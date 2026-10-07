@@ -40,9 +40,9 @@ test('Rework and parallel visits retain actual start data and explicit writes', 
  assert.equal(rework.input.needsRework, true); assert.equal(rework.output.needsRework, false);
  const repeated = q.receipts.filter(r => r.caseId === rework.caseId && r.stepId === 'qa');
  assert.equal(repeated.length, 2); assert.notEqual(repeated[0]!.id, repeated[1]!.id);
- const ux = q.receipts.find(r => r.stepId === 'ux')!, tech = q.receipts.find(r => r.stepId === 'architecture')!;
- assert.deepEqual(ux.changes, {uxReady: true}); assert.deepEqual(tech.changes, {techReady: true});
- assert.equal(ux.input.uxReady, undefined); assert.equal(tech.input.techReady, undefined);
+ const ux = q.receipts.find(r => r.stepId === 'product-design')!, tech = q.receipts.find(r => r.stepId === 'architecture')!;
+ assert.deepEqual(ux.changes, {requirementsReady: true}); assert.deepEqual(tech.changes, {techReady: true});
+ assert.equal(ux.input.requirementsReady, undefined); assert.equal(tech.input.techReady, undefined);
 });
 test('Completion history is bounded without dropping process inputs or final outputs', () => {
  const d = base(); d.arrivals[0]!.count = 200; d.arrivals[0]!.data = {request: 'kept'}; d.steps[1]!.set = {done: true};
@@ -68,9 +68,9 @@ test('Future arrivals and zero interval batches preserve authored arrival order'
  assert.equal(s.advance(9).metrics.arrived, 1); assert.equal(s.advance(1).metrics.arrived, 3); assert.equal(s.advance(5).metrics.completed, 3); s.dispose();
 });
 test('Agency parallel joins and rework complete with exact deterministic evidence', () => {
- const q = run(agency, 500); assert.equal(q.minute, 189); assert.equal(q.metrics.completed, 6); assert.equal(q.metrics.failed, 0); assert.equal(q.metrics.cost, 1536);
+ const q = run(agency, 500); assert.equal(q.minute, 217); assert.equal(q.metrics.completed, 6); assert.equal(q.metrics.failed, 0); assert.equal(q.metrics.cost, 1752);
  assert.equal(q.steps.find(s => s.id === 'design-ready')!.completed, 6); assert.equal(q.steps.find(s => s.id === 'qa')!.completed, 9);
- assert.equal(q.steps.find(s => s.id === 'rework')!.completed, 3); assert(q.cases.every(c => c.data.uxReady && c.data.techReady && !c.data.needsRework));
+ assert.equal(q.steps.find(s => s.id === 'rework')!.completed, 3); assert(q.cases.every(c => c.data.requirementsReady && c.data.techReady && !c.data.needsRework));
 });
 test('Chunked clock commands and one bounded run produce identical snapshots', () => {
  const whole = run(agency, 150), s = runtime.create(agency); for (let i = 0; i < 15; i++) s.advance(10);
@@ -81,7 +81,7 @@ test('Decisions take matching rules before fallback regardless of fallback posit
  const q = run(d, 500); assert.equal(q.steps.find(s => s.id === 'rework')!.completed, 3);
 });
 test('Missing condition fields choose fallback and numeric comparisons are typed', () => {
- const d = copy(agency); d.arrivals.forEach(a => a.data = {}); const q = run(d, 500); assert.equal(q.steps.find(s => s.id === 'rework')!.completed, 0);
+ const d = copy(agency); d.arrivals.forEach(a => a.data = {}); d.steps.find(s => s.id === 'handover')!.needs!.pop(); const q = run(d, 500); assert.equal(q.steps.find(s => s.id === 'rework')!.completed, 0);
  const graph = (globalThis as unknown as {LWProcessGraph: {matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean}}).LWProcessGraph;
  for (const op of ['gt', 'gte', 'lt', 'lte'] as const) assert.equal(graph.matches({value: '5'}, {field: 'value', op, value: 3}), false);
  assert.equal(graph.matches({}, {field: 'missing', op: 'ne', value: true}), false);
@@ -102,6 +102,72 @@ test('Run horizon is configurable per session, defaults to the engine limit and 
  short.setHorizon(null); assert.equal(short.advance(5).status, 'running'); assert.throws(() => short.setHorizon(0)); assert.throws(() => short.setHorizon(1.5)); short.dispose();
  const open = runtime.create(d, {horizon: null}); assert.equal(open.advance(100000).minute, 100000); assert.equal(open.query().status, 'running'); assert.equal(open.advance(100000).status, 'completed'); open.dispose();
  const fixed = runtime.create(d); assert.equal(fixed.horizon(), runtime.limits.minutes); assert.equal(fixed.advance(100000).status, 'limit'); fixed.dispose();
+});
+/** start -> intake task (1 min) -> bench task (10 min, one worker, optional backlog) -> end, with one arrival per listed priority. */
+function bench(backlog: LWProcess.Backlog | undefined, priorities: number[], gap = 2): LWProcess.Definition {
+ const d = base(); d.resources = [{id: 'worker', name: 'Worker', capacity: 1, costPerMinute: 1}];
+ d.steps[1]!.id = 'intake'; d.steps[1]!.duration = 1; d.steps[1]!.scene.id = 'scene-intake'; d.flows[0]!.to = 'intake'; d.flows[1]!.from = 'bench'; d.flows[0]!.id = 'start-intake';
+ d.steps.splice(2, 0, {id: 'bench', name: 'Bench', kind: 'task', duration: 10, resources: {worker: 1}, scene: {id: 'scene-bench', position: [24, 0], color: '#ffbb73'}});
+ d.steps[3]!.scene.position = [36, 0]; if (backlog) d.steps[2]!.backlog = backlog;
+ d.flows.splice(1, 0, {id: 'intake-bench', from: 'intake', to: 'bench'}); d.flows[2]!.id = 'bench-end';
+ d.arrivals = priorities.map((priority, i) => ({at: i * gap, count: 1, interval: 0, data: {priority}}));
+ return catalog.admit(d);
+}
+const startedOrder = (d: LWProcess.Definition) => {const s = runtime.create(d); try {s.advance(100); return s.query().events.filter(e => e.kind === 'started' && e.stepId === 'bench').map(e => e.caseId);} finally {s.dispose();}};
+test('Task backlogs bound waiting work, hold upstream work and honour fifo, lifo and priority order', () => {
+ const d = bench({capacity: 1}, [1, 1, 1, 1]), s = runtime.create(d); let held = false;
+ for (let i = 0; i < 60; i++) {
+  const q = s.advance(1), waiting = q.tokens.filter(t => t.stepId === 'bench' && t.status !== 'active' && t.status !== 'held').length;
+  assert(waiting <= 1, 'backlog exceeded capacity'); held ||= q.tokens.some(t => t.status === 'held');
+ }
+ assert(held); assert.equal(s.advance(40).metrics.completed, 4); s.dispose();
+ // The first case starts at once; the rest wait while it works, so their order shows the backlog rule.
+ assert.deepEqual(startedOrder(bench(undefined, [1, 1, 3, 2])), ['case-0001', 'case-0002', 'case-0003', 'case-0004']);
+ assert.deepEqual(startedOrder(bench({capacity: 3, order: 'lifo'}, [1, 1, 3, 2])), ['case-0001', 'case-0004', 'case-0003', 'case-0002']);
+ assert.deepEqual(startedOrder(bench({capacity: 3, order: 'priority', priority: 'priority'}, [1, 1, 3, 2])), ['case-0001', 'case-0003', 'case-0004', 'case-0002']);
+});
+test('Join backlogs fill on merge and release work downstream only within the pull limit', () => {
+ const q = run(agency, 500), steps = new Map(agency.steps.map(s => [s.id, s])); assert.deepEqual(steps.get('design-ready')!.backlog, {capacity: 3, order: 'priority', priority: 'priority', pull: 1});
+ const s = runtime.create(agency); let most = 0, deepest = 0;
+ for (let i = 0; i < 260; i++) {
+  const now = s.advance(1);
+  most = Math.max(most, now.tokens.filter(t => t.stepId === 'design-ready' && t.status === 'backlog').length);
+  deepest = Math.max(deepest, now.tokens.filter(t => t.stepId === 'implementation' && ['queued', 'active', 'routing'].includes(t.status)).length);
+ }
+ s.dispose(); assert(most >= 2 && most <= 3); assert.equal(deepest, 1);
+ const priorities = q.events.filter(e => e.kind === 'pulled').map(e => e.caseId); assert(priorities.length >= 3);
+ assert.equal(q.minute, 217); assert(q.cases.every(c => c.status === 'completed'));
+});
+test('Backlog configuration is validated for kind, order fields and pull targets', () => {
+ const bad = (mutate: (d: LWProcess.Definition) => void) => {const d = copy(agency); mutate(d); return catalog.validate(d).ok;};
+ const step = (d: LWProcess.Definition, id: string) => d.steps.find(s => s.id === id)!;
+ assert.equal(bad(d => {step(d, 'discovery').backlog = {capacity: 2, pull: 1};}), false);
+ assert.equal(bad(d => {step(d, 'review-gate').backlog = {capacity: 2};}), false);
+ assert.equal(bad(d => {delete step(d, 'design-ready').backlog!.priority;}), false);
+ assert.equal(bad(d => {step(d, 'design-ready').backlog!.order = 'fifo';}), false);
+ assert.equal(bad(d => {step(d, 'design-ready').backlog!.capacity = 0;}), false);
+ assert.equal(bad(d => {step(d, 'design-ready').backlog = {capacity: 4};}), true);
+});
+test('Needs are checked statically against arrivals, earlier deliveries, parallel merges and decision routes', () => {
+ const bad = (mutate: (d: LWProcess.Definition) => void) => {const d = copy(agency); mutate(d); return catalog.validate(d).diagnostics.filter(e => e.code === 'needs').map(e => e.path);};
+ const step = (d: LWProcess.Definition, id: string) => d.steps.find(s => s.id === id)!;
+ assert.deepEqual(bad(() => {}), []);
+ assert.deepEqual(bad(d => {delete step(d, 'product-design').set;}), ['/steps/5/needs/0', '/steps/6/needs/0']);
+ assert.deepEqual(bad(d => {step(d, 'product-design').set = {requirementsReady: false};}), ['/steps/5/needs/0', '/steps/6/needs/0']);
+ assert.deepEqual(bad(d => {step(d, 'handover').needs = [{field: 'needsRework', op: 'eq', value: true}];}), ['/steps/10/needs/0']);
+ assert.deepEqual(bad(d => {step(d, 'handover').needs = [{field: 'priority', op: 'gte', value: 1}, {field: 'missing'}];}), ['/steps/10/needs/1']);
+ assert.deepEqual(bad(d => {step(d, 'architecture').needs = [{field: 'requirementsReady'}];}), ['/steps/4/needs/0']);
+ const diagnostics = (mutate: (d: LWProcess.Definition) => void) => {const d = copy(agency); mutate(d); return catalog.validate(d).diagnostics.map(e => e.path);};
+ assert.deepEqual(diagnostics(d => {step(d, 'intake').needs = [{field: 'x'}];}), ['/steps/0/needs/0']);
+ assert.deepEqual(diagnostics(d => {step(d, 'handover').needs = [{field: 'priority', op: 'gte'}];}), ['/steps/10/needs/0']);
+});
+test('Needs report earlier deliveries and describe themselves', () => {
+ const steps = agency.steps, deliveries = (id: string) => (globalThis as unknown as {LWProcessNeeds: LWProcessNeeds.Api}).LWProcessNeeds.deliveries(agency, id);
+ assert.deepEqual(deliveries('implementation'), [{field: 'requirementsReady', steps: ['product-design'], arrivals: false}, {field: 'techReady', steps: ['architecture'], arrivals: false}]);
+ assert.deepEqual(deliveries('handover').map(x => x.field), ['verified', 'needsRework']); assert.equal(steps.length, 12);
+ const needs = (globalThis as unknown as {LWProcessNeeds: LWProcessNeeds.Api}).LWProcessNeeds;
+ assert.equal(needs.holds({field: 'built', op: 'eq', value: true}, {built: true}), true); assert.equal(needs.holds({field: 'built'}, {}), false);
+ assert.equal(needs.describe({field: 'priority', op: 'gte', value: 2}), 'priority \u2265 2'); assert.equal(needs.describe({field: 'built'}), 'built delivered');
 });
 test('Malformed, unknown and unsafe JSON values never pass admission', () => {
  for (const value of [null, [], {...base(), surprise: true}, {...base(), revision: NaN}, {...base(), format: 'bpmn'}]) assert.equal(catalog.validate(value).ok, false);
@@ -124,9 +190,9 @@ test('Impossible resources and invalid task fields are rejected before execution
  delete d.steps[1]!.resources; d.steps[0]!.duration = 1; assert.equal(catalog.validate(d).ok, false);
 });
 test('Parallel region rejects branch overlap, nested controls and conflicting writes', () => {
- for (const mutate of [(d: LWProcess.Definition) => {d.steps.find(s => s.id === 'architecture')!.set = {uxReady: true};},
-  (d: LWProcess.Definition) => {d.flows.find(f => f.id === 'design-split-architecture')!.to = 'ux';},
-  (d: LWProcess.Definition) => {const s = d.steps.find(s => s.id === 'ux')!; s.kind = 'decision'; delete s.duration; delete s.resources; delete s.set;}]) {
+ for (const mutate of [(d: LWProcess.Definition) => {d.steps.find(s => s.id === 'architecture')!.set = {requirementsReady: true};},
+  (d: LWProcess.Definition) => {d.flows.find(f => f.id === 'design-split-architecture')!.to = 'product-design';},
+  (d: LWProcess.Definition) => {const s = d.steps.find(s => s.id === 'product-design')!; s.kind = 'decision'; delete s.duration; delete s.resources; delete s.set;}]) {
   const d = copy(agency); mutate(d); assert.equal(catalog.validate(d).ok, false);
  }
 });
@@ -153,7 +219,7 @@ test('Incremental drafts retain explicit diagnostics and become runnable when co
 });
 test('Scene and renderer navigation leaves the authoritative run untouched', () => {
  const app = application.create(agency); app.advance(30); const q = app.query().snapshot;
- app.select('ux'); app.mode('2d'); app.select('qa'); app.mode('3d'); assert.deepEqual(app.query().snapshot, q);
+ app.select('product-design'); app.mode('2d'); app.select('qa'); app.mode('3d'); assert.deepEqual(app.query().snapshot, q);
  app.dispose();
 });
 test('Rejected imports preserve session and definition; valid import starts paused', () => {

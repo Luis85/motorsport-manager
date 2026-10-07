@@ -74,4 +74,4 @@ for the placement rule and the Wildlands
 [runtime contracts](../../source/wildlands/RUNTIME-CONTRACTS.md) for how a
 folder becomes an installed content profile.
 
-- [Agency delivery lab](agency-delivery/README.md) — process scenes, shared resources, parallel design and QA rework.
+- [Agency delivery lab](agency-delivery/README.md) — process scenes, shared resources, parallel product and technical design, a pull backlog, step needs and QA rework.

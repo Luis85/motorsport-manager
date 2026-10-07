@@ -2,7 +2,7 @@
 /** Process token transitions, atomic pool allocation and structured joins over shared ECS storage. */
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessLimits: LWProcess.Limits; LWProcessGraph: {matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean}; LWProcessSystems?: LWProcess.Systems};
+ const root = inputRoot as {LWProcessLimits: LWProcess.Limits; LWProcessNeeds: LWProcessNeeds.Api; LWProcessGraph: {matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean}; LWProcessSystems?: LWProcess.Systems};
  const limits = root.LWProcessLimits;
  // Locale-independent code-unit order keeps replays identical across hosts.
  const compare = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
@@ -22,8 +22,26 @@
   for (const t of tokens(s).filter(t => t.caseId === c.id)) { if (t.status === 'active') release(s, t); s.world.destroy(t.id); }
   event(s, 'failed', c.id, '', message);
  }
+ const holds = ['routing', 'queued'], stored = ['backlog'];
+ /** Work waiting at a step: a task's queue or a join's backlog. Joins' branch arrivals never count against capacity. */
+ const inStore = (s: LWProcess.State, id: string) => tokens(s).filter(t => t.stepId === id && (s.steps.get(id)!.kind === 'join' ? stored : holds).includes(t.status));
+ const accepts = (s: LWProcess.State, id: string) => { const step = s.steps.get(id)!; return !step.backlog || step.kind === 'join' || inStore(s, id).length < step.backlog.capacity; };
+ const ranking = (s: LWProcess.State, step: LWProcess.Step) => {
+  const base = (a: LWProcess.Token, b: LWProcess.Token) => a.entered - b.entered || compare(a.caseId, b.caseId) || compare(a.id, b.id);
+  const rank = (t: LWProcess.Token) => { const v = caseOf(s, t).data[step.backlog!.priority!]; return typeof v === 'number' ? v : 0; };
+  const order = step.backlog?.order ?? 'fifo';
+  return order === 'lifo' ? (a: LWProcess.Token, b: LWProcess.Token) => base(b, a) : order === 'priority' ? (a: LWProcess.Token, b: LWProcess.Token) => rank(b) - rank(a) || base(a, b) : base;
+ };
+ const unmet = (s: LWProcess.State, c: LWProcess.Case, step: LWProcess.Step) => (step.needs ?? []).find(n => !root.LWProcessNeeds.holds(n, c.data));
+ function failNeed(s: LWProcess.State, c: LWProcess.Case, step: LWProcess.Step, need: LWProcess.Need): void {
+  fail(s, c, 'Step "' + step.name + '" needs ' + root.LWProcessNeeds.describe(need) + (need.label ? ' (' + need.label + ')' : '') + ' but earlier steps did not deliver it.');
+ }
  function enter(s: LWProcess.State, t: LWProcess.Token, stepId: string): void {
-  t.stepId = stepId; t.entered = s.clock.minute; t.started = null; t.remaining = 0; t.input = null; t.status = 'routing';
+  if (!accepts(s, stepId)) {
+   if (t.status !== 'held') event(s, 'held', t.caseId, t.stepId, 'Backlog of ' + s.steps.get(stepId)!.name + ' is full.');
+   t.status = 'held'; t.target = stepId; return;
+  }
+  delete t.target; t.stepId = stepId; t.entered = s.clock.minute; t.started = null; t.remaining = 0; t.input = null; t.status = 'routing';
   station(s, stepId).visits++;
   event(s, 'entered', t.caseId, stepId);
  }
@@ -44,6 +62,8 @@
  function route(s: LWProcess.State, t: LWProcess.Token): void {
   const c = caseOf(s, t), step = s.steps.get(t.stepId)!, out = s.outgoing.get(step.id)!;
   if (++c.transitions > limits.transitions) { fail(s, c, 'Case exceeded ' + limits.transitions + ' step transitions.'); return; }
+  // A join merges branch tokens, so its needs are checked once at the merge instead of at each arrival.
+  const missing = step.kind === 'join' ? undefined : unmet(s, c, step); if (missing) { failNeed(s, c, step, missing); return; }
   if (step.kind === 'task') { t.status = 'queued'; return; }
   if (step.kind === 'end') {
    station(s, step.id).completed++; s.world.destroy(t.id);
@@ -71,28 +91,59 @@
    for (const group of groups) {
     const batch = waiting.filter(t => t.fork === group), expected = s.outgoing.get(fork.id)!.map(f => f.id);
     if (batch.length !== expected.length || !expected.every(id => batch.some(t => t.branch === id))) continue;
-    const first = batch[0]!;
-    batch.forEach(t => s.world.destroy(t.id)); station(s, step.id).completed++;
-    event(s, 'joined', first.caseId, step.id); spawn(s, first.caseId, s.outgoing.get(step.id)![0]!.to, null, null); changed = true;
+    const first = batch[0]!, c = caseOf(s, first);
+    if (step.backlog && inStore(s, step.id).length >= step.backlog.capacity) continue;
+    batch.forEach(t => s.world.destroy(t.id)); station(s, step.id).completed++; changed = true;
+    event(s, 'joined', first.caseId, step.id);
+    const missing = unmet(s, c, step); if (missing) { failNeed(s, c, step, missing); continue; }
+    if (!step.backlog) { spawn(s, first.caseId, s.outgoing.get(step.id)![0]!.to, null, null); continue; }
+    const id = 'token-' + String(++s.clock.serial).padStart(8, '0'); s.world.create(id);
+    s.world.set<LWProcess.Token>(id, 'process-token', {id, caseId: first.caseId, stepId: step.id, entered: s.clock.minute, started: null, input: null, remaining: 0, status: 'backlog', fork: null, branch: null});
+    event(s, 'backlogged', first.caseId, step.id);
    }
   }
   return changed;
+ }
+ /** Held work retries its blocked step; joins release backlog items downstream while the pull limit allows. */
+ function pull(s: LWProcess.State): boolean {
+  let changed = false;
+  for (const t of tokens(s).filter(t => t.status === 'held').sort((a, b) => a.entered - b.entered || compare(a.caseId, b.caseId) || compare(a.id, b.id))) {
+   if (accepts(s, t.target!)) { enter(s, t, t.target!); changed = true; }
+  }
+  for (const step of s.definition.steps.filter(x => x.kind === 'join' && x.backlog)) {
+   const next = s.outgoing.get(step.id)![0]!.to, load = () => tokens(s).filter(t => t.stepId === next && ['routing', 'queued', 'active'].includes(t.status)).length;
+   for (const t of tokens(s).filter(t => t.stepId === step.id && t.status === 'backlog').sort(ranking(s, step))) {
+    if (step.backlog!.pull !== undefined && load() >= step.backlog!.pull || !accepts(s, next)) break;
+    event(s, 'pulled', t.caseId, step.id, next); enter(s, t, next); changed = true;
+   }
+  }
+  return changed;
+ }
+ function start(s: LWProcess.State): boolean {
+  const queued = tokens(s).filter(t => t.status === 'queued').sort((a, b) => a.entered - b.entered || compare(a.caseId, b.caseId) || compare(a.id, b.id));
+  // Backlog orders re-rank only within their own step's positions, so other steps keep first-in order.
+  for (const step of s.definition.steps) if (step.backlog && step.backlog.order && step.backlog.order !== 'fifo' && step.kind === 'task') {
+   const slots = queued.flatMap((t, i) => t.stepId === step.id ? [i] : []), ranked = slots.map(i => queued[i]!).sort(ranking(s, step));
+   slots.forEach((i, k) => { queued[i] = ranked[k]!; });
+  }
+  let started = false;
+  for (const t of queued) {
+   const step = s.steps.get(t.stepId)!, demands = Object.entries(step.resources ?? {});
+   if (demands.some(([id, quantity]) => pool(s, id).busy + quantity > pool(s, id).capacity)) continue;
+   for (const [id, quantity] of demands) pool(s, id).busy += quantity;
+   t.input = {...caseOf(s, t).data}; t.started = s.clock.minute; t.status = 'active'; t.remaining = step.duration!; started = true;
+   station(s, step.id).waitMinutes += s.clock.minute - t.entered; s.clock.cost += step.cost ?? 0;
+   event(s, 'started', t.caseId, step.id);
+  }
+  return started;
  }
  function settle(s: LWProcess.State): void {
   // Control-only cycles cannot monopolize a browser frame: each case has a transition budget.
   while (true) {
    const pending = tokens(s).filter(t => t.status === 'routing');
-   if (!pending.length) { if (join(s)) continue; break; }
-   for (const t of pending) if (s.world.get(t.id, 'process-token')) route(s, t);
-  }
-  const queued = tokens(s).filter(t => t.status === 'queued').sort((a, b) => a.entered - b.entered || compare(a.caseId, b.caseId) || compare(a.id, b.id));
-  for (const t of queued) {
-   const step = s.steps.get(t.stepId)!, demands = Object.entries(step.resources ?? {});
-   if (demands.some(([id, quantity]) => pool(s, id).busy + quantity > pool(s, id).capacity)) continue;
-   for (const [id, quantity] of demands) pool(s, id).busy += quantity;
-   t.input = {...caseOf(s, t).data}; t.started = s.clock.minute; t.status = 'active'; t.remaining = step.duration!;
-   station(s, step.id).waitMinutes += s.clock.minute - t.entered; s.clock.cost += step.cost ?? 0;
-   event(s, 'started', t.caseId, step.id);
+   if (pending.length) { for (const t of pending) if (s.world.get(t.id, 'process-token')) route(s, t); continue; }
+   if (join(s) || pull(s) || start(s)) continue;
+   break;
   }
  }
  function work(s: LWProcess.State): void {

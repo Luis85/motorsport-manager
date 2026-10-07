@@ -2,7 +2,7 @@
 /** Graph admission and deterministic branching are domain rules, independent of ECS and rendering. */
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessLimits: LWProcess.Limits; LWProcessGraph?: {check(d: LWProcess.Definition): LWProcess.Diagnostic[]; matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean}};
+ const root = inputRoot as {LWProcessLimits: LWProcess.Limits; LWProcessNeeds: {check(d: LWProcess.Definition): LWProcess.Diagnostic[]}; LWProcessGraph?: {check(d: LWProcess.Definition): LWProcess.Diagnostic[]; matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean}};
  function matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean {
   if (!Object.hasOwn(data, c.field)) return false;
   const value = data[c.field];
@@ -40,6 +40,17 @@
     if (s.duration === undefined) fail(path + '/duration', 'Tasks need a positive whole-minute duration.');
     for (const [id, count] of Object.entries(s.resources ?? {})) if (!pools.has(id) || count > pools.get(id)!.capacity) fail(path + '/resources/' + id, 'Demand exceeds the available pool.');
    } else if (['duration', 'cost', 'resources', 'set'].some(k => Object.hasOwn(s, k))) fail(path, 'Only tasks declare work, costs, resource demands or effects.');
+   (s.needs ?? []).forEach((n, j) => {
+    if (s.kind === 'start') fail(path + '/needs/' + j, 'The start step has no earlier step to deliver its needs.');
+    if ((n.op === undefined) !== (n.value === undefined)) fail(path + '/needs/' + j, 'A need names an operator and a value together, or neither.');
+   });
+   if (s.backlog) {
+    const b = s.backlog, next = s.kind === 'join' ? steps.get(out[0]?.to ?? '') : undefined;
+    if (s.kind !== 'task' && s.kind !== 'join') fail(path + '/backlog', 'Only tasks and joins hold a backlog.');
+    if (b.order === 'priority' && !b.priority) fail(path + '/backlog/priority', 'Priority order needs the numeric case field to rank by.');
+    if (b.order !== 'priority' && b.priority !== undefined) fail(path + '/backlog/priority', 'A priority field needs priority order.');
+    if (b.pull !== undefined && next?.kind !== 'task') fail(path + '/backlog/pull', 'A pull limit needs a join whose next step is a task.');
+   }
    if (s.kind === 'fork' && steps.get(s.join ?? '')?.kind !== 'join') fail(path + '/join', 'A fork must name an existing join step.');
    else if (s.kind !== 'fork' && s.join !== undefined) fail(path + '/join', 'Only forks name a join step.');
   });
@@ -78,6 +89,7 @@
    if (new Set(outgoing(fork.id).map(f => f.to)).size !== outgoing(fork.id).length) fail(at(fork.id), 'Fork branches need distinct targets.');
   }
   for (const join of d.steps.filter(s => s.kind === 'join')) if (!owners.has(join.id)) fail(at(join.id), 'Join needs one owning fork.');
+  if (!errors.length) errors.push(...root.LWProcessNeeds.check(d));
   const cases = d.arrivals.reduce((n, a) => n + a.count, 0);
   if (cases > limits.cases) fail('/arrivals', 'At most ' + limits.cases + ' cases are supported.');
   // An arrival at the horizon minute could never start work: tasks last at least one minute.

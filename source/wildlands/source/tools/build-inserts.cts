@@ -285,6 +285,7 @@ export const INSERTS: readonly Insert[] = [
   ["PLAY_CSS", "play.css", "style", "play-boot"],
   ["PLAY_BOOT", "play-boot.js", "script", "play-boot"],
   ["PROCESS_SCHEMA", "process-schema.js", "script", "template-process"],
+  ["PROCESS_NEEDS", "process-needs.js", "script", "template-process"],
   ["PROCESS_GRAPH", "process-graph.js", "script", "template-process"],
   ["PROCESS_CATALOG", "process-catalog.js", "script", "template-process"],
   ["PROCESS_SYSTEMS", "process-systems.js", "script", "template-process"],

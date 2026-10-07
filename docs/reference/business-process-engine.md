@@ -47,7 +47,25 @@ scalar case `data`. The example's numbers are synthetic demonstration assumption
    A run has finite case, minute, transition, event and receipt limits; an
    arrival must occur strictly before the minute limit. Waiting work
    with no possible progress is reported as blocked, never silently completed.
-7. A case finishes only at an end with no outstanding parallel tokens. Throughput,
+7. **Backlogs.** A task or join may declare `backlog: {capacity, order, priority?, pull?}`.
+   A task's backlog is its waiting queue: at most `capacity` items wait, and work
+   that would exceed it stays *held* at its previous step (status `held`, event
+   `held`) without resources until room appears. A join's backlog stores merged
+   cases (status `backlog`, events `joined`, `backlogged`); a join does not merge
+   while its backlog is full. `order` is `fifo` (default, oldest first), `lifo`
+   (newest first) or `priority` (highest numeric case field named by `priority`
+   first, ties oldest first); it ranks only within that step. A join's optional
+   `pull` limits how many items may be queued or working in its next task; items
+   are released (event `pulled`) in backlog order whenever the limit allows.
+   Backlogs add no hidden capacity: resources still gate every task start.
+8. **Needs.** Any step except start may declare `needs: [{field, op?, value?, label?}]`,
+   the case data that earlier steps (or arrivals) must have delivered. A step
+   delivers data with its task `set` effects. Admission analyses every route from
+   the start (arrival data, task `set`, decision routes and parallel merges) and
+   rejects a need that is not guaranteed on all routes with a `needs` diagnostic
+   naming the step and need. Join needs are checked when the branches merge.
+   The runtime repeats the check and fails a case explicitly if a need is unmet.
+9. A case finishes only at an end with no outstanding parallel tokens. Throughput,
    active/queued cases, completed/failed cases, cycle time, task waiting time,
    resource utilization and simulated cost derive from that same state.
 

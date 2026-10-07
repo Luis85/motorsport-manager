@@ -107,7 +107,7 @@ async function templateDemo(page: Page, game: GameJson): Promise<void> {
     await waitForReady(page, {host: 'process', timeout: READY_TIMEOUT_MS});
     assert.equal(await page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {query(): {snapshot: {minute: number}}}}).LWProcessStudio.query().snapshot.minute), 0);
     await page.locator('#advance').click();
-    assert.equal(await page.locator('#clock').textContent(), '30 min');
+    assert.equal(await page.locator('#clock').textContent(), '30 min of 100,000');
     assert.equal(await page.locator('[data-step]').count(), 12);
     return;
   }

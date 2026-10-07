@@ -106,7 +106,7 @@ declare namespace LWProcess2D {
     const progress = working ? Math.max(0, Math.min(1, q.tokens.filter(t => t.stepId === step.id && t.status === 'active').reduce((n, t) => n + 1 - t.remaining / (step.duration || 1), 0) / metric.active)) : 0;
     group.append(el('rect', {x: x - w / 2 + .3, y: y + h / 2 - .35, width: w - .6, height: .08, fill: '#364150'}), el('rect', {x: x - w / 2 + .3, y: y + h / 2 - .35, width: (w - .6) * progress, height: .08, fill: th.accent}));
     group.append(glyph(th.id, x - w / 2 + .9, y + h / 2 - 1, selected ? 1.3 : .85, working ? th.accent : '#6a7684', progress));
-    group.append(el('text', {x: x - w / 2 + (selected ? 1.8 : 1.5), y: y + h / 2 - .85, fill: working ? '#edf2f7' : '#8a97a8', 'font-size': .46}, `${th.label} · ${working ? th.task : waiting ? 'Waiting to start' : 'Idle · standby'}`));
+    group.append(el('text', {x: x - w / 2 + (selected ? 1.8 : 1.5), y: y + h / 2 - .85, fill: working ? '#edf2f7' : '#8a97a8', 'font-size': .46}, working ? th.task : waiting ? 'Waiting to start' : 'Idle · standby'), el('title', {}, th.label));
     group.append(el('text', {x, y: y - h / 2 + 1.55, fill: '#b1bdcd', 'font-size': .48, 'text-anchor': 'middle'}, `${step.kind} · ${step.duration ?? 0} min · ${metric.completed} completed`));
     const work = q.tokens.filter(t => t.stepId === step.id);
     if (selected) {
@@ -118,8 +118,13 @@ declare namespace LWProcess2D {
       group.append(el('rect', {x: x - 4, y: y - .35, width: 8 * progress, height: .07, fill: '#ffbb73'}));
      }
     }
-    for (const [i, t] of work.slice(0, selected ? 40 : 8).entries()) group.append(el('circle', {cx: x - (selected ? 4 : 3) + (i % (selected ? 10 : 8)) * .8, cy: y + .65 + Math.floor(i / 10) * .6, r: .2, fill: t.status === 'active' ? '#ffbb73' : '#91b9d5'}));
+    for (const [i, t] of work.slice(0, selected ? 40 : 8).entries()) group.append(el('circle', {cx: x - (selected ? 4 : 3) + (i % (selected ? 10 : 8)) * .8, cy: y + .65 + Math.floor(i / 10) * .6, r: .2, fill: t.status === 'active' ? '#ffbb73' : t.status === 'held' ? '#e07a7a' : t.status === 'backlog' ? '#b79ad6' : '#91b9d5'}));
     if (work.length > (selected ? 40 : 8)) group.append(el('text', {x: x + 3.1, y: y + 1.4, fill: '#edf2f7', 'font-size': .5}, '+' + (work.length - (selected ? 40 : 8))));
+    if (step.backlog) {
+     const stored = work.filter(t => t.status === 'backlog' || step.kind === 'task' && t.status === 'queued').length, slots = Math.min(step.backlog.capacity, 8), filled = stored ? Math.max(1, Math.round(stored / step.backlog.capacity * slots)) : 0;
+     for (let i = 0; i < slots; i++) group.append(el('rect', {x: x + w / 2 - .5 - (slots - i) * .38, y: y + h / 2 - 1.15, width: .3, height: .3, fill: i < filled ? '#b79ad6' : 'none', stroke: '#6a7684', 'stroke-width': .05}));
+     group.append(el('text', {x: x + w / 2 - .5, y: y + h / 2 - 1.3, fill: '#b79ad6', 'font-size': .4, 'text-anchor': 'end'}, `Backlog ${stored}/${step.backlog.capacity}`));
+    }
     group.addEventListener('click', () => select(step.id));
     group.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(step.id); } });
     svg.append(group);

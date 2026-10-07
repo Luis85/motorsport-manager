@@ -34,12 +34,12 @@
       }
     },
     {
-      "id": "scene-ux",
+      "id": "scene-product-design",
       "family": "items",
-      "name": "UX design",
+      "name": "Product design",
       "models": {
         "world": {
-          "model": "scene-ux"
+          "model": "scene-product-design"
         }
       }
     },

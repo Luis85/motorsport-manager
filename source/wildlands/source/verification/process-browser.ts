@@ -32,7 +32,7 @@ async function main(): Promise<void> {
   await check('2D and 3D scene navigation preserves the same simulation state', async () => {
    await page.locator('#advance').click(); const before = (await query(page)).snapshot;
    await page.locator('#mode-2d').click(); assert.equal(await page.locator('#map svg').count(), 1);
-   await page.locator('[data-step="ux"]').click(); assert.equal((await query(page)).selected, 'ux');
+   await page.locator('[data-step="product-design"]').click(); assert.equal((await query(page)).selected, 'product-design');
    await page.locator('#mode-3d').click(); assert.deepEqual((await query(page)).snapshot, before);
    await page.locator('#overview').click();
   });
@@ -49,7 +49,7 @@ async function main(): Promise<void> {
    assert.equal(await page.locator('.process-written').evaluate((e: HTMLDetailsElement) => e.open), true);
    await page.locator('#mode-2d').click();
    await page.locator('#overview').click(); assert.match(await page.locator('#process-data').innerText(), /Process inputs/);
-   for (let i = 0; i < 6; i++) if (!(await page.locator('#advance').isDisabled())) await page.locator('#advance').click();
+   for (let i = 0; i < 10; i++) if (!(await page.locator('#advance').isDisabled())) await page.locator('#advance').click();
    assert.match(await page.locator('#process-data').innerText(), /Process outputs/);
    assert.match(await page.locator('#message').innerText(), /Run completed.*Export the report/);
    assert.match(await page.locator('#play').getAttribute('title') ?? '', /reset/);
@@ -99,6 +99,23 @@ async function main(): Promise<void> {
    assert.deepEqual((await query(page)).definition, before.definition); assert.match(await page.locator('#draft').inputValue(), /"duration": 77/);
    await page.locator('#apply').click(); const applied = await query(page); assert.equal(applied.definition.steps.find(s => s.kind === 'task')!.duration, 77); assert.equal(applied.horizon, 1440); assert.equal(applied.snapshot.minute, 0);
    await page.locator('#horizon').selectOption('100000'); await page.locator('#show-events').click();
+  });
+  await check('Backlogs and step needs are visible in the inspector and editable in the tuning form', async () => {
+   await page.locator('#reset').click(); const before = await query(page);
+   await page.locator('[data-step="design-ready"]').click(); const backlog = await page.locator('#inspector').innerText(); assert.match(backlog, /Items \/ capacity/); assert.match(backlog, /Highest priority first/); assert.match(backlog, /Pull limit/);
+   await page.locator('[data-step="implementation"]').click(); const needs = await page.locator('#inspector').innerText(); assert.match(needs, /Needs from earlier steps/); assert.match(needs, /requirementsReady = true/); assert.match(needs, /Delivered by Product design/);
+   await page.locator('#overview').click(); await page.locator('#show-definition').click();
+   const ready = page.locator('#tuning details', {hasText: 'Ready to build'}); await ready.locator('summary').click();
+   const capacity = ready.locator('input[id^="tune-backlog-cap"]'); await capacity.fill('2'); await capacity.dispatchEvent('change');
+   assert.equal(JSON.parse(await page.locator('#draft').inputValue()).steps.find((s: LWProcess.Step) => s.id === 'design-ready').backlog.capacity, 2);
+   const order = page.locator('#tuning select[id^="tune-backlog-order"]'); await order.selectOption('lifo');
+   const lifo = JSON.parse(await page.locator('#draft').inputValue()).steps.find((s: LWProcess.Step) => s.id === 'design-ready').backlog; assert.equal(lifo.order, 'lifo'); assert.equal(lifo.priority, undefined);
+   await page.locator('#tuning details', {hasText: 'Ready to build'}).locator('input[id^="tune-backlog-field"]').count().then(n => assert.equal(n, 0));
+   await page.locator('#tuning details', {hasText: 'Client handover'}).locator('summary').click();
+   await page.locator('#tune-add-need-10').click(); assert.equal(JSON.parse(await page.locator('#draft').inputValue()).steps[10].needs.length, 3);
+   await page.locator('#tuning details', {hasText: 'Client handover'}).locator('button', {hasText: 'Remove need'}).last().click(); assert.equal(JSON.parse(await page.locator('#draft').inputValue()).steps[10].needs.length, 2);
+   await page.locator('#tune-backlog-5').uncheck(); assert.equal(JSON.parse(await page.locator('#draft').inputValue()).steps[5].backlog, undefined);
+   assert.deepEqual((await query(page)).definition, before.definition); await page.locator('#restore-draft').click(); await page.locator('#show-events').click();
   });
   await check('Keyboard scene selection retains focus across detached view refreshes', async () => {
    await page.locator('[data-step="discovery"]').focus(); await page.keyboard.press('Enter');

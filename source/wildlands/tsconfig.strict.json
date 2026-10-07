@@ -377,6 +377,7 @@
     "source/test-content-provider.cts",
     "source/process-contracts.d.ts",
     "source/process-schema.ts",
+    "source/process-needs.ts",
     "source/process-graph.ts",
     "source/process-catalog.ts",
     "source/process-systems.ts",

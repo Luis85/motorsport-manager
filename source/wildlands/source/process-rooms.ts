@@ -4,7 +4,7 @@ declare namespace LWProcessRooms {
  interface Theme {id: string; label: string; floor: string; wall: string; accent: string; task: string}
  /** Subset of the 3D renderer's piece kit that room builders need. */
  interface Kit {T: any; mat(color: string, extra?: Record<string, unknown>): any; group(parent: any): any; piece(parent: any, kind: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, rotation?: number, extra?: Record<string, unknown>): any;}
- interface Room {setActive(active: boolean): void; animate(t: number, progress: number): void;}
+ interface Room {setActive(active: boolean): void; setBacklog(items: number): void; animate(t: number, progress: number): void;}
  interface Api {theme(step: LWProcess.Step): Theme; build(kit: Kit, parent: any, step: LWProcess.Step, furnished: boolean): Room;}
 }
 (function(inputRoot: unknown) {
@@ -21,7 +21,9 @@ declare namespace LWProcessRooms {
   decision: T('council', 'Decision room', '#3f3a33', '#574d41', '#e6c06e', 'Deliberating'), fork: T('junction', 'Junction', '#2b3a46', '#35495a', '#c79871', 'Routing work'),
   join: T('junction', 'Junction', '#2b3a46', '#35495a', '#c79871', 'Merging work'),
  };
+ const BACKLOG_THEME = T('backlog', 'Backlog room', '#33405a', '#46527a', '#9db4ff', 'Holding ready work');
  function theme(step: LWProcess.Step): LWProcessRooms.Theme {
+  if (step.kind === 'join' && step.backlog) return BACKLOG_THEME;
   if (step.kind !== 'task') return KIND_THEMES[step.kind]!;
   let h = 0; for (const c of step.id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   return TASK_THEMES[h % TASK_THEMES.length]!;
@@ -111,6 +113,12 @@ declare namespace LWProcessRooms {
    c.swing(t => {ring.rotation.set(Math.PI / 2 + wave(t, 1.1) * .35, t * 1.4, 0); ring.position.y = 1.7 + wave(t, 2) * .1; lamps.forEach((l, i) => l.scale.setScalar(.1 * (.7 + Math.max(0, wave(t, 2.5, i * 1.3)) * .9)));});
    c.P(c.idle, 'box', 0, 1, -.8, 2.1, .1, 2.1, '#6b6358');
   },
+  backlog(c) {
+   c.P(c.live.parent, 'box', 3.2, .3, -1.4, 3, .3, 1, '#4a5578'); c.P(c.live.parent, 'box', 1.5, .65, -1.4, .2, .7, 1.2, '#9db4ff');
+   const card = c.P(c.live, 'box', 0, .6, -1.4, .5, .08, .36, '#e7edff');
+   c.swing(t => {const u = (t * .3) % 1; card.position.x = 1.7 + u * 3; card.position.y = .6 + Math.sin(u * Math.PI) * .12;});
+   c.P(c.idle, 'box', 3.2, .55, -1.4, 3.1, .45, 1.1, '#5b6585');
+  },
   junction(c) {
    c.P(c.live.parent, 'cylinder', 0, .35, -.8, .9, .7, .9, '#4b6070');
    for (const a of [0, 1, 2, 3]) c.P(c.live.parent, 'box', Math.cos(a * Math.PI / 2) * 1.6, .25, -.8 + Math.sin(a * Math.PI / 2) * 1.6, a % 2 ? .4 : 2.2, .2, a % 2 ? 2.2 : .4, '#3b4d5b');
@@ -130,10 +138,21 @@ declare namespace LWProcessRooms {
     states.push(active => {mesh.material = active ? lit : dark;}); return mesh;
    }};
   if (furnished) BUILDERS[th.id]!(ctx);
+  const cards: any[] = [], capacity = step.backlog?.capacity ?? 1;
+  if (step.backlog) {
+   const big = th.id === 'backlog', cols = big ? 6 : 4, rows = 3, w = big ? 6.4 : 2.6, h = big ? 2.6 : 1.7, x = big ? 0 : -3.3, z = big ? -3.6 : -3.7, cell = w / cols;
+   P(parent, 'box', x, h / 2 + .45, z, w + .3, h + .3, .12, '#242b38'); P(parent, 'box', x, h + .75, z + .02, w + .3, .22, .16, th.accent);
+   for (let r = 0; r < rows; r++) for (let k = 0; k < cols; k++) {
+    const cx = x - w / 2 + cell * (k + .5), cy = .45 + h * (1 - (r + .5) / rows) - .1;
+    P(parent, 'box', cx, cy, z + .07, cell * .82, h / rows * .72, .03, '#394356');
+    const card = P(parent, 'box', cx, cy, z + .1, cell * .7, h / rows * .6, .04, r === 0 && k === 0 ? '#ffd27a' : th.accent); card.visible = false; cards.push(card);
+   }
+  }
   ctx.glow(P(parent, 'box', 2.6, 2.4, -4.2, .5, .14, .2, '#fff1df'), '#fff1df', '#ffd9a0', 1.6, '#4a4f55');
   P(idle, 'box', -3.3, .3, 1.8, .5, .6, .08, th.accent); P(idle, 'box', -3.3, .1, 1.8, .6, .2, .3, '#313c48');
   ctx.glow(P(idle, 'ball', -3.3, .75, 1.8, .06, .06, .06, th.accent), th.accent, th.accent, 1.2);
   return {
+   setBacklog(items) {const shown = items <= 0 ? 0 : capacity <= cards.length ? Math.min(items, cards.length) : Math.max(1, Math.round(items / capacity * cards.length)); cards.forEach((c, i) => {c.visible = i < shown;});},
    setActive(active) {live.visible = active; idle.visible = !active; for (const s of states) s(active);},
    animate(t, progress) {for (const s of swings) s(t, progress);},
   };

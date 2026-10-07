@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "kind": "model",
-  "id": "scene-ux",
-  "name": "UX design",
+  "id": "scene-product-design",
+  "name": "Product design",
   "category": "Business process scenes",
   "parameters": {},
   "geometries": {

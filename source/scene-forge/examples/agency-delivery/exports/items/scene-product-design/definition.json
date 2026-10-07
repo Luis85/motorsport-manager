@@ -2,13 +2,13 @@
   "format": "littlewild-definition",
   "schemaVersion": 1,
   "family": "items",
-  "id": "scene-ux",
+  "id": "scene-product-design",
   "visual": {
     "format": "littlewild-3d-asset",
     "schemaVersion": 1,
     "category": "item",
-    "id": "scene-ux",
-    "name": "UX design",
+    "id": "scene-product-design",
+    "name": "Product design",
     "materials": {
       "wood": {
         "color": "#8c725d",

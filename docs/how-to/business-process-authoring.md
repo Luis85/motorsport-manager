@@ -74,8 +74,22 @@ and `rename` complete the supported edit vocabulary.
   at that join. Each branch may write different case fields using task `set`.
 - For rework, route a decision back to a task outside a parallel region. The task
   can clear a boolean such as `needsRework` before the next decision.
-- Resource demands are simultaneous. A task needing designer and developer
-  waits until both are available. There is no hidden staff capacity.
+- Resource demands are simultaneous. A task needing a business analyst and a
+  requirements engineer waits until both are available. There is no hidden staff capacity.
+
+## Declare needs and backlogs
+
+- A step delivers data with `set` (for example `"set": {"requirementsReady": true}`)
+  and states what it needs with `needs`: `[{"field": "requirementsReady", "op": "eq",
+  "value": true, "label": "Product design deliverable"}]`. Omit `op` and `value` to
+  require only that the field was delivered. Validation fails when any route can reach
+  the step without the delivery, so mistakes show up before a run.
+- Give a task or join a `backlog` to bound and order waiting work:
+  `{"capacity": 3, "order": "priority", "priority": "priority", "pull": 1}`.
+  `pull` (joins only) caps work in the next task so downstream steps draw from the
+  backlog instead of the whole queue piling up in front of them.
+- The webview's **Tune values** form edits backlog capacity, order, priority field and
+  pull limit, and adds, edits or removes needs. Apply to start a fresh run.
 
 The complete [agency example](../concepts/agency-delivery/README.md) demonstrates
 all of these rules in its [JSON definition](../concepts/agency-delivery/content/agency.process.json).

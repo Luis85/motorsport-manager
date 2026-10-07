@@ -194,17 +194,18 @@ declare namespace LWProcess3D {
     }
     marker.position.set(step.scene.position[0] + (detailed ? -2.5 + at * 2.5 : -4 + at % 16 * .5), detailed ? .04 : .25 + Math.floor(at / 16) * .18, step.scene.position[1] + (detailed ? 2.4 : working ? 3.3 : 3.85));
     marker.userData.phase = Number(token.id.split('-').at(-1)) * 1.7;
-    if (!detailed) marker.material = mat(working ? '#ffbb73' : '#91b9d5');
+    if (!detailed) marker.material = mat(working ? '#ffbb73' : token.status === 'held' ? '#e07a7a' : token.status === 'backlog' ? '#b79ad6' : '#91b9d5');
    }
    for (const [id, indicator] of indicators) {
     const metric = view.snapshot.steps.find(s => s.id === id)!;
     const active = view.snapshot.tokens.filter(t => t.stepId === id && t.status === 'active');
     const duration = stepIndex.get(id)!.duration ?? 1;
     const progress = active.length ? active.reduce((n, t) => n + (duration - t.remaining) / duration, 0) / active.length : 0;
-    roomProgress.set(id, progress); rooms.get(id)!.setActive(metric.active > 0);
+    const definitionStep = stepIndex.get(id)!, stored = view.snapshot.tokens.filter(t => t.stepId === id && (t.status === 'backlog' || definitionStep.kind === 'task' && t.status === 'queued')).length;
+    roomProgress.set(id, progress); rooms.get(id)!.setActive(metric.active > 0 || definitionStep.kind === 'join' && stored > 0); rooms.get(id)!.setBacklog(definitionStep.backlog ? stored : 0);
     indicator.bar.scale.x = Math.max(.001, progress * 8); indicator.bar.position.x = -4 + progress * 4;
     indicator.lamp.material = mat(metric.active ? '#ffbb73' : metric.queued ? '#91b9d5' : '#6d9585', {emissive: metric.active ? '#704c2d' : '#000000'});
-    const caption = metric.active ? `${metric.active} working · ${metric.queued} waiting` : metric.queued ? `${metric.queued} waiting` : metric.completed ? `${metric.completed} completed` : 'Ready';
+    const caption = definitionStep.backlog ? `Backlog ${stored}/${definitionStep.backlog.capacity}` + (metric.active ? ` · ${metric.active} working` : '') : metric.active ? `${metric.active} working · ${metric.queued} waiting` : metric.queued ? `${metric.queued} waiting` : metric.completed ? `${metric.completed} completed` : 'Ready';
     if (indicator.status.userData.caption !== caption) {
      const texture = indicator.status.material.map, c = texture.image as HTMLCanvasElement, ctx = c.getContext('2d')!;
      ctx.clearRect(0, 0, c.width, c.height); ctx.fillText(caption, 320, 56, 615); texture.needsUpdate = true; indicator.status.userData.caption = caption;

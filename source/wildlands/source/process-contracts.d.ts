@@ -4,9 +4,13 @@ declare namespace LWProcess {
  type Fields = Record<string, Scalar>;
  type Kind = 'start' | 'task' | 'decision' | 'fork' | 'join' | 'end';
  interface Scene { id: string; position: [number, number]; color: string; asset?: unknown; }
+ /** A value a step requires before it can run. `op` and `value` come together; without them the field only has to be delivered. */
+ interface Need { field: string; op?: Condition['op']; value?: Scalar; label?: string; }
+ /** A bounded store of waiting work at a task or join. `pull` (joins only) limits work in the next task before more is released. */
+ interface Backlog { capacity: number; order?: 'fifo' | 'lifo' | 'priority'; priority?: string; pull?: number; }
  interface Step {
   id: string; name: string; kind: Kind; scene: Scene; description?: string;
-  duration?: number; cost?: number; resources?: Record<string, number>; set?: Fields; join?: string;
+  duration?: number; cost?: number; resources?: Record<string, number>; set?: Fields; join?: string; needs?: Need[]; backlog?: Backlog;
  }
  interface Condition { field: string; op: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte'; value: Scalar; }
  interface Flow { id: string; from: string; to: string; label?: string; when?: Condition; }
@@ -30,8 +34,8 @@ declare namespace LWProcess {
  }
  interface Token extends Record<string, unknown> {
   id: string; caseId: string; stepId: string; entered: number; started: number | null;
-  input: Fields | null; remaining: number; status: 'routing' | 'queued' | 'active' | 'joining';
-  fork: string | null; branch: string | null;
+  input: Fields | null; remaining: number; status: 'routing' | 'queued' | 'active' | 'joining' | 'backlog' | 'held';
+  fork: string | null; branch: string | null; target?: string;
  }
  interface StepMetric { id: string; queued: number; active: number; visits: number; completed: number; waitMinutes: number; }
  interface PoolMetric { id: string; capacity: number; busy: number; busyMinutes: number; utilization: number; }

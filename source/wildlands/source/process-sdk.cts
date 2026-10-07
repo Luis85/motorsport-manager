@@ -3,6 +3,7 @@
 require('./ecs.js');
 require('./asset-catalog.js');
 require('./process-schema.js');
+require('./process-needs.js');
 require('./process-graph.js');
 require('./process-catalog.js');
 require('./process-systems.js');

@@ -3,7 +3,7 @@
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWContentProvider: LWContentProvider.Api; LWProcessApplication: LWProcessApp.Api; LWProcessCatalog: LWProcess.Catalog;
-  LWProcessData: LWProcessData.Api; LWProcess2D: LWProcess2D.Api; LWProcess3D: LWProcess3D.Api; LWProcessTuning: LWProcessTuning.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
+  LWProcessData: LWProcessData.Api; LWProcess2D: LWProcess2D.Api; LWProcess3D: LWProcess3D.Api; LWProcessTuning: LWProcessTuning.Api; LWProcessNeeds: LWProcessNeeds.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
  const host = document.getElementById('process-shell'); if (!host) return;
  const pristine = '<!doctype html>\n' + document.documentElement.outerHTML;
  const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
@@ -22,7 +22,7 @@
  <section class="process-stage" aria-label="Simulation viewport"><div class="process-stagebar"><div><h2 id="scene-title">Process overview</h2><p id="scene-subtitle"></p></div>
  <div class="process-view-controls"><button id="mode-2d" aria-pressed="false">2D</button><button id="mode-3d" aria-pressed="true">3D</button><button id="frame">Frame view</button></div></div>
  <div id="viewport"><canvas id="canvas" aria-label="3D process scenes. Use the scene list for keyboard selection." tabindex="0"></canvas><div id="map" hidden></div></div>
- <div class="process-legend"><span><i class="active-dot"></i>Working</span><span><i class="queue-dot"></i>Waiting</span><span id="marker-count"></span><span id="camera-hint">Drag to orbit · Scroll to zoom</span></div>
+ <div class="process-legend"><span><i class="active-dot"></i>Working</span><span><i class="queue-dot"></i>Waiting</span><span><i class="backlog-dot"></i>Backlog</span><span><i class="held-dot"></i>Blocked</span><span id="marker-count"></span><span id="camera-hint">Drag to orbit · Scroll to zoom</span></div>
  <div id="metrics" class="process-metrics" aria-label="Run metrics"></div><section id="process-data" aria-label="Process inputs and outputs"></section></section>
  <nav class="process-nav" aria-label="Process steps"><div class="process-panel-heading"><h2>Step scenes</h2><span id="step-count"></span></div>
  <button id="overview">Whole process</button><div id="steps"></div><p class="process-note">Choose a step to enter its scene. Navigation keeps the run at the same minute.</p></nav>
@@ -57,6 +57,19 @@
   get<HTMLTextAreaElement>('draft').value = activeDraft;
   get('draft').removeAttribute('aria-invalid'); get('diagnostics').textContent = ''; draftState(); tuning.refresh();
  }
+ const operator = (n: LWProcess.Need) => root.LWProcessNeeds.describe(n);
+ function needsHtml(step: LWProcess.Step): string {
+  const delivered = Object.entries(step.set ?? {}).map(([k, v]) => `<li>${esc(k)} = ${esc(JSON.stringify(v))}</li>`).join('');
+  const deliveries = root.LWProcessNeeds.deliveries(view.definition, step.id), names = new Map(view.definition.steps.map(s => [s.id, s.name]));
+  const needs = (step.needs ?? []).map((n, i) => { const from = deliveries[i]!, who = [...from.steps.map(id => names.get(id)!), ...from.arrivals ? ['case arrival'] : []];
+   return `<li><strong>${esc(operator(n))}</strong>${n.label ? ' · ' + esc(n.label) : ''}<small>${who.length ? 'Delivered by ' + esc(who.join(', ')) : 'No earlier delivery'}</small></li>`; }).join('');
+  return (needs ? `<h3>Needs from earlier steps</h3><ul class="process-needs">${needs}</ul>` : '') + (delivered ? `<h3>Delivers</h3><ul class="process-needs">${delivered}</ul>` : '');
+ }
+ function backlogHtml(step: LWProcess.Step, q: LWProcess.Snapshot): string {
+  const b = step.backlog; if (!b) return '';
+  const items = q.tokens.filter(t => t.stepId === step.id && (t.status === 'backlog' || step.kind === 'task' && t.status === 'queued')).length, blocked = q.tokens.filter(t => t.status === 'held' && t.target === step.id).length;
+  return `<h3>Backlog</h3><dl><dt>Items / capacity</dt><dd>${items} / ${b.capacity}</dd><dt>Order</dt><dd>${esc(b.order === 'priority' ? 'Highest ' + b.priority + ' first' : b.order === 'lifo' ? 'Newest first' : 'Oldest first')}</dd>${b.pull !== undefined ? `<dt>Pull limit</dt><dd>${b.pull} in next step</dd>` : ''}<dt>Blocked upstream</dt><dd>${blocked}</dd></dl>`;
+ }
  function refresh(): void {
   const focused = document.activeElement as HTMLElement | null, focusedStep = focused?.dataset.step, focusedNext = focused?.dataset.next;
   view = app.query(); const {definition: d, snapshot: q, selected} = view, step = d.steps.find(s => s.id === selected);
@@ -75,7 +88,7 @@
   get('scene-subtitle').textContent = step ? step.scene.id + ' · ' + step.kind : `${d.steps.length} connected scenes · ${num(q.metrics.arrived)} ${q.metrics.arrived === 1 ? "case" : "cases"} admitted`;
   get('inspector-title').textContent = step ? 'Scene details' : 'Process overview';
   const m = q.steps.find(m => m.id === selected);
-  const inspectorHtml = step ? `<p>${esc(step.description ?? step.name)}</p><dl><dt>Duration</dt><dd>${num(step.duration ?? 0)} min</dd><dt>Working / waiting</dt><dd>${m!.active} / ${m!.queued}</dd><dt>Completed visits</dt><dd>${num(m!.completed)}</dd><dt>Total queue time</dt><dd>${num(m!.waitMinutes)} min</dd><dt>Fixed cost per visit</dt><dd>${num(step.cost ?? 0)}</dd></dl><h3>Next steps</h3>${d.flows.filter(f => f.from === step.id).map(f => `<button class="next-step" data-next="${esc(f.to)}">${esc(d.steps.find(s => s.id === f.to)!.name)}${f.label ? ' · ' + esc(f.label) : ''}</button>`).join('') || '<p>Process ends here.</p>'}`
+  const inspectorHtml = step ? `<p>${esc(step.description ?? step.name)}</p><dl><dt>Duration</dt><dd>${num(step.duration ?? 0)} min</dd><dt>Working / waiting</dt><dd>${m!.active} / ${m!.queued}</dd><dt>Completed visits</dt><dd>${num(m!.completed)}</dd><dt>Total queue time</dt><dd>${num(m!.waitMinutes)} min</dd><dt>Fixed cost per visit</dt><dd>${num(step.cost ?? 0)}</dd></dl>${needsHtml(step)}${backlogHtml(step, q)}<h3>Next steps</h3>${d.flows.filter(f => f.from === step.id).map(f => `<button class="next-step" data-next="${esc(f.to)}">${esc(d.steps.find(s => s.id === f.to)!.name)}${f.label ? ' · ' + esc(f.label) : ''}</button>`).join('') || '<p>Process ends here.</p>'}`
    : `<p>${esc(d.description ?? 'Cases move through the process. Run the simulation to see work, queues and resource contention.')}</p><p>${d.flows.length} connections · revision ${d.revision}</p>`;
   if (setHtml('inspector', inspectorHtml)) get('inspector').querySelectorAll<HTMLButtonElement>('[data-next]').forEach(b => b.onclick = () => command(() => app.select(b.dataset.next!)));
   setHtml('pools', q.resources.map(p => `<div class="process-pool"><strong>${esc(d.resources.find(r => r.id === p.id)!.name)}</strong><span>${p.busy}/${p.capacity} busy · ${num(p.utilization * 100)}%</span><progress value="${p.busy}" max="${p.capacity}" aria-label="${esc(p.id)} busy capacity"></progress></div>`).join('') || '<p>No shared resources defined.</p>');

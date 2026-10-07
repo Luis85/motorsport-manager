@@ -380,6 +380,7 @@
       "layer": "domain",
       "files": [
         "process-schema.ts",
+        "process-needs.ts",
         "process-graph.ts",
         "process-catalog.ts",
         "process-systems.ts"
@@ -479,6 +480,7 @@
     "LWCreatureEditorFieldDefinitions",
     "LWScenarioPacks",
     "LWProcessLimits",
+    "LWProcessNeeds",
     "LWProcessSchema",
     "LWProcessGraph",
     "LWProcessCatalog",

@@ -4,7 +4,7 @@
   "revision": 0,
   "id": "agency-delivery",
   "name": "Agency delivery lab",
-  "description": "Follow a project from discovery to handover. UX and technical design run in parallel; shared developers and QA create visible queues. Two project groups exercise both acceptance and rework. All values are synthetic.",
+  "description": "Follow a project from discovery to handover. Product design (business analysts and requirements engineers) and technical design run in parallel into a Ready to build backlog that developers pull from; shared developers and QA create visible queues. Each step declares what earlier steps must deliver. Two project groups exercise both acceptance and rework. All values are synthetic.",
   "start": "intake",
   "resources": [
     {
@@ -14,8 +14,14 @@
       "costPerMinute": 2
     },
     {
-      "id": "designer",
-      "name": "UX designer",
+      "id": "business-analyst",
+      "name": "Business analysts",
+      "capacity": 2,
+      "costPerMinute": 2
+    },
+    {
+      "id": "requirements-engineer",
+      "name": "Requirements engineers",
       "capacity": 1,
       "costPerMinute": 2
     },
@@ -312,7 +318,10 @@
       "resources": {
         "product-owner": 1
       },
-      "cost": 10
+      "cost": 10,
+      "set": {
+        "problemFramed": true
+      }
     },
     {
       "id": "design-split",
@@ -384,15 +393,15 @@
           "metadata": {}
         }
       },
-      "description": "UX and technical design run in parallel. Both are needed before implementation.",
+      "description": "Product design and technical design run in parallel. Both are needed before work enters the backlog.",
       "join": "design-ready"
     },
     {
-      "id": "ux",
-      "name": "UX design",
+      "id": "product-design",
+      "name": "Product design",
       "kind": "task",
       "scene": {
-        "id": "scene-ux",
+        "id": "scene-product-design",
         "position": [
           42,
           -8
@@ -402,8 +411,8 @@
           "format": "littlewild-3d-asset",
           "schemaVersion": 1,
           "category": "item",
-          "id": "scene-ux",
-          "name": "UX design",
+          "id": "scene-product-design",
+          "name": "Product design",
           "materials": {
             "wood": {
               "color": "#8c725d",
@@ -589,14 +598,23 @@
           "metadata": {}
         }
       },
-      "description": "The designer shapes the user flow and acceptance examples.",
+      "description": "Business analysts and requirements engineers turn the framed problem into prioritised requirements and acceptance examples.",
       "duration": 18,
       "resources": {
-        "designer": 1
+        "business-analyst": 1,
+        "requirements-engineer": 1
       },
       "set": {
-        "uxReady": true
-      }
+        "requirementsReady": true
+      },
+      "needs": [
+        {
+          "field": "problemFramed",
+          "op": "eq",
+          "value": true,
+          "label": "Discovery outcome"
+        }
+      ]
     },
     {
       "id": "architecture",
@@ -807,7 +825,15 @@
       },
       "set": {
         "techReady": true
-      }
+      },
+      "needs": [
+        {
+          "field": "problemFramed",
+          "op": "eq",
+          "value": true,
+          "label": "Discovery outcome"
+        }
+      ]
     },
     {
       "id": "design-ready",
@@ -879,7 +905,27 @@
           "metadata": {}
         }
       },
-      "description": "Wait for both design branches of this project to finish."
+      "description": "Designed projects wait in a bounded backlog, ordered by priority. Developers pull the next item when they have capacity.",
+      "needs": [
+        {
+          "field": "requirementsReady",
+          "op": "eq",
+          "value": true,
+          "label": "Product design deliverable"
+        },
+        {
+          "field": "techReady",
+          "op": "eq",
+          "value": true,
+          "label": "Technical design deliverable"
+        }
+      ],
+      "backlog": {
+        "capacity": 3,
+        "order": "priority",
+        "priority": "priority",
+        "pull": 1
+      }
     },
     {
       "id": "implementation",
@@ -1088,7 +1134,22 @@
       "resources": {
         "developer": 1
       },
-      "cost": 15
+      "cost": 15,
+      "needs": [
+        {
+          "field": "requirementsReady",
+          "op": "eq",
+          "value": true
+        },
+        {
+          "field": "techReady",
+          "op": "eq",
+          "value": true
+        }
+      ],
+      "set": {
+        "built": true
+      }
     },
     {
       "id": "qa",
@@ -1296,6 +1357,17 @@
       "duration": 10,
       "resources": {
         "qa": 1
+      },
+      "needs": [
+        {
+          "field": "built",
+          "op": "eq",
+          "value": true,
+          "label": "Implemented feature"
+        }
+      ],
+      "set": {
+        "verified": true
       }
     },
     {
@@ -1787,7 +1859,21 @@
       "duration": 6,
       "resources": {
         "product-owner": 1
-      }
+      },
+      "needs": [
+        {
+          "field": "verified",
+          "op": "eq",
+          "value": true,
+          "label": "QA verification"
+        },
+        {
+          "field": "needsRework",
+          "op": "eq",
+          "value": false,
+          "label": "Findings resolved"
+        }
+      ]
     },
     {
       "id": "delivered",
@@ -1874,9 +1960,9 @@
       "to": "design-split"
     },
     {
-      "id": "design-split-ux",
+      "id": "design-split-product-design",
       "from": "design-split",
-      "to": "ux"
+      "to": "product-design"
     },
     {
       "id": "design-split-architecture",
@@ -1884,8 +1970,8 @@
       "to": "architecture"
     },
     {
-      "id": "ux-design-ready",
-      "from": "ux",
+      "id": "product-design-design-ready",
+      "from": "product-design",
       "to": "design-ready"
     },
     {
@@ -1943,7 +2029,8 @@
       "count": 3,
       "interval": 8,
       "data": {
-        "needsRework": false
+        "needsRework": false,
+        "priority": 2
       }
     },
     {
@@ -1951,7 +2038,8 @@
       "count": 3,
       "interval": 8,
       "data": {
-        "needsRework": true
+        "needsRework": true,
+        "priority": 1
       }
     }
   ]

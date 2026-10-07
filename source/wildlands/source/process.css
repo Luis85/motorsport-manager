@@ -109,3 +109,5 @@
 #map svg { cursor:grab; touch-action:none; } #map svg.panning { cursor:grabbing; }
 #tuning fieldset, #tuning details { margin:0 0 10px; border:1px solid var(--line, #364150); border-radius:6px; padding:8px 10px; }
 #tuning label { display:grid; gap:4px; margin:6px 0; max-width:420px; } #tuning input, #tuning textarea { font:inherit; }
+.backlog-dot { background:#b79ad6; } .held-dot { background:#e07a7a; }
+.process-needs { margin:0 0 10px; padding-left:18px; } .process-needs small { display:block; color:var(--muted); }
