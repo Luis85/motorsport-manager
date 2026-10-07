@@ -2,15 +2,18 @@
 /// <reference path="../wildlands-project-contracts.d.ts" />
 /** Stable JSON-only, noninteractive CLI. No output is written until admission succeeds. */
 import {readJsonFile,writeJsonFile,emit} from './cli-io.cjs';
-const usage='wildlands --help | --version | discover | scenarios | create --output project.json [--scenario littlewild|emberworks|office] [--scene ID] [--pack pack.json] [--id ID] [--name NAME] | validate|inspect --project project.json | scenario --project project.json --scenario ID [--scene ID] --output project.json | run|edit --project project.json --recipe recipe.json --output project.json | compile|export --project project.json --output godot-directory';
+const usage='wildlands --help | --version | discover | scenarios | create --output project.json [--scenario littlewild|emberworks|office] [--scene ID] [--pack pack.json] [--id ID] [--name NAME] | validate|inspect --project project.json | scenario --project project.json --scenario ID [--scene ID] --output project.json | run|edit --project project.json --recipe recipe.json --output project.json | compile|export --project project.json --output godot-directory [--with-engine-sources]';
 /** Repository handbook for humans and agents; reported by --help. */
 const handbook='docs/reference/wildlands-cli.md';
-const allowed:Record<string,readonly string[]>={discover:[],scenarios:[],create:['--output','--scenario','--scene','--pack','--id','--name'],validate:['--project'],inspect:['--project'],scenario:['--project','--scenario','--scene','--output'],run:['--project','--recipe','--output'],edit:['--project','--recipe','--output'],compile:['--project','--output'],export:['--project','--output']};
+const allowed:Record<string,readonly string[]>={discover:[],scenarios:[],create:['--output','--scenario','--scene','--pack','--id','--name'],validate:['--project'],inspect:['--project'],scenario:['--project','--scenario','--scene','--output'],run:['--project','--recipe','--output'],edit:['--project','--recipe','--output'],compile:['--project','--output','--with-engine-sources'],export:['--project','--output','--with-engine-sources']};
+/** Value-less opt-in flags; every other option takes exactly one value. */
+const switches=new Set(['--with-engine-sources']);
 function options(args:readonly string[],fields:readonly string[]):Map<string,string>{
  const values=new Map<string,string>();
  for(let index=0;index<args.length;index++){
   const flag=args[index];if(!flag||!fields.includes(flag))throw Error('Unknown option: '+flag);
   if(values.has(flag))throw Error('Duplicate option: '+flag);
+  if(switches.has(flag)){values.set(flag,'true');continue;}
   const value=args[++index];if(!value||value.startsWith('--'))throw Error('Missing value for '+flag);values.set(flag,value);
  }
  return values;
@@ -53,8 +56,9 @@ export async function run(args:readonly string[]):Promise<void>{
    const output=writeJsonFile(required('--output'),result.project,[input,recipeFile]);
    const {project:_,...details}=result;emit({ok:true,protocolVersion:1,output,scenarioId:result.project.scenarioId,sceneId:result.project.sceneId,...details});return;
   }
-  const writer=require('./wildlands-godot-writer.cjs') as {writeGodotProject(project:Wildlands.Project,output:string):Promise<unknown>};
-  const result=await writer.writeGodotProject(project,required('--output'));emit({ok:true,protocolVersion:1,...result as Record<string,unknown>});
+  const writer=require('./wildlands-godot-writer.cjs') as typeof import('./wildlands-godot-writer.cjs');
+  // The inert engine-source bundle (~30 MB code-generator input) is opt-in; the default project runs without it.
+  const result=await writer.writeGodotProject(project,required('--output'),{withEngineSources:values.has('--with-engine-sources')});emit({ok:true,protocolVersion:1,...result as Record<string,unknown>});
  }catch(error){emit({ok:false,protocolVersion:1,code:'operation-failed',errors:[error instanceof Error?error.message:String(error)]});process.exitCode=2;}
 }
 if(require.main===module)void run(process.argv.slice(2));

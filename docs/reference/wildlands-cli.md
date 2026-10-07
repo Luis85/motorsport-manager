@@ -8,7 +8,8 @@ them into runnable Godot desktop projects. Littlewild is the default scenario;
 Emberworks and Office are the other built-in scenarios.
 
 The file is one self-contained, checked-in CommonJS executable. It embeds the
-compiled simulation, all built-in content and the trusted Godot runtime, so it
+compiled simulation, all built-in content, the trusted Godot runtime and the
+opt-in engine-source bundle (inflated only when a command asks for it), so it
 needs no `npm ci`, build step, `node_modules` or network access. It speaks a
 stable JSON-only protocol, which makes it suitable for scripts and AI agents.
 Wildlands is separate from the native Motorsport Manager game: it does not read
@@ -98,7 +99,7 @@ Arguments in `[brackets]` are optional.
 | `scenario --project FILE --scenario ID [--scene ID] --output FILE` | Switch scenario/scene into a new document. |
 | `run --project FILE --recipe FILE --output FILE` | Play a bounded game recipe and capture the result. |
 | `edit --project FILE --recipe FILE --output FILE` | Apply a bounded scene-editor recipe. |
-| `compile --project FILE --output DIR` (alias `export`) | Write a runnable Godot desktop project. |
+| `compile --project FILE --output DIR [--with-engine-sources]` (alias `export`) | Write a runnable Godot desktop project. |
 
 ### `--help` and `--version`
 
@@ -256,15 +257,27 @@ jq '{files, runtime: .manifest.runtime, prerequisites: .manifest.prerequisites}'
 
 `export` is an alias for `compile`. `--output` must be a directory that does not
 exist yet, with an existing real parent and no symlinked ancestors; choose a fresh
-path for every compile. Result: `{ok, protocolVersion, output, files, manifest}`.
+path for every compile. Result: `{ok, protocolVersion, output, files, engineSources, manifest}`.
 
 The directory contains `project.godot` and `main.tscn`, `native/*.gd` (native
 presentation and the subprocess bridge), `runtime/` (the compiled TypeScript
-simulation that stays the gameplay authority), `wildlands.project.json` (the
-validated project) and `wildlands.manifest.json` (target, prerequisites,
-capabilities, limitations and the byte size and SHA-256 of every generated file).
-A Littlewild project compiles to about 260 files and 47 MB, mostly the bundled
-runtime and its source provenance. Projects whose scenes use custom renderer or
+simulation that stays the gameplay authority: exactly the static require closure
+of the bridge runtime, without browser presentation modules or test fixtures),
+`wildlands.project.json` (the validated project) and `wildlands.manifest.json`
+(target, prerequisites, capabilities, limitations and the byte size and SHA-256
+of every generated file). A Littlewild project compiles to about 150 files and
+3.9 MB.
+
+The inert engine-source bundle (code-generator input: authoritative sources,
+vendors and a trimmed TypeScript toolchain; see
+[ENGINE-EXPORT.md](../../source/wildlands/ENGINE-EXPORT.md#payload-policy)) is
+opt-in. `--with-engine-sources` is a value-less flag that adds the exact
+`runtime/engine-source-bundle.json` (about 30 MB), which enables the
+`engineExport` tools inside the compiled runtime; the result then reports
+`engineSources: true` and the manifest lists the capability. Without the flag the
+manifest records the omission as a limitation and the project still runs
+completely. Output is deterministic: compiling the same project twice gives
+byte-identical directories. Projects whose scenes use custom renderer or
 animation extensions without a native adapter are rejected. The output needs
 desktop Godot 4.4+ and Node.js 22+ on `PATH` (or `WILDLANDS_NODE`); it is not a
 web or mobile export. See [WILDLANDS.md](../../source/wildlands/WILDLANDS.md#runnable-godot-compiler)
@@ -436,7 +449,8 @@ npm run check:cli
 - `npm run build:cli` runs the full `npm run build`, bundles
   `.generated/tools/wildlands-cli.cjs` and writes `bin/wildlands` with mode 755.
   It smoke-runs the candidate first: `--version`, `--help`, `discover`,
-  `scenarios`, `create` and `validate`, from an empty temporary directory with
+  `scenarios`, `create`, `validate` and `compile` with and without
+  `--with-engine-sources`, from an empty temporary directory with
   file reads confined to that directory through Node's permission model.
 - `npm run check:cli` performs the same build and smoke test in memory and fails
   (exit 1) when the checked-in file differs or is not executable. CI can use it as
@@ -448,12 +462,14 @@ npm run check:cli
 The bundle is byte-deterministic for the same sources and lockfile: it has no
 timestamps, absolute paths or source maps, and its embedded runtime payloads are
 compressed with the pinned pure-JavaScript `pako`, so neither the checkout path
-nor the Node.js release changes the bytes. It embeds the complete engine source
-bundle that every Godot export carries. Consequently any change to an authored
-file under `source/wildlands/source/`, `vendor/`, `package.json`,
-`package-lock.json` or the `tsconfig` files changes `bin/wildlands`. Rebuild and
-commit it in the same change. The file is about 16 MB, mostly the compressed
-engine sources.
+nor the Node.js release changes the bytes. It embeds two payloads: the Godot
+runtime closure (about 0.5 MB compressed) and the engine-source bundle (about
+6 MB compressed) used by engine export and `compile --with-engine-sources`.
+Consequently any change to an authored file under `source/wildlands/source/`,
+`vendor/`, `package.json`, `package-lock.json` or the `tsconfig` files changes
+`bin/wildlands`. Rebuild and commit it in the same change. The file is about
+12.4 MB, half of it the compressed engine sources. `npm run report:artifacts`
+breaks down both payloads.
 
 ## Related documentation
 

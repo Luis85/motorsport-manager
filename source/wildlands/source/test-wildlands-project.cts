@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {writeWildlandsBundle} from './tools/wildlands-bundle.cjs';
+import {gunzipSync} from 'node:zlib';
+import {writeWildlandsBundle,runtimeClosure,RUNTIME_ROOTS} from './tools/wildlands-bundle.cjs';
 import {projects,runProject,editProject,inspectProject,discover,toolbox} from './wildlands-project-sdk.cjs';
 const results:{name:string;passed:boolean;error?:string}[]=[];
 function test(name:string,work:()=>void):void{try{work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
@@ -85,10 +86,28 @@ test('Runtime builds preserve owned data and ignore generated verification artif
   fs.mkdirSync(path.join(directory,'runtime'));fs.writeFileSync(path.join(directory,'runtime','another-checkpoint.json'),'{}');
   writeWildlandsBundle(source,directory);assert.equal(fs.readFileSync(path.join(directory,'wildlands-runtime-bundle.json'),'utf8'),expected);
   assert.equal(fs.readFileSync(path.join(directory,'wildlands-runtime-loader.json'),'utf8'),loader);
-  for(const name of ['asset-definitions.json','creature-definitions.json','creature-config.json','interaction-library.json','content/scenario.schema.json'])assert(bundle.files.some(file=>file.path==='runtime/'+name),name);
+  for(const name of ['asset-definitions.json','creature-definitions.json','creature-config.json','content/scenario.schema.json'])assert(bundle.files.some(file=>file.path==='runtime/'+name),name);
   const data=path.join(directory,'content','balancing.json'),changed=fs.readFileSync(data,'utf8')+'\n';fs.writeFileSync(data,changed);
   writeWildlandsBundle(source,directory);const updated=JSON.parse(fs.readFileSync(path.join(directory,'wildlands-runtime-bundle.json'),'utf8')) as {files:{path:string;content:string}[]};
   assert.equal(updated.files.find(file=>file.path==='runtime/content/balancing.json')?.content,changed);assert.equal(updated.files.length,bundle.files.length);
+ }finally{fs.rmSync(directory,{recursive:true,force:true});}
+});
+test('Godot runtime bundle is exactly the static require closure of the bridge entry points',()=>{
+ const source=path.resolve(__dirname,'../source'),text=fs.readFileSync(path.join(__dirname,'wildlands-runtime-bundle.json'),'utf8');
+ const bundle=JSON.parse(text) as {format:string;sharedEngineSources?:boolean;files:{path:string;content:string}[]},paths=bundle.files.map(file=>file.path.slice('runtime/'.length));
+ assert.deepEqual([...paths].sort(),[...runtimeClosure(source,__dirname)].sort());for(const root of RUNTIME_ROOTS)assert(paths.includes(root),root);
+ // Browser presentation, other templates, opt-in engine sources, unrequired generated data and test fixtures stay out.
+ for(const excluded of ['engine-source-bundle.json','scenario-v3-grown.json','interaction-library.json','ui.js','world-3d.js','colony-ui.js','scenario-ui.js','wildlands-ui.js','play-boot.js','rts-host.js','pet-host.js','wildlands-godot.js','wildlands-sdk.cjs','tools/wildlands-cli.cjs'])assert(!paths.includes(excluded),excluded);
+ assert(paths.length<160);assert.equal(bundle.sharedEngineSources,undefined);
+ const loader=JSON.parse(fs.readFileSync(path.join(__dirname,'wildlands-runtime-loader.json'),'utf8')) as {decodedBytes:number;data:string};assert.equal(gunzipSync(Buffer.from(loader.data,'base64')).toString(),text);assert.equal(loader.decodedBytes,Buffer.byteLength(text));
+ const directory=fs.mkdtempSync(path.join(path.resolve(__dirname,'..'),'.wildlands-closure-test-'));
+ try{
+  for(const file of bundle.files){const target=path.join(directory,file.path.slice('runtime/'.length));fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,file.content);}
+  const entry=path.join(directory,'tools/wildlands-runtime.cjs'),original=fs.readFileSync(entry,'utf8');
+  for(const [addition,error] of [['\nrequire(process.env.WILDLANDS_PLUGIN);',/non-literal require/],['\nconsole.log(__dirname);',/__dirname/],['\nvoid import("./engine.js");',/dynamic import\(\)/],['\nrequire("./missing-runtime-module.js");',/requires tools\/missing-runtime-module\.js, which is not an authored or generated runtime file/],['\nrequire("../../escape.js");',/outside the runtime/]] as const){
+   fs.writeFileSync(entry,original+addition);assert.throws(()=>writeWildlandsBundle(source,directory),error);
+  }
+  fs.writeFileSync(entry,original);writeWildlandsBundle(source,directory);assert.equal(fs.readFileSync(path.join(directory,'wildlands-runtime-bundle.json'),'utf8'),text);
  }finally{fs.rmSync(directory,{recursive:true,force:true});}
 });
 const report={suite:'wildlands-project',passed:results.filter(value=>value.passed).length,total:results.length,results};fs.writeFileSync(path.join(__dirname,'wildlands-project-results.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));if(results.some(value=>!value.passed))process.exitCode=1;

@@ -22,7 +22,7 @@ const GENERATED = path.join(PROJECT, '.generated');
 const MAX_DECODED = 256 * 1024 * 1024;
 
 interface FileEntry {path: string; bytes: number; role?: string;}
-interface PayloadReport {encoding: string; storedBytes: number; decodedBytes: number; files: number; byRole?: Record<string, number>; largest: FileEntry[];}
+interface PayloadReport {encoding: string; storedBytes: number; decodedBytes: number; files: number; byRole?: Record<string, number>; largest: FileEntry[]; inlineFromArtifact?: {files: number; bytes: number};}
 const sha256 = (value: string | Uint8Array): string => createHash('sha256').update(value).digest('hex');
 const bytes = (text: string): number => Buffer.byteLength(text, 'utf8');
 const add = (record: Record<string, number>, key: string, value: number): void => { record[key] = (record[key] ?? 0) + value; };
@@ -48,10 +48,13 @@ function bundleReport(encoding: string, storedBytes: number, raw: Buffer, top: n
 }
 
 function payload(name: string, value: unknown, top: number): PayloadReport | null {
-  const loader = value as {encoding?: string; data?: string} | null;
+  const loader = value as {encoding?: string; data?: string; inlineScripts?: {bytes: number}[]} | null;
   if (!loader || loader.encoding !== 'gzip-base64' || typeof loader.data !== 'string') return null;
   const compressed = Buffer.from(loader.data, 'base64');
-  try { return bundleReport('gzip-base64', compressed.length, gunzipSync(compressed, {maxOutputLength: MAX_DECODED}), top); }
+  // Files the loader restores from the artifact's own inline scripts are stored empty (sizes stay declared).
+  const inline = Array.isArray(loader.inlineScripts) && loader.inlineScripts.length
+    ? {inlineFromArtifact: {files: loader.inlineScripts.length, bytes: loader.inlineScripts.reduce((sum, entry) => sum + entry.bytes, 0)}} : {};
+  try { return {...bundleReport('gzip-base64', compressed.length, gunzipSync(compressed, {maxOutputLength: MAX_DECODED}), top), ...inline}; }
   catch (error) { throw Error(`${name} payload could not be decoded: ${error instanceof Error ? error.message : String(error)}`); }
 }
 

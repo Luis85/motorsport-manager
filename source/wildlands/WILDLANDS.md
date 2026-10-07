@@ -174,7 +174,8 @@ The compiler produces a desktop Godot project containing:
 | `wildlands.project.json` | Validated portable project and complete scenario snapshot. |
 | `wildlands.manifest.json` | Generated-file identities, target and runtime requirements, feature coverage. |
 | `native/*.gd` | Native presentation, input and subprocess adapters. |
-| `runtime/` | Compiled TypeScript simulation, SDK and bridge runtime. |
+| `runtime/` | Compiled TypeScript simulation, SDK and bridge runtime: exactly the static require closure of the bridge entry points, without browser presentation modules or test fixtures. |
+| `runtime/engine-source-bundle.json` | Only with the explicit `--with-engine-sources` opt-in: the inert [engine-source inventory](ENGINE-EXPORT.md#payload-policy) that enables engine export inside the project. |
 
 Godot supplies the native view and sends requests to a local Node subprocess over
 JSON lines. The existing TypeScript domain remains the gameplay authority. The
