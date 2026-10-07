@@ -3,13 +3,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
-import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
-const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'.generated/artifacts/showcase.html'),OUT=process.env.LITTLEWILD_STORYTELLING_PLAYER_OUT||path.join(ROOT,'verification/v15');
+import {ARTIFACT_FIXTURE_URL,launchBrowser} from './browser-harness';
+import {artifactPath,monitorArtifacts,openColony,presentationElapsed} from './browser-pages';
+const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=artifactPath(ROOT,'studio'),OUT=process.env.LITTLEWILD_STORYTELLING_PLAYER_OUT||path.join(ROOT,'verification/v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
 async function test(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});console.log('PASS '+name);}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
 const native=(page:Page):Promise<string>=>page.evaluate('JSON.stringify(Littlewild.engine.export().state)') as Promise<string>;
 async function setup(page:Page,gated=false,cueSwitch=false):Promise<void>{
- await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});await waitForReady(page,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act=begin]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario=editor]').click();
+ await openColony(page,ARTIFACT);await page.locator('[data-act=begin]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario=editor]').click();
  await page.evaluate(({blocked,cueSwitch})=>{
   const root=window as unknown as {Littlewild:{scenarioUI:{editor:{session:LWSceneEditor.Session}};open(type:string):void}};
   const editor=root.Littlewild.scenarioUI.editor,pack=editor.session.snapshot(),first=pack.scenes[0]!;
@@ -25,12 +26,12 @@ async function setup(page:Page,gated=false,cueSwitch=false):Promise<void>{
  await page.locator('[data-scene-editor=review]').click();await page.locator('[data-scenario=launch]').click();
 }
 async function main():Promise<void>{
- fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({acceptDownloads:true}),diagnostics=monitorContext(context);
+ fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({acceptDownloads:true}),diagnostics=monitorArtifacts(context);
  try{
   const page=await context.newPage();page.setDefaultTimeout(20000);await page.setViewportSize({width:1440,height:1000});await setup(page);
   await test('Reviewed native launch plays the scene entry cutscene with a native simulation pause lease',async()=>{
    await page.waitForFunction(()=>{const root=window as unknown as {Littlewild:{scenarioUI:{storytelling:{isPresenting():boolean}}}};return root.Littlewild.scenarioUI.storytelling.isPresenting();});
-   const before=await native(page);await page.waitForTimeout(600);assert.equal(await native(page),before,'Cinematic RAF must not advance native state or RNG.');
+   const before=await native(page);await presentationElapsed(page,.6);assert.equal(await native(page),before,'Cinematic RAF must not advance native state or RNG.');
    assert.equal(await page.evaluate('Littlewild.engine.s.paused'),false,'Presentation preserves the native manual pause setting.');
   });
   await test('Timed message and pause cues execute during playback before completion review',async()=>{
@@ -59,7 +60,7 @@ async function main():Promise<void>{
   });
   await timed.close();
  }finally{await context.close();await browser.close();}
- await test('Native storytelling browser proof has no page/console errors or external requests',async()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);assert.deepEqual(diagnostics.requests,[]);});
+ await test('Native storytelling browser proof has no page/console errors or external requests',async()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);assert.deepEqual(diagnostics.requests,[]);assert.deepEqual(diagnostics.fixtureRequests,[ARTIFACT_FIXTURE_URL,ARTIFACT_FIXTURE_URL,ARTIFACT_FIXTURE_URL]);});
  fs.writeFileSync(path.join(OUT,'storytelling-player-browser-results.json'),JSON.stringify({suite:'storytelling-player-browser',passed:results.filter(r=>r.passed).length,total:results.length,results,diagnostics},null,2)+'\n');
 }
 main().catch(error=>{results.push({name:'Native storytelling browser setup',passed:false,error:String(error)});console.error(error);}).finally(()=>{console.log(`Native storytelling browser: ${results.filter(r=>r.passed).length}/${results.length} passed.`);if(results.some(r=>!r.passed))process.exitCode=1;});

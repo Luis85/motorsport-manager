@@ -6,13 +6,8 @@
     "verification/browser-contracts.ts": 3,
     "verification/browser.ts": 15,
     "verification/building-interiors-browser.ts": 1,
-    "verification/creature-editor-browser.ts": 3,
     "verification/interactions-browser.ts": 1,
     "verification/office-browser.ts": 5,
-    "verification/pet-browser.ts": 2,
-    "verification/renderers-browser.ts": 1,
-    "verification/renderers-libraries-browser.ts": 1,
-    "verification/renderers-storytelling-browser.ts": 6,
-    "verification/storytelling-player-browser.ts": 1
+    "verification/pet-browser.ts": 2
   }
 }

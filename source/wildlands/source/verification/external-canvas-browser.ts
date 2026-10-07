@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
-import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
-const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'.generated/artifacts/showcase.html'),OUT=process.env.LITTLEWILD_EXTERNAL_CANVAS_OUT||path.join(ROOT,'verification/v15');
+import {ARTIFACT_FIXTURE_URL,launchBrowser} from './browser-harness';
+import {artifactPath,monitorArtifacts,openColony} from './browser-pages';
+const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=artifactPath(ROOT,'studio'),OUT=process.env.LITTLEWILD_EXTERNAL_CANVAS_OUT||path.join(ROOT,'verification/v15');
 type Data=Record<string,unknown>;
 const data=(v:unknown):Data=>v as Data,rows=(v:unknown):Data[]=>v as Data[];
 const results:{name:string;passed:boolean;error?:string}[]=[];
@@ -12,9 +13,9 @@ async function test(name:string,work:()=>Promise<void>):Promise<void>{try{await 
 async function value<T=unknown>(page:Page,expression:string):Promise<T>{return page.evaluate(expression) as Promise<T>;}
 const sourceNode=(doc:Data,id:string):Data=>rows(doc.nodes).find(n=>n.id===id)!;
 async function main():Promise<void>{
- const browser=await launchBrowser(),context=await browser.newContext({acceptDownloads:true}),diagnostics=monitorContext(context);
+ const browser=await launchBrowser(),context=await browser.newContext({acceptDownloads:true}),diagnostics=monitorArtifacts(context);
  try{for(const width of [1440,390]){
-  const page=await context.newPage();page.setDefaultTimeout(15000);await page.setViewportSize({width,height:width===390?844:1000});await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});await waitForReady(page,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act="begin"]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario="editor"]').click();
+  const page=await context.newPage();page.setDefaultTimeout(15000);await page.setViewportSize({width,height:width===390?844:1000});await openColony(page,ARTIFACT);await page.locator('[data-act="begin"]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario="editor"]').click();
   await page.evaluate('(()=>{const e=Littlewild.scenarioUI.editor,p=e.session.snapshot(),first=p.scenes[0];for(const s of p.scenes)delete s.initialState.scenarioResources;first.graph={...first.graph,kind:"level",connections:[{id:"canvas-travel",targetSceneId:"canvas-remote",label:"Travel to remote world"}]};p.worlds.push({...structuredClone(p.worlds[0]),id:"canvas-world",name:"Canvas World"});p.scenes.push({...structuredClone(first),id:"canvas-remote",name:"Canvas Remote",worldId:"canvas-world",graph:{kind:"level"}});e.session.replace(p);Littlewild.open("scene-editor")})()');
   const original=await value<string>(page,'JSON.stringify(Littlewild.engine.export())');await page.locator('[data-external-editor-panel] summary').first().click();
   for(const format of ['canvas','advanced-canvas'] as const)await test(format+' real edited file review, Cancel and explicit graph apply at '+width+'px',async()=>{
@@ -39,7 +40,7 @@ async function main():Promise<void>{
   });
   await page.close();
  }}finally{await context.close();await browser.close();}
- await test('Canvas browser exchange has no page errors, console warnings or external network requests',async()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);assert.deepEqual(diagnostics.requests,[]);});
+ await test('Canvas browser exchange has no page errors, console warnings or external network requests',async()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);assert.deepEqual(diagnostics.requests,[]);assert.deepEqual(diagnostics.fixtureRequests,[ARTIFACT_FIXTURE_URL,ARTIFACT_FIXTURE_URL]);});
  fs.mkdirSync(OUT,{recursive:true});fs.writeFileSync(path.join(OUT,'external-canvas-browser-results.json'),JSON.stringify({suite:'external-canvas-browser',passed:results.filter(r=>r.passed).length,total:results.length,results,diagnostics},null,2)+'\n');
 }
 main().catch(error=>{results.push({name:'Canvas browser setup',passed:false,error:String(error)});console.error(error);}).finally(()=>{console.log(`External Canvas browser: ${results.filter(r=>r.passed).length}/${results.length} passed.`);if(results.some(r=>!r.passed))process.exitCode=1;});

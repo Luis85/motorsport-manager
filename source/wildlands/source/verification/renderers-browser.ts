@@ -3,18 +3,19 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {toolbox} from '../developer-sdk.cjs';
-import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
+import {ARTIFACT_FIXTURE_URL,launchBrowser} from './browser-harness';
+import {artifactPath,monitorArtifacts,openColony,renderingFrames} from './browser-pages';
 interface Result {name:string;passed:boolean;error?:string;}
 const SHOTS=process.env.LITTLEWILD_SCREENSHOT_DIR||'/tmp/littlewild-renderers';
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification','v15'),results:Result[]=[];
 fs.mkdirSync(OUT,{recursive:true});
 async function check(name:string,work:()=>unknown|Promise<unknown>):Promise<void>{try{await work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
 async function main():Promise<void>{
- const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
+ const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorArtifacts(context);
  try {
   const p=await context.newPage();p.setDefaultTimeout(5000);
-  await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'.generated/artifacts/showcase.html'),'utf8'),{waitUntil:'load',timeout:30000});
-  await waitForReady(p,{timeout:READY_TIMEOUT_MS});await p.locator('[data-act=begin]').click();
+  // LWRendererExample (the field-map example renderer) ships only in the showcase fixture's renderer-examples bundle.
+  await openColony(p,artifactPath(ROOT,'showcase'));await p.locator('[data-act=begin]').click();
   await p.evaluate("Littlewild.engine.s.paused=true;LWRendererExample.register()");
   await p.keyboard.press('Escape');
   await check('Default adapter retains the shipped graphics renderer',async()=>{assert.equal(await p.evaluate('Littlewild.world.rendererId'),'basic');assert.match(await p.evaluate('Littlewild.world.mode') as string,/WebGL|Software/);});
@@ -61,7 +62,7 @@ async function main():Promise<void>{
    if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1'){fs.mkdirSync(SHOTS,{recursive:true});await p.screenshot({path:path.join(SHOTS,'field-map-upper-work-1440.png'),animations:'disabled'});}
    await p.keyboard.press('Escape');
   });
-  for(const width of [1440,390]){await p.setViewportSize({width,height:width===390?844:900});await p.waitForTimeout(150);await check('Custom renderer resizes with the browser at '+width+'px',async()=>{assert(await p.locator('#world').isVisible());assert.equal(await p.evaluate('Littlewild.world.rendererId'),'field-map');assert.equal(await p.evaluate('document.documentElement.scrollWidth<=innerWidth'),true);});if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1'){fs.mkdirSync(SHOTS,{recursive:true});await p.screenshot({path:path.join(SHOTS,'field-map-'+width+'.png'),animations:'disabled'});}}
+  for(const width of [1440,390]){await p.setViewportSize({width,height:width===390?844:900});await renderingFrames(p);await check('Custom renderer resizes with the browser at '+width+'px',async()=>{assert(await p.locator('#world').isVisible());assert.equal(await p.evaluate('Littlewild.world.rendererId'),'field-map');assert.equal(await p.evaluate('document.documentElement.scrollWidth<=innerWidth'),true);});if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1'){fs.mkdirSync(SHOTS,{recursive:true});await p.screenshot({path:path.join(SHOTS,'field-map-'+width+'.png'),animations:'disabled'});}}
   await check('Repeated switches leave one input owner and no duplicate canvases',async()=>{
    const value=await p.evaluate(`(()=>{for(let i=0;i<4;i++){Littlewild.world.selectRenderer('basic');Littlewild.world.selectRenderer('field-map');}Littlewild.world.selectRenderer('basic');return{canvases:document.querySelectorAll('.world-canvas').length,labels:document.querySelectorAll('.v10-labels').length,suspended:!!Littlewild.world.suspended};})()`);assert.deepEqual(value,{canvases:1,labels:1,suspended:false});
   });
@@ -71,7 +72,7 @@ async function main():Promise<void>{
    assert(value.switched.ok);assert.match(value.quest,/Customer discovery call/);assert(value.onsite);assert.equal(value.away,false);assert.equal(value.hitActor,value.actorId);assert(value.unchanged);assert(value.frozen);
    if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1'){fs.mkdirSync(SHOTS,{recursive:true});await p.screenshot({path:path.join(SHOTS,'field-map-office-onsite-1440.png'),animations:'disabled'});}
   });
-  await check('Renderer extension flows remain offline and produce no browser errors',()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);assert.deepEqual(diagnostics.requests,[]);});
+  await check('Renderer extension flows remain offline and produce no browser errors',()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);assert.deepEqual(diagnostics.requests,[]);assert.deepEqual(diagnostics.fixtureRequests,[ARTIFACT_FIXTURE_URL]);});
  }finally{await browser.close();}
  const report={passed:results.filter(result=>result.passed).length,total:results.length,results,...diagnostics};fs.writeFileSync(path.join(OUT,'renderers-browser-results.json'),JSON.stringify(report,null,2)+'\n');console.log(report.passed+'/'+report.total+' browser renderer checks passed');if(report.passed!==report.total)process.exitCode=1;
 }

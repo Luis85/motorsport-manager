@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
+import {artifactPath} from './browser-pages';
 
 const ROOT=path.resolve(__dirname,'../..');
 const OUT=path.join(ROOT,'verification/v15');
@@ -36,13 +37,14 @@ async function main():Promise<void>{
  fs.mkdirSync(OUT,{recursive:true});
  const browser=await launchBrowser(),context=await browser.newContext({acceptDownloads:true});
  const observed=monitorContext(context);
- await context.route(FIXTURE,route=>route.fulfill({status:200,contentType:'text/html',body:fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'.generated/artifacts/showcase.html'),'utf8')}));
+ await context.route(FIXTURE,route=>route.fulfill({status:200,contentType:'text/html',body:fs.readFileSync(artifactPath(ROOT,'studio'),'utf8')}));
  try{
   for(const width of [1440,390]){
    const page=await context.newPage();page.setDefaultTimeout(20000);
    await page.setViewportSize({width,height:width===390?844:1000});
    await page.addInitScript('localStorage.clear()');
    await page.goto(FIXTURE,{waitUntil:'load',timeout:60000});
+   await waitForReady(page,{timeout:READY_TIMEOUT_MS,host:'colony'});
    await page.waitForFunction(()=>{
     const runtime=window as unknown as {Littlewild?:unknown;WildlandsProject?:unknown};
     return !!runtime.Littlewild&&!!runtime.WildlandsProject;

@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
-import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
+import {ARTIFACT_FIXTURE_URL,launchBrowser} from './browser-harness';
+import {artifactPath,monitorArtifacts,openColony} from './browser-pages';
 import {storyClickDiagnostics} from './storytelling-click-diagnostics';
 import {storytellingRetirementTests} from './storytelling-retirement-browser';
-const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'.generated/artifacts/showcase.html'),OUT=process.env.LITTLEWILD_STORYTELLING_OUT||path.join(ROOT,'verification/v15');
+const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=artifactPath(ROOT,'showcase'),OUT=process.env.LITTLEWILD_STORYTELLING_OUT||path.join(ROOT,'verification/v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
 const clickDiagnostics=storyClickDiagnostics(OUT);
 async function test(name:string,work:()=>Promise<void>):Promise<void>{clickDiagnostics.begin(name);try{await work();results.push({name,passed:true});console.log('PASS '+name);}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}finally{clickDiagnostics.end();}}
@@ -21,9 +22,9 @@ async function seek(page:Page,seconds:number):Promise<void>{await page.locator('
 async function pixels(page:Page,selector:string):Promise<string>{return page.locator(selector).evaluate(canvas=>{const root=window as unknown as {Littlewild:{scenarioUI:{editor:{storytelling:LWStorytellingUI.Surface}}}};root.Littlewild.scenarioUI.editor.storytelling.draw(0);return (canvas as HTMLCanvasElement).toDataURL();});}
 async function ready(page:Page):Promise<void>{await page.waitForFunction(()=>document.querySelector('[data-story-preview-notice]')?.textContent?.includes('Detached scene ready'),{},{timeout:20000});}
 async function main():Promise<void>{
- fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({acceptDownloads:true}),diagnostics=monitorContext(context);
+ fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({acceptDownloads:true}),diagnostics=monitorArtifacts(context);
  try{for(const width of [1440,390]){
-  const page=await context.newPage();page.setDefaultTimeout(20000);await page.setViewportSize({width,height:width===390?844:1000});await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});await waitForReady(page,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act="begin"]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario="editor"]').click();
+  const page=await context.newPage();page.setDefaultTimeout(20000);await page.setViewportSize({width,height:width===390?844:1000});await openColony(page,ARTIFACT);await page.locator('[data-act="begin"]').click();await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.open("scenarios")');await page.locator('[data-scenario="editor"]').click();
   // Explicit synthetic authoring fixture: existing native scene plus another world.
   await page.evaluate('(()=>{const editor=Littlewild.scenarioUI.editor,p=editor.session.snapshot(),first=p.scenes[0];delete p.resources;for(const scene of p.scenes)delete scene.initialState.scenarioResources;first.graph={...first.graph,kind:"level",rendering:{dimension:"3d",rendererId:"basic"},connections:[{id:"story-travel",targetSceneId:"story-remote",label:"Travel to story world"}]};p.worlds.push({...structuredClone(p.worlds[0]),id:"story-world",name:"Second story world"});p.scenes.push({...structuredClone(first),id:"story-remote",name:"Remote story scene",worldId:"story-world",graph:{kind:"level",rendering:{dimension:"2d",rendererId:"basic"}}});editor.session.replace(p);Littlewild.open("scene-editor")})()');
   const active=await snapshot(page),first=await value<string>(page,'Littlewild.scenarioUI.editor.session.snapshot().scenes[0].id'),entity=await value<LWSceneGraph.Entity>(page,'Littlewild.scenarioUI.editor.session.entities(Littlewild.scenarioUI.editor.session.snapshot().scenes[0].id).find(e=>e.category==="creatures")');
@@ -177,7 +178,7 @@ async function main():Promise<void>{
   await storytellingRetirementTests(page,width,test);
   await page.close();
  }}finally{await context.close();await browser.close();clickDiagnostics.write();}
- await test('Storytelling browser proof has no page/console errors or external requests',async()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);assert.deepEqual(diagnostics.requests,[]);});
+ await test('Storytelling browser proof has no page/console errors or external requests',async()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);assert.deepEqual(diagnostics.requests,[]);assert.deepEqual(diagnostics.fixtureRequests,[ARTIFACT_FIXTURE_URL,ARTIFACT_FIXTURE_URL]);});
  fs.writeFileSync(path.join(OUT,'storytelling-browser-results.json'),JSON.stringify({suite:'storytelling-browser',passed:results.filter(r=>r.passed).length,total:results.length,results,diagnostics},null,2)+'\n');
 }
 main().catch(error=>{results.push({name:'Storytelling browser setup',passed:false,error:String(error)});console.error(error);}).finally(()=>{console.log(`Storytelling browser: ${results.filter(r=>r.passed).length}/${results.length} passed.`);if(results.some(r=>!r.passed))process.exitCode=1;});
