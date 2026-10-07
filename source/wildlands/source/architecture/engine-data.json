@@ -1,7 +1,7 @@
 {
   "format": "wildlands-engine-data",
   "schemaVersion": 1,
-  "description": "Closed allow-list of files under source/content, source/assets and source/schemas. Engine entries are engine-owned grammars and engine metadata. Pending entries are game data that has not yet moved to its own game folder docs/concepts/<game>/; the list is empty because every game (littlewild, emberworks, office, rts-frontier, pocket-pet) now has its own folder, and a new pending entry must name the game whose folder will receive it. The TypeScript architecture check rejects unlisted files, stale entries, unknown games and game-shaped engine entries.",
+  "description": "Closed allow-list of files under source/content, source/assets and source/schemas: engine-owned grammars and engine metadata only. Game data lives only in its own game folder docs/concepts/<game>/ (littlewild, emberworks, office, rts-frontier, pocket-pet); there is no pending or transitional game-data list. The TypeScript architecture check rejects unlisted files, stale entries, game-shaped entries, extra entry fields and any other top-level field.",
   "engine": [
     {
       "pattern": "content/*.schema.json",
@@ -51,6 +51,5 @@
       "pattern": "content/default-profile.json",
       "reason": "classic-v1 compatibility world profile reference used by developer-toolbox realm tests; no game profile reads it."
     }
-  ],
-  "pending": []
+  ]
 }

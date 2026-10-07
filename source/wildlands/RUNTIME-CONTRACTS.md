@@ -205,7 +205,11 @@ Office are colony folders without a canonical pack whose balancing and asset doc
 materialized copies of Littlewild's (decision D4), so each folder profile equals the profile its
 pack ran with; `source/fixtures/<id>-profile.sha256.json` records those pre-move digests and the
 `game-folders` suite compares every folder against its fixture. No game data remains under
-`source/content` or `source/assets` (`architecture/engine-data.json` has no pending entries).
+`source/content`, `source/assets` or `source/schemas`: `architecture/engine-data.json` is a
+closed allow-list of engine data only (format, schemaVersion, description and `engine` entries
+of pattern and reason). There is no pending or transitional game-data mechanism; the TypeScript
+architecture check rejects a `pending` list (even an empty one), unlisted or game-shaped files
+and stale entries, and engine distributions remove only the build's `games/<id>/` folders.
 
 `test-content-provider.cts` (registered as `content-provider`) covers load-without-content,
 later installation, envelope admission, the browser adoption of data globals, the injected

@@ -225,14 +225,20 @@ check("Bundled assets have one authoring source and canonical catalog projection
 });
 
 check("Engine content directories hold only engine data and declared pending game data", () => {
+  // Every game has its own folder, so the end state has no pending mechanism: engine directories hold
+  // only allow-listed engine data, and a pending game-data list is itself rejected.
   const manifest = JSON.parse(source("architecture/engine-data.json")) as EngineDataManifest;
   const files = [...shippedData().keys()].filter(file => !file.startsWith("games/"));
-  const errors = engineDataErrors(manifest, files, ["littlewild", "emberworks", "office", "rts-frontier", "pocket-pet"]);
-  // Regression probes: a returned game file and a game-shaped engine entry are both rejected.
-  assert(engineDataErrors(manifest, [...files, "content/balancing.json"], ["emberworks"]).some(error => error.includes("content/balancing.json has 0")) &&
-    engineDataErrors({...manifest, engine: [...manifest.engine, {pattern: "assets/items/*/definition.json", reason: "Probe entry that pretends game definitions are engine data."}]}, files, []).some(error => error.includes("game data shape")),
+  const errors = engineDataErrors(manifest, files);
+  assert(!Object.hasOwn(manifest, "pending"), "The engine data allow-list declares no pending game data.");
+  // Regression probes: a returned game file, a game-shaped engine entry and any pending list (even empty) are rejected.
+  const pending = (list: unknown[]): EngineDataManifest => ({...manifest, pending: list} as EngineDataManifest);
+  assert(engineDataErrors(manifest, [...files, "content/balancing.json"]).some(error => error.includes("content/balancing.json has 0")) &&
+    engineDataErrors({...manifest, engine: [...manifest.engine, {pattern: "assets/items/*/definition.json", reason: "Probe entry that pretends game definitions are engine data."}]}, files).some(error => error.includes("game data shape")) &&
+    engineDataErrors(pending([]), files).some(error => error.includes("no pending game data")) &&
+    engineDataErrors(pending([{pattern: "content/balancing.json", reason: "Probe entry that pretends game data may wait in the engine.", game: "littlewild"}]), [...files, "content/balancing.json"]).some(error => error.includes("no pending game data")) &&
+    engineDataErrors({...manifest, engine: [...manifest.engine.slice(1), {...manifest.engine[0]!, game: "littlewild"} as EngineDataManifest["engine"][number]]}, files).some(error => error.includes("only pattern and reason")),
     "Engine data regression probes must be detected.");
-  for (const id of BUNDLED_GAMES) for (const entry of manifest.pending) assert(entry.game !== id, "Pending engine data names a game that already has a folder: " + entry.pattern);
   assert(errors.length === 0, errors.join("; "));
 });
 

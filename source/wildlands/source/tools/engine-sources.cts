@@ -35,24 +35,18 @@ export function sourceLoader(bundle:LWEngineExport.SourceBundle):LWEngineExport.
  return {format:'littlewild-engine-source-loader',schemaVersion:1,identity:bundle.identity,decodedBytes:Buffer.byteLength(stored),compressedBytes:compressed.byteLength,encoding:'gzip-base64',data:compressed.toString('base64'),inlineScripts};
 }
 
-/** Source paths of game data still pending its move to a game folder (architecture/engine-data.json). */
-function pendingGameData(bundle:LWEngineExport.SourceBundle):RegExp[]{
- const manifest=(bundle.architecture as Record<string,unknown>|undefined)?.['engine-data'] as {pending?:{pattern:string}[]}|undefined;
- const literal=(part:string):string=>part.replace(/[.+?^${}()|[\]\\]/g,'\\$&');
- return (manifest?.pending??[]).map(entry=>new RegExp('^source/'+entry.pattern.split('*').map(literal).join('[^/]+')+'$'));
-}
 /**
  * The exact engine-source bundle text without game content: the build's bundled game folders
- * (`games/<id>/`) and the game data its architecture metadata still declares as pending under
- * `source/`. Text without such entries is returned unchanged, so the transform is idempotent.
+ * (`games/<id>/`). Engine directories under `source/` hold only engine data (the architecture
+ * check enforces architecture/engine-data.json), so nothing else is game data. Text without such
+ * entries is returned unchanged, so the transform is idempotent.
  */
 export function engineOnlySources(text:string):string{
  const bundle=JSON.parse(text) as LWEngineExport.SourceBundle;
  if(bundle.format!=='littlewild-engine-sources'||!Array.isArray(bundle.files))throw Error('Trusted engine-source bundle is invalid. Rebuild Wildlands.');
- const pending=pendingGameData(bundle),game=(file:string):boolean=>file.startsWith('games/')||pending.some(pattern=>pattern.test(file));
+ const game=(file:string):boolean=>file.startsWith('games/');
  if(!bundle.files.some(file=>game(file.path)))return text;
- const removed=bundle.files.filter(file=>game(file.path)).map(file=>file.path),files=bundle.files.filter(file=>!game(file.path));
- const notes=[...removed.some(file=>file.startsWith('games/'))?[GAMES_EXCLUDED]:[],...removed.filter(file=>!file.startsWith('games/')).map(file=>file+' (pending game data; it belongs to its game folder)')];
- const inventory={...bundle.inventory,included:files.map(file=>file.path),excluded:[...bundle.inventory.excluded,...notes].sort()};
+ const files=bundle.files.filter(file=>!game(file.path));
+ const inventory={...bundle.inventory,included:files.map(file=>file.path),excluded:[...bundle.inventory.excluded,GAMES_EXCLUDED].sort()};
  return JSON.stringify({...bundle,identity:digest(files.map(file=>file.path+'\0'+file.sha256+'\n').join('')),files,inventory});
 }
