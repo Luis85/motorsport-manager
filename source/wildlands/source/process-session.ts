@@ -5,7 +5,12 @@
  const root = inputRoot as {LWECS: LWProcess.Ecs; LWProcessCatalog: LWProcess.Catalog; LWProcessSystems: LWProcess.Systems; LWProcessLimits: LWProcess.Limits; LWProcessRuntime?: LWProcess.Runtime};
  const limits = root.LWProcessLimits;
  const copy = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
- function create(input: unknown): LWProcess.Session {
+ const checkHorizon = (value: number | null): number | null => {
+  if (value !== null && (!Number.isSafeInteger(value) || value < 1)) throw Error('Run horizon must be a whole number of minutes (1 or more) or unlimited.');
+  return value;
+ };
+ function create(input: unknown, options: {horizon?: number | null} = {}): LWProcess.Session {
+  let horizon = options.horizon === undefined ? limits.minutes : checkHorizon(options.horizon);
   const definition = root.LWProcessCatalog.admit(input), world = new root.LWECS.World(), scheduler = new root.LWECS.Scheduler();
   const clock: LWProcess.Clock = {minute: 0, serial: 0, forkSerial: 0, arrival: 0, cost: 0};
   world.create('process-clock'); world.set('process-clock', 'process-clock', clock);
@@ -25,7 +30,7 @@
    const tokens = world.query(['process-token']).map(id => world.get<LWProcess.Token>(id, 'process-token')!);
    const finished = cases.filter(c => c.status === 'completed'), active = cases.filter(c => c.status === 'active').length;
    const future = clock.arrival < state.arrivals.length;
-   const status = clock.minute >= limits.minutes && (future || active) ? 'limit' : !future && !active ? 'completed'
+   const status = horizon !== null && clock.minute >= horizon && (future || active) ? 'limit' : !future && !active ? 'completed'
     : !future && active && !tokens.some(t => t.status === 'active') ? 'blocked' : clock.minute === 0 ? 'ready' : 'running';
    return copy({minute: clock.minute, status, cases, tokens, events: state.events, receipts: state.receipts, receiptsDropped: state.receiptsDropped,
     steps: definition.steps.map(step => ({...world.get<LWProcess.Station>('station-' + step.id, 'process-station')!,
@@ -38,14 +43,14 @@
   }
   function advance(minutes: number): LWProcess.Snapshot {
    alive();
-   if (!Number.isSafeInteger(minutes) || minutes < 1 || minutes > limits.minutes || clock.minute + minutes > limits.minutes) throw Error('Advance needs 1–' + limits.minutes + ' whole minutes within the run horizon.');
+   if (!Number.isSafeInteger(minutes) || minutes < 1 || minutes > limits.minutes || horizon !== null && clock.minute + minutes > horizon) throw Error('Advance needs 1–' + limits.minutes + ' whole minutes within the run horizon.');
    for (let i = 0; i < minutes; i++) {
     if (clock.arrival === state.arrivals.length && !world.query(['process-token']).length) break;
     scheduler.step(world, .1); root.LWProcessSystems.admit(state); root.LWProcessSystems.settle(state);
    }
    return query();
   }
-  return {query, advance, dispose() { disposed = true; for (const id of world.query([])) world.destroy(id); }};
+  return {query, advance, horizon: () => horizon, setHorizon(value) { alive(); horizon = checkHorizon(value); }, dispose() { disposed = true; for (const id of world.query([])) world.destroy(id); }};
  }
  root.LWProcessRuntime = {create, limits};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessRuntime;

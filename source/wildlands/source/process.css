@@ -48,7 +48,7 @@
 .process-stagebar p { font-size:11px; margin-top:3px; }
 #viewport { position:relative; min-height:400px; }
 #canvas,#map { width:100%; height:100%; position:absolute; inset:0; display:block; }
-#canvas { touch-action:none; }#map { touch-action:pan-y; }
+#canvas { touch-action:none; }#map { touch-action:none; }
 #map svg { width:100%; height:100%; }
 .process-legend { display:flex; flex-wrap:wrap; align-items:center; gap:14px; padding:9px 20px; font-size:11px; color:var(--muted); }
 .process-legend span { display:inline-flex; align-items:center; gap:5px; }
@@ -104,3 +104,8 @@
 @media(min-width:1101px) { .process-nav { max-height:1050px; overflow:auto; } }
 @media(max-width:1100px) { .process-inspector h3 { margin-top:22px; } }
 @media(max-width:650px) { #viewport { height:350px; }#process-data { padding:16px; }.process-io-columns { grid-template-columns:1fr; gap:20px; }.process-data-heading { align-items:flex-start; }.process-studio button { min-height:44px; }.process-studio select { min-height:44px; } }
+.process-map-controls { position:absolute; right:10px; bottom:10px; display:flex; gap:6px; z-index:1; }
+.process-map-controls button { min-width:36px; min-height:36px; }
+#map svg { cursor:grab; touch-action:none; } #map svg.panning { cursor:grabbing; }
+#tuning fieldset, #tuning details { margin:0 0 10px; border:1px solid var(--line, #364150); border-radius:6px; padding:8px 10px; }
+#tuning label { display:grid; gap:4px; margin:6px 0; max-width:420px; } #tuning input, #tuning textarea { font:inherit; }

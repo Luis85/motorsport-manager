@@ -10,7 +10,7 @@ import type {Page} from 'playwright';
 const PROJECT = path.resolve(__dirname, '../..'), OUT = path.join(PROJECT, 'verification/v15');
 const results: {name: string; passed: boolean; error?: string}[] = [];
 async function check(name: string, work: () => Promise<void>): Promise<void> {try {await work(); results.push({name, passed: true});} catch (e) {results.push({name, passed: false, error: String(e)});}}
-async function query(page: Page): Promise<{snapshot: LWProcess.Snapshot; definition: LWProcess.Definition; mode: string; selected: string | null; playing: boolean}> {
+async function query(page: Page): Promise<{snapshot: LWProcess.Snapshot; definition: LWProcess.Definition; mode: string; selected: string | null; playing: boolean; horizon: number | null}> {
  return page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {query(): any}}).LWProcessStudio.query());
 }
 async function main(): Promise<void> {
@@ -82,6 +82,23 @@ async function main(): Promise<void> {
    assert.deepEqual(await exercise(false), {actors: 1, moved: true, frozen: true, unchanged: true});
    assert.deepEqual(await exercise(true), {actors: 1, moved: false, frozen: true, unchanged: true});
    await page.emulateMedia({reducedMotion: 'no-preference'});
+  });
+  await check('Cameras pan and zoom without ticking, run length is configurable and tuned values apply on request', async () => {
+   await page.locator('#reset').click(); await page.locator('#overview').click(); const before = await query(page);
+   await page.locator('#mode-3d').click(); const canvas = (await page.locator('#canvas').boundingBox())!;
+   const shot = async () => (await page.locator('#canvas').screenshot()).toString('base64');
+   const still = await shot(); await page.mouse.move(canvas.x + 300, canvas.y + 200); await page.mouse.down({button: 'right'}); await page.mouse.move(canvas.x + 200, canvas.y + 150, {steps: 4}); await page.mouse.up({button: 'right'});
+   await nextFrames(page); assert.notEqual(await shot(), still); await page.locator('#frame').click();
+   await page.locator('#mode-2d').click(); const box = (await page.locator('#map').boundingBox())!, viewBox = () => page.locator('#map svg').getAttribute('viewBox');
+   const fitted = await viewBox(); await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.wheel(0, -500); const zoomed = await viewBox(); assert.notEqual(zoomed, fitted);
+   await page.mouse.down(); await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2 + 40, {steps: 4}); await page.mouse.up(); assert.notEqual(await viewBox(), zoomed);
+   await page.locator('#frame').click(); assert.equal(await viewBox(), fitted); assert.deepEqual((await query(page)).snapshot, before.snapshot);
+   await page.locator('#horizon').selectOption('unlimited'); assert.equal((await query(page)).horizon, null); await page.locator('#horizon').selectOption('1440'); assert.equal((await query(page)).horizon, 1440);
+   await page.locator('#show-definition').click(); await page.locator('#tuning details:has(input[id^="tune-step-dur"])').first().locator('summary').click();
+   const duration = page.locator('#tuning input[id^="tune-step-dur"]').first(); await duration.fill('77'); await duration.dispatchEvent('change');
+   assert.deepEqual((await query(page)).definition, before.definition); assert.match(await page.locator('#draft').inputValue(), /"duration": 77/);
+   await page.locator('#apply').click(); const applied = await query(page); assert.equal(applied.definition.steps.find(s => s.kind === 'task')!.duration, 77); assert.equal(applied.horizon, 1440); assert.equal(applied.snapshot.minute, 0);
+   await page.locator('#horizon').selectOption('100000'); await page.locator('#show-events').click();
   });
   await check('Keyboard scene selection retains focus across detached view refreshes', async () => {
    await page.locator('[data-step="discovery"]').focus(); await page.keyboard.press('Enter');

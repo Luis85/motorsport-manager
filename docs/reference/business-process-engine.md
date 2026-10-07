@@ -129,7 +129,13 @@ Actor hands, heads and posture animate only during playback and remain still
 when paused or reduced motion is requested. These actors are a representation
 of active work, not staff allocation, additional capacity or travel time.
 Room props, shadows, task progress and occupancy labels are presentation only.
-The camera supports pointer orbit/zoom and keyboard arrows, +/− and F to frame.
+The 3D camera supports pointer orbit/zoom, right-drag or Shift-drag pan, and keyboard arrows (orbit), Shift+arrows or WASD (pan), +/− and F to frame. The 2D map supports drag pan, wheel/pinch zoom, arrows, +/−, 0 and on-screen zoom buttons. Cameras are presentation-only and never tick the run.
+
+Rooms use a presentation theme (reception, office, design studio, test lab, workshop, review desk, records room, decision room, junction, dispatch dock) chosen from the step kind and a stable hash of the step id. A step with working tokens shows its animated task props and lit lamps; a step with none shows an idle variant (covered equipment, dimmed lamp, standby sign). Process Forge starter geometry (desk/monitor or podium/marker) yields to the themed room; custom attached geometry is drawn as authored.
+
+Run length is a session option, not part of the definition or fingerprint. It defaults to the engine limit (100,000 minutes); `Runtime.create(definition, {horizon})` and `Session.setHorizon` accept a whole number of minutes or `null` for no clock limit. An unlimited run still stops when all work completes or cannot advance, and each clock command remains bounded to 100,000 minutes. Case count and retained history limits are unchanged.
+
+The Definition editor tab includes a form over the unapplied draft (names, descriptions, resource capacity and cost, task duration, cost and resource needs, arrivals). Edits update the draft only; Apply validates through the catalog and starts a fresh paused run that keeps the chosen run length.
 Static paused scenes render only when the view or camera changes.
 
 Each 2D scene shows a bounded marker sample plus an overflow count. All cases

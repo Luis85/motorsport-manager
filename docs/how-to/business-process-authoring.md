@@ -148,7 +148,7 @@ retain the latest 128 task completions, with an explicit omitted-record count.
 In 3D, active work appears as desk actors typing and reviewing screens while
 playback runs. Pause freezes their motion; reduced-motion preferences disable
 it. Additional work uses bounded markers, with counts preserving total activity.
-Focus the canvas to orbit with arrow keys, zoom with +/−, or frame with F.
+Focus the canvas to orbit with arrow keys, pan with Shift+arrows or WASD (or right-drag), zoom with +/−, or frame with F. In 2D, drag to pan, scroll or pinch to zoom, and press 0 to reset. Use **Run until** in the toolbar to choose a run length or Unlimited, and the **Tune values** form in the Definition editor to fine-tune an agent-built process before applying it.
 
 **Export run report** downloads observed results, including retained task I/O. **Download HTML** embeds the
 active definition and starts a fresh paused run when reopened. There is no

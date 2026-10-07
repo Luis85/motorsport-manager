@@ -45,9 +45,10 @@ declare namespace LWProcess {
   cases: Case[]; tokens: Token[]; receipts: Receipt[]; receiptsDropped: number; steps: StepMetric[]; resources: PoolMetric[]; events: Event[];
   metrics: { arrived: number; completed: number; failed: number; active: number; cost: number; meanCycleMinutes: number; throughputPerHour: number; };
  }
- interface Session { query(): Snapshot; advance(minutes: number): Snapshot; dispose(): void; }
+ /** `horizon` is the total run length in minutes; `null` means no clock limit (the run still ends when no work remains or can advance). */
+ interface Session { query(): Snapshot; advance(minutes: number): Snapshot; horizon(): number | null; setHorizon(value: number | null): void; dispose(): void; }
  interface Limits { readonly cases: number; readonly minutes: number; readonly transitions: number; readonly events: number; readonly receipts: number; }
- interface Runtime { create(input: unknown): Session; limits: Limits; }
+ interface Runtime { create(input: unknown, options?: {horizon?: number | null}): Session; limits: Limits; }
  interface Recipe {
   expectedRevision: number; expectedFingerprint: string;
   operations: ({op: 'putStep'; value: Step} | {op: 'putFlow'; value: Flow} | {op: 'putResource'; value: Resource} |

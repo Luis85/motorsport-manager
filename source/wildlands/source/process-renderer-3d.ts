@@ -8,7 +8,7 @@ declare namespace LWProcess3D {
  'use strict';
  // Vendored Three.js has the same intentionally loose adapter boundary as pet-renderer.ts.
  type O = any;
- const root = inputRoot as {THREE: O; LWAssetRenderer: {createFromDefinition(kit: O, parent: O, input: unknown, model?: string): {root: O}}; LWProcess3D?: LWProcess3D.Api};
+ const root = inputRoot as {THREE: O; LWAssetRenderer: {createFromDefinition(kit: O, parent: O, input: unknown, model?: string): {root: O}}; LWProcessRooms: LWProcessRooms.Api; LWProcess3D?: LWProcess3D.Api};
  function create(canvas: HTMLCanvasElement, definition: LWProcess.Definition, select: (id: string) => void): LWProcess3D.Surface {
   const renderer = new root.THREE.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true});
   try {return build(renderer, canvas, definition, select);}
@@ -22,14 +22,19 @@ declare namespace LWProcess3D {
   const scene = new T.Scene(), camera = new T.PerspectiveCamera(38, 1, .1, 3000), target = new T.Vector3();
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const stepIndex = new Map(definition.steps.map(s => [s.id, s]));
-  const indicators = new Map<string, {bar: O; lamp: O; status: O}>();
+  const rooms = new Map<string, LWProcessRooms.Room>(), roomProgress = new Map<string, number>(), indicators = new Map<string, {bar: O; lamp: O; status: O}>();
   let needsRender = true;
   const motionChanged = () => {needsRender = true;}; reducedMotion.addEventListener('change', motionChanged);
   let phase = 0, previousView: LWProcessApp.View | undefined;
   const objects: O[] = [], textures: O[] = [], stations = new Map<string, O>(), markers = new Map<string, O>();
-  let selected: string | null | undefined, yaw = -.3, pitch = .65, distance = 85, dragging = false, moved = false, px = 0, py = 0;
+  let selected: string | null | undefined, yaw = -.3, pitch = .65, distance = 85, dragging: 'orbit' | 'pan' | null = null, moved = false, px = 0, py = 0;
+  let panBounds = {minX: 0, maxX: 0, minZ: 0, maxZ: 0};
   let viewportWidth = 0, viewportHeight = 0;
   const geometries = new Map<string, O>(), materials = new Map<string, O>();
+  function isStarterAsset(asset: unknown): boolean {
+   const ids = new Set(((asset as {models?: {world?: {nodes?: {id?: string}[]}}}).models?.world?.nodes ?? []).map(n => n.id));
+   return ids.has('desk') && ids.has('monitor') || ids.has('podium') && ids.has('marker');
+  }
   function geometry(kind: string): O {
    if (!geometries.has(kind)) geometries.set(kind, kind === 'box' ? new T.BoxGeometry(1, 1, 1) : kind === 'ground' ? new T.PlaneGeometry(1, 1).rotateX(-Math.PI / 2)
     : kind === 'cone' || kind === 'roof' ? new T.ConeGeometry(1, 1, kind === 'roof' ? 4 : 8) : kind === 'cylinder' ? new T.CylinderGeometry(1, 1, 1, 12)
@@ -60,23 +65,21 @@ declare namespace LWProcess3D {
    const g = kit.group(scene); g.position.set(step.scene.position[0], 0, step.scene.position[1]); g.userData.stepId = step.id; stations.set(step.id, g);
    const floor = kit.piece(g, 'box', 0, -.16, 0, 10, .3, 9, '#293544'); floor.userData.stepId = step.id; objects.push(floor);
    kit.piece(g, 'box', 0, .01, -4.35, 10, .1, .18, step.scene.color);
-   // Low walls and inset floor panels give authored furniture a readable room.
-   kit.piece(g, 'box', 0, .7, -4.35, 10, 1.4, .14, '#374756');
-   kit.piece(g, 'box', -4.9, .7, -2.8, .14, 1.4, 3.2, '#374756');
+   // Low walls and inset floor panels tinted per room theme; the themed workstation and its idle variant come from LWProcessRooms.
+   const theme = root.LWProcessRooms.theme(step);
+   kit.piece(g, 'box', 0, .7, -4.35, 10, 1.4, .14, theme.wall);
+   kit.piece(g, 'box', -4.9, .7, -2.8, .14, 1.4, 3.2, theme.wall);
    for (const x of [-3.75, -1.25, 1.25, 3.75]) for (const z of [-3, -.5, 2])
-    kit.piece(g, 'box', x, .006, z, 2.46, .015, 2.46, '#314050');
+    kit.piece(g, 'box', x, .006, z, 2.46, .015, 2.46, theme.floor);
    kit.piece(g, 'cylinder', 4.05, .3, -3.2, .36, .6, .36, '#b99c7f');
    for (const [x, y] of [[3.85, 1.05], [4.15, 1.35], [4.35, .95]]) kit.piece(g, 'ball', x!, y!, -3.2, .28, .55, .28, '#6d9585');
-   kit.piece(g, 'box', -3.7, 1, -3.4, 1.35, 2, .7, '#526579');
-   for (const y of [.5, 1.15, 1.8]) kit.piece(g, 'box', -3.7, y, -3, 1.12, .06, .08, '#9cabb7');
-   if (step.scene.asset) root.LWAssetRenderer.createFromDefinition(kit, g, step.scene.asset, 'world');
-   else if (step.kind === 'task') {
-    kit.piece(g, 'box', 0, 1.1, -.6, 3.4, .18, 1.4, '#8c725d');
-    for (const x of [-1.4, 1.4]) kit.piece(g, 'box', x, .5, -.6, .16, 1, 1, '#536379');
-    kit.piece(g, 'box', 0, 1.7, -.8, 1, .65, .1, '#86a6bb');
-   } else kit.piece(g, step.kind === 'decision' ? 'cone' : 'cylinder', 0, .55, 0, .7, 1, .7, step.scene.color);
+   // Process Forge starter furnishings (desk/monitor or podium/marker) give way to the themed room; custom attached geometry is drawn as authored.
+   const custom = step.scene.asset && !isStarterAsset(step.scene.asset);
+   if (custom) root.LWAssetRenderer.createFromDefinition(kit, g, step.scene.asset, 'world');
+   rooms.set(step.id, root.LWProcessRooms.build(kit, g, step, !custom));
+   rooms.get(step.id)!.setActive(false);
    const name = label(step.name, '#edf2f7'); name.position.set(0, 4.8, -1); g.add(name);
-   const role = label(step.kind + (step.duration ? ' · ' + step.duration + ' min' : ''), '#b1bdcd'); role.position.set(0, 4.05, -1); role.scale.multiplyScalar(.67); g.add(role);
+   const role = label(theme.label + ' · ' + step.kind + (step.duration ? ' · ' + step.duration + ' min' : ''), '#b1bdcd'); role.position.set(0, 4.05, -1); role.scale.multiplyScalar(.67); g.add(role);
    const lamp = kit.piece(g, 'ball', 4.35, 1.65, -4.25, .12, .12, .12, '#91b9d5');
    kit.piece(g, 'box', 0, .12, 4.2, 8, .07, .12, '#15222e');
    const bar = kit.piece(g, 'box', -4, .17, 4.2, .001, .07, .14, '#ffbb73');
@@ -100,6 +103,7 @@ declare namespace LWProcess3D {
    const vertical = camera.fov * Math.PI / 180, horizontal = 2 * Math.atan(Math.tan(vertical / 2) * aspect);
    distance = Math.max(spanX / (2 * Math.tan(horizontal / 2)), spanZ / (2 * Math.tan(vertical / 2))) * 1.25;
    target.y = selected ? 1 : 0;
+   panBounds = {minX: Math.min(...xs) - 6, maxX: Math.max(...xs) + 6, minZ: Math.min(...zs) - 6, maxZ: Math.max(...zs) + 6};
    light.position.set(target.x + 10, 35, target.z + 15); light.target.position.copy(target);
    const shadowSpan = Math.max(spanX, spanZ) * .7;
    Object.assign(light.shadow.camera, {left: -shadowSpan, right: shadowSpan, top: shadowSpan, bottom: -shadowSpan, far: shadowSpan * 3 + 100});
@@ -107,23 +111,41 @@ declare namespace LWProcess3D {
    if (resetOrbit) {yaw = -.3; pitch = .65;}
   }
   const frame = () => fit(true);
-  const pointerDown = (e: PointerEvent) => {if (e.button !== 0) return; canvas.focus({preventScroll: true}); dragging = true; moved = false; px = e.clientX; py = e.clientY; canvas.setPointerCapture(e.pointerId);};
-  const pointerMove = (e: PointerEvent) => { if (!dragging) return; needsRender = true; const dx = e.clientX - px, dy = e.clientY - py; if (Math.abs(dx) + Math.abs(dy) > 2) moved = true; yaw -= dx * .006; pitch = Math.max(.2, Math.min(1.45, pitch + dy * .005)); px = e.clientX; py = e.clientY; };
+  const clampTarget = () => {target.x = Math.max(panBounds.minX, Math.min(panBounds.maxX, target.x)); target.z = Math.max(panBounds.minZ, Math.min(panBounds.maxZ, target.z));};
+  /** Slide the orbit target along the ground plane relative to the current heading. Presentation-only. */
+  function pan(right: number, forward: number): void {
+   target.x += Math.cos(yaw) * right - Math.sin(yaw) * forward; target.z += -Math.sin(yaw) * right - Math.cos(yaw) * forward; clampTarget(); needsRender = true;
+  }
+  const pointerDown = (e: PointerEvent) => {
+   if (e.button > 2) return; canvas.focus({preventScroll: true});
+   dragging = e.button === 0 && !e.shiftKey ? 'orbit' : 'pan'; moved = false; px = e.clientX; py = e.clientY; canvas.setPointerCapture(e.pointerId);
+   if (e.button !== 0) e.preventDefault();
+  };
+  const pointerMove = (e: PointerEvent) => {
+   if (!dragging) return; needsRender = true; const dx = e.clientX - px, dy = e.clientY - py; if (Math.abs(dx) + Math.abs(dy) > 2) moved = true;
+   if (dragging === 'pan') {const k = distance * Math.tan(camera.fov * Math.PI / 360) * 2 / Math.max(1, canvas.clientHeight); pan(-dx * k, dy * k / Math.max(.3, Math.sin(pitch)));}
+   else {yaw -= dx * .006; pitch = Math.max(.2, Math.min(1.45, pitch + dy * .005));}
+   px = e.clientX; py = e.clientY;
+  };
   const pointerUp = (e: PointerEvent) => {
-   if (!dragging) return; dragging = false; if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId); if (moved) return;
+   if (!dragging) return; const mode = dragging; dragging = null; if (canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId); if (moved || mode === 'pan' || e.button !== 0) return;
    const rect = canvas.getBoundingClientRect(), ray = new T.Raycaster();
    ray.setFromCamera(new T.Vector2((e.clientX - rect.left) / rect.width * 2 - 1, -(e.clientY - rect.top) / rect.height * 2 + 1), camera);
    const hit = ray.intersectObjects(objects.filter(o => o.parent.visible))[0]; if (hit) select(String(hit.object.userData.stepId));
   };
-  const cancel = () => {dragging = false;};
+  const cancel = () => {dragging = null;};
+  const contextMenu = (e: Event) => e.preventDefault();
   const keyboard = (e: KeyboardEvent) => {
    if (e.ctrlKey || e.metaKey || e.altKey) return;
-   if (e.key === 'ArrowLeft') yaw += .12; else if (e.key === 'ArrowRight') yaw -= .12;
+   const step = distance * .06, key = e.key.toLowerCase();
+   if (e.shiftKey && e.key.startsWith('Arrow')) pan(e.key === 'ArrowRight' ? step : e.key === 'ArrowLeft' ? -step : 0, e.key === 'ArrowUp' ? step : e.key === 'ArrowDown' ? -step : 0);
+   else if (key === 'a') pan(-step, 0); else if (key === 'd') pan(step, 0); else if (key === 'w') pan(0, step); else if (key === 's') pan(0, -step);
+   else if (e.key === 'ArrowLeft') yaw += .12; else if (e.key === 'ArrowRight') yaw -= .12;
    else if (e.key === 'ArrowUp') pitch = Math.min(1.45, pitch + .1); else if (e.key === 'ArrowDown') pitch = Math.max(.2, pitch - .1);
    else if (e.key === '+' || e.key === '=') distance = Math.max(10, distance / 1.15); else if (e.key === '-') distance = Math.min(200000, distance * 1.15);
-   else if (e.key.toLowerCase() === 'f') frame(); else return; needsRender = true; e.preventDefault();
+   else if (key === 'f') frame(); else return; needsRender = true; e.preventDefault();
   };
-  canvas.addEventListener('pointercancel', cancel); canvas.addEventListener('lostpointercapture', cancel); canvas.addEventListener('keydown', keyboard);
+  canvas.addEventListener('pointercancel', cancel); canvas.addEventListener('lostpointercapture', cancel); canvas.addEventListener('keydown', keyboard); canvas.addEventListener('contextmenu', contextMenu);
   const wheel = (e: WheelEvent) => {e.preventDefault(); needsRender = true; distance = Math.max(10, Math.min(200000, distance * Math.exp(e.deltaY * .001)));};
   canvas.addEventListener('pointerdown', pointerDown); canvas.addEventListener('pointermove', pointerMove); canvas.addEventListener('pointerup', pointerUp); canvas.addEventListener('wheel', wheel, {passive: false});
   function actor(): O {
@@ -179,6 +201,7 @@ declare namespace LWProcess3D {
     const active = view.snapshot.tokens.filter(t => t.stepId === id && t.status === 'active');
     const duration = stepIndex.get(id)!.duration ?? 1;
     const progress = active.length ? active.reduce((n, t) => n + (duration - t.remaining) / duration, 0) / active.length : 0;
+    roomProgress.set(id, progress); rooms.get(id)!.setActive(metric.active > 0);
     indicator.bar.scale.x = Math.max(.001, progress * 8); indicator.bar.position.x = -4 + progress * 4;
     indicator.lamp.material = mat(metric.active ? '#ffbb73' : metric.queued ? '#91b9d5' : '#6d9585', {emissive: metric.active ? '#704c2d' : '#000000'});
     const caption = metric.active ? `${metric.active} working · ${metric.queued} waiting` : metric.queued ? `${metric.queued} waiting` : metric.completed ? `${metric.completed} completed` : 'Ready';
@@ -200,6 +223,7 @@ declare namespace LWProcess3D {
     rig.head.rotation.y = Math.sin(t * .18) * .12;
     rig.body.rotation.z = Math.sin(t * .3) * .025;
    }
+   for (const [id, room] of rooms) if (!selected || selected === id) room.animate(phase, roomProgress.get(id) ?? 0);
    const width = Math.max(1, canvas.clientWidth), height = Math.max(1, canvas.clientHeight);
    if (width !== viewportWidth || height !== viewportHeight) {
     viewportWidth = width; viewportHeight = height; renderer.setSize(width, height, false); fit(false);
@@ -212,7 +236,7 @@ declare namespace LWProcess3D {
   }
   return {draw, frame, dispose() {
    reducedMotion.removeEventListener('change', motionChanged);
-   canvas.removeEventListener('pointercancel', cancel); canvas.removeEventListener('lostpointercapture', cancel); canvas.removeEventListener('keydown', keyboard);
+   canvas.removeEventListener('pointercancel', cancel); canvas.removeEventListener('lostpointercapture', cancel); canvas.removeEventListener('keydown', keyboard); canvas.removeEventListener('contextmenu', contextMenu);
    canvas.removeEventListener('pointerdown', pointerDown); canvas.removeEventListener('pointermove', pointerMove); canvas.removeEventListener('pointerup', pointerUp); canvas.removeEventListener('wheel', wheel);
    const allGeometry = new Set<O>(geometries.values()), allMaterials = new Set<O>(materials.values());
    scene.traverse((o: O) => {if (o.geometry) allGeometry.add(o.geometry); if (o.material) for (const m of Array.isArray(o.material) ? o.material : [o.material]) allMaterials.add(m);});

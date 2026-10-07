@@ -398,8 +398,10 @@
       "id": "process-presentation",
       "layer": "presentation",
       "files": [
+        "process-rooms.ts",
         "process-renderer-2d.ts",
         "process-renderer-3d.ts",
+        "process-tuning.ts",
         "process-ui.ts",
         "process-data-view.ts",
         "process-sdk.cts"
