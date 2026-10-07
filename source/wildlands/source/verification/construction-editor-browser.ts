@@ -23,7 +23,7 @@ interface BrowserGlobals {
  editorObserved?:{preview:LWConstruction.Preview|null;commands:unknown[]};
 }
 const PROJECT=path.resolve(__dirname,'../..');
-const ARTIFACT=process.env.LITTLEWILD_CONSTRUCTION_HTML||path.join(PROJECT,'littlewild.html');
+const ARTIFACT=process.env.LITTLEWILD_CONSTRUCTION_HTML||path.join(PROJECT,'.generated/artifacts/showcase.html');
 const OUT=process.env.LITTLEWILD_CONSTRUCTION_OUT||path.join(PROJECT,'verification','v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
 let diagnostics:ReturnType<typeof monitorContext>;

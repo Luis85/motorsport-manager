@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
 import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
-const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'littlewild.html'),OUT=process.env.LITTLEWILD_EXTERNAL_CANVAS_OUT||path.join(ROOT,'verification/v15');
+const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'.generated/artifacts/showcase.html'),OUT=process.env.LITTLEWILD_EXTERNAL_CANVAS_OUT||path.join(ROOT,'verification/v15');
 type Data=Record<string,unknown>;
 const data=(v:unknown):Data=>v as Data,rows=(v:unknown):Data[]=>v as Data[];
 const results:{name:string;passed:boolean;error?:string}[]=[];

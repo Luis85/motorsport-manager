@@ -6,7 +6,7 @@ import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './brow
 import type {Page} from 'playwright';
 interface Result {name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,'../..');
-const ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'littlewild.html');
+const ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'.generated/artifacts/showcase.html');
 const OUT=process.env.LITTLEWILD_SCENE_EDITOR_OUT||path.join(ROOT,'verification','v15');
 const SHOTS=process.env.LITTLEWILD_SCREENSHOT_DIR||OUT;
 const results:Result[]=[];let rawDiagnostics:unknown=null;

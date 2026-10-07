@@ -5,7 +5,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
 import type {Page} from 'playwright';
-const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'littlewild.html'),OUT=process.env.LITTLEWILD_CREATURE_EDITOR_OUT||path.join(ROOT,'verification/v15'),SHOTS=process.env.LITTLEWILD_SCREENSHOT_DIR||OUT;
+const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'.generated/artifacts/showcase.html'),OUT=process.env.LITTLEWILD_CREATURE_EDITOR_OUT||path.join(ROOT,'verification/v15'),SHOTS=process.env.LITTLEWILD_SCREENSHOT_DIR||OUT;
 const results:{name:string;passed:boolean;error?:string}[]=[],rawConsole:{type:string;text:string}[]=[],failedRequests:string[]=[];let diagnostics:unknown=null;
 async function check(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});console.log('PASS '+name);}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
 async function value<T=unknown>(page:Page,expression:string):Promise<T>{return page.evaluate(expression) as Promise<T>;}

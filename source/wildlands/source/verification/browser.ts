@@ -33,7 +33,7 @@ async function main():Promise<void>{
  const context=await browser.newContext({viewport:{width:1440,height:900},acceptDownloads:true});
  diagnostics=monitorContext(context);
  const p=await context.newPage();activePage=p;p.setDefaultTimeout(5000);
- await p.setContent(fs.readFileSync(path.join(ROOT,"littlewild.html"),"utf8"),{waitUntil:"load",timeout:30000});
+ await p.setContent(fs.readFileSync(path.join(ROOT,".generated/artifacts/showcase.html"),"utf8"),{waitUntil:"load",timeout:30000});
  await waitForReady(p,{timeout:READY_TIMEOUT_MS});await p.waitForTimeout(250);
  await check("Application identifies the new implementation",async()=>equal(await p.evaluate("Littlewild.version"),"15.0.0"));
  await p.locator("[data-act=begin]").click();await p.waitForTimeout(250);

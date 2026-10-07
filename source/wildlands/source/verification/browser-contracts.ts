@@ -18,7 +18,7 @@ async function main():Promise<void>{
  try {
  const context=await browser.newContext({viewport:{width:1440,height:900}});diagnostics=monitorContext(context);
  let page=await context.newPage();
- await page.setContent(fs.readFileSync(path.join(ROOT,"littlewild.html"),"utf8"),{waitUntil:"load"});await waitForReady(page,{timeout:READY_TIMEOUT_MS});
+ await page.setContent(fs.readFileSync(path.join(ROOT,".generated/artifacts/showcase.html"),"utf8"),{waitUntil:"load"});await waitForReady(page,{timeout:READY_TIMEOUT_MS});
  await page.locator("[data-act=land-demo]").click();await page.waitForTimeout(200);
  await page.evaluate("Littlewild.engine.s.paused=true;Littlewild.refresh()");
  const before=await page.evaluate("Littlewild.engine.creatures.map(c=>({id:c.id,n:c.orders.length,approach:c.buildPolicy.approach}))") as any[];

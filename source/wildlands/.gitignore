@@ -5,3 +5,5 @@ node_modules/
 /verification/
 screenshots/
 source/*-results.json
+# Retired generated composite (decision D1): play builds are demos/<id>.html; the fixture is .generated/artifacts/showcase.html.
+/littlewild.html

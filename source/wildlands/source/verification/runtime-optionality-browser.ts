@@ -10,7 +10,7 @@ import {gameDirectory} from '../tools/game-folder.cjs';
 const ROOT=path.resolve(__dirname,'../..'),SOURCE=path.join(ROOT,'source'),GENERATED=path.join(ROOT,'.generated'),OUT=path.join(ROOT,'verification','v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
 async function check(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
-const ARTIFACT=fs.readFileSync(path.join(ROOT,'littlewild.html'),'utf8');
+const ARTIFACT=fs.readFileSync(path.join(ROOT,'.generated/artifacts/showcase.html'),'utf8');
 /** Simulate an artifact without a bundle: its module's global assignment is ignored. */
 const absent=(names:readonly string[]):string=>`for(const name of ${JSON.stringify(names)})Object.defineProperty(window,name,{configurable:false,get(){return undefined;},set(){}});`;
 const RECORD_READY="window.__readyEvents=[];addEventListener('wildlands:ready',event=>window.__readyEvents.push({host:event.detail.host,flag:window.__wildlandsReady===true}));";

@@ -14,7 +14,7 @@ interface BrowserGlobals {
 }
 interface Result {name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,'../..');
-const ARTIFACT=process.env.LITTLEWILD_GAME_SETTINGS_HTML||path.join(ROOT,'littlewild.html');
+const ARTIFACT=process.env.LITTLEWILD_GAME_SETTINGS_HTML||path.join(ROOT,'.generated/artifacts/showcase.html');
 const OUT=process.env.LITTLEWILD_GAME_SETTINGS_OUT||path.join(ROOT,'verification','v15');
 const results:Result[]=[];
 let diagnostics:ReturnType<typeof monitorContext>;

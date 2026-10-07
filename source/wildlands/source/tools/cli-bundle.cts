@@ -140,36 +140,22 @@ function gameFolders(): Map<string, string> {
   return new Map(fs.readdirSync(root, {withFileTypes: true}).filter(entry => entry.isDirectory() && fs.existsSync(path.join(root, entry.name, 'game.json')))
     .map(entry => [entry.name, path.join(root, entry.name)] as const).sort(([a], [b]) => a < b ? -1 : 1));
 }
-/** Long prose of every scenario pack this checkout ships (game folders and pending engine data): game-content sentinels. */
+/** Long prose of every scenario pack this checkout's game folders ship: game-content sentinels. */
 function contentSentinels(): string[] {
   const packs: string[] = [];
   for (const directory of gameFolders().values()) {
     const content = path.join(directory, 'content');
     if (fs.existsSync(content)) packs.push(...fs.readdirSync(content).filter(name => name.endsWith('.pack.json')).map(name => path.join(content, name)));
   }
-  const pending = path.join(PROJECT, 'source', 'content');
-  packs.push(...fs.readdirSync(pending).filter(name => name.endsWith('.pack.json')).map(name => path.join(pending, name)));
   return packs.map(file => (JSON.parse(fs.readFileSync(file, 'utf8')) as {description?: unknown}).description).filter((text): text is string => typeof text === 'string' && text.length >= 40);
 }
-/** A tiny RTS game folder (from its game folder once it exists, else the pending engine catalog). */
-function writeFixtureGame(root: string): string {
-  const id = 'smoke-frontier', directory = path.join(root, id), existing = gameFolders().get('rts-frontier');
-  fs.mkdirSync(path.join(directory, 'content'), {recursive: true});
-  const catalog = existing ? path.join(existing, (JSON.parse(fs.readFileSync(path.join(existing, 'game.json'), 'utf8')) as {content: {catalog: string}}).content.catalog)
-    : path.join(PROJECT, 'source', 'content', 'rts-demo.json');
-  fs.copyFileSync(catalog, path.join(directory, 'content', 'rts.json'));
-  fs.writeFileSync(path.join(directory, 'game.json'), JSON.stringify({format: 'wildlands-game', schemaVersion: 1, id, name: 'Smoke Frontier', version: '1.0.0', template: 'rts',
-    engine: {api: 1}, content: {catalog: 'content/rts.json'}, presentation: {title: 'Smoke Frontier'}, storage: {namespace: 'wildlands.' + id},
-    targets: {html: {output: `demos/${id}.html`, budgetBytes: 1048576}}}, null, 2) + '\n');
-  return directory;
-}
-
 /**
  * Run the candidate from an empty directory with no node_modules. Where Node's permission model is
  * available, file reads are confined to that directory, proving no resource comes from the checkout.
- * It builds a fixture game and Littlewild, compares them byte for byte with the checkout's compiled
- * CLI, validates Littlewild, creates and compiles a project and runs the compiled Godot runtime, which
- * installs the game its project embeds.
+ * It copies the Littlewild, RTS Frontier and Pocket Pet game folders next to it, builds one game of
+ * every template and compares each byte for byte with the checkout's compiled CLI, validates
+ * Littlewild, creates and compiles a project and runs the compiled Godot runtime, which installs the
+ * game its project embeds.
  */
 function smoke(built: BundleResult): void {
   const directory = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), 'wildlands-cli-smoke-'))), cli = path.join(directory, 'wildlands');
@@ -193,14 +179,17 @@ function smoke(built: BundleResult): void {
     if (missing.code !== 'game-required' || !String((missing.errors as string[])[0]).includes('--game') || missing.handbook !== 'docs/reference/wildlands-cli.md')
       throw Error('Bundled CLI create without --game lacks its diagnostic.');
     // Games are data the smoke copies next to the CLI; the candidate reads nothing else.
-    const games = path.join(directory, 'games'), littlewild = path.join(games, 'littlewild'), source = gameFolders().get('littlewild');
-    if (!source) throw Error('The littlewild game folder is required for the CLI smoke.');
-    fs.cpSync(source, littlewild, {recursive: true});
-    const fixture = writeFixtureGame(games);
+    const games = path.join(directory, 'games'), folders = gameFolders(), copies = new Map<string, string>();
+    for (const id of ['littlewild', 'rts-frontier', 'pocket-pet']) {
+     const source = folders.get(id);
+     if (!source) throw Error(`The ${id} game folder is required for the CLI smoke.`);
+     copies.set(id, path.join(games, id)); fs.cpSync(source, copies.get(id)!, {recursive: true});
+    }
+    const littlewild = copies.get('littlewild')!;
     if ((run(['validate-game', '--game', littlewild]).errors as unknown[]).length) throw Error('Littlewild did not validate.');
-    run(['inspect-game', '--game', fixture]);
+    run(['inspect-game', '--game', copies.get('rts-frontier')!]);
     // Byte identity with the checkout's compiled CLI, which computes the same kit with esbuild.
-    for (const [game, name] of [[fixture, 'fixture'], [littlewild, 'littlewild']] as const) {
+    for (const [name, game] of copies) {
       const output = path.join(directory, name + '.html'), reference = path.join(directory, name + '-checkout.html');
       run(['build-game', '--game', game, '--output', output]);
       run(['build-game', '--game', game, '--output', reference], 0, ENTRY, []);

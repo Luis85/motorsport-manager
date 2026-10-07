@@ -27,31 +27,46 @@ its fields, ranges and references.
 The manifest uses the storage namespace `wildlands.rts-frontier`. Matches are
 saved and restored as exported checkpoint files; see the tutorial.
 
-## Build and play
+## Play
 
-Today the Wildlands build composes this catalog into its artifacts:
+Open [`demos/rts-frontier.html`](../../../demos/rts-frontier.html) in a current
+desktop browser. The file is self-contained: it runs offline from `file://` with
+no network access, install or build step, and carries only this game. The match
+starts in the browser; save and restore it as exported checkpoint files (see the
+tutorial).
+
+The JSON-only RTS CLI (`npm run rts -- discover` in `source/wildlands`) runs the
+same catalog headlessly.
+
+## Build
+
+The engine CLI builds the demo from this folder; it needs only Node.js 22:
 
 ```sh
-cd source/wildlands
-npm ci
-npm run build    # writes .generated/artifacts/rts-play.html and the showcase fixture
+bin/wildlands validate-game --game docs/concepts/rts-frontier
+bin/wildlands build-game --game docs/concepts/rts-frontier --output demos/rts-frontier.html
 ```
 
-Open `.generated/artifacts/rts-play.html` directly from disk to play, or use
-the JSON-only CLI (`npm run rts -- discover`). The engine CLI command that
-builds `demos/rts-frontier.html` from this folder arrives with the next engine
-phase; until then this README does not claim it.
+`build-game` validates the folder with the engine's runtime validators, records
+the folder digest and engine identity in the artifact, and writes nothing when
+the play artifact exceeds `targets.html.budgetBytes` in `game.json` (524,288
+bytes, 512 KiB). Add `--profile studio` to build the same game with the editors
+and export tools on demand; studios are not published in `demos/`. The
+checked-in [`demos/`](../../../demos/README.md) is regenerated for every game by
+`npm run build:demos` in `source/wildlands` and checked by
+`npm run check:demos`; see the
+[Wildlands CLI handbook](../../reference/wildlands-cli.md).
 
 ## Editing and validation
 
 Edit `content/rts.json` (or export it from the in-game mission editor), then
-rebuild; `npm run rts -- validate FILE` checks a catalog on its own. The build
-rejects a folder whose files are not all named by `game.json` (other than
-README, PROVENANCE and LICENSE files), that contains code, markup, executable
-files or symbolic links, or whose catalog fails the engine validator. The
-`game-folders` verification suite checks the manifest, the closed inventory,
-full validation and that the compiled profile still equals the profile RTS
-Frontier ran with before this folder existed.
+validate the folder and rebuild the demo; `npm run rts -- validate FILE` checks
+a catalog on its own. Validation rejects a folder whose files are not all named
+by `game.json` (other than README, PROVENANCE and LICENSE files), that contains
+code, markup, executable files or symbolic links, or whose catalog fails the
+engine validator. The `game-folders` verification suite checks the manifest, the
+closed inventory, full validation and that the compiled profile still equals the
+profile RTS Frontier ran with before this folder existed.
 
 ## Provenance
 

@@ -9,7 +9,7 @@ async function main():Promise<void>{
  fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
  try{
   const page=await context.newPage();page.setDefaultTimeout(8000);
-  await page.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
+  await page.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'.generated/artifacts/showcase.html'),'utf8'),{waitUntil:'load',timeout:30000});
   await waitForReady(page,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act=begin]').click();
   await page.evaluate("Littlewild.open('scenarios')");await page.locator('[data-scenario=review][data-id=charted-home]').click();
   await page.evaluate("document.querySelector('[data-scenario=launch]').click();Littlewild.engine.s.paused=true;Littlewild.refresh()");

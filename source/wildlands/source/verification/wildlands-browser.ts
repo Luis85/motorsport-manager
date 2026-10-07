@@ -36,7 +36,7 @@ async function main():Promise<void>{
  fs.mkdirSync(OUT,{recursive:true});
  const browser=await launchBrowser(),context=await browser.newContext({acceptDownloads:true});
  const observed=monitorContext(context);
- await context.route(FIXTURE,route=>route.fulfill({status:200,contentType:'text/html',body:fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'littlewild.html'),'utf8')}));
+ await context.route(FIXTURE,route=>route.fulfill({status:200,contentType:'text/html',body:fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'.generated/artifacts/showcase.html'),'utf8')}));
  try{
   for(const width of [1440,390]){
    const page=await context.newPage();page.setDefaultTimeout(20000);

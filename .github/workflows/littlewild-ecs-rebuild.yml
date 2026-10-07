@@ -5,6 +5,7 @@ on:
       - 'source/wildlands/**'
       - 'docs/concepts/**'
       - 'bin/wildlands'
+      - 'demos/**'
       - 'docs/reference/wildlands-cli.md'
       - '.github/workflows/littlewild-ecs-rebuild.yml'
   workflow_dispatch:
@@ -25,6 +26,15 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: source/wildlands/package-lock.json
+      - name: Validate every game folder with only the checked-in engine CLI
+        # Runs before npm ci: bin/wildlands needs Node.js 22 and nothing else (no node_modules, no build).
+        shell: bash
+        run: |
+          set -euo pipefail
+          for folder in docs/concepts/*/; do
+            [ -f "$folder/game.json" ] || continue
+            bin/wildlands validate-game --game "$folder"
+          done
       - name: Install TypeScript verification toolchain
         working-directory: source/wildlands
         run: npm ci --no-audit --no-fund
@@ -36,13 +46,17 @@ jobs:
         run: npm run architecture
       - name: Verify checked-in bin/wildlands matches source
         working-directory: source/wildlands
-        # Performs a full build into .generated/ and littlewild.html; the next step clears that output.
+        # Performs a full build into .generated/; a later step clears that output.
         run: npm run check:cli
+      - name: Verify checked-in demos/ match fresh game builds
+        working-directory: source/wildlands
+        # Rebuilds the CLI candidate and every docs/concepts/<id> demo in a temporary directory and fails
+        # on any byte difference, orphan, missing demo or play artifact over its game.json budget.
+        run: npm run check:demos
       - name: Clear stale Littlewild verification evidence
         working-directory: source/wildlands
         run: |
           rm -rf verification/v15 .generated
-          rm -f littlewild.html
       - name: Install Chromium
         working-directory: source/wildlands
         run: npx playwright install --with-deps chromium
@@ -78,7 +92,7 @@ jobs:
           const sha = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
           const gatePath = path.join(root, 'verification/v15/gate-results.json');
           const baselinePath = path.join(root, 'verification/v15/storytelling-browser-results.json');
-          const artifact = path.join(root, 'littlewild.html');
+          const artifact = path.join(root, '.generated/artifacts/showcase.html');
           const suiteSnapshot = gate => {
             const seen = new Set();
             return gate.suites.map(suite => {
@@ -259,7 +273,7 @@ jobs:
               else:
                   missing.append(str(path.relative_to(root)))
 
-          for relative in ('package-lock.json', 'littlewild.html', 'verification/v15/gate-results.json', 'verification/v15/browser-progress.json'):
+          for relative in ('package-lock.json', '.generated/artifacts/showcase.html', 'verification/v15/gate-results.json', 'verification/v15/browser-progress.json'):
               select(root / relative)
           gate_path = root / 'verification/v15/gate-results.json'
           gate = json.loads(gate_path.read_text()) if gate_path.is_file() else {}
@@ -327,7 +341,7 @@ jobs:
           name: littlewild-ecs-verification
           path: |
             source/wildlands/package-lock.json
-            source/wildlands/littlewild.html
+            source/wildlands/.generated/artifacts/showcase.html
             source/wildlands/verification/v15/
             source/wildlands/verification/storytelling-diagnostics-off/
             source/wildlands/.generated/*-results.json

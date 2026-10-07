@@ -9,7 +9,7 @@ async function main():Promise<void>{
  fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
  try{
   const page=await context.newPage();page.setDefaultTimeout(10000);
-  await page.setContent(fs.readFileSync(path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
+  await page.setContent(fs.readFileSync(path.join(ROOT,'.generated/artifacts/showcase.html'),'utf8'),{waitUntil:'load',timeout:30000});
   await page.waitForFunction(()=>!!(window as any).Littlewild&&!!(window as any).WildlandsRTS,null,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act=begin]').click();
   await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.refresh()');
   await check('RTS is discoverable and switching runs only the RTS application clock',async()=>{

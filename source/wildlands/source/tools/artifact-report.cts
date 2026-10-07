@@ -4,7 +4,7 @@
  *
  *   node --import tsx source/tools/artifact-report.cts [--html FILE]... [--cli FILE]... [--top N] [--out FILE]
  *
- * Without --html/--cli it reports littlewild.html, every .generated/artifacts/*.html and
+ * Without --html/--cli it reports every .generated/artifacts/*.html, the published ../../demos/*.html and
  * ../../bin/wildlands when present. A sidecar <name>.manifest.json written by the assembler is
  * used when its sha256 matches; otherwise inline blocks are identified by content against the
  * current INSERTS sources (unmatched blocks are reported as unknown, never guessed).
@@ -137,8 +137,8 @@ function main(argv: readonly string[]): void {
   }
   if (!html.length && !cli.length) {
     const artifacts = path.join(GENERATED, 'artifacts');
-    for (const candidate of [path.join(PROJECT, 'littlewild.html'), ...(fs.existsSync(artifacts) ? fs.readdirSync(artifacts).sort().filter(name => name.endsWith('.html')).map(name => path.join(artifacts, name)) : [])])
-      if (fs.existsSync(candidate)) html.push(candidate);
+    const htmlIn = (directory: string): string[] => fs.existsSync(directory) ? fs.readdirSync(directory).sort().filter(name => name.endsWith('.html')).map(name => path.join(directory, name)) : [];
+    html.push(...htmlIn(artifacts), ...htmlIn(path.resolve(PROJECT, '../../demos')));
     const bundled = path.resolve(PROJECT, '../../bin/wildlands');
     if (fs.existsSync(bundled)) cli.push(bundled);
   }

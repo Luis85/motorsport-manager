@@ -78,10 +78,10 @@ try {
     }
   });
   test("Build help and usage failure do not compile or rewrite output",()=>{
-    const artifact=path.join(ROOT,"littlewild.html"),before=fs.existsSync(artifact)?fs.readFileSync(artifact):null;
+    const artifact=path.join(ROOT,".generated/artifacts/showcase.html"),before=fs.existsSync(artifact)?fs.readFileSync(artifact):null;
     const run=(args:string[])=>spawnSync(process.execPath,["--import","tsx",path.join(ROOT,"source/build.ts"),...args],{cwd:ROOT,encoding:"utf8",timeout:15000});
     assert.equal(run(["--help"]).status,0);
-    for(const args of [["--unknown"],["--output","--pack"],["--output","one","--output","two"],["--output","source/style.css"],["--pack",".generated/content/littlewild.pack.json","--output",".generated/content/littlewild.pack.json"]]){const r=run(args);assert.equal(r.status,1);assert.match(r.stderr,/Build failed:/);assert.doesNotMatch(r.stderr,/at parseArgs/);}
+    for(const args of [["--unknown"],["--output","--pack"],["--output","one","--output","two"],["--output","source/style.css"],["--pack",".generated/content/littlewild.pack.json","--output",".generated/content/littlewild.pack.json"],["--pack",".generated/content/littlewild.pack.json"]]){const r=run(args);assert.equal(r.status,1);assert.match(r.stderr,/Build failed:/);assert.doesNotMatch(r.stderr,/at parseArgs/);}
     if(before)assert.deepEqual(fs.readFileSync(artifact),before);
   });
   test("Build rejects symlinked protected parents before compiling or writing",()=>{

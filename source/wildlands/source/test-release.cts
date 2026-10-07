@@ -5,7 +5,7 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),crypto=require(
 const {executableFiles,assertAuthoredTypescript}=require('./verification/release-integrity.js');
 const L=require('./simulation.cjs'),S=require('./story-codec.js'),G=require('./growth-content.js'),root=path.resolve(__dirname,'..'),sourceRoot=path.join(root,'source');const results=[];
 function test(name,fn){try{fn();results.push({name,passed:true});}catch(e){results.push({name,passed:false,error:e.stack});console.error('FAIL',name,e.message);}}
-const html=fs.readFileSync(root+'/littlewild.html','utf8');
+const html=fs.readFileSync(root+'/.generated/artifacts/showcase.html','utf8');
 test('Title and entry point are v15, with no unresolved build markers',()=>{assert(html.includes('Worlds of Possibility · v15'));assert(!html.includes('<!-- INLINE_'));assert(html.includes("version: '15.0.0'"));});
 test('No external executable or visual dependencies',()=>{assert(!/<script[^>]+src=/i.test(html));assert(!/<(?:link|img|iframe)[^>]+(?:href|src)=["']https?:/i.test(html));assert(html.includes("connect-src 'none'"));});
 test('Vendor license is retained in the actual HTML',()=>assert(html.includes('Copyright © 2010-2026 three.js authors')));

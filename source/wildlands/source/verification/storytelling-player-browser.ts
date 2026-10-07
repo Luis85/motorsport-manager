@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
 import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
-const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'littlewild.html'),OUT=process.env.LITTLEWILD_STORYTELLING_PLAYER_OUT||path.join(ROOT,'verification/v15');
+const ROOT=path.resolve(__dirname,'../..'),ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT||path.join(ROOT,'.generated/artifacts/showcase.html'),OUT=process.env.LITTLEWILD_STORYTELLING_PLAYER_OUT||path.join(ROOT,'verification/v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
 async function test(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});console.log('PASS '+name);}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
 const native=(page:Page):Promise<string>=>page.evaluate('JSON.stringify(Littlewild.engine.export().state)') as Promise<string>;

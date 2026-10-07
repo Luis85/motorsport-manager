@@ -156,7 +156,7 @@ async function main(): Promise<void> {
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "wildlands-gate-"));
   try {
     await preflight();
-    const artifact = path.join(ROOT, "littlewild.html");
+    const artifact = path.join(ROOT, ".generated/artifacts/showcase.html");
     const artifactBytes = fs.readFileSync(artifact);
     report.htmlSha256 = crypto.createHash("sha256").update(new Uint8Array(artifactBytes)).digest("hex");
     report.htmlBytes = artifactBytes.length;

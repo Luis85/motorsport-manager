@@ -30,32 +30,46 @@ catalog. A pet game's `assets` may hold only `pets` definitions.
 The manifest uses the storage namespace `wildlands.pocket-pet`. Pets are saved
 and restored as exported checkpoint files; see the tutorial.
 
-## Build and play
+## Play
 
-Today the Wildlands build composes this folder into its artifacts:
+Open [`demos/pocket-pet.html`](../../../demos/pocket-pet.html) in a current
+desktop browser. The file is self-contained: it runs offline from `file://` with
+no network access, install or build step, and carries only this game. It needs a
+browser with WebGL 2. Save and restore the pet as exported checkpoint files (see
+the tutorial).
+
+The JSON-only pet CLI (`npm run pet -- discover` in `source/wildlands`) runs the
+same catalog headlessly.
+
+## Build
+
+The engine CLI builds the demo from this folder; it needs only Node.js 22:
 
 ```sh
-cd source/wildlands
-npm ci
-npm run build    # writes .generated/artifacts/pet-play.html and the showcase fixture
+bin/wildlands validate-game --game docs/concepts/pocket-pet
+bin/wildlands build-game --game docs/concepts/pocket-pet --output demos/pocket-pet.html
 ```
 
-Open `.generated/artifacts/pet-play.html` directly from disk in a browser with
-WebGL 2, or use the JSON-only CLI (`npm run pet -- discover`). The engine CLI
-command that builds `demos/pocket-pet.html` from this folder arrives with the
-next engine phase; until then this README does not claim it.
+`build-game` validates the folder with the engine's runtime validators, records
+the folder digest and engine identity in the artifact, and writes nothing when
+the play artifact exceeds `targets.html.budgetBytes` in `game.json` (3,145,728
+bytes, 3 MiB). The `pet` template has no studio profile; `build-game` builds the
+play artifact only. The checked-in [`demos/`](../../../demos/README.md) is
+regenerated for every game by `npm run build:demos` in `source/wildlands` and
+checked by `npm run check:demos`; see the
+[Wildlands CLI handbook](../../reference/wildlands-cli.md).
 
 ## Editing and validation
 
-Edit `content/pet.json`, then rebuild; `npm run pet -- validate FILE` checks a
-catalog on its own. Do not hand-edit `assets/pets/`: change the Scene Forge
-recipes and publish them again (see [PROVENANCE.md](PROVENANCE.md)). The build
-rejects a folder whose files are not all named by `game.json` (other than
-README, PROVENANCE and LICENSE files), that contains code, markup, executable
-files or symbolic links, or whose catalog fails the engine validator. The
-`game-folders` verification suite checks the manifest, the closed inventory,
-full validation and that the compiled profile still equals the profile Pocket
-Pet ran with before this folder existed.
+Edit `content/pet.json`, then validate the folder and rebuild the demo;
+`npm run pet -- validate FILE` checks a catalog on its own. Do not hand-edit
+`assets/pets/`: change the Scene Forge recipes and publish them again (see
+[PROVENANCE.md](PROVENANCE.md)). Validation rejects a folder whose files are not
+all named by `game.json` (other than README, PROVENANCE and LICENSE files), that
+contains code, markup, executable files or symbolic links, or whose catalog
+fails the engine validator. The `game-folders` verification suite checks the
+manifest, the closed inventory, full validation and that the compiled profile
+still equals the profile Pocket Pet ran with before this folder existed.
 
 ## Provenance
 

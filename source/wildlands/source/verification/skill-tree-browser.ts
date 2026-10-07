@@ -14,7 +14,7 @@ async function main():Promise<void>{
  try{
   for(const viewport of[{width:1440,height:1000},{width:390,height:844}]){
    const page=await context.newPage();await page.setViewportSize(viewport);page.setDefaultTimeout(5000);
-   await page.setContent(fs.readFileSync(path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
+   await page.setContent(fs.readFileSync(path.join(ROOT,'.generated/artifacts/showcase.html'),'utf8'),{waitUntil:'load',timeout:30000});
    await waitForReady(page,{timeout:READY_TIMEOUT_MS});
    await page.locator('[data-act=begin]').click();await page.evaluate(()=>(window as unknown as Globals).Littlewild.open('training'));
    await page.locator('[data-act=v3-learn-tab][data-id=trees]').click();

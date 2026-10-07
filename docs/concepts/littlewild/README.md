@@ -35,32 +35,45 @@ keep their existing keys (`littlewild.save.v5`, `littlewild.backup.v5`) and the
 serialized `littlewild-*` format identifiers are unchanged. Other games use
 `wildlands.<id>`.
 
-## Build and play
+## Play
 
-Today the Wildlands build reads this folder (or the folder named by
-`WILDLANDS_GAMES_DIR`) and composes it into its artifacts:
+Open [`demos/littlewild.html`](../../../demos/littlewild.html) in a current
+desktop browser. The file is self-contained: it runs offline from `file://` with
+no network access, install or build step, and carries only this game. Choose
+**A first morning** for earned progression or **A charted home** for the
+multi-creature demonstration; saves stay in the browser under the legacy keys
+above.
+
+## Build
+
+The engine CLI builds the demo from this folder; it needs only Node.js 22:
 
 ```sh
-cd source/wildlands
-npm ci
-npm run build    # writes littlewild.html and .generated/artifacts/colony-play.html
+bin/wildlands validate-game --game docs/concepts/littlewild
+bin/wildlands build-game --game docs/concepts/littlewild --output demos/littlewild.html
 ```
 
-Open `.generated/artifacts/colony-play.html` directly from disk to play. The
-engine CLI command that builds `demos/littlewild.html` from this folder
-(`bin/wildlands build-game --game docs/concepts/littlewild`) arrives with the
-next engine phase; until then this README does not claim it.
+`build-game` validates the folder with the engine's runtime validators, records
+the folder digest and engine identity in the artifact, and writes nothing when
+the play artifact exceeds `targets.html.budgetBytes` in `game.json` (4,194,304
+bytes, 4 MiB). Add `--profile studio` to build the same game with the editors
+and export tools on demand; studios are not published in `demos/`. The
+checked-in [`demos/`](../../../demos/README.md) is regenerated for every game by
+`npm run build:demos` in `source/wildlands` and checked by
+`npm run check:demos`; see the
+[Wildlands CLI handbook](../../reference/wildlands-cli.md).
 
 ## Editing and validation
 
-Edit the JSON here, then rebuild. The build rejects a folder whose files are not
-all named by `game.json` (other than README, PROVENANCE and LICENSE files),
-that contains code, markup, executable files or symbolic links, or whose
-documents fail the engine validators. The folder digest is SHA-256 over every
-file's path and byte hash, so any byte change, including whitespace or key
-order, gives a new digest. The `game-folders` verification suite checks the
-manifest, inventory, digest and that the compiled profile still equals the
-profile the engine shipped before the folder existed.
+Edit the JSON here, then validate the folder and rebuild the demo. Validation
+rejects a folder whose files are not all named by `game.json` (other than
+README, PROVENANCE and LICENSE files), that contains code, markup, executable
+files or symbolic links, or whose documents fail the engine validators. The
+folder digest is SHA-256 over every file's path and byte hash, so any byte
+change, including whitespace or key order, gives a new digest. The
+`game-folders` verification suite checks the manifest, inventory, digest and
+that the compiled profile still equals the profile the engine shipped before the
+folder existed.
 
 ## Provenance
 

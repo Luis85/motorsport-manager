@@ -47,32 +47,42 @@ The manifest uses the storage namespace `wildlands.emberworks`, so a
 standalone Emberworks build keeps its saves apart from Littlewild and the other
 games.
 
-## Build and play
+## Play
 
-Today the Wildlands build composes this folder's pack into its artifacts next
-to the Littlewild and Office packs:
+Open [`demos/emberworks.html`](../../../demos/emberworks.html) in a current
+desktop browser. The file is self-contained: it runs offline from `file://` with
+no network access, install or build step, and carries only this game: the
+Emberworks pack. Choose **Found a workshop** or **An established workshop**;
+saves stay under `wildlands.emberworks`.
+
+## Build
+
+The engine CLI builds the demo from this folder; it needs only Node.js 22:
 
 ```sh
-cd source/wildlands
-npm ci
-npm run build    # writes .generated/artifacts/colony-play.html and the showcase fixture
+bin/wildlands validate-game --game docs/concepts/emberworks
+bin/wildlands build-game --game docs/concepts/emberworks --output demos/emberworks.html
 ```
 
-Open `.generated/artifacts/colony-play.html` directly from disk and choose
-**Emberworks**. To build the showcase with only this pack, run
-`npm run build -- --pack ../../docs/concepts/emberworks/content/emberworks.pack.json --output emberworks.html`.
-The engine CLI command that builds `demos/emberworks.html` from this folder
-arrives with the next engine phase; until then this README does not claim it.
+`build-game` validates the folder with the engine's runtime validators, records
+the folder digest and engine identity in the artifact, and writes nothing when
+the play artifact exceeds `targets.html.budgetBytes` in `game.json` (4,194,304
+bytes, 4 MiB). Add `--profile studio` to build the same game with the editors
+and export tools on demand; studios are not published in `demos/`. The
+checked-in [`demos/`](../../../demos/README.md) is regenerated for every game by
+`npm run build:demos` in `source/wildlands` and checked by
+`npm run check:demos`; see the
+[Wildlands CLI handbook](../../reference/wildlands-cli.md).
 
 ## Editing and validation
 
-Edit the JSON here, then rebuild. The build rejects a folder whose files are not
-all named by `game.json` (other than README, PROVENANCE and LICENSE files),
-that contains code, markup, executable files or symbolic links, or whose
-documents fail the engine validators. The `game-folders` verification suite
-checks the manifest, the closed inventory, full validation with the engine's
-runtime validators and that the compiled profile still equals the profile
-Emberworks ran with before this folder existed.
+Edit the JSON here, then validate the folder and rebuild the demo. Validation
+rejects a folder whose files are not all named by `game.json` (other than
+README, PROVENANCE and LICENSE files), that contains code, markup, executable
+files or symbolic links, or whose documents fail the engine validators. The
+`game-folders` verification suite checks the manifest, the closed inventory,
+full validation with the engine's runtime validators and that the compiled
+profile still equals the profile Emberworks ran with before this folder existed.
 
 ## Provenance
 

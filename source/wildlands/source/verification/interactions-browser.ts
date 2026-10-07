@@ -12,7 +12,7 @@ async function main():Promise<void>{
  const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
  try{
   const p=await context.newPage();p.setDefaultTimeout(5000);
-  await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
+  await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'.generated/artifacts/showcase.html'),'utf8'),{waitUntil:'load',timeout:30000});
   await waitForReady(p,{timeout:READY_TIMEOUT_MS});await p.locator('[data-act=begin]').click();
   await p.evaluate("Littlewild.open('scenarios')");await p.locator('[data-scenario=review][data-id=charted-home]').click();
   // Pause synchronously with scene installation, before the first decision frame.
