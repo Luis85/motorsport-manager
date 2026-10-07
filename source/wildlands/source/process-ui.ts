@@ -26,12 +26,12 @@
  <div id="metrics" class="process-metrics" aria-label="Run metrics"></div><section id="process-data" aria-label="Process inputs and outputs"></section></section>
  <aside class="process-inspector" aria-label="Scene inspector"><h2 id="inspector-title">Process overview</h2><div id="inspector"></div><h3>Shared resources</h3><div id="pools"></div><button id="report">Export run report</button></aside></div>
  <section class="process-bottom"><div class="process-bottom-nav"><button id="show-events" aria-pressed="true">Activity</button><button id="show-definition" aria-pressed="false">Definition editor</button><span>Simulation results depend on authored durations and capacities</span></div>
- <div id="events" class="process-events"></div><div id="editor" hidden><p>Edit the JSON draft, validate, then apply to start a fresh paused run. Export your run report first if you need it.</p><label for="draft">Process definition</label><textarea id="draft" spellcheck="false"></textarea>
- <div class="process-editor-actions"><button id="validate">Validate draft</button><button id="apply">Apply draft & reset run</button><button id="restore-draft">Restore active definition</button></div><pre id="diagnostics" role="status"></pre></div></section>`;
+ <div id="events" class="process-events"></div><div id="editor" hidden><p>Edit the JSON draft, validate, then apply to start a fresh paused run. Export your run report first if you need it.</p><label for="draft">Process definition</label><p id="draft-state" role="status"></p><textarea id="draft" spellcheck="false" aria-describedby="draft-state diagnostics"></textarea>
+ <div class="process-editor-actions"><button id="validate">Validate draft</button><button id="apply">Apply draft & reset run</button><button id="export-draft">Export draft</button><button id="restore-draft">Restore active definition</button></div><pre id="diagnostics" role="status"></pre></div></section>`;
  const get = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
  let view = app.query(), three: LWProcess3D.Surface | null = null, svg = root.LWProcess2D.create(get('map'), id => command(() => app.select(id)));
  const dataView = root.LWProcessData.create(get('process-data'));
- let last = 0, elapsed = 0, frameId = 0, disposed = false, unavailable = '';
+ let last = 0, elapsed = 0, frameId = 0, disposed = false, unavailable = '', activeDraft = '', previousStatus = '';
  const status = (message: string, error = false) => {
   get('message').textContent = message + (unavailable && message !== unavailable ? ' ' + unavailable : '');
   get('message').classList.toggle('error', error || !!unavailable);
@@ -39,11 +39,19 @@
  const download = (name: string, data: string, type: string) => {
   const url = URL.createObjectURL(new Blob([data], {type})), a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
  };
+ function draftState(): void {
+  const changed = get<HTMLTextAreaElement>('draft').value !== activeDraft;
+  const message = changed ? 'Unapplied draft. Export JSON and Download HTML use the active definition. Export draft saves these edits.' : 'Draft matches the active definition.';
+  if (get('draft-state').textContent !== message) get('draft-state').textContent = message;
+  get('draft-state').classList.toggle('unapplied', changed);
+ }
  function rebuild(): void {
   three?.dispose(); three = null; unavailable = ''; dataView.reset();
   try {three = root.LWProcess3D.create(get<HTMLCanvasElement>('canvas'), app.query().definition, id => command(() => app.select(id)));}
   catch (e) {unavailable = '3D unavailable in this browser. The complete simulation is available in 2D.'; app.mode('2d'); status(unavailable, true);}
-  get<HTMLTextAreaElement>('draft').value = JSON.stringify(app.query().definition, null, 2);
+  activeDraft = JSON.stringify(app.query().definition, null, 2);
+  get<HTMLTextAreaElement>('draft').value = activeDraft;
+  get('draft').removeAttribute('aria-invalid'); get('diagnostics').textContent = ''; draftState();
  }
  function refresh(): void {
   const focused = document.activeElement as HTMLElement | null, focusedStep = focused?.dataset.step, focusedNext = focused?.dataset.next;
@@ -51,7 +59,10 @@
   get('process-title').textContent = d.name; get('step-count').textContent = String(d.steps.length);
   get('clock').textContent = num(q.minute) + ' min'; get('run-status').textContent = view.playing ? 'Running' : q.status === 'completed' ? 'Finished' : q.status === 'limit' ? 'Run limit reached' : q.status === 'blocked' ? 'Blocked' : 'Paused';
   get('play').textContent = view.playing ? 'Pause' : 'Run simulation';
-  for (const id of ['play', 'step', 'advance']) get<HTMLButtonElement>(id).disabled = ['completed', 'limit', 'blocked'].includes(q.status);
+  const stopped = q.status === 'completed' ? 'Run finished. Export the report or reset to run again.' : q.status === 'limit' ? 'Run limit reached. Export the report or reset the run.' : q.status === 'blocked' ? 'No work can advance. Inspect waiting steps and resources, or reset the run.' : '';
+  for (const id of ['play', 'step', 'advance']) {const control = get<HTMLButtonElement>(id); control.disabled = !!stopped; control.title = stopped;}
+  if (stopped && previousStatus !== q.status) status(stopped);
+  previousStatus = q.status;
   get('steps').innerHTML = d.steps.map((s, i) => {const m = q.steps.find(m => m.id === s.id)!; return `<button data-step="${esc(s.id)}" class="process-step ${s.id === selected ? 'selected' : ''}" aria-current="${s.id === selected ? 'step' : 'false'}"><span class="process-order">${String(i + 1).padStart(2, '0')}</span><span><strong>${esc(s.name)}</strong><small>${esc(s.kind)}${m.active ? ' · ' + m.active + ' working' : ''}${m.queued ? ' · ' + m.queued + ' waiting' : ''}</small></span><i style="background:${s.scene.color}"></i></button>`;}).join('');
   get('steps').querySelectorAll<HTMLButtonElement>('button').forEach(b => b.onclick = () => command(() => app.select(b.dataset.step!)));
   get('overview').classList.toggle('selected', !selected); get('scene-title').textContent = step?.name ?? 'Whole process';
@@ -105,11 +116,14 @@
  function checkDraft(): LWProcess.Definition | undefined {
   try {const result = root.LWProcessCatalog.validate(JSON.parse(get<HTMLTextAreaElement>('draft').value));
    get('diagnostics').textContent = result.ok ? 'Valid definition. Applying starts a fresh paused run.' : result.diagnostics.map(e => e.path + ': ' + e.message).join('\n');
+   get('draft').setAttribute('aria-invalid', String(!result.ok));
    return result.ok ? result.definition : undefined;
-  } catch (e) {get('diagnostics').textContent = 'Invalid JSON: ' + String(e); return undefined;}
+  } catch (e) {get('draft').setAttribute('aria-invalid', 'true'); get('diagnostics').textContent = 'Invalid JSON: ' + String(e); return undefined;}
  }
+ get<HTMLTextAreaElement>('draft').oninput = () => {get('diagnostics').textContent = ''; get('draft').removeAttribute('aria-invalid'); draftState();};
  on('validate', () => {checkDraft();}); on('apply', () => {const d = checkDraft(); if (!d) return; d.revision = Math.max(view.definition.revision + 1, d.revision); app.replace(d); rebuild(); status('Definition applied. New run is paused.');});
- on('restore-draft', () => {get<HTMLTextAreaElement>('draft').value = JSON.stringify(view.definition, null, 2); get('diagnostics').textContent = 'Draft restored from the active definition.';});
+ on('export-draft', () => {download(view.definition.id + '.draft.json', get<HTMLTextAreaElement>('draft').value, 'application/json'); status('Draft downloaded as written. Apply a valid draft to update the simulation.');});
+ on('restore-draft', () => {get<HTMLTextAreaElement>('draft').value = activeDraft; get('draft').removeAttribute('aria-invalid'); draftState(); get('diagnostics').textContent = 'Draft restored from the active definition.';});
  function animate(time: number): void {
   if (disposed) return; const delta = Math.min(.1, (time - last) / 1000 || 0); last = time;
   if (view.playing) {elapsed += delta; if (elapsed >= .35) {elapsed = 0; command(() => app.pulse(Number(get<HTMLSelectElement>('speed').value)));}} else elapsed = 0;

@@ -44,9 +44,15 @@ async function main(): Promise<void> {
    await page.locator('#mode-2d').click(); assert.deepEqual((await query(page)).snapshot, before);
    assert.match(await page.locator('#process-data').innerText(), /needsRework/);
    await page.locator('#advance').click(); assert.match(await page.locator('#process-data').innerText(), /Step outputs/);
+   await page.locator('#process-written-toggle').click();
+   await page.locator('#mode-3d').click(); await page.locator('#step').click();
+   assert.equal(await page.locator('.process-written').evaluate((e: HTMLDetailsElement) => e.open), true);
+   await page.locator('#mode-2d').click();
    await page.locator('#overview').click(); assert.match(await page.locator('#process-data').innerText(), /Process inputs/);
    for (let i = 0; i < 6; i++) if (!(await page.locator('#advance').isDisabled())) await page.locator('#advance').click();
    assert.match(await page.locator('#process-data').innerText(), /Process outputs/);
+   assert.match(await page.locator('#message').innerText(), /Run finished.*Export the report/);
+   assert.match(await page.locator('#play').getAttribute('title') ?? '', /reset/);
    const reworked = (await query(page)).snapshot.receipts.find(r => r.stepId === 'rework')!;
    await page.locator('#process-case').selectOption(reworked.caseId);
    await page.locator('[data-step="qa"]').click(); assert.equal(await page.locator('#process-visit option').count(), 3);
@@ -104,6 +110,22 @@ async function main(): Promise<void> {
    await page.locator('#apply').click(); const next = await query(page); assert.equal(next.snapshot.minute, 0); assert.equal(next.definition.revision, before.definition.revision + 1); assert.equal(next.playing, false);
    await page.locator('#show-events').click();
   });
+  await check('Unapplied drafts export losslessly without changing the active process or retaining stale validation', async () => {
+   await page.locator('#show-definition').click(); const before = await query(page);
+   await page.locator('#validate').click(); assert.match(await page.locator('#diagnostics').innerText(), /Valid definition/);
+   const raw = '{\n  "unfinished":'; await page.locator('#draft').fill(raw);
+   assert.equal(await page.locator('#diagnostics').innerText(), '');
+   assert.match(await page.locator('#draft-state').innerText(), /Unapplied draft/);
+   await page.locator('#validate').click(); assert.equal(await page.locator('#draft').getAttribute('aria-invalid'), 'true');
+   let pending = page.waitForEvent('download'); await page.locator('#export-draft').click(); let saved = await pending;
+   const draftFile = path.join(dir, 'unfinished.json'); await saved.saveAs(draftFile); assert.equal(fs.readFileSync(draftFile, 'utf8'), raw);
+   pending = page.waitForEvent('download'); await page.locator('#json').click(); saved = await pending;
+   const activeFile = path.join(dir, 'active.json'); await saved.saveAs(activeFile); assert.deepEqual(JSON.parse(fs.readFileSync(activeFile, 'utf8')), before.definition);
+   assert.deepEqual(await query(page), before);
+   await page.locator('#show-events').click(); await page.locator('#show-definition').click(); assert.equal(await page.locator('#draft').inputValue(), raw);
+   await page.locator('#restore-draft').click(); assert.equal(await page.locator('#draft').getAttribute('aria-invalid'), null);
+   assert.match(await page.locator('#draft-state').innerText(), /matches the active definition/); await page.locator('#show-events').click();
+  });
   await check('Browser exported JSON imports losslessly and report binds definition to observed metrics', async () => {
    let pending = page.waitForEvent('download'); await page.locator('#json').click(); let download = await pending; const jsonFile = path.join(dir, 'export.json'); await download.saveAs(jsonFile);
    const definition = (await query(page)).definition; assert.deepEqual(JSON.parse(fs.readFileSync(jsonFile, 'utf8')), definition);
@@ -135,6 +157,11 @@ async function main(): Promise<void> {
    await page.locator('#mode-2d').click(); assert.equal(await page.locator('#map').isVisible(), true);
    await page.screenshot({path: path.join(OUT, 'process-mobile-2d.png'), fullPage: true});
    await page.setViewportSize({width: 900, height: 900}); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+   const long = (await query(page)).definition; long.name = 'LongProcessName'.repeat(8); long.steps[0]!.name = 'LongStepName'.repeat(7);
+   await page.locator('#file').setInputFiles({name: 'long-labels.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(long))});
+   await page.waitForFunction(name => document.getElementById('process-title')!.textContent === name, long.name);
+   await page.locator('[data-step]').first().click();
+   for (const width of [1440, 900, 390]) {await page.setViewportSize({width, height: 900}); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);}
   });
   await check('Process browser lifecycle emits no runtime errors or network requests', async () => {
    assert.deepEqual(diagnostics.errors, []); assert.deepEqual(diagnostics.requests, []);

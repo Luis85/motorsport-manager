@@ -129,6 +129,10 @@ Open the HTML directly. Use **Run simulation**, **Pause**, **Step 1 min**,
 **Advance 30 min**, and **Reset run**. **2D** and **3D** show one simulation;
 **Step scenes** and **Whole process** change the view without advancing time.
 **Definition editor** offers validation before **Apply draft & reset run**.
+Unapplied edits stay in the draft when you switch to Activity. **Export draft**
+saves that text exactly, including unfinished JSON. **Export JSON** and
+**Download HTML** continue to use the active definition until you apply a valid
+draft. Editing clears the previous validation result; validate again before applying.
 A rejected import retains the previous definition and run.
 Use **Inputs & outputs** beneath either view to select a case. **Whole process**
 shows its arrival fields and, after completion, final outputs. Select a task to

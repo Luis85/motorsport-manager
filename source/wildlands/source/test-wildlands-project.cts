@@ -82,7 +82,7 @@ test('Scene authoring recipes use native revisions and validators',()=>{
  assert.throws(()=>editProject(littlewild,{format:'wildlands-editor-recipe',schemaVersion:1,operations:[{operation:'updateScene',args:['missing',{}]}]}));
 });
 test('Runtime builds preserve owned data and ignore generated verification artifacts and stale executables',()=>{
- const source=path.resolve(__dirname,'../source'),directory=fs.mkdtempSync(path.join(path.resolve(__dirname,'..'),'.wildlands-bundle-test-'));
+ const source=path.resolve(__dirname,'../source'),directory=fs.mkdtempSync(path.join(os.tmpdir(),'wildlands-bundle-test-'));
  const expected=fs.readFileSync(path.join(__dirname,'wildlands-runtime-bundle.json'),'utf8');
  const bundle=JSON.parse(expected) as {files:{path:string;content:string}[]};
  try{

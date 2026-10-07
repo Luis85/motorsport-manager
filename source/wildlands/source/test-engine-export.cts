@@ -28,10 +28,20 @@ async function main():Promise<void>{
  const pack=X.builtins().find(value=>value.id==='office')!,before=JSON.stringify(pack),exchanged=await E.export(pack,pack.scenes[0]!.id),source=exchanged.sources;
  await test('Ignored generated suite evidence cannot change the source bundle or its metadata',()=>{
   const builder=require('./tools/engine-export-bundle.cjs') as {createSourceBundle(project:string):LWEngineExport.SourceBundle};
-  const project=path.resolve(__dirname,'..'),evidence=path.join(project,'source/engine-export-audit-results.json');
-  assert.equal(fs.existsSync(evidence),false);const original=builder.createSourceBundle(project);
-  try{fs.writeFileSync(evidence,JSON.stringify({passed:1,total:1,results:[{name:'Prior run',passed:true}]}));const rebuilt=builder.createSourceBundle(project);assert.deepEqual(rebuilt,original);assert.equal(rebuilt.files.some(file=>file.path==='source/engine-export-audit-results.json'),false);}
-  finally{fs.rmSync(evidence,{force:true});}
+  // Keep compiler residue out of the real checkout while other gate suites run.
+  const fixture=fs.mkdtempSync(path.join(os.tmpdir(),'engine-source-residue-'));
+  try{
+   fs.cpSync(path.join(project,'source'),path.join(fixture,'source'),{recursive:true});
+   fs.symlinkSync(path.join(project,'vendor'),path.join(fixture,'vendor'),'dir');
+   for(const name of fs.readdirSync(project).filter(name=>/^(package(-lock)?\.json|tsconfig[^/]*\.json)$/.test(name)))fs.copyFileSync(path.join(project,name),path.join(fixture,name));
+   for(const name of ['typescript','@types/node','undici-types'])fs.cpSync(path.join(project,'node_modules',name),path.join(fixture,'node_modules',name),{recursive:true});
+   const original=builder.createSourceBundle(fixture);
+   fs.writeFileSync(path.join(fixture,'source/engine-export-audit-results.json'),JSON.stringify({passed:1,total:1,results:[{name:'Prior run',passed:true}]}));
+   for(const name of ['developer-sdk','wildlands-project-sdk','wildlands-sdk','tools/build-inserts','tools/engine-sources'])fs.writeFileSync(path.join(fixture,'source',name+'.d.cts'),'export declare const generated: true;\n');
+   const rebuilt=builder.createSourceBundle(fixture);
+   assert.deepEqual(rebuilt,original,'Generated evidence and SDK sidecars must not change payloads or inventory metadata');
+   assert(rebuilt.files.some(file=>file.path==='source/developer-contracts.d.ts'),'Authored contracts remain in the source inventory');
+  }finally{fs.rmSync(fixture,{recursive:true,force:true});}
  });
  await test('Complete versioned inert input preserves native pack/checkpoints and has cryptographic inventory',async()=>{
   assert.equal(exchanged.format,'littlewild-engine-export');assert.deepEqual(exchanged.pack,pack);assert.equal(JSON.stringify(pack),before);assert(source.files.length>300);assert.equal(source.identity,exchanged.sourceIdentity);assert.equal(new Set(source.files.map(file=>file.path)).size,source.files.length);assert.deepEqual(source.inventory.included,source.files.map(file=>file.path));assert((await E.validate(exchanged)).ok);
