@@ -1,16 +1,19 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {launchBrowser,monitorContext,READY_TIMEOUT_MS} from './browser-harness';
+import {ACTION_TIMEOUT_MS,ARTIFACT_FIXTURE_URL,launchBrowser,monitorContext,nextFrames,openArtifact,READY_TIMEOUT_MS,TRANSITION_TIMEOUT_MS,waitForReady} from './browser-harness';
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification','v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
+// Cross-host composition: the suite opens Pocket Pet from the running colony and returns to it, asserting the colony
+// story is untouched and focus returns to the colony launcher. Only the composite showcase mounts both hosts.
+const ARTIFACT=path.join(ROOT,'.generated/artifacts/showcase.html');
 async function check(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
 async function main():Promise<void>{
- fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
+ fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context,{fixtureUrls:[ARTIFACT_FIXTURE_URL]});
  try{
-  const page=await context.newPage();page.setDefaultTimeout(15000);
-  await page.setContent(fs.readFileSync(path.join(ROOT,'.generated/artifacts/showcase.html'),'utf8'),{waitUntil:'load',timeout:30000});
-  await page.waitForFunction(()=>!!(window as any).Littlewild&&!!(window as any).WildlandsPet,null,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act=begin]').click();
+  const page=await context.newPage();page.setDefaultTimeout(ACTION_TIMEOUT_MS);
+  await openArtifact(page,ARTIFACT);await waitForReady(page,{host:'colony',timeout:READY_TIMEOUT_MS});
+  await page.waitForFunction(()=>!!(window as any).Littlewild&&!!(window as any).WildlandsPet);await page.locator('[data-act=begin]').click({timeout:TRANSITION_TIMEOUT_MS});
   await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.refresh()');
   await check('Pet demo is discoverable and runs only its own application clock',async()=>{
    const before=await page.evaluate('JSON.stringify(Littlewild.engine.export())');
@@ -20,7 +23,8 @@ async function main():Promise<void>{
    assert.equal(await page.evaluate('JSON.stringify(Littlewild.engine.export())'),before);
    await page.locator('[data-pet=pause]').click();assert.equal(await page.evaluate('WildlandsPet.status().paused'),true);
    const tick=await page.evaluate('WildlandsPet.query().tick');for(let i=0;i<10;i++)await page.evaluate('WildlandsPet.query()');
-   await page.waitForTimeout(300);assert.equal(await page.evaluate('WildlandsPet.query().tick'),tick);
+   // Eighteen rendered frames (300 ms at 60 Hz, longer under load): the pet frame loop runs in each one while paused.
+   await nextFrames(page,18);assert.equal(await page.evaluate('WildlandsPet.query().tick'),tick);
   });
   await check('The 3D room renders Scene Forge pet assets through WebGL',async()=>{
    await page.waitForFunction(()=>((window as any).WildlandsPet.renderer()?.frames??0)>2);
@@ -99,7 +103,8 @@ async function main():Promise<void>{
   await check('Returning to the colony restores focus and stops the pet clock',async()=>{
    await page.locator('[data-pet=exit]').click();assert.equal(await page.locator('#pet-mode').isHidden(),true);
    assert.equal(await page.evaluate('document.activeElement?.dataset.wildlandsPet'),'open');
-   const tick=await page.evaluate('WildlandsPet.query().tick');await page.waitForTimeout(300);
+   // Eighteen rendered frames of the colony loop after exit: the pet clock must not advance in any of them.
+   const tick=await page.evaluate('WildlandsPet.query().tick');await nextFrames(page,18);
    assert.equal(await page.evaluate('WildlandsPet.query().tick'),tick);
   });
   await check('Self-contained pet loading and interaction generate no script errors or network requests',async()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.requests,[]);});

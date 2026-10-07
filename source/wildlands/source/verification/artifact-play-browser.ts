@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
-import {launchBrowser, monitorContext, READY_TIMEOUT_MS, waitForReady} from './browser-harness';
+import {ACTION_TIMEOUT_MS, launchBrowser, monitorContext, READY_TIMEOUT_MS, TRANSITION_TIMEOUT_MS, waitForReady} from './browser-harness';
 import type {Browser, Page} from 'playwright';
 
 const ROOT = path.resolve(__dirname, '../..'), ARTIFACTS = path.join(ROOT, '.generated', 'artifacts');
@@ -29,7 +29,7 @@ async function withArtifact(browser: Browser, id: string, work: (page: Page) => 
   for (const payload of PAYLOADS) assert.equal(html.includes('window.' + payload + ' = '), !id.endsWith('-play'), `${id} payload ${payload}`);
   const context = await browser.newContext({viewport: {width: 1280, height: 860}}), diagnostics = monitorContext(context);
   try {
-    const page = await context.newPage(); page.setDefaultTimeout(15000);
+    const page = await context.newPage(); page.setDefaultTimeout(ACTION_TIMEOUT_MS);
     await page.goto(pathToFileURL(file).href, {waitUntil: 'load', timeout: 60000});
     await work(page);
     await page.screenshot({path: path.join(OUT, `artifact-${id}.png`)});
@@ -73,7 +73,7 @@ async function main(): Promise<void> {
       // The play profile carries no editors, developer session, export or template bundles.
       assert.equal(await page.evaluate('[typeof LWScenarioUI,typeof LWDeveloper,typeof WildlandsUI,typeof LWRTSHost,typeof LWPetHost].join()'), 'undefined,undefined,undefined,undefined,undefined');
       assert.equal(await page.locator('[data-act=scenarios], [data-wildlands-rts], [data-wildlands-pet]').count(), 0, 'no launcher for an absent bundle');
-      await page.locator('[data-act=begin]').click();
+      await page.locator('[data-act=begin]').click({timeout: TRANSITION_TIMEOUT_MS});
       const before = await page.evaluate('Littlewild.engine.s.simTime') as number;
       await page.evaluate('Littlewild.advance(5)');
       assert((await page.evaluate('Littlewild.engine.s.simTime') as number) > before, 'explicit advance moves the colony clock');
@@ -84,7 +84,7 @@ async function main(): Promise<void> {
     await check('Studio artifact boots the colony with editors and export tools', () => withArtifact(browser, 'studio', async page => {
       await waitForReady(page, {host: 'colony', timeout: READY_TIMEOUT_MS});
       assert.equal(await page.evaluate('typeof Littlewild+"/"+typeof Wildlands'), 'object/object');
-      await page.locator('[data-act=begin]').click();
+      await page.locator('[data-act=begin]').click({timeout: TRANSITION_TIMEOUT_MS});
       assert.equal(await page.evaluate('typeof LWDeveloper'), 'object');
       assert.equal(await page.evaluate('typeof LWRTSHost+"/"+typeof LWPetHost+"/"+Wildlands.capabilities().some(entry=>entry.id.startsWith("app:"))'), 'undefined/undefined/false');
     }));

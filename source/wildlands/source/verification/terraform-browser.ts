@@ -1,17 +1,20 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
+import {ACTION_TIMEOUT_MS,ARTIFACT_FIXTURE_URL,launchBrowser,monitorContext,openArtifact,READY_TIMEOUT_MS,TRANSITION_TIMEOUT_MS,waitForReady} from './browser-harness';
 const ROOT=path.resolve(__dirname,'../..'),OUT=process.env.LITTLEWILD_TERRAFORM_EVIDENCE??path.join(ROOT,'verification','v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
+// Scene switching goes through the scenario library (review and launch), which ships in the studio artifact;
+// play artifacts omit it and the composite showcase adds nothing these checks need.
+const ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'.generated/artifacts/studio.html');
 async function check(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
 async function main():Promise<void>{
- fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
+ fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context,{fixtureUrls:[ARTIFACT_FIXTURE_URL]});
  try{
-  const page=await context.newPage();page.setDefaultTimeout(8000);
-  await page.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'.generated/artifacts/showcase.html'),'utf8'),{waitUntil:'load',timeout:30000});
-  await waitForReady(page,{timeout:READY_TIMEOUT_MS});await page.locator('[data-act=begin]').click();
-  await page.evaluate("Littlewild.open('scenarios')");await page.locator('[data-scenario=review][data-id=charted-home]').click();
+  const page=await context.newPage();page.setDefaultTimeout(ACTION_TIMEOUT_MS);
+  await openArtifact(page,ARTIFACT);
+  await waitForReady(page,{host:'colony',timeout:READY_TIMEOUT_MS});await page.locator('[data-act=begin]').click({timeout:TRANSITION_TIMEOUT_MS});
+  await page.evaluate("Littlewild.open('scenarios')");await page.locator('[data-scenario=review][data-id=charted-home]').click({timeout:TRANSITION_TIMEOUT_MS});
   await page.evaluate("document.querySelector('[data-scenario=launch]').click();Littlewild.engine.s.paused=true;Littlewild.refresh()");
   let tile:{x:number;y:number}={x:5,y:5};
   await check('Terraform is discoverable from More and opens a keyboard-accessible map workbench',async()=>{
@@ -78,7 +81,7 @@ async function main():Promise<void>{
   });
   await check('Indoor Office terrain uses the same editable ground and elevation while preserving its authored stage',async()=>{
    await page.setViewportSize({width:1440,height:900});await page.evaluate("Littlewild.open('scenarios')");
-   await page.locator('[data-scenario=select]').filter({hasText:/office/i}).click();await page.locator('[data-scenario=review]').first().click();
+   await page.locator('[data-scenario=select]').filter({hasText:/office/i}).click();await page.locator('[data-scenario=review]').first().click({timeout:TRANSITION_TIMEOUT_MS});
    await page.evaluate("document.querySelector('[data-scenario=launch]').click();Littlewild.engine.s.paused=true;Littlewild.refresh();Littlewild.terraform.open()");
    const point=await page.evaluate(`(()=>{const e=Littlewild.engine;for(let y=3;y<=15;y++)for(let x=3;x<=15;x++)if(e.previewTerraform({revision:0,tiles:[{x,y,height:1,ground:'water'}],plants:[]}).ok)return {x,y};throw Error('No safe office tile');})()`) as {x:number;y:number};
    await page.locator('#terraform-tool').selectOption('raise');await page.evaluate(`Littlewild.world.keyboardTile=${JSON.stringify(point)};Littlewild.world.canvas.focus()`);await page.keyboard.press('Enter');
