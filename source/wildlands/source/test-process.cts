@@ -21,6 +21,34 @@ test('One task completes at its declared business minute with detached read quer
  assert.equal(s.advance(4).metrics.completed, 0); const q = s.advance(1);
  assert.equal(q.minute, 5); assert.equal(q.metrics.meanCycleMinutes, 5); assert.equal(q.metrics.completed, 1); s.dispose(); assert.throws(() => s.query());
 });
+test('Process inputs and per-visit outputs remain detached after later changes', () => {
+ const d = base(); d.arrivals[0]!.data = {approved: false, note: '<input>', empty: null, count: 0}; d.steps[1]!.set = {approved: true};
+ const session = runtime.create(d), first = session.query();
+ assert.deepEqual(first.tokens[0]!.input, d.arrivals[0]!.data); first.tokens[0]!.input!.approved = 'tampered';
+ const q = session.advance(5); assert.equal(q.cases[0]!.input.approved, false); assert.equal(q.cases[0]!.data.approved, true);
+ assert.equal(q.receipts[0]!.input.approved, false); assert.equal(q.receipts[0]!.output.approved, true);
+ assert.deepEqual(q.receipts[0]!.changes, {approved: true}); assert.equal(q.receipts[0]!.started, 0); assert.equal(q.receipts[0]!.finished, 5);
+ q.receipts[0]!.output.approved = 'tampered'; assert.equal(session.query().receipts[0]!.output.approved, true); session.dispose();
+});
+test('Queued visits have no captured inputs or completed outputs until started', () => {
+ const d = base(); d.resources = [{id: 'worker', name: 'Worker', capacity: 1, costPerMinute: 0}]; d.steps[1]!.resources = {worker: 1}; d.arrivals[0]!.count = 2;
+ const session = runtime.create(d); assert.equal(session.query().tokens[1]!.input, null); assert.equal(session.query().receipts.length, 0);
+ const q = session.advance(5); assert.equal(q.receipts.length, 1); assert.equal(q.tokens[0]!.started, 5); assert.deepEqual(q.tokens[0]!.input, {}); session.dispose();
+});
+test('Rework and parallel visits retain actual start data and explicit writes', () => {
+ const q = run(agency, 500), rework = q.receipts.find(r => r.stepId === 'rework')!;
+ assert.equal(rework.input.needsRework, true); assert.equal(rework.output.needsRework, false);
+ const repeated = q.receipts.filter(r => r.caseId === rework.caseId && r.stepId === 'qa');
+ assert.equal(repeated.length, 2); assert.notEqual(repeated[0]!.id, repeated[1]!.id);
+ const ux = q.receipts.find(r => r.stepId === 'ux')!, tech = q.receipts.find(r => r.stepId === 'architecture')!;
+ assert.deepEqual(ux.changes, {uxReady: true}); assert.deepEqual(tech.changes, {techReady: true});
+ assert.equal(ux.input.uxReady, undefined); assert.equal(tech.input.techReady, undefined);
+});
+test('Completion history is bounded without dropping process inputs or final outputs', () => {
+ const d = base(); d.arrivals[0]!.count = 200; d.arrivals[0]!.data = {request: 'kept'}; d.steps[1]!.set = {done: true};
+ const q = run(d, 5); assert.equal(q.receipts.length, 128); assert.equal(q.receiptsDropped, 72);
+ assert.equal(q.cases.length, 200); assert(q.cases.every(c => c.input.request === 'kept' && c.data.done));
+});
 test('FIFO shared capacity produces exact queue times, utilization and costs', () => {
  const d = base(); d.resources = [{id: 'worker', name: 'Worker', capacity: 1, costPerMinute: 2}];
  d.steps[1]!.resources = {worker: 1}; d.steps[1]!.cost = 7; d.arrivals[0]!.count = 2;

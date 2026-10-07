@@ -20,21 +20,21 @@
   event(s, 'failed', c.id, '', message);
  }
  function enter(s: LWProcess.State, t: LWProcess.Token, stepId: string): void {
-  t.stepId = stepId; t.entered = s.clock.minute; t.started = null; t.remaining = 0; t.status = 'routing';
+  t.stepId = stepId; t.entered = s.clock.minute; t.started = null; t.remaining = 0; t.input = null; t.status = 'routing';
   station(s, stepId).visits++;
   event(s, 'entered', t.caseId, stepId);
  }
  function spawn(s: LWProcess.State, caseId: string, stepId: string, fork: string | null, branch: string | null): void {
   const id = 'token-' + String(++s.clock.serial).padStart(8, '0');
   s.world.create(id);
-  const token: LWProcess.Token = {id, caseId, stepId, entered: s.clock.minute, started: null, remaining: 0, status: 'routing', fork, branch};
+  const token: LWProcess.Token = {id, caseId, stepId, entered: s.clock.minute, started: null, input: null, remaining: 0, status: 'routing', fork, branch};
   s.world.set(id, 'process-token', token); enter(s, token, stepId);
  }
  function admit(s: LWProcess.State): void {
   while (s.clock.arrival < s.arrivals.length && s.arrivals[s.clock.arrival]!.at <= s.clock.minute) {
    const arrival = s.arrivals[s.clock.arrival++]!, id = 'case-' + String(s.clock.arrival).padStart(4, '0');
    s.world.create(id);
-   s.world.set<LWProcess.Case>(id, 'process-case', {id, data: {...arrival.data}, entered: s.clock.minute, finished: null, status: 'active', transitions: 0, error: null});
+   s.world.set<LWProcess.Case>(id, 'process-case', {id, input: {...arrival.data}, data: {...arrival.data}, entered: s.clock.minute, finished: null, status: 'active', transitions: 0, error: null});
    event(s, 'arrived', id, s.definition.start); spawn(s, id, s.definition.start, null, null);
   }
  }
@@ -87,7 +87,7 @@
    const step = s.steps.get(t.stepId)!, demands = Object.entries(step.resources ?? {});
    if (demands.some(([id, quantity]) => pool(s, id).busy + quantity > pool(s, id).capacity)) continue;
    for (const [id, quantity] of demands) pool(s, id).busy += quantity;
-   t.started = s.clock.minute; t.status = 'active'; t.remaining = step.duration!;
+   t.input = {...caseOf(s, t).data}; t.started = s.clock.minute; t.status = 'active'; t.remaining = step.duration!;
    station(s, step.id).waitMinutes += s.clock.minute - t.entered; s.clock.cost += step.cost ?? 0;
    event(s, 'started', t.caseId, step.id);
   }
@@ -105,6 +105,9 @@
   for (const t of completed) {
    const step = s.steps.get(t.stepId)!, c = caseOf(s, t);
    Object.assign(c.data, step.set ?? {}); station(s, step.id).completed++;
+   s.receipts.push({id: t.id + '@' + t.started, caseId: c.id, stepId: step.id, started: t.started!, finished: s.clock.minute,
+    input: {...t.input!}, output: {...c.data}, changes: {...step.set ?? {}}});
+   if (s.receipts.length > 128) {s.receipts.shift(); s.receiptsDropped++;}
    event(s, 'finished-task', c.id, step.id);
    enter(s, t, s.outgoing.get(step.id)![0]!.to);
   }

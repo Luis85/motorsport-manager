@@ -24,20 +24,24 @@ declare namespace LWProcess {
   admit(input: unknown): Definition; fingerprint(input: unknown): string;
  }
  interface Case extends Record<string, unknown> {
-  id: string; data: Fields; entered: number; finished: number | null;
+  id: string; input: Fields; data: Fields; entered: number; finished: number | null;
   status: 'active' | 'completed' | 'failed'; transitions: number; error: string | null;
  }
  interface Token extends Record<string, unknown> {
   id: string; caseId: string; stepId: string; entered: number; started: number | null;
-  remaining: number; status: 'routing' | 'queued' | 'active' | 'joining';
+  input: Fields | null; remaining: number; status: 'routing' | 'queued' | 'active' | 'joining';
   fork: string | null; branch: string | null;
  }
  interface StepMetric { id: string; queued: number; active: number; visits: number; completed: number; waitMinutes: number; }
  interface PoolMetric { id: string; capacity: number; busy: number; busyMinutes: number; utilization: number; }
  interface Event { minute: number; kind: string; caseId: string; stepId: string; detail: string; }
+ interface Receipt {
+  id: string; caseId: string; stepId: string; started: number; finished: number;
+  input: Fields; output: Fields; changes: Fields;
+ }
  interface Snapshot {
   minute: number; status: 'ready' | 'running' | 'completed' | 'blocked' | 'limit';
-  cases: Case[]; tokens: Token[]; steps: StepMetric[]; resources: PoolMetric[]; events: Event[];
+  cases: Case[]; tokens: Token[]; receipts: Receipt[]; receiptsDropped: number; steps: StepMetric[]; resources: PoolMetric[]; events: Event[];
   metrics: { arrived: number; completed: number; failed: number; active: number; cost: number; meanCycleMinutes: number; throughputPerHour: number; };
  }
  interface Session { query(): Snapshot; advance(minutes: number): Snapshot; dispose(): void; }
@@ -70,7 +74,7 @@ declare namespace LWProcess {
  interface Station extends Record<string, unknown> { id: string; visits: number; completed: number; waitMinutes: number; }
  interface State {
   world: EcsWorld; definition: Definition; steps: Map<string, Step>; outgoing: Map<string, Flow[]>;
-  clock: Clock; events: Event[]; arrivals: {at: number; data: Fields}[];
+  clock: Clock; events: Event[]; receipts: Receipt[]; receiptsDropped: number; arrivals: {at: number; data: Fields}[];
  }
  interface Systems { settle(s: State): void; work(s: State): void; admit(s: State): void; }
 }

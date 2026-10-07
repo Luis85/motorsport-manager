@@ -401,6 +401,7 @@
         "process-renderer-2d.ts",
         "process-renderer-3d.ts",
         "process-ui.ts",
+        "process-data-view.ts",
         "process-sdk.cts"
       ]
     }

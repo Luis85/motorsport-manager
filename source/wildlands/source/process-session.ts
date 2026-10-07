@@ -11,7 +11,7 @@
   world.create('process-clock'); world.set('process-clock', 'process-clock', clock);
   for (const r of definition.resources) { world.create('pool-' + r.id); world.set('pool-' + r.id, 'process-pool', {...r, busy: 0, busyMinutes: 0}); }
   for (const step of definition.steps) { world.create('station-' + step.id); world.set('station-' + step.id, 'process-station', {id: step.id, visits: 0, completed: 0, waitMinutes: 0}); }
-  const state: LWProcess.State = {world, definition, clock, events: [], steps: new Map(definition.steps.map(s => [s.id, s])),
+  const state: LWProcess.State = {world, definition, clock, events: [], receipts: [], receiptsDropped: 0, steps: new Map(definition.steps.map(s => [s.id, s])),
    outgoing: new Map(definition.steps.map(s => [s.id, definition.flows.filter(f => f.from === s.id)])),
    arrivals: definition.arrivals.flatMap(a => Array.from({length: a.count}, (_, i) => ({at: a.at + i * a.interval, data: {...a.data}}))).sort((a, b) => a.at - b.at)};
   // Scheduler owns timed ECS value updates; graph/structural changes happen after it releases its lock.
@@ -27,7 +27,7 @@
    const future = clock.arrival < state.arrivals.length;
    const status = clock.minute >= limits.minutes && (future || active) ? 'limit' : !future && !active ? 'completed'
     : !future && active && !tokens.some(t => t.status === 'active') ? 'blocked' : clock.minute === 0 ? 'ready' : 'running';
-   return copy({minute: clock.minute, status, cases, tokens, events: state.events,
+   return copy({minute: clock.minute, status, cases, tokens, events: state.events, receipts: state.receipts, receiptsDropped: state.receiptsDropped,
     steps: definition.steps.map(step => ({...world.get<LWProcess.Station>('station-' + step.id, 'process-station')!,
      queued: tokens.filter(t => t.stepId === step.id && t.status !== 'active').length, active: tokens.filter(t => t.stepId === step.id && t.status === 'active').length})),
     resources: definition.resources.map(r => { const p = world.get<LWProcess.Pool>('pool-' + r.id, 'process-pool')!;

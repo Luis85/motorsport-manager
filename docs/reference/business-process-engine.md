@@ -15,7 +15,7 @@ in metres (X/Z in 3D), a color, and an optional Scene Forge `asset` definition. 
 business-minute `duration`, optional `cost`, and simultaneous resource demands.
 Resource pools declare integer `capacity` and `costPerMinute`; costs are simulated
 units, not currency or accounting entries. Pools represent capacity slots; moving
-case markers represent work, not physical people or a travel-time model.
+case markers and desk actors represent work, not physical people or a travel-time model.
 
 One explicit simulation tick is one business minute. The shared ECS scheduler
 receives its fixed 0.1-second step; this is an adapter interval, not business time.
@@ -97,6 +97,40 @@ migration, saved-run restoration or native Godot process export is claimed.
 Graph layout and scene presentation do not influence scheduling. Simulation
 results describe authored assumptions and are not measured project forecasts.
 
+## Observed inputs and outputs
+
+Both projections share an **Inputs & outputs** panel with a case selector.
+The overview retains each case's arrival `input` separately from mutable `data`.
+Completed cases show their final process outputs; active and failed cases show
+current data, explicitly distinguished from a completed result.
+
+A task captures its input fields when resources are allocated and work starts,
+not while queued. On completion it records a receipt with case/step identity,
+start/finish minutes, captured `input`, observed case `output`, and `changes`
+(the fields written by that task). A later task or rework visit cannot rewrite
+an earlier receipt. Parallel tasks share case data: a receipt's output can also
+contain fields already written by another branch; `changes` identifies exactly
+what this task wrote. The Visit selector exposes retained completed visits.
+Before completion the panel labels authored `set` effects as **Expected changes**.
+No inferred or planned effect is presented as an observed output.
+
+Snapshots and exported reports retain the latest 128 task receipts and report
+`receiptsDropped` explicitly. Original inputs and final case outputs remain for
+all admitted cases even when earlier task receipts leave this bounded history.
+These are additive read-model fields; the definition schema is unchanged.
+
 ## Presentation limits
 
-The 3D view displays at most 1,000 work markers and each 2D scene displays a bounded marker sample plus an overflow count. All cases remain in simulation and reports. Resource occupancy appears in the inspector; there is no animated staff allocation or travel-time model. The latest 128 events are retained for inspection; metrics cover the full run.
+The 3D view displays up to 120 work markers, prioritizing active work, with a
+visible overflow count. Up to three active tokens per scene (32 across the view)
+use articulated desk actors; additional work and queues use compact markers.
+Actor hands, heads and posture animate only during playback and remain still
+when paused or reduced motion is requested. These actors are a representation
+of active work, not staff allocation, additional capacity or travel time.
+Room props, shadows, task progress and occupancy labels are presentation only.
+The camera supports pointer orbit/zoom and keyboard arrows, +/− and F to frame.
+Static paused scenes render only when the view or camera changes.
+
+Each 2D scene shows a bounded marker sample plus an overflow count. All cases
+remain in the data inspector, simulation and reports. Resource occupancy appears
+in the inspector. The latest 128 events are retained; metrics cover the full run.

@@ -4,9 +4,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import {pathToFileURL} from 'node:url';
 import {spawnSync} from 'node:child_process';
-import {launchBrowser, monitorContext, waitForReady} from './browser-harness';
+import {launchBrowser, monitorContext, waitForReady, openArtifact, nextFrames} from './browser-harness';
 import type {Page} from 'playwright';
 const PROJECT = path.resolve(__dirname, '../..'), OUT = path.join(PROJECT, 'verification/v15');
 const results: {name: string; passed: boolean; error?: string}[] = [];
@@ -19,10 +18,11 @@ async function main(): Promise<void> {
  const file = path.join(dir, 'process.html'), cli = path.join(PROJECT, '.generated/tools/wildlands-cli.cjs');
  const built = spawnSync(process.execPath, [cli, 'build-game', '--game', path.resolve(PROJECT, '../../docs/concepts/agency-delivery'), '--output', file], {encoding: 'utf8', timeout: 300000});
  assert.equal(built.status, 0, built.stderr + built.stdout);
- const browser = await launchBrowser(), context = await browser.newContext({viewport: {width: 1440, height: 1060}}), diagnostics = monitorContext(context), page = await context.newPage();
+ const fixtureUrls = ['https://localhost/process', 'https://localhost/exported', 'https://localhost/escaped'];
+ const browser = await launchBrowser(), context = await browser.newContext({viewport: {width: 1440, height: 1060}}), diagnostics = monitorContext(context, {fixtureUrls}), page = await context.newPage();
  page.setDefaultTimeout(15000);
  try {
-  await page.goto(pathToFileURL(file).href); await waitForReady(page, {host: 'process'});
+  await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
   await check('Process artifact starts paused with one selectable scene per step and real WebGL', async () => {
    const q = await query(page); assert.equal(q.snapshot.minute, 0); assert.equal(q.playing, false); assert.equal(q.mode, '3d');
    assert.equal(await page.locator('[data-step]').count(), q.definition.steps.length);
@@ -36,6 +36,47 @@ async function main(): Promise<void> {
    await page.locator('#mode-3d').click(); assert.deepEqual((await query(page)).snapshot, before);
    await page.locator('#overview').click();
   });
+  await check('Both views display captured inputs, expected effects and observed outputs', async () => {
+   await page.locator('#reset').click(); await page.locator('[data-step="discovery"]').click();
+   assert.match(await page.locator('#process-data').innerText(), /Step inputs/);
+   assert.match(await page.locator('#process-data').innerText(), /Expected changes/);
+   const before = (await query(page)).snapshot;
+   await page.locator('#mode-2d').click(); assert.deepEqual((await query(page)).snapshot, before);
+   assert.match(await page.locator('#process-data').innerText(), /needsRework/);
+   await page.locator('#advance').click(); assert.match(await page.locator('#process-data').innerText(), /Step outputs/);
+   await page.locator('#overview').click(); assert.match(await page.locator('#process-data').innerText(), /Process inputs/);
+   for (let i = 0; i < 6; i++) if (!(await page.locator('#advance').isDisabled())) await page.locator('#advance').click();
+   assert.match(await page.locator('#process-data').innerText(), /Process outputs/);
+   const reworked = (await query(page)).snapshot.receipts.find(r => r.stepId === 'rework')!;
+   await page.locator('#process-case').selectOption(reworked.caseId);
+   await page.locator('[data-step="qa"]').click(); assert.equal(await page.locator('#process-visit option').count(), 3);
+   await page.locator('#process-visit').selectOption({index: 1}); assert.match(await page.locator('#process-data').innerText(), /Completed/);
+   await page.locator('#reset').click(); await page.locator('#overview').click(); await page.locator('#mode-3d').click();
+  });
+  await check('Actor joints animate only during playback, respect reduced motion, and do not tick the process', async () => {
+   await page.locator('#reset').click();
+   const exercise = async (reduced: boolean) => {
+    await page.emulateMedia({reducedMotion: reduced ? 'reduce' : 'no-preference'});
+    return page.evaluate(() => {
+     const w = globalThis as any, T = w.THREE, view = w.LWProcessStudio.query(), before = JSON.stringify(view.snapshot);
+     const canvas = document.createElement('canvas'); canvas.style.cssText = 'width:400px;height:300px'; document.body.append(canvas);
+     let captured: any; const OriginalRenderer = T.WebGLRenderer;
+     T.WebGLRenderer = class extends OriginalRenderer {constructor(options: any) {super(options); const render = this.render; this.render = (scene: any, camera: any) => {captured = scene; return render.call(this, scene, camera);};}};
+     const surface = w.LWProcess3D.create(canvas, view.definition, () => {});
+     try {
+      view.selected = 'discovery'; view.playing = true; surface.draw(view, .01);
+      const actors: any[] = []; captured.traverse((o: any) => {if (o.userData.actor) actors.push(o);});
+      const pose = () => actors[0].userData.hands[0].rotation.x;
+      const first = pose(); surface.draw(view, .1); const moving = pose();
+      view.playing = false; surface.draw(view, .1); const paused = pose(); surface.draw(view, .1);
+      return {actors: actors.length, moved: first !== moving, frozen: moving === paused && paused === pose(), unchanged: before === JSON.stringify(w.LWProcessStudio.query().snapshot)};
+     } finally {surface.dispose(); canvas.remove(); T.WebGLRenderer = OriginalRenderer;}
+    });
+   };
+   assert.deepEqual(await exercise(false), {actors: 1, moved: true, frozen: true, unchanged: true});
+   assert.deepEqual(await exercise(true), {actors: 1, moved: false, frozen: true, unchanged: true});
+   await page.emulateMedia({reducedMotion: 'no-preference'});
+  });
   await check('Keyboard scene selection retains focus across detached view refreshes', async () => {
    await page.locator('[data-step="discovery"]').focus(); await page.keyboard.press('Enter');
    assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.step), 'discovery');
@@ -44,7 +85,7 @@ async function main(): Promise<void> {
    await page.locator('#overview').click();
   });
   await check('Run and pause controls advance only the owned process clock', async () => {
-   const before = (await query(page)).snapshot.minute; await page.locator('#play').click();
+   await page.locator('#reset').click(); const before = (await query(page)).snapshot.minute; await page.locator('#play').click();
    await page.waitForFunction(minute => (globalThis as unknown as {LWProcessStudio: {query(): {snapshot: {minute: number}}}}).LWProcessStudio.query().snapshot.minute > minute, before);
    await page.locator('#play').click(); assert.equal((await query(page)).playing, false);
    await page.locator('#step').click(); assert.equal((await query(page)).playing, false);
@@ -73,7 +114,7 @@ async function main(): Promise<void> {
   });
   await check('Downloaded self-contained HTML reopens offline with the edited definition and no requests', async () => {
    const pending = page.waitForEvent('download'); await page.locator('#html').click(); const download = await pending, exported = path.join(dir, 'exported.html'); await download.saveAs(exported);
-   const other = await context.newPage(); await other.goto(pathToFileURL(exported).href); await waitForReady(other, {host: 'process'});
+   const other = await context.newPage(); await openArtifact(other, exported, {url: fixtureUrls[1]!}); await waitForReady(other, {host: 'process'});
    assert.deepEqual((await query(other)).definition, (await query(page)).definition); assert.equal((await query(other)).snapshot.minute, 0);
    assert.equal(await other.locator('#process-title').count(), 1); await other.close(); assert.deepEqual(diagnostics.requests, []);
   });
@@ -82,15 +123,18 @@ async function main(): Promise<void> {
    await page.locator('#file').setInputFiles({name: 'text.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(d))});
    await page.waitForFunction(() => document.getElementById('process-title')!.textContent!.startsWith('</script>'));
    assert.equal(await page.locator('img').count(), 0); const pending = page.waitForEvent('download'); await page.locator('#html').click(); const download = await pending, escaped = path.join(dir, 'escaped.html'); await download.saveAs(escaped);
-   const other = await context.newPage(); await other.goto(pathToFileURL(escaped).href); await waitForReady(other, {host: 'process'}); assert.equal((await query(other)).definition.name, d.name); await other.close();
+   const other = await context.newPage(); await openArtifact(other, escaped, {url: fixtureUrls[2]!}); await waitForReady(other, {host: 'process'}); assert.equal((await query(other)).definition.name, d.name); await other.close();
   });
   await check('Desktop and mobile reflow retain controls without horizontal overflow', async () => {
-   await page.goto(pathToFileURL(file).href); await waitForReady(page, {host: 'process'});
+   await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
+   await page.locator('[data-step="discovery"]').click(); await page.locator('#step').click(); await nextFrames(page);
    await page.screenshot({path: path.join(OUT, 'process-desktop.png'), fullPage: true});
    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
    await page.setViewportSize({width: 390, height: 844}); await page.screenshot({path: path.join(OUT, 'process-mobile.png'), fullPage: true});
    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
    await page.locator('#mode-2d').click(); assert.equal(await page.locator('#map').isVisible(), true);
+   await page.screenshot({path: path.join(OUT, 'process-mobile-2d.png'), fullPage: true});
+   await page.setViewportSize({width: 900, height: 900}); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   });
   await check('Process browser lifecycle emits no runtime errors or network requests', async () => {
    assert.deepEqual(diagnostics.errors, []); assert.deepEqual(diagnostics.requests, []);

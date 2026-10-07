@@ -387,12 +387,12 @@
     "source/process-renderer-2d.ts",
     "source/process-renderer-3d.ts",
     "source/process-ui.ts",
+    "source/process-data-view.ts",
     "source/tools/process-cli.cts",
     "source/tools/process-forge.cts",
     "source/test-process.cts",
-    "source/verification/process-browser.ts"
-    "source/test-support/scene-journeys.cts",
-    "source/test-content-provider.cts"
+    "source/verification/process-browser.ts",
+    "source/test-support/scene-journeys.cts"
   ],
   "include": []
 }

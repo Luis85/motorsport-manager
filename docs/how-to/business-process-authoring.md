@@ -130,7 +130,19 @@ Open the HTML directly. Use **Run simulation**, **Pause**, **Step 1 min**,
 **Step scenes** and **Whole process** change the view without advancing time.
 **Definition editor** offers validation before **Apply draft & reset run**.
 A rejected import retains the previous definition and run.
-**Export run report** downloads observed results. **Download HTML** embeds the
+Use **Inputs & outputs** beneath either view to select a case. **Whole process**
+shows its arrival fields and, after completion, final outputs. Select a task to
+compare its captured inputs with completed outputs; **Visit** lets you inspect
+retained rework visits. Until completion, authored effects are labeled
+**Expected changes**. Waiting work has no captured task inputs yet. Reports
+retain the latest 128 task completions, with an explicit omitted-record count.
+
+In 3D, active work appears as desk actors typing and reviewing screens while
+playback runs. Pause freezes their motion; reduced-motion preferences disable
+it. Additional work uses bounded markers, with counts preserving total activity.
+Focus the canvas to orbit with arrow keys, zoom with +/−, or frame with F.
+
+**Export run report** downloads observed results, including retained task I/O. **Download HTML** embeds the
 active definition and starts a fresh paused run when reopened. There is no
 checkpoint import or automatic browser persistence in v1.
 

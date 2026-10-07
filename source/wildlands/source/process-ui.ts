@@ -3,7 +3,7 @@
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWContentProvider: LWContentProvider.Api; LWProcessApplication: LWProcessApp.Api; LWProcessCatalog: LWProcess.Catalog;
-  LWProcess2D: LWProcess2D.Api; LWProcess3D: LWProcess3D.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
+  LWProcessData: LWProcessData.Api; LWProcess2D: LWProcess2D.Api; LWProcess3D: LWProcess3D.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
  const host = document.getElementById('process-shell'); if (!host) return;
  const pristine = '<!doctype html>\n' + document.documentElement.outerHTML;
  const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
@@ -22,14 +22,15 @@
  <section class="process-stage" aria-label="Simulation viewport"><div class="process-stagebar"><div><h2 id="scene-title">Whole process</h2><p id="scene-subtitle"></p></div>
  <div class="process-view-controls"><button id="mode-2d" aria-pressed="false">2D</button><button id="mode-3d" aria-pressed="true">3D</button><button id="frame">Frame view</button></div></div>
  <div id="viewport"><canvas id="canvas" aria-label="3D process scenes. Use the scene list for keyboard selection." tabindex="0"></canvas><div id="map" hidden></div></div>
- <div class="process-legend"><span><i class="active-dot"></i>Working</span><span><i class="queue-dot"></i>Waiting</span><span id="camera-hint">Drag to orbit · Scroll to zoom</span></div>
- <div id="metrics" class="process-metrics" aria-label="Run metrics"></div></section>
+ <div class="process-legend"><span><i class="active-dot"></i>Working</span><span><i class="queue-dot"></i>Waiting</span><span id="marker-count"></span><span id="camera-hint">Drag to orbit · Scroll to zoom</span></div>
+ <div id="metrics" class="process-metrics" aria-label="Run metrics"></div><section id="process-data" aria-label="Process inputs and outputs"></section></section>
  <aside class="process-inspector" aria-label="Scene inspector"><h2 id="inspector-title">Process overview</h2><div id="inspector"></div><h3>Shared resources</h3><div id="pools"></div><button id="report">Export run report</button></aside></div>
  <section class="process-bottom"><div class="process-bottom-nav"><button id="show-events" aria-pressed="true">Activity</button><button id="show-definition" aria-pressed="false">Definition editor</button><span>Simulation results depend on authored durations and capacities</span></div>
  <div id="events" class="process-events"></div><div id="editor" hidden><p>Edit the JSON draft, validate, then apply to start a fresh paused run. Export your run report first if you need it.</p><label for="draft">Process definition</label><textarea id="draft" spellcheck="false"></textarea>
  <div class="process-editor-actions"><button id="validate">Validate draft</button><button id="apply">Apply draft & reset run</button><button id="restore-draft">Restore active definition</button></div><pre id="diagnostics" role="status"></pre></div></section>`;
  const get = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
  let view = app.query(), three: LWProcess3D.Surface | null = null, svg = root.LWProcess2D.create(get('map'), id => command(() => app.select(id)));
+ const dataView = root.LWProcessData.create(get('process-data'));
  let last = 0, elapsed = 0, frameId = 0, disposed = false, unavailable = '';
  const status = (message: string, error = false) => {
   get('message').textContent = message + (unavailable && message !== unavailable ? ' ' + unavailable : '');
@@ -39,7 +40,7 @@
   const url = URL.createObjectURL(new Blob([data], {type})), a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
  };
  function rebuild(): void {
-  three?.dispose(); three = null; unavailable = '';
+  three?.dispose(); three = null; unavailable = ''; dataView.reset();
   try {three = root.LWProcess3D.create(get<HTMLCanvasElement>('canvas'), app.query().definition, id => command(() => app.select(id)));}
   catch (e) {unavailable = '3D unavailable in this browser. The complete simulation is available in 2D.'; app.mode('2d'); status(unavailable, true);}
   get<HTMLTextAreaElement>('draft').value = JSON.stringify(app.query().definition, null, 2);
@@ -65,8 +66,11 @@
   get('events').innerHTML = q.events.slice(-25).reverse().map(e => `<div><time>${e.minute} min</time><span>${esc(e.caseId)}</span><strong>${esc(e.kind.replaceAll('-', ' '))}</strong><span>${esc(d.steps.find(s => s.id === e.stepId)?.name ?? e.detail)}</span></div>`).join('') || '<p>No work has arrived yet.</p>';
   get('canvas').hidden = view.mode !== '3d'; get('map').hidden = view.mode !== '2d';
   get('mode-2d').setAttribute('aria-pressed', String(view.mode === '2d')); get('mode-3d').setAttribute('aria-pressed', String(view.mode === '3d'));
-  get<HTMLButtonElement>('mode-3d').disabled = !!unavailable; get<HTMLButtonElement>('frame').disabled = view.mode === '2d';
-  get('camera-hint').textContent = view.mode === '3d' ? 'Drag to orbit · Scroll to zoom' : 'Select a scene on the map';
+  get<HTMLButtonElement>('mode-3d').disabled = !!unavailable; get<HTMLButtonElement>('frame').disabled = view.mode === '2d'; get('frame').title = view.mode === '2d' ? 'The 2D map fits automatically.' : 'Reset camera (F)';
+  get('camera-hint').textContent = view.mode === '3d' ? 'Drag to orbit · Scroll to zoom · Arrows / + − / F' : 'Select a scene on the map';
+  const visibleTokens = q.tokens.filter(t => !selected || t.stepId === selected).length;
+  get('marker-count').textContent = view.mode === '3d' && visibleTokens > 120 ? `Showing 120 of ${visibleTokens} work markers` : '';
+  dataView.draw(view);
   if (view.mode === '2d') svg.draw(view);
   if (focusedStep) get('steps').querySelector<HTMLButtonElement>(`[data-step="${focusedStep}"]`)?.focus({preventScroll: true});
   if (focusedNext) {
@@ -78,7 +82,7 @@
  const on = (id: string, action: () => void) => {get(id).onclick = () => command(action);};
  on('play', () => app.play(!view.playing)); on('step', () => {app.play(false); app.advance(1);});
  on('advance', () => {app.play(false); app.advance(Math.min(30, 100000 - view.snapshot.minute));});
- on('reset', () => {app.reset(); status('Run reset. Definition retained.');});
+ on('reset', () => {app.reset(); dataView.reset(); status('Run reset. Definition retained.');});
  on('overview', () => app.select(null)); on('mode-2d', () => app.mode('2d')); on('mode-3d', () => app.mode('3d')); on('frame', () => three?.frame());
  on('json', () => download(view.definition.id + '.process.json', JSON.stringify(view.definition, null, 2), 'application/json'));
  on('report', () => download(view.definition.id + '.report.json', JSON.stringify({format: 'wildlands-process-report', schemaVersion: 1, fingerprint: root.LWProcessCatalog.fingerprint(view.definition), definition: view.definition, snapshot: view.snapshot}, null, 2), 'application/json'));
