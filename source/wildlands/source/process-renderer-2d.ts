@@ -23,6 +23,7 @@ declare namespace LWProcess2D {
   else if (id === 'archive') g.append(el('path', {d: 'M-.5 -.35 H-.1 L.05 -.2 H.5 V.4 H-.5 Z'}), el('path', {d: 'M-.5 -.05 H.5'}));
   else if (id === 'reception') g.append(el('rect', {x: -.5, y: -.35, width: 1, height: .7, rx: .06}), el('path', {d: 'M-.5 -.35 L0 .05 L.5 -.35'}));
   else if (id === 'dispatch') g.append(el('rect', {x: -.45, y: -.2, width: .6, height: .6}), el('path', {d: 'M.25 .1 H.55 M.45 -.05 L.58 .1 L.45 .25'}));
+  else if (id === 'clock') g.append(el('circle', {cx: 0, cy: 0, r: .42}), el('path', {d: 'M0 -.25 V0 L.2 .12'}));
   else if (id === 'council') g.append(el('circle', {cx: 0, cy: 0, r: .3}), el('path', {d: 'M0 -.5 V-.38 M0 .38 V.5 M-.5 0 H-.38 M.38 0 H.5'}));
   else g.append(el('circle', {cx: 0, cy: 0, r: .12}), el('path', {d: 'M-.5 0 H-.12 M.12 0 H.5 M0 -.5 V-.12 M0 .12 V.5'}));
   return g;
@@ -97,8 +98,8 @@ declare namespace LWProcess2D {
    }
    for (const step of steps) {
     const [x, y] = locations.get(step.id)! as [number, number], metric = q.steps.find(s => s.id === step.id)!;
-    const group = el('g', {id: 'process-map-' + step.id, role: 'button', tabindex: 0, 'aria-label': step.name + ', ' + metric.active + ' active, ' + metric.queued + ' waiting'});
-    const w = selected ? 10 : 8, h = selected ? 7 : 4.8, th = root.LWProcessRooms.theme(step), working = metric.active > 0, waiting = !working && metric.queued > 0;
+    const group = el('g', {id: 'process-map-' + step.id, role: 'button', tabindex: 0, 'aria-label': step.name + ', ' + metric.active + ' active, ' + metric.queued + ' waiting' + (metric.timers.waiting ? ', ' + metric.timers.waiting + ' on timer, next due minute ' + metric.timers.nextDue : '')});
+    const w = selected ? 10 : 8, h = selected ? 7 : 4.8, th = root.LWProcessRooms.theme(step), timing = metric.timers.waiting > 0, working = metric.active > 0, waiting = !working && (metric.queued > 0 || timing);
     group.append(el('rect', {x: x - w / 2, y: y - h / 2, width: w, height: h, rx: .3, fill: working ? '#222c37' : '#181e26', stroke: working ? th.accent : step.scene.color, 'stroke-width': working ? .18 : .1, 'stroke-dasharray': working || waiting ? '' : '.5 .3', opacity: working || waiting ? 1 : .8}));
     const title = el('text', {x, y: y - h / 2 + .85, fill: '#edf2f7', 'font-size': .67, 'text-anchor': 'middle'}, step.name);
     if (step.name.length > 22) {title.setAttribute('textLength', String(w - .8)); title.setAttribute('lengthAdjust', 'spacingAndGlyphs');}
@@ -106,11 +107,11 @@ declare namespace LWProcess2D {
     const progress = working ? Math.max(0, Math.min(1, q.tokens.filter(t => t.stepId === step.id && t.status === 'active').reduce((n, t) => n + 1 - t.remaining / (step.duration || 1), 0) / metric.active)) : 0;
     group.append(el('rect', {x: x - w / 2 + .3, y: y + h / 2 - .35, width: w - .6, height: .08, fill: '#364150'}), el('rect', {x: x - w / 2 + .3, y: y + h / 2 - .35, width: (w - .6) * progress, height: .08, fill: th.accent}));
     group.append(glyph(th.id, x - w / 2 + .9, y + h / 2 - 1, selected ? 1.3 : .85, working ? th.accent : '#6a7684', progress));
-    group.append(el('text', {x: x - w / 2 + (selected ? 1.8 : 1.5), y: y + h / 2 - .85, fill: working ? '#edf2f7' : '#8a97a8', 'font-size': .46}, working ? th.task : waiting ? 'Waiting to start' : 'Idle · standby'), el('title', {}, th.label));
-    group.append(el('text', {x, y: y - h / 2 + 1.55, fill: '#b1bdcd', 'font-size': .48, 'text-anchor': 'middle'}, `${step.kind} · ${step.duration ?? 0} min · ${metric.completed} completed`));
+    group.append(el('text', {x: x - w / 2 + (selected ? 1.8 : 1.5), y: y + h / 2 - .85, fill: working ? '#edf2f7' : '#8a97a8', 'font-size': .46}, working ? th.task : timing ? 'Waiting on timer' : waiting ? 'Waiting to start' : 'Idle · standby'), el('title', {}, th.label));
+    group.append(el('text', {x, y: y - h / 2 + 1.55, fill: '#b1bdcd', 'font-size': .48, 'text-anchor': 'middle'}, `${step.kind} · ${step.kind === 'timer' ? (step.until !== undefined ? 'until minute ' + step.until : (step.duration ?? 0) + ' min') : (step.duration ?? 0) + ' min'} · ${metric.completed} completed`));
     const work = q.tokens.filter(t => t.stepId === step.id);
     if (selected) {
-     group.append(el('text', {x, y: y - .65, fill: '#ffbb73', 'font-size': .48, 'text-anchor': 'middle'}, `${metric.active} working · ${metric.queued} waiting`));
+     group.append(el('text', {x, y: y - .65, fill: '#ffbb73', 'font-size': .48, 'text-anchor': 'middle'}, `${metric.active} working · ${metric.queued} waiting` + (metric.timers.waiting ? ` · ${metric.timers.waiting} on timer, next due ${metric.timers.nextDue}` : '')));
      const active = work.filter(t => t.status === 'active');
      if (active.length) {
       const duration = step.duration, progress = duration ? Math.max(0, Math.min(1, active.reduce((n, t) => n + 1 - t.remaining / duration, 0) / active.length)) : 0;
@@ -118,7 +119,7 @@ declare namespace LWProcess2D {
       group.append(el('rect', {x: x - 4, y: y - .35, width: 8 * progress, height: .07, fill: '#ffbb73'}));
      }
     }
-    for (const [i, t] of work.slice(0, selected ? 40 : 8).entries()) group.append(el('circle', {cx: x - (selected ? 4 : 3) + (i % (selected ? 10 : 8)) * .8, cy: y + .65 + Math.floor(i / 10) * .6, r: .2, fill: t.status === 'active' ? '#ffbb73' : t.status === 'held' ? '#e07a7a' : t.status === 'backlog' ? '#b79ad6' : '#91b9d5'}));
+    for (const [i, t] of work.slice(0, selected ? 40 : 8).entries()) group.append(el('circle', {cx: x - (selected ? 4 : 3) + (i % (selected ? 10 : 8)) * .8, cy: y + .65 + Math.floor(i / 10) * .6, r: .2, fill: t.status === 'active' ? '#ffbb73' : t.status === 'held' ? '#e07a7a' : t.status === 'backlog' ? '#b79ad6' : t.status === 'timer' ? '#d9c58a' : '#91b9d5'}));
     if (work.length > (selected ? 40 : 8)) group.append(el('text', {x: x + 3.1, y: y + 1.4, fill: '#edf2f7', 'font-size': .5}, '+' + (work.length - (selected ? 40 : 8))));
     if (step.backlog) {
      const stored = work.filter(t => t.status === 'backlog' || step.kind === 'task' && t.status === 'queued').length, slots = Math.min(step.backlog.capacity, 8), filled = stored ? Math.max(1, Math.round(stored / step.backlog.capacity * slots)) : 0;

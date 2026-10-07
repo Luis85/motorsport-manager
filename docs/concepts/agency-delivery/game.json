@@ -9,11 +9,14 @@
     "api": 1
   },
   "content": {
-    "definition": "content/agency.process.json"
+    "definitions": [
+      "content/agency.process.json",
+      "content/agile-vendor.process.json"
+    ]
   },
   "presentation": {
     "title": "Agency delivery lab",
-    "description": "Explore an agency delivery process in 2D and 3D with shared resources, parallel design and rework.",
+    "description": "Explore two synthetic delivery processes in 2D and 3D and switch between them: the in-house agency pipeline with shared resources, parallel design and rework, and an agile vendor pipeline.",
     "accent": "#ffbb73"
   },
   "storage": {

@@ -397,6 +397,7 @@
     "source/tools/process-cli.cts",
     "source/tools/process-forge.cts",
     "source/test-process.cts",
+    "source/test-process-bpmn.cts",
     "source/verification/process-browser.ts",
     "source/test-support/scene-journeys.cts"
   ],

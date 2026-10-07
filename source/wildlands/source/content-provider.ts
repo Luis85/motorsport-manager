@@ -8,7 +8,7 @@
  type Profile=LWContentProvider.Profile;
  type Plain=Record<string,unknown>;
  interface Root {
-  LWContentProvider?:LWContentProvider.Api;LWProcessDefinition?:unknown;
+  LWContentProvider?:LWContentProvider.Api;LWProcessDefinition?:unknown;LWProcessDefinitions?:unknown;
   LWGameProfile?:unknown;LWDefaultBalancing?:unknown;LWContentSchema?:unknown;
   LWCreatureConfig?:unknown;LWCreatureDefinitions?:unknown;LWCreatureEditorFieldDefinitions?:unknown;
   LWAssetDefinitions?:unknown;LWScenarioPacks?:unknown;LWRTSDefinitions?:unknown;LWPetDefinitions?:unknown;LWPetAssetDefinitions?:unknown;
@@ -16,7 +16,7 @@
  const self=inputRoot as Root;
  const node=typeof module!=='undefined'&&module.exports;
  const VERSION=1 as const,FORMAT='wildlands-content-profile' as const,ID=/^[a-z][a-z0-9-]{0,63}$/,MAX_PACKS=256;
- const SECTIONS:readonly LWContentProvider.Section[]=Object.freeze(['storage','balancing','librarySchema','creatures','assets','scenarios','rts','pet','process'] as const);
+ const SECTIONS:readonly LWContentProvider.Section[]=Object.freeze(['storage','balancing','librarySchema','creatures','assets','scenarios','rts','pet','process','processes'] as const);
  const NESTED:Readonly<Record<string,readonly string[]>>={creatures:['configuration','definitions','editorFields'],pet:['definitions','assets'],scenarios:['packs','defaultId','canonicalId']};
  const fail=(message:string):never=>{throw Error('Content profile: '+message);};
  const plain=(value:unknown):value is Plain=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
@@ -75,8 +75,8 @@
  function fromGlobals(root:Root):Profile|null{
   const game=root.LWGameProfile,balancing=root.LWDefaultBalancing,librarySchema=root.LWContentSchema;
   const configuration=root.LWCreatureConfig,definitions=root.LWCreatureDefinitions,editorFields=root.LWCreatureEditorFieldDefinitions;
-  const process=root.LWProcessDefinition,assets=root.LWAssetDefinitions,packs=root.LWScenarioPacks,rts=root.LWRTSDefinitions,pet=root.LWPetDefinitions,petAssets=root.LWPetAssetDefinitions;
-  if([process,game,balancing,librarySchema,configuration,definitions,editorFields,assets,packs,rts,pet,petAssets].every(value=>value===undefined))return null;
+  const process=root.LWProcessDefinition,processes=root.LWProcessDefinitions,assets=root.LWAssetDefinitions,packs=root.LWScenarioPacks,rts=root.LWRTSDefinitions,pet=root.LWPetDefinitions,petAssets=root.LWPetAssetDefinitions;
+  if([process,processes,game,balancing,librarySchema,configuration,definitions,editorFields,assets,packs,rts,pet,petAssets].every(value=>value===undefined))return null;
   const storage=plain(game)&&Object.hasOwn(game,'storage')?game.storage as {namespace:string}:undefined;
   const namespace=plain(storage)&&typeof storage.namespace==='string'?storage.namespace.split('.').pop()??'':'';
   const defined=<T extends Plain>(record:T):Partial<T>=>Object.fromEntries(Object.entries(record).filter(([,value])=>value!==undefined)) as Partial<T>;
@@ -84,7 +84,7 @@
   const scenarios=typeof first==='string'?{packs:packs as unknown[],defaultId:first,...(packs as unknown[]).some(pack=>plain(pack)&&pack.id==='littlewild')?{canonicalId:'littlewild'}:{}}:undefined;
   const creatures=defined({configuration,definitions,editorFields}),petContent=defined({definitions:pet,assets:petAssets});
   return admit({format:FORMAT,version:VERSION,id:ID.test(namespace)?namespace:'embedded',
-   ...defined({storage,balancing,librarySchema,assets,scenarios,rts,process}),
+   ...defined({storage,balancing,librarySchema,assets,scenarios,rts,process,processes}),
    ...Object.keys(creatures).length?{creatures}:{},...Object.keys(petContent).length?{pet:petContent}:{}});
  }
  /** Run `listener` now when a game is installed, otherwise synchronously when one is installed; with `section`, only when the game declares it. */

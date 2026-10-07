@@ -20,6 +20,7 @@ declare namespace LWProcessRooms {
   start: T('reception', 'Reception', '#2f4157', '#3b536c', '#91b9d5', 'Receiving requests'), end: T('dispatch', 'Dispatch dock', '#38404a', '#4a5563', '#8fc9a2', 'Delivering results'),
   decision: T('council', 'Decision room', '#3f3a33', '#574d41', '#e6c06e', 'Deliberating'), fork: T('junction', 'Junction', '#2b3a46', '#35495a', '#c79871', 'Routing work'),
   join: T('junction', 'Junction', '#2b3a46', '#35495a', '#c79871', 'Merging work'),
+  timer: T('clock', 'Waiting room', '#33384a', '#434a62', '#d9c58a', 'Waiting for the due minute'),
  };
  const BACKLOG_THEME = T('backlog', 'Backlog room', '#33405a', '#46527a', '#9db4ff', 'Holding ready work');
  function theme(step: LWProcess.Step): LWProcessRooms.Theme {
@@ -118,6 +119,13 @@ declare namespace LWProcessRooms {
    const card = c.P(c.live, 'box', 0, .6, -1.4, .5, .08, .36, '#e7edff');
    c.swing(t => {const u = (t * .3) % 1; card.position.x = 1.7 + u * 3; card.position.y = .6 + Math.sin(u * Math.PI) * .12;});
    c.P(c.idle, 'box', 3.2, .55, -1.4, 3.1, .45, 1.1, '#5b6585');
+  },
+  clock(c) {
+   c.P(c.live.parent, 'box', 0, 1.8, -3.9, 2.4, 2.4, .14, '#4a516b'); c.P(c.live.parent, 'cylinder', 0, 1.8, -3.78, 1, .08, 1, '#efe8d2').rotation.x = Math.PI / 2;
+   const hand = c.P(c.live, 'box', 0, 2.2, -3.7, .08, .8, .05, '#3a3f52'), sand = c.glow(c.P(c.live.parent, 'cone', 2.2, .9, -1.6, .5, .9, .5, '#d9c58a'), '#d9c58a', '#a38f45', .7);
+   c.P(c.live.parent, 'box', 2.2, .3, -1.6, 1, .1, 1, '#6b5f42'); c.P(c.live.parent, 'box', 2.2, 1.55, -1.6, 1, .1, 1, '#6b5f42');
+   c.swing(t => {hand.rotation.z = -t * .6; hand.position.set(Math.sin(t * .6) * .4, 1.8 + Math.cos(t * .6) * .4, -3.7); sand.scale.y = .6 + Math.abs(wave(t, .8)) * .4;});
+   c.P(c.idle, 'box', 0, 1.8, -3.7, .9, .9, .05, '#7b829c');
   },
   junction(c) {
    c.P(c.live.parent, 'cylinder', 0, .35, -.8, .9, .7, .9, '#4b6070');

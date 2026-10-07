@@ -41,7 +41,7 @@
    if (t.status !== 'held') event(s, 'held', t.caseId, t.stepId, 'Backlog of ' + s.steps.get(stepId)!.name + ' is full.');
    t.status = 'held'; t.target = stepId; return;
   }
-  delete t.target; t.stepId = stepId; t.entered = s.clock.minute; t.started = null; t.remaining = 0; t.input = null; t.status = 'routing';
+  delete t.target; delete t.due; t.stepId = stepId; t.entered = s.clock.minute; t.started = null; t.remaining = 0; t.input = null; t.status = 'routing';
   station(s, stepId).visits++;
   event(s, 'entered', t.caseId, stepId);
  }
@@ -59,12 +59,42 @@
    event(s, 'arrived', id, s.definition.start); spawn(s, id, s.definition.start, null, null);
   }
  }
+ const SUM_LIMIT = 1000000000;
+ /** Applies `set` then `add` atomically and records the receipt; returns false after failing the case on an unsafe sum. */
+ function conclude(s: LWProcess.State, t: LWProcess.Token, step: LWProcess.Step, id: string, event_: string, deferred = false): boolean {
+  const c = caseOf(s, t), changes: LWProcess.Fields = {...step.set ?? {}};
+  // The scheduler forbids structural changes while it runs, so clock-driven failures wait for the next settle.
+  const reject = (message: string) => { if (deferred) s.failures.push({caseId: c.id, message}); else fail(s, c, message); return false; };
+  for (const [field, delta] of Object.entries(step.add ?? {})) {
+   const current = Object.hasOwn(changes, field) ? changes[field]! : Object.hasOwn(c.data, field) ? c.data[field]! : 0;
+   if (typeof current !== 'number' || !Number.isInteger(current)) return reject('Step "' + step.name + '" cannot add to ' + field + ' because it holds ' + JSON.stringify(current) + ', not a whole number.');
+   if (Math.abs(current + delta) > SUM_LIMIT) return reject('Step "' + step.name + '" adding ' + delta + ' to ' + field + ' would reach ' + (current + delta) + ', beyond the ' + SUM_LIMIT + ' limit.');
+   changes[field] = current + delta;
+  }
+  Object.assign(c.data, changes); station(s, step.id).completed++;
+  s.receipts.push({id, caseId: c.id, stepId: step.id, started: t.started!, finished: s.clock.minute, input: {...t.input!}, output: {...c.data}, changes});
+  if (s.receipts.length > limits.receipts) {s.receipts.shift(); s.receiptsDropped++;}
+  event(s, event_, c.id, step.id);
+  return true;
+ }
+ /** A timer holds its token without pool capacity or cost until its due minute; an `until` already reached fires at once. */
+ function startTimer(s: LWProcess.State, t: LWProcess.Token, step: LWProcess.Step): void {
+  const due = step.until ?? s.clock.minute + step.duration!;
+  t.input = {...caseOf(s, t).data}; t.started = s.clock.minute; t.remaining = 0;
+  event(s, 'timer-started', t.caseId, step.id, 'due ' + due);
+  if (due <= s.clock.minute) { fireTimer(s, t, step); return; }
+  t.status = 'timer'; t.due = due;
+ }
+ function fireTimer(s: LWProcess.State, t: LWProcess.Token, step: LWProcess.Step, deferred = false): void {
+  if (conclude(s, t, step, t.id + '@' + t.started + ':' + step.id, 'timer-fired', deferred)) enter(s, t, s.outgoing.get(step.id)![0]!.to);
+ }
  function route(s: LWProcess.State, t: LWProcess.Token): void {
   const c = caseOf(s, t), step = s.steps.get(t.stepId)!, out = s.outgoing.get(step.id)!;
   if (++c.transitions > limits.transitions) { fail(s, c, 'Case exceeded ' + limits.transitions + ' step transitions.'); return; }
   // A join merges branch tokens, so its needs are checked once at the merge instead of at each arrival.
   const missing = step.kind === 'join' ? undefined : unmet(s, c, step); if (missing) { failNeed(s, c, step, missing); return; }
   if (step.kind === 'task') { t.status = 'queued'; return; }
+  if (step.kind === 'timer') { startTimer(s, t, step); return; }
   if (step.kind === 'end') {
    station(s, step.id).completed++; s.world.destroy(t.id);
    if (tokens(s).some(other => other.caseId === c.id)) { fail(s, c, 'End reached with outstanding work.'); return; }
@@ -138,6 +168,7 @@
   return started;
  }
  function settle(s: LWProcess.State): void {
+  for (const f of s.failures.splice(0)) { const c = s.world.get<LWProcess.Case>(f.caseId, 'process-case')!; if (c.status === 'active') fail(s, c, f.message); }
   // Control-only cycles cannot monopolize a browser frame: each case has a transition budget.
   while (true) {
    const pending = tokens(s).filter(t => t.status === 'routing');
@@ -155,16 +186,15 @@
   const completed: LWProcess.Token[] = [];
   for (const t of tokens(s)) if (t.status === 'active') { t.remaining--; if (t.remaining === 0) completed.push(t); }
   // Release all simultaneous completions before admitting the next set of tasks.
-  completed.forEach(t => release(s, t));
+  completed.forEach(t => { release(s, t); t.status = 'routing'; });
+  const live = (t: LWProcess.Token) => caseOf(s, t).status === 'active' && !s.failures.some(f => f.caseId === t.caseId);
   for (const t of completed) {
-   const step = s.steps.get(t.stepId)!, c = caseOf(s, t);
-   Object.assign(c.data, step.set ?? {}); station(s, step.id).completed++;
-   s.receipts.push({id: t.id + '@' + t.started, caseId: c.id, stepId: step.id, started: t.started!, finished: s.clock.minute,
-    input: {...t.input!}, output: {...c.data}, changes: {...step.set ?? {}}});
-   if (s.receipts.length > limits.receipts) {s.receipts.shift(); s.receiptsDropped++;}
-   event(s, 'finished-task', c.id, step.id);
-   enter(s, t, s.outgoing.get(step.id)![0]!.to);
+   if (!live(t)) continue;
+   const step = s.steps.get(t.stepId)!;
+   if (conclude(s, t, step, t.id + '@' + t.started, 'finished-task', true)) enter(s, t, s.outgoing.get(step.id)![0]!.to);
   }
+  const due = tokens(s).filter(t => t.status === 'timer' && t.due! <= s.clock.minute).sort((a, b) => a.due! - b.due! || compare(a.caseId, b.caseId) || compare(a.id, b.id));
+  for (const t of due) if (live(t)) fireTimer(s, t, s.steps.get(t.stepId)!, true);
  }
  root.LWProcessSystems = {settle, work, admit};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessSystems;

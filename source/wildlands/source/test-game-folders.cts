@@ -293,6 +293,52 @@ for (const [id, name, documents, expected] of FOLDERS) test(`${name} folder vali
  assert.deepEqual(validateGame(directory), {ok: true, id, digest: game.digest, errors: []});
 });
 
+test('Process manifests declare exactly one of definition or definitions (1-8 unique paths) in schema and validator alike', () => {
+ const schema = read(path.join(source, 'schemas/game.schema.json')) as Plain, validate = new Ajv2020({strict: true, allErrors: true}).compile(schema);
+ const both = (value: unknown): [boolean, boolean] => [validate(value), manifestErrors(value).length === 0];
+ const agency = read(path.join(gameDirectory('agency-delivery'), 'game.json')) as Plain;
+ const withContent = (content: unknown): Plain => ({...clone(agency), content});
+ const paths = (count: number): string[] => Array.from({length: count}, (_, index) => `content/p${index}.process.json`);
+ for (const content of [{definition: 'content/a.process.json'}, {definitions: paths(1)}, {definitions: paths(8)}]) assert.deepEqual(both(withContent(content)), [true, true], JSON.stringify(content));
+ const rejected: [string, unknown][] = [['both definition and definitions', {definition: 'content/a.process.json', definitions: paths(2)}], ['neither', {}],
+  ['empty list', {definitions: []}], ['nine definitions', {definitions: paths(9)}], ['repeated path', {definitions: ['content/a.process.json', 'content/a.process.json']}],
+  ['non-json path', {definitions: ['content/a.process.js']}], ['parent traversal', {definitions: ['../a.process.json']}], ['definitions as string', {definitions: 'content/a.process.json'}],
+  ['unknown field', {definitions: paths(2), extra: true}]];
+ for (const [name, content] of rejected) assert.deepEqual(both(withContent(content)), [false, false], name);
+ assert.match(manifestErrors(withContent(rejected[0]![1])).join('\n'), /either definition or definitions, not both/);
+ assert.match(manifestErrors(withContent({})).join('\n'), /must declare definition or definitions/);
+});
+
+test('Multi-process game folders inventory and digest every definition, emit LWProcessDefinitions and admit each entry by index', () => {
+ const source = gameDirectory('agency-delivery'), game = compileGame(source), manifest = read(path.join(source, 'game.json')) as Plain & {content: {definitions: string[]}};
+ assert.equal(manifest.content.definitions.length, 2); assert.equal(Object.hasOwn(manifest.content, 'definition'), false);
+ const documents = manifest.content.definitions.map(file => read(path.join(source, file)));
+ assert.deepEqual([...game.data.keys()], ['LWGameProfile', 'LWProcessDefinition', 'LWProcessDefinitions']);
+ assert.deepEqual(game.data.get('LWProcessDefinitions'), documents); assert.deepEqual(game.data.get('LWProcessDefinition'), documents[0]);
+ assert.deepEqual(game.profile.process, documents[0]); assert.deepEqual(game.profile.processes, documents);
+ for (const file of manifest.content.definitions) assert(game.files.some(entry => entry.path === file), file);
+ assert(DATA_GLOBALS.some(([name]) => name === 'LWProcessDefinitions'));
+ assert.deepEqual(validateGame(source), {ok: true, id: 'agency-delivery', digest: game.digest, errors: []});
+ // The digest covers each definition file; an unreferenced extra file and a missing listed file are both rejected.
+ copy(directory => {
+  const second = path.join(directory, manifest.content.definitions[1]!), value = read(second) as Plain;
+  fs.writeFileSync(second, JSON.stringify(value)); assert.notEqual(loadGame(directory).digest, game.digest);
+ }, source, 'agency-delivery');
+ copy(directory => { fs.writeFileSync(path.join(directory, 'content/third.process.json'), '{}'); assert.throws(() => loadGame(directory), /not referenced by game\.json: content\/third\.process\.json/); }, source, 'agency-delivery');
+ copy(directory => { fs.rmSync(path.join(directory, manifest.content.definitions[1]!)); assert.throws(() => loadGame(directory), /names a missing file: content\/agile-vendor\.process\.json/); }, source, 'agency-delivery');
+ // A game with a single `definition` keeps the original projection and declares no list global.
+ copy(directory => {
+  const file = path.join(directory, 'game.json'), value = clone(manifest) as Plain; value.content = {definition: manifest.content.definitions[0]};
+  fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n'); fs.rmSync(path.join(directory, manifest.content.definitions[1]!));
+  const single = compileGame(directory); assert.deepEqual([...single.data.keys()], ['LWGameProfile', 'LWProcessDefinition']); assert.equal(Object.hasOwn(single.profile, 'processes'), false);
+ }, source, 'agency-delivery');
+ // Full admission validates every entry and names the failing index.
+ copy(directory => {
+  const second = path.join(directory, manifest.content.definitions[1]!), value = read(second) as Plain; value.start = 'no-such-step'; fs.writeFileSync(second, JSON.stringify(value));
+  const result = validateGame(directory); assert.equal(result.ok, false); assert.match(result.errors.join('\n'), /Process definition 1 of 2/);
+ }, source, 'agency-delivery');
+});
+
 const report = {suite: 'game-folders', passed: results.filter(result => result.passed).length, total: results.length, results};
 fs.writeFileSync(path.join(__dirname, 'game-folders-results.json'), JSON.stringify(report, null, 2) + '\n');
 console.log(`${report.passed}/${report.total} game folder checks passed`);

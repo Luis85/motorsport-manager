@@ -17,11 +17,13 @@
   color: {type: 'string', pattern: '^#[0-9a-fA-F]{6}$'}, asset: {type: 'object'}}, ['id', 'position', 'color']);
  const fieldName = {type: 'string', pattern: '^[a-z][a-zA-Z0-9_]{0,63}$'};
  const need = object({field: fieldName, op: {enum: ['eq', 'ne', 'gt', 'gte', 'lt', 'lte']}, value: scalar, label: text}, ['field']);
+ // Counter deltas: whole numbers within a million; emptiness and zero are semantic checks in the graph.
+ const counters = {...object({}, [], integer(1000000, -1000000)), maxProperties: 8, propertyNames: fieldName};
  const backlog = object({capacity: integer(limits.cases, 1), order: {enum: ['fifo', 'lifo', 'priority']}, priority: fieldName, pull: integer(limits.cases, 1)}, ['capacity']);
- const step = object({id, name: text, kind: {enum: ['start', 'task', 'decision', 'fork', 'join', 'end']}, scene,
+ const step = object({id, name: text, kind: {enum: ['start', 'task', 'timer', 'decision', 'fork', 'join', 'end']}, scene,
   description: {type: 'string', maxLength: 2000}, duration: integer(limits.minutes, 1), cost: integer(100000000),
-  resources: {...object({}, [], integer(1000, 1)), maxProperties: 32, propertyNames: id}, set: fields, join: id, needs: list(need, 16), backlog}, ['id', 'name', 'kind', 'scene']);
- const condition = object({field: fieldName, op: {enum: ['eq', 'ne', 'gt', 'gte', 'lt', 'lte']}, value: scalar});
+  resources: {...object({}, [], integer(1000, 1)), maxProperties: 32, propertyNames: id}, set: fields, add: counters, until: integer(limits.minutes - 1, 1), join: id, needs: list(need, 16), backlog}, ['id', 'name', 'kind', 'scene']);
+ const condition = object({field: fieldName, op: {enum: ['eq', 'ne', 'gt', 'gte', 'lt', 'lte']}, value: scalar, valueField: fieldName}, ['field', 'op']);
  const flow = object({id, from: id, to: id, label: text, when: condition}, ['id', 'from', 'to']);
  const resource = object({id, name: text, capacity: integer(1000, 1), costPerMinute: integer(100000)});
  const arrival = object({at: integer(limits.minutes), count: integer(limits.cases, 1), interval: integer(limits.minutes), data: fields});

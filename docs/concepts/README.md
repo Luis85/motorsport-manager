@@ -7,7 +7,7 @@ data, not documentation in the Diátaxis sense and not code:
 - `game.json`, the manifest validated against the engine-owned
   [game manifest schema](../../source/wildlands/source/schemas/game.schema.json)
   (format `wildlands-game`, schemaVersion 1): id, name, version, engine template
-  (`colony`, `rts` or `pet`), engine API, optional engine features, content
+  (`colony`, `rts`, `pet` or `process`), engine API, optional engine features, content
   paths, presentation, storage namespace and build targets;
 - the JSON documents and asset definition folders the manifest names;
 - `README.md` (what the game is, how to build and play it, provenance) and,
@@ -74,4 +74,4 @@ for the placement rule and the Wildlands
 [runtime contracts](../../source/wildlands/RUNTIME-CONTRACTS.md) for how a
 folder becomes an installed content profile.
 
-- [Agency delivery lab](agency-delivery/README.md) — process scenes, shared resources, parallel product and technical design, a pull backlog, step needs and QA rework.
+- [Agency delivery lab](agency-delivery/README.md) — two synthetic delivery processes with a process switch: an in-house agency pipeline (shared resources, parallel product and technical design, a pull backlog, step needs, QA rework) and an agile vendor project (milestones, releases, iterations, bounded fix loop).

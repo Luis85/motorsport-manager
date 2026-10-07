@@ -10,7 +10,7 @@ import type {Page} from 'playwright';
 const PROJECT = path.resolve(__dirname, '../..'), OUT = path.join(PROJECT, 'verification/v15');
 const results: {name: string; passed: boolean; error?: string}[] = [];
 async function check(name: string, work: () => Promise<void>): Promise<void> {try {await work(); results.push({name, passed: true});} catch (e) {results.push({name, passed: false, error: String(e)});}}
-async function query(page: Page): Promise<{snapshot: LWProcess.Snapshot; definition: LWProcess.Definition; mode: string; selected: string | null; playing: boolean; horizon: number | null}> {
+async function query(page: Page): Promise<{snapshot: LWProcess.Snapshot; definition: LWProcess.Definition; mode: string; selected: string | null; playing: boolean; horizon: number | null; active: number; processes: {id: string; name: string}[]}> {
  return page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {query(): any}}).LWProcessStudio.query());
 }
 async function main(): Promise<void> {
@@ -18,7 +18,7 @@ async function main(): Promise<void> {
  const file = path.join(dir, 'process.html'), cli = path.join(PROJECT, '.generated/tools/wildlands-cli.cjs');
  const built = spawnSync(process.execPath, [cli, 'build-game', '--game', path.resolve(PROJECT, '../../docs/concepts/agency-delivery'), '--output', file], {encoding: 'utf8', timeout: 300000});
  assert.equal(built.status, 0, built.stderr + built.stdout);
- const fixtureUrls = ['https://localhost/process', 'https://localhost/exported', 'https://localhost/escaped'];
+ const fixtureUrls = ['https://localhost/process', 'https://localhost/exported', 'https://localhost/escaped', 'https://localhost/multi-exported', 'https://localhost/single'];
  const browser = await launchBrowser(), context = await browser.newContext({viewport: {width: 1440, height: 1060}}), diagnostics = monitorContext(context, {fixtureUrls}), page = await context.newPage();
  page.setDefaultTimeout(15000);
  try {
@@ -212,6 +212,148 @@ async function main(): Promise<void> {
    await page.waitForFunction(name => document.getElementById('process-title')!.textContent === name, long.name);
    await page.locator('[data-step]').first().click();
    for (const width of [1440, 900, 390]) {await page.setViewportSize({width, height: 900}); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);}
+  });
+  const switchTo = async (index: number) => {
+   const select = page.locator('#process-switch'); await select.focus(); await select.selectOption(String(index));
+   await page.waitForFunction(i => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === i, index);
+  };
+  const nameOf = (i: number) => page.evaluate(n => (globalThis as unknown as {LWProcessStudio: {definitions(): {name: string}[]}}).LWProcessStudio.definitions()[n]!.name, i);
+  const applyDraft = async (change: (d: LWProcess.Definition) => void) => {
+   await page.locator('#show-definition').click(); const d = JSON.parse(await page.locator('#draft').inputValue()) as LWProcess.Definition; change(d);
+   await page.locator('#draft').fill(JSON.stringify(d)); await page.locator('#apply').click(); await page.locator('#show-events').click();
+  };
+  await check('Process switch lists each process of a multi-process game, switches without ticking and stays hidden for one process', async () => {
+   await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
+   const first = await query(page); assert.equal(first.active, 0); assert.equal(first.processes.length, 2);
+   assert.equal(await page.locator('#process-switch-label').isVisible(), true); assert.match(await page.locator('#process-switch-label').innerText(), /^Process/);
+   assert.equal(await page.evaluate(() => (document.getElementById('process-switch') as HTMLSelectElement).labels![0]!.id), 'process-switch-label');
+   assert.equal(await page.locator('#process-switch option').count(), 2); assert.equal(await page.locator('#process-switch').inputValue(), '0');
+   assert.deepEqual(await page.locator('#process-switch option').allInnerTexts(), first.processes.map(p => p.name));
+   assert.match(await page.locator('#process-subtitle').innerText(), /Process 1 of 2/);
+   assert.equal(await page.locator('#process-title').innerText(), first.definition.name); assert.equal(await page.locator('[data-step]').count(), first.definition.steps.length);
+   await page.locator('#mode-2d').click(); await page.locator('#horizon').selectOption('1440'); await page.locator('#advance').click(); await page.locator('[data-step="discovery"]').click();
+   assert.equal((await query(page)).snapshot.minute, 30);
+   await page.locator('#play').click(); await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {snapshot: {minute: number}}}}).LWProcessStudio.query().snapshot.minute > 30);
+   await page.locator('#process-switch').focus(); await page.keyboard.press('ArrowDown');
+   await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === 1);
+   const second = await query(page); await nextFrames(page);
+   assert.equal(second.processes[1]!.name, second.definition.name); assert.notEqual(second.definition.id, first.definition.id);
+   assert.equal(second.snapshot.minute, 0); assert.equal(second.playing, false); assert.equal(second.selected, null); assert.equal(second.mode, '2d'); assert.equal(second.horizon, 1440);
+   assert.equal((await query(page)).snapshot.minute, 0, 'Switching never ticks the new session');
+   assert.equal(await page.locator('#process-title').innerText(), second.definition.name); assert.equal(await page.locator('[data-step]').count(), second.definition.steps.length);
+   assert.notEqual(second.definition.steps.length, first.definition.steps.length);
+   assert.equal(await page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {definition(): {id: string}}}).LWProcessStudio.definition().id), second.definition.id);
+   assert.equal(await page.evaluate(() => document.activeElement?.id), 'process-switch');
+   assert.equal(await page.locator('#message').innerText(), `Switched to ${second.definition.name}. Paused at minute 0.`);
+   assert.equal(await page.locator('#map svg').count(), 1); assert.match(await page.locator('#process-subtitle').innerText(), /Process 2 of 2/);
+   assert.match(await page.locator('#process-data').innerText(), /Process inputs/);
+   // A one-process game has no switch.
+   const single = path.join(dir, 'single', 'agency-delivery'), singleHtml = path.join(dir, 'single.html'), source = path.resolve(PROJECT, '../../docs/concepts/agency-delivery');
+   fs.cpSync(source, single, {recursive: true}); fs.rmSync(path.join(single, 'content/agile-vendor.process.json'));
+   const manifest = JSON.parse(fs.readFileSync(path.join(single, 'game.json'), 'utf8')); manifest.content = {definition: 'content/agency.process.json'}; fs.writeFileSync(path.join(single, 'game.json'), JSON.stringify(manifest, null, 2) + '\n');
+   const made = spawnSync(process.execPath, [cli, 'build-game', '--game', single, '--output', singleHtml], {encoding: 'utf8', timeout: 300000}); assert.equal(made.status, 0, made.stderr + made.stdout);
+   const other = await context.newPage(); await openArtifact(other, singleHtml, {url: fixtureUrls[4]!}); await waitForReady(other, {host: 'process'});
+   assert.equal(await other.locator('#process-switch-label').isVisible(), false); assert.equal(await other.locator('#process-subtitle').innerText(), 'Wildlands · Process Studio');
+   assert.equal((await query(other)).processes.length, 1); await other.close();
+  });
+  await check('Editing one process survives switching away and back with its applied definition and unapplied draft', async () => {
+   await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
+   const original = [await nameOf(0), await nameOf(1)], before = await query(page);
+   await applyDraft(d => {d.name = 'Edited agency';}); assert.equal((await query(page)).definition.revision, before.definition.revision + 1);
+   await page.locator('#show-definition').click(); const raw = '{\n  "unfinished":'; await page.locator('#draft').fill(raw);
+   await switchTo(1); assert.equal(await page.locator('#process-title').innerText(), original[1]); assert.match(await page.locator('#draft-state').innerText(), /matches the active definition/);
+   assert.equal(await page.locator('#process-switch option').first().innerText(), 'Edited agency'); assert.equal(await nameOf(0), 'Edited agency'); assert.equal((await query(page)).snapshot.minute, 0);
+   // Import replaces only the active process, in place.
+   const vendor = (await query(page)).definition; vendor.name = 'Imported vendor';
+   await page.locator('#file').setInputFiles({name: 'vendor.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(vendor))});
+   await page.waitForFunction(() => document.getElementById('message')!.textContent!.includes('Imported vendor.json'));
+   assert.deepEqual(await page.locator('#process-switch option').allInnerTexts(), ['Edited agency', 'Imported vendor']); assert.equal((await query(page)).active, 1);
+   await switchTo(0); assert.equal(await page.locator('#process-title').innerText(), 'Edited agency'); assert.equal((await query(page)).definition.revision, before.definition.revision + 1);
+   assert.equal(await page.locator('#draft').inputValue(), raw); assert.match(await page.locator('#draft-state').innerText(), /Unapplied draft/);
+   assert.equal((await query(page)).snapshot.minute, 0); assert.equal((await query(page)).playing, false);
+   await page.locator('#show-events').click();
+  });
+  await check('Downloaded HTML of a multi-process game reopens with every process in order and the applied edits', async () => {
+   await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
+   const names = [await nameOf(0), await nameOf(1)]; await switchTo(1); await applyDraft(d => {d.name = 'Edited vendor';});
+   const pending = page.waitForEvent('download'); await page.locator('#html').click(); const download = await pending, exported = path.join(dir, 'multi-exported.html'); await download.saveAs(exported);
+   const text = fs.readFileSync(exported, 'utf8'); assert.equal(download.suggestedFilename(), 'wildlands-processes.html');
+   assert.equal((text.match(/^window\.LWProcessDefinition = /gm) ?? []).length, 1); assert.equal((text.match(/^window\.LWProcessDefinitions = /gm) ?? []).length, 1);
+   const other = await context.newPage(); await openArtifact(other, exported, {url: fixtureUrls[3]!}); await waitForReady(other, {host: 'process'});
+   const reopened = await query(other); assert.deepEqual(reopened.processes.map(p => p.name), [names[0], 'Edited vendor']); assert.equal(reopened.active, 0); assert.equal(reopened.snapshot.minute, 0);
+   assert.equal(reopened.definition.name, names[0]); assert.equal(await other.locator('#process-switch option').count(), 2);
+   const listed = await other.evaluate(() => (globalThis as unknown as {LWProcessStudio: {definitions(): LWProcess.Definition[]}}).LWProcessStudio.definitions());
+   assert.deepEqual(listed, await page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {definitions(): LWProcess.Definition[]}}).LWProcessStudio.definitions()));
+   await other.locator('#process-switch').selectOption('1'); await other.waitForFunction(() => document.getElementById('process-title')!.textContent === 'Edited vendor');
+   assert.equal((await query(other)).snapshot.minute, 0); await other.close(); assert.deepEqual(diagnostics.requests, []);
+  });
+  await check('Process switch reflows at phone width without horizontal overflow and wraps long names', async () => {
+   await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
+   await switchTo(1); await applyDraft(d => {d.name = 'LongProcessName'.repeat(8);});
+   for (const width of [390, 900, 1440]) {
+    await page.setViewportSize({width, height: 900}); await nextFrames(page);
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, 'width ' + width);
+    const box = (await page.locator('#process-switch').boundingBox())!; assert(box.x >= 0 && box.x + box.width <= width, 'switch inside viewport at ' + width);
+    assert.equal(await page.locator('#process-switch-label').isVisible(), true);
+   }
+   await page.setViewportSize({width: 390, height: 844}); await page.screenshot({path: path.join(OUT, 'process-switch-mobile.png'), fullPage: true});
+   await switchTo(0); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+   await page.setViewportSize({width: 1440, height: 1060});
+  });
+  const timerFixture = (d: LWProcess.Definition) => {
+   const scene = (id: string, x: number) => ({id: 'scene-' + id, position: [x, 0] as [number, number], color: '#91b9d5'});
+   Object.assign(d, {id: 'timer-fixture', name: 'Timer fixture', description: 'Counter loop task, a duration timer, an until timer and an end.', start: 'begin', resources: [], arrivals: [{at: 0, count: 1, interval: 0, data: {}}],
+    steps: [{id: 'begin', name: 'Begin', kind: 'start', scene: scene('begin', 0)}, {id: 'loop', name: 'Count a pass', kind: 'task', duration: 5, add: {iteration: 1}, scene: scene('loop', 14)},
+     {id: 'wait', name: 'Wait for review window', kind: 'timer', duration: 30, add: {waits: 1}, scene: scene('wait', 28)}, {id: 'until', name: 'Hold until contract date', kind: 'timer', until: 200, scene: scene('until', 42)}, {id: 'finish', name: 'Finish', kind: 'end', scene: scene('finish', 56)}],
+    flows: [{id: 'f1', from: 'begin', to: 'loop'}, {id: 'f2', from: 'loop', to: 'wait'}, {id: 'f3', from: 'wait', to: 'until'}, {id: 'f4', from: 'until', to: 'finish'}]});
+  };
+  await check('Timer steps render in 2D and 3D with due minutes, never crash and never read as blocked', async () => {
+   await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
+   await applyDraft(timerFixture); const loaded = await query(page); assert.equal(loaded.definition.id, 'timer-fixture');
+   await page.locator('#horizon').selectOption('1440').catch(() => undefined);
+   for (let i = 0; i < 40 && !(await query(page)).snapshot.tokens.some(t => t.status === 'timer'); i++) await page.locator('#step').click();
+   let q = await query(page), token = q.snapshot.tokens.find(t => t.status === 'timer')!; assert(token, 'a timer token is pending'); assert.equal(token.stepId, 'wait'); assert.equal(typeof token.due, 'number');
+   const metric = q.snapshot.steps.find(s => s.id === 'wait')!; assert.deepEqual(metric.timers, {waiting: 1, nextDue: token.due}); assert.equal(metric.queued, 0); assert.equal(metric.active, 0);
+   assert.notEqual(q.snapshot.status, 'blocked'); assert.doesNotMatch(await page.locator('#run-status').innerText(), /Blocked/);
+   assert.match(await page.locator('.process-legend').innerText(), /Timer/);
+   assert.match(await page.locator('[data-step="wait"]').innerText(), /1 on timer/);
+   const before = q.snapshot;
+   await page.locator('#mode-2d').click();
+   const group = page.locator('#process-map-wait'); assert.match(await group.getAttribute('aria-label') ?? '', new RegExp(`1 on timer, next due minute ${token.due}`));
+   const textOf = (id: string) => page.evaluate(i => document.getElementById(i)!.textContent ?? '', id);
+   assert.match(await textOf('process-map-wait'), /Waiting on timer/); assert.match(await textOf('process-map-wait'), /timer · 30 min/);
+   assert.match(await textOf('process-map-until'), /until minute 200/);
+   await page.locator('[data-step="wait"]').click();
+   assert.match(await page.locator('#map svg').textContent() ?? '', new RegExp(`1 on timer, next due ${token.due}`));
+   assert.match(await page.locator('#inspector').innerText(), new RegExp(`Waiting on timer · 1 waiting, next due minute ${token.due}`));
+   assert.match(await page.locator('#inspector').innerText(), /Wait 30 min/);
+   assert.match(await page.locator('#process-data').innerText(), new RegExp(`Waiting on timer · due minute ${token.due}`));
+   await page.locator('#mode-3d').click(); await nextFrames(page); await page.locator('#overview').click(); await nextFrames(page);
+   await page.locator('[data-step="until"]').click(); assert.match(await page.locator('#inspector').innerText(), /Until minute 200/);
+   await page.locator('[data-step="wait"]').click(); await nextFrames(page);
+   const kinds = await page.evaluate(() => (globalThis as any).LWProcessRooms.theme({id: 'x', kind: 'timer'}).id); assert.equal(kinds, 'clock');
+   assert.deepEqual((await query(page)).snapshot, before); assert.equal((await query(page)).playing, false);
+   await page.locator('#mode-2d').click(); await page.locator('#overview').click(); assert.match(await page.locator('#events').innerText(), /timer started/);
+   await page.setViewportSize({width: 390, height: 844}); await nextFrames(page);
+   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false); await page.screenshot({path: path.join(OUT, 'process-timer-mobile.png'), fullPage: true});
+   await page.setViewportSize({width: 1440, height: 1060});
+  });
+  await check('Counter effects and timer receipts appear in Inputs and outputs and the inspector', async () => {
+   await page.locator('#reset').click(); await page.locator('#step').click(); await page.locator('[data-step="loop"]').click();
+   assert.match(await page.locator('#process-data').innerText(), /\+1 to iteration/); assert.match(await page.locator('#process-data').innerText(), /Current counters: iteration = 0/);
+   assert.match(await page.locator('#inspector').innerText(), /\+1 to iteration \(counter\)/);
+   for (let i = 0; i < 80 && (await query(page)).snapshot.status !== 'completed'; i++) { if (await page.locator('#advance').isDisabled()) break; await page.locator('#advance').click(); }
+   const done = (await query(page)).snapshot; assert.equal(done.status, 'completed'); assert.equal(done.cases[0]!.data.iteration, 1); assert.equal(done.cases[0]!.data.waits, 1);
+   const receipt = done.receipts.find(r => r.stepId === 'wait')!; assert.match(receipt.id, /:wait$/); assert.deepEqual(receipt.changes, {waits: 1});
+   await page.locator('[data-step="loop"]').click(); assert.match(await page.locator('#process-data').innerText(), /Step outputs/); assert.match(await page.locator('#process-data').innerText(), /iteration/);
+   await page.locator('[data-step="wait"]').click(); const text = await page.locator('#process-data').innerText();
+   assert.match(text, /Completed · \d+–\d+ min/); assert.match(text, /Step inputs/); assert.match(text, /waits/); assert.equal(await page.locator('#process-visit option').count(), 2);
+   await page.locator('#process-written-toggle').click(); assert.match(await page.locator('.process-written').innerText(), /waits/);
+   await page.locator('[data-step="until"]').click(); assert.match(await page.locator('#process-data').innerText(), /Completed · \d+–\d+ min/);
+   await page.locator('#show-definition').click(); await page.locator('[data-step="wait"]').click();
+   await page.locator('#tuning summary', {hasText: 'Wait for review window'}).click(); assert.equal(await page.locator('#tune-step-dur-2').inputValue(), '30');
+   assert.equal(await page.locator('#tune-step-add-2-0').inputValue(), '1'); assert.equal(await page.locator('#tune-step-cost-2').count(), 0);
+   await page.locator('#show-events').click();
   });
   await check('Process browser lifecycle emits no runtime errors or network requests', async () => {
    assert.deepEqual(diagnostics.errors, []); assert.deepEqual(diagnostics.requests, []);

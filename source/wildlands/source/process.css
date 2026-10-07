@@ -109,5 +109,13 @@
 #map svg { cursor:grab; touch-action:none; } #map svg.panning { cursor:grabbing; }
 #tuning fieldset, #tuning details { margin:0 0 10px; border:1px solid var(--line, #364150); border-radius:6px; padding:8px 10px; }
 #tuning label { display:grid; gap:4px; margin:6px 0; max-width:420px; } #tuning input, #tuning textarea { font:inherit; }
+.timer-dot { background:#d9c58a; } .process-adds, .process-counters { margin:6px 0; overflow-wrap:anywhere; } .process-adds { padding-left:18px; }
 .backlog-dot { background:#b79ad6; } .held-dot { background:#e07a7a; }
 .process-needs { margin:0 0 10px; padding-left:18px; } .process-needs small { display:block; color:var(--muted); }
+/* Process switch: shown only for games that hold several processes. */
+.process-header { flex-wrap:wrap; }
+.process-header>div:first-child { flex:1 1 240px; }
+.process-switch { display:flex; align-items:center; gap:8px; color:var(--muted); min-width:0; max-width:100%; }
+.process-switch select { min-width:0; max-width:min(100%,320px); min-height:36px; }
+.process-header p#process-subtitle { overflow-wrap:anywhere; }
+@media(max-width:650px) { .process-switch { width:100%; }.process-switch select { flex:1 1 auto; max-width:100%; } }

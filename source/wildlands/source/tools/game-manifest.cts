@@ -23,7 +23,11 @@ export interface ColonyContent {
  /** Reference adventure libraries: parsed, not admitted (they are written against the item set of their time). */
  readonly adventureExamples?: readonly string[];
 }
-export interface ProcessContent {readonly definition: string;}
+/** Exactly one of: a single `definition`, or 1-8 `definitions` (the first is the initially active process). */
+export type ProcessContent = {readonly definition: string; readonly definitions?: undefined} | {readonly definitions: readonly string[]; readonly definition?: undefined};
+export const MAX_PROCESS_DEFINITIONS = 8;
+/** Every process definition file of process content in switch order. */
+export const processDefinitionFiles = (content: ProcessContent): readonly string[] => content.definitions ?? [content.definition];
 export interface RtsContent {readonly catalog: string;}
 export interface PetContent {readonly catalog: string; readonly assets?: string;}
 export interface GameManifest {
@@ -109,8 +113,14 @@ export function manifestErrors(value: unknown): string[] {
    if (Object.hasOwn(content, 'adventureExamples')) list(content.adventureExamples, '/content/adventureExamples', 1, 16, (entry, at) => { text(entry, at, 255, JSON_PATH); });
   }
  } else if (template === 'process') {
-  const content = object(top.content, '/content', ['definition']);
-  if (content) text(content.definition, '/content/definition', 255, JSON_PATH);
+  const content = object(top.content, '/content', [], ['definition', 'definitions']);
+  if (content) {
+   const one = Object.hasOwn(content, 'definition'), many = Object.hasOwn(content, 'definitions');
+   if (one && many) fail('/content', 'must declare either definition or definitions, not both');
+   else if (!one && !many) fail('/content', 'must declare definition or definitions');
+   if (one) text(content.definition, '/content/definition', 255, JSON_PATH);
+   if (many) list(content.definitions, '/content/definitions', 1, MAX_PROCESS_DEFINITIONS, (entry, at) => { text(entry, at, 255, JSON_PATH); });
+  }
  } else if (template) {
   const content = object(top.content, '/content', ['catalog'], template === 'pet' ? ['assets'] : []);
   if (content) { text(content.catalog, '/content/catalog', 255, JSON_PATH); if (Object.hasOwn(content, 'assets')) text(content.assets, '/content/assets', 255, DIRECTORY); }

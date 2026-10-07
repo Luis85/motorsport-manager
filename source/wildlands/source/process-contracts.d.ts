@@ -2,7 +2,7 @@
 declare namespace LWProcess {
  type Scalar = string | number | boolean | null;
  type Fields = Record<string, Scalar>;
- type Kind = 'start' | 'task' | 'decision' | 'fork' | 'join' | 'end';
+ type Kind = 'start' | 'task' | 'timer' | 'decision' | 'fork' | 'join' | 'end';
  interface Scene { id: string; position: [number, number]; color: string; asset?: unknown; }
  /** A value a step requires before it can run. `op` and `value` come together; without them the field only has to be delivered. */
  interface Need { field: string; op?: Condition['op']; value?: Scalar; label?: string; }
@@ -10,9 +10,10 @@ declare namespace LWProcess {
  interface Backlog { capacity: number; order?: 'fifo' | 'lifo' | 'priority'; priority?: string; pull?: number; }
  interface Step {
   id: string; name: string; kind: Kind; scene: Scene; description?: string;
-  duration?: number; cost?: number; resources?: Record<string, number>; set?: Fields; join?: string; needs?: Need[]; backlog?: Backlog;
+  duration?: number; until?: number; cost?: number; resources?: Record<string, number>; set?: Fields; add?: Record<string, number>; join?: string; needs?: Need[]; backlog?: Backlog;
  }
- interface Condition { field: string; op: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte'; value: Scalar; }
+ /** Compares a case field to `value`, or to another case field named by `valueField` (exactly one; `value` is then absent at runtime). */
+ interface Condition { field: string; op: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte'; value: Scalar; valueField?: string; }
  interface Flow { id: string; from: string; to: string; label?: string; when?: Condition; }
  interface Resource { id: string; name: string; capacity: number; costPerMinute: number; }
  interface Arrival { at: number; count: number; interval: number; data: Fields; }
@@ -34,10 +35,12 @@ declare namespace LWProcess {
  }
  interface Token extends Record<string, unknown> {
   id: string; caseId: string; stepId: string; entered: number; started: number | null;
-  input: Fields | null; remaining: number; status: 'routing' | 'queued' | 'active' | 'joining' | 'backlog' | 'held';
-  fork: string | null; branch: string | null; target?: string;
+  input: Fields | null; remaining: number; status: 'routing' | 'queued' | 'active' | 'joining' | 'backlog' | 'held' | 'timer';
+  fork: string | null; branch: string | null; target?: string; due?: number;
  }
- interface StepMetric { id: string; queued: number; active: number; visits: number; completed: number; waitMinutes: number; }
+ /** `waiting` timer tokens at a step and the earliest minute one is due (`null` when none wait). */
+ interface TimerMetric { waiting: number; nextDue: number | null; }
+ interface StepMetric { id: string; queued: number; active: number; timers: TimerMetric; visits: number; completed: number; waitMinutes: number; }
  interface PoolMetric { id: string; capacity: number; busy: number; busyMinutes: number; utilization: number; }
  interface Event { minute: number; kind: string; caseId: string; stepId: string; detail: string; }
  interface Receipt {
@@ -82,6 +85,8 @@ declare namespace LWProcess {
  interface State {
   world: EcsWorld; definition: Definition; steps: Map<string, Step>; outgoing: Map<string, Flow[]>;
   clock: Clock; events: Event[]; receipts: Receipt[]; receiptsDropped: number; arrivals: {at: number; data: Fields}[];
+  /** Clock-step failures recorded while the scheduler is locked; the next settle applies them. */
+  failures: {caseId: string; message: string}[];
  }
  interface Systems { settle(s: State): void; work(s: State): void; admit(s: State): void; }
 }

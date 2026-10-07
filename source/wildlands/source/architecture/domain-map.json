@@ -491,7 +491,8 @@
     "LWProcessGraph",
     "LWProcessCatalog",
     "LWProcessSystems",
-    "LWProcessDefinition"
+    "LWProcessDefinition",
+    "LWProcessDefinitions"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",
@@ -524,7 +525,8 @@
     "LWPetDefinitions",
     "LWPetAssetDefinitions",
     "LWGameProfile",
-    "LWProcessDefinition"
+    "LWProcessDefinition",
+    "LWProcessDefinitions"
   ],
   "strictTypingDebt": {},
   "strictTypingDebtBudget": 0,

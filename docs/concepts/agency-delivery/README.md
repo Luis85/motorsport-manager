@@ -1,6 +1,16 @@
 # Agency delivery lab
 
-A synthetic agency process demonstrating step scenes, parallel product/technical design
+This game holds two synthetic processes (`content.definitions`), switchable in
+the studio with the **Process** selector: the agency pipeline below, first and
+initially active, and `content/agile-vendor.process.json`, a vendor running an agile
+project (an absolute contractual kickoff-date timer, then a release loop built from
+counters: per-project iterations per release and releases, iteration and increment
+counters, a customer review-window timer, UAT with one bounded fix loop, release
+go-live and handover; a customer product owner and experts take part). Neither models a real company;
+all values are authored examples. Switching restarts the chosen process paused at
+minute 0; Download HTML keeps both with your edits.
+
+The agency process is a synthetic agency process demonstrating step scenes, parallel product/technical design
 (business analysts and requirements engineers), a prioritised Ready to build backlog
 that developers pull from, declared step needs and deliveries, shared capacity, queues,
 QA rework and client handover. Timing and cost values are

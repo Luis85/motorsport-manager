@@ -91,6 +91,31 @@ and `rename` complete the supported edit vocabulary.
 - The webview's **Tune values** form edits backlog capacity, order, priority field and
   pull limit, and adds, edits or removes needs. Apply to start a fresh run.
 
+## Count iterations and wait with timers
+
+An iteration counter bounds a rework loop. The task adds 1 each visit and the decision
+compares the counter with a case field, so the arrival data sets the limit:
+
+```json
+{"id": "build", "name": "Build increment", "kind": "task", "duration": 8, "add": {"iteration": 1}, ...},
+{"id": "more", "name": "More iterations?", "kind": "decision", "needs": [{"field": "iteration"}], ...}
+```
+```json
+{"id": "more-build", "from": "more", "to": "build",
+ "when": {"field": "iteration", "op": "lt", "valueField": "iterations"}},
+{"id": "more-end", "from": "more", "to": "end"}
+```
+
+With `"data": {"iterations": 3}` the task runs three times and receipts show
+`iteration` 1, 2, 3. A missing counter or limit never matches and takes the fallback.
+
+A sprint timebox is a `timer` step: `{"id": "timebox", "kind": "timer", "duration": 20160,
+"set": {"sprintClosed": true}}` waits two working weeks (in business minutes) without using
+people or cost, then continues. Use `"until": 4800` to wait to an absolute minute (a
+release date); it passes straight through if that minute has already arrived. Place a
+timer beside tasks in a fork so the sprint ends when both the work and the timebox have
+finished. Timers cannot be interrupted or cancelled and have no calendars.
+
 The complete [agency example](../concepts/agency-delivery/README.md) demonstrates
 all of these rules in its [JSON definition](../concepts/agency-delivery/content/agency.process.json).
 
@@ -166,6 +191,10 @@ saves that text exactly, including unfinished JSON. **Export JSON** and
 **Download HTML** continue to use the active definition until you apply a valid
 draft. Editing clears the previous validation result; validate again before applying.
 A rejected import retains the previous definition and run.
+If the game folder lists several processes, choose one with the **Process**
+selector. Switching starts that process paused at minute 0 and keeps the others'
+applied edits and unapplied drafts for the session; import and apply change only
+the active process, and the JSON, BPMN, draft and report exports use it too.
 Use **Inputs & outputs** beneath either view to select a case. **Whole process**
 shows its arrival fields and, after completion, final outputs. Select a task to
 compare its captured inputs with completed outputs; **Visit** lets you inspect
@@ -179,12 +208,14 @@ it. Additional work uses bounded markers, with counts preserving total activity.
 Focus the canvas to orbit with arrow keys, pan with Shift+arrows or WASD (or right-drag), zoom with +/−, or frame with F. In 2D, drag to pan, scroll or pinch to zoom, and press 0 to reset. Use **Run until** in the toolbar to choose a run length or Unlimited, and the **Tune values** form in the Definition editor to fine-tune an agent-built process before applying it.
 
 **Export run report** downloads observed results, including retained task I/O. **Download HTML** embeds the
-active definition and starts a fresh paused run when reopened. There is no
+active definition (for a multi-process game, every applied process in list order)
+and starts a fresh paused run when reopened. There is no
 checkpoint import or automatic browser persistence in v1.
 
 For reusable game folders, copy the agency `game.json` shape, choose an ID equal
 to the folder name, set `template: process`, and point `content.definition` at
-the process JSON. Set matching storage/output IDs. Keep the folder data-only.
+the process JSON (or `content.definitions` at 1-8 process JSON files, never both,
+to let the studio switch between them). Set matching storage/output IDs. Keep the folder data-only.
 The build has no external scripts, fonts, asset requests or account dependency.
 
 ## Agent completion checklist

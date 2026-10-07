@@ -13,13 +13,14 @@ import path from 'node:path';
 import {BUNDLES, INSERTS, type BundleTag} from './build-inserts.cjs';
 import {TEMPLATE_FEATURES, type Template} from './game-manifest.cjs';
 
-export type DataGroup = 'game-profile' | 'export-payloads' | 'colony-content' | 'asset-catalog' | 'rts-content' | 'pet-content' | 'process-content';
+export type DataGroup = 'game-profile' | 'export-payloads' | 'colony-content' | 'asset-catalog' | 'rts-content' | 'pet-content' | 'process-content' | 'process-list';
 export type ProfileKind = 'fixture' | 'studio' | 'play';
 
 /** Canonical declaration order of every injectable data global (the showcase order). */
 export const DATA_GLOBALS: readonly (readonly [name: string, group: DataGroup])[] = [
   ['LWGameProfile', 'game-profile'],
   ['LWProcessDefinition', 'process-content'],
+  ['LWProcessDefinitions', 'process-list'],
   ['WildlandsGodotRuntimeLoader', 'export-payloads'],
   ['WildlandsGodotTemplates', 'export-payloads'],
   ['LWEngineSourceLoader', 'export-payloads'],
@@ -194,6 +195,8 @@ export interface GameDescription {
   readonly presentation: {readonly title: string; readonly description?: string};
   readonly storage: {readonly namespace: string};
 }
+/** Names in the canonical data-global declaration order. */
+const canonicalOrder = (names: readonly string[]): string[] => DATA_GLOBALS.map(([name]) => name).filter(name => names.includes(name));
 export type GameBuildKind = 'play' | 'studio';
 /** Optional data globals a game may omit (a pet game without presentation assets). */
 const OPTIONAL_GAME_DATA = new Set(['LWPetAssetDefinitions']);
@@ -219,7 +222,7 @@ export function gameProfile(game: GameDescription, kind: GameBuildKind, availabl
   const wanted = new Set<BundleTag>([...base.bundles,
     ...(kind === 'play' ? features as BundleTag[] : []), ...(kind === 'studio' && game.template === 'rts' ? ['rts-editor' as const] : [])]);
   const names = game.template === 'colony' ? groups('game-profile', ...(kind === 'studio' ? ['export-payloads' as const] : []), 'colony-content', 'asset-catalog')
-    : ['LWGameProfile', ...base.data];
+    : canonicalOrder(['LWGameProfile', ...base.data, ...game.template === 'process' && available?.has('LWProcessDefinitions') ? ['LWProcessDefinitions'] : []]);
   const description = game.presentation.description ?? game.presentation.title;
   return {id: `${game.template}-${kind}`, kind, template: base.template, minify: kind === 'play',
     variables: base.template === 'templates/standalone.html' ? {APP: base.variables.APP!, TITLE: game.presentation.title, DESCRIPTION: description} : {TITLE: game.presentation.title, DESCRIPTION: description},

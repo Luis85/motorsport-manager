@@ -1,12 +1,12 @@
 /// <reference path="./process-bpmn.ts" />
-/** BPMN 2.0 import: start/end events, task variants, exclusive and parallel gateways, sequence flows and resources. Everything else is reported, never guessed. */
+/** BPMN 2.0 import: start/end events, duration timer events, task variants, exclusive and parallel gateways, sequence flows and resources. Everything else is reported, never guessed. */
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessXml: LWProcessXml.Api; LWProcessCatalog: LWProcess.Catalog; LWProcessBpmnExport: {export(d: unknown): string; vocabulary: LWProcessBpmn.Vocabulary}; LWProcessBpmn?: LWProcessBpmn.Api};
  const {MODEL, DI, DC, WL, UNIT, OPS, COLORS} = root.LWProcessBpmnExport.vocabulary;
  type X = LWProcessXml.Node;
  const TASKS = new Set(['task', 'userTask', 'manualTask', 'businessRuleTask', 'serviceTask', 'scriptTask', 'sendTask', 'receiveTask']);
- const UNSUPPORTED = new Set(['subProcess', 'transaction', 'adHocSubProcess', 'callActivity', 'intermediateCatchEvent', 'intermediateThrowEvent', 'boundaryEvent', 'inclusiveGateway', 'eventBasedGateway', 'complexGateway']);
+ const UNSUPPORTED = new Set(['subProcess', 'transaction', 'adHocSubProcess', 'callActivity', 'intermediateThrowEvent', 'boundaryEvent', 'inclusiveGateway', 'eventBasedGateway', 'complexGateway']);
  const IGNORED = new Set(['documentation', 'extensionElements', 'laneSet', 'textAnnotation', 'association', 'group', 'dataObject', 'dataObjectReference', 'dataStoreReference', 'property', 'ioSpecification', 'category']);
  const PERFORMERS = new Set(['performer', 'humanPerformer', 'potentialOwner', 'resourceRole']);
  const kids = (n: X, local: string, ns = MODEL) => n.children.filter(c => c.local === local && c.ns === ns);
@@ -23,12 +23,31 @@
   taken.add(candidate); return candidate;
  };
  interface Flow {xml: string; from: string; to: string; label?: string | undefined; when?: LWProcess.Condition | undefined; expression?: string | undefined; orig?: string | undefined; node: X;}
- interface Item {xml: string; kind: LWProcess.Kind; node: X; local: string; id: string; collapsed?: boolean;}
+ interface Item {xml: string; kind: LWProcess.Kind; node: X; local: string; id: string; collapsed?: boolean; timer?: {duration?: number; until?: number} | undefined;}
  function condition(expression: string, where: string): LWProcess.Condition {
-  const m = /^\s*(?:[$#]\{)?\s*([A-Za-z_]\w*)\s*(==|!=|>=|<=|>|<|eq|ne|gte|gt|ge|lte|lt|le)\s*(true|false|null|-?\d+(?:\.\d+)?|'[^']*'|"[^"]*")\s*\}?\s*$/.exec(expression);
+  const m = /^\s*(?:[$#]\{)?\s*([A-Za-z_]\w*)\s*(==|!=|>=|<=|>|<|eq|ne|gte|gt|ge|lte|lt|le)\s*(-?\d+(?:\.\d+)?|'[^']*'|"[^"]*"|[A-Za-z_]\w*)\s*\}?\s*$/.exec(expression);
   if (!m || !/^[a-z][a-zA-Z0-9_]{0,63}$/.test(m[1]!)) throw Error(where + ': unsupported condition "' + expression.trim() + '". Use field == value comparisons.');
-  const raw = m[3]!, value = raw === 'true' ? true : raw === 'false' ? false : raw === 'null' ? null : /^-?\d/.test(raw) ? Number(raw) : raw.slice(1, -1);
-  return {field: m[1]!, op: OPS[m[2]!] as LWProcess.Condition['op'], value};
+  const raw = m[3]!, op = OPS[m[2]!] as LWProcess.Condition['op'];
+  // A bare word that is not true/false/null names another case field; text values are always quoted.
+  if (/^[A-Za-z_]/.test(raw) && !['true', 'false', 'null'].includes(raw)) {
+   if (!/^[a-z][a-zA-Z0-9_]{0,63}$/.test(raw)) throw Error(where + ': unsupported condition "' + expression.trim() + '". Compare to a quoted text, a number, true, false, null or a field name.');
+   return {field: m[1]!, op, valueField: raw} as unknown as LWProcess.Condition;
+  }
+  const value = raw === 'true' ? true : raw === 'false' ? false : raw === 'null' ? null : /^-?\d/.test(raw) ? Number(raw) : raw.slice(1, -1);
+  return {field: m[1]!, op, value};
+ }
+ /** Reads the single timer definition of an intermediate catch event: `PT{n}M` or `PT{n}H` durations only; the Wildlands extension restores exact values. */
+ function timerOf(node: X, xmlId: string, errors: string[]): Item['timer'] {
+  const defs = node.children.filter(c => c.ns === MODEL && c.local.endsWith('EventDefinition')), ext = first(node, 'step');
+  if (defs.length !== 1 || defs[0]!.local !== 'timerEventDefinition') { errors.push('intermediateCatchEvent ' + xmlId + ' is not supported unless it has exactly one timerEventDefinition; ' + (defs.map(d => d.local).join(', ') || 'no event definition') + ' found.'); return undefined; }
+  const forms = defs[0]!.children.filter(c => c.ns === MODEL), form = forms[0];
+  const fail = (why: string) => { errors.push('Timer ' + xmlId + ' is not supported: ' + why); return undefined; };
+  if (ext?.attrs.until !== undefined) return {until: Number(ext.attrs.until)};
+  if (forms.length !== 1) return fail('define exactly one timeDuration.');
+  if (form!.local !== 'timeDuration') return fail(form!.local + ' has no business-minute meaning; use timeDuration PT{n}M or PT{n}H.');
+  const m = /^PT(\d+)([MH])$/.exec(form!.text.trim()), minutes = m ? Number(m[1]) * (m[2] === 'H' ? 60 : 1) : 0;
+  if (!m || minutes < 1) return fail('duration "' + form!.text.trim() + '" must be PT{n}M or PT{n}H with n of at least 1.');
+  return {duration: ext?.attrs.duration !== undefined ? Number(ext.attrs.duration) : minutes};
  }
  function importBpmn(source: string, options: {defaultDuration?: number} = {}): LWProcessBpmn.ImportResult {
   const warnings: string[] = [], errors: string[] = [], warn = (m: string) => { if (!warnings.includes(m)) warnings.push(m); };
@@ -50,19 +69,20 @@
    if (child.ns !== MODEL) { warn('Ignored non-BPMN element ' + child.local + '.'); continue; }
    const local = child.local, xmlId = child.attrs.id;
    if (UNSUPPORTED.has(local)) { errors.push(local + (xmlId ? ' ' + xmlId : '') + ' is not supported; model it with tasks, exclusive gateways and parallel gateways.'); continue; }
-   const kind: LWProcess.Kind | undefined = local === 'startEvent' ? 'start' : local === 'endEvent' ? 'end' : TASKS.has(local) ? 'task' : local === 'exclusiveGateway' ? 'decision' : local === 'parallelGateway' ? 'fork' : undefined;
+   const kind: LWProcess.Kind | undefined = local === 'startEvent' ? 'start' : local === 'endEvent' ? 'end' : TASKS.has(local) ? 'task' : local === 'intermediateCatchEvent' ? 'timer' : local === 'exclusiveGateway' ? 'decision' : local === 'parallelGateway' ? 'fork' : undefined;
    if (!kind) { if (local !== 'sequenceFlow' && !IGNORED.has(local)) warn('Ignored element ' + local + '.'); continue; }
    if (!xmlId) { errors.push(local + ' needs an id.'); continue; }
    if (['startEvent', 'endEvent'].includes(local) && child.children.some(c => c.ns === MODEL && c.local.endsWith('EventDefinition'))) warn('Event definitions on ' + xmlId + ' are ignored; it is a plain event.');
    if (['serviceTask', 'scriptTask', 'sendTask', 'receiveTask', 'businessRuleTask'].includes(local)) warn(local + ' ' + xmlId + ' imports as a timed task; no behaviour is executed.');
    const stepExt = first(child, 'step'), item: Item = {xml: xmlId, kind, node: child, local, id: stepExt?.attrs.id ?? sanitize(xmlId, taken.steps, kind)};
    if (stepExt?.attrs.id) { if (taken.steps.has(item.id)) errors.push('Duplicate Wildlands step id ' + item.id + '.'); taken.steps.add(item.id); }
+   if (kind === 'timer') item.timer = timerOf(child, xmlId, errors);
    if (names.has(xmlId)) errors.push('Duplicate BPMN id ' + xmlId + '.'); names.set(xmlId, item); items.push(item);
   }
   let flows: Flow[] = kids(proc, 'sequenceFlow').map(f => {
    const ext = first(f, 'flow'), when = first(f, 'when'), expression = kids(f, 'conditionExpression')[0]?.text;
    return {xml: f.attrs.id ?? '', from: f.attrs.sourceRef ?? '', to: f.attrs.targetRef ?? '', label: f.attrs.name || undefined, expression, orig: ext?.attrs.id, node: f,
-    when: when ? {field: when.attrs.field!, op: when.attrs.op as LWProcess.Condition['op'], value: typed(when.attrs)} : undefined};
+    when: when ? (when.attrs.valueField !== undefined ? {field: when.attrs.field!, op: when.attrs.op, valueField: when.attrs.valueField} as unknown as LWProcess.Condition : {field: when.attrs.field!, op: when.attrs.op as LWProcess.Condition['op'], value: typed(when.attrs)}) : undefined};
   });
   for (const f of flows) if (!f.xml || !names.has(f.from) || !names.has(f.to)) errors.push('Sequence flow ' + (f.xml || '(no id)') + ' must connect two supported nodes.');
   if (errors.length) throw Error(errors.join('\n'));
@@ -86,6 +106,7 @@
   }
   for (const i of live) {
    const n = outOf(i.xml).length;
+   if (i.kind === 'timer' && n > 1) errors.push('Timer ' + i.xml + ' has ' + n + ' outgoing flows; use a parallel gateway to split work.');
    if (i.kind === 'task' && n > 1) errors.push('Task ' + i.xml + ' has ' + n + ' outgoing flows; use a parallel gateway to split work.');
    if (i.kind === 'start' && n !== 1) errors.push('The start event must have exactly one outgoing flow.');
    if (i.kind === 'decision' && n < 2) errors.push('Exclusive gateway ' + i.xml + ' needs two or more outgoing flows.');
@@ -99,7 +120,7 @@
    const ends = new Set<string>();
    for (const flow of outOf(fork.xml)) {
     let at = names.get(flow.to)!; const seen = new Set<string>();
-    while (at.kind === 'task' && !seen.has(at.xml)) { seen.add(at.xml); at = names.get(outOf(at.xml)[0]?.to ?? '') ?? at; if (!outOf(at.xml).length) break; }
+    while ((at.kind === 'task' || at.kind === 'timer') && !seen.has(at.xml)) { seen.add(at.xml); at = names.get(outOf(at.xml)[0]?.to ?? '') ?? at; if (!outOf(at.xml).length) break; }
     ends.add(at.kind === 'join' ? at.xml : '?');
    }
    if (ends.size !== 1 || ends.has('?')) throw Error('Parallel branches of ' + fork.xml + ' must be task chains meeting at one parallel join.');
@@ -138,8 +159,11 @@
     }
     if (Object.keys(demand).length) step.resources = demand;
    }
+   if (i.timer?.duration !== undefined) step.duration = i.timer.duration;
+   if (i.timer?.until !== undefined) step.until = i.timer.until;
    if (ext?.attrs.cost) step.cost = Number(ext.attrs.cost);
    const set = extensions(i.node, 'set'); if (set.length) step.set = Object.fromEntries(set.map(s => [s.attrs.name!, typed(s.attrs)]));
+   const adds = extensions(i.node, 'add'); if (adds.length) step.add = Object.fromEntries(adds.map(a => [a.attrs.name!, Number(a.attrs.delta)]));
    const needs = extensions(i.node, 'need'); if (needs.length) step.needs = needs.map(n => ({field: n.attrs.field!, ...n.attrs.op ? {op: n.attrs.op as LWProcess.Condition['op'], value: typed(n.attrs)} : {}, ...n.attrs.label ? {label: n.attrs.label} : {}}));
    const backlog = first(i.node, 'backlog'); if (backlog) step.backlog = {capacity: Number(backlog.attrs.capacity), ...backlog.attrs.order ? {order: backlog.attrs.order as 'fifo'} : {}, ...backlog.attrs.priority ? {priority: backlog.attrs.priority} : {}, ...backlog.attrs.pull ? {pull: Number(backlog.attrs.pull)} : {}};
    if (i.kind === 'fork') step.join = live.find(j => j.xml === joins.get(i.xml))!.id;

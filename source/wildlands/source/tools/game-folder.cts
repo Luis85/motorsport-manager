@@ -21,7 +21,7 @@ import {spawnSync} from 'node:child_process';
 import {definitions, read, record, type Definition, type RecordValue} from './definition-source.cjs';
 import {contentDocuments} from './bundled-content.cjs';
 import {assetDefinitions, creatureConfig, creatureDefinitions, petAssetDefinitions} from './bundled-assets.cjs';
-import {manifestErrors, type GameManifest, type ColonyContent, type RtsContent, type PetContent, type ProcessContent} from './game-manifest.cjs';
+import {manifestErrors, processDefinitionFiles, type GameManifest, type ColonyContent, type RtsContent, type PetContent, type ProcessContent} from './game-manifest.cjs';
 
 export type {GameManifest} from './game-manifest.cjs';
 type Profile = LWContentProvider.Profile;
@@ -132,7 +132,7 @@ function referenced(manifest: GameManifest): {files: string[]; assets: string | 
   return {assets: colony.assets, files: ['game.json', colony.balancing, colony.creatures.catalog, colony.creatures.editorFields,
    colony.interactions, ...colony.packs, ...colony.skillTree ? [colony.skillTree] : [], ...colony.adventureExamples ?? []]};
  }
- if (manifest.template === 'process') return {assets: null, files: ['game.json', (content as ProcessContent).definition]};
+ if (manifest.template === 'process') return {assets: null, files: ['game.json', ...processDefinitionFiles(content as ProcessContent)]};
  if (manifest.template === 'pet') { const pet = content as PetContent; return {assets: pet.assets ?? null, files: ['game.json', pet.catalog]}; }
  return {assets: null, files: ['game.json', (content as RtsContent).catalog]};
 }
@@ -226,8 +226,10 @@ export function compileGame(input: string | LoadedGame): CompiledGame {
  if (manifest.template === 'colony') return colony(game);
  const base = {format: 'wildlands-content-profile' as const, version: 1 as const, id: manifest.id, storage: plain(manifest.storage)};
  if (manifest.template === 'process') {
-  const definition = json(game.root, (manifest.content as ProcessContent).definition);
-  return {...game, packages: [], profile: {...base, process: definition}, data: new Map<string, unknown>([['LWGameProfile', {storage: base.storage}], ['LWProcessDefinition', definition]])};
+  const content = manifest.content as ProcessContent, files = processDefinitionFiles(content), all = files.map(file => json(game.root, file)), definition = all[0];
+  // A multi-process game's first entry is the single-definition projection; the full ordered list is its own global.
+  return {...game, packages: [], profile: {...base, process: definition, ...content.definitions ? {processes: all} : {}},
+   data: new Map<string, unknown>([['LWGameProfile', {storage: base.storage}], ['LWProcessDefinition', definition], ...content.definitions ? [['LWProcessDefinitions', all] as [string, unknown]] : []])};
  }
  if (manifest.template === 'rts') {
   const catalog = json(game.root, (manifest.content as RtsContent).catalog);

@@ -107,6 +107,7 @@
     {"name": "artifact-play-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/artifact-play-browser.js", "result": "verification/v15/artifact-play-browser-results.json", "timeout": 180, "cost": 28.0},
     {"name": "game-demos-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/game-demos-browser.js", "result": "verification/v15/game-demos-browser-results.json", "timeout": 330, "cost": 65.0},
     {"name": "business-process", "kind": "node", "tier": "fast", "entry": ".generated/test-process.cjs", "result": ".generated/process-results.json", "timeout": 120, "cost": 6},
+    {"name": "business-process-bpmn", "kind": "node", "tier": "fast", "entry": ".generated/test-process-bpmn.cjs", "result": ".generated/process-bpmn-results.json", "timeout": 120, "cost": 3},
     {"name": "business-process-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-browser.js", "result": "verification/v15/process-browser-results.json", "timeout": 180, "cost": 30}
   ]
 }

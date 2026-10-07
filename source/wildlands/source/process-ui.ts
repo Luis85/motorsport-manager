@@ -9,9 +9,10 @@
  const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
  const num = (n: number) => Number(n.toFixed(1)).toLocaleString();
  let app: LWProcessApp.Controller;
- try {app = root.LWProcessApplication.create(root.LWContentProvider.get('process').process);} catch (e) {host.textContent = 'Process could not load: ' + String(e); return;}
+ try {const profile = root.LWContentProvider.get('process'); app = root.LWProcessApplication.create(profile.processes ?? profile.process);} catch (e) {host.textContent = 'Process could not load: ' + String(e); return;}
  host.innerHTML = `
- <header class="process-header"><div><h1 id="process-title"></h1><p>Wildlands · Process Studio</p></div><div class="process-file-actions">
+ <header class="process-header"><div><h1 id="process-title"></h1><p id="process-subtitle">Wildlands · Process Studio</p></div>
+ <label id="process-switch-label" class="process-switch" hidden>Process <select id="process-switch" aria-describedby="process-subtitle"></select></label><div class="process-file-actions">
  <button id="import">Import JSON or BPMN</button><button id="json">Export JSON</button><button id="bpmn">Export BPMN</button><button id="html">Download HTML</button><input type="file" id="file" accept=".json,.bpmn,.xml,application/json,application/xml,text/xml" hidden></div></header>
  <div class="process-toolbar" aria-label="Simulation controls"><button id="play" class="primary" aria-describedby="message">Run simulation</button><button id="step" aria-describedby="message">Step 1 min</button><button id="advance" aria-describedby="message">Advance 30 min</button><button id="reset">Reset run</button>
  <label>Speed <select id="speed"><option value="1">1 min per tick</option><option value="5" selected>5 min per tick</option><option value="30">30 min per tick</option></select></label>
@@ -22,7 +23,7 @@
  <section class="process-stage" aria-label="Simulation viewport"><div class="process-stagebar"><div><h2 id="scene-title">Process overview</h2><p id="scene-subtitle"></p></div>
  <div class="process-view-controls"><button id="mode-2d" aria-pressed="false">2D</button><button id="mode-3d" aria-pressed="true">3D</button><button id="frame">Frame view</button></div></div>
  <div id="viewport"><canvas id="canvas" aria-label="3D process scenes. Use the scene list for keyboard selection." tabindex="0"></canvas><div id="map" hidden></div></div>
- <div class="process-legend"><span><i class="active-dot"></i>Working</span><span><i class="queue-dot"></i>Waiting</span><span><i class="backlog-dot"></i>Backlog</span><span><i class="held-dot"></i>Blocked</span><span id="marker-count"></span><span id="camera-hint">Drag to orbit · Scroll to zoom</span></div>
+ <div class="process-legend"><span><i class="active-dot"></i>Working</span><span><i class="queue-dot"></i>Waiting</span><span><i class="timer-dot"></i>Timer</span><span><i class="backlog-dot"></i>Backlog</span><span><i class="held-dot"></i>Blocked</span><span id="marker-count"></span><span id="camera-hint">Drag to orbit · Scroll to zoom</span></div>
  <div id="metrics" class="process-metrics" aria-label="Run metrics"></div><section id="process-data" aria-label="Process inputs and outputs"></section></section>
  <nav class="process-nav" aria-label="Process steps"><div class="process-panel-heading"><h2>Step scenes</h2><span id="step-count"></span></div>
  <button id="overview">Whole process</button><div id="steps"></div><p class="process-note">Choose a step to enter its scene. Navigation keeps the run at the same minute.</p></nav>
@@ -32,7 +33,11 @@
  <div class="process-editor-actions"><button id="validate">Validate draft</button><button id="apply">Apply draft & reset run</button><button id="export-draft">Export draft</button><button id="restore-draft">Restore active definition</button></div><pre id="diagnostics" role="status"></pre></div></section>`;
  const get = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
  const setHtml = (id: string, html: string): boolean => {const node = get(id); if (node.dataset.html === html) return false; node.dataset.html = html; node.innerHTML = html; return true;};
- let view = app.query(), three: LWProcess3D.Surface | null = null, svg = root.LWProcess2D.create(get('map'), id => command(() => app.select(id)));
+ let view = app.query(), three: LWProcess3D.Surface | null = null;
+ const newMap = () => root.LWProcess2D.create(get('map'), id => command(() => app.select(id)));
+ let svg = newMap();
+ /** Unapplied draft text kept per process while another process is active (switching never discards it). */
+ const drafts = new Map<number, string>();
  const dataView = root.LWProcessData.create(get('process-data'));
  const tuning = root.LWProcessTuning.create(get('tuning'), () => get<HTMLTextAreaElement>('draft').value, text => {get<HTMLTextAreaElement>('draft').value = text; get('draft').removeAttribute('aria-invalid'); get('diagnostics').textContent = ''; draftState();});
  let tuneTimer = 0, last = 0, elapsed = 0, frameId = 0, disposed = false, unavailable = '', activeDraft = '', previousStatus = '';
@@ -51,19 +56,41 @@
  }
  function rebuild(): void {
   three?.dispose(); three = null; unavailable = ''; dataView.reset();
+  // A disposed renderer force-loses its context for good, so every rebuild draws on a fresh canvas element.
+  const stale = get('canvas'); stale.replaceWith(stale.cloneNode(false));
   try {three = root.LWProcess3D.create(get<HTMLCanvasElement>('canvas'), app.query().definition, id => command(() => app.select(id)));}
   catch (e) {unavailable = '3D unavailable in this browser. The complete simulation is available in 2D.'; app.mode('2d'); status(unavailable, true);}
   activeDraft = JSON.stringify(app.query().definition, null, 2);
   get<HTMLTextAreaElement>('draft').value = activeDraft;
   get('draft').removeAttribute('aria-invalid'); get('diagnostics').textContent = ''; draftState(); tuning.refresh();
  }
+ function syncSwitch(): void {
+  const many = view.processes.length > 1, select = get<HTMLSelectElement>('process-switch');
+  get('process-switch-label').hidden = !many;
+  get('process-subtitle').textContent = many ? `Wildlands · Process Studio · Process ${view.active + 1} of ${view.processes.length}. JSON, BPMN and report exports use this process; Download HTML keeps all.` : 'Wildlands · Process Studio';
+  if (!many) return;
+  const names = view.processes.map(p => p.name), label = (p: {id: string; name: string}) => names.filter(n => n === p.name).length > 1 ? `${p.name} (${p.id})` : p.name;
+  setHtml('process-switch', view.processes.map((p, i) => `<option value="${i}">${esc(label(p))}</option>`).join('')); select.value = String(view.active);
+ }
+ function switchTo(index: number): void {
+  drafts.set(view.active, get<HTMLTextAreaElement>('draft').value); app.use(index); dataView.reset();
+  svg.dispose(); svg = newMap(); rebuild();
+  const kept = drafts.get(index); drafts.delete(index);
+  if (kept !== undefined && kept !== activeDraft) {get<HTMLTextAreaElement>('draft').value = kept; draftState(); tuning.refresh();}
+  refresh(); status('Switched to ' + app.query().definition.name + '. Paused at minute 0.');
+ }
  const operator = (n: LWProcess.Need) => root.LWProcessNeeds.describe(n);
  function needsHtml(step: LWProcess.Step): string {
-  const delivered = Object.entries(step.set ?? {}).map(([k, v]) => `<li>${esc(k)} = ${esc(JSON.stringify(v))}</li>`).join('');
+  const delivered = [...Object.entries(step.set ?? {}).map(([k, v]) => `<li>${esc(k)} = ${esc(JSON.stringify(v))}</li>`), ...Object.entries(step.add ?? {}).map(([k, n]) => `<li>${n >= 0 ? '+' : '\u2212'}${Math.abs(n)} to ${esc(k)} (counter)</li>`)].join('');
   const deliveries = root.LWProcessNeeds.deliveries(view.definition, step.id), names = new Map(view.definition.steps.map(s => [s.id, s.name]));
   const needs = (step.needs ?? []).map((n, i) => { const from = deliveries[i]!, who = [...from.steps.map(id => names.get(id)!), ...from.arrivals ? ['case arrival'] : []];
    return `<li><strong>${esc(operator(n))}</strong>${n.label ? ' · ' + esc(n.label) : ''}<small>${who.length ? 'Delivered by ' + esc(who.join(', ')) : 'No earlier delivery'}</small></li>`; }).join('');
   return (needs ? `<h3>Needs from earlier steps</h3><ul class="process-needs">${needs}</ul>` : '') + (delivered ? `<h3>Delivers</h3><ul class="process-needs">${delivered}</ul>` : '');
+ }
+ function timingHtml(step: LWProcess.Step, m: LWProcess.StepMetric): string {
+  if (step.kind !== 'timer') return `<dt>Duration</dt><dd>${num(step.duration ?? 0)} min</dd>`;
+  const rule = step.until !== undefined ? `Until minute ${num(step.until)}` : `Wait ${num(step.duration ?? 0)} min`;
+  return `<dt>Timer</dt><dd>${rule}</dd><dt>Status</dt><dd>${m.timers.waiting ? `Waiting on timer · ${m.timers.waiting} waiting, next due minute ${num(m.timers.nextDue!)}` : 'No timers waiting'}</dd>`;
  }
  function backlogHtml(step: LWProcess.Step, q: LWProcess.Snapshot): string {
   const b = step.backlog; if (!b) return '';
@@ -73,7 +100,7 @@
  function refresh(): void {
   const focused = document.activeElement as HTMLElement | null, focusedStep = focused?.dataset.step, focusedNext = focused?.dataset.next;
   view = app.query(); const {definition: d, snapshot: q, selected} = view, step = d.steps.find(s => s.id === selected);
-  get('process-title').textContent = d.name; get('step-count').textContent = String(d.steps.length);
+  get('process-title').textContent = d.name; syncSwitch(); get('step-count').textContent = String(d.steps.length);
   get('clock').textContent = num(q.minute) + ' min' + (view.horizon === null ? ' · no limit' : ' of ' + num(view.horizon));
   syncHorizon(view.horizon); get('run-status').textContent = view.playing ? 'Running' : q.status === 'completed' ? 'Completed' : q.status === 'limit' ? 'Run limit reached' : q.status === 'blocked' ? 'Blocked' : 'Paused';
   get('play').textContent = view.playing ? 'Pause' : 'Run simulation';
@@ -83,17 +110,17 @@
   if (refocusReset) get('reset').focus({preventScroll: true});
   if (stopped && previousStatus !== q.status) status(stopped);
   previousStatus = q.status;
-  if (setHtml('steps', d.steps.map((s, i) => {const m = q.steps.find(m => m.id === s.id)!; return `<button data-step="${esc(s.id)}" class="process-step ${s.id === selected ? 'selected' : ''}" aria-current="${s.id === selected ? 'step' : 'false'}"><span class="process-order">${String(i + 1).padStart(2, '0')}</span><span><strong>${esc(s.name)}</strong><small>${esc(s.kind)}${m.active ? ' · ' + m.active + ' working' : ''}${m.queued ? ' · ' + m.queued + ' waiting' : ''}</small></span><i style="background:${s.scene.color}"></i></button>`;}).join(''))) get('steps').querySelectorAll<HTMLButtonElement>('button').forEach(b => b.onclick = () => command(() => app.select(b.dataset.step!)));
+  if (setHtml('steps', d.steps.map((s, i) => {const m = q.steps.find(m => m.id === s.id)!; return `<button data-step="${esc(s.id)}" class="process-step ${s.id === selected ? 'selected' : ''}" aria-current="${s.id === selected ? 'step' : 'false'}"><span class="process-order">${String(i + 1).padStart(2, '0')}</span><span><strong>${esc(s.name)}</strong><small>${esc(s.kind)}${m.active ? ' · ' + m.active + ' working' : ''}${m.queued ? ' · ' + m.queued + ' waiting' : ''}${m.timers.waiting ? ' · ' + m.timers.waiting + ' on timer' : ''}</small></span><i style="background:${s.scene.color}"></i></button>`;}).join(''))) get('steps').querySelectorAll<HTMLButtonElement>('button').forEach(b => b.onclick = () => command(() => app.select(b.dataset.step!)));
   get('overview').classList.toggle('selected', !selected); get('overview').setAttribute('aria-pressed', String(!selected)); if (!selected) get('overview').setAttribute('aria-current', 'true'); else get('overview').removeAttribute('aria-current'); get('scene-title').textContent = step?.name ?? 'Process overview';
   get('scene-subtitle').textContent = step ? step.scene.id + ' · ' + step.kind : `${d.steps.length} connected scenes · ${num(q.metrics.arrived)} ${q.metrics.arrived === 1 ? "case" : "cases"} admitted`;
   get('inspector-title').textContent = step ? 'Scene details' : 'Process overview';
   const m = q.steps.find(m => m.id === selected);
-  const inspectorHtml = step ? `<p>${esc(step.description ?? step.name)}</p><dl><dt>Duration</dt><dd>${num(step.duration ?? 0)} min</dd><dt>Working / waiting</dt><dd>${m!.active} / ${m!.queued}</dd><dt>Completed visits</dt><dd>${num(m!.completed)}</dd><dt>Total queue time</dt><dd>${num(m!.waitMinutes)} min</dd><dt>Fixed cost per visit</dt><dd>${num(step.cost ?? 0)}</dd></dl>${needsHtml(step)}${backlogHtml(step, q)}<h3>Next steps</h3>${d.flows.filter(f => f.from === step.id).map(f => `<button class="next-step" data-next="${esc(f.to)}">${esc(d.steps.find(s => s.id === f.to)!.name)}${f.label ? ' · ' + esc(f.label) : ''}</button>`).join('') || '<p>Process ends here.</p>'}`
+  const inspectorHtml = step ? `<p>${esc(step.description ?? step.name)}</p><dl>${timingHtml(step, m!)}<dt>Working / waiting</dt><dd>${m!.active} / ${m!.queued}</dd><dt>Completed visits</dt><dd>${num(m!.completed)}</dd><dt>Total queue time</dt><dd>${num(m!.waitMinutes)} min</dd><dt>Fixed cost per visit</dt><dd>${num(step.cost ?? 0)}</dd></dl>${needsHtml(step)}${backlogHtml(step, q)}<h3>Next steps</h3>${d.flows.filter(f => f.from === step.id).map(f => `<button class="next-step" data-next="${esc(f.to)}">${esc(d.steps.find(s => s.id === f.to)!.name)}${f.label ? ' · ' + esc(f.label) : ''}</button>`).join('') || '<p>Process ends here.</p>'}`
    : `<p>${esc(d.description ?? 'Cases move through the process. Run the simulation to see work, queues and resource contention.')}</p><p>${d.flows.length} connections · revision ${d.revision}</p>`;
   if (setHtml('inspector', inspectorHtml)) get('inspector').querySelectorAll<HTMLButtonElement>('[data-next]').forEach(b => b.onclick = () => command(() => app.select(b.dataset.next!)));
   setHtml('pools', q.resources.map(p => `<div class="process-pool"><strong>${esc(d.resources.find(r => r.id === p.id)!.name)}</strong><span>${p.busy}/${p.capacity} busy · ${num(p.utilization * 100)}%</span><progress value="${p.busy}" max="${p.capacity}" aria-label="${esc(p.id)} busy capacity"></progress></div>`).join('') || '<p>No shared resources defined.</p>');
   setHtml('metrics', [['Completed', num(q.metrics.completed)], ['In progress', num(q.metrics.active)], ['Mean cycle', num(q.metrics.meanCycleMinutes) + ' min'], ['Simulated cost', num(q.metrics.cost)], ['Failed', num(q.metrics.failed)]].map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`).join(''));
-  setHtml('events', q.events.slice(-25).reverse().map(e => `<div><time>${num(e.minute)} min</time><span>${esc(e.caseId)}</span><strong>${esc(e.kind.replaceAll('-', ' '))}</strong><span>${esc(d.steps.find(s => s.id === e.stepId)?.name ?? e.detail)}</span></div>`).join('') || '<p>No work has arrived yet.</p>');
+  setHtml('events', q.events.slice(-25).reverse().map(e => `<div><time>${num(e.minute)} min</time><span>${esc(e.caseId)}</span><strong>${esc(e.kind.replaceAll('-', ' '))}</strong><span>${esc(d.steps.find(s => s.id === e.stepId)?.name ?? e.detail)}${e.kind.startsWith('timer-') && e.detail ? ' · ' + esc(e.detail) : ''}</span></div>`).join('') || '<p>No work has arrived yet.</p>');
   get('canvas').hidden = view.mode !== '3d'; get('map').hidden = view.mode !== '2d';
   get('mode-2d').setAttribute('aria-pressed', String(view.mode === '2d')); get('mode-3d').setAttribute('aria-pressed', String(view.mode === '3d'));
   get<HTMLButtonElement>('mode-3d').disabled = !!unavailable; get('frame').title = view.mode === '2d' ? 'Reset map view (0)' : 'Reset camera (F)';
@@ -112,6 +139,7 @@
  const on = (id: string, action: () => void) => {get(id).onclick = () => command(action);};
  on('play', () => app.play(!view.playing)); on('step', () => {app.play(false); app.advance(1);});
  on('advance', () => {app.play(false); app.advance(Math.max(1, Math.min(30, view.horizon === null ? 30 : view.horizon - view.snapshot.minute)));});
+ get<HTMLSelectElement>('process-switch').onchange = () => {try {switchTo(Number(get<HTMLSelectElement>('process-switch').value));} catch (e) {syncSwitch(); status(String(e), true);}};
  on('reset', () => {app.reset(); dataView.reset(); status('Run reset. Definition retained.');});
  const presets = new Set(['1440', '10080', '43200', '100000']);
  function syncHorizon(horizon: number | null): void {
@@ -133,10 +161,14 @@
  on('bpmn', () => {download(view.definition.id + '.bpmn', root.LWProcessBpmn.export(view.definition), 'application/xml'); status('Exported BPMN 2.0 XML with diagram layout. Wildlands values are stored in a wl: extension; other tools may ignore them.');});
  on('report', () => download(view.definition.id + '.report.json', JSON.stringify({format: 'wildlands-process-report', schemaVersion: 1, fingerprint: root.LWProcessCatalog.fingerprint(view.definition), definition: view.definition, snapshot: view.snapshot}, null, 2), 'application/json'));
  on('html', () => {
-  const encoded = JSON.stringify(view.definition).replaceAll('<', '\\u003c').replaceAll('>', '\\u003e').replaceAll('&', '\\u0026');
-  const html = pristine.replace(/window\.LWProcessDefinition = [^\n]*;/, () => 'window.LWProcessDefinition = ' + encoded + ';')
-   .replace(/<meta name="wildlands-game-digest"[^>]*>/g, '').replace(/<title>[^<]*<\/title>/, () => '<title>' + esc(view.definition.name) + '</title>');
-  download(view.definition.id + '.html', html, 'text/html'); status('Downloaded an offline HTML with the active definition. It opens with a fresh paused run.');
+  const defs = app.definitions(), many = defs.length > 1, safe = (value: unknown) => JSON.stringify(value).replaceAll('<', '\\u003c').replaceAll('>', '\\u003e').replaceAll('&', '\\u0026');
+  // The first list entry stays the single-definition global, so a multi-process page reopens on its first process.
+  let html = pristine.replace(/window\.LWProcessDefinition = [^\n]*;/, () => 'window.LWProcessDefinition = ' + safe(defs[0]) + ';')
+   .replace(/<meta name="wildlands-game-digest"[^>]*>/g, '');
+  if (many) html = html.replace(/window\.LWProcessDefinitions = [^\n]*;/, () => 'window.LWProcessDefinitions = ' + safe(defs) + ';');
+  else html = html.replace(/<title>[^<]*<\/title>/, () => '<title>' + esc(defs[0]!.name) + '</title>');
+  download((many ? 'wildlands-processes' : defs[0]!.id) + '.html', html, 'text/html');
+  status(many ? `Downloaded an offline HTML with all ${defs.length} applied processes. It opens on ${defs[0]!.name} with a fresh paused run.` : 'Downloaded an offline HTML with the active definition. It opens with a fresh paused run.');
  });
  on('import', () => get<HTMLInputElement>('file').click());
  get<HTMLInputElement>('file').onchange = async () => {
@@ -173,7 +205,7 @@
   frameId = requestAnimationFrame(animate);
  }
  rebuild(); refresh(); status(unavailable || 'Ready. Run the simulation, or choose a scene to inspect its work.', !!unavailable);
- root.LWProcessStudio = Object.freeze({query: () => app.query(), definition: () => app.query().definition});
+ root.LWProcessStudio = Object.freeze({query: () => app.query(), definition: () => app.query().definition, definitions: () => app.definitions()});
  root.__wildlandsReady = true;
  document.documentElement.dataset.wildlandsReady = 'process'; dispatchEvent(new CustomEvent('wildlands:ready', {detail: {host: 'process'}}));
  frameId = requestAnimationFrame(animate);

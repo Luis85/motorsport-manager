@@ -25,6 +25,13 @@ declare namespace LWProcessTuning {
    (b.order === 'priority' ? text(`tune-backlog-field-${i}`, 'Priority field (numeric case value)', `steps.${i}.backlog.priority`, b.priority) : '') +
    (s.kind === 'join' ? `<label for="tune-backlog-pull-${i}">Pull limit (work allowed in the next step; blank for no limit)<input id="tune-backlog-pull-${i}" type="number" min="1" max="200" step="1" data-path="steps.${i}.backlog.pull" data-kind="optional-int" value="${b.pull ?? ''}"></label>` : '');
  }
+ function timerMarkup(s: LWProcess.Step, i: number): string {
+  return s.until !== undefined ? num(`tune-step-until-${i}`, 'Wait until absolute minute', `steps.${i}.until`, s.until, 0, MAX) : num(`tune-step-dur-${i}`, 'Wait duration (minutes)', `steps.${i}.duration`, s.duration, 0, MAX);
+ }
+ function addMarkup(s: LWProcess.Step, i: number): string {
+  const keys = Object.keys(s.add ?? {}); if (!keys.length) return '';
+  return keys.map((k, j) => num(`tune-step-add-${i}-${j}`, `Adds to counter ${k} (whole number, may be negative)`, `steps.${i}.add.${k}`, s.add![k], -MAX, MAX)).join('');
+ }
  function needsMarkup(s: LWProcess.Step, i: number): string {
   if (s.kind === 'start') return '';
   const rows = (s.needs ?? []).map((n, j) => `<fieldset class="tune-need"><legend>Need ${j + 1}</legend>${text(`tune-need-field-${i}-${j}`, 'Field earlier steps must deliver', `steps.${i}.needs.${j}.field`, n.field)}
@@ -36,7 +43,7 @@ declare namespace LWProcessTuning {
  function markup(d: LWProcess.Definition): string {
   const res = d.resources.map((r, i) => `<fieldset><legend>${esc(r.name)}</legend>${text('tune-res-name-' + i, 'Name', `resources.${i}.name`, r.name)}${num('tune-res-cap-' + i, 'Capacity', `resources.${i}.capacity`, r.capacity, 1, 1000)}${num('tune-res-cost-' + i, 'Cost per minute', `resources.${i}.costPerMinute`, r.costPerMinute, 0, MAX)}</fieldset>`).join('') || '<p>No shared resources defined.</p>';
   const steps = d.steps.map((s, i) => `<details class="tune-step"><summary>${esc(s.name)} <small>${esc(s.kind)}</small></summary>${text('tune-step-name-' + i, 'Name', `steps.${i}.name`, s.name)}${text('tune-step-desc-' + i, 'Description', `steps.${i}.description`, s.description, true)}
-   ${s.kind === 'task' ? num('tune-step-dur-' + i, 'Duration (minutes)', `steps.${i}.duration`, s.duration, 1, MAX) : ''}${num('tune-step-cost-' + i, 'Fixed cost per visit', `steps.${i}.cost`, s.cost ?? 0, 0, 100000000)}
+   ${s.kind === 'task' ? num('tune-step-dur-' + i, 'Duration (minutes)', `steps.${i}.duration`, s.duration, 1, MAX) : ''}${s.kind === 'timer' ? timerMarkup(s, i) : num('tune-step-cost-' + i, 'Fixed cost per visit', `steps.${i}.cost`, s.cost ?? 0, 0, 100000000)}${addMarkup(s, i)}
    ${s.kind === 'task' ? d.resources.map((r, j) => num(`tune-step-res-${i}-${j}`, `Needs ${r.name}`, `steps.${i}.resources.${r.id}`, s.resources?.[r.id] ?? 0, 0, r.capacity)).join('') : ''}${backlogMarkup(s, i)}${needsMarkup(s, i)}</details>`).join('');
   const arrivals = d.arrivals.map((a, i) => `<fieldset><legend>Arrival ${i + 1}</legend>${num('tune-arr-at-' + i, 'First arrival (minute)', `arrivals.${i}.at`, a.at, 0, MAX)}${num('tune-arr-count-' + i, 'Cases', `arrivals.${i}.count`, a.count, 1, 200)}${num('tune-arr-int-' + i, 'Interval (minutes)', `arrivals.${i}.interval`, a.interval, 0, MAX)}</fieldset>`).join('') || '<p>No arrivals defined.</p>';
   return `<h3>Tune values</h3><p class="process-note">Edit numbers and names here. Changes update the draft below; apply it to start a fresh paused run.</p>

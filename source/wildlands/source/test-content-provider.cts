@@ -122,6 +122,15 @@ test('Built artifacts run the content provider after their data globals and befo
  }
 });
 
+test('Browser artifacts adopt an ordered process list beside the first process, and a single process declares no list',()=>{
+ const first={id:'one'},second={id:'two'};
+ const many=adopted({LWProcessDefinition:first,LWProcessDefinitions:[first,second]})!;
+ assert.deepEqual(many.process,first);assert.deepEqual(many.processes,[first,second]);
+ const single=adopted({LWProcessDefinition:first})!;
+ assert.deepEqual(single.process,first);assert.equal(Object.hasOwn(single,'processes'),false);
+ assert.equal((adopted({LWProcessDefinitions:[first]})!.processes as unknown[]).length,1);
+});
+
 const report={suite:'content-provider',passed:results.filter(result=>result.passed).length,total:results.length,results};
 fs.writeFileSync(path.join(__dirname,'content-provider-results.json'),JSON.stringify(report,null,2)+'\n');
 console.log(`${report.passed}/${report.total} content provider checks passed`);

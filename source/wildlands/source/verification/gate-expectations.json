@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
-  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-browser"],
-  "totalChecks": 1926,
+  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-bpmn", "business-process-browser"],
+  "totalChecks": 1942,
   "reviewedAdditions": [
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
@@ -387,7 +387,23 @@
     {"suite": "business-process", "name": "BPMN export is well-formed, standards-shaped and imports back losslessly"},
     {"suite": "business-process", "name": "Foreign BPMN imports with defaults, folded merges, parsed conditions, inferred joins and diagram layout"},
     {"suite": "business-process", "name": "BPMN import rejects unsupported behaviour, hostile XML and unreadable conditions explicitly"},
-    {"suite": "business-process-browser", "name": "BPMN 2.0 export imports losslessly in the browser and foreign or unsupported BPMN reports explicit notes or rejects"}
+    {"suite": "business-process-browser", "name": "BPMN 2.0 export imports losslessly in the browser and foreign or unsupported BPMN reports explicit notes or rejects"},
+    {"suite": "business-process", "name": "Agile vendor project completes three projects with variable iterations, UAT rework and UX in product design"},
+    {"suite": "business-process", "name": "Counters increment at completion, compare to other fields and loop a bounded number of times"},
+    {"suite": "business-process", "name": "Counter failures and field-to-field conditions reject unsafe or missing values explicitly"},
+    {"suite": "business-process", "name": "Timers hold work for exact durations or until an absolute minute without using resources"},
+    {"suite": "business-process", "name": "Timers inside parallel regions, pending timers and run limits stay deterministic and never read as blocked"},
+    {"suite": "business-process-bpmn", "name": "BPMN round trip preserves timer steps, counters and field-to-field conditions losslessly"},
+    {"suite": "business-process-bpmn", "name": "BPMN import accepts duration timer events and rejects unsupported timer and event forms explicitly"},
+    {"suite": "business-process-browser", "name": "Process switch lists each process of a multi-process game, switches without ticking and stays hidden for one process"},
+    {"suite": "business-process-browser", "name": "Editing one process survives switching away and back with its applied definition and unapplied draft"},
+    {"suite": "business-process-browser", "name": "Downloaded HTML of a multi-process game reopens with every process in order and the applied edits"},
+    {"suite": "business-process-browser", "name": "Process switch reflows at phone width without horizontal overflow and wraps long names"},
+    {"suite": "business-process-browser", "name": "Timer steps render in 2D and 3D with due minutes, never crash and never read as blocked"},
+    {"suite": "business-process-browser", "name": "Counter effects and timer receipts appear in Inputs and outputs and the inspector"},
+    {"suite": "game-folders", "name": "Process manifests declare exactly one of definition or definitions (1-8 unique paths) in schema and validator alike"},
+    {"suite": "game-folders", "name": "Multi-process game folders inventory and digest every definition, emit LWProcessDefinitions and admit each entry by index"},
+    {"suite": "content-provider", "name": "Browser artifacts adopt an ordered process list beside the first process, and a single process declares no list"}
   ],
   "renames": [
     {"suite": "wildlands-acceptance", "from": "Every discovered built-in scenario compiles complete resources with verified manifest hashes", "to": "Every discovered game folder scenario compiles complete resources with verified manifest hashes", "reason": "Phase 4A (decision D1): the engine CLI has no built-in scenarios. The check now compiles every scenario of every colony game folder (scenarios --game DIR) instead of the three former built-in packs; its assertions on complete resources and manifest hashes are unchanged."}
@@ -2425,7 +2441,8 @@
       "Profile admission rejects malformed, newer and second installs without invoking accessors",
       "Browser artifacts adopt their declared data globals as the installed profile",
       "The injected scenario catalog orders built-ins and selects its declared default pack",
-      "Built artifacts run the content provider after their data globals and before every engine module"
+      "Built artifacts run the content provider after their data globals and before every engine module",
+      "Browser artifacts adopt an ordered process list beside the first process, and a single process declares no list"
     ],
     "game-folders": [
       "Game manifest schema and structural validator agree and stay closed and bounded",
@@ -2441,7 +2458,9 @@
       "Emberworks folder validates, keeps a closed inventory and equals its pre-move profile",
       "Office folder validates, keeps a closed inventory and equals its pre-move profile",
       "RTS Frontier folder validates, keeps a closed inventory and equals its pre-move profile",
-      "Pocket Pet folder validates, keeps a closed inventory and equals its pre-move profile"
+      "Pocket Pet folder validates, keeps a closed inventory and equals its pre-move profile",
+      "Process manifests declare exactly one of definition or definitions (1-8 unique paths) in schema and validator alike",
+      "Multi-process game folders inventory and digest every definition, emit LWProcessDefinitions and admit each entry by index"
     ],
     "runtime-optionality-browser": [
       "The complete colony shell signals ready once, after its public APIs and optional hosts exist",
@@ -2512,7 +2531,16 @@
       "Needs report earlier deliveries and describe themselves",
       "BPMN export is well-formed, standards-shaped and imports back losslessly",
       "Foreign BPMN imports with defaults, folded merges, parsed conditions, inferred joins and diagram layout",
-      "BPMN import rejects unsupported behaviour, hostile XML and unreadable conditions explicitly"
+      "BPMN import rejects unsupported behaviour, hostile XML and unreadable conditions explicitly",
+      "Agile vendor project completes three projects with variable iterations, UAT rework and UX in product design",
+      "Counters increment at completion, compare to other fields and loop a bounded number of times",
+      "Counter failures and field-to-field conditions reject unsafe or missing values explicitly",
+      "Timers hold work for exact durations or until an absolute minute without using resources",
+      "Timers inside parallel regions, pending timers and run limits stay deterministic and never read as blocked"
+    ],
+    "business-process-bpmn": [
+      "BPMN round trip preserves timer steps, counters and field-to-field conditions losslessly",
+      "BPMN import accepts duration timer events and rejects unsupported timer and event forms explicitly"
     ],
     "business-process-browser": [
       "Process artifact starts paused with one selectable scene per step and real WebGL",
@@ -2531,7 +2559,13 @@
       "Downloaded self-contained HTML reopens offline with the edited definition and no requests",
       "Imported text renders inertly and survives escaped standalone HTML export",
       "Desktop and mobile reflow retain controls without horizontal overflow",
-      "Process browser lifecycle emits no runtime errors or network requests"
+      "Process browser lifecycle emits no runtime errors or network requests",
+      "Process switch lists each process of a multi-process game, switches without ticking and stays hidden for one process",
+      "Editing one process survives switching away and back with its applied definition and unapplied draft",
+      "Downloaded HTML of a multi-process game reopens with every process in order and the applied edits",
+      "Process switch reflows at phone width without horizontal overflow and wraps long names",
+      "Timer steps render in 2D and 3D with due minutes, never crash and never read as blocked",
+      "Counter effects and timer receipts appear in Inputs and outputs and the inspector"
     ]
   }
 }

@@ -69,7 +69,12 @@ export function admitTemplate(template: 'rts' | 'pet', profile: Profile): void {
 export function admitGameProfile(game: CompiledGame, audit: BalancingAudit): Profile {
  const profile = (require('../content-provider.js') as LWContentProvider.Api).install(game.profile);
  if (game.manifest.template === 'process') {
-  (require('../process-sdk.cjs') as typeof import('../process-sdk.cjs')).catalog.admit(profile.process);
+  const catalog = (require('../process-sdk.cjs') as typeof import('../process-sdk.cjs')).catalog;
+  if (!profile.processes) catalog.admit(profile.process);
+  // Every listed process is admitted on its own; a failure names its index so the author can find the file.
+  (profile.processes ?? []).forEach((entry, index) => {
+   try { catalog.admit(entry); } catch (error) { throw Error(`Process definition ${index} of ${profile.processes!.length}: ${error instanceof Error ? error.message : String(error)}`); }
+  });
   return profile;
  }
 

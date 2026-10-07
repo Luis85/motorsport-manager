@@ -16,7 +16,7 @@
   world.create('process-clock'); world.set('process-clock', 'process-clock', clock);
   for (const r of definition.resources) { world.create('pool-' + r.id); world.set('pool-' + r.id, 'process-pool', {...r, busy: 0, busyMinutes: 0}); }
   for (const step of definition.steps) { world.create('station-' + step.id); world.set('station-' + step.id, 'process-station', {id: step.id, visits: 0, completed: 0, waitMinutes: 0}); }
-  const state: LWProcess.State = {world, definition, clock, events: [], receipts: [], receiptsDropped: 0, steps: new Map(definition.steps.map(s => [s.id, s])),
+  const state: LWProcess.State = {world, definition, clock, events: [], receipts: [], receiptsDropped: 0, failures: [], steps: new Map(definition.steps.map(s => [s.id, s])),
    outgoing: new Map(definition.steps.map(s => [s.id, definition.flows.filter(f => f.from === s.id)])),
    arrivals: definition.arrivals.flatMap(a => Array.from({length: a.count}, (_, i) => ({at: a.at + i * a.interval, data: {...a.data}}))).sort((a, b) => a.at - b.at)};
   // Scheduler owns timed ECS value updates; graph/structural changes happen after it releases its lock.
@@ -29,12 +29,14 @@
    const cases = world.query(['process-case']).map(id => world.get<LWProcess.Case>(id, 'process-case')!);
    const tokens = world.query(['process-token']).map(id => world.get<LWProcess.Token>(id, 'process-token')!);
    const finished = cases.filter(c => c.status === 'completed'), active = cases.filter(c => c.status === 'active').length;
+   const timers = (id: string): LWProcess.TimerMetric => { const due = tokens.filter(t => t.stepId === id && t.status === 'timer').map(t => t.due!); return {waiting: due.length, nextDue: due.length ? Math.min(...due) : null}; };
    const future = clock.arrival < state.arrivals.length;
    const status = horizon !== null && clock.minute >= horizon && (future || active) ? 'limit' : !future && !active ? 'completed'
-    : !future && active && !tokens.some(t => t.status === 'active') ? 'blocked' : clock.minute === 0 ? 'ready' : 'running';
+    : !future && active && !tokens.some(t => t.status === 'active' || t.status === 'timer') ? 'blocked' : clock.minute === 0 ? 'ready' : 'running';
    return copy({minute: clock.minute, status, cases, tokens, events: state.events, receipts: state.receipts, receiptsDropped: state.receiptsDropped,
     steps: definition.steps.map(step => ({...world.get<LWProcess.Station>('station-' + step.id, 'process-station')!,
-     queued: tokens.filter(t => t.stepId === step.id && t.status !== 'active').length, active: tokens.filter(t => t.stepId === step.id && t.status === 'active').length})),
+     queued: tokens.filter(t => t.stepId === step.id && t.status !== 'active' && t.status !== 'timer').length, active: tokens.filter(t => t.stepId === step.id && t.status === 'active').length,
+     timers: timers(step.id)})),
     resources: definition.resources.map(r => { const p = world.get<LWProcess.Pool>('pool-' + r.id, 'process-pool')!;
      return {id: r.id, capacity: p.capacity, busy: p.busy, busyMinutes: p.busyMinutes, utilization: clock.minute ? p.busyMinutes / (clock.minute * p.capacity) : 0}; }),
     metrics: {arrived: cases.length, completed: finished.length, failed: cases.filter(c => c.status === 'failed').length, active, cost: clock.cost,

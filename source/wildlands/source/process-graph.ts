@@ -6,10 +6,13 @@
  function matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean {
   if (!Object.hasOwn(data, c.field)) return false;
   const value = data[c.field];
-  if (c.op === 'eq') return value === c.value;
-  if (c.op === 'ne') return value !== c.value;
-  if (typeof value !== 'number' || typeof c.value !== 'number') return false;
-  return c.op === 'gt' ? value > c.value : c.op === 'gte' ? value >= c.value : c.op === 'lt' ? value < c.value : value <= c.value;
+  // A field-to-field comparison needs the other field too; a missing one never matches.
+  if (c.valueField !== undefined && !Object.hasOwn(data, c.valueField)) return false;
+  const other = c.valueField === undefined ? c.value : data[c.valueField];
+  if (c.op === 'eq') return value === other;
+  if (c.op === 'ne') return value !== other;
+  if (typeof value !== 'number' || typeof other !== 'number') return false;
+  return c.op === 'gt' ? value > other : c.op === 'gte' ? value >= other : c.op === 'lt' ? value < other : value <= other;
  }
  function check(d: LWProcess.Definition): LWProcess.Diagnostic[] {
   const limits = root.LWProcessLimits, errors: LWProcess.Diagnostic[] = [];
@@ -29,6 +32,7 @@
   d.flows.forEach((f, i) => {
    if (!steps.has(f.from) || !steps.has(f.to)) fail('/flows/' + i, 'Both endpoints must exist.');
    if (f.when && steps.get(f.from)?.kind !== 'decision') fail('/flows/' + i + '/when', 'Only decisions have conditions.');
+   if (f.when && (f.when.value === undefined) === (f.when.valueField === undefined)) fail('/flows/' + i + '/when', 'A condition compares to exactly one of a value or another case field (valueField).');
   });
   d.steps.forEach((s, i) => {
    const path = '/steps/' + i, out = outgoing(s.id), into = incoming(s.id);
@@ -38,8 +42,17 @@
    if (s.kind === 'decision' && out.filter(f => !f.when).length !== 1) fail(path, 'Decision needs exactly one unconditional fallback.');
    if (s.kind === 'task') {
     if (s.duration === undefined) fail(path + '/duration', 'Tasks need a positive whole-minute duration.');
+    if (s.until !== undefined) fail(path + '/until', 'Only timers wait until a minute.');
     for (const [id, count] of Object.entries(s.resources ?? {})) if (!pools.has(id) || count > pools.get(id)!.capacity) fail(path + '/resources/' + id, 'Demand exceeds the available pool.');
-   } else if (['duration', 'cost', 'resources', 'set'].some(k => Object.hasOwn(s, k))) fail(path, 'Only tasks declare work, costs, resource demands or effects.');
+   } else if (s.kind === 'timer') {
+    if ((s.duration === undefined) === (s.until === undefined)) fail(path, 'A timer needs exactly one of a whole-minute duration or an absolute until minute.');
+    if (s.until !== undefined && s.until >= limits.minutes) fail(path + '/until', 'A timer must expire before the ' + limits.minutes + '-minute horizon.');
+    for (const key of ['cost', 'resources', 'backlog']) if (Object.hasOwn(s, key)) fail(path + '/' + key, 'Timers hold work without resources, costs or a backlog.');
+   } else if (['duration', 'until', 'cost', 'resources', 'set', 'add'].some(k => Object.hasOwn(s, k))) fail(path, 'Only tasks and timers declare work, waits, costs, resource demands or effects.');
+   if (s.add !== undefined) {
+    if (!Object.keys(s.add).length) fail(path + '/add', 'Name at least one counter field to add to.');
+    for (const [field, delta] of Object.entries(s.add)) if (delta === 0) fail(path + '/add/' + field, 'A counter step must add a nonzero whole number.');
+   }
    (s.needs ?? []).forEach((n, j) => {
     if (s.kind === 'start') fail(path + '/needs/' + j, 'The start step has no earlier step to deliver its needs.');
     if ((n.op === undefined) !== (n.value === undefined)) fail(path + '/needs/' + j, 'A need names an operator and a value together, or neither.');
@@ -74,11 +87,11 @@
     const path = new Set<string>(), fields = new Set<string>(); let current = flow.to, previous = fork.id;
     while (current !== fork.join) {
      const step = steps.get(current);
-     if (!step || path.has(current) || region.has(current) || step.kind !== 'task' || outgoing(current).length !== 1 || incoming(current).length !== 1) {
-      fail(at(fork.id), 'Parallel branches must be disjoint task chains ending at their join.'); break;
+     if (!step || path.has(current) || region.has(current) || step.kind !== 'task' && step.kind !== 'timer' || outgoing(current).length !== 1 || incoming(current).length !== 1) {
+      fail(at(fork.id), 'Parallel branches must be disjoint task or timer chains ending at their join.'); break;
      }
      path.add(current); region.add(current);
-     Object.keys(step.set ?? {}).forEach(key => fields.add(key));
+     Object.keys(step.set ?? {}).concat(Object.keys(step.add ?? {})).forEach(key => fields.add(key));
      previous = current; current = outgoing(current)[0]!.to;
     }
     if (current === fork.join) expectedIncoming.add(previous);

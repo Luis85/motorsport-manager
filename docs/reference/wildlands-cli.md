@@ -728,4 +728,4 @@ payloads.
 | | `--output` | yes unless `--dry-run` | Edited definition. |
 | | `--dry-run` | no | Write nothing; conflicts with `--output`. |
 
-The `process` template builds data-only definitions into offline 2D/3D simulations. See [Business process authoring](../how-to/business-process-authoring.md).
+The `process` template builds data-only definitions into offline 2D/3D simulations; its manifest names either one `content.definition` or an ordered `content.definitions` list of 1-8 files (never both), and `validate-game` admits every entry and reports the failing index. See [Business process authoring](../how-to/business-process-authoring.md).
