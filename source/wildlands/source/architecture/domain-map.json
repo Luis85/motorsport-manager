@@ -381,6 +381,9 @@
       "files": [
         "process-schema.ts",
         "process-needs.ts",
+        "process-xml.ts",
+        "process-bpmn.ts",
+        "process-bpmn-import.ts",
         "process-graph.ts",
         "process-catalog.ts",
         "process-systems.ts"
@@ -481,6 +484,9 @@
     "LWScenarioPacks",
     "LWProcessLimits",
     "LWProcessNeeds",
+    "LWProcessXml",
+    "LWProcessBpmnExport",
+    "LWProcessBpmn",
     "LWProcessSchema",
     "LWProcessGraph",
     "LWProcessCatalog",

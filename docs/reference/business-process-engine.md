@@ -107,10 +107,46 @@ The viewer imports/exports process JSON, runs/pauses/steps/resets simulations,
 exports reports and downloads a new self-contained HTML with the current
 definition. Exported HTML starts a fresh paused run; it is not a checkpoint.
 
+## BPMN 2.0 interchange
+
+`process export-bpmn` and the studio's **Export BPMN** write BPMN 2.0 XML (model
+and diagram interchange); `process import-bpmn` and **Import JSON or BPMN** read it.
+
+| Wildlands | BPMN 2.0 |
+| --- | --- |
+| start / end | `startEvent` / `endEvent` |
+| task (duration, cost, `set`) | `task`; resource demands as `performer` + `resourceRef` |
+| decision, conditional flow | `exclusiveGateway` with `default`; `conditionExpression` (`${field == value}`) |
+| fork / join | diverging / converging `parallelGateway` |
+| flow label | `sequenceFlow` `name` |
+| resources | root `resource` |
+| scenes, layout | `BPMNShape` / `BPMNEdge` (10 pixels per scene unit) |
+
+Values BPMN has no field for (durations, costs, capacities, `set`, `needs`, `backlog`,
+arrivals, scene ids, colours, attached assets, the exact condition) travel in
+elements of the `urn:wildlands:process:1` namespace inside `extensionElements`. An
+export imports back to an identical definition (same fingerprint); other BPMN tools
+ignore the extension. Exported files are not executable BPMN (`isExecutable="false"`).
+
+Import accepts one `process` with start and end events, `task`, `userTask`,
+`manualTask`, `businessRuleTask`, `serviceTask`, `scriptTask`, `sendTask`,
+`receiveTask`, exclusive and parallel gateways, sequence flows, resources and
+`resourceRef` performers. Rejected with a list of offending elements: sub-processes,
+call activities, boundary and intermediate events, inclusive, event-based and complex
+gateways, and conditions that are not `field op literal`. Reported as warnings, never
+silent: durations defaulted (5 minutes, `--default-duration`), merge or pass-through
+exclusive gateways folded into their flows, behaviour of service or script tasks not
+executed, ignored event definitions, lanes and annotations, automatic layout, and a
+default arrival of one case. Foreign ids are lowercased to the Wildlands id format.
+The imported definition is checked like any other (needs, backlogs, graph rules);
+a draft with diagnostics can be kept with `--draft`. XML with DOCTYPE or entity
+declarations, more than 8 MiB or 64 levels of nesting is refused.
+Conformance to the OMG XSD or any specific modeler was not verified.
+
 ## Explicit v1 boundaries
 
-This is an executable process simulation format, not a BPMN 2.0 interchange
-implementation. No external service execution, credentials, calendars, stochastic
+This is an executable process simulation format; BPMN 2.0 interchange covers only
+the subset above. No external service execution, credentials, calendars, stochastic
 distributions, nested parallel regions, interrupts, compensation, live process
 migration, saved-run restoration or native Godot process export is claimed.
 Graph layout and scene presentation do not influence scheduling. Simulation

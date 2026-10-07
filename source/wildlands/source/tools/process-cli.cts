@@ -1,25 +1,26 @@
 /// <reference path="../process-contracts.d.ts" />
 /** Noninteractive process agent tools. All outputs are guarded and atomic via shared CLI I/O. */
 import {createHash} from 'node:crypto';
-import {catalog, runtime, authoring} from '../process-sdk.cjs';
+import {catalog, runtime, authoring, bpmn} from '../process-sdk.cjs';
 import {emit, readJsonFile, writeJsonFile, writeTextFile} from './cli-io.cjs';
 import {assembleGame} from './game-build.cjs';
 import {writeForgeProject} from './process-forge.cjs';
 const commands: Record<string, readonly string[]> = {
  discover: [], schema: ['--kind'], create: ['--id', '--name', '--output'], validate: ['--input', '--draft'], inspect: ['--input'],
  edit: ['--input', '--recipe', '--output', '--dry-run', '--draft'], run: ['--input', '--minutes', '--output'],
- build: ['--input', '--output'], forge: ['--input', '--output'],
+ build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output'], 'import-bpmn': ['--input', '--output', '--draft', '--default-duration'],
  attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint', '--output', '--dry-run']
 };
 const flags = new Set(['--draft', '--dry-run']);
 /** Options every invocation of a command must carry; checked before any file is read or work is done. */
 const requiredOptions: Record<string, readonly string[]> = {create: ['--id', '--output'], validate: ['--input'], inspect: ['--input'], edit: ['--input', '--recipe'],
- run: ['--input', '--minutes', '--output'], build: ['--input', '--output'], forge: ['--input', '--output'],
+ run: ['--input', '--minutes', '--output'], build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output'], 'import-bpmn': ['--input', '--output'],
  attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint']};
 const descriptions: Record<string, string> = {discover: 'Discover commands, limits and guarded edit operations.', schema: 'Get the authoritative process JSON Schema.',
  create: 'Create a runnable starter definition.', validate: 'Validate shape, references and graph semantics; --draft permits graph diagnostics.', inspect: 'Read identity, scene graph and starting snapshot without advancing time.',
  edit: 'Apply a revision/fingerprint guarded transaction; --draft allows intermediate graph diagnostics.', run: 'Run a fresh deterministic session for a bounded number of business minutes.',
- build: 'Build one self-contained offline HTML file.', forge: 'Create an editable Scene Forge project with one scene per step.', attach: 'Attach a Scene Forge Wildlands asset to a step using edit guards.'};
+ build: 'Build one self-contained offline HTML file.', 'export-bpmn': 'Export a BPMN 2.0 XML file (with Wildlands extension values and diagram layout).',
+ 'import-bpmn': 'Import a BPMN 2.0 XML file into a definition; unsupported elements are rejected, defaults are reported as warnings.', forge: 'Create an editable Scene Forge project with one scene per step.', attach: 'Attach a Scene Forge Wildlands asset to a step using edit guards.'};
 function recipeSchema(): Record<string, unknown> {
  const properties = catalog.schema.properties as Record<string, Record<string, unknown>>;
  const operation = (op: string, key: string, value: unknown) => ({type: 'object', additionalProperties: false, required: ['op', key], properties: {op: {const: op}, [key]: value}});
@@ -61,7 +62,7 @@ export function run(args: readonly string[]): void {
    if (values.has('--dry-run') && values.has('--output')) throw Error('Dry run does not accept --output.');
    if (!values.has('--dry-run') && !values.has('--output')) throw Error('Missing --output (or use --dry-run).');
   }
-  for (const key of ['--minutes', '--expected-revision']) if (values.has(key) && !/^\d+$/.test(values.get(key)!)) throw Error(key + ' must be a whole number.');
+  for (const key of ['--minutes', '--expected-revision', '--default-duration']) if (values.has(key) && !/^\d+$/.test(values.get(key)!)) throw Error(key + ' must be a whole number.');
   if (values.has('--kind') && !['definition', 'recipe'].includes(values.get('--kind')!)) throw Error('--kind must be definition or recipe.');
   const required = (key: string) => {const value = values.get(key); if (!value) throw Error('Missing ' + key); return value;};
   const read = (file: string) => JSON.parse(readJsonFile(file, 8 * 1024 * 1024).replace(/^\uFEFF/, '')) as unknown;
@@ -71,7 +72,7 @@ export function run(args: readonly string[]): void {
    success({format: 'wildlands-process', schemaVersion: 1, handbook: 'docs/reference/business-process-engine.md', limits: runtime.limits,
     operations: Object.entries(commands).map(([id, options]) => ({id, options, description: descriptions[id]})),
     editOperations: editOperations(),
-    workflow: ['create', 'inspect', 'edit --dry-run', 'edit', 'validate', 'forge', 'attach', 'run', 'build'],
+    workflow: ['create', 'inspect', 'edit --dry-run', 'edit', 'validate', 'forge', 'attach', 'run', 'build'], interchange: {bpmn: 'BPMN 2.0 XML via export-bpmn and import-bpmn'},
     recipe: {expectedRevision: 0, expectedFingerprint: '<inspect.fingerprint>', operations: [{op: 'rename', value: 'My process'}]},
     notes: ['put operations replace full definitions', 'dry runs write nothing', 'draft graph diagnostics must be resolved before run or build', 'fingerprint is a change guard, not a cryptographic signature']}); return;
   }
@@ -84,7 +85,17 @@ export function run(args: readonly string[]): void {
    const definition = authoring.create(required('--id'), values.get('--name') ?? required('--id'));
    success({output: output(definition, []), revision: definition.revision, fingerprint: catalog.fingerprint(definition)}); return;
   }
+  if (command === 'import-bpmn') {
+   const source = readJsonFile(required('--input'), 8 * 1024 * 1024), duration = values.has('--default-duration') ? Number(values.get('--default-duration')) : undefined;
+   const imported = bpmn.import(source, duration === undefined ? {} : {defaultDuration: duration}), draft = values.has('--draft');
+   if (!(draft ? imported.acceptable : imported.ok)) {emit({ok: false, protocolVersion: 1, diagnostics: imported.diagnostics, warnings: imported.warnings}); process.exitCode = 1; return;}
+   success({output: output(imported.definition, [required('--input')]), runnable: imported.ok, diagnostics: imported.diagnostics, warnings: imported.warnings}); return;
+  }
   const file = required('--input'), input = read(file);
+  if (command === 'export-bpmn') {
+   const target = required('--output'); if (!/\.(bpmn|xml)$/.test(target)) throw Error('BPMN output must end in .bpmn or .xml.');
+   success({output: writeTextFile(target, bpmn.export(input), [file])}); return;
+  }
   if (command === 'validate') {
    const checked = catalog.validate(input, values.has('--draft')), accepted = values.has('--draft') ? checked.acceptable : checked.ok;
    emit({ok: accepted, protocolVersion: 1, runnable: checked.ok, diagnostics: checked.diagnostics});

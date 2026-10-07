@@ -3,7 +3,7 @@
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWContentProvider: LWContentProvider.Api; LWProcessApplication: LWProcessApp.Api; LWProcessCatalog: LWProcess.Catalog;
-  LWProcessData: LWProcessData.Api; LWProcess2D: LWProcess2D.Api; LWProcess3D: LWProcess3D.Api; LWProcessTuning: LWProcessTuning.Api; LWProcessNeeds: LWProcessNeeds.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
+  LWProcessData: LWProcessData.Api; LWProcess2D: LWProcess2D.Api; LWProcess3D: LWProcess3D.Api; LWProcessTuning: LWProcessTuning.Api; LWProcessNeeds: LWProcessNeeds.Api; LWProcessBpmn: LWProcessBpmn.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
  const host = document.getElementById('process-shell'); if (!host) return;
  const pristine = '<!doctype html>\n' + document.documentElement.outerHTML;
  const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
@@ -12,7 +12,7 @@
  try {app = root.LWProcessApplication.create(root.LWContentProvider.get('process').process);} catch (e) {host.textContent = 'Process could not load: ' + String(e); return;}
  host.innerHTML = `
  <header class="process-header"><div><h1 id="process-title"></h1><p>Wildlands · Process Studio</p></div><div class="process-file-actions">
- <button id="import">Import JSON</button><button id="json">Export JSON</button><button id="html">Download HTML</button><input type="file" id="file" accept=".json,application/json" hidden></div></header>
+ <button id="import">Import JSON or BPMN</button><button id="json">Export JSON</button><button id="bpmn">Export BPMN</button><button id="html">Download HTML</button><input type="file" id="file" accept=".json,.bpmn,.xml,application/json,application/xml,text/xml" hidden></div></header>
  <div class="process-toolbar" aria-label="Simulation controls"><button id="play" class="primary" aria-describedby="message">Run simulation</button><button id="step" aria-describedby="message">Step 1 min</button><button id="advance" aria-describedby="message">Advance 30 min</button><button id="reset">Reset run</button>
  <label>Speed <select id="speed"><option value="1">1 min per tick</option><option value="5" selected>5 min per tick</option><option value="30">30 min per tick</option></select></label>
  <label>Run until <select id="horizon"><option value="1440">1 day (1,440 min)</option><option value="10080">1 week (10,080 min)</option><option value="43200">30 days (43,200 min)</option><option value="100000">Engine default (100,000 min)</option><option value="unlimited">Unlimited</option><option value="custom">Custom…</option></select></label>
@@ -130,6 +130,7 @@
  get<HTMLSelectElement>('horizon').onchange = applyHorizon; get<HTMLInputElement>('horizon-custom').onchange = applyHorizon;
  on('overview', () => app.select(null)); on('mode-2d', () => app.mode('2d')); on('mode-3d', () => app.mode('3d')); on('frame', () => {if (view.mode === '2d') svg.frame(); else three?.frame();});
  on('json', () => download(view.definition.id + '.process.json', JSON.stringify(view.definition, null, 2), 'application/json'));
+ on('bpmn', () => {download(view.definition.id + '.bpmn', root.LWProcessBpmn.export(view.definition), 'application/xml'); status('Exported BPMN 2.0 XML with diagram layout. Wildlands values are stored in a wl: extension; other tools may ignore them.');});
  on('report', () => download(view.definition.id + '.report.json', JSON.stringify({format: 'wildlands-process-report', schemaVersion: 1, fingerprint: root.LWProcessCatalog.fingerprint(view.definition), definition: view.definition, snapshot: view.snapshot}, null, 2), 'application/json'));
  on('html', () => {
   const encoded = JSON.stringify(view.definition).replaceAll('<', '\\u003c').replaceAll('>', '\\u003e').replaceAll('&', '\\u0026');
@@ -140,8 +141,14 @@
  on('import', () => get<HTMLInputElement>('file').click());
  get<HTMLInputElement>('file').onchange = async () => {
   const file = get<HTMLInputElement>('file').files?.[0]; if (!file) return;
-  try {if (file.size > 8 * 1024 * 1024) throw Error('Choose a JSON file smaller than 8 MiB.'); const input = JSON.parse(await file.text()) as unknown;
-   app.replace(input); rebuild(); refresh(); status('Imported ' + file.name + '. New run is paused.');}
+  try {if (file.size > 8 * 1024 * 1024) throw Error('Choose a JSON or BPMN file smaller than 8 MiB.'); const text = await file.text();
+   let notes = '';
+   if (/\.(bpmn|xml)$/i.test(file.name) || text.trimStart().startsWith('<')) {
+    const result = root.LWProcessBpmn.import(text);
+    if (!result.ok) throw Error('BPMN needs changes before it can run: ' + result.diagnostics.map(e => e.path + ': ' + e.message).join(' '));
+    app.replace(result.definition); notes = result.warnings.length ? ' ' + result.warnings.length + ' import note(s): ' + result.warnings.slice(0, 2).join(' ') + (result.warnings.length > 2 ? ' …' : '') : '';
+   } else app.replace(JSON.parse(text) as unknown);
+   rebuild(); refresh(); status('Imported ' + file.name + '. New run is paused.' + notes);}
   catch (e) {status('Import rejected; active process retained. ' + String(e), true);}
   get<HTMLInputElement>('file').value = '';
  };

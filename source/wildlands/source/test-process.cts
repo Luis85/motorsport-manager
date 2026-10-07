@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import os from 'node:os';
-import {catalog, runtime, authoring} from './process-sdk.cjs';
+import {catalog, runtime, authoring, bpmn} from './process-sdk.cjs';
 require('./process-application.js');
 const application = (globalThis as unknown as {LWProcessApplication: LWProcessApp.Api}).LWProcessApplication;
 const results: {name: string; passed: boolean; error?: string}[] = [];
@@ -169,6 +169,52 @@ test('Needs report earlier deliveries and describe themselves', () => {
  assert.equal(needs.holds({field: 'built', op: 'eq', value: true}, {built: true}), true); assert.equal(needs.holds({field: 'built'}, {}), false);
  assert.equal(needs.describe({field: 'priority', op: 'gte', value: 2}), 'priority \u2265 2'); assert.equal(needs.describe({field: 'built'}), 'built delivered');
 });
+const M = 'xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"';
+const foreign = (body: string, extra = '') => `<?xml version="1.0"?><bpmn:definitions ${M} id="Definitions_1">${extra}<bpmn:process id="Process_Order.1" name="Order handling">${body}</bpmn:process></bpmn:definitions>`;
+const flow = (id: string, from: string, to: string, inner = '') => `<bpmn:sequenceFlow id="${id}" sourceRef="${from}" targetRef="${to}">${inner}</bpmn:sequenceFlow>`;
+test('BPMN export is well-formed, standards-shaped and imports back losslessly', () => {
+ const xml = bpmn.export(agency), again = bpmn.import(xml);
+ assert(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')); assert.match(xml, /<bpmn:definitions [^>]*xmlns:bpmn="http:\/\/www\.omg\.org\/spec\/BPMN\/20100524\/MODEL"/);
+ for (const tag of ['startEvent', 'endEvent', 'task', 'exclusiveGateway', 'parallelGateway', 'sequenceFlow', 'performer', 'resource', 'BPMNShape', 'BPMNEdge', 'conditionExpression']) assert(xml.includes('<' + (/^BPMN/.test(tag) ? 'bpmndi:' : tag === 'conditionExpression' || tag === 'resource' || tag === 'performer' ? 'bpmn:' : 'bpmn:') + tag), tag);
+ assert.deepEqual(again.warnings, []); assert.equal(again.ok, true); assert.deepEqual(again.definition, agency); assert.equal(catalog.fingerprint(again.definition), catalog.fingerprint(agency));
+ assert.equal(bpmn.export(again.definition), xml);
+ const ids = [...xml.matchAll(/<(?:bpmn|bpmndi):\w+[^>]*?\sid="([^"]+)"/g)].map(m => m[1]); assert.equal(new Set(ids).size, ids.length, 'BPMN ids must be unique');
+ const refs = [...xml.matchAll(/(?:sourceRef|targetRef|bpmnElement)="([^"]+)"/g)].map(m => m[1]!); assert(refs.every(r => ids.includes(r)), 'every reference resolves');
+ const withAsset = copy(agency); assert(withAsset.steps.some(st => st.scene.asset)); assert.deepEqual(bpmn.import(bpmn.export(withAsset)).definition!.steps.map(st => st.scene.asset), withAsset.steps.map(st => st.scene.asset));
+});
+test('Foreign BPMN imports with defaults, folded merges, parsed conditions, inferred joins and diagram layout', () => {
+ const xml = foreign(`<bpmn:startEvent id="Start_1" name="Request"><bpmn:outgoing>F1</bpmn:outgoing></bpmn:startEvent>
+  <bpmn:exclusiveGateway id="Merge_1"/><bpmn:userTask id="Review" name="Review request"><bpmn:performer><bpmn:resourceRef>Res_Clerk</bpmn:resourceRef></bpmn:performer></bpmn:userTask>
+  <bpmn:exclusiveGateway id="Valid" name="Valid?" default="F_fix"/><bpmn:serviceTask id="Fix" name="Fix data"/><bpmn:parallelGateway id="Split"/><bpmn:task id="Pack" name="Pack"/><bpmn:task id="Bill" name="Bill"/>
+  <bpmn:parallelGateway id="Sync"/><bpmn:endEvent id="Done" name="Done"/><bpmn:laneSet id="Lanes"/>
+  ${flow('F1', 'Start_1', 'Merge_1')}${flow('F2', 'Merge_1', 'Review')}${flow('F3', 'Review', 'Valid')}
+  ${flow('F_ok', 'Valid', 'Split', '<bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${approved == true}</bpmn:conditionExpression>')}${flow('F_fix', 'Valid', 'Fix')}${flow('F_back', 'Fix', 'Merge_1')}
+  ${flow('P1', 'Split', 'Pack')}${flow('P2', 'Split', 'Bill')}${flow('P3', 'Pack', 'Sync')}${flow('P4', 'Bill', 'Sync')}${flow('F9', 'Sync', 'Done')}`,
+  '<bpmn:resource id="Res_Clerk" name="Clerk"/>');
+ const r = bpmn.import(xml); assert(r.acceptable, JSON.stringify(r.diagnostics)); const d = r.definition!;
+ assert.equal(d.id, 'process-order-1'); assert.equal(d.name, 'Order handling'); assert.equal(d.start, 'start-1');
+ assert.deepEqual(d.steps.map(s => [s.id, s.kind]), [['start-1', 'start'], ['review', 'task'], ['valid', 'decision'], ['fix', 'task'], ['split', 'fork'], ['pack', 'task'], ['bill', 'task'], ['sync', 'join'], ['done', 'end']]);
+ assert.equal(d.steps.find(s => s.id === 'split')!.join, 'sync'); assert.deepEqual(d.steps.find(s => s.id === 'review')!.resources, {'res-clerk': 1}); assert.equal(d.steps.find(s => s.id === 'fix')!.duration, 5);
+ assert.deepEqual(d.flows.find(f => f.id === 'f-ok')!.when, {field: 'approved', op: 'eq', value: true}); assert.equal(d.flows.find(f => f.id === 'f-fix')!.when, undefined);
+ assert.equal(d.flows.find(f => f.id === 'f-back')!.to, 'review'); assert(!d.steps.some(s => s.id === 'merge-1'));
+ assert(r.warnings.some(w => /folded/.test(w))); assert(r.warnings.some(w => /no duration/.test(w))); assert(r.warnings.some(w => /serviceTask/.test(w))); assert(r.warnings.some(w => /arrivals/.test(w)));
+ assert.equal(d.arrivals.length, 1); const ok = catalog.validate(d); assert(!ok.diagnostics.length || r.ok === false);
+ const shaped = xml.replace('</bpmn:process>', '</bpmn:process><bpmndi:BPMNDiagram id="D"><bpmndi:BPMNPlane id="P" bpmnElement="Process_Order.1">' + ['Start_1', 'Review', 'Valid', 'Fix', 'Split', 'Pack', 'Bill', 'Sync', 'Done'].map((id, i) => `<bpmndi:BPMNShape id="${id}_di" bpmnElement="${id}"><dc:Bounds x="${100 + i * 150}" y="${100 + i % 2 * 100}" width="100" height="80"/></bpmndi:BPMNShape>`).join('') + '</bpmndi:BPMNPlane></bpmndi:BPMNDiagram>');
+ const laid = bpmn.import(shaped).definition!; assert.deepEqual(laid.steps.map(s => s.scene.position), [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => [i * 15, i % 2 * 10]));
+});
+test('BPMN import rejects unsupported behaviour, hostile XML and unreadable conditions explicitly', () => {
+ const start = '<bpmn:startEvent id="S"><bpmn:outgoing>A</bpmn:outgoing></bpmn:startEvent><bpmn:endEvent id="E"/>';
+ assert.throws(() => bpmn.import(foreign(start + '<bpmn:subProcess id="Sub"/><bpmn:boundaryEvent id="B" attachedToRef="Sub"/>' + flow('A', 'S', 'E'))), /subProcess Sub is not supported[\s\S]*boundaryEvent B/);
+ assert.throws(() => bpmn.import(foreign(start + '<bpmn:inclusiveGateway id="I"/>' + flow('A', 'S', 'E'))), /inclusiveGateway I/);
+ assert.throws(() => bpmn.import('<!DOCTYPE x [<!ENTITY a "b">]><x/>'), /DOCTYPE/); assert.throws(() => bpmn.import('<bpmn:definitions'), /Unterminated|Undeclared|incomplete/);
+ assert.throws(() => bpmn.import(`<a xmlns="x">&bogus;</a>`), /entities|Expected a BPMN/); assert.throws(() => bpmn.import('<a xmlns="x"/>'), /Expected a BPMN 2.0/);
+ assert.throws(() => bpmn.import(foreign(start + '<bpmn:exclusiveGateway id="G"/><bpmn:endEvent id="E2"/>' + flow('A', 'S', 'G') + flow('B', 'G', 'E', '<bpmn:conditionExpression>x.y(1)</bpmn:conditionExpression>') + flow('C', 'G', 'E2'))), /unsupported condition/);
+ assert.throws(() => bpmn.import(foreign('<bpmn:startEvent id="S"/><bpmn:startEvent id="S2"/>')), /start/);
+ assert.throws(() => bpmn.import(foreign(start + '<bpmn:task id="T"/>' + flow('A', 'S', 'T') + flow('B', 'T', 'E') + flow('C', 'T', 'E'))), /outgoing flows/);
+ assert.throws(() => bpmn.import(foreign('') + foreign('')), /Multiple root|Text outside/);
+ assert.throws(() => bpmn.import('<bpmn:definitions ' + M + '>' + '<bpmn:process id="A"/><bpmn:process id="B"/></bpmn:definitions>'), /exactly one process/);
+ const draft = bpmn.import(foreign('<bpmn:startEvent id="S"><bpmn:outgoing>A</bpmn:outgoing></bpmn:startEvent><bpmn:task id="T"/>' + flow('A', 'S', 'T'))); assert.equal(draft.ok, false); assert(draft.acceptable);
+});
 test('Malformed, unknown and unsafe JSON values never pass admission', () => {
  for (const value of [null, [], {...base(), surprise: true}, {...base(), revision: NaN}, {...base(), format: 'bpmn'}]) assert.equal(catalog.validate(value).ok, false);
  const d = base(); Object.defineProperty(d, 'name', {get() {throw Error('getter executed');}, enumerable: true});
@@ -245,7 +291,12 @@ test('CLI agent workflow supports create, dry-run, guarded edit, inspect and bou
   const report = call(['run', '--input', 'b.json', '--minutes', '20', '--output', 'report.json']); assert.equal(report.advancedMinutes, 5);
   call(['run', '--input', 'b.json', '--minutes', '20', '--output', 'b.json'], 2);
   fs.linkSync(path.join(dir, 'b.json'), path.join(dir, 'alias.json')); call(['run', '--input', 'b.json', '--minutes', '20', '--output', 'alias.json'], 2);
-  assert(call(['schema', '--kind', 'recipe']).schema); assert.equal(call(['discover']).operations.length, 10);
+  assert(call(['schema', '--kind', 'recipe']).schema); assert.equal(call(['discover']).operations.length, 12);
+  call(['export-bpmn', '--input', 'b.json', '--output', 'b.bpmn']); call(['export-bpmn', '--input', 'b.json', '--output', 'b.txt'], 2); call(['export-bpmn', '--input', 'b.json', '--output', 'b.bpmn'], 0);
+  const imported = call(['import-bpmn', '--input', 'b.bpmn', '--output', 'c.json']); assert.equal(imported.runnable, true); assert.deepEqual(imported.warnings, []);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'c.json'), 'utf8')), JSON.parse(fs.readFileSync(path.join(dir, 'b.json'), 'utf8')));
+  fs.writeFileSync(path.join(dir, 'bad.bpmn'), '<?xml version="1.0"?><!DOCTYPE x><x/>'); call(['import-bpmn', '--input', 'bad.bpmn', '--output', 'd.json'], 2); assert(!fs.existsSync(path.join(dir, 'd.json')));
+  call(['import-bpmn', '--input', 'b.bpmn', '--output', 'b.bpmn'], 2);
  } finally {fs.rmSync(dir, {recursive: true, force: true});}
 });
 test('Scene Forge attachment requires exact edit guards and retains compiled geometry', () => {

@@ -1,7 +1,7 @@
 {
   "format": "wildlands-demos",
   "schemaVersion": 1,
-  "engine": "35856ca7fdb9a620e92549651fa0a78fbd304477b376074d8c207a291cc74cc5",
+  "engine": "69606f932e4c1cf34399fca151990e0044ceca7bbaeb87861b07e0aaa014f102",
   "demos": [
     {
       "id": "agency-delivery",
@@ -11,11 +11,11 @@
       "title": "Agency delivery lab",
       "description": "Explore an agency delivery process in 2D and 3D with shared resources, parallel design and rework.",
       "output": "demos/agency-delivery.html",
-      "bytes": 1170539,
-      "sha256": "861b84050bf56678a9cb4e7ffd1dc310f46b0b34a557c4387104e5ee6213af1a",
+      "bytes": 1194670,
+      "sha256": "d05298b0722de4327bc096761493bcf0d300d86627ba1207a8f042b0a5c75b19",
       "budgetBytes": 4194304,
       "gameDigest": "1c49962e0dcae7bc9bcda3cff8146c81822086de80cfbbccb02f921b618a6806",
-      "engine": "35856ca7fdb9a620e92549651fa0a78fbd304477b376074d8c207a291cc74cc5"
+      "engine": "69606f932e4c1cf34399fca151990e0044ceca7bbaeb87861b07e0aaa014f102"
     },
     {
       "id": "emberworks",
@@ -26,10 +26,10 @@
       "description": "A warm clay-and-copper workshop settlement. Same engine; a separately authored setting and starting scene.",
       "output": "demos/emberworks.html",
       "bytes": 3203339,
-      "sha256": "a224bc99e306909ea9fe4d99a9d2dbe0a3af79b3d14e9f136f3d078cdbb090f4",
+      "sha256": "54afb67aa0b55ac648b25c292f371cb4f4315d40231ede6eee1b24c4c50ffc66",
       "budgetBytes": 4194304,
       "gameDigest": "fb4c21acc3c0c5ca430909d778e816ae944a2a4957c04fe6356d0df602ddc6be",
-      "engine": "35856ca7fdb9a620e92549651fa0a78fbd304477b376074d8c207a291cc74cc5"
+      "engine": "69606f932e4c1cf34399fca151990e0044ceca7bbaeb87861b07e0aaa014f102"
     },
     {
       "id": "littlewild",
@@ -40,10 +40,10 @@
       "description": "A little life. A shared adventure. Littlewild is an offline, autonomous-buddy RPG prototype.",
       "output": "demos/littlewild.html",
       "bytes": 3213656,
-      "sha256": "e5d357672e3aa17a9f28139ea52790420fe276df4e2dca5bc9caeae90a481903",
+      "sha256": "40379fea96e5b6ce627276ff3235b50c102181afeee00ce9522a7ad86b6a7c38",
       "budgetBytes": 4194304,
       "gameDigest": "927a583f16e3088e0a58fe7377973fea02105fe9b6218fbb0600950ee8fc6882",
-      "engine": "35856ca7fdb9a620e92549651fa0a78fbd304477b376074d8c207a291cc74cc5"
+      "engine": "69606f932e4c1cf34399fca151990e0044ceca7bbaeb87861b07e0aaa014f102"
     },
     {
       "id": "office",
@@ -54,10 +54,10 @@
       "description": "An indoor sales, warehouse and fulfillment team. Phil wins customer deals, Angela packs and dispatches orders, and Marty keeps inbound materials moving.",
       "output": "demos/office.html",
       "bytes": 3461888,
-      "sha256": "0777391df69f3eadc0805f459a9fec8e6e0ac7b3e6ab2d6af11c0873e0ac5516",
+      "sha256": "4eae652f04626da5df555959a2fcf977bd314bd3c450796097f790fbc576dacc",
       "budgetBytes": 4194304,
       "gameDigest": "640b7f7804e4d2ed68dabec62032d888a9520114ca07cdb9ee525142286332b8",
-      "engine": "35856ca7fdb9a620e92549651fa0a78fbd304477b376074d8c207a291cc74cc5"
+      "engine": "69606f932e4c1cf34399fca151990e0044ceca7bbaeb87861b07e0aaa014f102"
     },
     {
       "id": "pocket-pet",
@@ -68,10 +68,10 @@
       "description": "An offline virtual pet built with Wildlands.",
       "output": "demos/pocket-pet.html",
       "bytes": 2330760,
-      "sha256": "f9a2dcf0a8d4d6aecd3623615807fa2afc519424c95c99ff1e5c1438923a1067",
+      "sha256": "4d06d9557347c64c7b4751573c99e988f736a0b3970c89d6946137446b1caeae",
       "budgetBytes": 3145728,
       "gameDigest": "0e6c25f3df4ee1a5b64f0eabafb39e3e42c350e305ae846acc9fe548bc647aaa",
-      "engine": "35856ca7fdb9a620e92549651fa0a78fbd304477b376074d8c207a291cc74cc5"
+      "engine": "69606f932e4c1cf34399fca151990e0044ceca7bbaeb87861b07e0aaa014f102"
     },
     {
       "id": "rts-frontier",
@@ -82,10 +82,10 @@
       "description": "An offline isometric real-time strategy match built with Wildlands.",
       "output": "demos/rts-frontier.html",
       "bytes": 165627,
-      "sha256": "da06db1d1238fc90582c49fe7b732712db8a1514022d37d3a889b627cf3153b4",
+      "sha256": "9ae3b971975b2401224dcab285341c14b5e8566dc8b8d65f5b2373fe1453ecfd",
       "budgetBytes": 524288,
       "gameDigest": "63b0bfff27fcfad220b44f341f0752427dd2f0ef0be0cc72c268a613e113a67e",
-      "engine": "35856ca7fdb9a620e92549651fa0a78fbd304477b376074d8c207a291cc74cc5"
+      "engine": "69606f932e4c1cf34399fca151990e0044ceca7bbaeb87861b07e0aaa014f102"
     }
   ]
 }

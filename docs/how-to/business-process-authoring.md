@@ -127,6 +127,20 @@ exporter converts them. Materials/meshes travel inside the process JSON.
 The [agency Scene Forge project](../../source/scene-forge/examples/agency-delivery/forge.project.json)
 is the editable source of the demo's attached scene geometry.
 
+## Exchange BPMN 2.0
+
+```sh
+bin/wildlands process export-bpmn --input /tmp/process-work/review.json --output /tmp/process-work/review.bpmn
+bin/wildlands process import-bpmn --input /tmp/process-work/review.bpmn --output /tmp/process-work/imported.json
+```
+
+Export carries durations, needs, backlogs and layout in a `wl:` extension, so a
+round trip is lossless. Importing BPMN from another tool lists every default or
+folded element in `warnings`; add durations, resources and arrivals afterwards in
+the **Tune values** form or with guarded edits. Unsupported constructs (sub-processes,
+boundary events, inclusive gateways) are rejected rather than approximated. The studio
+offers the same through **Export BPMN** and **Import JSON or BPMN**.
+
 ## Run and build
 
 ```sh

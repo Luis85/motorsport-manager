@@ -1,0 +1,174 @@
+/// <reference path="./process-bpmn.ts" />
+/** BPMN 2.0 import: start/end events, task variants, exclusive and parallel gateways, sequence flows and resources. Everything else is reported, never guessed. */
+(function(inputRoot: unknown) {
+ 'use strict';
+ const root = inputRoot as {LWProcessXml: LWProcessXml.Api; LWProcessCatalog: LWProcess.Catalog; LWProcessBpmnExport: {export(d: unknown): string; vocabulary: LWProcessBpmn.Vocabulary}; LWProcessBpmn?: LWProcessBpmn.Api};
+ const {MODEL, DI, DC, WL, UNIT, OPS, COLORS} = root.LWProcessBpmnExport.vocabulary;
+ type X = LWProcessXml.Node;
+ const TASKS = new Set(['task', 'userTask', 'manualTask', 'businessRuleTask', 'serviceTask', 'scriptTask', 'sendTask', 'receiveTask']);
+ const UNSUPPORTED = new Set(['subProcess', 'transaction', 'adHocSubProcess', 'callActivity', 'intermediateCatchEvent', 'intermediateThrowEvent', 'boundaryEvent', 'inclusiveGateway', 'eventBasedGateway', 'complexGateway']);
+ const IGNORED = new Set(['documentation', 'extensionElements', 'laneSet', 'textAnnotation', 'association', 'group', 'dataObject', 'dataObjectReference', 'dataStoreReference', 'property', 'ioSpecification', 'category']);
+ const PERFORMERS = new Set(['performer', 'humanPerformer', 'potentialOwner', 'resourceRole']);
+ const kids = (n: X, local: string, ns = MODEL) => n.children.filter(c => c.local === local && c.ns === ns);
+ const documentation = (n: X) => kids(n, 'documentation').map(d => d.text.trim()).filter(Boolean).join('\n\n') || undefined;
+ const extensions = (n: X, local: string) => kids(n, 'extensionElements').flatMap(e => e.children.filter(c => c.ns === WL && c.local === local));
+ const first = (n: X, local: string) => extensions(n, local)[0];
+ const typed = (a: Record<string, string>): LWProcess.Scalar => {
+  const v = a.value ?? '', t = a.type ?? 'string';
+  if (t === 'null') return null; if (t === 'boolean') return v === 'true'; if (t === 'number') { const n = Number(v); if (!Number.isFinite(n)) throw Error('Invalid number: ' + v); return n; } return v;
+ };
+ const sanitize = (raw: string, taken: Set<string>, fallback: string): string => {
+  let id = raw.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60); if (!/^[a-z]/.test(id)) id = (fallback + '-' + id).replace(/-$/, '');
+  let candidate = id, n = 2; while (taken.has(candidate)) candidate = id + '-' + n++;
+  taken.add(candidate); return candidate;
+ };
+ interface Flow {xml: string; from: string; to: string; label?: string | undefined; when?: LWProcess.Condition | undefined; expression?: string | undefined; orig?: string | undefined; node: X;}
+ interface Item {xml: string; kind: LWProcess.Kind; node: X; local: string; id: string; collapsed?: boolean;}
+ function condition(expression: string, where: string): LWProcess.Condition {
+  const m = /^\s*(?:[$#]\{)?\s*([A-Za-z_]\w*)\s*(==|!=|>=|<=|>|<|eq|ne|gte|gt|ge|lte|lt|le)\s*(true|false|null|-?\d+(?:\.\d+)?|'[^']*'|"[^"]*")\s*\}?\s*$/.exec(expression);
+  if (!m || !/^[a-z][a-zA-Z0-9_]{0,63}$/.test(m[1]!)) throw Error(where + ': unsupported condition "' + expression.trim() + '". Use field == value comparisons.');
+  const raw = m[3]!, value = raw === 'true' ? true : raw === 'false' ? false : raw === 'null' ? null : /^-?\d/.test(raw) ? Number(raw) : raw.slice(1, -1);
+  return {field: m[1]!, op: OPS[m[2]!] as LWProcess.Condition['op'], value};
+ }
+ function importBpmn(source: string, options: {defaultDuration?: number} = {}): LWProcessBpmn.ImportResult {
+  const warnings: string[] = [], errors: string[] = [], warn = (m: string) => { if (!warnings.includes(m)) warnings.push(m); };
+  const doc = root.LWProcessXml.parse(source);
+  if (doc.ns !== MODEL || doc.local !== 'definitions') throw Error('Expected a BPMN 2.0 definitions document.');
+  const processes = kids(doc, 'process'); if (processes.length !== 1) throw Error('Import needs exactly one process; this file has ' + processes.length + '.');
+  const proc = processes[0]!;
+  // ------------------------------------------------------------ resources
+  const taken = {steps: new Set<string>(), flows: new Set<string>(), resources: new Set<string>()}, resources = new Map<string, LWProcess.Resource>();
+  for (const r of kids(doc, 'resource')) {
+   const ext = first(r, 'resource'), xmlId = r.attrs.id ?? ''; if (!xmlId) continue;
+   const id = ext?.attrs.id ?? sanitize(xmlId, taken.resources, 'resource'); taken.resources.add(id);
+   resources.set(xmlId, {id, name: (r.attrs.name || id).slice(0, 120), capacity: Number(ext?.attrs.capacity ?? 1), costPerMinute: Number(ext?.attrs.costPerMinute ?? 0)});
+   if (!ext) warn('Resources have capacity 1 and no cost unless set in Wildlands.');
+  }
+  // ------------------------------------------------------------ nodes
+  const items: Item[] = [], names = new Map<string, Item>();
+  for (const child of proc.children) {
+   if (child.ns !== MODEL) { warn('Ignored non-BPMN element ' + child.local + '.'); continue; }
+   const local = child.local, xmlId = child.attrs.id;
+   if (UNSUPPORTED.has(local)) { errors.push(local + (xmlId ? ' ' + xmlId : '') + ' is not supported; model it with tasks, exclusive gateways and parallel gateways.'); continue; }
+   const kind: LWProcess.Kind | undefined = local === 'startEvent' ? 'start' : local === 'endEvent' ? 'end' : TASKS.has(local) ? 'task' : local === 'exclusiveGateway' ? 'decision' : local === 'parallelGateway' ? 'fork' : undefined;
+   if (!kind) { if (local !== 'sequenceFlow' && !IGNORED.has(local)) warn('Ignored element ' + local + '.'); continue; }
+   if (!xmlId) { errors.push(local + ' needs an id.'); continue; }
+   if (['startEvent', 'endEvent'].includes(local) && child.children.some(c => c.ns === MODEL && c.local.endsWith('EventDefinition'))) warn('Event definitions on ' + xmlId + ' are ignored; it is a plain event.');
+   if (['serviceTask', 'scriptTask', 'sendTask', 'receiveTask', 'businessRuleTask'].includes(local)) warn(local + ' ' + xmlId + ' imports as a timed task; no behaviour is executed.');
+   const stepExt = first(child, 'step'), item: Item = {xml: xmlId, kind, node: child, local, id: stepExt?.attrs.id ?? sanitize(xmlId, taken.steps, kind)};
+   if (stepExt?.attrs.id) { if (taken.steps.has(item.id)) errors.push('Duplicate Wildlands step id ' + item.id + '.'); taken.steps.add(item.id); }
+   if (names.has(xmlId)) errors.push('Duplicate BPMN id ' + xmlId + '.'); names.set(xmlId, item); items.push(item);
+  }
+  let flows: Flow[] = kids(proc, 'sequenceFlow').map(f => {
+   const ext = first(f, 'flow'), when = first(f, 'when'), expression = kids(f, 'conditionExpression')[0]?.text;
+   return {xml: f.attrs.id ?? '', from: f.attrs.sourceRef ?? '', to: f.attrs.targetRef ?? '', label: f.attrs.name || undefined, expression, orig: ext?.attrs.id, node: f,
+    when: when ? {field: when.attrs.field!, op: when.attrs.op as LWProcess.Condition['op'], value: typed(when.attrs)} : undefined};
+  });
+  for (const f of flows) if (!f.xml || !names.has(f.from) || !names.has(f.to)) errors.push('Sequence flow ' + (f.xml || '(no id)') + ' must connect two supported nodes.');
+  if (errors.length) throw Error(errors.join('\n'));
+  // Exclusive gateways that merge (or only pass through) have no Wildlands step: re-point their inflows at the single continuation.
+  const outOf = (id: string) => flows.filter(f => f.from === id), into = (id: string) => flows.filter(f => f.to === id);
+  const passThrough = (i: Item) => (i.local === 'exclusiveGateway' || i.local === 'parallelGateway' && into(i.xml).length < 2 && outOf(i.xml).length < 2) && outOf(i.xml).length === 1 && !i.collapsed;
+  for (let progress = true; progress;) {
+   progress = false;
+   for (const g of items.filter(passThrough)) {
+    const o = outOf(g.xml)[0]!; if (o.to === g.xml) throw Error('Gateway ' + g.xml + ' loops onto itself.');
+    for (const f of into(g.xml)) f.to = o.to;
+    flows = flows.filter(f => f !== o); g.collapsed = true; progress = true; warn('Merge or pass-through gateway ' + g.xml + ' was folded into its flows; Wildlands steps accept several incoming flows.');
+   }
+  }
+  const live = items.filter(i => !i.collapsed), flowIds = new Map<Flow, string>();
+  for (const f of flows) { const id = f.orig ?? sanitize(f.xml, taken.flows, 'flow'); if (f.orig) taken.flows.add(id); flowIds.set(f, id); }
+  // ------------------------------------------------------------ gateway roles
+  for (const g of live.filter(i => i.local === 'parallelGateway')) {
+   const nIn = into(g.xml).length, nOut = outOf(g.xml).length;
+   if (nIn === 1 && nOut >= 2) g.kind = 'fork'; else if (nIn >= 2 && nOut === 1) g.kind = 'join'; else errors.push('Parallel gateway ' + g.xml + ' must split (1 in, 2+ out) or join (2+ in, 1 out).');
+  }
+  for (const i of live) {
+   const n = outOf(i.xml).length;
+   if (i.kind === 'task' && n > 1) errors.push('Task ' + i.xml + ' has ' + n + ' outgoing flows; use a parallel gateway to split work.');
+   if (i.kind === 'start' && n !== 1) errors.push('The start event must have exactly one outgoing flow.');
+   if (i.kind === 'decision' && n < 2) errors.push('Exclusive gateway ' + i.xml + ' needs two or more outgoing flows.');
+  }
+  if (live.filter(i => i.kind === 'start').length !== 1) errors.push('Exactly one start event is required.');
+  if (errors.length) throw Error(errors.join('\n'));
+  const joins = new Map<string, string>();
+  for (const fork of live.filter(i => i.kind === 'fork')) {
+   const declared = first(fork.node, 'step')?.attrs.join;
+   if (declared) { const target = live.find(j => j.kind === 'join' && (j.id === declared)); if (!target) throw Error('Fork ' + fork.xml + ' names unknown join ' + declared + '.'); joins.set(fork.xml, target.xml); continue; }
+   const ends = new Set<string>();
+   for (const flow of outOf(fork.xml)) {
+    let at = names.get(flow.to)!; const seen = new Set<string>();
+    while (at.kind === 'task' && !seen.has(at.xml)) { seen.add(at.xml); at = names.get(outOf(at.xml)[0]?.to ?? '') ?? at; if (!outOf(at.xml).length) break; }
+    ends.add(at.kind === 'join' ? at.xml : '?');
+   }
+   if (ends.size !== 1 || ends.has('?')) throw Error('Parallel branches of ' + fork.xml + ' must be task chains meeting at one parallel join.');
+   joins.set(fork.xml, [...ends][0]!);
+  }
+  // ------------------------------------------------------------ layout
+  const centers = new Map<string, [number, number]>();
+  for (const shape of doc.children.filter(c => c.local === 'BPMNDiagram').flatMap(d => d.children.flatMap(p => p.children.filter(s => s.local === 'BPMNShape' && s.ns === DI)))) {
+   const b = shape.children.find(c => c.local === 'Bounds' && c.ns === DC); if (b && shape.attrs.bpmnElement) centers.set(shape.attrs.bpmnElement, [Number(b.attrs.x) + Number(b.attrs.width) / 2, Number(b.attrs.y) + Number(b.attrs.height) / 2]);
+  }
+  const placed = new Map<string, [number, number]>();
+  if (live.every(i => first(i.node, 'scene'))) live.forEach(i => { const s = first(i.node, 'scene')!; placed.set(i.xml, [Number(s.attrs.x), Number(s.attrs.y)]); });
+  else if (live.every(i => centers.has(i.xml))) {
+   const minX = Math.min(...live.map(i => centers.get(i.xml)![0])), minY = Math.min(...live.map(i => centers.get(i.xml)![1]));
+   live.forEach(i => placed.set(i.xml, [Math.round((centers.get(i.xml)![0] - minX) / UNIT * 10) / 10, Math.round((centers.get(i.xml)![1] - minY) / UNIT * 10) / 10]));
+  } else {
+   warn('The file has no complete diagram layout; scenes were arranged automatically.');
+   const depth = new Map<string, number>([[live.find(i => i.kind === 'start')!.xml, 0]]), queue = [...depth.keys()], rows = new Map<number, number>();
+   while (queue.length) { const id = queue.shift()!; for (const f of outOf(id)) if (!depth.has(f.to)) { depth.set(f.to, depth.get(id)! + 1); queue.push(f.to); } }
+   for (const i of live) { const x = depth.get(i.xml) ?? 0, row = rows.get(x) ?? 0; rows.set(x, row + 1); placed.set(i.xml, [x * 14, row * 12]); }
+  }
+  // ------------------------------------------------------------ definition
+  const defaultDuration = options.defaultDuration ?? 5; let defaulted = 0;
+  const steps: LWProcess.Step[] = live.map(i => {
+   const ext = first(i.node, 'step'), scene = first(i.node, 'scene'), [x, y] = placed.get(i.xml)!, asset = scene && extensions(i.node, 'scene')[0]?.children.find(c => c.local === 'asset');
+   const step: LWProcess.Step = {id: i.id, name: (i.node.attrs.name || i.xml).slice(0, 120), kind: i.kind,
+    scene: {id: scene?.attrs.id ?? 'scene-' + i.id, position: [x, y], color: scene?.attrs.color ?? COLORS[i.kind]!, ...asset ? {asset: JSON.parse(asset.text) as object} : {}}};
+   const description = documentation(i.node); if (description) step.description = description;
+   if (i.kind === 'task') {
+    if (ext?.attrs.duration) step.duration = Number(ext.attrs.duration); else { step.duration = defaultDuration; defaulted++; }
+    const demand: Record<string, number> = {};
+    for (const p of i.node.children.filter(c => c.ns === MODEL && PERFORMERS.has(c.local))) {
+     const ref = kids(p, 'resourceRef')[0]?.text.trim(), r = resources.get(ref?.includes(':') ? ref.split(':').at(-1)! : ref ?? '');
+     if (!r) throw Error('Task ' + i.xml + ' references an unknown resource ' + (ref ?? '(none)') + '.');
+     demand[r.id] = Number(first(p, 'demand')?.attrs.quantity ?? 1) + (demand[r.id] ?? 0);
+    }
+    if (Object.keys(demand).length) step.resources = demand;
+   }
+   if (ext?.attrs.cost) step.cost = Number(ext.attrs.cost);
+   const set = extensions(i.node, 'set'); if (set.length) step.set = Object.fromEntries(set.map(s => [s.attrs.name!, typed(s.attrs)]));
+   const needs = extensions(i.node, 'need'); if (needs.length) step.needs = needs.map(n => ({field: n.attrs.field!, ...n.attrs.op ? {op: n.attrs.op as LWProcess.Condition['op'], value: typed(n.attrs)} : {}, ...n.attrs.label ? {label: n.attrs.label} : {}}));
+   const backlog = first(i.node, 'backlog'); if (backlog) step.backlog = {capacity: Number(backlog.attrs.capacity), ...backlog.attrs.order ? {order: backlog.attrs.order as 'fifo'} : {}, ...backlog.attrs.priority ? {priority: backlog.attrs.priority} : {}, ...backlog.attrs.pull ? {pull: Number(backlog.attrs.pull)} : {}};
+   if (i.kind === 'fork') step.join = live.find(j => j.xml === joins.get(i.xml))!.id;
+   return step;
+  });
+  if (defaulted) warn(defaulted + ' task(s) had no duration and were given ' + defaultDuration + ' minutes; tune them in the editor.');
+  const byXml = new Map(live.map(i => [i.xml, i]));
+  const flowList: LWProcess.Flow[] = flows.map(f => ({id: flowIds.get(f)!, from: byXml.get(f.from)!.id, to: byXml.get(f.to)!.id, ...f.label ? {label: f.label.slice(0, 120)} : {}}));
+  for (const g of live.filter(i => i.kind === 'decision')) {
+   const mine = flows.filter(f => f.from === g.xml);
+   const fallback = mine.find(f => f.xml === g.node.attrs.default) ?? (mine.filter(f => !f.when && !f.expression?.trim()).length === 1 ? mine.find(f => !f.when && !f.expression?.trim()) : undefined)
+    ?? (() => { if (mine.some(f => !f.when && !f.expression?.trim())) throw Error('Exclusive gateway ' + g.xml + ' has several flows without a condition; mark one as the default flow.'); warn('Gateway ' + g.xml + ' had no default flow; its last flow is the fallback.'); return mine.at(-1)!; })();
+   for (const f of mine) if (f !== fallback) {
+    const target = flowList[flows.indexOf(f)]!;
+    target.when = f.when ?? condition(f.expression ?? '', 'Flow ' + f.xml);
+   }
+  }
+  for (const f of flows) if (f.expression?.trim() && byXml.get(f.from)!.kind !== 'decision') warn('Condition on flow ' + f.xml + ' is ignored; only exclusive gateways branch.');
+  const arrivals = extensions(proc, 'arrival').map(a => ({at: Number(a.attrs.at), count: Number(a.attrs.count), interval: Number(a.attrs.interval),
+   data: Object.fromEntries(a.children.filter(c => c.ns === WL && c.local === 'data').map(c => [c.attrs.name!, typed(c.attrs)]))}));
+  if (!arrivals.length) { warn('No case arrivals were found; one case arrives at minute 0.'); arrivals.push({at: 0, count: 1, interval: 0, data: {}}); }
+  const meta = first(proc, 'process'), idTaken = new Set<string>();
+  const definition: LWProcess.Definition = {format: 'wildlands-process', schemaVersion: 1, revision: Number(meta?.attrs.revision ?? 0), id: meta?.attrs.id ?? sanitize(proc.attrs.id ?? 'imported-process', idTaken, 'process'),
+   name: (proc.attrs.name || doc.attrs.name || proc.attrs.id || 'Imported process').slice(0, 120), start: live.find(i => i.kind === 'start')!.id,
+   resources: [...resources.values()], steps, flows: flowList, arrivals, ...meta?.attrs.schema ? {$schema: meta.attrs.schema} : {}};
+  const description = documentation(proc); if (description) definition.description = description;
+  const checked = root.LWProcessCatalog.validate(definition, true);
+  return {ok: checked.ok, acceptable: checked.acceptable, definition: checked.definition ?? undefined, diagnostics: checked.diagnostics, warnings};
+ }
+ root.LWProcessBpmn = {export: root.LWProcessBpmnExport.export, import: importBpmn};
+ if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessBpmn;
+})(globalThis);
