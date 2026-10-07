@@ -1,10 +1,11 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /// <reference path="./rts-contracts.d.ts" />
 /** Strict inert catalog admission. No executable content or mutable authored records escape. */
 (function(inputRoot:unknown) {
  'use strict';
  type RecordData=Record<string,unknown>;
  type Spec=string|Readonly<{[key:string]:Spec}>;
- interface Root { LWRTSCatalog?:LWRTSData.CatalogApi; LWRTSDefinitions?:unknown; }
+ interface Root { LWRTSCatalog?:LWRTSData.CatalogApi; LWContentProvider?:LWContentProvider.Api; }
  const root=inputRoot as Root;
  const node=typeof module!=='undefined'&&module.exports;
  const fail=(message:string):never=>{throw Error('RTS catalog: '+message);};
@@ -194,11 +195,15 @@
    }
   }
  }
- const data=validate(root.LWRTSDefinitions??(node?require('./content/rts-demo.json'):undefined));
- const api:LWRTSData.CatalogApi=Object.freeze({data,defaults:data,validate,
-  get<K extends LWRTSData.Kind>(kind:K,id:string):LWRTSData.Entry<K>|null {return data[kind].find(entry=>entry.id===id) as LWRTSData.Entry<K>??null;},
-  all<K extends LWRTSData.Kind>(kind:K):LWRTSData.Catalog[K] {return data[kind];},
-  clone:()=>clone(data)
+ const Content=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api;
+ // The installed game's RTS catalog, admitted on first use or as soon as an RTS game is installed.
+ let installed:LWRTSData.Catalog|null=null;
+ const data=():LWRTSData.Catalog=>installed??=validate(Content.get('the RTS catalog').rts);
+ const api:LWRTSData.CatalogApi=Object.freeze({get data(){return data();},get defaults(){return data();},validate,
+  get<K extends LWRTSData.Kind>(kind:K,id:string):LWRTSData.Entry<K>|null {return data()[kind].find(entry=>entry.id===id) as LWRTSData.Entry<K>??null;},
+  all<K extends LWRTSData.Kind>(kind:K):LWRTSData.Catalog[K] {return data()[kind];},
+  clone:()=>clone(data())
  });
+ Content.whenInstalled(()=>{data();},'rts');
  root.LWRTSCatalog=api;if(node)module.exports=api;
 })(globalThis);

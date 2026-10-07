@@ -1,6 +1,8 @@
 /// <reference path="./renderer-contracts.d.ts" />
 /// <reference path="./storytelling-renderer-contracts.d.ts" />
 /// <reference path="./animation-contracts.d.ts" />
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {getEventListeners} from 'node:events';

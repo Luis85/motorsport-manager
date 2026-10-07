@@ -1,6 +1,8 @@
 /// <reference path="../rts-contracts.d.ts" />
 /** JSON-only RTS content and bounded session adapter. Player files are explicit outputs. */
 import {emit,helpRequested,readJsonFile,writeJsonFile} from './cli-io.cjs';
+import {installTemplate} from '../content-installers/template-games.cjs';
+// Transitional: the bundled template game is installed (inside the JSON error boundary) until game folders supply profiles.
 interface Tools {
  discover():unknown;catalog():LWRTSData.Catalog;
  validate(input:unknown):{ok:boolean;errors:string[];catalog:LWRTSData.Catalog|null};
@@ -16,7 +18,7 @@ try {
  if(helpRequested(args)){emit({ok:true,usage,exitCodes:{accepted:0,rejected:1,usageOrIO:2}});process.exit(0);}
  const valid=action==='discover'?files.length===0:action==='catalog'?files.length<=1:action==='validate'?files.length===1:action==='inspect'?files.length<=2:action==='run'?files.length>=1&&files.length<=3:action==='restore'&&files.length>=2&&files.length<=3;
  if(!valid)throw Error(usage);
- require('../ecs.js');require('../rts-catalog.js');require('../rts-stats.js');require('../rts-navigation.js');require('../rts-systems.js');require('../rts-production.js');require('../rts-economy.js');require('../rts-checkpoint.js');require('../rts-session.js');
+ installTemplate('rts');require('../ecs.js');require('../rts-catalog.js');require('../rts-stats.js');require('../rts-navigation.js');require('../rts-systems.js');require('../rts-production.js');require('../rts-economy.js');require('../rts-checkpoint.js');require('../rts-session.js');
  const tools=require('../rts-tools.js') as Tools;
  if(action==='discover')emit({ok:true,...tools.discover() as object});
  else if(action==='catalog')emit(files[0]?{ok:true,output:writeJsonFile(files[0],tools.catalog())}:{ok:true,catalog:tools.catalog()});

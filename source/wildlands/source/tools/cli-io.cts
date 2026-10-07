@@ -27,6 +27,12 @@ export function readJsonFile(file: string, maxBytes: number): string {
 /** Unique, exclusively created temporaries belong to this attempt; cleanup cannot delete another writer's file. */
 export function writeJsonFile(file: string, value: unknown, inputs: readonly string[] = []): string {
   if (!file) throw new Error("Provide an output .json path.");
+  return writeTextFile(file, JSON.stringify(value, null, 2) + "\n", inputs);
+}
+
+/** Atomic text publication with the same input-alias protection as JSON outputs. */
+export function writeTextFile(file: string, text: string, inputs: readonly string[] = []): string {
+  if (!file) throw new Error("Provide an output path.");
   const destination = path.resolve(file);
   for (const input of inputs) {
     if (destination === path.resolve(input)) throw new Error("Output must not overwrite an input file.");
@@ -40,7 +46,7 @@ export function writeJsonFile(file: string, value: unknown, inputs: readonly str
   try {
     const descriptor = fs.openSync(temporary, "wx");
     owned = true;
-    try { fs.writeFileSync(descriptor, JSON.stringify(value, null, 2) + "\n", "utf8"); }
+    try { fs.writeFileSync(descriptor, text, "utf8"); }
     finally { fs.closeSync(descriptor); }
     fs.renameSync(temporary, destination);
     owned = false;

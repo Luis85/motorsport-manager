@@ -1,3 +1,5 @@
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -65,6 +67,8 @@ test('Architecture resolves runtime paths without basename collisions or escapes
 });
 test('Architecture catches composition accessed with brackets', () => assert(analyze("const composition=root.LW['EngineComposition']; composition.register({});").composition.includes('EngineComposition')));
 
+/** Backstop for one nested architecture-checker process; the suite's registry timeout bounds all four runs. */
+const NESTED_CHECKER_TIMEOUT_MS=120000;
 test('The actual architecture policy rejects asset-catalog DOM/platform and presentation dependencies',()=>{
  const project=path.resolve(__dirname,'..'),fixture=fs.mkdtempSync(path.join(os.tmpdir(),'littlewild-asset-policy-'));
  interface PolicyResult {passed:number;total:number;results:{name:string;passed:boolean;error?:string}[];}
@@ -75,12 +79,18 @@ test('The actual architecture policy rejects asset-catalog DOM/platform and pres
   fs.symlinkSync(path.join(project,'node_modules'),path.join(fixture,'node_modules'),'junction');
   const tools=path.join(fixture,'.generated','tools');fs.mkdirSync(tools,{recursive:true});
   const checkerFiles=['architecture-check.cjs','architecture-analysis.cjs','architecture-data.cjs','architecture-contracts.cjs',
-   'definition-source.cjs','bundled-content.cjs','bundled-assets.cjs','bundled-library-schema.cjs'];
+   'definition-source.cjs','bundled-content.cjs','bundled-assets.cjs','bundled-library-schema.cjs','artifact-profiles.cjs','build-inserts.cjs',
+   'game-folder.cjs','game-manifest.cjs'];
   for(const file of checkerFiles)fs.copyFileSync(path.join(__dirname,'tools',file),path.join(tools,file));
+  // game-folder.cjs requires the compiled engine schemas (content/*.schema.json) relative to itself.
+  fs.cpSync(path.join(__dirname,'content'),path.join(fixture,'.generated','content'),{recursive:true});
   const map=JSON.parse(fs.readFileSync(path.join(fixture,'source','architecture','domain-map.json'),'utf8')) as {contexts:{layer:string;files:string[]}[]};
   assert.equal(map.contexts.find(context=>context.files.includes('asset-catalog.ts'))?.layer,'domain');
   const run=():{status:number|null;report:PolicyResult}=>{
-   const process=spawnSync(globalThis.process.execPath,[path.join(tools,'architecture-check.cjs')],{cwd:fixture,encoding:'utf8',timeout:15000});
+   // The isolated tree has no repository around it: point it at the real game folders. One checker run
+   // takes about 10 s alone (most of it the TypeScript program) and several times that beside other
+   // suites, so each nested run gets a generous backstop; the registry timeout still bounds the suite.
+   const process=spawnSync(globalThis.process.execPath,[path.join(tools,'architecture-check.cjs')],{cwd:fixture,encoding:'utf8',timeout:NESTED_CHECKER_TIMEOUT_MS,killSignal:'SIGKILL',env:{...globalThis.process.env,WILDLANDS_GAMES_DIR:(require('./tools/game-folder.cjs') as typeof import('./tools/game-folder.cjs')).gamesRoot()}});
    assert.ifError(process.error);assert.equal(process.signal,null,process.stderr);
    return {status:process.status,report:JSON.parse(fs.readFileSync(path.join(fixture,'.generated','typescript-architecture-results.json'),'utf8')) as PolicyResult};
   };

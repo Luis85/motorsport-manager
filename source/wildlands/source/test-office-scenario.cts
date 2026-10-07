@@ -1,8 +1,12 @@
 /// <reference path="./developer-contracts.d.ts" />
 /// <reference path="./application-records.d.ts" />
 /// <reference path="./content-contracts.d.ts" />
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import path from 'node:path';
+import {gameDirectory} from './tools/game-folder.cjs';
 const {toolbox}=require('./developer-sdk.cjs') as {toolbox:LittlewildDeveloper.Toolbox};
 type Document=LittlewildDeveloper.Document;
 interface CustomerOrder {id:string;dealId:string;fact:string;item:string;amount:number;actorId:string;created:number;saleId:string|null;status:string;shippedAt:number|null;}
@@ -16,7 +20,8 @@ const root=globalThis as unknown as {
  LWAssets:{all():unknown[];revision:number;building(id:string):{models:{world:{nodes:{primitive:string}[]}}}};
  LWCreatures:{all():unknown[];configuration:unknown;revision:number};LWScenarioResources:{defaults():LWContentPorts.Resources};
 };
-const authored=JSON.parse(fs.readFileSync(__dirname+'/content/office.pack.json','utf8')) as LWContentPorts.ScenarioPack;
+// The authored pack is read from the Office game folder (docs/concepts/office).
+const authored=JSON.parse(fs.readFileSync(path.join(gameDirectory('office'),'content/office.pack.json'),'utf8')) as LWContentPorts.ScenarioPack;
 const copy=<T,>(value:T):T=>JSON.parse(JSON.stringify(value)) as T;
 const results:{name:string;passed:boolean;error?:string}[]=[];
 function test(name:string,work:()=>void):void{try{work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error instanceof Error?error.stack||error.message:String(error)});}}

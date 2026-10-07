@@ -1,7 +1,11 @@
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {writeWildlandsBundle} from './tools/wildlands-bundle.cjs';
+import {gunzipSync} from 'node:zlib';
+import {writeWildlandsBundle,runtimeClosure,RUNTIME_ROOTS,INSTALLER_SHIM} from './tools/wildlands-bundle.cjs';
+import {profile as installed} from './test-support/install-games.cjs';
 import {projects,runProject,editProject,inspectProject,discover,toolbox} from './wildlands-project-sdk.cjs';
 const results:{name:string;passed:boolean;error?:string}[]=[];
 function test(name:string,work:()=>void):void{try{work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
@@ -10,15 +14,19 @@ const littlewild=projects.create();
 test('Default project is a complete detached Littlewild prototype',()=>{
  assert.equal(littlewild.format,'wildlands-project');assert.equal(littlewild.target,'godot');assert.equal(littlewild.scenarioId,'littlewild');assert.equal(littlewild.sceneId,'first-morning');assert.equal(littlewild.pack.scenes.length,2);
  const changed=projects.create();changed.pack.name='Changed';assert.notEqual(projects.create().pack.name,'Changed');
+ // schemaVersion 2: the installed game is embedded and detached from the realm's profile.
+ assert.equal(littlewild.schemaVersion,2);assert.equal(littlewild.game.id,installed.id);assert.notEqual(littlewild.game.profile,installed);
  const checked=projects.validate(littlewild);assert(checked.ok);assert.equal(projects.validate(JSON.stringify(littlewild)).ok,true);assert(checked.fingerprint);
  const text=projects.validate(JSON.stringify(littlewild)),renamed=projects.validate({...littlewild,name:'Renamed'});assert(text.ok&&renamed.ok);assert.match(checked.fingerprint,/^[0-9a-f]{16}$/);assert.equal(text.fingerprint,checked.fingerprint);assert.notEqual(renamed.fingerprint,checked.fingerprint);
 });
 test('Versioned discovery describes useful portable and bounded agent operations',()=>{
- const found=discover();assert.equal(found.protocolVersion,1);assert.equal(found.projectSchemaVersion,1);assert.deepEqual(found.scenarios.map(value=>value.id),['littlewild','emberworks','office']);
+ const found=discover();assert.equal(found.protocolVersion,1);assert.equal(found.projectSchemaVersion,2);assert.deepEqual(found.legacySchemaVersions,[1]);
+ assert.equal(found.game?.id,installed.id);assert.equal(found.game?.defaultScenario,'littlewild');assert.deepEqual(found.game?.scenarios.map(value=>value.id),['littlewild','emberworks','office']);
+ for(const operation of ['create','upgrade','validate-game','inspect-game','build-game'])assert(found.operations.find(value=>value.operation===operation),operation);
  assert(found.operations.find(value=>value.operation==='edit'));assert(found.operations.find(value=>value.operation==='compile'));assert(found.commands.length>40);assert.equal(found.recipes.maxSteps,36000);
 });
 test('Project fields, target, identity and scene selection are validated strictly',()=>{
- for(const patch of [{schemaVersion:2},{target:'unity'},{extra:true},{scenarioId:'office'},{sceneId:'missing'},{id:'../path'},{name:''}])assert.equal(projects.validate({...littlewild,...patch}).ok,false);
+ for(const patch of [{schemaVersion:3},{schemaVersion:1},{target:'unity'},{extra:true},{scenarioId:'office'},{sceneId:'missing'},{id:'../path'},{name:''}])assert.equal(projects.validate({...littlewild,...patch}).ok,false);
  const broken=clone(littlewild);delete (broken as unknown as Record<string,unknown>).name;assert.equal(projects.validate(broken).ok,false);
  assert.equal(projects.validate('{').ok,false);assert.throws(()=>projects.create({scenarioId:'unknown'}),/Unknown scenario/);
  assert.throws(()=>projects.create({unknown:true} as Wildlands.CreateOptions),/unknown fields/);
@@ -85,10 +93,69 @@ test('Runtime builds preserve owned data and ignore generated verification artif
   fs.mkdirSync(path.join(directory,'runtime'));fs.writeFileSync(path.join(directory,'runtime','another-checkpoint.json'),'{}');
   writeWildlandsBundle(source,directory);assert.equal(fs.readFileSync(path.join(directory,'wildlands-runtime-bundle.json'),'utf8'),expected);
   assert.equal(fs.readFileSync(path.join(directory,'wildlands-runtime-loader.json'),'utf8'),loader);
-  for(const name of ['asset-definitions.json','creature-definitions.json','creature-config.json','interaction-library.json','content/scenario.schema.json'])assert(bundle.files.some(file=>file.path==='runtime/'+name),name);
-  const data=path.join(directory,'content','balancing.json'),changed=fs.readFileSync(data,'utf8')+'\n';fs.writeFileSync(data,changed);
+  // Owned data is engine data only: the bundle carries no game content (projects embed their game).
+  assert(bundle.files.some(file=>file.path==='runtime/content/scenario.schema.json'));
+  for(const name of ['asset-definitions.json','creature-definitions.json','creature-config.json','content/balancing.json','content/littlewild.pack.json'])assert(!bundle.files.some(file=>file.path==='runtime/'+name),name);
+  // The native export rejects test files (test-wildlands-godot); runtime installers must live outside test-support.
+  assert.equal(bundle.files.find(file=>file.path==='runtime/content-installers/littlewild-game.cjs')?.content,INSTALLER_SHIM);assert(!bundle.files.some(file=>file.path.includes('test-')),'Godot runtime closure contains test code');
+  const data=path.join(directory,'content','scenario.schema.json'),changed=fs.readFileSync(data,'utf8')+'\n';fs.writeFileSync(data,changed);
   writeWildlandsBundle(source,directory);const updated=JSON.parse(fs.readFileSync(path.join(directory,'wildlands-runtime-bundle.json'),'utf8')) as {files:{path:string;content:string}[]};
-  assert.equal(updated.files.find(file=>file.path==='runtime/content/balancing.json')?.content,changed);assert.equal(updated.files.length,bundle.files.length);
+  assert.equal(updated.files.find(file=>file.path==='runtime/content/scenario.schema.json')?.content,changed);assert.equal(updated.files.length,bundle.files.length);
  }finally{fs.rmSync(directory,{recursive:true,force:true});}
+});
+test('Godot runtime bundle is exactly the static require closure of the bridge entry points',()=>{
+ const source=path.resolve(__dirname,'../source'),text=fs.readFileSync(path.join(__dirname,'wildlands-runtime-bundle.json'),'utf8');
+ const bundle=JSON.parse(text) as {format:string;sharedEngineSources?:boolean;files:{path:string;content:string}[]},paths=bundle.files.map(file=>file.path.slice('runtime/'.length));
+ assert.deepEqual([...paths].sort(),[...runtimeClosure(source,__dirname)].sort());for(const root of RUNTIME_ROOTS)assert(paths.includes(root),root);
+ // Browser presentation, other templates, opt-in engine sources, unrequired generated data and test fixtures stay out.
+ for(const excluded of ['engine-source-bundle.json','scenario-v3-grown.json','interaction-library.json','asset-definitions.json','content-installers/littlewild-game.js','ui.js','world-3d.js','colony-ui.js','scenario-ui.js','wildlands-ui.js','play-boot.js','rts-host.js','pet-host.js','wildlands-godot.js','wildlands-sdk.cjs','tools/wildlands-cli.cjs'])assert(!paths.includes(excluded),excluded);
+ assert(paths.length<160);assert.equal(bundle.sharedEngineSources,undefined);
+ const loader=JSON.parse(fs.readFileSync(path.join(__dirname,'wildlands-runtime-loader.json'),'utf8')) as {decodedBytes:number;data:string};assert.equal(gunzipSync(Buffer.from(loader.data,'base64')).toString(),text);assert.equal(loader.decodedBytes,Buffer.byteLength(text));
+ const directory=fs.mkdtempSync(path.join(path.resolve(__dirname,'..'),'.wildlands-closure-test-'));
+ try{
+  for(const file of bundle.files){const target=path.join(directory,file.path.slice('runtime/'.length));fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,file.content);}
+  const entry=path.join(directory,'tools/wildlands-runtime.cjs'),original=fs.readFileSync(entry,'utf8');
+  for(const [addition,error] of [['\nrequire(process.env.WILDLANDS_PLUGIN);',/non-literal require/],['\nconsole.log(__dirname);',/__dirname/],['\nvoid import("./engine.js");',/dynamic import\(\)/],['\nrequire("./missing-runtime-module.js");',/requires tools\/missing-runtime-module\.js, which is not an authored or generated runtime file/],['\nrequire("../../escape.js");',/outside the runtime/]] as const){
+   fs.writeFileSync(entry,original+addition);assert.throws(()=>writeWildlandsBundle(source,directory),error);
+  }
+  fs.writeFileSync(entry,original);writeWildlandsBundle(source,directory);assert.equal(fs.readFileSync(path.join(directory,'wildlands-runtime-bundle.json'),'utf8'),text);
+ }finally{fs.rmSync(directory,{recursive:true,force:true});}
+});
+test('Schema version 2 projects embed the colony sections of the installed game and round-trip',()=>{
+ const sections=Object.keys(littlewild.game.profile).sort();
+ assert.deepEqual(sections,['assets','balancing','creatures','format','id','librarySchema','scenarios','version'].filter(key=>key in installed).sort());
+ assert(!('rts' in littlewild.game.profile)&&!('pet' in littlewild.game.profile),'RTS and Pocket Pet catalogs are not project content');
+ assert.deepEqual(clone(littlewild.game.profile.balancing),clone(installed.balancing));
+ const text=JSON.stringify(littlewild),roundTrip=projects.validate(text);assert(roundTrip.ok);assert.deepEqual(roundTrip.project,JSON.parse(text));
+ assert.equal(roundTrip.fingerprint,(projects.validate(littlewild) as Extract<Wildlands.Validation,{ok:true}>).fingerprint);
+ // The fingerprint covers the whole document, the embedded game included.
+ const tuned=clone(littlewild);(tuned.game.profile as unknown as {storage?:unknown}).storage={namespace:'wildlands.tuned'};
+ const retuned=projects.validate(tuned);assert(retuned.ok);assert.notEqual(retuned.fingerprint,roundTrip.fingerprint);
+ const rejected:[string,(doc:Record<string,unknown>&{game:Record<string,unknown>&{profile:Record<string,unknown>}})=>void,RegExp][]=[
+  ['missing game',doc=>{delete (doc as Record<string,unknown>).game;},/missing or unknown fields/],
+  ['extra game field',doc=>{doc.game.extra=true;},/game has missing or unknown fields/],
+  ['profile id mismatch',doc=>{doc.game.profile.id='other-game';},/whose id is/],
+  ['newer profile',doc=>{doc.game.profile.version=2;},/version 1/],
+  ['RTS section',doc=>{doc.game.profile.rts={};},/does not embed: rts/],
+  ['no scenario catalog',doc=>{delete doc.game.profile.scenarios;},/no scenario catalog/],
+  ['another game',doc=>{doc.game.id='office';doc.game.profile.id='office';},/embeds the game office, but this runtime runs/]
+ ];
+ for(const [name,change,error] of rejected){const doc=clone(littlewild) as unknown as Parameters<typeof change>[0];change(doc);const checked=projects.validate(doc);assert.equal(checked.ok,false,name);assert.match(checked.errors.join(' '),error,name);}
+});
+test('Legacy schemaVersion 1 projects stay readable and every write upgrades them to the installed game',()=>{
+ const {game:_game,...rest}=littlewild,legacy={...rest,schemaVersion:1} as Wildlands.LegacyProject;
+ const checked=projects.validate(JSON.stringify(legacy));assert(checked.ok);assert.equal(checked.project.schemaVersion,1);assert(!('game' in checked.project));
+ assert.notEqual(checked.fingerprint,(projects.validate(littlewild) as Extract<Wildlands.Validation,{ok:true}>).fingerprint);
+ assert.equal(projects.validate({...legacy,game:littlewild.game}).ok,false);
+ const upgraded=projects.upgrade(legacy);assert.deepEqual(upgraded,littlewild);assert.deepEqual(projects.upgrade(littlewild),littlewild);
+ assert.equal(projects.select(legacy,'littlewild','charted-home').schemaVersion,2);
+ assert.equal(runProject(legacy,recipe).project.schemaVersion,2);assert.equal(inspectProject(legacy).project.schemaVersion,1);
+});
+test('Engine distributions install no game: the engine-only installer leaves the game to its entry point',()=>{
+ const engine=require('./tools/engine-installer.cjs') as typeof import('./tools/engine-installer.cjs');
+ assert.equal(engine.installLittlewild(),installed);assert.equal(engine.installTemplate('pet'),installed);assert.equal(engine.petAssets(),undefined);
+ for(const make of [engine.littlewildProfile,engine.rtsProfile,engine.petProfile])assert.throws(()=>make(),/carries no game content/);
+ assert.equal(engine.contentProvider(),require('./content-provider.js'));
+ assert.match(INSTALLER_SHIM,/^"use strict";\n\/\/ Engine distributions carry no game[^\n]*\nmodule\.exports = require\("\.\.\/tools\/engine-installer\.cjs"\);\n$/);
 });
 const report={suite:'wildlands-project',passed:results.filter(value=>value.passed).length,total:results.length,results};fs.writeFileSync(path.join(__dirname,'wildlands-project-results.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));if(results.some(value=>!value.passed))process.exitCode=1;

@@ -1,11 +1,13 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /// <reference path="./building-interior-data-contracts.d.ts" />
 /* Bounded, portable interior layouts. Definitions contain geometry and stable IDs only. */
 (function(inputRoot:unknown){
  'use strict';
- const root=inputRoot as {LWInteriorDefinitions?:unknown;LWInteriors?:LWInterior.CatalogApi;LWContent:{parse(input:unknown,limit:number):unknown};LWInteriorPaths:{validate(f:LWInterior.Floor):void;path(f:LWInterior.Floor,a:LWInterior.Point,b:LWInterior.Point):LWInterior.Point[]|null}};
+ const root=inputRoot as {LWContentProvider?:LWContentProvider.Api;LWInteriors?:LWInterior.CatalogApi;LWContent:{parse(input:unknown,limit:number):unknown};LWInteriorPaths:{validate(f:LWInterior.Floor):void;path(f:LWInterior.Floor,a:LWInterior.Point,b:LWInterior.Point):LWInterior.Point[]|null}};
  const node=typeof module!=='undefined'&&module.exports;
  const C=(node?require('./content-runtime.js'):root.LWContent) as typeof root.LWContent;
  const Paths=(node?require('./building-interior-paths.js'):root.LWInteriorPaths) as typeof root.LWInteriorPaths;
+ const Content=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api;
  const copy=<T>(value:T):T=>JSON.parse(JSON.stringify(value)) as T;
  const plain=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v)&&Object.getPrototypeOf(v)===Object.prototype;
  const finite=(v:unknown,min:number,max:number):v is number=>typeof v==='number'&&Number.isFinite(v)&&v>=min&&v<=max;
@@ -34,11 +36,17 @@
   if(typeof input.fallback!=='string'||!layoutIds.has(input.fallback))bad('missing fallback layout');for(const [kind,layout]of Object.entries(input.bindings))if(!id(kind)||typeof layout!=='string'||!layoutIds.has(layout))bad('invalid binding');
   return copy(input as unknown as LWInterior.Catalog);
  }
- const defaults=validate(root.LWInteriorDefinitions??require('./content/balancing.json').interiors);
  function freeze(value:unknown):void{if(value&&typeof value==='object'){Object.freeze(value);for(const child of Object.values(value))freeze(child);}}
- freeze(defaults);
+ // The installed game's interior catalog, validated and frozen once on first use (or at install).
+ let catalog:LWInterior.Catalog|null=null;
+ function defaults():LWInterior.Catalog{
+  if(catalog)return catalog;
+  const balance=Content.get('the interior catalog').balancing,checked=validate(balance!==null&&typeof balance==='object'?(balance as {interiors?:unknown}).interiors:undefined);
+  freeze(checked);return catalog=checked;
+ }
  const layout=(catalog:LWInterior.Catalog,kind:string):LWInterior.Layout=>catalog.layouts.find(l=>l.id===(catalog.bindings[kind]||catalog.fallback))!;
  const floor=(definition:LWInterior.Layout,id:string):LWInterior.Floor|null=>definition.floors.find(f=>f.id===id)||null;
- const forBuilding=(world:LWInterior.CatalogWorld,building:LWInterior.CatalogBuilding):LWInterior.Layout=>building.designId&&world.construction?.designs[building.designId]?world.construction.designs[building.designId]!.layout:layout(world.interiors?.catalog||defaults,building.kind);
- root.LWInteriors=Object.freeze({defaults,validate,layout,floor,forBuilding,copy});if(typeof module!=='undefined'&&module.exports)module.exports=root.LWInteriors;
+ const forBuilding=(world:LWInterior.CatalogWorld,building:LWInterior.CatalogBuilding):LWInterior.Layout=>building.designId&&world.construction?.designs[building.designId]?world.construction.designs[building.designId]!.layout:layout(world.interiors?.catalog||defaults(),building.kind);
+ root.LWInteriors=Object.freeze({get defaults(){return defaults();},validate,layout,floor,forBuilding,copy});
+ Content.whenInstalled(()=>{defaults();},'balancing');if(typeof module!=='undefined'&&module.exports)module.exports=root.LWInteriors;
 })(globalThis);

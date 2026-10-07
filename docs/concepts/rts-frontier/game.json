@@ -1,0 +1,28 @@
+{
+  "$schema": "../../../source/wildlands/source/schemas/game.schema.json",
+  "format": "wildlands-game",
+  "schemaVersion": 1,
+  "id": "rts-frontier",
+  "name": "RTS Frontier",
+  "version": "1.0.0",
+  "template": "rts",
+  "engine": {
+    "api": 1
+  },
+  "content": {
+    "catalog": "content/rts.json"
+  },
+  "presentation": {
+    "title": "Wildlands RTS",
+    "description": "An offline isometric real-time strategy match built with Wildlands."
+  },
+  "storage": {
+    "namespace": "wildlands.rts-frontier"
+  },
+  "targets": {
+    "html": {
+      "output": "demos/rts-frontier.html",
+      "budgetBytes": 524288
+    }
+  }
+}

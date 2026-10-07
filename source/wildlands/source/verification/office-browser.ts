@@ -2,32 +2,35 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import {type Page} from 'playwright';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {ACTION_TIMEOUT_MS,ARTIFACT_FIXTURE_URL,launchBrowser,monitorContext,nextFrames,openArtifact,READY_TIMEOUT_MS,TRANSITION_TIMEOUT_MS,waitForReady} from './browser-harness';
 interface Result {name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification','v15');
 const SHOTS=process.env.LITTLEWILD_SCREENSHOT_DIR??path.join(ROOT,'screenshots','office');
 const results:Result[]=[];fs.mkdirSync(OUT,{recursive:true});
+// Office is reached and left through the scenario library (review and launch), which ships in the studio
+// artifact with the 2D renderers this suite compares; play artifacts omit both.
+const ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'.generated/artifacts/studio.html');
 async function check(name:string,work:()=>unknown|Promise<unknown>):Promise<void>{
  try{await work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}
 }
 async function shot(p:Page,name:string):Promise<void>{if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1'){fs.mkdirSync(SHOTS,{recursive:true});await p.screenshot({path:path.join(SHOTS,name+'.png'),animations:'disabled'});}}
 async function launchScene(p:Page,pack:string,scene:string):Promise<void>{
  await p.evaluate("Littlewild.open('scenarios')");await p.locator('[data-scenario=select]').filter({hasText:pack}).click();
- await p.locator('[data-scenario=review][data-id='+scene+']').click();
+ await p.locator('[data-scenario=review][data-id='+scene+']').click({timeout:TRANSITION_TIMEOUT_MS});
+ // The launch handler installs the scene synchronously, so it is paused before any later frame.
  await p.evaluate("document.querySelector('[data-scenario=launch]').click();Littlewild.engine.s.paused=true;Littlewild.refresh()");
- await p.waitForTimeout(200);
 }
 async function main():Promise<void>{
- const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
+ const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context,{fixtureUrls:[ARTIFACT_FIXTURE_URL]});
  try{
-  const p=await context.newPage();p.setDefaultTimeout(5000);
-  await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
-  await p.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await p.locator('[data-act=begin]').click();
+  const p=await context.newPage();p.setDefaultTimeout(ACTION_TIMEOUT_MS);
+  await openArtifact(p,ARTIFACT);
+  await waitForReady(p,{host:'colony',timeout:READY_TIMEOUT_MS});await p.locator('[data-act=begin]').click({timeout:TRANSITION_TIMEOUT_MS});
   await check('Office is discoverable as a reviewed authored experience with three named residents',async()=>{
    await p.evaluate("Littlewild.open('scenarios')");await p.locator('[data-scenario=select]').filter({hasText:'Office'}).click();
    assert.match(await p.locator('.scenario-library').innerText(),/Angela.*Phil.*Marty/s);
-   await p.locator('[data-scenario=review][data-id=operations-shift]').click();assert.match(await p.locator('.scenario-review').innerText(),/Angela, Phil, Marty/);
-   await p.evaluate("document.querySelector('[data-scenario=launch]').click();Littlewild.engine.s.paused=true;Littlewild.refresh()");await p.waitForTimeout(200);
+   await p.locator('[data-scenario=review][data-id=operations-shift]').click({timeout:TRANSITION_TIMEOUT_MS});assert.match(await p.locator('.scenario-review').innerText(),/Angela, Phil, Marty/);
+   await p.evaluate("document.querySelector('[data-scenario=launch]').click();Littlewild.engine.s.paused=true;Littlewild.refresh()");
    assert.deepEqual(await p.evaluate('Littlewild.engine.creatures.map(c=>c.name)'),['Angela','Phil','Marty']);
   });
   await check('Office guidance uses its authored four-step team workflow and exact final step',async()=>{
@@ -57,11 +60,14 @@ async function main():Promise<void>{
     return {nodes:count(asset.models.world.nodes),decor:view.decor.length,environmentKey:view.environmentKey,hash:LWWorldProfile.hash,unchanged:before===JSON.stringify(Littlewild.engine.export()),names:view.nameTargets.map(t=>t.id),triangles:Littlewild.world.diagnostics().triangles};
    })()`);
    assert(evidence.nodes>=6,'Office desk must use furniture components, not a relabeled outdoor building.');assert.equal(evidence.decor,0);assert.equal(evidence.environmentKey,evidence.hash);assert.equal(evidence.unchanged,true);
-   assert.deepEqual(evidence.names.sort(),['c1','c2','c3']);assert(evidence.triangles>100,'The installed indoor 3D stage must render real geometry.');await p.waitForTimeout(50);const capture=await p.evaluate<{pixel:number[];colors:number;png:string}>(`(()=>{const view=officeCanvasCheck;view.draw(1,0);const pixels=view.c.getImageData(0,0,view.canvas.width,view.canvas.height).data,colors=new Set();for(let i=0;i<pixels.length;i+=64)colors.add(pixels[i]+','+pixels[i+1]+','+pixels[i+2]);return {pixel:Array.from(pixels.slice(0,4)),colors:colors.size,png:view.canvas.toDataURL()};})()`);assert.deepEqual(capture.pixel,[220,227,232,255],'The Canvas preview must retain its authored background after resize.');assert(capture.colors>20,'The Canvas preview must visibly paint the room, furniture and residents.');if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1'){fs.mkdirSync(SHOTS,{recursive:true});fs.writeFileSync(path.join(SHOTS,'office-canvas-desktop.png'),Buffer.from(capture.png.split(',')[1]!, 'base64'));}
+   assert.deepEqual(evidence.names.sort(),['c1','c2','c3']);assert(evidence.triangles>100,'The installed indoor 3D stage must render real geometry.');
+   // The preview canvas adopts its CSS size through a resize observer, which runs between rendered frames.
+   await nextFrames(p);const capture=await p.evaluate<{pixel:number[];colors:number;png:string}>(`(()=>{const view=officeCanvasCheck;view.draw(1,0);const pixels=view.c.getImageData(0,0,view.canvas.width,view.canvas.height).data,colors=new Set();for(let i=0;i<pixels.length;i+=64)colors.add(pixels[i]+','+pixels[i+1]+','+pixels[i+2]);return {pixel:Array.from(pixels.slice(0,4)),colors:colors.size,png:view.canvas.toDataURL()};})()`);assert.deepEqual(capture.pixel,[220,227,232,255],'The Canvas preview must retain its authored background after resize.');assert(capture.colors>20,'The Canvas preview must visibly paint the room, furniture and residents.');if(process.env.LITTLEWILD_CAPTURE_SCREENSHOTS==='1'){fs.mkdirSync(SHOTS,{recursive:true});fs.writeFileSync(path.join(SHOTS,'office-canvas-desktop.png'),Buffer.from(capture.png.split(',')[1]!, 'base64'));}
   });
   await p.evaluate("document.getElementById('office-canvas-check')?.remove()");
   for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
-   await p.setViewportSize(viewport);await p.evaluate('Littlewild.world.home();Littlewild.world.invalidate();Littlewild.refresh()');await p.waitForTimeout(200);
+   // Resize steps, the shell's double-frame resize handler and the next world paint settle before measuring.
+   await p.setViewportSize(viewport);await p.evaluate('Littlewild.world.home();Littlewild.world.invalidate();Littlewild.refresh()');await nextFrames(p,3);
    await check('Office controls and authored world remain usable at '+viewport.width+'px',async()=>{
     const fit=await p.evaluate<{overflow:boolean;canvas:boolean;labels:unknown}>(`(()=>{const c=document.getElementById('world').getBoundingClientRect();return {overflow:document.documentElement.scrollWidth>innerWidth,canvas:c.width>100&&c.height>200,labels:Littlewild.world.labelLayer.diagnostics()};})()`);
     assert.equal(fit.overflow,false);assert.equal(fit.canvas,true);
@@ -77,7 +83,9 @@ async function main():Promise<void>{
    // Ordinary ticks find the opportunity, travel and start the authored quest; no view teleports or task injection.
    const onsite=await p.evaluate<{quest:boolean;onsite:boolean;distance:number}>(`(()=>{const e=Littlewild.engine;e.s.paused=false;for(let i=0;i<400&&!e.creatures.find(c=>c.name==='Phil').activeQuest;i++)e.step(.1);e.s.paused=true;Littlewild.refresh();const c=e.creatures.find(c=>c.name==='Phil'),b=e.s.buildings.find(b=>b.id==='office-sales');return {quest:!!c.activeQuest,onsite:LWSceneEnvironment.onsite(e.s,c),distance:Math.hypot(c.creature.x-b.x,c.creature.y-b.y)};})()`);
    assert.equal(onsite.quest,true);assert.equal(onsite.onsite,true);assert(onsite.distance<2);
-   await p.waitForTimeout(200);assert.match(await p.locator('.v10-labels').innerText(),/Phil · Sales Rep/);
+   // Twelve rendered frames (200 ms at 60 Hz, longer under load) include several 30 fps world paints, which
+   // refresh the world labels.
+   await nextFrames(p,12);assert.match(await p.locator('.v10-labels').innerText(),/Phil · Sales Rep/);
    assert.equal(await p.evaluate("Littlewild.world.actors.get('c2').root.visible"),true);await shot(p,'office-sales-call');
   });
   await check('Switching Office back to Littlewild resets installed scenery and cached Canvas terrain',async()=>{

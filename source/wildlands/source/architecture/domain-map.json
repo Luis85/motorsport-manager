@@ -9,6 +9,13 @@
   ],
   "contexts": [
     {
+      "id": "content-provider",
+      "layer": "domain",
+      "files": [
+        "content-provider.ts"
+      ]
+    },
+    {
       "id": "simulation-core",
       "layer": "domain",
       "files": [
@@ -264,7 +271,8 @@
         "pet-renderer.ts",
         "pet-demo.ts",
         "pet-host.ts",
-        "pet-store.ts"
+        "pet-store.ts",
+        "play-boot.ts"
       ]
     },
     {
@@ -433,7 +441,11 @@
     "LWPetDefinitions",
     "LWPetAssetDefinitions",
     "LWPetCatalog",
-    "LWPetSystems"
+    "LWPetSystems",
+    "LWContentProvider",
+    "LWGameProfile",
+    "LWCreatureEditorFieldDefinitions",
+    "LWScenarioPacks"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",
@@ -464,7 +476,8 @@
     "WildlandsGodotTemplates",
     "LWRTSDefinitions",
     "LWPetDefinitions",
-    "LWPetAssetDefinitions"
+    "LWPetAssetDefinitions",
+    "LWGameProfile"
   ],
   "strictTypingDebt": {},
   "strictTypingDebtBudget": 0,

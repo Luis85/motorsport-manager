@@ -1,4 +1,6 @@
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 /* Real-engine boundary tests for ECS-owned deposits, worksite inventories and jobs. */
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const L=require('./simulation.cjs'),S=require('./story-codec.js'),E=require('./ecs.js');

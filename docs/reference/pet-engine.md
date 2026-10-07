@@ -10,8 +10,8 @@ reproduce a licensed product's content or rules. Follow the
 ## Content and authority
 
 The catalog is plain JSON with `format: "wildlands-pet"`, `schemaVersion: 1`. The
-shipped fixture is
-[`pet-demo.json`](../../source/wildlands/source/content/pet-demo.json).
+shipped catalog is [`content/pet.json`](../concepts/pocket-pet/content/pet.json)
+in the [Pocket Pet game folder](../concepts/pocket-pet/README.md).
 [`pet-contracts.d.ts`](../../source/wildlands/source/pet-contracts.d.ts) declares
 every record; [`pet-catalog.ts`](../../source/wildlands/source/pet-catalog.ts)
 validates fields, ranges, ordering and references, then returns a frozen copy.
@@ -113,8 +113,9 @@ and the diary keep working. The browser exposes `WildlandsPet` for automation.
 
 ## Assets
 
-Pet and prop definitions live in `source/assets/pets/<id>/definition.json` with
-category `pet`. They are generated from the
+Pet and prop definitions live in the game folder's
+`assets/pets/<id>/definition.json` (`docs/concepts/pocket-pet/`) with category
+`pet`; a pet game's `assets` may hold only `pets` definitions. They are generated from the
 [Scene Forge pocket-pet project](../../source/scene-forge/examples/pocket-pet/littlewild.export.json)
 and bundled separately as `LWPetAssetDefinitions`, so colony scenarios and saves
 never embed them. Follow [authoring Littlewild assets in Scene Forge](../how-to/scene-forge-littlewild-assets.md).

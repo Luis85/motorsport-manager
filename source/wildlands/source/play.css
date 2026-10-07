@@ -1,0 +1,31 @@
+/* Standalone game templates (RTS, Pet) do not load the colony stylesheet. These tokens mirror
+   style.css :root exactly (an architecture check compares them) so game surfaces keep one palette. */
+:root{
+  --paper: #f6f5ee;
+  --card: #fffef8;
+  --ink: #31463d;
+  --muted: #7f8a79;
+  --line: #e2e5d8;
+  --green: #426a54;
+  --green-dark: #315441;
+  --green-light: #e8eee0;
+  --amber: #b78f4e;
+  --rose: #b77770;
+  --shadow: 0 8px 26px #3045320c;
+  font-family: ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-synthesis: none;
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 13px
+}
+*{box-sizing:border-box}
+body{margin:0}
+button,input,select{font:inherit}
+button{color:inherit;cursor:pointer;touch-action:manipulation}
+button:disabled{cursor:not-allowed;opacity:.45}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #b69150;outline-offset:3px}
+#play-shell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:100vh;padding:24px;text-align:center}
+#play-status{margin:0;font-size:15px;max-width:60ch}
+#play-status[role=alert]{color:#843d28}
+#play-resume{min-height:44px;padding:8px 16px;border:1px solid #8b9e7d;border-radius:6px;background:var(--card)}
+#play-resume[hidden]{display:none}

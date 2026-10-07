@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {ACTION_TIMEOUT_MS,fixtureUrl,launchBrowser,monitorContext,openArtifact,READY_TIMEOUT_MS,TRANSITION_TIMEOUT_MS,waitForReady} from './browser-harness';
 
 interface Settings {duels:boolean;quests:boolean;}
 interface SettingsEngine {
@@ -14,7 +14,11 @@ interface BrowserGlobals {
 }
 interface Result {name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,'../..');
-const ARTIFACT=process.env.LITTLEWILD_GAME_SETTINGS_HTML||path.join(ROOT,'littlewild.html');
+// The colony play artifact carries the whole settings surface; the composite showcase adds nothing it needs.
+const ARTIFACT=process.env.LITTLEWILD_GAME_SETTINGS_HTML||path.join(ROOT,'.generated/artifacts/colony-play.html');
+const VIEWPORTS=[{width:1440,height:1000},{width:390,height:844}];
+// Each viewport starts a fresh story: its own origin keeps the first page's saves out of the second.
+const pageUrl=(viewport:{width:number}):string=>fixtureUrl('settings-'+viewport.width);
 const OUT=process.env.LITTLEWILD_GAME_SETTINGS_OUT||path.join(ROOT,'verification','v15');
 const results:Result[]=[];
 let diagnostics:ReturnType<typeof monitorContext>;
@@ -26,15 +30,14 @@ async function check(name:string,work:()=>unknown|Promise<unknown>):Promise<void
 async function main():Promise<void>{
  const browser=await launchBrowser();
  const context=await browser.newContext();
- diagnostics=monitorContext(context);
+ diagnostics=monitorContext(context,{fixtureUrls:VIEWPORTS.map(pageUrl)});
  try{
-  const html=fs.readFileSync(ARTIFACT,'utf8');
-  for(const viewport of[{width:1440,height:1000},{width:390,height:844}]){
+  for(const viewport of VIEWPORTS){
    const page=await context.newPage();
-   await page.setViewportSize(viewport);page.setDefaultTimeout(5000);
-   await page.setContent(html,{waitUntil:'load'});
-   await page.waitForFunction(()=>!!(window as unknown as BrowserGlobals).Littlewild);
-   await page.locator('[data-act=begin]').click();
+   await page.setViewportSize(viewport);page.setDefaultTimeout(ACTION_TIMEOUT_MS);
+   await openArtifact(page,ARTIFACT,{url:pageUrl(viewport)});
+   await waitForReady(page,{host:'colony',timeout:READY_TIMEOUT_MS});
+   await page.locator('[data-act=begin]').click({timeout:TRANSITION_TIMEOUT_MS});
    await page.evaluate(()=>(window as unknown as BrowserGlobals).Littlewild.open('settings'));
 
    await check('Native settings checkboxes start independently enabled at '+viewport.width+'px',async()=>{

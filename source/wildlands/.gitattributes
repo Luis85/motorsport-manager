@@ -1,5 +1,3 @@
-# Generated standalone output preserves literal upstream shader whitespace.
-littlewild.html whitespace=-blank-at-eol,-space-before-tab linguist-generated=true
 # Pinned upstream bundles are byte-preserved, including shader string whitespace.
 vendor/excalibur-0.32.0.min.js whitespace=-blank-at-eol linguist-vendored=true
 vendor/pixi-8.22.0.min.js whitespace=-blank-at-eol linguist-vendored=true

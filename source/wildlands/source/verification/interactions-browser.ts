@@ -1,20 +1,23 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {ACTION_TIMEOUT_MS,ARTIFACT_FIXTURE_URL,launchBrowser,monitorContext,nextFrames,openArtifact,READY_TIMEOUT_MS,TRANSITION_TIMEOUT_MS,waitForReady} from './browser-harness';
 interface Result {name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification','v15');
 const results:Result[]=[];fs.mkdirSync(OUT,{recursive:true});
+// Scene switching goes through the scenario library (review and launch), which ships in the studio artifact;
+// play artifacts omit it and the composite showcase adds nothing these checks need.
+const ARTIFACT=process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'.generated/artifacts/studio.html');
 async function check(name:string,work:()=>unknown|Promise<unknown>):Promise<void>{
  try{await work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}
 }
 async function main():Promise<void>{
- const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
+ const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context,{fixtureUrls:[ARTIFACT_FIXTURE_URL]});
  try{
-  const p=await context.newPage();p.setDefaultTimeout(5000);
-  await p.setContent(fs.readFileSync(process.env.LITTLEWILD_BROWSER_ARTIFACT??path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
-  await p.waitForFunction(()=>!!(window as unknown as {Littlewild?:unknown}).Littlewild);await p.locator('[data-act=begin]').click();
-  await p.evaluate("Littlewild.open('scenarios')");await p.locator('[data-scenario=review][data-id=charted-home]').click();
+  const p=await context.newPage();p.setDefaultTimeout(ACTION_TIMEOUT_MS);
+  await openArtifact(p,ARTIFACT);
+  await waitForReady(p,{host:'colony',timeout:READY_TIMEOUT_MS});await p.locator('[data-act=begin]').click({timeout:TRANSITION_TIMEOUT_MS});
+  await p.evaluate("Littlewild.open('scenarios')");await p.locator('[data-scenario=review][data-id=charted-home]').click({timeout:TRANSITION_TIMEOUT_MS});
   // Pause synchronously with scene installation, before the first decision frame.
   await p.evaluate("document.querySelector('[data-scenario=launch]').click();Littlewild.engine.s.paused=true;Littlewild.refresh()");
   await check('Player can discover the interaction workspace and named initiators',async()=>{
@@ -30,7 +33,10 @@ async function main():Promise<void>{
   });
   await check('Creature invitations expose pending consent and then run seeded rounds autonomously',async()=>{
    await p.locator('#ci-source').selectOption('c1');await p.locator('#ci-target').selectOption('c2');
-   const seekButton=await p.locator('[data-act=ci-seek-duel]').elementHandle();assert(seekButton);await p.waitForTimeout(120);assert(await seekButton.evaluate(el=>el.isConnected),'Unchanged interaction buttons must remain mounted across frame refreshes.');
+   const seekButton=await p.locator('[data-act=ci-seek-duel]').elementHandle();assert(seekButton);
+   // Thirty rendered frames (500 ms at 60 Hz, longer under load) span at least two HUD refreshes, which the
+   // shell runs every 250 ms of frame time.
+   await nextFrames(p,30);assert(await seekButton.evaluate(el=>el.isConnected),'Unchanged interaction buttons must remain mounted across frame refreshes.');
    await p.locator('[data-act=ci-seek-duel]').click();assert.match(await p.locator('#ci-status').innerText(),/looking for a partner/);
    assert.equal(await p.evaluate('Littlewild.engine.interactionState().active.length'),0);
    await p.locator('[data-act=ci-cancel-duel-seek]').click();assert.equal(await p.evaluate('Littlewild.engine.interactionState().seeks.length'),0);
@@ -60,7 +66,7 @@ async function main():Promise<void>{
    const fresh=await p.evaluate("LWScenarios.builtins().find(pack=>pack.id==='littlewild')");
    await p.locator('#scenario-import-file').setInputFiles({name:'fresh-littlewild.pack.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(fresh))});
    await p.locator('#toasts .toast').filter({hasText:'Pack validated. Review a scene before starting it.'}).waitFor();
-   await p.locator('[data-scenario=review][data-id=charted-home]').click();
+   await p.locator('[data-scenario=review][data-id=charted-home]').click({timeout:TRANSITION_TIMEOUT_MS});
    await p.evaluate("document.querySelector('[data-scenario=launch]').click();Littlewild.engine.s.paused=true;Littlewild.open('v10-interactions');Littlewild.refresh()");
    await p.locator('#ci-source').selectOption('c1');await p.locator('#ci-scope').selectOption('node');
    const node=await p.evaluate("Littlewild.engine.s.nodes.find(n=>n.kind==='wood'&&!Littlewild.engine.s.buildings.some(b=>b.x===n.x&&b.y===n.y)).id") as string;

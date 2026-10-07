@@ -6,13 +6,16 @@
  * Schemas check shape; runtime validation also checks references and dependency cycles.
  */
 const {readJsonFile,helpRequested,emit}=require('./cli-io.cjs');
+// Transitional: the bundled Littlewild game is installed (inside the JSON error boundary, after
+// help) until game folders supply profiles.
+const {installLittlewild}=require('../content-installers/littlewild-game.cjs');
 try {
   const args=process.argv.slice(2);
   if(helpRequested(args)){emit({ok:true,usage:'world-cli.cjs export | schema | validate <file> | diff <file>'});process.exit(0);}
   const [command, filename, ...extra] = args;
   if (extra.length) throw Error('Unexpected extra arguments.');
   if(!['export','schema','validate','diff'].includes(command)||(['export','schema'].includes(command)?!!filename:!filename))throw Error('Use export, schema, validate <file>, or diff <file>.');
-  require('../simulation.cjs');const W = require('../world-content.js');
+  installLittlewild();require('../simulation.cjs');const W = require('../world-content.js');
   let result;
   if (command === 'export' && !filename) result = W.clone(W.content);
   else if (command === 'schema' && !filename) result = W.clone(W.schema);

@@ -27,6 +27,10 @@
       "owner": "content-model"
     },
     {
+      "path": "content-provider-contracts.d.ts",
+      "owner": "content-provider"
+    },
+    {
       "path": "developer-contracts.d.ts",
       "owner": "developer-application"
     },
@@ -217,6 +221,10 @@
     {
       "path": "pet-contracts.d.ts",
       "owner": "pet"
+    },
+    {
+      "path": "embedded-app-contracts.d.ts",
+      "owner": "presentation"
     }
   ]
 }

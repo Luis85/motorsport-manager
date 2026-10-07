@@ -1,14 +1,15 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /// <reference path="./interaction-contracts.d.ts" />
 /* Pure data validation. Executable capabilities are selected by a small compiled enum. */
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {
   LWContent:{parse(input:unknown,limit:number):unknown;fingerprint(input:unknown):string;tables:{SKILLS:Record<string,unknown>;RES:Record<string,unknown>}};
-  LWInteractionLibrary?:unknown;LWInteractions?:LWInteraction.Catalog;
+  LWContentProvider?:LWContentProvider.Api;LWInteractions?:LWInteraction.Catalog;
  };
  const node=typeof module!=='undefined'&&module.exports;
  const C=(node?require('./content-runtime.js'):root.LWContent) as typeof root.LWContent;
- const seed=node?require('./content/balancing.json').interactions as unknown:root.LWInteractionLibrary;
+ const Content=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api;
  const copy=<T>(value:T):T=>C.parse(value,2*1024*1024) as T;
  function object(value:unknown,keys:readonly string[],label:string):Record<string,unknown>{
   if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid '+label+'.');
@@ -118,8 +119,15 @@
   return {format:'littlewild-interactions',schemaVersion:1,id:identity(data.id,'library ID'),version:number(data.version,1,100000,'library version',true),
    definitions,triggers};
  }
- const defaults=validate(seed);
+ // The installed game's interaction library, validated once on first use (or at install).
+ let library:LWInteraction.Library|null=null;
+ function defaults():LWInteraction.Library{
+  if(library)return library;
+  const balance=Content.get('the interaction library').balancing;
+  return library=validate(balance!==null&&typeof balance==='object'?(balance as {interactions?:unknown}).interactions:undefined);
+ }
  const fingerprint=(input:unknown):string=>C.fingerprint({schemaVersion:1,components:input});
- const api:LWInteraction.Catalog=Object.freeze({get defaults(){return copy(defaults);},all:()=>copy(defaults.definitions),validate,definition,copy,fingerprint});
+ const api:LWInteraction.Catalog=Object.freeze({get defaults(){return copy(defaults());},all:()=>copy(defaults().definitions),validate,definition,copy,fingerprint});
+ Content.whenInstalled(()=>{defaults();},'balancing');
  root.LWInteractions=api;if(node)module.exports=api;
 })(globalThis);

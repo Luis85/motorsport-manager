@@ -1,3 +1,4 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /* Deterministic economy, reward and progression settlement.
  * Domain commands authorize intent and choose reward amounts. This module only validates
  * invariant-safe deltas, applies them atomically, and returns a presentation-neutral outbox.
@@ -61,14 +62,17 @@
   threshold(level:number):number;
  }
  interface EconomyApi { create(rules?:unknown):EconomyRuntime;validateRules(input:unknown):EconomyRules; }
- interface LittlewildRoot { LWECS?:EcsApi;LWContent?:ContentApi;LWEconomyRules?:unknown;LWEconomyECS?:EconomyApi; }
+ interface LittlewildRoot { LWECS?:EcsApi;LWContent?:ContentApi;LWContentProvider?:LWContentProvider.Api;LWEconomyECS?:EconomyApi; }
  const root=inputRoot as LittlewildRoot;
  const node=typeof module!=='undefined'&&module.exports;
  const ecs=(node?require('./ecs.js'):root.LWECS) as EcsApi|undefined;
  const content=(node?require('./content-runtime.js'):root.LWContent) as ContentApi|undefined;
- const DEFAULT=node?require('./content/balancing.json').simulation.rules.economy as unknown:root.LWEconomyRules;
- if(!ecs||!content||DEFAULT===undefined)throw Error('Economy ECS dependencies are missing.');
- const E:EcsApi=ecs,C:ContentApi=content;
+ const provider=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api|undefined;
+ if(!ecs||!content||!provider)throw Error('Economy ECS dependencies are missing.');
+ const E:EcsApi=ecs,C:ContentApi=content,Content:LWContentProvider.Api=provider;
+ const dig=(value:unknown,...keys:string[]):unknown=>keys.reduce<unknown>((at,key)=>at!==null&&typeof at==='object'?(at as Record<string,unknown>)[key]:undefined,value);
+ /** Canonical economy rules of the installed game, read when a runtime is created without rules. */
+ function defaults():unknown{const rules=dig(Content.get('economy ECS rules').balancing,'simulation','rules','economy');if(rules===undefined)throw Error('Economy ECS dependencies are missing.');return rules;}
  const own=(object:object,key:PropertyKey):boolean=>Object.prototype.hasOwnProperty.call(object,key);
  const plain=(value:unknown):value is Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
  const clone=<T>(value:T):T=>C.copy(value);
@@ -95,7 +99,7 @@
    xp:Object.freeze({base:xp.base,perLevel:xp.perLevel,playerResearchPerLevel:xp.playerResearchPerLevel,actorBondPerLevel:xp.actorBondPerLevel}),
    income:Object.freeze({pocketShare:income.pocketShare}),limits:Object.freeze({balance:limits.balance,delta:limits.delta,level:limits.level,stat:limits.stat})});
  }
- function create(rules:unknown=DEFAULT):EconomyRuntime{
+ function create(rules:unknown=defaults()):EconomyRuntime{
   const tuning=validateRules(rules),world=new E.World(),scheduler=new E.Scheduler(),completed=new Set<string>();let serial=0;
   const threshold=(level:number):number=>{if(!integer(level,1,tuning.limits.level))throw Error('Invalid economy level.');return tuning.xp.base+level*tuning.xp.perLevel;};
   const component=<T extends ComponentData>(id:string,type:string,data:T):T=>{

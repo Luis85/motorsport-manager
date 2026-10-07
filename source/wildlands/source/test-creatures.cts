@@ -1,9 +1,14 @@
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const source=path.resolve(__dirname,'../source'),creatureRoot=path.join(source,'assets','creatures'),assetRoot=path.join(source,'assets'),results=[];
+const source=path.resolve(__dirname,'../source'),game=require('./tools/game-folder.cjs').gameDirectory('littlewild'),creatureRoot=path.join(game,'assets','creatures'),assetRoot=path.join(game,'assets'),results=[];
+/** Build projections over one copy of a game folder's assets (discovery, creature catalog, asset catalog). */
+const bundled=require('./tools/bundled-assets.cjs'),discover=directory=>require('./tools/definition-source.cjs').definitions(path.join(directory,'assets'));
+const projections={creatureDefinitions:directory=>bundled.creatureDefinitions(discover(directory)),creatureConfig:directory=>bundled.creatureConfig(path.join(directory,'assets','creatures','catalog.json'),discover(directory)),assetDefinitions:directory=>bundled.assetDefinitions(discover(directory))};
 function test(name,fn){try{fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error.stack});console.error('FAIL',name,error.message);}}
 const Creatures=require('./creature-catalog.js');require('./content-runtime.js');require('./behavior-tree.js');const Adventure=require('./adventure-content.js'),Factory=require('./creature-factory.js'),ActorECS=require('./actor-ecs.js');
-global.LWAssetDefinitions=require('./tools/bundled-assets.cjs').assetDefinitions(source);
+global.LWAssetDefinitions=bundled.assetDefinitions(discover(game));
 const Assets=require('./asset-catalog.js');
 test('Creature catalog loads every isolated definition folder',()=>{const folders=fs.readdirSync(creatureRoot,{withFileTypes:true}).filter(x=>x.isDirectory());assert.equal(Creatures.all().length,folders.length);for(const d of Creatures.all())assert(fs.existsSync(path.join(creatureRoot,d.id,'definition.json')),d.id);});
 test('Creature definitions are immutable and executable-free',()=>{const forbidden=new Set(['script','callback','execute','eval','sourceCode','modulePath','handler','command']);const visit=(v,p)=>{if(Array.isArray(v))v.forEach((x,i)=>visit(x,p+'/'+i));else if(v&&typeof v==='object')for(const[k,x]of Object.entries(v)){assert(!forbidden.has(k),p+'/'+k);visit(x,p+'/'+k);}};assert(Object.isFrozen(Creatures.all()));assert.throws(()=>Creatures.all().push({}),TypeError);for(const d of Creatures.all()){assert(Object.isFrozen(d));assert(Object.isFrozen(d.state.defaults));visit(d,d.id);}});
@@ -19,7 +24,8 @@ test('Actor animation and expression tuning are data and remain finite',()=>{for
 test('Presentation code uses explicit creature archetype identity',()=>{for(const file of ['ui.ts','colony-ui.ts','world-fidelity.ts','world-3d.ts']){const text=fs.readFileSync(path.join(source,file),'utf8');assert(!text.includes('forPersonality('),file);}const world=fs.readFileSync(path.join(source,'world-3d.ts'),'utf8');assert(world.includes('root.LWCreatures.defaultArchetype'));assert(world.includes('root.LWCreatures.defaultPersonality'));});
 test('Recruitment and fidelity contain no hard-coded creature template or visual variant tables',()=>{const colony=fs.readFileSync(path.join(source,'colony.ts'),'utf8'),village=fs.readFileSync(path.join(source,'village-systems.ts'),'utf8'),fidelity=fs.readFileSync(path.join(source,'world-fidelity.ts'),'utf8'),renderer=fs.readFileSync(path.join(source,'asset-renderer.ts'),'utf8');assert(!colony.includes('decorateActor'));assert(!colony.includes("constructThrough('systems').s"));assert(!colony.includes("names = ['Pip'"));assert(!village.includes('eventInteractions||='));assert(!village.includes('interactionCooldowns||='));assert(!fidelity.includes('const swatches='));assert(!fidelity.includes("forPersonality("));assert(!fidelity.includes("'sproutling'"));assert(!fidelity.includes("'world-round'"));assert(!renderer.includes("id='sproutling'"));});
 test('Creature catalog rejects nested schema drift, mismatched identity and invalid spawn modes',()=>{const raw=JSON.parse(fs.readFileSync(path.join(creatureRoot,'sproutling','definition.json'),'utf8')).creature,bad=JSON.parse(JSON.stringify(raw));bad.movement.typo=1;assert.throws(()=>Creatures.validate(bad),/movement/);const identity=JSON.parse(JSON.stringify(raw));identity.state.defaults.archetype='other';assert.throws(()=>Creatures.validate(identity),/archetype/);const extra=JSON.parse(JSON.stringify(raw));extra.state.defaults.unowned={};assert.throws(()=>Creatures.validate(extra),/actor-scoped/);assert.throws(()=>Creatures.seed('sproutling','curious','sideways',0),/mode/);assert.throws(()=>Factory.create({id:'c9',archetype:'sproutling',personality:'curious',mode:'sideways',sequence:9,day:1,simTime:0}),/creation options/);});
-test('Creature authoring schema is shipped beside the catalog',()=>{const schema=JSON.parse(fs.readFileSync(path.join(creatureRoot,'creature.schema.json'),'utf8'));assert.equal(schema.title,'Littlewild Creature Definition');assert.equal(schema.properties.format.const,'littlewild-creature');});
+// Grammars stay with the engine (source/assets/creatures) beside the catalog grammar; game folders hold only data.
+test('Creature authoring schema is shipped beside the catalog',()=>{const engine=path.join(source,'assets','creatures'),schema=JSON.parse(fs.readFileSync(path.join(engine,'creature.schema.json'),'utf8'));assert(fs.existsSync(path.join(engine,'catalog.schema.json')));assert(!fs.existsSync(path.join(creatureRoot,'creature.schema.json')));assert.equal(schema.title,'Littlewild Creature Definition');assert.equal(schema.properties.format.const,'littlewild-creature');});
 test('Creature data preflight rejects accessors, sparse lists and reserved keys without evaluating them',()=>{const raw=JSON.parse(fs.readFileSync(path.join(creatureRoot,'sproutling','definition.json'),'utf8')).creature;let reads=0;const accessor={...raw};Object.defineProperty(accessor,'name',{enumerable:true,get(){reads++;return 'Accessor';}});assert.throws(()=>Creatures.validate(accessor),/non-JSON/);assert.equal(reads,0);const sparse=JSON.parse(JSON.stringify(raw));delete sparse.names[0];assert.throws(()=>Creatures.validate(sparse),/dense/);const unsafe=JSON.parse(JSON.stringify(raw));unsafe.state.defaults.memory=JSON.parse('{"__proto__":{"polluted":true}}');assert.throws(()=>Creatures.validate(unsafe),/reserved/);});
 test('Spawn mode components satisfy their actual ECS system contracts',()=>{const raw=JSON.parse(fs.readFileSync(path.join(creatureRoot,'sproutling','definition.json'),'utf8')).creature;for(const edit of[
  d=>d.state.modes.arrival.needs=null,d=>d.state.modes.founder.needs={food:'full'},
@@ -27,12 +33,17 @@ test('Spawn mode components satisfy their actual ECS system contracts',()=>{cons
  d=>d.ecs.components.push({type:'Creature',field:'rpg'})
  ]){const d=JSON.parse(JSON.stringify(raw));edit(d);assert.throws(()=>Creatures.validate(d),/component|Needs|transient/);}});
 test('Factory rejects a coerced identity before reading or mutating actor state',()=>{let reads=0;const options={id:{toString(){reads++;return 'c9';}},archetype:'sproutling',personality:'curious',mode:'arrival',sequence:9,day:1,simTime:0};assert.throws(()=>Factory.create(options),/creation options/);assert.equal(reads,0);});
-// Load untouched compiled modules in a fresh CommonJS realm with discovered manifests.
+// Load untouched compiled modules in a fresh CommonJS realm with discovered manifests. The realm's
+// content provider adopts its data globals like a browser artifact: the discovered creatures and
+// assets plus the bundled Littlewild balancing, library schema, editor fields and scenario packs.
 function realm(definitions,configuration,assets){
  const vm=require('node:vm'),context=vm.createContext({console,TextEncoder,TextDecoder}),cache=new Map();
  context.LWCreatureDefinitions=vm.runInContext('JSON.parse('+JSON.stringify(JSON.stringify(definitions))+')',context);
  context.LWCreatureConfig=vm.runInContext('JSON.parse('+JSON.stringify(JSON.stringify(configuration))+')',context);
  context.LWAssetDefinitions=vm.runInContext('JSON.parse('+JSON.stringify(JSON.stringify(assets))+')',context);
+ const bundled=file=>'JSON.parse('+JSON.stringify(fs.readFileSync(path.join(__dirname,file),'utf8'))+')';
+ for(const [name,file] of [['LWDefaultBalancing','content/balancing.json'],['LWContentSchema','content/library.schema.json'],['LWCreatureEditorFieldDefinitions','creature-editor-fields.json']])context[name]=vm.runInContext(bundled(file),context);
+ context.LWScenarioPacks=vm.runInContext('['+['littlewild','emberworks','office'].map(id=>bundled('content/'+id+'.pack.json')).join(',')+']',context);
  function load(file){
   const filename=path.resolve(__dirname,file);if(cache.has(filename))return cache.get(filename).exports;
   const module={exports:{}};cache.set(filename,module);
@@ -54,7 +65,7 @@ function authoredFixture(fn){
   const folder=path.join(directory,'assets','creatures',d.id);fs.mkdirSync(folder);
   const a=JSON.parse(fs.readFileSync(path.join(creatureRoot,'sproutling','definition.json'),'utf8')).visual;a.id=d.id;a.name='Brookling';a.materials.fur='#347f97';
   fs.writeFileSync(path.join(folder,'definition.json'),JSON.stringify({format:'littlewild-definition',schemaVersion:1,family:'creatures',id:d.id,creature:d,visual:a}));
-  const discovery=require('./tools/bundled-assets.cjs');
+  const discovery=projections;
   fn({directory,d,discovery,definitions:discovery.creatureDefinitions(directory),configuration:discovery.creatureConfig(directory),assets:discovery.assetDefinitions(directory)});
  }finally{fs.rmSync(directory,{recursive:true,force:true});}
 }
@@ -85,12 +96,14 @@ test('Visual swaps select a reusable bundled asset while retaining gameplay iden
  assert.equal(r.context.LWCreatures.get('brookling').visualAsset,'sproutling');assert.equal(r.context.LWFidelity.mood({archetype:'brookling',personality:'maker',needs:{joy:100}}),'happy');
  definitions[0].visualAsset='missing';packageValue.creature=definitions[0];fs.writeFileSync(packagePath,JSON.stringify(packageValue));assert.throws(()=>discovery.assetDefinitions(directory),/visual asset/);
 }));
+/** A browser page loads the content provider (engine kernel) ahead of every catalog module. */
+const browserModule=(file:string):string=>fs.readFileSync(path.join(__dirname,'content-provider.js'),'utf8')+'\n'+fs.readFileSync(path.join(__dirname,file),'utf8');
 test('Catalog configuration and top-level compensated sparse arrays fail closed',()=>{
  const defs=JSON.parse(fs.readFileSync(path.join(__dirname,'creature-definitions.json'),'utf8')),config=JSON.parse(fs.readFileSync(path.join(creatureRoot,'catalog.json'),'utf8'));
  for(const bad of [{...config,defaultArchetype:'missing'},{...config,typo:1}])assert.throws(()=>realm(defs,bad,[]).load('creature-catalog.js'),/catalog|default|configuration/);
- const vm=require('node:vm'),missing=vm.createContext({});vm.runInContext('LWCreatureDefinitions=JSON.parse('+JSON.stringify(JSON.stringify(defs))+')',missing);assert.throws(()=>vm.runInContext(fs.readFileSync(path.join(__dirname,'creature-catalog.js'),'utf8'),missing),/configuration/);
+ const vm=require('node:vm'),missing=vm.createContext({});vm.runInContext('LWCreatureDefinitions=JSON.parse('+JSON.stringify(JSON.stringify(defs))+')',missing);assert.throws(()=>vm.runInContext(browserModule('creature-catalog.js'),missing),/configuration/);
  const context=vm.createContext({});vm.runInContext('LWCreatureDefinitions=JSON.parse('+JSON.stringify(JSON.stringify(defs))+');LWCreatureConfig=JSON.parse('+JSON.stringify(JSON.stringify(config))+');delete LWCreatureDefinitions[0];LWCreatureDefinitions.extra={};',context);
- assert.throws(()=>vm.runInContext(fs.readFileSync(path.join(__dirname,'creature-catalog.js'),'utf8'),context),/dense/);
+ assert.throws(()=>vm.runInContext(browserModule('creature-catalog.js'),context),/dense/);
 });
 test('Creature tuning rejects unbound baseline components and invalid physiology or Unicode',()=>{
  const raw=JSON.parse(fs.readFileSync(path.join(creatureRoot,'sproutling','definition.json'),'utf8')).creature;

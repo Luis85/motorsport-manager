@@ -7,11 +7,14 @@
  * node tools/content-cli.cjs schema [--out schema.json]
  */
 const {readJsonFile,writeJsonFile,helpRequested,emit}=require('./cli-io.cjs');
+// Transitional: the bundled Littlewild game is installed (inside the JSON error boundary, after
+// help) until game folders supply profiles.
+const {installLittlewild}=require('../content-installers/littlewild-game.cjs');
 function main(args){
  if(helpRequested(args)){emit({ok:true,usage:'content-cli.cjs validate <file> [--base <file>] | normalize <file> --out <file> [--base <file>] | export [--out <file>] | schema [--out <file>]'});return;}
  const command=args.shift(),options={};let filename=null;
  while(args.length){const value=args.shift();if(['--base','--out'].includes(value)){if(!args.length||args[0].startsWith('--'))throw Error('A path is required after '+value);if(options[value.slice(2)])throw Error('Duplicate option: '+value);options[value.slice(2)]=args.shift();}else if(value.startsWith('--')||filename)throw Error('Unexpected argument: '+value);else filename=value;}
- const C=require('../content-runtime.js');const registry=new C.Registry();
+ installLittlewild();const C=require('../content-runtime.js');const registry=new C.Registry();
  const read=file=>readJsonFile(file,C.MAX_BYTES);
  const write=value=>{if(options.out){const destination=writeJsonFile(options.out,value,[filename,options.base].filter(Boolean));emit({ok:true,output:destination});}else emit(value);};
  if(['export','schema'].includes(command)&&(filename||options.base))throw Error(command+' accepts only --out <file>.');

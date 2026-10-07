@@ -1,3 +1,4 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /* Validated visual data catalog. Scenario scopes install JSON definitions atomically. */
 (function(inputRoot:unknown){
  'use strict';
@@ -24,7 +25,7 @@
   hasModel(category:Category,id:string,name:string):boolean;
   validate(input:unknown):Definition;
  }
- interface Root {LWAssetDefinitions?:unknown;LWAssets?:Api;}
+ interface Root {LWContentProvider?:LWContentProvider.Api;LWAssets?:Api;}
  const root=inputRoot as Root;
  const categories=new Set<string>(['building','item','actor','pet']);
  const primitives=new Set<string>(['group','box','ball','soft','tiny','cone','cylinder','ring','roof','ground','mesh']);
@@ -51,17 +52,20 @@
    if(++count>400000||depth>32)fail('definition exceeds supported complexity');
    if(entry===null||typeof entry==='boolean'||typeof entry==='string'||finite(entry))return;
    if(!Array.isArray(entry)&&!plain(entry))fail('definition must contain only JSON data');
-   const object=entry as object;
+   const object=entry as object,array=Array.isArray(entry);
    if(ancestors.has(object)||Object.getOwnPropertySymbols(object).length)fail('definition must contain only JSON data');
    ancestors.add(object);
-   const descriptors=Object.getOwnPropertyDescriptors(object);
-   if(Array.isArray(entry)){
-    if(Object.keys(descriptors).length!==entry.length+1)fail('arrays must be dense JSON lists');
-    for(let i=0;i<entry.length;i++)if(!Object.hasOwn(descriptors,String(i)))fail('arrays must contain every own numeric index');
+   // Own string keys in property order (symbols were rejected above); each descriptor is read
+   // without invoking accessors, exactly as a full descriptor snapshot would be.
+   const keys=Object.getOwnPropertyNames(object);
+   if(array){
+    if(keys.length!==entry.length+1)fail('arrays must be dense JSON lists');
+    for(let i=0;i<entry.length;i++)if(!Object.hasOwn(object,String(i)))fail('arrays must contain every own numeric index');
    }
-   for(const [key,descriptor] of Object.entries(descriptors)){
-    if(Array.isArray(entry)&&key==='length')continue;
-    if(forbidden.has(key)||!descriptor.enumerable||descriptor.get||descriptor.set)fail('invalid data field '+key);
+   for(const key of keys){
+    if(array&&key==='length')continue;
+    const descriptor=Object.getOwnPropertyDescriptor(object,key);
+    if(!descriptor||forbidden.has(key)||!descriptor.enumerable||descriptor.get||descriptor.set)fail('invalid data field '+key);
     visit(descriptor.value,depth+1);
    }
    ancestors.delete(object);
@@ -190,29 +194,61 @@
    for(const [role,value] of Object.entries(appearance.materials))if(!Object.hasOwn(materials,role)||!color(value))fail(id+' invalid appearance material '+profile+'/'+role);
   }
  }
- const raw=root.LWAssetDefinitions??(typeof module!=='undefined'&&module.exports?require('./asset-definitions.json'):undefined);
- if(!Array.isArray(raw))fail('bundled definition list is missing');
- function prepare(input:unknown):{defs:readonly Definition[];index:Map<string,Definition>;revision:number}{
-  dataOnly(input);const entries=list(input,'asset definitions');if(!entries.length||entries.length>256)fail('expected 1–256 definitions');
+ /**
+  * Prepared catalogs by exact JSON text. A prepared catalog is immutable (frozen definitions, a
+  * private index and a content revision), and its validation reads nothing but its input, so an
+  * input whose JSON-only check passed and whose serialized text equals an earlier accepted input
+  * reuses that result. Rejected inputs are never remembered.
+  */
+ const PREPARED_ENTRIES=8,prepared=new Map<string,Active>();
+ function prepare(input:unknown):Active{
+  dataOnly(input);
+  const text=JSON.stringify(input),known=prepared.get(text);
+  if(known){prepared.delete(text);prepared.set(text,known);return known;}
+  const result=prepareChecked(input);
+  prepared.set(text,result);
+  for(const key of prepared.keys()){if(prepared.size<=PREPARED_ENTRIES)break;prepared.delete(key);}
+  return result;
+ }
+ function prepareChecked(input:unknown):{defs:readonly Definition[];index:Map<string,Definition>;revision:number}{
+  const entries=list(input,'asset definitions');if(!entries.length||entries.length>256)fail('expected 1–256 definitions');
   const defs=Object.freeze(entries.map(checkedDefinition)),index=new Map<string,Definition>();
   for(const asset of defs){const key=asset.category+':'+asset.id;if(index.has(key))fail('duplicate '+key);index.set(key,asset);}
   const revision=defs.reduce((hash,asset)=>{for(const ch of JSON.stringify(asset))hash=(hash*33+ch.charCodeAt(0))>>>0;return hash;},5381);
   return {defs,index,revision};
  }
- let active=prepare(raw);const defaults=active.defs;
+ type Active=ReturnType<typeof prepareChecked>;
+ let installed:Active|null=null,active:Active|null=null;
+ /**
+  * The installed game's asset definitions. A game without a bundled catalog (a standalone pet
+  * admits its own definitions through validate()) starts empty; a declared list must be a valid
+  * 1–256 catalog. Colony profiles always declare LWAssetDefinitions (tools/artifact-profiles.cts
+  * enforces it). The provider is read as a global: this catalog depends on no executable module.
+  */
+ function load():Active{
+  if(installed)return installed;
+  const provider=root.LWContentProvider;if(!provider)return fail('content provider is not loaded');
+  const raw=provider.get('asset definitions').assets;
+  if(raw!==undefined&&!Array.isArray(raw))fail('bundled definition list is missing');
+  const first=raw===undefined?{defs:Object.freeze([]) as readonly Definition[],index:new Map<string,Definition>(),revision:5381}:prepare(raw);
+  if(active===null)active=first;
+  return installed=first;
+ }
+ const current=():Active=>{load();return active!;};
  function replace(input:unknown):void{active=prepare(input);}
  function withDefinitions<T>(input:unknown,work:()=>T):T{
-  const previous=active;try{replace(input);const result=work();if(result&&typeof (result as {then?:unknown}).then==='function')throw Error('Asset scope must be synchronous.');return result;}finally{active=previous;}
+  const previous=current();try{replace(input);const result=work();if(result&&typeof (result as {then?:unknown}).then==='function')throw Error('Asset scope must be synchronous.');return result;}finally{active=previous;}
  }
  const api:Api=Object.freeze({
-  get revision(){return active.revision;},defaults,validate,replace,withDefinitions,all:()=>active.defs,
-  get:(category:Category,id:string)=>active.index.get(category+':'+id)||null,
-  building:(id:string)=>active.index.get('building:'+id)||null,
-  item:(id:string)=>active.index.get('item:'+id)||null,
-  actor:(id:string)=>active.index.get('actor:'+id)||null,
-  pet:(id:string)=>active.index.get('pet:'+id)||null,
-  hasModel:(category:Category,id:string,name:string)=>!!active.index.get(category+':'+id)?.models[name]
+  get revision(){return current().revision;},get defaults(){return load().defs;},validate,replace,withDefinitions,all:()=>current().defs,
+  get:(category:Category,id:string)=>current().index.get(category+':'+id)||null,
+  building:(id:string)=>current().index.get('building:'+id)||null,
+  item:(id:string)=>current().index.get('item:'+id)||null,
+  actor:(id:string)=>current().index.get('actor:'+id)||null,
+  pet:(id:string)=>current().index.get('pet:'+id)||null,
+  hasModel:(category:Category,id:string,name:string)=>!!current().index.get(category+':'+id)?.models[name]
  });
+ root.LWContentProvider?.whenInstalled(()=>{load();});
  root.LWAssets=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

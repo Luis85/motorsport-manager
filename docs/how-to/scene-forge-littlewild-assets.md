@@ -36,7 +36,7 @@ describes how the game consumes it.
    {
      "schemaVersion": 1,
      "kind": "littlewild-export",
-     "target": "../../../wildlands/source/assets",
+     "target": "../../../../docs/concepts/pocket-pet/assets",
      "assets": [
        {
          "id": "pebble", "family": "pets", "name": "Pebble",
@@ -49,7 +49,9 @@ describes how the game consumes it.
    }
    ```
 
-   `target` is relative to the manifest. `materials` replaces a model material for
+   `target` is relative to the manifest and names a game folder's `assets`
+   directory; the pocket-pet project publishes into the
+   [Pocket Pet game folder](../concepts/pocket-pet/README.md). `materials` replaces a model material for
    that variant, so one recipe can produce several species. `parameters` sets model
    parameters.
 4. Preview, write and check:
@@ -80,7 +82,7 @@ facets, actor behaviors and existing rigs are retained. Lights are skipped.
 ## Edit an existing Littlewild asset
 
 ```sh
-node dist/cli.js -p my-project littlewild import --definition ../wildlands/source/assets/creatures/sproutling/definition.json
+node dist/cli.js -p my-project littlewild import --definition ../../docs/concepts/littlewild/assets/creatures/sproutling/definition.json
 ```
 
 Each variant becomes a model such as `sproutlingWorld`. Engine primitives are
@@ -101,6 +103,8 @@ node .generated/test-pet-catalog.cjs
 ```
 
 The build validates every definition through the asset catalog, and the pet
-catalog test resolves each species' stage models and props. Open the maker's
-**Pet demo** to inspect the result. These checks validate data and rendering
+catalog test resolves each species' stage models and props. Rebuild the demo
+(`bin/wildlands build-game --game docs/concepts/pocket-pet --output pocket-pet.html`
+from the repository root, or `npm run build:demos` to refresh `demos/`) and open
+it to inspect the result. These checks validate data and rendering
 contracts; they do not certify Blender or Godot imports.

@@ -1,0 +1,102 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "items",
+  "id": "bread",
+  "visual": {
+    "format": "littlewild-3d-asset",
+    "schemaVersion": 1,
+    "category": "item",
+    "id": "bread",
+    "name": "Fresh bread",
+    "materials": {
+      "bread": "#d8b47a",
+      "light": "#ecd29c",
+      "basket": "#9d805c"
+    },
+    "models": {
+      "carry": {
+        "nodes": [
+          {
+            "primitive": "cylinder",
+            "id": "basket",
+            "position": [
+              0,
+              0.1,
+              0
+            ],
+            "scale": [
+              0.14,
+              0.15,
+              0.13
+            ],
+            "material": "basket"
+          },
+          {
+            "primitive": "soft",
+            "id": "loaf-a",
+            "position": [
+              -0.07,
+              0.21,
+              0
+            ],
+            "scale": [
+              0.09,
+              0.07,
+              0.14
+            ],
+            "material": "bread"
+          },
+          {
+            "primitive": "soft",
+            "id": "loaf-b",
+            "position": [
+              0.07,
+              0.22,
+              0.01
+            ],
+            "scale": [
+              0.09,
+              0.07,
+              0.14
+            ],
+            "material": "light"
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "radius": 0.6
+    }
+  },
+  "item": {
+    "id": "bread",
+    "name": "Fresh bread",
+    "icon": "meal",
+    "price": 13
+  },
+  "recipe": {
+    "id": "bread",
+    "skill": "baking",
+    "station": "bakery",
+    "cost": {
+      "flour": 2,
+      "water": 1
+    },
+    "amount": 2,
+    "time": 6,
+    "output": "bread"
+  },
+  "weight": 300,
+  "itemRequirements": {
+    "playerLevel": 1,
+    "features": {}
+  },
+  "recipeRequirements": {
+    "playerLevel": 3,
+    "features": {
+      "making": 3
+    },
+    "research": "recipe-bread"
+  }
+}

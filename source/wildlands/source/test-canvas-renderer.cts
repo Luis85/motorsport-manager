@@ -2,6 +2,8 @@
  * This recording context verifies order, geometry, camera transforms and state isolation;
  * browser suites retain responsibility for actual pixels and native input. */
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');

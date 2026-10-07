@@ -1,4 +1,6 @@
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';

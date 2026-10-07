@@ -24,8 +24,12 @@ export const record = (value: unknown): value is RecordValue =>
 const folders = (directory: string): string[] => fs.readdirSync(directory, {withFileTypes: true})
  .filter(entry => entry.isDirectory()).map(entry => entry.name).sort();
 
-export function definitions(source: string): Definition[] {
- const directory = path.join(source, 'assets'), result: Definition[] = [];
+/**
+ * Discover the definitions of one asset directory (a game folder's `assets/`). `interactions`
+ * holds a catalog document rather than definition folders.
+ */
+export function definitions(directory: string): Definition[] {
+ const result: Definition[] = [];
  for (const family of folders(directory)) {
   if (family === 'interactions') continue;
   if (!Object.hasOwn(facets, family)) throw Error('Unknown asset family: ' + family);

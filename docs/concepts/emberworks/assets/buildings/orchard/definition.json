@@ -1,0 +1,242 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "buildings",
+  "id": "orchard",
+  "visual": {
+    "format": "littlewild-3d-asset",
+    "schemaVersion": 1,
+    "category": "building",
+    "id": "orchard",
+    "name": "Bramble orchard",
+    "materials": {
+      "soil": "#7d7353",
+      "ridge": "#a28860",
+      "green": "#679160",
+      "light": "#a7bb7d",
+      "fruit": "#be7667",
+      "grain": "#cfb36d",
+      "grainLight": "#e2c785",
+      "post": "#c1ad86",
+      "trunk": "#8b7052"
+    },
+    "models": {
+      "world": {
+        "nodes": [
+          {
+            "primitive": "box",
+            "id": "soil",
+            "position": [
+              0,
+              0.03,
+              0
+            ],
+            "scale": [
+              1.08,
+              0.08,
+              1.08
+            ],
+            "material": "soil"
+          },
+          {
+            "primitive": "cylinder",
+            "id": "tree-trunk",
+            "position": [
+              0.05,
+              0.55,
+              0.05
+            ],
+            "scale": [
+              0.09,
+              1.05,
+              0.09
+            ],
+            "material": "trunk"
+          },
+          {
+            "primitive": "soft",
+            "id": "crown-a",
+            "position": [
+              -0.18,
+              1.02,
+              0.03
+            ],
+            "scale": [
+              0.46,
+              0.42,
+              0.43
+            ],
+            "material": "green"
+          },
+          {
+            "primitive": "soft",
+            "id": "crown-b",
+            "position": [
+              0.25,
+              1.13,
+              -0.05
+            ],
+            "scale": [
+              0.46,
+              0.48,
+              0.45
+            ],
+            "material": "light"
+          },
+          {
+            "primitive": "soft",
+            "id": "crown-c",
+            "position": [
+              0.03,
+              1.34,
+              0.1
+            ],
+            "scale": [
+              0.4,
+              0.36,
+              0.4
+            ],
+            "material": "green"
+          },
+          {
+            "primitive": "ball",
+            "id": "berry-0",
+            "position": [
+              0.32,
+              1.18,
+              0
+            ],
+            "scale": [
+              0.045,
+              0.045,
+              0.045
+            ],
+            "material": "fruit"
+          },
+          {
+            "primitive": "ball",
+            "id": "berry-1",
+            "position": [
+              0.17289673787780474,
+              1.2999999999999998,
+              0.23561187574621104
+            ],
+            "scale": [
+              0.045,
+              0.045,
+              0.045
+            ],
+            "material": "fruit"
+          },
+          {
+            "primitive": "ball",
+            "id": "berry-2",
+            "position": [
+              -0.13316698769508556,
+              1.18,
+              0.2546032795111909
+            ],
+            "scale": [
+              0.045,
+              0.045,
+              0.045
+            ],
+            "material": "fruit"
+          },
+          {
+            "primitive": "ball",
+            "id": "berry-3",
+            "position": [
+              -0.31679759891214254,
+              1.2999999999999998,
+              0.03951360225676282
+            ],
+            "scale": [
+              0.045,
+              0.045,
+              0.045
+            ],
+            "material": "fruit"
+          },
+          {
+            "primitive": "ball",
+            "id": "berry-4",
+            "position": [
+              -0.20916595867635582,
+              1.18,
+              -0.21190469868621992
+            ],
+            "scale": [
+              0.045,
+              0.045,
+              0.045
+            ],
+            "material": "fruit"
+          },
+          {
+            "primitive": "ball",
+            "id": "berry-5",
+            "position": [
+              0.0907718993482324,
+              1.2999999999999998,
+              -0.2684987969056788
+            ],
+            "scale": [
+              0.045,
+              0.045,
+              0.045
+            ],
+            "material": "fruit"
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "orientation": "none",
+      "indoor": false,
+      "hitHeight": 1.75,
+      "radius": 1.05
+    }
+  },
+  "building": {
+    "id": "orchard",
+    "name": "Bramble orchard",
+    "skill": "stewardship",
+    "cost": {
+      "beams": 2,
+      "rope": 3,
+      "water": 5,
+      "pots": 3
+    },
+    "time": 30,
+    "category": "growing",
+    "effect": "Tending with delivered water produces berries. This peaceful place adds +8 joy to play.",
+    "desc": "A promise of shade, fruit and many unhurried afternoons.",
+    "icon": "sprout",
+    "unique": true
+  },
+  "physicalBuilding": {
+    "id": "orchard",
+    "requiresNode": "soil",
+    "inputCapacity": 8,
+    "outputCapacity": 16,
+    "production": {
+      "output": "berries",
+      "amount": 6,
+      "cost": {
+        "water": 1
+      },
+      "seconds": 24,
+      "skill": "stewardship",
+      "depletion": 1
+    },
+    "defaultTarget": 8
+  },
+  "buildingRequirements": {
+    "playerLevel": 4,
+    "features": {
+      "homestead": 4
+    },
+    "research": "blueprint-orchard"
+  }
+}

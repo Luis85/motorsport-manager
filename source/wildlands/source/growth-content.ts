@@ -1,19 +1,29 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /* V10 content contract. JSON describes rules and permitted handlers; it never executes code. */
 (function(inputRoot:unknown){'use strict';
- interface Root {LWContent?:LWContentPorts.ContentApi;LWAdventure?:LWContentPorts.AdventureApi;LWDefaultGrowth?:LWContentPorts.Growth;LWGrowthSchema?:LWContentPorts.Schema;LWGrowth?:LWContentPorts.GrowthApi;}
+ interface Root {LWContent?:LWContentPorts.ContentApi;LWContentProvider?:LWContentProvider.Api;LWAdventure?:LWContentPorts.AdventureApi;LWGrowthSchema?:LWContentPorts.Schema;LWGrowth?:LWContentPorts.GrowthApi;}
  const root=inputRoot as Root;
  const node=typeof module!=='undefined'&&module.exports;
  const contentApi=(node?require('./content-runtime.js'):root.LWContent) as LWContentPorts.ContentApi|undefined;
  const adventureApi=(node?require('./adventure-content.js'):root.LWAdventure) as LWContentPorts.AdventureApi|undefined;
- if(!contentApi||!adventureApi)throw Error('Growth content dependencies are missing.');
- const C=contentApi,A=adventureApi;
- const defaultGrowth=(node?require('./content/balancing.json').libraries.growth:root.LWDefaultGrowth) as LWContentPorts.Growth|undefined;
- if(!defaultGrowth)throw Error('Default growth content is missing.');
- const defaults=defaultGrowth;
+ const provider=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api|undefined;
+ if(!contentApi||!adventureApi||!provider)throw Error('Growth content dependencies are missing.');
+ const C=contentApi,A=adventureApi,Content=provider;
+ const dig=(value:unknown,...keys:string[]):unknown=>keys.reduce<unknown>((at,key)=>at!==null&&typeof at==='object'?(at as Record<string,unknown>)[key]:undefined,value);
  const growthSchema=(node?require('./content/growth.schema.json'):root.LWGrowthSchema) as LWContentPorts.Schema|undefined;
  if(!growthSchema)throw Error('Growth schema is missing.');
  const schema=growthSchema;
- const clone=C.copy;let active=clone(defaults);
+ const clone=C.copy;
+ // The installed game's growth library; admitted on first use or as soon as a game is installed.
+ let defaultGrowth:LWContentPorts.Growth|null=null,active:LWContentPorts.Growth|null=null;
+ function defaults():LWContentPorts.Growth{
+  if(defaultGrowth)return defaultGrowth;
+  const value=dig(Content.get('growth content').balancing,'libraries','growth') as LWContentPorts.Growth|undefined;
+  if(!value)throw Error('Default growth content is missing.');
+  if(active===null)active=clone(value);
+  return defaultGrowth=value;
+ }
+ const current=():LWContentPorts.Growth=>{defaults();return active!;};
  function shape(v:unknown,s:LWContentPorts.Schema|undefined,path:string,errors:string[]):void{
   if(!s)throw Error('Missing bundled growth schema.');
   if(s.anyOf){if(!s.anyOf.some(t=>{const e:string[]=[];shape(v,t,path,e);return !e.length;}))errors.push(path+': wrong value type');return;}
@@ -52,8 +62,9 @@
  // Do not pass Growth directly: its fields are outside Base's components projection.
  const hash=(p:unknown)=>C.fingerprint({schemaVersion:1,library:{id:'littlewild-growth',version:1},components:p});
  function mechanicalHash(p:LWContentPorts.Growth):string{p=clone(p);const strip=(v:unknown):unknown=>Array.isArray(v)?v.map(strip):v&&typeof v==='object'?Object.fromEntries(Object.entries(v).filter(([k])=>!['name','label','description','icon','extensions'].includes(k)).map(([k,x])=>[k,strip(x)])):v;return hash(strip(p));}
- function replace(p:unknown){const v=validate(p);if(!v.ok)throw Error(v.errors.join('\n'));active=clone(v.content);return active;}
- function withLibrary<T>(p:unknown,fn:()=>T):T{const old=active;try{replace(p);const result=fn();if(result&&['object','function'].includes(typeof result)&&typeof (result as {then?:unknown}).then==='function')throw Error('Growth library sandbox callback must be synchronous.');return result;}finally{active=old;}}
- const api:LWContentPorts.GrowthApi={defaults,schema,clone,validate,replace,withLibrary,mechanicalHash,hashOf:hash,get content(){return active;},get hash(){return hash(active);}};
+ function replace(p:unknown){defaults();const v=validate(p);if(!v.ok)throw Error(v.errors.join('\n'));active=clone(v.content);return active;}
+ function withLibrary<T>(p:unknown,fn:()=>T):T{const old=current();try{replace(p);const result=fn();if(result&&['object','function'].includes(typeof result)&&typeof (result as {then?:unknown}).then==='function')throw Error('Growth library sandbox callback must be synchronous.');return result;}finally{active=old;}}
+ const api:LWContentPorts.GrowthApi={get defaults(){return defaults();},schema,clone,validate,replace,withLibrary,mechanicalHash,hashOf:hash,get content(){return current();},get hash(){return hash(current());}};
+ Content.whenInstalled(()=>{defaults();},'balancing');
  root.LWGrowth=api;if(node)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

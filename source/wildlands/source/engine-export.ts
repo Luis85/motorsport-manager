@@ -8,17 +8,20 @@
  const D=(node?require('./engine-export-data.js'):root.LWEngineExportData) as LWEngineExport.Decoder;
  const M=(node?require('./engine-export-manifest.js'):root.LWEngineExportManifest) as LWEngineExport.ManifestApi;
  let sourceCache:Promise<LWEngineExport.SourceBundle>|undefined;
+ // Inline script texts come from a presentation adapter (engine-export-ui.ts); this layer never reads the DOM.
+ let inlineScripts:()=>readonly string[]=()=>[];
+ // The engine-source payload is an opt-in capability of an artifact; its absence is reported, never guessed.
+ const SOURCES_UNAVAILABLE='Engine export is unavailable in this build: the trusted engine-source payload is not included. Rebuild with the engine-source payload enabled.';
+ /** Report, without inflating the payload, whether trusted engine sources are present. */
+ function capability():LWEngineExport.Capability{
+  if(node){try{require('./engine-source-bundle.json');return {available:true};}catch{return {available:false,reason:SOURCES_UNAVAILABLE};}}
+  return root.LWEngineSourceLoader===undefined?{available:false,reason:SOURCES_UNAVAILABLE}:{available:true};
+ }
  async function trusted():Promise<LWEngineExport.SourceBundle>{
+  if(!capability().available)throw Error(SOURCES_UNAVAILABLE);
   if(!sourceCache)sourceCache=(async()=>{
    if(node)return D.parse(require('./engine-source-bundle.json')) as LWEngineExport.SourceBundle;
-   const loader=D.record(D.parse(root.LWEngineSourceLoader));
-   if(loader.format!=='littlewild-engine-source-loader'||loader.schemaVersion!==1||loader.encoding!=='gzip-base64'||typeof loader.data!=='string'||typeof loader.decodedBytes!=='number'||loader.decodedBytes>D.maxBytes||typeof loader.compressedBytes!=='number'||loader.compressedBytes>D.maxBytes)throw Error('Invalid compressed engine source loader.');
-   const binary=atob(loader.data);if(binary.length!==loader.compressedBytes)throw Error('Invalid compressed engine source length.');
-   const bytes=Uint8Array.from(binary,value=>value.charCodeAt(0)),reader=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip')).getReader(),chunks:Uint8Array[]=[];let length=0;
-   try{while(true){const next=await reader.read();if(next.done)break;length+=next.value.byteLength;if(length>D.maxBytes||length>loader.decodedBytes)throw Error('Inflated engine source bundle exceeds its bounds.');chunks.push(next.value);}}finally{await reader.cancel();}
-   if(length!==loader.decodedBytes)throw Error('Truncated compressed engine source bundle.');
-   const joined=new Uint8Array(length);let offset=0;for(const chunk of chunks){joined.set(chunk,offset);offset+=chunk.byteLength;}
-   const bundle=D.parse(new TextDecoder('utf-8',{fatal:true}).decode(joined)) as LWEngineExport.SourceBundle;if(bundle.identity!==loader.identity)throw Error('Engine source identity mismatch.');return bundle;
+   return D.sources(root.LWEngineSourceLoader,inlineScripts());
   })();
   try{return await sourceCache;}catch(error){sourceCache=undefined;throw error;}
  }
@@ -57,5 +60,6 @@
   for(const key of ['checkpoint','catalogs','runtime','godot','limitations'] as const)if(!equal(exchanged[key],manifest[key]))throw Error('Derived engine manifest differs from canonical sources/data: '+key);
   return {ok:true,document:exchanged as unknown as LWEngineExport.Document,errors:[]};
  }catch(error){return {ok:false,errors:[error instanceof Error?error.message:String(error)]};}}
- const api:LWEngineExport.Api={export:exportEngine,validate,maxBytes:D.maxBytes};root.LWEngineExport=api;if(node)module.exports=api;
+ function useInlineScripts(provider:()=>readonly string[]):void{if(typeof provider!=='function')throw Error('Inline script provider must be a function.');inlineScripts=provider;sourceCache=undefined;}
+ const api:LWEngineExport.Api&LWEngineExport.InlineScriptPort={export:exportEngine,validate,maxBytes:D.maxBytes,capability,useInlineScripts};root.LWEngineExport=api;if(node)module.exports=api;
 })(globalThis);

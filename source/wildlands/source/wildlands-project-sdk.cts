@@ -3,6 +3,7 @@
 import {toolbox} from './developer-sdk.cjs';
 export const projects=require('./wildlands-project.js') as Wildlands.ProjectApi;
 export type Project=Wildlands.Project;
+export type AnyProject=Wildlands.AnyProject;
 export type CreateOptions=Wildlands.CreateOptions;
 export type Validation=Wildlands.Validation;
 export interface Recipe {format:'wildlands-recipe';schemaVersion:1;operations:GameOperation[];}
@@ -20,14 +21,14 @@ function object(input:unknown):Record<string,unknown>{
 function exact(input:Record<string,unknown>,fields:readonly string[]):void{
  if(Object.keys(input).length!==fields.length||fields.some(key=>!Object.hasOwn(input,key)))throw Error('Missing or unknown recipe operation fields.');
 }
-function admitted(input:unknown):Project{const checked=projects.validate(input);if(!checked.ok)throw Error(checked.errors.join('\n'));return checked.project;}
+function admitted(input:unknown):AnyProject{const checked=projects.validate(input);if(!checked.ok)throw Error(checked.errors.join('\n'));return checked.project;}
 function recipe(input:unknown,format:string):Record<string,unknown>[] {
  const C=(globalThis as unknown as {LWContent:LWContentPorts.ContentApi}).LWContent;
  const doc=object(C.parse(input,1024*1024));exact(doc,['format','schemaVersion','operations']);
  if(doc.format!==format||doc.schemaVersion!==1||!Array.isArray(doc.operations)||doc.operations.length>256)throw Error('Expected '+format+' schemaVersion 1 with at most 256 operations.');
  return doc.operations.map(object);
 }
-function recapture(project:Project,pack:unknown,sceneId:string):Project{return projects.create({id:project.id,name:project.name,pack,sceneId});}
+function recapture(project:AnyProject,pack:unknown,sceneId:string):Project{return projects.create({id:project.id,name:project.name,pack,sceneId});}
 export function runProject(input:unknown,recipeInput:unknown):RunResult{
  const project=admitted(input),operations=recipe(recipeInput,'wildlands-recipe');let requestedSteps=0;
  for(const op of operations){
@@ -62,7 +63,7 @@ export function runProject(input:unknown,recipeInput:unknown):RunResult{
   return {project:projects.capture(project,session.captureScenario(),snapshot.sceneId),snapshot,results,requestedSteps,advancedSeconds};
  }finally{session.dispose();}
 }
-export function inspectProject(input:unknown):{project:Project;fingerprint:string;snapshot:LittlewildDeveloper.Snapshot;connections:readonly LittlewildDeveloper.SceneConnection[]}{
+export function inspectProject(input:unknown):{project:AnyProject;fingerprint:string;snapshot:LittlewildDeveloper.Snapshot;connections:readonly LittlewildDeveloper.SceneConnection[]}{
  const project=admitted(input),session=toolbox.createScenario(project.pack,project.sceneId);
  try{return {project,fingerprint:(projects.validate(project) as Extract<Validation,{ok:true}>).fingerprint,snapshot:session.inspect(),connections:session.sceneConnections()};}
  finally{session.dispose();}

@@ -1,10 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
-<meta name="theme-color" content="#f6f5ee"><meta name="description" content="A little life. A shared adventure. Littlewild is an offline, autonomous-buddy RPG prototype.">
-<title>Wildlands — Worlds of Possibility · v15</title>
+<!-- INCLUDE document-head.html -->
 <!-- INLINE_STYLE -->
 <!-- INLINE_POLISH -->
 <!-- INLINE_COLONY_CSS -->
@@ -15,140 +12,9 @@
 <!-- INLINE_CARTOGRAPHY_CSS -->
 </head>
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
-<defs>
-<symbol id="i-leaf" viewBox="0 0 24 24"><path d="M20 4C9 2 3 7 5 14c2 6 14 7 15-10Z"/><path d="m3 21 12-12M9 15v-5m0 5h6"/></symbol>
-<symbol id="i-sprout" viewBox="0 0 24 24"><path d="M12 21v-9M12 14C4 15 3 8 3 5c7-1 10 2 9 9Zm0-3c0-7 5-9 9-8 0 6-3 10-9 8ZM7 21h10"/></symbol>
-<symbol id="i-wood" viewBox="0 0 24 24"><path d="m5 6 11-3c4 0 6 10 3 12l-11 5C3 20 1 8 5 6Z"/><ellipse cx="6.5" cy="13" rx="3.5" ry="7" transform="rotate(-15 6.5 13)"/><path d="m6 10 2 6M10 7l7-2m-4 9 6-2"/></symbol>
-<symbol id="i-stone" viewBox="0 0 24 24"><path d="m3 17 2-9 8-5 7 6 1 9-11 3-7-4Z"/><path d="m5 8 8 4 7-3m-7 3-3 9m3-18v9"/></symbol>
-<symbol id="i-fiber" viewBox="0 0 24 24"><path d="M12 22V8M7 20l-3-9m13 9 3-10M12 12l-4-4 1-5 3 4 3-5 1 6-4 4ZM4 11 1 7m3 4 3-5m13 4-3-5m3 5 3-4"/></symbol>
-<symbol id="i-berries" viewBox="0 0 24 24"><circle cx="8" cy="14" r="4"/><circle cx="16" cy="14" r="4"/><circle cx="12" cy="19" r="3"/><path d="M12 11V7m0 1C7 9 5 6 5 3c4 0 6 1 7 5Zm0 0c0-5 3-6 6-5-1 4-3 5-6 5Z"/></symbol>
-<symbol id="i-water" viewBox="0 0 24 24"><path d="M12 2C10 7 5 10 5 15a7 7 0 0 0 14 0c0-5-5-8-7-13Z"/><path d="M8 15a4 4 0 0 0 3 4"/></symbol>
-<symbol id="i-planks" viewBox="0 0 24 24"><path d="m2 9 15-6 5 4-15 6-5-4Zm0 5 5 4 15-6M2 19l5 3 15-6M7 13v9"/><path d="m7 8 10-4"/></symbol>
-<symbol id="i-meat" viewBox="0 0 24 24"><path d="m13 14-7 7c-3 1-5-2-3-4-2-3 0-6 3-4l6-7"/><ellipse cx="15" cy="9" rx="6" ry="7" transform="rotate(35 15 9)"/><ellipse cx="16" cy="8" rx="2" ry="3" transform="rotate(35 16 8)"/></symbol>
-<symbol id="i-meal" viewBox="0 0 24 24"><path d="M3 12h18c0 6-3 9-9 9s-9-3-9-9ZM1 12h22M7 2c-3 4 3 4 0 8m5-8c-3 4 3 4 0 8m5-8c-3 4 3 4 0 8"/></symbol>
-<symbol id="i-home" viewBox="0 0 24 24"><path d="m2 11 10-9 10 9M5 9v12h14V9m-10 12v-8h6v8"/></symbol>
-<symbol id="i-cottage" viewBox="0 0 24 24"><path d="m1 11 11-9 11 9M4 9v12h16V9M8 21v-7h5v7m4-18h3v7"/><path d="M15 13h2v3h-2z"/></symbol>
-<symbol id="i-bench" viewBox="0 0 24 24"><path d="M2 9h20v4H2zM5 13v8m14-8v8M9 3v6m-3-6h6M7 18h10M17 3l3 6"/></symbol>
-<symbol id="i-fire" viewBox="0 0 24 24"><path d="M13 2c2 7 7 8 7 13a8 8 0 0 1-16 0c0-4 3-6 5-9 0 4 2 5 3 6 3-3 3-6 1-10Z"/><path d="M12 13c-1 3-3 4-3 6a3 3 0 0 0 6 0c0-2-2-3-3-6Z"/></symbol>
-<symbol id="i-market" viewBox="0 0 24 24"><path d="m3 3-2 6c0 4 5 4 6 1 1 3 5 3 5 0 1 3 5 3 6 0 1 3 5 2 5-1l-2-6H3ZM3 12v9h18v-9M8 21v-7h8v7M8 3 7 9m5-6v6m4-6 2 6"/></symbol>
-<symbol id="i-research" viewBox="0 0 24 24"><path d="m12 1 3 7 7 4-7 3-3 8-3-8-8-3 8-4 3-7Z"/><path d="m20 1 .5 2 2.5 1-2.5 1-.5 2-.5-2-2-1 2-1 .5-2Z"/></symbol>
-<symbol id="i-paw" viewBox="0 0 24 24"><ellipse cx="5" cy="8" rx="2.2" ry="3" transform="rotate(-25 5 8)"/><ellipse cx="11" cy="5" rx="2" ry="3"/><ellipse cx="17" cy="6" rx="2" ry="3" transform="rotate(15 17 6)"/><ellipse cx="21" cy="11" rx="2" ry="3" transform="rotate(30 21 11)"/><path d="M6 17c0-3 5-7 8-5 1 1 2 4 4 5 5 4-1 7-5 3-4 3-9 1-7-3Z"/></symbol>
-<symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6"/><path d="M12 8v8m-2-6 2-2"/></symbol>
-<symbol id="i-heart" viewBox="0 0 24 24"><path d="M20 4c-3-3-7-1-8 2-2-3-6-5-9-1-5 6 4 11 9 16 5-5 14-11 8-17Z"/></symbol>
-<symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 1v2m0 18v2M1 12h2m18 0h2M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"/></symbol>
-<symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 14C11 18 6 10 10 2 0 4 0 17 8 21c6 3 11-1 13-7Z"/></symbol>
-<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1 3-6Z"/></symbol>
-<symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5C8 2 5 2 2 3v16c4-1 7 0 10 3 3-3 6-4 10-3V3c-4-1-7 0-10 2Zm0 0v17M5 7l4 1m-4 3 4 1m6-4 4-1m-4 5 4-1"/></symbol>
-<symbol id="i-plan" viewBox="0 0 24 24"><path d="M5 2h14v20H5zM8 7h8M8 11h5M8 15h8M8 18h5"/><path d="M3 5H2v15h1"/></symbol>
-<symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 7-2 7-6 3 2-7 6-3Z"/><path d="m10 10 4 4"/></symbol>
-<symbol id="i-energy" viewBox="0 0 24 24"><path d="m14 2-10 12h7l-1 8L21 9h-8l1-7Z"/></symbol>
-<symbol id="i-comfort" viewBox="0 0 24 24"><path d="M3 4v17m0-5h18v5M7 7h12l2 9M3 8h5v5H3m6 0h11"/></symbol>
-<symbol id="i-joy" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 9h.01M16 9h.01M7 14c2 5 8 5 10 0"/></symbol>
-<symbol id="i-play" viewBox="0 0 24 24"><path d="m7 3 14 9-14 9V3Z"/></symbol>
-<symbol id="i-pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM15 4h4v16h-4z"/></symbol>
-<symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
-<symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L20 5"/></symbol>
-<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v15M5 12h14"/></symbol>
-<symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
-<symbol id="i-focus" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m8 0h5v-5"/><circle cx="12" cy="12" r="3"/></symbol>
-<symbol id="i-route" viewBox="0 0 24 24"><circle cx="5" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><path d="M7 5h8a4 4 0 0 1 0 8H8a3 3 0 0 0 0 6h9"/></symbol>
-<symbol id="i-expand" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m8 0h5v-5M3 3l6 6m6 6 6 6M21 3l-6 6m-6 6-6 6"/></symbol>
-<symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 8c0-4 7-4 7 0 0 3-4 3-4 6m0 3v1"/></symbol>
-<symbol id="i-gear" viewBox="0 0 24 24"><path d="m9 2-1 3-3 1-3 3 2 3-2 3 3 3 3 1 1 3h6l1-3 3-1 3-3-2-3 2-3-3-3-3-1-1-3H9Z"/><circle cx="12" cy="12" r="4"/></symbol>
-<symbol id="i-edit" viewBox="0 0 24 24"><path d="m3 21 1-6L17 2l5 5L9 20l-6 1Zm12-17 5 5M4 15l5 5"/></symbol>
-<symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
-<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M3 12h17m-6-6 6 6-6 6"/></symbol>
-<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V3h8v3M5 6l1 16h12l1-16M10 10v8m4-8v8"/></symbol>
-<symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 22V2c5-4 10 4 15 0v12c-5 4-10-4-15 0"/></symbol>
-<symbol id="i-search" viewBox="0 0 24 24"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></symbol>
-<symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 7h14l2 14H3L5 7Zm3 0V5c0-5 8-5 8 0v2"/></symbol>
-<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 2v15m-5-5 5 5 5-5M3 16v5h18v-5"/></symbol>
-<symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V2m-5 5 5-5 5 5M3 16v5h18v-5"/></symbol>
-<symbol id="i-sound" viewBox="0 0 24 24"><path d="M3 9h4l5-5v16l-5-5H3V9Zm13-3c4 3 4 9 0 12m3-15c6 5 6 13 0 18"/></symbol>
-<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 5v7l5 3"/></symbol>
-</defs></svg>
-<a class="skip-link" href="#world">Skip to the glade</a><div class="app" id="app">
-<header class="topbar">
- <div class="brand"><div class="brand-mark" aria-hidden="true"><svg width="26" height="28" viewBox="0 0 26 28"><path fill="#748a58" d="M12 25V12H5V9H2V3h6v3h5v6h2V8h3V4h6v7h-3v3h-6v11z"/><path fill="#aaba79" d="M3 4h5v3h4v4H8V8H3zm16 1h4v4h-4v3h-3V9h3z"/></svg></div><div><div class="brand-word">Wildlands<span class="badge-prototype">PROTOTYPE</span></div><div class="brand-sub">TypeScript game prototype maker</div></div></div>
- <div class="header-center">
-  <button class="stat-pod wallet-button" data-act="ledger" title="Your guide wallet. Fund lessons and creature allowances."><span class="stat-icon"><svg class="icon"><use href="#i-coin"/></svg></span><div><strong id="player-coins">86</strong><small>Your coins</small></div></button>
-  <div class="stat-pod research" title="A shared research account. You and every creature contribute."><span class="stat-icon"><svg class="icon"><use href="#i-research"/></svg></span><div><strong id="research-points">10</strong><small>Shared research</small></div></div>
-  <button class="stat-pod pocket wallet-button" data-act="ledger" title="Pip’s own wallet. Open the shared ledger."><span class="stat-icon"><svg class="icon"><use href="#i-bag"/></svg></span><div><strong id="header-pocket">6</strong><small>Pip’s coins</small></div></button><div class="player-stat"><div class="xp-row"><svg class="icon" style="width:13px;height:13px;color:#a1ac86"><use href="#i-star"/></svg><span>Guide <strong id="player-level">Lv. 1</strong></span></div><div class="mini-meter" id="guide-xp" title="Guide experience"><i id="player-xp-fill" style="width:0"></i></div></div>
- </div>
- <div class="header-actions">
-  <div class="time-controls" aria-label="Simulation speed"><button id="pause-button" data-act="pause" title="Pause (Space)" aria-label="Pause"><svg class="icon"><use href="#i-pause"/></svg></button><button class="active" data-act="speed" data-id="1" aria-label="Normal speed">1×</button><button data-act="speed" data-id="2" aria-label="Double speed">2×</button><button data-act="speed" data-id="4" aria-label="Four times speed">4×</button></div>
-  <button class="icon-btn mobile-story" data-act="story" aria-label="Story and allowance" title="Story & allowance"><svg class="icon"><use href="#i-book"/></svg></button>
-  <button class="icon-btn guide-header" data-act="guide" title="Field guide" aria-label="Field guide"><svg class="icon"><use href="#i-help"/></svg></button>
-  <button class="icon-btn library-header-button" data-act="content" aria-label="Open content library" title="Content library"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg></button><button class="icon-btn" data-act="settings" title="Settings and save" aria-label="Settings and save"><svg class="icon"><use href="#i-gear"/></svg></button>
- </div>
-</header>
-<div class="resource-bar" aria-label="Warehouse inventory"><button class="resource-title pantry-opener" data-act="pantry" title="Inspect deposited warehouse stock">Warehouse <svg class="icon"><use href="#i-arrow"/></svg></button><div class="resource-list" id="resource-list"></div><span class="save-status" title="Stored in this browser. Export a save for a portable backup."><span class="dot"></span><span id="save-label">Local & offline</span></span></div>
-<section class="cx-roster-strip" aria-label="Creature selection"><div class="cx-roster-title"><span class="eyebrow">COMPANIONS · <span id="roster-count">1</span></span><span id="selection-label">Select a creature.</span></div><div id="creature-roster" class="cx-roster-list"></div><button class="btn cx-welcome-button" data-act="cx-open" data-id="community" aria-label="Welcome a friend" title="Welcome a friend"><svg class="icon"><use href="#i-plus"/></svg><span>Welcome a friend</span></button></section>
-<nav class="cx-world-nav" aria-label="Adventure and creature tools"><button data-act="cx-open" data-id="adventures"><svg class="icon"><use href="#i-compass"/></svg>Quest board</button><button data-act="cx-open" data-id="outfit"><svg class="icon"><use href="#i-bag"/></svg>Equipment</button><button data-act="cx-open" data-id="character"><svg class="icon"><use href="#i-star"/></svg>Character & rolls</button><button data-act="cx-open" data-id="feelings"><svg class="icon"><use href="#i-heart"/></svg>Personalities & bonds</button><button data-act="cx-open" data-id="adventure-library"><svg class="icon"><use href="#i-book"/></svg>Adventure JSON</button></nav>
-<main class="main-grid" id="main-content">
- <aside class="sidebar left-sidebar" aria-label="Friendship, milestones and allowance">
-  <div id="story-content"></div><section class="card wish-card" id="wish-panel" aria-label="Pip’s small wish"></section>
-  <section class="card bond-card"><div class="bond-head"><div class="bond-icon"><svg class="icon"><use href="#i-heart"/></svg></div><div class="bond-value"><span id="bond-value">22</span><small> / 100</small></div></div><h3 id="bond-title">Getting to know you</h3><p id="bond-description">Trust grows in the little things you do together.</p><div class="meter"><i id="bond-fill" style="width:22%"></i></div><div class="milestones"><span>Strangers</span><span>Buddies</span><span>Inseparable</span></div></section>
-  <section class="allowance"><div class="section-heading"><h2>A little independence</h2><svg class="icon" style="color:#a5ad96;width:15px;height:15px"><use href="#i-coin"/></svg></div><div class="allowance-readout"><span>Daily allowance</span><span><strong data-allowance-number>10</strong> <small>coins</small></span></div><label class="sr-only" for="allowance-slider">Daily allowance in coins</label><input id="allowance-slider" class="range" type="range" min="0" max="30" step="1" value="10" data-allowance><div class="range-labels"><span>0</span><span>Your limit. Their choices.</span><span>30</span></div><p class="allowance-note"><strong data-buddy-name>Pip</strong> has <strong data-pocket>6</strong> pocket coins.<br><span data-issued>6 of 10 issued today.</span></p><button class="btn allowance-button" data-act="allowance"><svg class="icon"><use href="#i-coin"/></svg><span data-topup-label>Top up today’s allowance</span></button><label class="checkbox-line"><input type="checkbox" checked data-auto-allowance> Automatically share each new day</label></section>
-  <button class="btn ledger-link" data-act="ledger"><svg class="icon"><use href="#i-book"/></svg>Our money & choices</button><div class="little-note"><svg class="icon"><use href="#i-leaf"/></svg><span>You’re not the hands.<br>You’re the helping hand.</span></div>
- </aside>
- <section class="center" aria-label="Mossmeadow and interaction controls">
-  <div class="world-frame" id="world-frame"><canvas class="world-canvas" id="world" aria-label="Mossmeadow. Select a creature to interact. Drag or use arrow keys to pan. Plus and minus zoom. B opens building plans. Creatures move independently." tabindex="0"></canvas>
-   <div class="world-top"><div><h1 class="location-title">Mossmeadow</h1><div class="location-sub">A small world. So much possibility.</div></div><div class="clock-pill"><svg class="icon" id="clock-icon"><use href="#i-sun"/></svg><span id="day-label">Day 1</span><span style="opacity:.4">·</span><strong id="clock-time">08:00</strong><span style="opacity:.4">·</span><span id="day-phase">Morning</span></div></div>
-   <button class="portrait-floating" data-act="buddy-status" aria-label="See your buddy’s needs"><strong id="mini-mood">Pip · Feeling good</strong><span id="mini-needs"></span></button>
-   <div class="pause-badge" id="pause-badge"><svg class="icon" style="width:12px;height:12px"><use href="#i-pause"/></svg><span id="pause-text">A little pause</span></div>
-   <div class="tile-tip" id="tile-tip" role="status"></div><div class="world-context" id="world-context" aria-live="polite"></div>
-   <div class="placement-banner" id="placement-banner"><svg class="icon"><use href="#i-plan"/></svg><div class="text"><strong id="placement-name">Place a leaf shelter</strong><small>Click a tile, or use arrow keys + Enter. Pip handles the how.</small></div><button data-act="cancel-placement">Cancel</button></div>
-   <div class="world-footer"><span class="dot"></span><span id="world-footer-text">Pip has a mind of their own.</span><strong id="world-status-label">Life in the glade</strong></div>
-   <div class="world-tools"><button class="icon-btn optional-tool active" id="path-button" data-act="path" title="Show selected creature’s intention trail" aria-label="Toggle intention trail"><svg class="icon"><use href="#i-route"/></svg></button><button class="icon-btn optional-tool" id="follow-button" data-act="follow" title="Follow the selected creature" aria-label="Follow selected creature"><svg class="icon"><use href="#i-paw"/></svg></button><button class="icon-btn" data-act="zoom-out" title="Zoom out" aria-label="Zoom out"><svg class="icon"><use href="#i-minus"/></svg></button><button class="icon-btn" data-act="zoom-in" title="Zoom in" aria-label="Zoom in"><svg class="icon"><use href="#i-plus"/></svg></button><button class="icon-btn" data-act="home-view" title="Recenter the glade" aria-label="Recenter the glade"><svg class="icon"><use href="#i-focus"/></svg></button><button class="icon-btn optional-tool" data-act="fullscreen" title="Expand the world" aria-label="Expand the world"><svg class="icon"><use href="#i-expand"/></svg></button></div>
-  </div>
-  <div id="cx-interaction-gate" class="cx-interaction-gate" hidden></div><div id="cx-roll-feedback" class="cx-roll-feedback" hidden></div><section class="dock" aria-label="Care, build, train and trade"><div class="dock-header"><div class="tabs" role="tablist" aria-label="Interaction type"><button class="tab active" role="tab" aria-selected="true" data-act="tab" data-id="care"><svg class="icon"><use href="#i-heart"/></svg>Care</button><button class="tab" role="tab" aria-selected="false" data-act="tab" data-id="build"><svg class="icon"><use href="#i-home"/></svg>Build</button><button class="tab" role="tab" aria-selected="false" data-act="tab" data-id="train"><svg class="icon"><use href="#i-book"/></svg>Learn</button><button class="tab" role="tab" aria-selected="false" data-act="tab" data-id="trade"><svg class="icon"><use href="#i-market"/></svg>Trade</button></div><span class="dock-hint" id="dock-hint">Good company makes a good day.</span></div><div class="dock-body" id="dock-body" role="tabpanel"></div></section>
- </section>
- <aside class="sidebar right-sidebar" aria-label="Selected creature’s needs, thoughts and plans">
-  <section class="card buddy-card"><div class="buddy-header"><div class="portrait-shell"><canvas id="portrait" width="134" height="138" aria-label="Pip, your little woodland buddy"></canvas></div><div><div class="buddy-name"><h2 data-buddy-name>Pip</h2><button class="rename" data-act="rename" title="Rename your buddy" aria-label="Rename your buddy"><svg class="icon"><use href="#i-edit"/></svg></button></div><p class="buddy-sub">A woodland companion</p><span class="mood-pill" id="buddy-mood">Feeling good</span></div></div>
-   <div id="cx-character-summary"></div><div class="buddy-level"><strong id="buddy-level">Level 1</strong><div class="meter"><i id="buddy-xp-fill" style="width:0"></i></div><span id="buddy-xp">0 / 36 XP</span></div>
-   <div class="task-card"><div class="eyebrow"><span>ON MY LITTLE MIND</span><span class="dot"></span></div><div class="task-label" id="task-label" aria-live="polite">A new friend. A new beginning.</div><p class="task-reason" id="task-reason">I’m taking it all in. What a lovely place to begin.</p><div class="meter"><i id="task-progress" style="width:0"></i></div><div class="task-meta"><span id="task-phase">Thinking for myself</span><span id="task-percent">Autonomous</span></div><button class="decision-link" data-act="decision"><span id="decision-source">Pip’s choice</span><span>Why this? ↗</span></button></div>
-   <div class="needs-area"><div class="needs-heading">The little essentials <small>NEEDS</small></div><div id="needs-list"></div></div>
-   <div class="focus-row"><label for="focus-select">Encourage a little…</label><select id="focus-select" aria-label="Encourage behavior"><option value="balanced">Balance</option><option value="cozy">Self-care</option><option value="builder">Building</option><option value="curious">Curiosity</option></select></div>
-   <button class="btn request-btn" data-act="suggest"><svg class="icon"><use href="#i-plus"/></svg><span id="request-button-label">Give Pip an idea</span><span style="margin-left:auto;opacity:.5"><svg class="icon"><use href="#i-arrow"/></svg></span></button>
-  </section>
-  <section class="plans-card"><div class="section-heading"><h2>Our little plans <span class="counter" id="order-count">0</span></h2><button class="text-btn" data-act="plans">Plan board ↗</button></div><div id="orders-list"></div></section>
-  <section class="skills-section"><div class="section-heading" style="margin-bottom:7px"><h2>Growing confidence</h2><button class="text-btn" data-act="training">All lessons <svg class="icon" style="width:11px;height:11px"><use href="#i-arrow"/></svg></button></div><div class="skill-chips" id="skill-chips"></div></section>
-  <section class="journal-section"><div class="section-heading" style="margin-bottom:2px"><h2>Little moments</h2><button class="text-btn" data-act="journal">Journal <svg class="icon" style="width:11px;height:11px"><use href="#i-arrow"/></svg></button></div><div id="journal-preview"></div></section>
- </aside>
-</main>
-<button id="world-objective" data-act="w7-panel" data-id="story"><span class="w7-eyebrow"><svg class="icon" style="width:12px;height:12px"><use href="#i-leaf"/></svg> OUR NEXT LITTLE STEP</span><strong id="world-objective-title">A new friendship</strong><small id="world-objective-caption">Our story & allowance ↗</small></button>
-<div id="world-selection-hint">Select a companion in the glade or the roster</div>
-<nav id="world-toolbar" aria-label="World tools">
-<button data-act="land-atlas" title="World resources and workplaces"><svg class="icon"><use href="#i-leaf"/></svg><span>World</span></button>
-<button data-act="w7-panel" data-id="construction" title="Build a place (B)"><svg class="icon"><use href="#i-home"/></svg><span>Build</span></button>
-<button data-act="w7-panel" data-id="training" title="Learn & practice (L)"><svg class="icon"><use href="#i-book"/></svg><span>Learn</span></button>
-<button data-act="w7-panel" data-id="adventures" title="Quest board (Q)"><svg class="icon"><use href="#i-compass"/></svg><span>Quests</span><small id="world-quest-count" aria-label="Available quests"></small></button>
-<button data-act="w7-panel" data-id="warehouse" title="Deposited stock and sales (I)"><svg class="icon"><use href="#i-market"/></svg><span>Warehouse</span></button>
-<button data-act="w7-panel" data-id="plans" title="Plans for the selected creature"><svg class="icon"><use href="#i-plan"/></svg><span>Plans</span></button>
-<button data-act="w7-panel" data-id="journal" title="Little moments (J)"><svg class="icon"><use href="#i-heart"/></svg><span>Journal</span></button>
-<button id="world-more-button" data-act="w7-more" aria-expanded="false" aria-controls="world-more" title="Story, content libraries, field guide and settings"><svg class="icon"><use href="#i-more"/></svg><span>More</span></button>
-</nav>
-<section id="world-more" aria-label="More world tools" hidden><h2>A few useful things</h2>
-<button data-act="w7-panel" data-id="story"><svg class="icon"><use href="#i-heart"/></svg>Story & allowance</button>
-<button data-act="w7-panel" data-id="community"><svg class="icon"><use href="#i-paw"/></svg>Our creatures</button>
-<button data-act="w7-panel" data-id="journal"><svg class="icon"><use href="#i-book"/></svg>Memories & journal</button>
-<button data-act="w7-panel" data-id="content"><svg class="icon"><use href="#i-research"/></svg>Content library · JSON</button>
-<button data-act="w7-panel" data-id="adventure-library"><svg class="icon"><use href="#i-compass"/></svg>Adventure library · JSON</button>
-<button data-act="land-library"><svg class="icon"><use href="#i-leaf"/></svg>World library · JSON</button>
-<button data-act="w7-panel" data-id="guide"><svg class="icon"><use href="#i-help"/></svg>Field guide & controls</button>
-<button data-act="w7-panel" data-id="settings"><svg class="icon"><use href="#i-gear"/></svg>Settings & save</button><div class="w7-fine">Nothing here moves a creature. You guide; they decide.</div></section>
-<svg id="context-link" hidden aria-hidden="true"><path id="context-link-path"/><circle id="context-link-dot" r="5"/></svg>
-<section id="creature-context" role="dialog" aria-modal="false" aria-labelledby="context-title" hidden><div id="creature-context-content"></div></section>
-<div id="world-announcement" class="sr-only" role="status" aria-live="polite"></div>
-<footer class="footer"><span>Made for small steps and shared stories. <span style="opacity:.65">· v15.0 Living Worlds</span></span><span class="keyboard-hints">Drag to explore <kbd>B</kbd> Build <kbd>L</kbd> Learn <kbd>Space</kbd> Pause <kbd>?</kbd> Field guide</span><button class="text-btn" data-act="guide" style="font-size:8px;padding:0">A little help <svg class="icon" style="width:10px;height:10px"><use href="#i-help"/></svg></button></footer>
-</div>
-<div class="overlay" id="overlay"><section class="modal" id="modal" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="modal-title"></section></div>
-<div class="toast-stack" id="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
-<input id="content-import-file" type="file" accept=".json,application/json" hidden>
-<input id="import-file" type="file" accept=".json,application/json" hidden>
+<!-- INCLUDE colony-body.html -->
 <!-- INLINE_CONTENT_DATA -->
+<!-- INLINE_CONTENT_PROVIDER -->
 <!-- INLINE_BALANCING_RULES -->
 <!-- INLINE_CONTENT_RUNTIME -->
 <!-- INLINE_CREATURE_BALANCING -->

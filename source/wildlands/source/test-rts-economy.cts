@@ -1,3 +1,5 @@
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 for (const file of ['developer-data', 'ecs', 'rts-catalog', 'rts-stats', 'rts-navigation', 'rts-systems', 'rts-production', 'rts-economy', 'rts-checkpoint', 'rts-session'])

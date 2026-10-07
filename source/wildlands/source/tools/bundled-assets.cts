@@ -1,28 +1,27 @@
 /** Runtime projections from the single authored definition in each asset folder. */
-import path from 'node:path';
-import {definitions, read, record, type RecordValue, type Definition} from './definition-source.cjs';
+import {read, record, type RecordValue, type Definition} from './definition-source.cjs';
 const compare = (a: string, b: string): number => a < b ? -1 : a > b ? 1 : 0;
 
-export function creatureConfig(source: string, packages: readonly Definition[] = definitions(source)): RecordValue {
- const config = read(path.join(source, 'assets/creatures/catalog.json'));
+export function creatureConfig(catalogFile: string, packages: readonly Definition[]): RecordValue {
+ const config = read(catalogFile);
  if (!record(config) || Object.keys(config).length !== 3 || config.format !== 'littlewild-creature-catalog' ||
      config.schemaVersion !== 1 || typeof config.defaultArchetype !== 'string' || !/^[a-z][a-z0-9_-]{0,60}$/.test(config.defaultArchetype))
   throw Error('Invalid creature catalog configuration.');
- if (!creatureDefinitions(source, packages).some(definition => definition.id === config.defaultArchetype))
+ if (!creatureDefinitions(packages).some(definition => definition.id === config.defaultArchetype))
   throw Error('Unknown default creature archetype: ' + config.defaultArchetype);
  return config;
 }
-export function creatureDefinitions(source: string, packages: readonly Definition[] = definitions(source)): RecordValue[] {
+export function creatureDefinitions(packages: readonly Definition[]): RecordValue[] {
  const result = packages.flatMap(definition => definition.creature ? [definition.creature] : []);
  if (!result.length) throw Error('At least one creature definition is required.');
  return result;
 }
 /** Pocket Pet presentation assets ship as their own bundle; colony scenarios and saves never embed them. */
-export function petAssetDefinitions(source: string, packages: readonly Definition[] = definitions(source)): RecordValue[] {
+export function petAssetDefinitions(packages: readonly Definition[]): RecordValue[] {
  return packages.filter(definition => definition.family === 'pets' && definition.visual).map(definition => definition.visual!)
   .sort((a, b) => compare(String(a.id), String(b.id)));
 }
-export function assetDefinitions(source: string, packages: readonly Definition[] = definitions(source)): RecordValue[] {
+export function assetDefinitions(packages: readonly Definition[]): RecordValue[] {
  const result = packages.flatMap(definition => definition.visual && definition.family !== 'pets' ? [definition.visual] : []);
  const assets = new Map(result.filter(definition => definition.category === 'actor').map(definition => [definition.id, definition]));
  for (const {creature} of packages) {

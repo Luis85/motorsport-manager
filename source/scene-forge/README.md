@@ -80,7 +80,7 @@ Scene Forge is the modeling tool for the Wildlands engine in `../wildlands/`. A 
 ```bash
 forge3d -p examples/pocket-pet littlewild sync --file examples/pocket-pet/littlewild.export.json
 forge3d -p examples/pocket-pet littlewild sync --file examples/pocket-pet/littlewild.export.json --check
-forge3d -p my-project littlewild import --definition ../wildlands/source/assets/creatures/sproutling/definition.json
+forge3d -p my-project littlewild import --definition ../../docs/concepts/littlewild/assets/creatures/sproutling/definition.json
 ```
 
 From the repository root, the checked-in executable runs the same freshness check: `bin/scene-forge -p source/scene-forge/examples/pocket-pet littlewild sync --file source/scene-forge/examples/pocket-pet/littlewild.export.json --check`.

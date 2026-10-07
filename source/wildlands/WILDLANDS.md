@@ -12,8 +12,12 @@ application lifecycles, simulations and persistence.
 
 ## Browser workspace
 
-Build with `npm run build`, then open `littlewild.html` in a desktop browser. The
-workspace offers project save/open, scenario review and the existing authoring
+The workspace is the studio build of a colony game. Build it on demand from the
+repository root with
+`bin/wildlands build-game --game docs/concepts/littlewild --profile studio --output littlewild-studio.html`
+and open that file in a desktop browser (the published `demos/` are play builds
+without the workspace; a source checkout's `npm run build` also writes
+`.generated/artifacts/studio.html`). The workspace offers project save/open, scenario review and the existing authoring
 tools for scenes/worlds, creatures, balance and content libraries. Scenario review
 precedes **Start this scene**, which replaces the active story after confirmation.
 The existing world/scene, creature, terrain, building and storytelling editors
@@ -27,17 +31,26 @@ validates the file and opens the scenario review. **Export Godot project → Dow
 Godot ZIP** compiles a validated project in the browser, without a server. Unzip
 that archive and open its `project.godot` in Godot.
 
-A project is `wildlands-project` schema version 1 with `id`, `name`, `target:
-"godot"`, `scenarioId`, `sceneId` and a complete current-format scenario `pack`.
-The selected scene must exist and `scenarioId` must match `pack.id`. The complete
-pack carries supported content libraries, assets, creature definitions,
-configuration, storyboards and owner checkpoints. It is data, and cannot add
-executable mechanics. Project validation is bounded to 10 MiB; the inner pack
-retains its own admission limits.
+A project is `wildlands-project` schema version 2 with `id`, `name`, `target:
+"godot"`, `scenarioId`, `sceneId`, a complete current-format scenario `pack` and
+`game`: `{id, profile}`, the content profile of the game it was made from (its
+balancing, library schema, creatures, assets and scenario catalog; never RTS or
+Pocket Pet catalogs). The embedded game makes the document self-contained: the
+CLI and the compiled Godot runtime install it before they validate or run the
+project, and a realm only admits a project whose game id it runs. The selected
+scene must exist and `scenarioId` must match `pack.id`. The complete pack carries
+supported content libraries, assets, creature definitions, configuration,
+storyboards and owner checkpoints. It is data, and cannot add executable
+mechanics. Project validation is bounded to 10 MiB and 1,000,000 JSON values;
+the inner pack retains its own admission limits. Schema version 1 documents (no
+`game`) stay readable against an installed game; every document Wildlands writes
+from them, and every Godot compilation, is schema version 2
+(`WildlandsProject.upgrade`).
 
 `validate` and `inspect` report the same project `fingerprint`: 16 hexadecimal
 digits computed from the key-sorted canonical JSON of the complete normalized
-project, including `id`, `name`, `scenarioId`, `sceneId` and the whole `pack`.
+project, including `id`, `name`, `scenarioId`, `sceneId`, the whole `pack` and
+the embedded `game`.
 JSON key order and whitespace do not affect it; any value change, including a
 captured `run` or `edit` result, does. The fingerprint is not stored in the
 project. It detects changes rather than authenticating authors, and is a
@@ -47,12 +60,17 @@ non-cryptographic identifier, not a signature.
 
 Use Node.js 22 or newer. Install dependencies and build once:
 
+The CLI is the engine alone: it has no built-in game. Games are data-only folders
+under `docs/concepts/<id>/` ([game folders](../../docs/concepts/README.md)); a
+command that needs a game takes `--game DIR`, and a project embeds the game it was
+created from, so later commands need no folder.
+
 ```sh
 npm ci --no-audit --no-fund
 npm run build
 npm run wildlands -- discover
-npm run wildlands -- scenarios
-npm run wildlands -- create --output /tmp/wildlands.project.json
+npm run wildlands -- scenarios --game ../../docs/concepts/littlewild
+npm run wildlands -- create --game ../../docs/concepts/littlewild --output /tmp/wildlands.project.json
 npm run wildlands -- validate --project /tmp/wildlands.project.json
 npm run wildlands -- inspect --project /tmp/wildlands.project.json
 npm run wildlands -- compile --project /tmp/wildlands.project.json --output /tmp/wildlands-godot
@@ -64,13 +82,20 @@ The Godot output directory must not already exist. Choose a fresh path for anoth
 compile. `export` is an alias for `compile`. The CLI stages output in a sibling
 working directory and publishes the complete project together.
 
-Create a specific scenario or switch an existing project into a separate file:
+Create a specific scenario or scene, switch an existing project into a separate
+file, or start from a custom pack validated against the game:
 
 ```sh
-npm run wildlands -- create --scenario littlewild --scene charted-home --output /tmp/showcase.json
-npm run wildlands -- scenario --project /tmp/showcase.json --scenario office --output /tmp/office.json
-npm run wildlands -- create --pack /tmp/custom.pack.json --output /tmp/custom.json
+npm run wildlands -- create --game ../../docs/concepts/littlewild --scenario littlewild --scene charted-home --output /tmp/showcase.json
+npm run wildlands -- scenario --project /tmp/showcase.json --scenario littlewild --scene first-morning --output /tmp/morning.json
+npm run wildlands -- create --game ../../docs/concepts/littlewild --pack /tmp/custom.pack.json --output /tmp/custom.json
 ```
+
+The same CLI builds games: `validate-game --game DIR` runs the engine's validators
+on a folder, `inspect-game` summarizes it and `build-game --game DIR --output
+FILE.html [--profile play|studio]` writes one self-contained HTML artifact (the
+checked-in [`demos/`](../../demos/README.md) are built this way by
+`npm run build:demos`). See the handbook for every option.
 
 For machine parsing, invoke the generated entry directly so npm's lifecycle
 banner does not appear on stdout:
@@ -89,8 +114,9 @@ source, package or toolchain file, refresh it with `npm run build:cli`;
 directory and fails when the checked-in file differs.
 
 Each invocation emits one JSON result with `ok` and `protocolVersion: 1`. Exit 0
-means success, exit 1 means the project was rejected by validation, and exit 2
-means usage, I/O, bootstrap or operation failure. Unknown and duplicate flags
+means success, exit 1 means the project or game folder was rejected (or a built
+artifact is over budget or stale), and exit 2 means usage, I/O, bootstrap or
+operation failure, including a missing `--game`. Unknown and duplicate flags
 are rejected; commands never prompt. Input aliases are protected when writing
 project documents.
 
@@ -174,7 +200,8 @@ The compiler produces a desktop Godot project containing:
 | `wildlands.project.json` | Validated portable project and complete scenario snapshot. |
 | `wildlands.manifest.json` | Generated-file identities, target and runtime requirements, feature coverage. |
 | `native/*.gd` | Native presentation, input and subprocess adapters. |
-| `runtime/` | Compiled TypeScript simulation, SDK and bridge runtime. |
+| `runtime/` | Compiled TypeScript simulation, SDK and bridge runtime: exactly the static require closure of the bridge entry points, without browser presentation modules or test fixtures. |
+| `runtime/engine-source-bundle.json` | Only with the explicit `--with-engine-sources` opt-in: the inert [engine-source inventory](ENGINE-EXPORT.md#payload-policy) that enables engine export inside the project. |
 
 Godot supplies the native view and sends requests to a local Node subprocess over
 JSON lines. The existing TypeScript domain remains the gameplay authority. The

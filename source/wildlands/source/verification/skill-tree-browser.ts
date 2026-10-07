@@ -1,22 +1,27 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {ACTION_TIMEOUT_MS,fixtureUrl,launchBrowser,monitorContext,openArtifact,READY_TIMEOUT_MS,TRANSITION_TIMEOUT_MS,waitForReady} from './browser-harness';
 interface Globals {
  Littlewild:{open(id:string):void;engine:{s:{paused:boolean};actor:{id:string;creature:{level:number}};
   skillTreeState(id:string):LWSkillTrees.View[];attachSkillTree(id:string,definition:LWSkillTrees.Definition):{ok:boolean};grantSkillTreeXp(id:string,n:number):{ok:boolean};export():unknown}};
 }
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification/v15');
+// The colony play artifact carries the training workspace and skill trees; nothing here needs the composite showcase.
+const ARTIFACT=path.join(ROOT,'.generated/artifacts/colony-play.html');
+const VIEWPORTS=[{width:1440,height:1000},{width:390,height:844}];
+// Each viewport starts a fresh story: its own origin keeps the first page's saves out of the second.
+const pageUrl=(viewport:{width:number}):string=>fixtureUrl('skill-tree-'+viewport.width);
 const results:{name:string;passed:boolean;error?:string}[]=[];
 async function check(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
 async function main():Promise<void>{
- fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext(),diagnostics=monitorContext(context);
+ fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext(),diagnostics=monitorContext(context,{fixtureUrls:VIEWPORTS.map(pageUrl)});
  try{
-  for(const viewport of[{width:1440,height:1000},{width:390,height:844}]){
-   const page=await context.newPage();await page.setViewportSize(viewport);page.setDefaultTimeout(5000);
-   await page.setContent(fs.readFileSync(path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
-   await page.waitForFunction(()=>!!(window as unknown as Globals).Littlewild);
-   await page.locator('[data-act=begin]').click();await page.evaluate(()=>(window as unknown as Globals).Littlewild.open('training'));
+  for(const viewport of VIEWPORTS){
+   const page=await context.newPage();await page.setViewportSize(viewport);page.setDefaultTimeout(ACTION_TIMEOUT_MS);
+   await openArtifact(page,ARTIFACT,{url:pageUrl(viewport)});
+   await waitForReady(page,{host:'colony',timeout:READY_TIMEOUT_MS});
+   await page.locator('[data-act=begin]').click({timeout:TRANSITION_TIMEOUT_MS});await page.evaluate(()=>(window as unknown as Globals).Littlewild.open('training'));
    await page.locator('[data-act=v3-learn-tab][data-id=trees]').click();
    await check('Fresh tree displays earned-point gates at '+viewport.width+'px',async()=>{
     assert(await page.locator('.skill-tree-summary').innerText().then(t=>t.includes('0 points available')));

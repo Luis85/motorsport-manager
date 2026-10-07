@@ -32,7 +32,7 @@
         if(a==='v12-motion'){shell.engine.s.settings.reducedMotion=!shell.engine.s.settings.reducedMotion;shell.world.invalidate();save();renderModal(true);return;}
         if(a==='scenarios'){openModal('scenarios');return;}
         if(a==='blueprint'){openModal('blueprint-detail',id);return;}
-        if(a==='begin'||a==='land-demo'){const pack=LWScenarios.builtins()[0];const ready=LWScenarios.prepareScene(pack,pack.scenes[a==='begin'?0:Math.min(1,pack.scenes.length-1)].id);backupStory();setEngine(LWScenarios.commitScene(ready));closeModal();save();if(a==='begin')openModal('v10-guide');return;}
+        if(a==='begin'||a==='land-demo'){const pack=LWScenarios.defaultPack();const ready=LWScenarios.prepareScene(pack,pack.scenes[a==='begin'?0:Math.min(1,pack.scenes.length-1)].id);backupStory();setEngine(LWScenarios.commitScene(ready));closeModal();save();if(a==='begin')openModal('v10-guide');return;}
         if(a==='cx-select'){shell.buildPanel?.close(false);shell.guidePanel?.minimize();}
         if(shell.villageUI.action(a,id,b))return;
         if(shell.worldExplorer.action(a,id,b))return;

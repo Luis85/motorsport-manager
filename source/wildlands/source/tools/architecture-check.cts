@@ -1,13 +1,13 @@
 import {definitions} from './definition-source.cjs';
-import {balancingDocument, defaultScenario} from './bundled-content.cjs';
-import {assetDefinitions} from './bundled-assets.cjs';
+import {BUNDLED_GAMES, compileGame, gameDirectory, loadGame} from './game-folder.cjs';
 'use strict';
 import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
-import { ownershipErrors, executableDataErrors, DataManifest } from "./architecture-data.cjs";
+import { ownershipErrors, executableDataErrors, engineDataErrors, DataManifest, EngineDataManifest } from "./architecture-data.cjs";
 import { contractErrors, ContractOwner } from "./architecture-contracts.cjs";
 import { analyzeRuntime, resolveRuntimeDependency } from "./architecture-analysis.cjs";
+import { profileErrors, DATA_GLOBALS } from "./artifact-profiles.cjs";
 
 interface CheckResult { name: string; passed: boolean; error?: string; }
 
@@ -199,23 +199,73 @@ check("All domain/application modules avoid ambient randomness and wall clock", 
   assert(violations.length === 0, "Nondeterministic API found: " + [...new Set(violations)].join("; "));
 });
 
+/** Engine data files (source/content, source/assets, source/schemas) and bundled game folder files (games/<id>/...). */
+function shippedData(): Map<string, string> {
+  const shipped = new Map<string, string>();
+  for (const directory of ["content", "assets", "schemas"]) for (const file of walk(path.join(SOURCE, directory))) shipped.set(path.relative(SOURCE, file).replace(/\\/g, "/"), file);
+  for (const id of BUNDLED_GAMES) { const game = loadGame(gameDirectory(id)); for (const entry of game.files) shipped.set("games/" + id + "/" + entry.path, path.join(game.root, entry.path)); }
+  return shipped;
+}
 check("Shipped definitions and configuration have one declared owner and compiled validator", () => {
   assert(DOMAIN_MAP.dataOwnership === "architecture/data-ownership.json", "Data ownership metadata must be referenced by the domain map.");
   const manifest = JSON.parse(source(DOMAIN_MAP.dataOwnership)) as DataManifest;
-  const shipped = [...walk(path.join(SOURCE,"content")),...walk(path.join(SOURCE,"assets"))]
-    .filter(file=>file.endsWith(".json")).map(file=>path.relative(SOURCE,file).replace(/\\/g,"/"));
-  const errors = ownershipErrors(manifest,shipped,new Set(DOMAIN_MAP.contexts.map(context=>context.id)));
-  for(const file of shipped)errors.push(...executableDataErrors(JSON.parse(source(file)),file));
+  const shipped = [...shippedData()].filter(([file]) => file.endsWith(".json"));
+  const errors = ownershipErrors(manifest,shipped.map(([file]) => file),new Set(DOMAIN_MAP.contexts.map(context=>context.id)));
+  for(const [file, location] of shipped)errors.push(...executableDataErrors(JSON.parse(fs.readFileSync(location,"utf8")),file));
   const fixtures=walk(path.join(SOURCE,"fixtures")).filter(file=>file.endsWith(".json")).map(file=>path.relative(SOURCE,file).replace(/\\/g,"/"));
   assert(JSON.stringify(fixtures.sort())===JSON.stringify(manifest.historicalFixtures.map(entry=>entry.path).sort()),"Historical JSON fixtures require explicit path and reason exclusions.");
   assert(errors.length===0,errors.join("; "));
 });
 
 check("Bundled assets have one authoring source and canonical catalog projections", () => {
-  definitions(SOURCE); assetDefinitions(SOURCE);
-  defaultScenario(SOURCE, balancingDocument(SOURCE));
+  for (const id of BUNDLED_GAMES) compileGame(gameDirectory(id));
+  assert(definitions(path.join(SOURCE, "assets")).length === 0, "Asset definitions belong to game folders, not to the engine assets directory.");
   for (const name of ['default-library','adventure-library','world-library','growth-library','building-interiors'])
     assert(!fs.existsSync(path.join(SOURCE,'content',name+'.json')), 'Duplicate content source: '+name);
+});
+
+check("Engine content directories hold only engine data and declared pending game data", () => {
+  // Every game has its own folder, so the end state has no pending mechanism: engine directories hold
+  // only allow-listed engine data, and a pending game-data list is itself rejected.
+  const manifest = JSON.parse(source("architecture/engine-data.json")) as EngineDataManifest;
+  const files = [...shippedData().keys()].filter(file => !file.startsWith("games/"));
+  const errors = engineDataErrors(manifest, files);
+  assert(!Object.hasOwn(manifest, "pending"), "The engine data allow-list declares no pending game data.");
+  // Regression probes: a returned game file, a game-shaped engine entry and any pending list (even empty) are rejected.
+  const pending = (list: unknown[]): EngineDataManifest => ({...manifest, pending: list} as EngineDataManifest);
+  assert(engineDataErrors(manifest, [...files, "content/balancing.json"]).some(error => error.includes("content/balancing.json has 0")) &&
+    engineDataErrors({...manifest, engine: [...manifest.engine, {pattern: "assets/items/*/definition.json", reason: "Probe entry that pretends game definitions are engine data."}]}, files).some(error => error.includes("game data shape")) &&
+    engineDataErrors(pending([]), files).some(error => error.includes("no pending game data")) &&
+    engineDataErrors(pending([{pattern: "content/balancing.json", reason: "Probe entry that pretends game data may wait in the engine.", game: "littlewild"}]), [...files, "content/balancing.json"]).some(error => error.includes("no pending game data")) &&
+    engineDataErrors({...manifest, engine: [...manifest.engine.slice(1), {...manifest.engine[0]!, game: "littlewild"} as EngineDataManifest["engine"][number]]}, files).some(error => error.includes("only pattern and reason")),
+    "Engine data regression probes must be detected.");
+  assert(errors.length === 0, errors.join("; "));
+});
+
+/** Game content files: shipped definitions/packs and their build projections. Engine schemas are not game data. */
+function gameDataRequest(request: string): boolean {
+  return /^\.\.?\/(?:assets\/|content\/(?![^/]+\.schema\.json$))/.test(request) ||
+    /^\.\/(?:asset-definitions|pet-asset-definitions|creature-definitions|creature-config|creature-editor-fields|interaction-library)\.json$/.test(request);
+}
+check("Runtime modules read game content only through the installed content provider", () => {
+  const provider = "content-provider.ts";
+  const owner = DOMAIN_MAP.contexts.find(context => context.files.includes(provider));
+  assert(owner?.layer === "domain", "The content provider must be a domain-owned runtime module.");
+  assert(analyses.get(provider)!.globals.some(global => global.name === "LWContentProvider" && global.write), "The content provider must publish LWContentProvider.");
+  // Injected game data globals reach engine modules only as an installed profile. Engine-owned
+  // schemas and export payloads stay outside the profile; the library schema carries game vocabulary.
+  const gameGlobals = new Set(DATA_GLOBALS.filter(([name, group]) => group !== "export-payloads" && (!/Schema$/.test(name) || name === "LWContentSchema")).map(([name]) => name));
+  const probe = analyzeRuntime("probe.ts", "const a=require('./content/balancing.json'),b=require('./content/scenario.schema.json'),c=require('./creature-definitions.json');const d=root.LWDefaultBalancing;");
+  assert(probe.dependencies.filter(request => request !== null && gameDataRequest(request)).length === 2 && probe.globals.some(global => gameGlobals.has(global.name)),
+    "Game content regression probe must be detected.");
+  assert(gameDataRequest("../assets/items/wood/definition.json") && !gameDataRequest("./engine-source-bundle.json") && gameGlobals.has("LWScenarioPacks") && !gameGlobals.has("LWScenarioSchema"),
+    "Game content classification probe failed.");
+  const violations: string[] = [];
+  for (const [file, analysis] of analyses) {
+    for (const request of analysis.dependencies) if (request !== null && gameDataRequest(request)) violations.push(file + " requires game data " + request);
+    if (file !== provider) for (const global of analysis.globals) if (gameGlobals.has(global.name)) violations.push(file + " reads injected game data " + global.name);
+  }
+  assert(violations.length === 0, "Runtime module bypasses the content provider: " + violations.join("; "));
 });
 
 check("Project contracts and erased type dependencies follow inward ownership", () => {
@@ -328,6 +378,11 @@ check("ECS persistence remains plain-data owned by domain records", () => {
   assert(actor.includes("Components bind by reference"), "Actor ECS no longer documents authoritative record binding.");
   assert(world.includes("no ECS state is") && world.includes("serialized"), "World ECS persistence boundary is unclear.");
   assert(economy.includes("Existing save records remain authoritative"), "Economy ECS persistence boundary is unclear.");
+});
+
+check("Artifact bundles tag every insert and profiles keep the canonical load order", () => {
+  const errors = profileErrors(SOURCE);
+  assert(errors.length === 0, errors.join("; "));
 });
 
 check("Generated JavaScript is outside authored source", () => {

@@ -1,15 +1,16 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /* Data-only world definition registry. Validation has no simulation side effects. */
 (function(inputRoot:unknown){
  'use strict';
- interface Root {LWContent?:LWContentPorts.ContentApi;LWDefaultWorld?:LWContentPorts.World;LWWorldSchema?:LWContentPorts.Schema;LWAdventure?:LWContentPorts.AdventureApi;LWWorldContent?:LWContentPorts.WorldApi;LW?:{WorldSystem?:{siteIssues(world:LWContentPorts.World):string[]}};}
+ interface Root {LWContent?:LWContentPorts.ContentApi;LWContentProvider?:LWContentProvider.Api;LWWorldSchema?:LWContentPorts.Schema;LWAdventure?:LWContentPorts.AdventureApi;LWWorldContent?:LWContentPorts.WorldApi;LW?:{WorldSystem?:{siteIssues(world:LWContentPorts.World):string[]}};}
  const root=inputRoot as Root;
  const node=typeof module!=='undefined'&&module.exports;
  const contentApi=(node?require('./content-runtime.js'):root.LWContent) as LWContentPorts.ContentApi|undefined;
  if(!contentApi)throw Error('Content runtime is missing.');
- const C=contentApi;
- const defaultWorld=(node?require('./content/balancing.json').libraries.world:root.LWDefaultWorld) as LWContentPorts.World|undefined;
- if(!defaultWorld)throw Error('Default world content is missing.');
- const defaults=defaultWorld;
+ const provider=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api|undefined;
+ if(!provider)throw Error('Content provider is missing.');
+ const C=contentApi,Content=provider;
+ const dig=(value:unknown,...keys:string[]):unknown=>keys.reduce<unknown>((at,key)=>at!==null&&typeof at==='object'?(at as Record<string,unknown>)[key]:undefined,value);
  const worldSchema=(node?require('./content/world.schema.json'):root.LWWorldSchema) as LWContentPorts.Schema|undefined;
  if(!worldSchema)throw Error('World content schema is missing.');
  const schema=worldSchema;
@@ -17,7 +18,17 @@
  const own=(o:object,k:PropertyKey)=>Object.prototype.hasOwnProperty.call(o,k);
  // Wrap the whole world document: the base fingerprint intentionally hashes only its own schema fields.
  const hash=(x:LWContentPorts.World)=>C.fingerprint({schemaVersion:1,library:{id:x?.id,version:x?.version},components:x});
- let content=clone(defaults);
+ // The installed game's world library; admitted on first use or as soon as a game is installed.
+ let loaded:{defaults:LWContentPorts.World;exposed:LWContentPorts.World}|null=null,content:LWContentPorts.World|null=null;
+ function defaults():LWContentPorts.World{
+  if(loaded)return loaded.defaults;
+  const value=dig(Content.get('world content').balancing,'libraries','world') as LWContentPorts.World|undefined;
+  if(!value)throw Error('Default world content is missing.');
+  loaded={defaults:value,exposed:clone(value)};
+  if(content===null)content=clone(value);
+  return value;
+ }
+ const current=():LWContentPorts.World=>{defaults();return content!;};
  function validate(input:unknown):LWContentPorts.Validation<LWContentPorts.World>{
   const errors:string[]=[];let parsed:unknown;
   try{parsed=C.parse(input,300000);if(JSON.stringify(parsed).length>300000)throw Error('World definitions exceed 300 KB.');}catch(e){return {ok:false,errors:['/: '+(e instanceof Error?e.message:String(e))]};}
@@ -50,8 +61,9 @@
   const tables=C.tables;
   for(const k of ['nodes','buildings','sites'] as const)if(new Set(d[k].map(v=>v.id)).size!==d[k].length)errors.push('/'+k+': duplicate IDs');
   // Existing kinds remain stable: new visual/gameplay kinds need an engine implementation.
-  for(const n of defaults.nodes)if(!d.nodes.some(x=>x.id===n.id))errors.push('/nodes: missing '+n.id);
-  for(const n of d.nodes){if(!defaults.nodes.some(x=>x.id===n.id))errors.push('/nodes/'+n.id+': unsupported node kind');if(n.resource&&!own(tables.RES,n.resource))errors.push('/nodes/'+n.id+': unknown item');if(n.skill&&!own(tables.SKILLS,n.skill))errors.push('/nodes/'+n.id+': unknown skill');if(n.direct&&!n.resource)errors.push('/nodes/'+n.id+': direct gathering needs an item');}
+  const reference=defaults();
+  for(const n of reference.nodes)if(!d.nodes.some(x=>x.id===n.id))errors.push('/nodes: missing '+n.id);
+  for(const n of d.nodes){if(!reference.nodes.some(x=>x.id===n.id))errors.push('/nodes/'+n.id+': unsupported node kind');if(n.resource&&!own(tables.RES,n.resource))errors.push('/nodes/'+n.id+': unknown item');if(n.skill&&!own(tables.SKILLS,n.skill))errors.push('/nodes/'+n.id+': unknown skill');if(n.direct&&!n.resource)errors.push('/nodes/'+n.id+': direct gathering needs an item');}
   for(const b of d.buildings){if(!own(tables.BUILDINGS,b.id))errors.push('/buildings/'+b.id+': unknown building');if(b.requiresNode&&!d.nodes.some(x=>x.id===b.requiresNode))errors.push('/buildings/'+b.id+': unknown required node');const p=b.production;if(p){if(!own(tables.RES,p.output)||!own(tables.SKILLS,p.skill))errors.push('/buildings/'+b.id+': unknown production reference');for(const id of Object.keys(p.cost))if(!own(tables.RES,id))errors.push('/buildings/'+b.id+': unknown ingredient');if(Object.values(p.cost).reduce((a,b)=>a+b,0)>b.inputCapacity||p.amount>b.outputCapacity)errors.push('/buildings/'+b.id+': a batch does not fit the inventory');}}
   for(const r of Object.values(tables.RECIPES)){const p=d.buildings.find(b=>b.id===r.station);if(!p||p.outputCapacity<r.amount+1||p.inputCapacity<Object.values(r.cost).reduce((a,b)=>a+b,0))errors.push('/buildings/'+r.station+': recipe batch requires larger buffers');}
   // Reject unsatisfiable recipe loops before they can enter the autonomous planner.
@@ -67,8 +79,9 @@
  const record=(v:unknown):v is Record<string,unknown>=>v!==null&&typeof v==='object'&&!Array.isArray(v);
  const identified=(v:unknown):v is {id:unknown}=>record(v)&&!!v.id;
  function diff(a:unknown,b:unknown,p=''):LWContentPorts.Change[]{const out:LWContentPorts.Change[]=[];if(JSON.stringify(a)===JSON.stringify(b))return out;if(record(a)&&record(b)){for(const k of new Set([...Object.keys(a),...Object.keys(b)]))out.push(...diff(a[k],b[k],p+'/'+k));}else if(Array.isArray(a)&&Array.isArray(b)&&a.every(identified)&&b.every(identified)){for(const id of new Set([...a.map(x=>x.id),...b.map(x=>x.id)]))out.push(...diff(a.find(x=>x.id===id),b.find(x=>x.id===id),p+'/'+id));if(a.map(x=>x.id).join()!==b.map(x=>x.id).join())out.push({path:p+'/$order',before:a.map(x=>x.id),after:b.map(x=>x.id)});}else out.push({path:p||'/',before:a===undefined?null:a,after:b===undefined?null:b});return out;}
- function replace(input:unknown){const r=validate(input);if(!r.ok)throw Error(r.errors.join('\n'));content=clone(r.content);return content;}
- function withLibrary<T>(input:unknown,fn:()=>T):T{const prior=content;try{replace(input);const result=fn();if(result&&['object','function'].includes(typeof result)&&typeof (result as {then?:unknown}).then==='function')throw Error('World library sandbox callback must be synchronous.');return result;}finally{content=prior;}}
- const api:LWContentPorts.WorldApi={defaults:clone(defaults),schema,clone,validate,replace,withLibrary,diff,hashOf:hash,get content(){return content;},get hash(){return hash(content);},node:id=>content.nodes.find(n=>n.id===id),building:id=>content.buildings.find(b=>b.id===id)};
+ function replace(input:unknown){defaults();const r=validate(input);if(!r.ok)throw Error(r.errors.join('\n'));content=clone(r.content);return content;}
+ function withLibrary<T>(input:unknown,fn:()=>T):T{const prior=current();try{replace(input);const result=fn();if(result&&['object','function'].includes(typeof result)&&typeof (result as {then?:unknown}).then==='function')throw Error('World library sandbox callback must be synchronous.');return result;}finally{content=prior;}}
+ const api:LWContentPorts.WorldApi={get defaults(){defaults();return loaded!.exposed;},schema,clone,validate,replace,withLibrary,diff,hashOf:hash,get content(){return current();},get hash(){return hash(current());},node:id=>current().nodes.find(n=>n.id===id),building:id=>current().buildings.find(b=>b.id===id)};
+ Content.whenInstalled(()=>{defaults();},'balancing');
  if(node)module.exports=api;root.LWWorldContent=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

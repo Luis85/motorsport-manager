@@ -1,3 +1,5 @@
+/// <reference path="./renderer-data-contracts.d.ts" />
+/// <reference path="./content-provider-contracts.d.ts" />
 /* Reusable experience boundary: definition libraries + world template + scene state.
  * Validation is synchronous and reversible. Only a confirmed launch changes registries.
  * Stable simulation roles remain compiled code; packs select validated data profiles only. */
@@ -6,7 +8,7 @@
   interface ProfileApi {readonly defaults:LWContentPorts.SimulationProfile;readonly current:LWContentPorts.SimulationProfile;validate(input:unknown):LWContentPorts.SimulationProfile;apply(input:unknown):string;fingerprint(input:unknown):string;withProfile<T>(profile:unknown,work:()=>T):T;}
   interface WorldProfileApi {readonly defaults:LWContentPorts.WorldProfile;readonly current:LWContentPorts.WorldProfile;apply(profile:LWContentPorts.WorldProfile):void;withProfile<T>(profile:LWContentPorts.WorldProfile,work:()=>T):T;}
   interface EngineFacade {Engine:{import(input:unknown):LWContentPorts.ScenarioEngine};}
-  interface Root {LWSceneGraph:LWSceneGraph.Api;LWSceneNavigation:LWSceneNavigation.NavigationApi;LW?:EngineFacade;LWContent?:LWContentPorts.ContentApi;LWAdventure?:LWContentPorts.AdventureApi;LWWorldContent?:LWContentPorts.WorldApi;LWGrowth?:LWContentPorts.GrowthApi;LWWorldProfile?:WorldProfileApi;LWSimulationProfile?:ProfileApi;LWScenarioShape?:(input:unknown,schema:LWContentPorts.Schema)=>string[];LWScenarioSchema?:LWContentPorts.Schema;LWScenarioPacks?:LWContentPorts.ScenarioPack[];LWScenarios?:LWContentPorts.ScenarioApi;LWScenarioResources?:{snapshot():LWContentPorts.Resources;defaults():LWContentPorts.Resources;validate(input:unknown):LWContentPorts.Resources;withResources<T>(input:LWContentPorts.Resources|undefined,work:()=>T):T;apply(input:LWContentPorts.Resources|undefined):void;checkBindings(resources:LWContentPorts.Resources|undefined,libraries:LWContentPorts.Libraries):void;};LWGeography:{Grid:new(layout:{estate:{islands:{ix:number;iy:number}[]};nodes:{kind:string;x:number;y:number}[];buildings:never[]})=>{cells:Set<string>;flood(point:{x:number;y:number}):Set<string>;approach(point:{x:number;y:number}):boolean};};}
+  interface Root {LWRendererCatalog?:LittlewildRenderer.Catalog;LWAnimationCatalog?:{list():readonly unknown[]};LWSceneGraph:LWSceneGraph.Api;LWSceneNavigation:LWSceneNavigation.NavigationApi;LW?:EngineFacade;LWContent?:LWContentPorts.ContentApi;LWAdventure?:LWContentPorts.AdventureApi;LWWorldContent?:LWContentPorts.WorldApi;LWGrowth?:LWContentPorts.GrowthApi;LWWorldProfile?:WorldProfileApi;LWSimulationProfile?:ProfileApi;LWScenarioShape?:(input:unknown,schema:LWContentPorts.Schema)=>string[];LWScenarioSchema?:LWContentPorts.Schema;LWContentProvider?:LWContentProvider.Api;LWScenarios?:LWContentPorts.ScenarioApi;LWScenarioResources?:{snapshot():LWContentPorts.Resources;defaults():LWContentPorts.Resources;validate(input:unknown):LWContentPorts.Resources;withResources<T>(input:LWContentPorts.Resources|undefined,work:()=>T):T;apply(input:LWContentPorts.Resources|undefined):void;checkBindings(resources:LWContentPorts.Resources|undefined,libraries:LWContentPorts.Libraries):void;};LWGeography:{Grid:new(layout:{estate:{islands:{ix:number;iy:number}[]};nodes:{kind:string;x:number;y:number}[];buildings:never[]})=>{cells:Set<string>;flood(point:{x:number;y:number}):Set<string>;approach(point:{x:number;y:number}):boolean};};}
   const root=inputRoot as Root;
   const isRecord=(value:unknown):value is Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value);
   function issueMessages(error:unknown):string[]|null{if(!isRecord(error)||!Array.isArray(error.issues))return null;return error.issues.map(issue=>{const row=isRecord(issue)?issue:{};return (row.path||'/')+': '+row.message;});}
@@ -23,12 +25,31 @@
   const growth=root.LWGrowth,worldProfile=root.LWWorldProfile,profiles=root.LWSimulationProfile;
   const shapeValidator=(node ? require('./scenario-shape.js') : root.LWScenarioShape) as Root['LWScenarioShape'];
   const packSchema=(node ? require('./content/scenario.schema.json') : root.LWScenarioSchema) as LWContentPorts.Schema|undefined;
-  const builtinPacks=(node ? [require('./content/littlewild.pack.json'), require('./content/emberworks.pack.json'),require('./content/office.pack.json')] : root.LWScenarioPacks) as LWContentPorts.ScenarioPack[]|undefined;
-  if(!facade||!content||!adventure||!worldContent||!growth||!worldProfile||!profiles||!shapeValidator||!packSchema||!builtinPacks?.length)throw Error('Scenario runtime dependencies are missing.');
-  const L=facade,C=content,A=adventure,W=worldContent,G=growth,P=worldProfile,Profiles=profiles,shape=shapeValidator,schema=packSchema,builtin=builtinPacks;
-  const balance=(node?require('./content/balancing.json'):(globalThis as unknown as {LWDefaultBalancing:unknown}).LWDefaultBalancing) as {startingScenes:LWContentPorts.Scene[];world:LWContentPorts.WorldProfile;libraries:LWContentPorts.Libraries;simulation:LWContentPorts.SimulationProfile;creatures:unknown;interactions:unknown;interiors:unknown};
-  const classic=builtin.find(pack=>pack.id==='littlewild');
-  if(classic){classic.scenes=C.copy(balance.startingScenes);classic.libraries=C.copy(balance.libraries);classic.simulation=C.copy(balance.simulation);classic.worlds=classic.worlds.map(w=>w.id===balance.world.id?C.copy(balance.world):w);if(classic.resources)classic.resources.creatures=C.copy(resources.defaults().creatures);for(const scene of classic.scenes){const state=scene.initialState;if(state.creatureInteractions&&typeof state.creatureInteractions==='object') (state.creatureInteractions as {library?:unknown}).library=C.copy(balance.interactions);if(state.interiors&&typeof state.interiors==='object') (state.interiors as {catalog?:unknown}).catalog=C.copy(balance.interiors);}}
+  const provider=(node ? require('./content-provider.js') : root.LWContentProvider) as LWContentProvider.Api|undefined;
+  if(!facade||!content||!adventure||!worldContent||!growth||!worldProfile||!profiles||!shapeValidator||!packSchema||!provider)throw Error('Scenario runtime dependencies are missing.');
+  const L=facade,C=content,A=adventure,W=worldContent,G=growth,P=worldProfile,Profiles=profiles,shape=shapeValidator,schema=packSchema,Content=provider;
+  type Balance={startingScenes:LWContentPorts.Scene[];world:LWContentPorts.WorldProfile;libraries:LWContentPorts.Libraries;simulation:LWContentPorts.SimulationProfile;creatures:unknown;interactions:unknown;interiors:unknown};
+  let installed:{packs:LWContentPorts.ScenarioPack[];defaultPack:LWContentPorts.ScenarioPack}|null=null;
+  /**
+   * The installed game's scenario catalog in its declared order. Its canonical pack (if declared)
+   * is a detached copy refreshed from the game's balancing defaults; other packs stay as admitted
+   * profile data and are only ever handed out as copies.
+   */
+  function catalog():{packs:LWContentPorts.ScenarioPack[];defaultPack:LWContentPorts.ScenarioPack} {
+    if(installed)return installed;
+    const profile=Content.get('the scenario catalog'),scenarios=profile.scenarios;
+    if(!scenarios?.packs.length)throw Error('Scenario runtime dependencies are missing.');
+    const canonicalId=scenarios.canonicalId;
+    const packs=(scenarios.packs as LWContentPorts.ScenarioPack[]).map(pack=>canonicalId!==undefined&&pack.id===canonicalId?JSON.parse(JSON.stringify(pack)) as LWContentPorts.ScenarioPack:pack);
+    const classic=canonicalId===undefined?undefined:packs.find(pack=>pack.id===canonicalId);
+    if(classic){const balance=profile.balancing as Balance;refresh(classic,balance);}
+    const defaultPack=packs.find(pack=>pack.id===scenarios.defaultId);
+    if(!defaultPack)throw Error('Scenario runtime dependencies are missing.');
+    return installed={packs,defaultPack};
+  }
+  function refresh(classic:LWContentPorts.ScenarioPack,balance:Balance):void{
+    {classic.scenes=C.copy(balance.startingScenes);classic.libraries=C.copy(balance.libraries);classic.simulation=C.copy(balance.simulation);classic.worlds=classic.worlds.map(w=>w.id===balance.world.id?C.copy(balance.world):w);if(classic.resources)classic.resources.creatures=C.copy(resources.defaults().creatures);for(const scene of classic.scenes){const state=scene.initialState;if(state.creatureInteractions&&typeof state.creatureInteractions==='object') (state.creatureInteractions as {library?:unknown}).library=C.copy(balance.interactions);if(state.interiors&&typeof state.interiors==='object') (state.interiors as {catalog?:unknown}).catalog=C.copy(balance.interiors);}}
+  }
   const copy = C.copy, hash = (value:unknown) => C.fingerprint({ schemaVersion: 2, components: value });
   const sceneReview = (packFingerprint:string, sceneId:string) => hash({packFingerprint, sceneId});
   const sceneReviews = new WeakMap<object,string>();
@@ -142,9 +163,41 @@
         throw Error(path + '/player/coins: expected a non-negative integer');
     } else throw Error(path + '/player: expected an object');
   }
+  /**
+   * Accepted-pack memo. Validation is a pure function of the parsed pack and of the extension
+   * catalogs it consults (renderer metadata and p5 animation presets); the installed game profile
+   * is fixed for the realm. Only accepted results are kept, keyed by the exact serialized pack (key
+   * order included, so a hit reproduces the same output) plus those catalogs, and every hit returns
+   * a fresh detached copy. A changed pack, a registered or withdrawn renderer or preset, and every
+   * rejection run the complete validation again.
+   */
+  type Accepted={key:string;pack:LWContentPorts.ScenarioPack;fingerprint:string;sceneCount:number};
+  const ACCEPTED_ENTRIES=8,ACCEPTED_TEXT=32*1024*1024,accepted=new Map<string,Accepted>();
+  let acceptedText=0;
+  function extensionCatalogs():string{
+    const renderers=(node?require('./renderer-catalog.js'):root.LWRendererCatalog) as LittlewildRenderer.Catalog|undefined;
+    return C.stable({renderers:renderers?.list()??null,animations:root.LWAnimationCatalog?.list()??null});
+  }
+  function remember(entry:Accepted):void{
+    if(entry.key.length>ACCEPTED_TEXT)return;
+    accepted.set(entry.key,entry);acceptedText+=entry.key.length;
+    for(const [key,old] of accepted){if(accepted.size<=ACCEPTED_ENTRIES&&acceptedText<=ACCEPTED_TEXT)break;accepted.delete(key);acceptedText-=old.key.length;}
+  }
   function validate(input:unknown):LWContentPorts.PackValidation {
     try {
       const parsed = stage('pack parse', () => C.parse(input, 8 * 1024 * 1024));
+      const key=extensionCatalogs()+'\n'+JSON.stringify(parsed),hit=accepted.get(key);
+      if(hit){accepted.delete(key);accepted.set(key,hit);return {ok:true,errors:[],pack:copy(hit.pack),fingerprint:hit.fingerprint,sceneCount:hit.sceneCount};}
+      const checked=validateParsed(parsed);
+      if(checked.ok)remember({key,pack:copy(checked.pack),fingerprint:checked.fingerprint,sceneCount:checked.sceneCount});
+      return checked;
+    } catch (error) {
+      const issues = issueMessages(error);
+      return { ok:false, errors: issues?.length ? issues : [message(error)] };
+    }
+  }
+  function validateParsed(parsed:unknown):LWContentPorts.PackValidation {
+    try {
       if(!isRecord(parsed)||parsed.schemaVersion!==2)return {ok:false,errors:['/schemaVersion: only current scenario schema version 2 is supported']};
       const errors:string[]=[];
       if (!packShape(parsed,errors)) return {ok:false,errors};
@@ -219,7 +272,8 @@
   }
   function capture(engine:LWContentPorts.ScenarioEngine):LWContentPorts.ScenarioPack {
     const journeyPack=navigation.capture(engine);if(journeyPack)return journeyPack;
-    const ctx = engine.scenarioContext ? copy(engine.scenarioContext) : context(builtin[0]!, builtin[0]!.scenes[0]!);
+    const fallback = catalog().defaultPack;
+    const ctx = engine.scenarioContext ? copy(engine.scenarioContext) : context(fallback, fallback.scenes[0]!);
     if(!engine.scenarioContext){ctx.world=copy(P.defaults);ctx.simulation=copy(engine.simulationProfile||Profiles.current||Profiles.defaults);}
     if(engine.simulationProfile&&Profiles.fingerprint(engine.simulationProfile)!==Profiles.fingerprint(ctx.simulation))
       throw Error('Experience simulation does not match the engine profile; restore the original context before capturing.');
@@ -230,7 +284,9 @@
       libraries:{base:C.registry.export(),adventure:copy(A.content),world:copy(W.content),growth:copy(G.content)}};
   }
   const api:LWContentPorts.ScenarioApi = {validate,prepareScene,commitScene,activate,capture,checkContext,checkWorld,hash,withLibraries,withRuntime,transaction,schema,
-    builtins: () => copy(builtin), defaultTutorial: () => copy(builtin[0]!.tutorial), defaultPresentation: () => copy(builtin[0]!.presentation),
+    builtins: () => copy(catalog().packs), defaultPack: () => copy(catalog().defaultPack), defaultId: () => catalog().defaultPack.id,
+    defaultTutorial: () => copy(catalog().defaultPack.tutorial), defaultPresentation: () => copy(catalog().defaultPack.presentation),
     defaultSimulation:()=>copy(Profiles.defaults)};
+  Content.whenInstalled(() => { catalog(); }, 'scenarios');
   root.LWScenarios = api; if (node) module.exports = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

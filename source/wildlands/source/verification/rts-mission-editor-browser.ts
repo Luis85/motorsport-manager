@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import type {Page} from 'playwright';
-import {launchBrowser, monitorContext} from './browser-harness';
+import {ACTION_TIMEOUT_MS, ARTIFACT_FIXTURE_URL, launchBrowser, monitorContext, openArtifact, READY_TIMEOUT_MS, TRANSITION_TIMEOUT_MS, waitForReady} from './browser-harness';
 
 const ROOT = path.resolve(__dirname, '../..');
 const OUT = path.join(ROOT, 'verification', 'v15');
+// Cross-host composition: every editor journey asserts the running colony story stays untouched, and the editor
+// is reached from the RTS embedded in that colony. Only the composite showcase mounts the colony with both.
+const ARTIFACT = path.join(ROOT, '.generated/artifacts/showcase.html');
 const results: {name:string;passed:boolean;error?:string}[] = [];
 async function check(name:string, work:()=>Promise<void>):Promise<void> {
  try {await work(); results.push({name, passed:true});}
@@ -28,15 +31,16 @@ async function main():Promise<void> {
  fs.mkdirSync(OUT, {recursive:true});
  const browser = await launchBrowser();
  const context = await browser.newContext({viewport:{width:1440,height:900}, acceptDownloads:true});
- const diagnostics = monitorContext(context);
+ const diagnostics = monitorContext(context, {fixtureUrls:[ARTIFACT_FIXTURE_URL]});
  try {
   const page = await context.newPage();
-  page.setDefaultTimeout(10000);
-  await page.setContent(fs.readFileSync(path.join(ROOT,'littlewild.html'),'utf8'), {waitUntil:'load',timeout:30000});
+  page.setDefaultTimeout(ACTION_TIMEOUT_MS);
+  await openArtifact(page, ARTIFACT);
+  await waitForReady(page, {host:'colony', timeout:READY_TIMEOUT_MS});
   await page.waitForFunction(()=>!!(window as any).Littlewild && !!(window as any).WildlandsRTS);
-  await page.locator('[data-act=begin]').click();
+  await page.locator('[data-act=begin]').click({timeout:TRANSITION_TIMEOUT_MS});
   await page.evaluate('Littlewild.engine.s.paused=true; Littlewild.refresh()');
-  await page.locator('[data-wildlands-rts=open]').click();
+  await page.locator('[data-wildlands-rts=open]').click({timeout:TRANSITION_TIMEOUT_MS});
   await page.locator('[data-rts=pause]').click();
   const retained = await match(page);
   const colony = await page.evaluate('JSON.stringify(Littlewild.engine.export())');

@@ -20,12 +20,15 @@
   const g=new T.Group();for(const v of buckets.values()){const m=new T.InstancedMesh(v.geometry,v.material,v.list.length);v.list.forEach((matrix,i)=>m.setMatrixAt(i,matrix));m.castShadow=true;m.receiveShadow=true;m.instanceMatrix.needsUpdate=true;m.computeBoundingSphere();m.matrixAutoUpdate=false;g.add(m);}g.updateMatrixWorld(true);g.matrixAutoUpdate=false;g.matrixWorldAutoUpdate=false;return g;
  }
 
+ /* The quality preference is a device preference: scoped to the installed game's storage namespace
+  * (file:// pages share one origin); the littlewild namespace keeps the exact legacy key. */
+ function qualityKey(){const key='littlewild.visual-quality',S=root.LWStoryStorage,P=root.LWContentProvider;return S?S.scopedKey(S.namespace(P?.installed()?P.get():undefined),key):key;}
  const artKit={T,group,box,ball,piece,mat};
  function creature(parent,c){return root.LWFidelity.create(artKit,parent,c);}
  class World {
   constructor(canvas,engine,handlers={}){
    this.lifecycle=new AbortController();this.canvas=canvas;this.engine=engine;this.handlers=handlers;this.camera={z:1,x:0,y:0};this.hover=null;this.selected=null;this.placement=null;this.manual=false;this.showPath=true;this.time=0;this.bubble=null;this.effects=[];this.particles=[];this.lastDrawAt=0;this.mode='WebGL · low-poly';this.actors=new Map();this.doors=new Map();this.rotors=[];this.geometryKey='';this.staticRevision=0;this.frameCount=0;this.skippedFrames=0;this.visualTime=0;this.running=false;this.quality='balanced';this.motion=new root.LWPresentation.MotionSamples();this.presentationAlpha=1;this.actorAnchors=new Map();
-   try{const q=localStorage.getItem('littlewild.visual-quality');if(['eco','balanced','high'].includes(q))this.quality=q;}catch(_){}
+   try{const q=localStorage.getItem(qualityKey());if(['eco','balanced','high'].includes(q))this.quality=q;}catch(_){}
    let context=null;try{context=canvas.getContext('webgl2',{antialias:true,alpha:false,powerPreference:'default'});}catch(error){}
    if(context)this.renderer=new T.WebGLRenderer({canvas,context,antialias:true,alpha:false});else{this.renderer=new root.LWSoftware3D(canvas,this);this.mode='Software 3D · compatibility';}
 
@@ -52,7 +55,7 @@
   present(c){return !c.activeQuest||!!root.LWSceneEnvironment?.onsite(this.engine.s,c);}
   invalidate(){this.forceDraw=true;this.lastDrawAt=0;}
   resetPresentation(){this.motion.reset();this.actorAnchors.clear();this.labelLayer.clear();this.input?.cancel();this.geometryKey='';this.renderKey='';this.planKey='';this.lastState=null;for(const a of this.actors.values())this.dynamicRoot.remove(a.root);this.actors.clear();for(const r of this.responses||[])r.el.remove();this.responses=[];this.effects=[];this.particles=[];this.menuTile=null;this.visualTime=0;this.invalidate();}
-  setQuality(q){if(!['eco','balanced','high'].includes(q))return false;this.quality=q;this.renderer.setQuality?.(q);this.renderer.shadowMap.enabled=q!=='eco';this.sun?.shadow.mapSize.set(q==='high'?2048:1024,q==='high'?2048:1024);if(this.sun?.shadow.map){this.sun.shadow.map.dispose();this.sun.shadow.map=null;}try{localStorage.setItem('littlewild.visual-quality',q);}catch(_){}this.invalidate();return true;}
+  setQuality(q){if(!['eco','balanced','high'].includes(q))return false;this.quality=q;this.renderer.setQuality?.(q);this.renderer.shadowMap.enabled=q!=='eco';this.sun?.shadow.mapSize.set(q==='high'?2048:1024,q==='high'?2048:1024);if(this.sun?.shadow.map){this.sun.shadow.map.dispose();this.sun.shadow.map=null;}try{localStorage.setItem(qualityKey(),q);}catch(_){}this.invalidate();return true;}
   makeGround(){this.geometryKey='';this.invalidate();}
   resize(){const r=this.canvas.getBoundingClientRect();if(!r.width||!r.height)return;this.renderer.setSize(Math.round(r.width),Math.round(r.height),false);this.invalidate();if(!this.manual)this.home();this.syncCamera();}
   home(){const w=this.canvas.width,h=this.canvas.height;this.camera.z=clamp(Math.min((w-110)/1040,(h-190)/610),.38,1.2);this.camera.x=w>900?50:0;this.camera.y=30;this.manual=false;const authored=root.LWSceneEnvironment?.read()?.camera;if(authored){this.camera.z=clamp(this.camera.z*authored.zoom,.3,3);const p=this.toScreen(authored.center[0],authored.center[1]);this.camera.x+=w/2-p.x;this.camera.y+=h*.5-p.y;}this.syncCamera();}

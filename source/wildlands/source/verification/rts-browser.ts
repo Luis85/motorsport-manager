@@ -1,20 +1,23 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {launchBrowser,monitorContext} from './browser-harness';
+import {ACTION_TIMEOUT_MS,ARTIFACT_FIXTURE_URL,launchBrowser,monitorContext,openArtifact,READY_TIMEOUT_MS,TRANSITION_TIMEOUT_MS,waitForReady} from './browser-harness';
 const ROOT=path.resolve(__dirname,'../..'),OUT=path.join(ROOT,'verification','v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
+// Cross-host composition: the suite switches from the running colony into the RTS and back, asserting the colony
+// story is untouched and focus returns to the colony launcher. Only the composite showcase mounts both hosts.
+const ARTIFACT=path.join(ROOT,'.generated/artifacts/showcase.html');
 async function check(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
 async function main():Promise<void>{
- fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
+ fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context,{fixtureUrls:[ARTIFACT_FIXTURE_URL]});
  try{
-  const page=await context.newPage();page.setDefaultTimeout(10000);
-  await page.setContent(fs.readFileSync(path.join(ROOT,'littlewild.html'),'utf8'),{waitUntil:'load',timeout:30000});
-  await page.waitForFunction(()=>!!(window as any).Littlewild&&!!(window as any).WildlandsRTS);await page.locator('[data-act=begin]').click();
+  const page=await context.newPage();page.setDefaultTimeout(ACTION_TIMEOUT_MS);
+  await openArtifact(page,ARTIFACT);await waitForReady(page,{host:'colony',timeout:READY_TIMEOUT_MS});
+  await page.waitForFunction(()=>!!(window as any).Littlewild&&!!(window as any).WildlandsRTS);await page.locator('[data-act=begin]').click({timeout:TRANSITION_TIMEOUT_MS});
   await page.evaluate('Littlewild.engine.s.paused=true;Littlewild.refresh()');
   await check('RTS is discoverable and switching runs only the RTS application clock',async()=>{
    const before=await page.evaluate('JSON.stringify(Littlewild.engine.export())');
-   await page.locator('[data-wildlands-rts=open]').click();assert(await page.locator('#rts-demo').isVisible());
+   await page.locator('[data-wildlands-rts=open]').click({timeout:TRANSITION_TIMEOUT_MS});assert(await page.locator('#rts-demo').isVisible());
    await page.waitForFunction(()=>(window as any).WildlandsRTS.query().tick>=3);
    assert.equal(await page.evaluate('JSON.stringify(Littlewild.engine.export())'),before);
    await page.locator('[data-rts=pause]').click();assert.equal(await page.evaluate('WildlandsRTS.status().paused'),true);
@@ -105,7 +108,7 @@ async function main():Promise<void>{
    await page.locator('[data-rts=exit]').click();assert.equal(await page.locator('#rts-demo').count(),0);assert.equal(await page.evaluate('WildlandsRTS.status().active'),false);
    assert.equal(await page.locator('[data-wildlands-rts=open]').evaluate(el=>el===document.activeElement),true);
    await page.evaluate('new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');assert.equal(await page.evaluate('JSON.stringify(WildlandsRTS.checkpoint())'),before);
-   await page.locator('[data-wildlands-rts=open]').click();assert.equal(await page.locator('#rts-demo').count(),1);assert.equal(await page.evaluate('JSON.stringify(WildlandsRTS.checkpoint())'),before);
+   await page.locator('[data-wildlands-rts=open]').click({timeout:TRANSITION_TIMEOUT_MS});assert.equal(await page.locator('#rts-demo').count(),1);assert.equal(await page.evaluate('JSON.stringify(WildlandsRTS.checkpoint())'),before);
   });
   await check('Self-contained RTS loading and interaction generate no script errors or network requests',async()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.requests,[]);});
  }finally{await context.close();await browser.close();}

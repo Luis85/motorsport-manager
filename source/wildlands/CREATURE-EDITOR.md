@@ -60,7 +60,7 @@ those domain constraints.
 
 ## Extending the field surface
 
-`source/assets/creatures/editor-fields.json` owns section labels and selected
+The game folder's `assets/creatures/editor-fields.json` (Littlewild: `docs/concepts/littlewild/assets/creatures/editor-fields.json`) owns section labels and selected
 paths. `creature-editor-fields.ts` validates its closed grammar and compiles only
 number, text, boolean and JSON controls. Current map keys generate controls from
 the actual validated companion data. Extra ECS component fields are discovered

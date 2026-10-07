@@ -42,5 +42,33 @@
  function record(input:unknown):Record<string,unknown>{if(!input||typeof input!=='object'||Array.isArray(input))throw Error('Expected an engine export JSON object.');return input as Record<string,unknown>;}
  function path(input:unknown):string{if(typeof input!=='string'||input.length>240||!input||input.startsWith('/')||input.includes('\\')||input.split('/').some(p=>!p||p==='.'||p==='..')||! /^[A-Za-z0-9_./@ -]+$/.test(input))throw Error('Unsafe engine export source path.');return input;}
  async function sha256(text:string):Promise<string>{const hash=await globalThis.crypto.subtle.digest('SHA-256',encoder.encode(text));return Array.from(new Uint8Array(hash),byte=>byte.toString(16).padStart(2,'0')).join('');}
- const api:LWEngineExport.Decoder={parse,record,path,sha256,maxBytes};root.LWEngineExportData=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+ /**
+  * Trusted browser source loader: bounded gzip inflation, strict parsing and identity check. Files the
+  * loader lists as inline scripts were stored empty because the artifact already inlines their exact
+  * bytes (the assembler wraps each script body in one leading and one trailing newline); each is
+  * restored only from a candidate script text with the same UTF-8 length and SHA-256, so a missing or
+  * altered script rejects. Candidates come from the caller's platform adapter, never from this layer.
+  */
+ async function sources(input:unknown,candidates:readonly string[]=[]):Promise<LWEngineExport.SourceBundle>{
+  const loader=record(parse(input));
+  if(loader.format!=='littlewild-engine-source-loader'||loader.schemaVersion!==1||loader.encoding!=='gzip-base64'||typeof loader.data!=='string'||typeof loader.decodedBytes!=='number'||loader.decodedBytes>maxBytes||typeof loader.compressedBytes!=='number'||loader.compressedBytes>maxBytes)throw Error('Invalid compressed engine source loader.');
+  const binary=atob(loader.data);if(binary.length!==loader.compressedBytes)throw Error('Invalid compressed engine source length.');
+  const bytes=Uint8Array.from(binary,value=>value.charCodeAt(0)),reader=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip')).getReader(),chunks:Uint8Array[]=[];let length=0;
+  try{while(true){const next=await reader.read();if(next.done)break;length+=next.value.byteLength;if(length>maxBytes||length>loader.decodedBytes)throw Error('Inflated engine source bundle exceeds its bounds.');chunks.push(next.value);}}finally{await reader.cancel();}
+  if(length!==loader.decodedBytes)throw Error('Truncated compressed engine source bundle.');
+  const joined=new Uint8Array(length);let offset=0;for(const chunk of chunks){joined.set(chunk,offset);offset+=chunk.byteLength;}
+  const bundle=parse(new TextDecoder('utf-8',{fatal:true}).decode(joined)) as LWEngineExport.SourceBundle;if(bundle.identity!==loader.identity)throw Error('Engine source identity mismatch.');
+  const inline=loader.inlineScripts??[];if(!Array.isArray(inline)||inline.length>64)throw Error('Invalid inline engine source references.');
+  const scripts=inline.length?candidates.map(text=>text.startsWith('\n')&&text.endsWith('\n')?text.slice(1,-1):text):[];
+  for(const value of inline){
+   const entry=record(value),filePath=path(entry.path),file=bundle.files.find(item=>item.path===filePath);
+   if(!file||file.encoding!=='utf8'||file.text!==''||file.bytes!==entry.bytes||file.sha256!==entry.sha256)throw Error('Invalid inline engine source reference: '+filePath);
+   let restored:string|undefined;
+   for(const text of scripts)if(text.length<=file.bytes&&text.length*3>=file.bytes&&encoder.encode(text).byteLength===file.bytes&&await sha256(text)===file.sha256){restored=text;break;}
+   if(restored===undefined)throw Error('Engine source '+filePath+' is not inlined in this artifact; the engine-source payload is incomplete.');
+   file.text=restored;
+  }
+  return bundle;
+ }
+ const api:LWEngineExport.Decoder={parse,record,path,sha256,sources,maxBytes};root.LWEngineExportData=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

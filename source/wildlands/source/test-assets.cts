@@ -1,9 +1,14 @@
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const source=path.resolve(__dirname,'../source'),assetRoot=path.join(source,'assets'),results=[];
+// Engine-owned grammars stay in source/assets; Littlewild's definitions live in its game folder.
+const source=path.resolve(__dirname,'../source'),schemaRoot=path.join(source,'assets'),assetRoot=path.join(require('./tools/game-folder.cjs').gameDirectory('littlewild'),'assets'),results=[];
 function test(name,fn){try{fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error.stack});console.error(name,error.message);}}
-function load(){return require('./tools/bundled-assets.cjs').assetDefinitions(source);}
+function load(){return require('./tools/bundled-assets.cjs').assetDefinitions(require('./tools/definition-source.cjs').definitions(assetRoot));}
 global.LWAssetDefinitions=load();const A=require('./asset-catalog.js');
+/** A browser page loads the content provider (engine kernel) ahead of the asset catalog. */
+const catalogScript=()=>fs.readFileSync(__dirname+'/content-provider.js','utf8')+'\n'+fs.readFileSync(__dirname+'/asset-catalog.js','utf8');
 test('Asset catalog loads every isolated asset folder',()=>assert.equal(A.all().length,global.LWAssetDefinitions.length));
 test('Asset identities are unique and folder aligned',()=>{const ids=new Set();for(const d of global.LWAssetDefinitions){const key=d.category+':'+d.id;assert(!ids.has(key),key);ids.add(key);const file=path.join(assetRoot,d.category==='actor'?'creatures':d.category+'s',d.id,'definition.json');assert(fs.existsSync(file),file);}});
 test('Every gameplay building has a world model',()=>{const lib=JSON.parse(fs.readFileSync(path.join(__dirname,'content','default-library.json')));for(const b of lib.components.buildings){assert(A.building(b.id),b.id);assert(A.hasModel('building',b.id,'world'),b.id);}});
@@ -17,7 +22,7 @@ function accepts(definition){
  // A separate realm exercises catalog startup without mutating the active catalog.
  const vm=require('node:vm'),sandbox={LWAssetDefinitions:definition};
  const json=JSON.stringify(definition);
- vm.runInNewContext('globalThis.LWAssetDefinitions=JSON.parse('+JSON.stringify(json)+');\n'+fs.readFileSync(__dirname+'/asset-catalog.js','utf8'),sandbox);
+ vm.runInNewContext('globalThis.LWAssetDefinitions=JSON.parse('+JSON.stringify(json)+');\n'+catalogScript(),sandbox);
  return sandbox.LWAssets;
 }
 test('Catalog rejects malformed renderer data before model construction',()=>{const base=global.LWAssetDefinitions.find(d=>d.id==='cottage'),clone=()=>JSON.parse(JSON.stringify(base));assert.equal(accepts([base]).building('cottage').id,'cottage');for(const edit of[
@@ -32,7 +37,7 @@ test('Every selected actor appearance has the rig shape required by animation',(
  d=>{d.models.preview={nodes:[]};d.behaviors.appearances.curious.model='preview';}
  ]){const d=JSON.parse(JSON.stringify(base));edit(d);assert.throws(()=>accepts([d]),/rig|socket/);}});
 test('Asset data preflight rejects getters, cycles, sparse lists and reserved keys',()=>{
- const vm=require('node:vm'),base=global.LWAssetDefinitions.find(d=>d.id==='cottage'),code=fs.readFileSync(__dirname+'/asset-catalog.js','utf8');
+ const vm=require('node:vm'),base=global.LWAssetDefinitions.find(d=>d.id==='cottage'),code=catalogScript();
  for(const setup of [
   'Object.defineProperty(d,"name",{enumerable:true,get(){globalThis.reads++;return "Changed";}});',
   'd.models.world.nodes.push(d.models.world.nodes);',
@@ -57,7 +62,7 @@ test('Public validation returns detached immutable data without registering asse
  assert.throws(()=>A.validate(accessor),/3D asset:/);assert.equal(reads,0);assert.equal(A.revision,revision);assert.equal(JSON.stringify(A.all()),before);
 });
 test('Catalog rejects substituted array indexes and malformed own properties without publishing',()=>{
- const vm=require('node:vm'),base=global.LWAssetDefinitions.find(d=>d.id==='cottage'),code=fs.readFileSync(__dirname+'/asset-catalog.js','utf8');
+ const vm=require('node:vm'),base=global.LWAssetDefinitions.find(d=>d.id==='cottage'),code=catalogScript();
  const setups=[
   'd.models.world.nodes[0].position=Array(3);d.models.world.nodes[0].position.a=0;d.models.world.nodes[0].position.b=0;d.models.world.nodes[0].position.c=0;',
   'const nodes=d.models.world.nodes;delete nodes[0];nodes.substitute={primitive:"group"};',
@@ -77,7 +82,7 @@ test('Catalog rejects substituted array indexes and malformed own properties wit
  assert.equal(A.get(base.category,base.id).id,base.id);
 });
 test('Asset identity text accepts Unicode at the schema limit and rejects beyond it',()=>{
- const base=global.LWAssetDefinitions.find(d=>d.id==='cottage'),schema=JSON.parse(fs.readFileSync(path.join(assetRoot,'asset.schema.json')));
+ const base=global.LWAssetDefinitions.find(d=>d.id==='cottage'),schema=JSON.parse(fs.readFileSync(path.join(schemaRoot,'asset.schema.json')));
  const Ajv=require('ajv/dist/2020').default,validate=new Ajv({strict:false}).compile(schema);
  for(const count of [120,121]){const d=JSON.parse(JSON.stringify(base));d.name='🌱'.repeat(count);assert.equal(validate(d),count===120);
   if(count===120)assert.equal(accepts([d]).building(d.id).name,d.name);else assert.throws(()=>accepts([d]),/invalid identity/);
@@ -100,7 +105,7 @@ test('Pet assets accept bounded baked meshes and per-model rigs',()=>{
 test('Generic asset renderer builds baked meshes once per immutable definition',()=>{
  const sandbox={};
  const vm=require('node:vm'),json=JSON.stringify([bakedPet()]);
- vm.runInNewContext('globalThis.LWAssetDefinitions=JSON.parse('+JSON.stringify(json)+');\n'+fs.readFileSync(__dirname+'/asset-catalog.js','utf8')+'\n'+fs.readFileSync(__dirname+'/asset-renderer.js','utf8'),sandbox);
+ vm.runInNewContext('globalThis.LWAssetDefinitions=JSON.parse('+JSON.stringify(json)+');\n'+catalogScript()+'\n'+fs.readFileSync(__dirname+'/asset-renderer.js','utf8'),sandbox);
  let geometries=0;class Obj{constructor(){this.position={set(){}};this.rotation={set(){}};this.scale={set(){}};this.children=[];this.userData={};}add(c){this.children.push(c);}}
  class Mesh extends Obj{constructor(g,m){super();this.geometry=g;this.material=m;}}
  class BufferGeometry{constructor(){geometries++;this.attributes={};}setAttribute(k,v){this.attributes[k]=v;}setIndex(i){this.index=i;}computeVertexNormals(){}computeBoundingSphere(){}}

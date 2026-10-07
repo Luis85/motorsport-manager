@@ -1,5 +1,7 @@
 /// <reference path="./developer-contracts.d.ts" />
 /// <reference path="./interaction-contracts.d.ts" />
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -38,9 +40,9 @@ function request(g:Session,source='c1',recipient='c2'):LWInteraction.Record{
 function checked(g:Session):void{const save=g.save();root.LW.Engine.import(save);}
 
 test('Authored JSON schema and semantic validator accept the bundled library',()=>{
- const source=path.resolve(__dirname,'../source/assets/interactions');
+ const source=path.resolve(__dirname,'../source/assets/interactions'),game=(require('./tools/game-folder.cjs') as typeof import('./tools/game-folder.cjs')).gameDirectory('littlewild');
  const schema=JSON.parse(fs.readFileSync(path.join(source,'interaction.schema.json'),'utf8')) as object;
- const lib=JSON.parse(fs.readFileSync(path.join(source,'catalog.json'),'utf8')) as unknown;
+ const lib=JSON.parse(fs.readFileSync(path.join(game,'assets/interactions/catalog.json'),'utf8')) as unknown;
  const validate=new Ajv({strict:true}).compile(schema);assert(validate(lib),JSON.stringify(validate.errors));assert(toolbox.validateInteractionLibrary(lib).ok);
 });
 test('Data definitions and SDK discovery are detached and reject executable shapes',()=>game(g=>{

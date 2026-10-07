@@ -49,6 +49,17 @@ class DocumentationChecks(unittest.TestCase):
         self.assertTrue(any("root permits only" in error for error in errors))
         self.assertTrue(any("loose.md: unreachable" in error for error in errors))
 
+    def test_game_folder_data_is_accepted_but_its_readme_must_be_indexed(self):
+        self.write("docs/concepts/demo/game.json", '{"format": "wildlands-game"}\n')
+        self.write("docs/concepts/demo/content/demo.pack.json", "{}\n")
+        self.write("docs/concepts/demo/README.md", "# Demo\n\n[Manifest](game.json)\n")
+        errors, _ = check(self.root)
+        self.assertEqual(errors, ["docs/concepts/demo/README.md: unreachable from docs/README.md"])
+        self.write("docs/concepts/README.md", "# Game folders\n\n[Demo](demo/README.md)\n")
+        with (self.root / "docs/README.md").open("a") as file:
+            file.write("[Game folders](concepts/README.md)\n")
+        self.assertEqual(check(self.root)[0], [])
+
     def test_archive_requires_historical_notice(self):
         self.write("docs/_archive/old.md", "# Old\n")
         self.write("docs/README.md", "[Old](_archive/old.md)\n[Guide](how-to/guide.md)\n")

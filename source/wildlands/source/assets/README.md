@@ -5,6 +5,12 @@ Each item, building, environment source and creature has one authored
 The folder and wrapper identify the thing. Its facets describe different uses of
 that same identity: gameplay, production, progression and visual presentation.
 
+Definitions live in a game folder's `assets/` directory (Littlewild:
+`docs/concepts/littlewild/assets/`; Pocket Pet: `docs/concepts/pocket-pet/assets/pets/`;
+named by `content.assets` in its `game.json`). This engine directory keeps only
+the grammars (`definition.schema.json`, `asset.schema.json`,
+`creatures/*.schema.json`, `interactions/*.schema.json`) and this documentation.
+
 | Family | Supported facets |
 |---|---|
 | Items | `visual`, `item`, `weight`, `equipment`, `recipe`, `node`, `itemRequirements`, `recipeRequirements` |
@@ -22,7 +28,7 @@ wrong families and mismatched identities. `tools/bundled-content.cts` projects
 facets into the existing portable library and balancing formats. Runtime catalogs
 still validate, detach and freeze their own values; geometry remains data only.
 
-`content/balancing.json` owns shared rules and catalog order, using selectors such
+A game folder's `content/balancing.json` owns shared rules and catalog order, using selectors such
 as `{"$catalog":"item","order":["wood","stone"],"shape":"list"}`. These selectors
 are authoring instructions for known tables, not executable runtime data. Existing
 order is retained; newly discovered facets append in stable ID order. Adding a

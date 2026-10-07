@@ -48,7 +48,7 @@ cooldown after acceptance, including a subsequently cancelled duel.
 ## Data authoring
 
 Bundled definitions and triggers are in
-[`source/assets/interactions/catalog.json`](source/assets/interactions/catalog.json).
+[`docs/concepts/littlewild/assets/interactions/catalog.json`](../../docs/concepts/littlewild/assets/interactions/catalog.json).
 The JSON schema is
 [`interaction.schema.json`](source/assets/interactions/interaction.schema.json).
 Runtime validation additionally checks cross references, supported skills,

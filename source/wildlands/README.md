@@ -4,7 +4,7 @@ Wildlands is a standalone TypeScript game prototype maker. **Littlewild** is its
 
 Development stays in `source/wildlands/` inside Motorsport Manager. This folder remains a separate npm project with its own build, tools and verification; it does not share the native Motorsport Manager game's simulation or UI. Existing `LW*` APIs, scenario IDs and versioned save formats remain compatible.
 
-To script projects without installing anything, run the checked-in single-file CLI `bin/wildlands` from the repository root with Node.js 22+; the [Wildlands CLI handbook](../../docs/reference/wildlands-cli.md) covers every command.
+To script projects or build games without installing anything, run the checked-in single-file engine CLI `bin/wildlands` from the repository root with Node.js 22+. It carries no game: games are data-only folders under [`docs/concepts/`](../../docs/concepts/README.md), and `bin/wildlands build-game --game docs/concepts/<id> --output demos/<id>.html` turns one into a self-contained, ready-to-play HTML file (the checked-in [`demos/`](../../demos/README.md)). The [Wildlands CLI handbook](../../docs/reference/wildlands-cli.md) covers every command.
 
 See [WILDLANDS.md](WILDLANDS.md) for the project workflow, terminal interface, Godot compiler contract and current limits. The [documentation index](DOCUMENTATION.md) separates task guides and contracts from source-bound Littlewild records.
 
@@ -25,9 +25,9 @@ that informed the interface.
 
 ## Play
 
-Choose **RTS demo** in the maker toolbar to open the separate isometric RTS match. Its validated JSON catalog defines units, buildings, terrain, resources, research, items, abilities and missions over the shared ECS. **Return to colony** restores the colony workspace. Follow the [RTS demo tutorial](../../docs/tutorials/rts-demo.md) and [engine reference](../../docs/reference/rts-engine.md) for controls, developer tools and current limits.
+Open [`demos/rts-frontier.html`](../../demos/rts-frontier.html) for the separate isometric RTS match (in the composite showcase fixture, **RTS demo** in the toolbar opens it and **Return to colony** restores the colony workspace). Its validated JSON catalog defines units, buildings, terrain, resources, research, items, abilities and missions over the shared ECS. Follow the [RTS demo tutorial](../../docs/tutorials/rts-demo.md) and [engine reference](../../docs/reference/rts-engine.md) for controls, developer tools and current limits.
 
-Choose **Pet demo** in the maker toolbar to raise an original tamagotchi-style
+Open [`demos/pocket-pet.html`](../../demos/pocket-pet.html) (or **Pet demo** in the showcase fixture's toolbar) to raise an original tamagotchi-style
 virtual pet in a 3D room. A validated catalog drives needs, digestion, sleep,
 sickness, care mistakes, growth and two adult forms on the shared ECS. Coins buy
 skins and socketed accessories; premium offers unlock through a replaceable store
@@ -39,12 +39,14 @@ recipe exported with `forge3d littlewild sync`. Follow the
 [engine reference](../../docs/reference/pet-engine.md) and the
 [asset workflow](../../docs/how-to/scene-forge-littlewild-assets.md).
 
-Choose **Mission editor** in the RTS toolbar to author terrain, placements,
+In an RTS studio build (`bin/wildlands build-game --game docs/concepts/rts-frontier --profile studio --output rts-studio.html`), choose **Mission editor** in the RTS toolbar to author terrain, placements,
 objectives and mission settings in a separate validated catalog draft. Undo/redo
 and complete JSON import/export retain the authoring boundary; explicitly playing
 the draft creates a paused fresh match. Follow the [mission authoring guide](../../docs/how-to/rts-mission-editor.md).
 
-Open `littlewild.html` in a full desktop browser. No server, network, account, API key or asset download is needed. Choose the first scene for earned progression or **A charted home** for the existing multi-creature demonstration. Under **More → Worlds & scenarios**, switch to Emberworks or **Office**, or import your own pack. Starting a scene replaces the active story only after review and confirmation; export a backup first.
+Open a ready-to-play demo from the repository's [`demos/`](../../demos/README.md) in a full desktop browser: `littlewild.html`, `emberworks.html`, `office.html`, `rts-frontier.html` or `pocket-pet.html`. Each file carries one game and runs from disk; no server, network, account, API key, asset download, install or build is needed. In Littlewild, choose **A first morning** for earned progression or **A charted home** for the existing multi-creature demonstration. Starting a scene replaces the active story only after review and confirmation; export a backup first.
+
+The editors, developer tools and export features below (World & Scene Editor, Creature Editor, Balancing workshop, storyboards, external editors, scenario library and Godot/engine export) are studio tools, not published demos. Build a colony game's studio on demand with `bin/wildlands build-game --game docs/concepts/<id> --profile studio --output <id>-studio.html`; under **More → Worlds & scenarios** it can import your own pack. Engine developers also get the composite showcase (every bundled game and tool in one file) as the test fixture `.generated/artifacts/showcase.html` after `npm run build`; it is not published.
 
 Office runs indoors: Phil wins customer deals, Marty supplies the warehouse, and Angela packs and ships orders through physical production and delivery tasks. Whole scenario exports include the content libraries, creature and visual catalogs, environment, roles, workflows, interaction rules, settings, and captured state. See [OFFICE-SCENARIO.md](OFFICE-SCENARIO.md) for editing and programmatic import/export.
 
@@ -64,7 +66,7 @@ The Wildlands compiler exports a **runnable Godot project** with a native presen
 
 The existing **engine JSON document** remains a separate inert code-generator input: canonical scenario data and checkpoints, implementation sources, contracts, assets, schemas, licenses and a Godot mapping manifest. A pure GDScript semantic port remains separate work. See [ENGINE-EXPORT.md](ENGINE-EXPORT.md) for the distinction.
 
-Edit [source/content/balancing.json](source/content/balancing.json) for default gameplay tuning, or open the editor's **Balancing workshop** to review changes and compare seeded experiments. Creature tuning overlays retain archetype identity and discovery in the assets folder. Complete packs and saved stories keep their captured overrides. See [BALANCING.md](BALANCING.md) for JSON, CLI and SDK workflows.
+Edit the Littlewild game folder's [content/balancing.json](../../docs/concepts/littlewild/content/balancing.json) for default gameplay tuning, or open the editor's **Balancing workshop** to review changes and compare seeded experiments. Creature tuning overlays retain archetype identity and discovery in the assets folder. Complete packs and saved stories keep their captured overrides. See [BALANCING.md](BALANCING.md) for JSON, CLI and SDK workflows.
 
 **Build** opens a non-modal catalog beside the world. Search a researched blueprint, choose a builder and approach, then choose a location. Drag/zoom the world normally. **F6** switches focus between the world and an open panel. **Escape** closes the panel or cancels placement. **Guide** opens a compact, resumable tutorial; Show me links to the relevant existing controls without completing tasks.
 
@@ -80,8 +82,11 @@ npm run typecheck
 npm run architecture
 
 npm run build
-# A separate, single-pack HTML using the same compiled runtime:
-npm run build -- --pack source/content/emberworks.pack.json --output emberworks.html
+# A separate, single-pack composite using the same compiled runtime (--pack needs --output):
+npm run build -- --pack ../../docs/concepts/emberworks/content/emberworks.pack.json --output emberworks.html
+# The engine CLI and the published demos (never written by npm run build):
+npm run build:cli && npm run build:demos
+npm run check:cli && npm run check:demos
 
 npx playwright install chromium
 npm run verify
@@ -91,7 +96,9 @@ npm run verify:godot
 npm run verify -- --no-browser
 ```
 
-`typecheck` runs strict TypeScript checks, including shared declarations and dependencies. The former 15-module compatibility typing debt inventory is empty. `architecture` enforces TypeScript-only authored executables, DDD bounded-context ownership, dependency direction, data-only scenario/configuration inputs, and domain/application isolation from DOM, storage, network, wall-clock and ambient RNG APIs. `verify` compiles the complete TypeScript source tree, rebuilds the standalone artifact, validates the bundled 3D asset catalog, then runs the generated Node and Playwright suites.
+`npm run build` compiles once, then `source/tools/artifact-assembler.cts` assembles every profile in `source/tools/artifact-profiles.cts`. Each profile selects bundle tags from `source/tools/build-inserts.cts` (canonical load order), a template under `source/templates/` and its data globals. It writes the full composite showcase `.generated/artifacts/showcase.html` (the browser suites' test fixture; decision D1 retired the tracked `littlewild.html`) plus `.generated/artifacts/studio.html` and the minified play artifacts `colony-play.html`, `rts-play.html` and `pet-play.html`, each with a `.manifest.json`. Play artifacts never embed the engine-source or Godot runtime payloads. `colony-play` carries no editors, developer, export or RTS/Pet template bundles and declares an explicit `LWGameProfile` (`littlewild` namespace, legacy save keys); the studio carries no RTS/Pet templates; `pet-play` omits the colony asset catalog. The architecture check also requires every global a module declares as required in its `inputRoot` shape to be published inside each profile. `npm run build -- --profile ID [--output FILE]` builds one artifact; `--pack FILE` requires `--output`. `npm run report:artifacts` prints a JSON size breakdown per insert, bundle, data global and compressed payload, including `bin/wildlands`.
+
+`typecheck` runs strict TypeScript checks, including shared declarations and dependencies. The former 15-module compatibility typing debt inventory is empty. `architecture` enforces TypeScript-only authored executables, DDD bounded-context ownership, dependency direction, data-only scenario/configuration inputs, and domain/application isolation from DOM, storage, network, wall-clock and ambient RNG APIs. `verify` compiles the complete TypeScript source tree, rebuilds the artifacts (including the showcase fixture), validates the bundled 3D asset catalog, then runs the generated Node and Playwright suites.
 
 ## Documentation
 
