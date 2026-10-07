@@ -3,7 +3,7 @@
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
   "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "runtime-optionality-browser", "artifact-play-browser"],
-  "totalChecks": 1818,
+  "totalChecks": 1822,
   "reviewedAdditions": [
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
@@ -279,7 +279,11 @@
     {"suite": "artifact-play-browser", "name": "Colony play artifact boots the colony and starts a story"},
     {"suite": "artifact-play-browser", "name": "Studio artifact boots the colony with editors and export tools"},
     {"suite": "engine-export", "name": "Trimmed toolchain keeps exactly the declarations the project compiler loads and drops unloaded TypeScript files"},
-    {"suite": "engine-export", "name": "Bundled sources and trimmed toolchain recompile to the gate's exact compiled JavaScript"}
+    {"suite": "engine-export", "name": "Bundled sources and trimmed toolchain recompile to the gate's exact compiled JavaScript"},
+    {"suite": "wildlands-project", "name": "Godot runtime bundle is exactly the static require closure of the bridge entry points"},
+    {"suite": "wildlands-cli", "name": "Default compile writes a runnable Godot project without the engine-source payload"},
+    {"suite": "wildlands-cli", "name": "Opt-in --with-engine-sources adds the exact engine-source bundle and enables engine export in the compiled runtime"},
+    {"suite": "wildlands-cli", "name": "Godot compilation is deterministic and the engine-source switch is a strict value-less flag"}
   ],
   "renames": [],
   "retirements": [],
@@ -449,7 +453,8 @@
       "Recipe count, clock bounds and reflection are rejected before opening sessions",
       "Rejected native commands release their session and preserve input project",
       "Scene authoring recipes use native revisions and validators",
-      "Runtime builds preserve owned data and ignore generated verification artifacts and stale executables"
+      "Runtime builds preserve owned data and ignore generated verification artifacts and stale executables",
+      "Godot runtime bundle is exactly the static require closure of the bridge entry points"
     ],
     "wildlands-cli": [
       "Cold help and discovery are structured, versioned and machine readable",
@@ -460,7 +465,10 @@
       "Malformed arguments and bounded recipe failures retain prior published output",
       "Invalid semantic project returns exit 1 without touching files",
       "Input aliases and symlink aliases are rejected without overwriting authority",
-      "Bootstrap errors remain one structured diagnostic while help remains available"
+      "Bootstrap errors remain one structured diagnostic while help remains available",
+      "Default compile writes a runnable Godot project without the engine-source payload",
+      "Opt-in --with-engine-sources adds the exact engine-source bundle and enables engine export in the compiled runtime",
+      "Godot compilation is deterministic and the engine-source switch is a strict value-less flag"
     ],
     "wildlands-acceptance": [
       "A new terminal project preloads Littlewild and discovery describes its actual commands",

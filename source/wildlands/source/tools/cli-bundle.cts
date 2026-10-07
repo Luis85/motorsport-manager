@@ -3,8 +3,9 @@
  *
  * The result runs with plain Node.js 22+ and no node_modules or .generated directory. Every
  * runtime resource the CLI reads is embedded: content JSON as exact text parsed at first use,
- * and the trusted Godot runtime bundle as two integrity-checked raw-deflate payloads (the
- * engine sources and the remaining runtime files). They are compressed with the pinned pure
+ * and two integrity-checked raw-deflate payloads: the trusted Godot runtime bundle (the runtime
+ * closure only) and the opt-in engine-source bundle, inflated only when an operation asks for
+ * engine sources (engine export, compile --with-engine-sources). They are compressed with the pinned pure
  * JavaScript pako, not Node's zlib, so the bytes do not depend on the Node release or CPU.
  * Output is byte-deterministic for a given .generated tree: no timestamps, absolute paths or
  * source maps. Run `npm run build` first.
@@ -39,37 +40,24 @@ function payload(text: string): string {
   return JSON.stringify({bytes: raw.length, sha256: sha256(raw), data: data.toString('base64')});
 }
 
-/**
- * Split the engine sources out of the runtime bundle, prove that the runtime module rebuilds
- * wildlands-runtime-bundle.json byte-for-byte, then emit that small module with its payloads.
- */
+/** The runtime bundle never carries engine sources: they are a separate, lazily inflated payload. */
 function embeddedModule(): string {
   const engineText = readGenerated('engine-source-bundle.json'), runtimeText = readGenerated('wildlands-runtime-bundle.json');
-  const original = JSON.parse(runtimeText) as RuntimeBundle, index = original.files.findIndex(file => file.path === ENGINE_PATH);
-  if (index < 0 || original.files[index]!.content !== engineText) throw Error('Runtime bundle lacks the current engine sources. Rebuild Wildlands.');
-  const restText = JSON.stringify({...original, files: original.files.filter((_, position) => position !== index)});
-  const rebuilt = JSON.parse(restText) as RuntimeBundle;
-  rebuilt.files.splice(index, 0, {path: ENGINE_PATH, encoding: 'utf8', content: engineText});
-  if (JSON.stringify(rebuilt) !== runtimeText) throw Error('Embedded runtime reconstruction differs from wildlands-runtime-bundle.json.');
+  const runtime = JSON.parse(runtimeText) as RuntimeBundle;
+  if (runtime.files.some(file => file.path === ENGINE_PATH)) throw Error('Runtime bundle unexpectedly carries the engine sources. Rebuild Wildlands.');
   return [
     '"use strict";',
     'const {inflateRawSync} = require("node:zlib"), {createHash} = require("node:crypto");',
-    `const RUNTIME = ${payload(restText)};`,
+    `const RUNTIME = ${payload(runtimeText)};`,
     `const ENGINE = ${payload(engineText)};`,
-    `const ENGINE_PATH = ${JSON.stringify(ENGINE_PATH)}, ENGINE_INDEX = ${index};`,
     'function inflate(item) {',
     '  const raw = inflateRawSync(Buffer.from(item.data, "base64"), {maxOutputLength: item.bytes});',
     '  if (raw.length !== item.bytes || createHash("sha256").update(raw).digest("hex") !== item.sha256)',
     '    throw Error("Embedded Wildlands resource integrity failed. Rebuild bin/wildlands.");',
     '  return new TextDecoder("utf-8", {fatal: true}).decode(raw);',
     '}',
-    'let engine;',
-    'exports.engineSourceText = () => engine ??= inflate(ENGINE);',
-    'exports.runtimeBundle = () => {',
-    '  const bundle = JSON.parse(inflate(RUNTIME));',
-    '  bundle.files.splice(ENGINE_INDEX, 0, {path: ENGINE_PATH, encoding: "utf8", content: exports.engineSourceText()});',
-    '  return bundle;',
-    '};',
+    'exports.engineSourceText = () => inflate(ENGINE);',
+    'exports.runtimeText = () => inflate(RUNTIME);',
     ''
   ].join('\n');
 }
@@ -78,7 +66,7 @@ function embeddedModule(): string {
 function resources(used: Set<string>): Plugin {
   const lazy: Record<string, string> = {
     'engine-source-bundle.json': `module.exports = JSON.parse(require(${JSON.stringify(EMBEDDED)}).engineSourceText());`,
-    'wildlands-runtime-bundle.json': `module.exports = require(${JSON.stringify(EMBEDDED)}).runtimeBundle();`
+    'wildlands-runtime-bundle.json': `module.exports = JSON.parse(require(${JSON.stringify(EMBEDDED)}).runtimeText());`
   };
   return {name: 'wildlands-cli-resources', setup(context) {
     context.onResolve({filter: new RegExp('^' + EMBEDDED + '$')}, () => ({path: EMBEDDED, namespace: EMBEDDED}));
@@ -134,6 +122,11 @@ function smoke(bytes: Buffer): void {
     const version = run('--version');
     if (version.name !== manifest.name || version.version !== manifest.version) throw Error('Bundled CLI reports the wrong version.');
     for (const args of [['--help'], ['discover'], ['scenarios'], ['create', '--output', 'smoke.json'], ['validate', '--project', 'smoke.json']]) run(...args);
+    // Both embedded payloads: the default runnable project and the explicit engine-source opt-in.
+    for (const withSources of [false, true]) {
+      const compiled = run('compile', '--project', 'smoke.json', '--output', withSources ? 'godot-sources' : 'godot', ...(withSources ? ['--with-engine-sources'] : []));
+      if (compiled.engineSources !== withSources) throw Error('Bundled CLI compile does not honor the engine-source opt-in.');
+    }
   } finally { fs.rmSync(directory, {recursive: true, force: true}); }
 }
 
