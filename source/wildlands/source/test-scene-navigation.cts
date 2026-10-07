@@ -204,11 +204,14 @@ test('Whole portable capacity rejects a larger journey before replacing its live
  assert(rejected,'Expected the shared portable capacity to bound accumulated owner checkpoints');
  const saved=session.save(),story=session.story();session.dispose();const restored=sdk.toolbox.openStory(sdk.toolbox.reviewStory(story));assert.deepEqual(restored.save(),saved);restored.dispose();
 });
-test('Accepted pack validation is memoized by canonical content and extension catalogs and hands out detached packs',()=>{
+test('Accepted pack validation is memoized by exact pack content and extension catalogs and hands out detached packs',()=>{
  const p=pack(),first=X.validate(p),second=X.validate(p);
  assert(first.ok&&second.ok);assert.deepEqual(second.pack,first.pack);assert.notEqual(second.pack,first.pack);assert.equal(second.fingerprint,first.fingerprint);assert.equal(second.sceneCount,first.sceneCount);
  first.pack.name='Mutated accepted copy';(first.pack.scenes[0]!.initialState.player as {coins:number}).coins=-5;
  const third=X.validate(p);assert(third.ok);assert.deepEqual(third.pack,second.pack);
+ // Equal content in another key order is a different exact input: its accepted copy keeps that order.
+ const reordered=Object.fromEntries(Object.entries(p).reverse()) as unknown as LWContentPorts.ScenarioPack,fourth=X.validate(reordered);
+ assert(fourth.ok);assert.deepEqual(Object.keys(fourth.pack),Object.keys(reordered));const fifth=X.validate(p);assert(fifth.ok);assert.deepEqual(Object.keys(fifth.pack),Object.keys(p));
  // Editing the same input object is new content: an invalid edit is rejected, and restoring it is accepted again.
  const player=p.scenes[0]!.initialState.player as {coins:number},coins=player.coins;player.coins=-1;
  const rejected=X.validate(p);assert(!rejected.ok&&rejected.errors.length>0);player.coins=coins;assert(X.validate(p).ok);

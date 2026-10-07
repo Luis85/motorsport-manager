@@ -166,9 +166,10 @@
   /**
    * Accepted-pack memo. Validation is a pure function of the parsed pack and of the extension
    * catalogs it consults (renderer metadata and p5 animation presets); the installed game profile
-   * is fixed for the realm. Only accepted results are kept, keyed by the canonical pack text plus
-   * those catalogs, and every hit returns a fresh detached copy. A changed pack, a registered or
-   * withdrawn renderer or preset, and every rejection run the complete validation again.
+   * is fixed for the realm. Only accepted results are kept, keyed by the exact serialized pack (key
+   * order included, so a hit reproduces the same output) plus those catalogs, and every hit returns
+   * a fresh detached copy. A changed pack, a registered or withdrawn renderer or preset, and every
+   * rejection run the complete validation again.
    */
   type Accepted={key:string;pack:LWContentPorts.ScenarioPack;fingerprint:string;sceneCount:number};
   const ACCEPTED_ENTRIES=8,ACCEPTED_TEXT=32*1024*1024,accepted=new Map<string,Accepted>();
@@ -185,7 +186,7 @@
   function validate(input:unknown):LWContentPorts.PackValidation {
     try {
       const parsed = stage('pack parse', () => C.parse(input, 8 * 1024 * 1024));
-      const key=extensionCatalogs()+'\n'+C.stable(parsed),hit=accepted.get(key);
+      const key=extensionCatalogs()+'\n'+JSON.stringify(parsed),hit=accepted.get(key);
       if(hit){accepted.delete(key);accepted.set(key,hit);return {ok:true,errors:[],pack:copy(hit.pack),fingerprint:hit.fingerprint,sceneCount:hit.sceneCount};}
       const checked=validateParsed(parsed);
       if(checked.ok)remember({key,pack:copy(checked.pack),fingerprint:checked.fingerprint,sceneCount:checked.sceneCount});
