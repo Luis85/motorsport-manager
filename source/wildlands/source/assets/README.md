@@ -6,10 +6,10 @@ The folder and wrapper identify the thing. Its facets describe different uses of
 that same identity: gameplay, production, progression and visual presentation.
 
 Definitions live in a game folder's `assets/` directory (Littlewild:
-`docs/concepts/littlewild/assets/`, named by `content.assets` in its `game.json`).
-This engine directory keeps the grammars (`definition.schema.json`,
-`asset.schema.json`, `creatures/*.schema.json`, `interactions/*.schema.json`) and,
-until Pocket Pet receives its own folder, the pending `pets/` definitions.
+`docs/concepts/littlewild/assets/`; Pocket Pet: `docs/concepts/pocket-pet/assets/pets/`;
+named by `content.assets` in its `game.json`). This engine directory keeps only
+the grammars (`definition.schema.json`, `asset.schema.json`,
+`creatures/*.schema.json`, `interactions/*.schema.json`) and this documentation.
 
 | Family | Supported facets |
 |---|---|

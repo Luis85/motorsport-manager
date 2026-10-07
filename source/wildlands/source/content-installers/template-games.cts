@@ -1,22 +1,19 @@
 /// <reference path="../content-provider-contracts.d.ts" />
 /**
  * Transitional runtime game installers (not test code) for the RTS and Pocket Pet templates, kept apart from the
- * Littlewild profile so the colony CLI bundle never embeds their catalogs or pet meshes.
+ * Littlewild profile so the colony CLI bundle never embeds their catalogs or pet meshes. Each profile is its
+ * compiled game folder (docs/concepts/rts-frontier, docs/concepts/pocket-pet), which build.ts writes with
+ * `compileGame` to `.generated/games/<id>.profile.json`; literal require() calls read it.
  */
 import {contentProvider} from './littlewild-game.cjs';
 type Profile=LWContentProvider.Profile;
 
+/** A fresh top-level object per call; sections are the shared parsed document (install freezes only the top level). */
 export function rtsProfile():Profile{
- return {format:'wildlands-content-profile',version:1,id:'rts-frontier',rts:require('../content/rts-demo.json') as unknown};
-}
-/** Pet presentation assets are optional: the Godot runtime bundle does not carry them. */
-export function petAssets():unknown{
- try{return require('../pet-asset-definitions.json') as unknown;}catch{return undefined;}
+ return {...require('../games/rts-frontier.profile.json') as Profile};
 }
 export function petProfile():Profile{
- const assets=petAssets();
- return {format:'wildlands-content-profile',version:1,id:'pocket-pet',
-  pet:{definitions:require('../content/pet-demo.json') as unknown,...assets===undefined?{}:{assets}}};
+ return {...require('../games/pocket-pet.profile.json') as Profile};
 }
 /** Install a template game unless the process already installed one (tests install the showcase). */
 export function installTemplate(kind:'rts'|'pet'):Profile{

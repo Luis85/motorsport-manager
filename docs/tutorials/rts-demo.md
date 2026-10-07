@@ -4,7 +4,8 @@ This tutorial uses the TypeScript Wildlands maker extended from PR 25. It leaves
 native race and campaign saves under their own existing authorities. The demo is
 an original isometric RTS scenario showcasing the engine's data-driven ECS
 mechanics. See the [RTS reference](../reference/rts-engine.md) for ownership,
-content contracts and tool budgets.
+content contracts and tool budgets. The shipped catalog lives in the
+[RTS Frontier game folder](../concepts/rts-frontier/README.md).
 
 ## Build and open the maker
 

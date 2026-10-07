@@ -10,8 +10,9 @@ recreation of a licensed game's content or rules. Follow the
 ## Content and authority
 
 The complete catalog is plain JSON with `format: "wildlands-rts"`, `schemaVersion: 1`,
-identity and nine arrays. The shipped fixture is
-[`rts-demo.json`](../../source/wildlands/source/content/rts-demo.json).
+identity and nine arrays. The shipped catalog is
+[`content/rts.json`](../concepts/rts-frontier/content/rts.json) in the
+[RTS Frontier game folder](../concepts/rts-frontier/README.md).
 [`rts-contracts.d.ts`](../../source/wildlands/source/rts-contracts.d.ts) defines
 all records; [`rts-catalog.ts`](../../source/wildlands/source/rts-catalog.ts)
 validates shape, ranges, references and technology dependencies before use.

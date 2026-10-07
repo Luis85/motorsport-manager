@@ -68,5 +68,6 @@ Authored for this repository as part of the Wildlands project (MIT, see the
 repository [LICENSE](../../../LICENSE)). The data moved here unchanged with
 `git mv` from `source/wildlands/source/content` and `source/wildlands/source/assets`;
 see the Wildlands [changelog](../../../source/wildlands/CHANGELOG.md).
-Emberworks and Office still borrow these assets until they receive their own
-folders.
+[Emberworks](../emberworks/README.md) and [Office](../office/README.md) carry
+their own copies of the balancing and asset documents taken from this folder;
+editing Littlewild does not change them.

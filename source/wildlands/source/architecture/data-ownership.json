@@ -43,7 +43,7 @@
     },
     {
       "id": "emberworks-pack",
-      "pattern": "content/emberworks.pack.json",
+      "pattern": "games/emberworks/content/emberworks.pack.json",
       "owner": "experience-application",
       "kind": "scenario",
       "validatorRole": "scenario"
@@ -73,7 +73,7 @@
     },
     {
       "id": "office-pack",
-      "pattern": "content/office.pack.json",
+      "pattern": "games/office/content/office.pack.json",
       "owner": "experience-application",
       "kind": "scenario",
       "validatorRole": "scenario"
@@ -155,7 +155,7 @@
     },
     {
       "id": "pet-assets",
-      "pattern": "assets/pets/*/definition.json",
+      "pattern": "games/*/assets/pets/*/definition.json",
       "owner": "content-model",
       "kind": "definitions",
       "validatorRole": "definitionSource"
@@ -206,7 +206,7 @@
     },
     {
       "id": "rts-demo",
-      "pattern": "content/rts-demo.json",
+      "pattern": "games/rts-frontier/content/rts.json",
       "owner": "content-model",
       "kind": "definitions",
       "validatorRole": "rts",
@@ -221,7 +221,7 @@
     },
     {
       "id": "pet-demo",
-      "pattern": "content/pet-demo.json",
+      "pattern": "games/pocket-pet/content/pet.json",
       "owner": "content-model",
       "kind": "definitions",
       "validatorRole": "pet",
@@ -304,6 +304,22 @@
     {
       "path": "fixtures/littlewild-profile.sha256.json",
       "reason": "Digests of the Littlewild content profile captured before its data moved to docs/concepts/littlewild; loaded only by the game-folders suite, never shipped content."
+    },
+    {
+      "path": "fixtures/emberworks-profile.sha256.json",
+      "reason": "Digests of the Emberworks content profile captured before its data moved to docs/concepts/emberworks; loaded only by the game-folders suite, never shipped content."
+    },
+    {
+      "path": "fixtures/office-profile.sha256.json",
+      "reason": "Digests of the Office content profile captured before its data moved to docs/concepts/office; loaded only by the game-folders suite, never shipped content."
+    },
+    {
+      "path": "fixtures/rts-frontier-profile.sha256.json",
+      "reason": "Digests of the RTS Frontier content profile captured before its data moved to docs/concepts/rts-frontier; loaded only by the game-folders suite, never shipped content."
+    },
+    {
+      "path": "fixtures/pocket-pet-profile.sha256.json",
+      "reason": "Digests of the Pocket Pet content profile captured before its data moved to docs/concepts/pocket-pet; loaded only by the game-folders suite, never shipped content."
     }
   ]
 }

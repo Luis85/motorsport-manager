@@ -81,7 +81,7 @@ npm run architecture
 
 npm run build
 # A separate, single-pack HTML using the same compiled runtime:
-npm run build -- --pack source/content/emberworks.pack.json --output emberworks.html
+npm run build -- --pack ../../docs/concepts/emberworks/content/emberworks.pack.json --output emberworks.html
 
 npx playwright install chromium
 npm run verify

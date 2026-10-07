@@ -1,0 +1,11 @@
+{
+  "format": "wildlands-profile-digest",
+  "schemaVersion": 1,
+  "description": "Canonical (sorted-key JSON) SHA-256 digests of the RTS Frontier content profile the transitional installer (source/content-installers/template-games.cts) produced at 3601c0c, before the catalog moved to docs/concepts/rts-frontier, with the game's own storage namespace added. The game-folders suite compares the folder profile against it.",
+  "id": "rts-frontier",
+  "profile": "0a4a9d5effe94a7d4a1ead63b9a1ae294220ac98f192578b83d107f295448e82",
+  "sections": {
+    "storage": "9ad8fe5fec47fb2a60cd00f0c32f8880064800366c1bdc562abd3d344d9629d9",
+    "rts": "b8ed807aa286d4f1cee47c9304b2b169a3faed1e16b1dde02d16a1d9cf45876d"
+  }
+}

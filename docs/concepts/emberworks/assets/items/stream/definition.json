@@ -1,0 +1,17 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "items",
+  "id": "stream",
+  "node": {
+    "id": "stream",
+    "name": "Flowing spring bank",
+    "resource": null,
+    "mode": "infinite",
+    "quantity": 300,
+    "batch": 1,
+    "seconds": 8,
+    "skill": null,
+    "direct": false
+  }
+}

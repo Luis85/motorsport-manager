@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../source/wildlands/source/schemas/game.schema.json",
+  "format": "wildlands-game",
+  "schemaVersion": 1,
+  "id": "office",
+  "name": "Office",
+  "version": "1.0.0",
+  "template": "colony",
+  "engine": {
+    "api": 1
+  },
+  "features": [
+    "storytelling-player"
+  ],
+  "content": {
+    "balancing": "content/balancing.json",
+    "assets": "assets",
+    "creatures": {
+      "catalog": "assets/creatures/catalog.json",
+      "editorFields": "assets/creatures/editor-fields.json"
+    },
+    "interactions": "assets/interactions/catalog.json",
+    "packs": [
+      "content/office.pack.json"
+    ],
+    "defaultId": "office"
+  },
+  "presentation": {
+    "title": "Office",
+    "description": "An indoor sales, warehouse and fulfillment team. Phil wins customer deals, Angela packs and dispatches orders, and Marty keeps inbound materials moving.",
+    "accent": "#386a84"
+  },
+  "storage": {
+    "namespace": "wildlands.office"
+  },
+  "targets": {
+    "html": {
+      "output": "demos/office.html",
+      "budgetBytes": 4194304
+    },
+    "godot": {
+      "engineSources": false
+    }
+  }
+}

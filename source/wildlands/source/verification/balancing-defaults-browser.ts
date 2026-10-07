@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
-import {gameDirectory} from '../tools/game-folder.cjs';
+import {BUNDLED_GAMES,gameDirectory} from '../tools/game-folder.cjs';
 const ROOT=path.resolve(__dirname,'../..'),OUT=process.env.LITTLEWILD_BALANCING_OUT||path.join(ROOT,'verification','v15');
 interface Balance {libraries:{base:{components:{items:{id:string;price:number}[];recipes:{id:string;cost:Record<string,number>}[]}}};simulation:{rules:{actor:{needs:{foodWork:number}}}};startingScenes:{initialState:{player:{coins:number}}}[];creatures:{definitions:{movement:{baseSpeed:number}}[]};}
 interface Creature {id:string;name:string;visualAsset:string;movement:{baseSpeed:number};state:{defaults:{archetype:string}};}
@@ -19,8 +19,8 @@ async function main():Promise<void>{
  fs.mkdirSync(OUT,{recursive:true});const temporary=fs.mkdtempSync(path.join(os.tmpdir(),'littlewild-balance-defaults-'));
  try{
   for(const name of ['source','vendor'])fs.cpSync(path.join(ROOT,name),path.join(temporary,name),{recursive:true});for(const name of ['package.json','tsconfig.json','tsconfig.sdk.json','tsconfig.strict.json'])fs.copyFileSync(path.join(ROOT,name),path.join(temporary,name));fs.symlinkSync(path.join(ROOT,'node_modules'),path.join(temporary,'node_modules'),'dir');
-  // The Littlewild game folder is copied beside the isolated project and selected with WILDLANDS_GAMES_DIR.
-  const games=path.join(temporary,'games');fs.cpSync(gameDirectory('littlewild'),path.join(games,'littlewild'),{recursive:true});const env={...process.env,WILDLANDS_GAMES_DIR:games};
+  // The bundled game folders are copied beside the isolated project and selected with WILDLANDS_GAMES_DIR; only Littlewild is edited.
+  const games=path.join(temporary,'games');for(const id of BUNDLED_GAMES)fs.cpSync(gameDirectory(id),path.join(games,id),{recursive:true});const env={...process.env,WILDLANDS_GAMES_DIR:games};
   const file=path.join(games,'littlewild/content/balancing.json'),balance=read<Balance>(file);
   balance.simulation.rules.actor.needs.foodWork=.29;balance.startingScenes[0]!.initialState.player.coins=103;write(file,balance);
   const itemFile=path.join(games,'littlewild/assets/items/berries/definition.json'),item=read<{item:{price:number}}>(itemFile);item.item.price=13;write(itemFile,item);

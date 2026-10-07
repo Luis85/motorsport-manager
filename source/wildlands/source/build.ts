@@ -9,11 +9,8 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { writeSourceBundle } from "./tools/engine-export-bundle.cjs";
 import { writeWildlandsBundle } from "./tools/wildlands-bundle.cjs";
-import { petAssetDefinitions } from "./tools/bundled-assets.cjs";
-
-import { definitions } from "./tools/definition-source.cjs";
 import { writeContent } from "./tools/bundled-content.cjs";
-import { compileGame, gameDirectory, type CompiledGame } from "./tools/game-folder.cjs";
+import { BUNDLED_GAMES, compileGame, gameDirectory, type CompiledGame } from "./tools/game-folder.cjs";
 import type { ColonyContent } from "./tools/game-manifest.cjs";
 
 import { assembleArtifact, writeArtifact, type AssembledArtifact } from "./tools/artifact-assembler.cjs";
@@ -62,16 +59,23 @@ function compile(): void {
   for (const directory of ["content", "fixtures"]) {
     fs.cpSync(path.join(ROOT, directory), path.join(GENERATED, directory), { recursive: true });
   }
-  // Littlewild is read from its game folder (docs/concepts/littlewild, or WILDLANDS_GAMES_DIR). The
+  // Game data is read from the bundled game folders (docs/concepts/<id>, or WILDLANDS_GAMES_DIR). The
   // compiled layout under .generated is unchanged: runtime installers and the CLI bundle read it.
   const game = littlewild();
   const content = game.manifest.content as ColonyContent;
   const authored = [...content.packs, content.balancing, ...(content.skillTree ? [content.skillTree] : []), ...(content.adventureExamples ?? [])];
-  for (const file of authored) {
-    const target = path.join(GENERATED, "content", path.posix.basename(file));
-    if (fs.existsSync(path.join(ROOT, "content", path.posix.basename(file)))) throw new Error("Game content shadows engine content: " + file);
-    fs.copyFileSync(path.join(game.root, file), target);
-  }
+  const copied = new Set<string>();
+  const copyContent = (from: CompiledGame, file: string): void => {
+    const name = path.posix.basename(file), target = path.join(GENERATED, "content", name);
+    if (fs.existsSync(path.join(ROOT, "content", name))) throw new Error("Game content shadows engine content: " + from.manifest.id + "/" + file);
+    if (copied.has(name)) throw new Error("Game content collides with another bundled game's document: " + from.manifest.id + "/" + file);
+    copied.add(name);
+    fs.copyFileSync(path.join(from.root, file), target);
+  };
+  for (const file of authored) copyContent(game, file);
+  // The other colony games contribute their scenario packs to the transitional Littlewild installer
+  // composite; their balancing, creature and asset documents are copies equal to Littlewild's (D4).
+  for (const other of colonyGames().filter(entry => entry !== game)) for (const file of (other.manifest.content as ColonyContent).packs) copyContent(other, file);
   writeContent(GENERATED, game.documents!);
   for (const fixture of ["scenario-v3-grown.json"]) {
     fs.copyFileSync(path.join(ROOT, fixture), path.join(GENERATED, fixture));
@@ -82,39 +86,47 @@ function compile(): void {
   fs.copyFileSync(path.join(game.root, content.creatures.editorFields), path.join(GENERATED, "creature-editor-fields.json"));
   fs.writeFileSync(path.join(GENERATED, "creature-config.json"), JSON.stringify(creatures.configuration));
   fs.writeFileSync(path.join(GENERATED, "asset-definitions.json"), JSON.stringify(profile.assets));
-  // Pending engine data (Phase 3b moves it to docs/concepts/pocket-pet): pet presentation definitions.
-  fs.writeFileSync(path.join(GENERATED, "pet-asset-definitions.json"), JSON.stringify(petAssetDefinitions(definitions(path.join(ROOT, "assets")))));
+  // Template games install their compiled folder profile (content-installers/template-games.cts).
+  fs.mkdirSync(path.join(GENERATED, "games"), { recursive: true });
+  for (const id of ["rts-frontier", "pocket-pet"] as const) fs.writeFileSync(path.join(GENERATED, "games", id + ".profile.json"), JSON.stringify(bundled(id).profile));
+  fs.writeFileSync(path.join(GENERATED, "pet-asset-definitions.json"), JSON.stringify(bundled("pocket-pet").profile.pet!.assets));
 }
 
-let compiledLittlewild: CompiledGame | null = null;
-/** The Littlewild game folder, compiled once per build. */
+const compiledGames = new Map<string, CompiledGame>();
+/** A bundled game folder, compiled once per build. */
+function bundled(id: (typeof BUNDLED_GAMES)[number]): CompiledGame {
+  let game = compiledGames.get(id);
+  if (!game) compiledGames.set(id, game = compileGame(gameDirectory(id)));
+  return game;
+}
+/** The Littlewild game folder (data globals, compiled documents and the canonical pack). */
 function littlewild(): CompiledGame {
-  return compiledLittlewild ??= compileGame(gameDirectory("littlewild"));
+  return bundled("littlewild");
 }
-
-function json(file: string): unknown {
-  return JSON.parse(fs.readFileSync(path.join(GENERATED, "content", file), "utf8"));
+/** Bundled colony games in BUNDLED_GAMES order: Littlewild, Emberworks, Office (the showcase pack order). */
+function colonyGames(): CompiledGame[] {
+  return BUNDLED_GAMES.map(bundled).filter(game => game.manifest.template === "colony");
 }
 
 /**
- * Every injectable data global; profiles select what they declare. Colony globals come from the
- * Littlewild game folder; Emberworks/Office packs and the RTS/pet catalogs are pending engine data
- * until their own game folders exist (Phase 3b).
+ * Every injectable data global; profiles select what they declare. This is the composite showcase
+ * fixture: Littlewild's colony globals with the scenario packs of every bundled colony game, and the
+ * RTS Frontier and Pocket Pet catalogs, each read from its game folder.
  */
 function bundledData(packPath: string | null): Map<string, unknown> {
   const generated = (file: string): unknown => JSON.parse(fs.readFileSync(path.join(GENERATED, file), "utf8"));
-  const colony = littlewild().data;
   const packs = packPath
     ? [JSON.parse(fs.readFileSync(packPath, "utf8"))]
-    : [...colony.get("LWScenarioPacks") as unknown[], json("emberworks.pack.json"), json("office.pack.json")];
+    : colonyGames().flatMap(game => game.data.get("LWScenarioPacks") as unknown[]);
+  const rts = bundled("rts-frontier").data, pet = bundled("pocket-pet").data;
   return new Map<string, unknown>([
     ["WildlandsGodotRuntimeLoader", generated("wildlands-runtime-loader.json")],
     ["WildlandsGodotTemplates", generated("wildlands-godot-templates.json")],
     ["LWEngineSourceLoader", generated("engine-source-loader.json")],
-    ...colony,
-    ["LWRTSDefinitions", json("rts-demo.json")],
-    ["LWPetDefinitions", json("pet-demo.json")],
-    ["LWPetAssetDefinitions", generated("pet-asset-definitions.json")],
+    ...littlewild().data,
+    ["LWRTSDefinitions", rts.get("LWRTSDefinitions")],
+    ["LWPetDefinitions", pet.get("LWPetDefinitions")],
+    ["LWPetAssetDefinitions", pet.get("LWPetAssetDefinitions")],
     ["LWScenarioPacks", packs]
   ]);
 }

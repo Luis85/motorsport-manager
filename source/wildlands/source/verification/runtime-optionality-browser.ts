@@ -6,6 +6,7 @@ import path from 'node:path';
 import type {Page} from 'playwright';
 import {launchBrowser,monitorContext} from './browser-harness';
 import {INSERTS} from '../tools/build-inserts.cjs';
+import {gameDirectory} from '../tools/game-folder.cjs';
 const ROOT=path.resolve(__dirname,'../..'),SOURCE=path.join(ROOT,'source'),GENERATED=path.join(ROOT,'.generated'),OUT=path.join(ROOT,'verification','v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
 async function check(name:string,work:()=>Promise<void>):Promise<void>{try{await work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
@@ -36,7 +37,8 @@ function withoutModules(html:string,files:readonly string[]):string{
   return page.slice(0,at)+page.slice(at+text.length);
  },html);
 }
-const content=(file:string):unknown=>JSON.parse(fs.readFileSync(path.join(GENERATED,'content',file),'utf8'));
+/** A game folder's catalog document (RTS Frontier, Pocket Pet). */
+const catalog=(id:string,file:string):unknown=>JSON.parse(fs.readFileSync(path.join(gameDirectory(id),'content',file),'utf8'));
 
 async function main():Promise<void>{
  fs.mkdirSync(OUT,{recursive:true});const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}}),diagnostics=monitorContext(context);
@@ -88,7 +90,7 @@ async function main():Promise<void>{
    await page.close();
   });
   await check('Standalone RTS keeps the mission editor launcher focusable with an explicit reason when its bundle is absent',async()=>{
-   const html=playOnlyPage('RTS_',['CONTENT_PROVIDER','ECS','FILES'],{LWRTSDefinitions:content('rts-demo.json')},'LWRTSHost.standalone();');
+   const html=playOnlyPage('RTS_',['CONTENT_PROVIDER','ECS','FILES'],{LWRTSDefinitions:catalog('rts-frontier','rts.json')},'LWRTSHost.standalone();');
    const page=await open('',withoutModules(html,['rts-mission-editor-ui.js']));await ready(page,'rts');
    const button=page.locator('[data-rts-file=editor]');
    assert.equal(await button.textContent(),'Mission editor');assert.equal(await button.getAttribute('aria-disabled'),'true');
@@ -157,7 +159,7 @@ async function main():Promise<void>{
    }finally{await shared.close();}
   });
   await check('Standalone RTS page runs its own frame loop without the colony shell and signals ready',async()=>{
-   const html=playOnlyPage('RTS_',['CONTENT_PROVIDER','ECS','FILES'],{LWRTSDefinitions:content('rts-demo.json')},'LWRTSHost.standalone();');
+   const html=playOnlyPage('RTS_',['CONTENT_PROVIDER','ECS','FILES'],{LWRTSDefinitions:catalog('rts-frontier','rts.json')},'LWRTSHost.standalone();');
    const page=await open(RECORD_READY,html);await ready(page,'rts');
    assert.deepEqual(await value(page,'window.__readyEvents'),[{host:'rts',flag:true}]);
    assert.equal(await value(page,'typeof window.Littlewild+"/"+!!document.getElementById("app")'),'undefined/false');
@@ -175,7 +177,7 @@ async function main():Promise<void>{
   await check('Standalone Pocket Pet page runs its own frame loop without the colony shell and signals ready',async()=>{
    const definitions=JSON.parse(fs.readFileSync(path.join(GENERATED,'pet-asset-definitions.json'),'utf8')) as unknown;
    // The pet renderer admits its own definitions through the portable asset validator; they are the whole catalog.
-   const html=playOnlyPage('PET_',['CONTENT_PROVIDER','ECS','FILES','THREE','ASSET_CATALOG','ASSET_RENDERER'],{LWAssetDefinitions:definitions,LWPetDefinitions:content('pet-demo.json'),LWPetAssetDefinitions:definitions},'LWPetHost.standalone();');
+   const html=playOnlyPage('PET_',['CONTENT_PROVIDER','ECS','FILES','THREE','ASSET_CATALOG','ASSET_RENDERER'],{LWAssetDefinitions:definitions,LWPetDefinitions:catalog('pocket-pet','pet.json'),LWPetAssetDefinitions:definitions},'LWPetHost.standalone();');
    const page=await open(RECORD_READY,html);await ready(page,'pet');
    assert.deepEqual(await value(page,'window.__readyEvents'),[{host:'pet',flag:true}]);
    assert.equal(await value(page,'typeof window.Littlewild+"/"+!!document.getElementById("app")'),'undefined/false');

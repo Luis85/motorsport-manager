@@ -36,7 +36,7 @@ describes how the game consumes it.
    {
      "schemaVersion": 1,
      "kind": "littlewild-export",
-     "target": "../../../wildlands/source/assets",
+     "target": "../../../../docs/concepts/pocket-pet/assets",
      "assets": [
        {
          "id": "pebble", "family": "pets", "name": "Pebble",
@@ -49,7 +49,9 @@ describes how the game consumes it.
    }
    ```
 
-   `target` is relative to the manifest. `materials` replaces a model material for
+   `target` is relative to the manifest and names a game folder's `assets`
+   directory; the pocket-pet project publishes into the
+   [Pocket Pet game folder](../concepts/pocket-pet/README.md). `materials` replaces a model material for
    that variant, so one recipe can produce several species. `parameters` sets model
    parameters.
 4. Preview, write and check:

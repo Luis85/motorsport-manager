@@ -1,0 +1,25 @@
+{
+  "format": "wildlands-profile-digest",
+  "schemaVersion": 1,
+  "description": "Canonical (sorted-key JSON) SHA-256 digests of the Emberworks content profile captured at 3601c0c, before its data moved to docs/concepts/emberworks: the colony sections the transitional installer (source/content-installers/littlewild-game.cts) installed for every colony pack (balancing defaults, compiled library schema, creature catalog and asset catalog), the Emberworks pack exactly as installed, the game's own storage namespace and a one-pack scenario catalog without a canonical pack (the pack was always used verbatim). The game-folders suite compares the folder profile against it.",
+  "id": "emberworks",
+  "profile": "2216e43f7c47507a69c5462a48263fc597e02f09834192b73a70bd56053c9052",
+  "sections": {
+    "storage": "f6e8557c3595d1d20f97b93583a3d2c673eccd930f1b837672fa12701b7b5c8d",
+    "balancing": "2dfdcd797c76e9a8f222ecdac7363d711fb4a1091f9da01bf24f9fa530836446",
+    "librarySchema": "e85c5843cb56238b13d424fea38436fb01c1ffc767da57f32ec0c5efb55239f1",
+    "assets": "cb66ec70a1ffe16b8b6a1364f4898ee8ec2d3b6c7b4cd200274a56a107c0ce78",
+    "creatures.configuration": "0c4ca0d0b5e703f0060af1be75bd45c2c741011f554c8e33299c67a170fa6689",
+    "creatures.definitions": "2eb8167c726253b3b0b90756356fa4ad920c68f45d64f604b875e27260009380",
+    "creatures.editorFields": "b1c66f1e3f756c1ea184262f78f7b3cd17a44348653910a3ce556c2ce81193be"
+  },
+  "scenarios": {
+    "order": [
+      "emberworks"
+    ],
+    "defaultId": "emberworks",
+    "packs": {
+      "emberworks": "e9b71687903d1498beea29c10cb88bf0853c13b360303a115c374264dd06725c"
+    }
+  }
+}
