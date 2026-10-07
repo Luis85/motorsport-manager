@@ -77,12 +77,14 @@ test('The actual architecture policy rejects asset-catalog DOM/platform and pres
   fs.symlinkSync(path.join(project,'node_modules'),path.join(fixture,'node_modules'),'junction');
   const tools=path.join(fixture,'.generated','tools');fs.mkdirSync(tools,{recursive:true});
   const checkerFiles=['architecture-check.cjs','architecture-analysis.cjs','architecture-data.cjs','architecture-contracts.cjs',
-   'definition-source.cjs','bundled-content.cjs','bundled-assets.cjs','bundled-library-schema.cjs','artifact-profiles.cjs','build-inserts.cjs'];
+   'definition-source.cjs','bundled-content.cjs','bundled-assets.cjs','bundled-library-schema.cjs','artifact-profiles.cjs','build-inserts.cjs',
+   'game-folder.cjs','game-manifest.cjs'];
   for(const file of checkerFiles)fs.copyFileSync(path.join(__dirname,'tools',file),path.join(tools,file));
   const map=JSON.parse(fs.readFileSync(path.join(fixture,'source','architecture','domain-map.json'),'utf8')) as {contexts:{layer:string;files:string[]}[]};
   assert.equal(map.contexts.find(context=>context.files.includes('asset-catalog.ts'))?.layer,'domain');
   const run=():{status:number|null;report:PolicyResult}=>{
-   const process=spawnSync(globalThis.process.execPath,[path.join(tools,'architecture-check.cjs')],{cwd:fixture,encoding:'utf8',timeout:15000});
+   // The isolated tree has no repository around it: point it at the real game folders.
+   const process=spawnSync(globalThis.process.execPath,[path.join(tools,'architecture-check.cjs')],{cwd:fixture,encoding:'utf8',timeout:15000,env:{...globalThis.process.env,WILDLANDS_GAMES_DIR:(require('./tools/game-folder.cjs') as typeof import('./tools/game-folder.cjs')).gamesRoot()}});
    assert.ifError(process.error);assert.equal(process.signal,null,process.stderr);
    return {status:process.status,report:JSON.parse(fs.readFileSync(path.join(fixture,'.generated','typescript-architecture-results.json'),'utf8')) as PolicyResult};
   };

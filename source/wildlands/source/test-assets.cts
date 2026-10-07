@@ -2,9 +2,10 @@
 // Tests run the composite showcase game: install its content profile before any engine module loads.
 require('./test-support/install-games.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const source=path.resolve(__dirname,'../source'),assetRoot=path.join(source,'assets'),results=[];
+// Engine-owned grammars stay in source/assets; Littlewild's definitions live in its game folder.
+const source=path.resolve(__dirname,'../source'),schemaRoot=path.join(source,'assets'),assetRoot=path.join(require('./tools/game-folder.cjs').gameDirectory('littlewild'),'assets'),results=[];
 function test(name,fn){try{fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:error.stack});console.error(name,error.message);}}
-function load(){return require('./tools/bundled-assets.cjs').assetDefinitions(source);}
+function load(){return require('./tools/bundled-assets.cjs').assetDefinitions(require('./tools/definition-source.cjs').definitions(assetRoot));}
 global.LWAssetDefinitions=load();const A=require('./asset-catalog.js');
 /** A browser page loads the content provider (engine kernel) ahead of the asset catalog. */
 const catalogScript=()=>fs.readFileSync(__dirname+'/content-provider.js','utf8')+'\n'+fs.readFileSync(__dirname+'/asset-catalog.js','utf8');
@@ -81,7 +82,7 @@ test('Catalog rejects substituted array indexes and malformed own properties wit
  assert.equal(A.get(base.category,base.id).id,base.id);
 });
 test('Asset identity text accepts Unicode at the schema limit and rejects beyond it',()=>{
- const base=global.LWAssetDefinitions.find(d=>d.id==='cottage'),schema=JSON.parse(fs.readFileSync(path.join(assetRoot,'asset.schema.json')));
+ const base=global.LWAssetDefinitions.find(d=>d.id==='cottage'),schema=JSON.parse(fs.readFileSync(path.join(schemaRoot,'asset.schema.json')));
  const Ajv=require('ajv/dist/2020').default,validate=new Ajv({strict:false}).compile(schema);
  for(const count of [120,121]){const d=JSON.parse(JSON.stringify(base));d.name='🌱'.repeat(count);assert.equal(validate(d),count===120);
   if(count===120)assert.equal(accepts([d]).building(d.id).name,d.name);else assert.throws(()=>accepts([d]),/invalid identity/);

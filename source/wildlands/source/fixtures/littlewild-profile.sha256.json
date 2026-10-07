@@ -1,0 +1,30 @@
+{
+  "format": "wildlands-profile-digest",
+  "schemaVersion": 1,
+  "description": "Canonical (sorted-key JSON) SHA-256 digests of the Littlewild content profile the transitional installer (source/content-installers/littlewild-game.cts) produced at 2792b62, captured before the Littlewild data moved to docs/concepts/littlewild. The game-folders suite compares the folder profile (Littlewild pack only) and the installer (folder plus the pending Emberworks and Office packs) against it.",
+  "id": "littlewild",
+  "profile": "87af0b6eeec045146c673ef43a72f84b3dca68d8e175d0a688c853b3e9bd76fb",
+  "sections": {
+    "storage": "3bdc6e74f1e7b4c212ccb87db009647e1397fc079ccf8c5c8c2030b56863755b",
+    "balancing": "2dfdcd797c76e9a8f222ecdac7363d711fb4a1091f9da01bf24f9fa530836446",
+    "librarySchema": "e85c5843cb56238b13d424fea38436fb01c1ffc767da57f32ec0c5efb55239f1",
+    "assets": "cb66ec70a1ffe16b8b6a1364f4898ee8ec2d3b6c7b4cd200274a56a107c0ce78",
+    "creatures.configuration": "0c4ca0d0b5e703f0060af1be75bd45c2c741011f554c8e33299c67a170fa6689",
+    "creatures.definitions": "2eb8167c726253b3b0b90756356fa4ad920c68f45d64f604b875e27260009380",
+    "creatures.editorFields": "b1c66f1e3f756c1ea184262f78f7b3cd17a44348653910a3ce556c2ce81193be"
+  },
+  "scenarios": {
+    "order": [
+      "littlewild",
+      "emberworks",
+      "office"
+    ],
+    "defaultId": "littlewild",
+    "canonicalId": "littlewild",
+    "packs": {
+      "littlewild": "4aef78b7a585d7c350ce1682b141dea520ca3f0369d6b15139bd6587cc6f90be",
+      "emberworks": "e9b71687903d1498beea29c10cb88bf0853c13b360303a115c374264dd06725c",
+      "office": "e828be923dec56de5872d0063eaa532ee7d6a0663480936386c4e75283bac02b"
+    }
+  }
+}

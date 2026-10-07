@@ -1,11 +1,11 @@
 import {definitions} from './definition-source.cjs';
-import {balancingDocument, defaultScenario} from './bundled-content.cjs';
-import {assetDefinitions} from './bundled-assets.cjs';
+import {petAssetDefinitions} from './bundled-assets.cjs';
+import {BUNDLED_GAMES, compileGame, gameDirectory, loadGame} from './game-folder.cjs';
 'use strict';
 import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
-import { ownershipErrors, executableDataErrors, DataManifest } from "./architecture-data.cjs";
+import { ownershipErrors, executableDataErrors, engineDataErrors, DataManifest, EngineDataManifest } from "./architecture-data.cjs";
 import { contractErrors, ContractOwner } from "./architecture-contracts.cjs";
 import { analyzeRuntime, resolveRuntimeDependency } from "./architecture-analysis.cjs";
 import { profileErrors, DATA_GLOBALS } from "./artifact-profiles.cjs";
@@ -200,23 +200,41 @@ check("All domain/application modules avoid ambient randomness and wall clock", 
   assert(violations.length === 0, "Nondeterministic API found: " + [...new Set(violations)].join("; "));
 });
 
+/** Engine data files (source/content, source/assets, source/schemas) and bundled game folder files (games/<id>/...). */
+function shippedData(): Map<string, string> {
+  const shipped = new Map<string, string>();
+  for (const directory of ["content", "assets", "schemas"]) for (const file of walk(path.join(SOURCE, directory))) shipped.set(path.relative(SOURCE, file).replace(/\\/g, "/"), file);
+  for (const id of BUNDLED_GAMES) { const game = loadGame(gameDirectory(id)); for (const entry of game.files) shipped.set("games/" + id + "/" + entry.path, path.join(game.root, entry.path)); }
+  return shipped;
+}
 check("Shipped definitions and configuration have one declared owner and compiled validator", () => {
   assert(DOMAIN_MAP.dataOwnership === "architecture/data-ownership.json", "Data ownership metadata must be referenced by the domain map.");
   const manifest = JSON.parse(source(DOMAIN_MAP.dataOwnership)) as DataManifest;
-  const shipped = [...walk(path.join(SOURCE,"content")),...walk(path.join(SOURCE,"assets"))]
-    .filter(file=>file.endsWith(".json")).map(file=>path.relative(SOURCE,file).replace(/\\/g,"/"));
-  const errors = ownershipErrors(manifest,shipped,new Set(DOMAIN_MAP.contexts.map(context=>context.id)));
-  for(const file of shipped)errors.push(...executableDataErrors(JSON.parse(source(file)),file));
+  const shipped = [...shippedData()].filter(([file]) => file.endsWith(".json"));
+  const errors = ownershipErrors(manifest,shipped.map(([file]) => file),new Set(DOMAIN_MAP.contexts.map(context=>context.id)));
+  for(const [file, location] of shipped)errors.push(...executableDataErrors(JSON.parse(fs.readFileSync(location,"utf8")),file));
   const fixtures=walk(path.join(SOURCE,"fixtures")).filter(file=>file.endsWith(".json")).map(file=>path.relative(SOURCE,file).replace(/\\/g,"/"));
   assert(JSON.stringify(fixtures.sort())===JSON.stringify(manifest.historicalFixtures.map(entry=>entry.path).sort()),"Historical JSON fixtures require explicit path and reason exclusions.");
   assert(errors.length===0,errors.join("; "));
 });
 
 check("Bundled assets have one authoring source and canonical catalog projections", () => {
-  definitions(SOURCE); assetDefinitions(SOURCE);
-  defaultScenario(SOURCE, balancingDocument(SOURCE));
+  for (const id of BUNDLED_GAMES) compileGame(gameDirectory(id));
+  petAssetDefinitions(definitions(path.join(SOURCE, "assets")));
   for (const name of ['default-library','adventure-library','world-library','growth-library','building-interiors'])
     assert(!fs.existsSync(path.join(SOURCE,'content',name+'.json')), 'Duplicate content source: '+name);
+});
+
+check("Engine content directories hold only engine data and declared pending game data", () => {
+  const manifest = JSON.parse(source("architecture/engine-data.json")) as EngineDataManifest;
+  const files = [...shippedData().keys()].filter(file => !file.startsWith("games/"));
+  const errors = engineDataErrors(manifest, files, ["littlewild", "emberworks", "office", "rts-frontier", "pocket-pet"]);
+  // Regression probes: a returned game file and a game-shaped engine entry are both rejected.
+  assert(engineDataErrors(manifest, [...files, "content/balancing.json"], ["emberworks"]).some(error => error.includes("content/balancing.json has 0")) &&
+    engineDataErrors({...manifest, engine: [...manifest.engine, {pattern: "assets/items/*/definition.json", reason: "Probe entry that pretends game definitions are engine data."}]}, files, []).some(error => error.includes("game data shape")),
+    "Engine data regression probes must be detected.");
+  for (const id of BUNDLED_GAMES) for (const entry of manifest.pending) assert(entry.game !== id, "Pending engine data names a game that already has a folder: " + entry.pattern);
+  assert(errors.length === 0, errors.join("; "));
 });
 
 /** Game content files: shipped definitions/packs and their build projections. Engine schemas are not game data. */

@@ -80,7 +80,7 @@ facets, actor behaviors and existing rigs are retained. Lights are skipped.
 ## Edit an existing Littlewild asset
 
 ```sh
-node dist/cli.js -p my-project littlewild import --definition ../wildlands/source/assets/creatures/sproutling/definition.json
+node dist/cli.js -p my-project littlewild import --definition ../../docs/concepts/littlewild/assets/creatures/sproutling/definition.json
 ```
 
 Each variant becomes a model such as `sproutlingWorld`. Engine primitives are

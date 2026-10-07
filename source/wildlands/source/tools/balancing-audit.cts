@@ -1,10 +1,10 @@
 /** Bounded source audit: each declared tuner must have a real documented domain consumer. */
 import fs from 'node:fs';
 import path from 'node:path';
-import {balancingDocument} from './bundled-content.cjs';
 interface Entry {path:string;source:string;consumer:string;occurrences:number;}
-export function auditBalancing(sourceRoot:string):string[]{
- const issues:string[]=[],balance=balancingDocument(sourceRoot) as {simulation:{rules:{gameplay:Record<string,Record<string,number>>}}};
+/** Audit a game's compiled balancing defaults against the engine source consumers in `sourceRoot`. */
+export function auditBalancing(sourceRoot:string,compiled:unknown):string[]{
+ const issues:string[]=[],balance=compiled as {simulation:{rules:{gameplay:Record<string,Record<string,number>>}}};
  const inventory=JSON.parse(fs.readFileSync(path.join(sourceRoot,'content/balancing-inventory.json'),'utf8')) as {tuners:Entry[]};
  const declared=new Set(Object.entries(balance.simulation.rules.gameplay).flatMap(([group,keys])=>Object.keys(keys).map(key=>'/simulation/rules/gameplay/'+group+'/'+key)));
  const seen=new Set<string>(),files=fs.readdirSync(sourceRoot).filter(file=>file.endsWith('.ts')&&!file.startsWith('test-')&&!file.endsWith('.d.ts'));
@@ -24,4 +24,4 @@ export function auditBalancing(sourceRoot:string):string[]{
  }
  return [...new Set(issues)];
 }
-if(require.main===module){const issues=auditBalancing(path.resolve(__dirname,'../../source'));console.log(JSON.stringify({ok:issues.length===0,errors:issues},null,2));if(issues.length)process.exitCode=1;}
+if(require.main===module){const {compileGame,gameDirectory}=require('./game-folder.cjs') as typeof import('./game-folder.cjs');const issues=auditBalancing(path.resolve(__dirname,'../../source'),compileGame(gameDirectory('littlewild')).profile.balancing);console.log(JSON.stringify({ok:issues.length===0,errors:issues},null,2));if(issues.length)process.exitCode=1;}

@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import {librarySchema} from './bundled-library-schema.cjs';
 import path from 'node:path';
-import {definitions, read, record, type Definition, type RecordValue} from './definition-source.cjs';
+import {read, record, type Definition, type RecordValue} from './definition-source.cjs';
 
 // Order is compatibility data. New folders append deterministically without another registration.
 const tables: Readonly<Record<string, readonly [string, 'map' | 'list']>> = {
@@ -34,7 +34,8 @@ function facetValue(definition: Definition, facet: string): unknown {
  if (!creature) return undefined;
  return {id: creature.id, ...Object.fromEntries(['movement', 'physiology', 'rng', 'state'].map(key => [key, numeric(creature[key])]))};
 }
-export function balancingDocument(source: string, packages: readonly Definition[] = definitions(source)): RecordValue {
+/** Expand the authored balancing document's catalog selectors over the discovered definitions. */
+export function balancingDocument(balancingFile: string, packages: readonly Definition[]): RecordValue {
  const visited = new Set<string>();
  function expand(value: unknown, location: string): unknown {
   const table = tables[location];
@@ -60,27 +61,45 @@ export function balancingDocument(source: string, packages: readonly Definition[
   }
   return value;
  }
- const result = expand(read(path.join(source, 'content/balancing.json')), '');
+ const result = expand(read(balancingFile), '');
  if (!record(result) || visited.size !== Object.keys(tables).length) throw Error('Missing canonical catalog tables.');
  return result;
 }
-export function defaultScenario(source: string, balance: RecordValue): RecordValue {
- const template = read(path.join(source, 'content/littlewild.pack.json'));
+/** The canonical pack inherits libraries, simulation, starting scenes and the default world from balancing. */
+export function defaultScenario(templateFile: string, balance: RecordValue): RecordValue {
+ const template = read(templateFile);
  if (!record(template) || ['libraries', 'simulation', 'scenes', 'worlds'].some(key => Object.hasOwn(template, key)))
   throw Error('Default scenario must inherit canonical defaults.');
  return {...template, libraries: balance.libraries, simulation: balance.simulation, scenes: balance.startingScenes, worlds: [balance.world]};
 }
-export function writeContent(source: string, generated: string, packages: readonly Definition[] = definitions(source)): void {
+/** Authored inputs of the compiled colony content documents. */
+export interface ContentSources {
+ /** Authored balancing document with catalog selectors. */
+ readonly balancing: string;
+ /** The canonical template pack that inherits the balancing defaults; absent when every pack is complete. */
+ readonly templatePack?: string;
+ /** Engine-owned library schema template. */
+ readonly librarySchema: string;
+ /** Directories that must not hold standalone library mirrors (engine content and the game's content). */
+ readonly contentDirectories: readonly string[];
+ readonly packages: readonly Definition[];
+}
+/** The generated `.generated/content` documents, keyed by name without `.json`. */
+export function contentDocuments(sources: ContentSources): RecordValue {
  // Source mirrors would silently create a second editable authority.
  const mirrors = ['default-library', 'adventure-library', 'world-library', 'growth-library', 'building-interiors'];
- for (const name of mirrors) if (fs.existsSync(path.join(source, 'content', name + '.json'))) throw Error('Duplicate content source: ' + name);
- const balance = balancingDocument(source, packages), libraries = balance.libraries;
+ for (const directory of sources.contentDirectories) for (const name of mirrors)
+  if (fs.existsSync(path.join(directory, name + '.json'))) throw Error('Duplicate content source: ' + name);
+ const balance = balancingDocument(sources.balancing, sources.packages), libraries = balance.libraries;
  if (!record(libraries)) throw Error('Missing canonical libraries.');
- const output: RecordValue = {
-  'library.schema': librarySchema(read(path.join(source, 'content/library.schema.json')), balance),
+ const template = sources.templatePack === undefined ? null : path.basename(sources.templatePack, '.json');
+ return {
+  'library.schema': librarySchema(read(sources.librarySchema), balance),
   'balancing': balance, 'default-library': libraries.base, 'adventure-library': libraries.adventure,
   'world-library': libraries.world, 'growth-library': libraries.growth, 'building-interiors': balance.interiors,
-  'littlewild.pack': defaultScenario(source, balance)
+  ...template === null ? {} : {[template]: defaultScenario(sources.templatePack!, balance)}
  };
- for (const [name, document] of Object.entries(output)) fs.writeFileSync(path.join(generated, 'content', name + '.json'), JSON.stringify(document, null, 2) + '\n');
+}
+export function writeContent(generated: string, documents: RecordValue): void {
+ for (const [name, document] of Object.entries(documents)) fs.writeFileSync(path.join(generated, 'content', name + '.json'), JSON.stringify(document, null, 2) + '\n');
 }

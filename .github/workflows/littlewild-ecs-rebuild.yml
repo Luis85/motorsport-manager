@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'source/wildlands/**'
+      - 'docs/concepts/**'
       - 'bin/wildlands'
       - 'docs/reference/wildlands-cli.md'
       - '.github/workflows/littlewild-ecs-rebuild.yml'

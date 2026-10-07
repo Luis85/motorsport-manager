@@ -5,6 +5,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import ts from 'typescript';
 import {INSERTS} from './build-inserts.cjs';
+import {BUNDLED_GAMES, gameDirectory, loadGame} from './game-folder.cjs';
 // pako ships no declarations; the pinned pure-JS encoder keeps payload bytes independent of Node's zlib.
 const pako=require('pako') as {gzip(data:string|Uint8Array,options:{level:number}):Uint8Array};
 const compare=(a:string,b:string):number=>a<b?-1:a>b?1:0;
@@ -44,9 +45,9 @@ function loadedDeclarations(project:string):Set<string>{
  }
  return loaded;
 }
-function role(file:string):LWEngineExport.SourceFile['role']{if(/\.(zip|tgz|gz)$/i.test(file))return 'source-archive';if(/LICENSE|COPYING/i.test(file))return 'license';if(file.startsWith('toolchain/'))return 'toolchain';if(file.startsWith('vendor/'))return 'vendor';if(file.endsWith('.d.ts'))return 'contract';if(file.includes('.schema.json')||file.includes('/schemas/'))return 'schema';if(file.endsWith('.json'))return file.startsWith('source/')?'data':'configuration';if(file.endsWith('.md'))return 'documentation';return 'source';}
+function role(file:string):LWEngineExport.SourceFile['role']{if(/\.(zip|tgz|gz)$/i.test(file))return 'source-archive';if(/LICENSE|COPYING/i.test(file))return 'license';if(file.startsWith('toolchain/'))return 'toolchain';if(file.startsWith('vendor/'))return 'vendor';if(file.endsWith('.d.ts'))return 'contract';if(file.includes('.schema.json')||file.includes('/schemas/'))return 'schema';if(file.endsWith('.json'))return file.startsWith('source/')||file.startsWith('games/')?'data':'configuration';if(file.endsWith('.md'))return 'documentation';return 'source';}
 export function createSourceBundle(project:string):LWEngineExport.SourceBundle{
- const candidates:{file:string;relative:string}[]=[],excluded:string[]=['*.md outside source/vendor (manuals and release evidence distributed separately)','generated artifacts and suite-result evidence, credentials and repository internals'];
+ const candidates:{file:string;relative:string}[]=[],excluded:string[]=['*.md outside source/vendor/games (manuals and release evidence distributed separately)','generated artifacts and suite-result evidence, credentials and repository internals'];
  for(const file of walk(path.join(project,'source'))){
   const relative=path.relative(project,file).replaceAll(path.sep,'/');
   // Match the gate's ignored suite outputs; their presence cannot change an artifact.
@@ -55,6 +56,8 @@ export function createSourceBundle(project:string):LWEngineExport.SourceBundle{
   candidates.push({file,relative});
  }
  for(const file of walk(path.join(project,'vendor')))candidates.push({file,relative:path.relative(project,file).replaceAll(path.sep,'/')});
+ // Bundled game folders the build composes (data only, closed inventory) at games/<id>/; rebuild with WILDLANDS_GAMES_DIR=<extracted>/games.
+ for(const id of BUNDLED_GAMES){const game=loadGame(gameDirectory(id));for(const entry of game.files)candidates.push({file:path.join(game.root,entry.path),relative:'games/'+id+'/'+entry.path});}
  for(const name of fs.readdirSync(project).sort()){if(/^(package(-lock)?\.json|tsconfig[^/]*\.json)$/.test(name))candidates.push({file:path.join(project,name),relative:name});}
  const repositoryLicense=path.resolve(project,'../..','LICENSE');if(fs.existsSync(repositoryLicense)&&fs.readFileSync(repositoryLicense,'utf8')!==fs.readFileSync(path.join(project,'source/ENGINE-LICENSE.txt'),'utf8'))throw Error('Update the gate-covered engine license copy before rebuilding.');
  const loaded=loadedDeclarations(project);
@@ -69,7 +72,7 @@ export function createSourceBundle(project:string):LWEngineExport.SourceBundle{
  const architecture:Record<string,unknown>={projectLicense:{spdx:'MIT',copyright:'Copyright (c) 2026 Luis Mendez',source:'source/ENGINE-LICENSE.txt',provenance:'../../LICENSE; build verifies matching text when repository root is present'}};for(const file of files.filter(file=>file.path.startsWith('source/architecture/')&&file.path.endsWith('.json')))architecture[path.basename(file.path,'.json')]=JSON.parse(file.text) as unknown;
  const browserOrder=INSERTS.filter(insert=>insert[2]==='script').map(insert=>insert[1]);
  const packageData=JSON.parse(source('package.json')) as {dependencies?:Record<string,unknown>;devDependencies?:Record<string,unknown>};
- return {format:'littlewild-engine-sources',schemaVersion:1,identity:digest(files.map(file=>file.path+'\0'+file.sha256+'\n').join('')),files,inventory:{included:files.map(file=>file.path),excluded:excluded.sort(),policy:'All authoritative source, contracts, data, schemas, build tools, offline vendors, gate-covered source/vendor documentation and a trimmed installed toolchain: the TypeScript compiler API module (its executeCommandLine is tsc) with exactly the library, Node and Undici declarations the project tsconfig files load, plus package manifests and licenses; other build dependencies remain exact locked metadata; excludes tests, generated suite results and browser verification evidence, generated artifacts, unloaded toolchain files (localized diagnostics, unused libraries, tsserver, the duplicate _tsc.js command bundle, typesVersions fallbacks), node_modules outside the named toolchain, credentials and repository internals.'},architecture,build:{browserOrder,compiler:'toolchain/'+COMPILER,dependencies:{...packageData.dependencies,...packageData.devDependencies}}};
+ return {format:'littlewild-engine-sources',schemaVersion:1,identity:digest(files.map(file=>file.path+'\0'+file.sha256+'\n').join('')),files,inventory:{included:files.map(file=>file.path),excluded:excluded.sort(),policy:'All authoritative source, contracts, data, schemas, build tools, the bundled game folders (games/<id>, rebuilt with WILDLANDS_GAMES_DIR), offline vendors, gate-covered source/vendor documentation and a trimmed installed toolchain: the TypeScript compiler API module (its executeCommandLine is tsc) with exactly the library, Node and Undici declarations the project tsconfig files load, plus package manifests and licenses; other build dependencies remain exact locked metadata; excludes tests, generated suite results and browser verification evidence, generated artifacts, unloaded toolchain files (localized diagnostics, unused libraries, tsserver, the duplicate _tsc.js command bundle, typesVersions fallbacks), node_modules outside the named toolchain, credentials and repository internals.'},architecture,build:{browserOrder,compiler:'toolchain/'+COMPILER,dependencies:{...packageData.dependencies,...packageData.devDependencies}}};
 }
 /**
  * Vendor scripts the HTML artifacts inline verbatim. Profiles that declare the loader must inline

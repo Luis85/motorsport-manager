@@ -13,6 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import ts from 'typescript';
+import {BUNDLED_GAMES, gameDirectory, loadGame} from './game-folder.cjs';
 
 // pako ships no declarations; the pinned pure-JS encoder keeps payload bytes independent of Node's zlib.
 const pako=require('pako') as {gzip(data:Uint8Array,options:{level:number}):Uint8Array};
@@ -31,9 +32,13 @@ function walk(directory:string):string[]{
 }
 // Root JSON outputs written by build.ts rather than compiled or copied from an authored path.
 const generatedData=new Set(['interaction-library.json','creature-definitions.json','creature-editor-fields.json','creature-config.json','asset-definitions.json']);
-function ownedRuntimeFile(source:string,relative:string):boolean{
+/** Content documents build.ts copies or compiles from the bundled game folders into .generated/content. */
+function gameContent():Set<string>{
+ return new Set(BUNDLED_GAMES.flatMap(id=>loadGame(gameDirectory(id)).files.filter(file=>/^content\/[^/]+\.json$/.test(file.path)).map(file=>file.path)));
+}
+function ownedRuntimeFile(source:string,relative:string,games:ReadonlySet<string>):boolean{
  const authored=(name:string):boolean=>{const file=path.join(source,name);return fs.existsSync(file)&&fs.statSync(file).isFile();};
- if(relative.endsWith('.json'))return generatedData.has(relative)||authored(relative);
+ if(relative.endsWith('.json'))return generatedData.has(relative)||games.has(relative)||authored(relative);
  const author=relative.replace(/\.js$/,'.ts').replace(/\.cjs$/,'.cts');
  return authored(relative)||author!==relative&&authored(author);
 }
@@ -57,11 +62,12 @@ function requires(relative:string,text:string):string[]{
 /** Static require closure of the runtime roots, relative to the generated directory. */
 export function runtimeClosure(source:string,generated:string):Set<string>{
  const closure=new Set<string>(),pending:string[]=[...RUNTIME_ROOTS];
+ const games=gameContent();
  while(pending.length){
   const relative=pending.pop()!;
   if(closure.has(relative))continue;
   const file=path.join(generated,relative);
-  if(!fs.existsSync(file)||!ownedRuntimeFile(source,relative))throw Error(`Godot runtime requires ${relative}, which is not an authored or generated runtime file. Rebuild Wildlands.`);
+  if(!fs.existsSync(file)||!ownedRuntimeFile(source,relative,games))throw Error(`Godot runtime requires ${relative}, which is not an authored or generated runtime file. Rebuild Wildlands.`);
   closure.add(relative);
   if(!/\.c?js$/.test(relative))continue;
   for(const specifier of requires(relative,fs.readFileSync(file,'utf8'))){

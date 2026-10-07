@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
-  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "runtime-optionality-browser", "artifact-play-browser"],
-  "totalChecks": 1832,
+  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser"],
+  "totalChecks": 1842,
   "reviewedAdditions": [
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
@@ -293,7 +293,17 @@
     {"suite": "content-provider", "name": "Browser artifacts adopt their declared data globals as the installed profile"},
     {"suite": "content-provider", "name": "The injected scenario catalog orders built-ins and selects its declared default pack"},
     {"suite": "content-provider", "name": "Built artifacts run the content provider after their data globals and before every engine module"},
-    {"suite": "typescript-architecture", "name": "Runtime modules read game content only through the installed content provider"}
+    {"suite": "typescript-architecture", "name": "Runtime modules read game content only through the installed content provider"},
+    {"suite": "typescript-architecture", "name": "Engine content directories hold only engine data and declared pending game data"},
+    {"suite": "game-folders", "name": "Game manifest schema and structural validator agree and stay closed and bounded"},
+    {"suite": "game-folders", "name": "Manifest semantics bind id, folder name, storage namespace and demo output"},
+    {"suite": "game-folders", "name": "Closed inventory rejects code, unreferenced files, links, executable modes and oversized trees"},
+    {"suite": "game-folders", "name": "Folder digest is byte-based, path-ordered and independent of where the folder lives"},
+    {"suite": "game-folders", "name": "Littlewild folder profile equals the profile bundled before the move"},
+    {"suite": "game-folders", "name": "Artifact data globals are the folder profile plus engine-owned schemas and adopt as the same profile"},
+    {"suite": "game-folders", "name": "Template folders compile RTS and Pocket Pet catalogs into their profiles and validate"},
+    {"suite": "game-folders", "name": "Full validation runs the engine validators in a fresh process and reports their rejection"},
+    {"suite": "game-folders", "name": "Builds locate game folders through WILDLANDS_GAMES_DIR and fail clearly without one"}
   ],
   "renames": [],
   "retirements": [],
@@ -973,6 +983,7 @@
       "All domain/application modules avoid ambient randomness and wall clock",
       "Shipped definitions and configuration have one declared owner and compiled validator",
       "Bundled assets have one authoring source and canonical catalog projections",
+      "Engine content directories hold only engine data and declared pending game data",
       "Runtime modules read game content only through the installed content provider",
       "Project contracts and erased type dependencies follow inward ownership",
       "Strict TypeScript compiler contract is hardened",
@@ -2313,6 +2324,17 @@
       "Browser artifacts adopt their declared data globals as the installed profile",
       "The injected scenario catalog orders built-ins and selects its declared default pack",
       "Built artifacts run the content provider after their data globals and before every engine module"
+    ],
+    "game-folders": [
+      "Game manifest schema and structural validator agree and stay closed and bounded",
+      "Manifest semantics bind id, folder name, storage namespace and demo output",
+      "Closed inventory rejects code, unreferenced files, links, executable modes and oversized trees",
+      "Folder digest is byte-based, path-ordered and independent of where the folder lives",
+      "Littlewild folder profile equals the profile bundled before the move",
+      "Artifact data globals are the folder profile plus engine-owned schemas and adopt as the same profile",
+      "Template folders compile RTS and Pocket Pet catalogs into their profiles and validate",
+      "Full validation runs the engine validators in a fresh process and reports their rejection",
+      "Builds locate game folders through WILDLANDS_GAMES_DIR and fail clearly without one"
     ],
     "runtime-optionality-browser": [
       "The complete colony shell signals ready once, after its public APIs and optional hosts exist",

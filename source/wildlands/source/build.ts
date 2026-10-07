@@ -9,10 +9,12 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { writeSourceBundle } from "./tools/engine-export-bundle.cjs";
 import { writeWildlandsBundle } from "./tools/wildlands-bundle.cjs";
-import { creatureDefinitions, assetDefinitions, petAssetDefinitions, creatureConfig } from "./tools/bundled-assets.cjs";
+import { petAssetDefinitions } from "./tools/bundled-assets.cjs";
 
 import { definitions } from "./tools/definition-source.cjs";
 import { writeContent } from "./tools/bundled-content.cjs";
+import { compileGame, gameDirectory, type CompiledGame } from "./tools/game-folder.cjs";
+import type { ColonyContent } from "./tools/game-manifest.cjs";
 
 import { assembleArtifact, writeArtifact, type AssembledArtifact } from "./tools/artifact-assembler.cjs";
 import { PROFILES, profile, type ArtifactProfile } from "./tools/artifact-profiles.cjs";
@@ -60,58 +62,59 @@ function compile(): void {
   for (const directory of ["content", "fixtures"]) {
     fs.cpSync(path.join(ROOT, directory), path.join(GENERATED, directory), { recursive: true });
   }
-  const packages = definitions(ROOT);
-  writeContent(ROOT, GENERATED, packages);
+  // Littlewild is read from its game folder (docs/concepts/littlewild, or WILDLANDS_GAMES_DIR). The
+  // compiled layout under .generated is unchanged: runtime installers and the CLI bundle read it.
+  const game = littlewild();
+  const content = game.manifest.content as ColonyContent;
+  const authored = [...content.packs, content.balancing, ...(content.skillTree ? [content.skillTree] : []), ...(content.adventureExamples ?? [])];
+  for (const file of authored) {
+    const target = path.join(GENERATED, "content", path.posix.basename(file));
+    if (fs.existsSync(path.join(ROOT, "content", path.posix.basename(file)))) throw new Error("Game content shadows engine content: " + file);
+    fs.copyFileSync(path.join(game.root, file), target);
+  }
+  writeContent(GENERATED, game.documents!);
   for (const fixture of ["scenario-v3-grown.json"]) {
     fs.copyFileSync(path.join(ROOT, fixture), path.join(GENERATED, fixture));
   }
-  fs.copyFileSync(path.join(ROOT, "assets", "interactions", "catalog.json"), path.join(GENERATED, "interaction-library.json"));
-  fs.writeFileSync(path.join(GENERATED, "creature-definitions.json"), JSON.stringify(creatureDefinitions(ROOT, packages)));
-  fs.copyFileSync(path.join(ROOT, "assets/creatures/editor-fields.json"), path.join(GENERATED, "creature-editor-fields.json"));
-  fs.writeFileSync(path.join(GENERATED, "creature-config.json"), JSON.stringify(creatureConfig(ROOT, packages)));
-  fs.writeFileSync(path.join(GENERATED, "asset-definitions.json"), JSON.stringify(assetDefinitions(ROOT, packages)));
-  fs.writeFileSync(path.join(GENERATED, "pet-asset-definitions.json"), JSON.stringify(petAssetDefinitions(ROOT, packages)));
+  const profile = game.profile, creatures = profile.creatures!;
+  fs.copyFileSync(path.join(game.root, content.interactions), path.join(GENERATED, "interaction-library.json"));
+  fs.writeFileSync(path.join(GENERATED, "creature-definitions.json"), JSON.stringify(creatures.definitions));
+  fs.copyFileSync(path.join(game.root, content.creatures.editorFields), path.join(GENERATED, "creature-editor-fields.json"));
+  fs.writeFileSync(path.join(GENERATED, "creature-config.json"), JSON.stringify(creatures.configuration));
+  fs.writeFileSync(path.join(GENERATED, "asset-definitions.json"), JSON.stringify(profile.assets));
+  // Pending engine data (Phase 3b moves it to docs/concepts/pocket-pet): pet presentation definitions.
+  fs.writeFileSync(path.join(GENERATED, "pet-asset-definitions.json"), JSON.stringify(petAssetDefinitions(definitions(path.join(ROOT, "assets")))));
+}
+
+let compiledLittlewild: CompiledGame | null = null;
+/** The Littlewild game folder, compiled once per build. */
+function littlewild(): CompiledGame {
+  return compiledLittlewild ??= compileGame(gameDirectory("littlewild"));
 }
 
 function json(file: string): unknown {
   return JSON.parse(fs.readFileSync(path.join(GENERATED, "content", file), "utf8"));
 }
 
-/** Every injectable data global from the compiled bundle; profiles select what they declare. */
+/**
+ * Every injectable data global; profiles select what they declare. Colony globals come from the
+ * Littlewild game folder; Emberworks/Office packs and the RTS/pet catalogs are pending engine data
+ * until their own game folders exist (Phase 3b).
+ */
 function bundledData(packPath: string | null): Map<string, unknown> {
   const generated = (file: string): unknown => JSON.parse(fs.readFileSync(path.join(GENERATED, file), "utf8"));
-  const balance = json("balancing.json") as {libraries:{base:unknown;adventure:unknown;world:unknown;growth:unknown};simulation:{rules:{actor:unknown;economy:unknown}};world:unknown;creatures:unknown;interactions:unknown;interiors:unknown};
+  const colony = littlewild().data;
   const packs = packPath
     ? [JSON.parse(fs.readFileSync(packPath, "utf8"))]
-    : [json("littlewild.pack.json"), json("emberworks.pack.json"), json("office.pack.json")];
+    : [...colony.get("LWScenarioPacks") as unknown[], json("emberworks.pack.json"), json("office.pack.json")];
   return new Map<string, unknown>([
     ["WildlandsGodotRuntimeLoader", generated("wildlands-runtime-loader.json")],
     ["WildlandsGodotTemplates", generated("wildlands-godot-templates.json")],
     ["LWEngineSourceLoader", generated("engine-source-loader.json")],
-    ["LWDefaultBalancing", balance],
-    ["LWDefaultLibrary", balance.libraries.base],
+    ...colony,
     ["LWRTSDefinitions", json("rts-demo.json")],
     ["LWPetDefinitions", json("pet-demo.json")],
     ["LWPetAssetDefinitions", generated("pet-asset-definitions.json")],
-    ["LWContentSchema", json("library.schema.json")],
-    ["LWInteriorDefinitions", balance.interiors],
-    ["LWInteractionLibrary", balance.interactions],
-    ["LWCreatureDefinitions", generated("creature-definitions.json")],
-    ["LWCreatureEditorFieldDefinitions", JSON.parse(fs.readFileSync(path.join(ROOT, "assets/creatures/editor-fields.json"), "utf8"))],
-    ["LWCreatureConfig", generated("creature-config.json")],
-    ["LWDefaultAdventure", balance.libraries.adventure],
-    ["LWAdventureSchema", json("adventure.schema.json")],
-    ["LWDefaultWorld", balance.libraries.world],
-    ["LWWorldSchema", json("world.schema.json")],
-    ["LWActorRules", balance.simulation.rules.actor],
-    ["LWEconomyRules", balance.simulation.rules.economy],
-    ["LWDefaultSimulationProfile", balance.simulation],
-    ["LWSimulationSchema", json("simulation.schema.json")],
-    ["LWDefaultGrowth", balance.libraries.growth],
-    ["LWGrowthSchema", json("growth.schema.json")],
-    ["LWDefaultProfile", balance.world],
-    ["LWScenarioSchema", json("scenario.schema.json")],
-    ["LWAssetDefinitions", generated("asset-definitions.json")],
     ["LWScenarioPacks", packs]
   ]);
 }

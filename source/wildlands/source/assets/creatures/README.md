@@ -1,15 +1,18 @@
 # Creature assets
 
-Creature packages live together under `source/assets/creatures/`:
+Creature packages live together under a game folder's `assets/creatures/`
+(Littlewild: `docs/concepts/littlewild/assets/creatures/`):
 
 ```text
-creatures/
+assets/creatures/
   catalog.json
-  catalog.schema.json
-  creature.schema.json
+  editor-fields.json
   sproutling/
     definition.json
 ```
+
+Their grammars, `catalog.schema.json` and `creature.schema.json`, stay here in the
+engine.
 
 The `creature` facet of `definition.json` owns gameplay identity, supported Adventure personalities, names,
 spawn modes, movement, physiology multipliers, persistent defaults and ECS

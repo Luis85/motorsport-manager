@@ -10,7 +10,7 @@ character points and specialties keep their own progression.
 
 The [value contracts](../../source/wildlands/source/skill-tree-contracts.d.ts) and
 [pure validator](../../source/wildlands/source/skill-trees.ts) own these rules.
-[The demo definition](../../source/wildlands/source/content/skill-tree.json) is a
+[The demo definition](../concepts/littlewild/content/skill-tree.json) is a
 version-1 example. An attachment captures a complete definition with zero XP and
 an empty rank map. It receives future rewards; existing levels do not grant
 retroactive points.

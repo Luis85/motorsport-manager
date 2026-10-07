@@ -20,11 +20,11 @@
       "buildings": 24,
       "items": 42,
       "actors": 1,
-      "root": "source/assets/"
+      "root": "../../docs/concepts/littlewild/assets/"
     },
     "creaturePackages": {
-      "root": "source/assets/creatures/",
-      "defaultCatalog": "source/assets/creatures/catalog.json",
+      "root": "../../docs/concepts/littlewild/assets/creatures/",
+      "defaultCatalog": "../../docs/concepts/littlewild/assets/creatures/catalog.json",
       "definition": "<id>/creature.json",
       "visualManifest": "<id>/asset.json"
     },
