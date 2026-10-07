@@ -182,6 +182,7 @@
     "source/developer-scene-contracts.d.ts",
     "source/test-scene-editor.cts",
     "source/test-scene-navigation.cts",
+    "source/test-scene-journeys.cts",
     "source/verification/scene-editor-browser.ts",
     "source/renderer-scene-2d.ts",
     "source/renderer-pixi.ts",
@@ -373,6 +374,7 @@
     "source/content-installers/template-games.cts",
     "source/test-support/install-games.cts",
     "source/test-support/game-fixtures.cts",
+    "source/test-support/scene-journeys.cts",
     "source/test-content-provider.cts"
   ],
   "include": []

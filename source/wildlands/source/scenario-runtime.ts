@@ -1,3 +1,4 @@
+/// <reference path="./renderer-data-contracts.d.ts" />
 /// <reference path="./content-provider-contracts.d.ts" />
 /* Reusable experience boundary: definition libraries + world template + scene state.
  * Validation is synchronous and reversible. Only a confirmed launch changes registries.
@@ -7,7 +8,7 @@
   interface ProfileApi {readonly defaults:LWContentPorts.SimulationProfile;readonly current:LWContentPorts.SimulationProfile;validate(input:unknown):LWContentPorts.SimulationProfile;apply(input:unknown):string;fingerprint(input:unknown):string;withProfile<T>(profile:unknown,work:()=>T):T;}
   interface WorldProfileApi {readonly defaults:LWContentPorts.WorldProfile;readonly current:LWContentPorts.WorldProfile;apply(profile:LWContentPorts.WorldProfile):void;withProfile<T>(profile:LWContentPorts.WorldProfile,work:()=>T):T;}
   interface EngineFacade {Engine:{import(input:unknown):LWContentPorts.ScenarioEngine};}
-  interface Root {LWSceneGraph:LWSceneGraph.Api;LWSceneNavigation:LWSceneNavigation.NavigationApi;LW?:EngineFacade;LWContent?:LWContentPorts.ContentApi;LWAdventure?:LWContentPorts.AdventureApi;LWWorldContent?:LWContentPorts.WorldApi;LWGrowth?:LWContentPorts.GrowthApi;LWWorldProfile?:WorldProfileApi;LWSimulationProfile?:ProfileApi;LWScenarioShape?:(input:unknown,schema:LWContentPorts.Schema)=>string[];LWScenarioSchema?:LWContentPorts.Schema;LWContentProvider?:LWContentProvider.Api;LWScenarios?:LWContentPorts.ScenarioApi;LWScenarioResources?:{snapshot():LWContentPorts.Resources;defaults():LWContentPorts.Resources;validate(input:unknown):LWContentPorts.Resources;withResources<T>(input:LWContentPorts.Resources|undefined,work:()=>T):T;apply(input:LWContentPorts.Resources|undefined):void;checkBindings(resources:LWContentPorts.Resources|undefined,libraries:LWContentPorts.Libraries):void;};LWGeography:{Grid:new(layout:{estate:{islands:{ix:number;iy:number}[]};nodes:{kind:string;x:number;y:number}[];buildings:never[]})=>{cells:Set<string>;flood(point:{x:number;y:number}):Set<string>;approach(point:{x:number;y:number}):boolean};};}
+  interface Root {LWRendererCatalog?:LittlewildRenderer.Catalog;LWAnimationCatalog?:{list():readonly unknown[]};LWSceneGraph:LWSceneGraph.Api;LWSceneNavigation:LWSceneNavigation.NavigationApi;LW?:EngineFacade;LWContent?:LWContentPorts.ContentApi;LWAdventure?:LWContentPorts.AdventureApi;LWWorldContent?:LWContentPorts.WorldApi;LWGrowth?:LWContentPorts.GrowthApi;LWWorldProfile?:WorldProfileApi;LWSimulationProfile?:ProfileApi;LWScenarioShape?:(input:unknown,schema:LWContentPorts.Schema)=>string[];LWScenarioSchema?:LWContentPorts.Schema;LWContentProvider?:LWContentProvider.Api;LWScenarios?:LWContentPorts.ScenarioApi;LWScenarioResources?:{snapshot():LWContentPorts.Resources;defaults():LWContentPorts.Resources;validate(input:unknown):LWContentPorts.Resources;withResources<T>(input:LWContentPorts.Resources|undefined,work:()=>T):T;apply(input:LWContentPorts.Resources|undefined):void;checkBindings(resources:LWContentPorts.Resources|undefined,libraries:LWContentPorts.Libraries):void;};LWGeography:{Grid:new(layout:{estate:{islands:{ix:number;iy:number}[]};nodes:{kind:string;x:number;y:number}[];buildings:never[]})=>{cells:Set<string>;flood(point:{x:number;y:number}):Set<string>;approach(point:{x:number;y:number}):boolean};};}
   const root=inputRoot as Root;
   const isRecord=(value:unknown):value is Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value);
   function issueMessages(error:unknown):string[]|null{if(!isRecord(error)||!Array.isArray(error.issues))return null;return error.issues.map(issue=>{const row=isRecord(issue)?issue:{};return (row.path||'/')+': '+row.message;});}
@@ -162,9 +163,41 @@
         throw Error(path + '/player/coins: expected a non-negative integer');
     } else throw Error(path + '/player: expected an object');
   }
+  /**
+   * Accepted-pack memo. Validation is a pure function of the parsed pack and of the extension
+   * catalogs it consults (renderer metadata and p5 animation presets); the installed game profile
+   * is fixed for the realm. Only accepted results are kept, keyed by the exact serialized pack (key
+   * order included, so a hit reproduces the same output) plus those catalogs, and every hit returns
+   * a fresh detached copy. A changed pack, a registered or withdrawn renderer or preset, and every
+   * rejection run the complete validation again.
+   */
+  type Accepted={key:string;pack:LWContentPorts.ScenarioPack;fingerprint:string;sceneCount:number};
+  const ACCEPTED_ENTRIES=8,ACCEPTED_TEXT=32*1024*1024,accepted=new Map<string,Accepted>();
+  let acceptedText=0;
+  function extensionCatalogs():string{
+    const renderers=(node?require('./renderer-catalog.js'):root.LWRendererCatalog) as LittlewildRenderer.Catalog|undefined;
+    return C.stable({renderers:renderers?.list()??null,animations:root.LWAnimationCatalog?.list()??null});
+  }
+  function remember(entry:Accepted):void{
+    if(entry.key.length>ACCEPTED_TEXT)return;
+    accepted.set(entry.key,entry);acceptedText+=entry.key.length;
+    for(const [key,old] of accepted){if(accepted.size<=ACCEPTED_ENTRIES&&acceptedText<=ACCEPTED_TEXT)break;accepted.delete(key);acceptedText-=old.key.length;}
+  }
   function validate(input:unknown):LWContentPorts.PackValidation {
     try {
       const parsed = stage('pack parse', () => C.parse(input, 8 * 1024 * 1024));
+      const key=extensionCatalogs()+'\n'+JSON.stringify(parsed),hit=accepted.get(key);
+      if(hit){accepted.delete(key);accepted.set(key,hit);return {ok:true,errors:[],pack:copy(hit.pack),fingerprint:hit.fingerprint,sceneCount:hit.sceneCount};}
+      const checked=validateParsed(parsed);
+      if(checked.ok)remember({key,pack:copy(checked.pack),fingerprint:checked.fingerprint,sceneCount:checked.sceneCount});
+      return checked;
+    } catch (error) {
+      const issues = issueMessages(error);
+      return { ok:false, errors: issues?.length ? issues : [message(error)] };
+    }
+  }
+  function validateParsed(parsed:unknown):LWContentPorts.PackValidation {
+    try {
       if(!isRecord(parsed)||parsed.schemaVersion!==2)return {ok:false,errors:['/schemaVersion: only current scenario schema version 2 is supported']};
       const errors:string[]=[];
       if (!packShape(parsed,errors)) return {ok:false,errors};
