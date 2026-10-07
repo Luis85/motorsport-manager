@@ -112,6 +112,10 @@ export async function waitForReady(page: Page, options: { timeout?: number; host
  * Install Playwright's controllable clock. Call it before `openArtifact` so timers, Date and
  * requestAnimationFrame are virtual from the first script; the page then advances only through
  * `advanceClock`, replacing fixed sleeps with exact simulated durations.
+ * Avoid it on pages whose animation frames are expensive (the colony world, the WebGL hosts): while
+ * virtual time flows, the clock catches up with real time by running every due frame back to back,
+ * which starves real rendering, so Playwright's actionability checks (which await real frames) stall.
+ * Count rendered frames with `nextFrames` there instead.
  */
 export async function installClock(page: Page, time: number | string | Date = 0): Promise<void> {
   await page.clock.install({ time });
@@ -127,3 +131,50 @@ export async function advanceClock(page: Page, milliseconds: number): Promise<vo
 export async function pauseClockAt(page: Page, time: number | string | Date): Promise<void> {
   await page.clock.pauseAt(time);
 }
+
+/**
+ * Action budget for ordinary controls (click, fill, select, focus). The former 5–7 s budgets were
+ * exceeded under concurrent suites on a 4-core host; a control that is not actionable within this
+ * budget is a real failure, not load.
+ */
+export const ACTION_TIMEOUT_MS = 15_000;
+/**
+ * Budget for a control whose handler synchronously builds or replaces a whole world (Begin, a scene
+ * launch, entering an interior or an embedded application). Playwright's click resolves only after
+ * that handler returns, measured at 2–8 s per click on a contended 4-core host, so it is a scene
+ * transition rather than an ordinary user action. Use it only for such clicks.
+ */
+export const TRANSITION_TIMEOUT_MS = 60_000;
+/**
+ * Resolve after the page has rendered `count` further animation frames (style, layout, resize
+ * observers and paint run between them): an explicit rendering condition, not a duration. Every
+ * application frame loop (colony, RTS, Pet) runs once per rendered frame, so this also counts
+ * application frames. With an installed clock the frames come from virtual time and must not be paused.
+ */
+export async function nextFrames(page: Page, count = 2): Promise<void> {
+  await page.evaluate(total => new Promise<void>(resolve => {
+    let remaining = total;
+    const step = (): void => { remaining -= 1; if (remaining <= 0) resolve(); else requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }), count);
+}
+
+/**
+ * Wait until `predicate` holds before a check asserts that same state. A timeout is deliberately not
+ * thrown here: the check's own assertion then reports the failure under its name instead of
+ * aborting the suite. The predicate must be a function (the artifacts' CSP rejects string predicates).
+ */
+export async function settle<Arg>(page: Page, predicate: (arg: Arg) => unknown, arg: Arg, timeout = ACTION_TIMEOUT_MS): Promise<boolean> {
+  // Playwright cannot unbox a generic argument type, so the predicate is passed with an erased argument type.
+  try { await page.waitForFunction(predicate as (value: unknown) => unknown, arg as unknown, { timeout }); return true; }
+  catch { return false; }
+}
+
+/**
+ * Per-page fixture URL on its own origin. Artifacts served from one origin share localStorage (and
+ * the colony saves on pagehide), so pages that must each start fresh use distinct origins.
+ */
+export const fixtureUrl = (label: string): string => {
+  if (!/^[a-z0-9-]{1,40}$/.test(label)) throw new Error("Fixture labels are short lowercase host labels");
+  return `https://${label}.localhost/wildlands-artifact.html`;
+};

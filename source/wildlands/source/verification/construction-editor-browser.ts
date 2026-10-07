@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {launchBrowser,monitorContext,READY_TIMEOUT_MS,waitForReady} from './browser-harness';
+import {ACTION_TIMEOUT_MS,fixtureUrl,launchBrowser,monitorContext,openArtifact,READY_TIMEOUT_MS,TRANSITION_TIMEOUT_MS,waitForReady} from './browser-harness';
 
 interface BrowserEngine {
  s:LWConstruction.World & {paused:boolean};
@@ -23,7 +23,11 @@ interface BrowserGlobals {
  editorObserved?:{preview:LWConstruction.Preview|null;commands:unknown[]};
 }
 const PROJECT=path.resolve(__dirname,'../..');
-const ARTIFACT=process.env.LITTLEWILD_CONSTRUCTION_HTML||path.join(PROJECT,'.generated/artifacts/showcase.html');
+// The colony play artifact carries the build panel and construction designer; nothing here needs the composite showcase.
+const ARTIFACT=process.env.LITTLEWILD_CONSTRUCTION_HTML||path.join(PROJECT,'.generated/artifacts/colony-play.html');
+const VIEWPORTS=[{width:1440,height:1000},{width:390,height:844}];
+// Each viewport starts a fresh world: its own origin keeps the first page's saves out of the second.
+const pageUrl=(viewport:{width:number}):string=>fixtureUrl('construction-'+viewport.width);
 const OUT=process.env.LITTLEWILD_CONSTRUCTION_OUT||path.join(PROJECT,'verification','v15');
 const results:{name:string;passed:boolean;error?:string}[]=[];
 let diagnostics:ReturnType<typeof monitorContext>;
@@ -33,13 +37,13 @@ async function check(name:string,work:()=>Promise<void>):Promise<void>{
 }
 async function main():Promise<void>{
  fs.mkdirSync(OUT,{recursive:true});
- const browser=await launchBrowser(),context=await browser.newContext();diagnostics=monitorContext(context);
+ const browser=await launchBrowser(),context=await browser.newContext();diagnostics=monitorContext(context,{fixtureUrls:VIEWPORTS.map(pageUrl)});
  try{
-  for(const viewport of [{width:1440,height:1000},{width:390,height:844}]){
-   const page=await context.newPage();await page.setViewportSize(viewport);page.setDefaultTimeout(7000);
-   await page.setContent(fs.readFileSync(ARTIFACT,'utf8'),{waitUntil:'load',timeout:30000});
-   await waitForReady(page,{timeout:READY_TIMEOUT_MS});
-   await page.locator('[data-act=begin]').click();
+  for(const viewport of VIEWPORTS){
+   const page=await context.newPage();await page.setViewportSize(viewport);page.setDefaultTimeout(ACTION_TIMEOUT_MS);
+   await openArtifact(page,ARTIFACT,{url:pageUrl(viewport)});
+   await waitForReady(page,{host:'colony',timeout:READY_TIMEOUT_MS});
+   await page.locator('[data-act=begin]').click({timeout:TRANSITION_TIMEOUT_MS});
    if(!await page.evaluate(()=>(window as unknown as BrowserGlobals).Littlewild.engine.s.paused))await page.locator('#pause-button').click();
    await page.evaluate(()=>{
     const g=window as unknown as BrowserGlobals,engine=g.Littlewild.engine;

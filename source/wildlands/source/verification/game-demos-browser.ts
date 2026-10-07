@@ -17,7 +17,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
-import {launchBrowser, monitorContext, READY_TIMEOUT_MS, waitForReady} from './browser-harness';
+import {ACTION_TIMEOUT_MS, launchBrowser, monitorContext, READY_TIMEOUT_MS, TRANSITION_TIMEOUT_MS, waitForReady} from './browser-harness';
 import {createHash} from 'node:crypto';
 import {gameDirectory, gamesRoot} from '../tools/game-folder.cjs';
 import {gameFolders} from '../tools/game-build.cjs';
@@ -50,7 +50,7 @@ async function withDemo(browser: Browser, demo: {file: string; engine: string; d
   const id = (path.dirname(demo.file) === DEMOS ? 'published-' : '') + path.basename(demo.file, '.html');
   try {
     const page = await context.newPage(), url = pathToFileURL(demo.file).href, local: string[] = [];
-    page.setDefaultTimeout(15000);
+    page.setDefaultTimeout(ACTION_TIMEOUT_MS);
     // The harness records network requests; a self-contained file must not load other local files either.
     page.on('request', request => { if (request.url() !== url && /^(?:file|https?):/.test(request.url())) local.push(request.url()); });
     await page.goto(url, {waitUntil: 'load', timeout: 60000});
@@ -89,7 +89,7 @@ async function colonyDemo(page: Page, game: GameJson, folder: string): Promise<v
   assert.equal(await page.evaluate('[typeof LWRTSHost,typeof LWPetHost,typeof LWScenarioUI,typeof LWDeveloper].join()'), 'undefined,undefined,undefined,undefined');
   const packs = (game.content.packs ?? []).map(file => readJson<{id: string}>(path.join(folder, file)).id);
   assert.equal(await page.evaluate('LWScenarios.builtins().map(pack=>pack.id).join()'), packs.join());
-  await page.locator('[data-act=begin]').click();
+  await page.locator('[data-act=begin]').click({timeout: TRANSITION_TIMEOUT_MS});
   const before = await page.evaluate('Littlewild.engine.s.simTime') as number;
   await page.evaluate('Littlewild.advance(5)');
   assert((await page.evaluate('Littlewild.engine.s.simTime') as number) > before, 'explicit advance moves the colony clock');
@@ -168,7 +168,7 @@ async function main(): Promise<void> {
       // A play demo carries no editors, developer session, export or template bundles.
       assert.equal(await page.evaluate('[typeof LWScenarioUI,typeof LWDeveloper,typeof WildlandsUI,typeof LWRTSHost,typeof LWPetHost].join()'), 'undefined,undefined,undefined,undefined,undefined');
       assert.equal(await page.evaluate('LWScenarios.builtins().map(pack=>pack.id).join()'), 'littlewild');
-      await page.locator('[data-act=begin]').click();
+      await page.locator('[data-act=begin]').click({timeout: TRANSITION_TIMEOUT_MS});
       const before = await page.evaluate('Littlewild.engine.s.simTime') as number;
       await page.evaluate('Littlewild.advance(5)');
       assert((await page.evaluate('Littlewild.engine.s.simTime') as number) > before, 'explicit advance moves the colony clock');
@@ -195,7 +195,7 @@ async function main(): Promise<void> {
     await check('CLI-built studio boots the colony with editors and export tools on demand', () => withDemo(browser, build(littlewild, path.join(work, 'studio.html'), 'studio'), async page => {
       await waitForReady(page, {host: 'colony', timeout: READY_TIMEOUT_MS});
       assert.equal(await page.evaluate('typeof Littlewild+"/"+typeof Wildlands'), 'object/object');
-      await page.locator('[data-act=begin]').click();
+      await page.locator('[data-act=begin]').click({timeout: TRANSITION_TIMEOUT_MS});
       assert.equal(await page.evaluate('typeof LWDeveloper'), 'object');
       assert.equal(await page.evaluate('WildlandsGodot.capability().available'), true);
     }));
