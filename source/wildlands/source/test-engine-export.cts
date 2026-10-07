@@ -9,9 +9,18 @@ import {createHash} from 'node:crypto';
 import {gunzipSync} from 'node:zlib';
 import {spawnSync} from 'node:child_process';
 import ts from 'typescript';
+import {INSERTS} from './tools/build-inserts.cjs';
+import {PROFILES,P5_SOURCE_ARCHIVE,payloadErrors,profileBundles,type ArtifactProfile} from './tools/artifact-profiles.cjs';
 const X=require('./scenario-runtime.js') as LWContentPorts.ScenarioApi,E=require('./engine-export.js') as LWEngineExport.Api,D=require('./engine-export-data.js') as LWEngineExport.Decoder;
 const results:{name:string;passed:boolean;error?:string}[]=[];
 const project=path.resolve(__dirname,'..'),walk=(directory:string):string[]=>fs.readdirSync(directory,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walk(path.join(directory,entry.name)):[path.join(directory,entry.name)]);
+/** Vendor scripts every engine-source artifact inlines verbatim; the loader stores exactly these empty. */
+const inlineVendor=INSERTS.filter(insert=>insert[2]==='script'&&insert[1].startsWith('../vendor/')).map(insert=>insert[1].slice(3)).sort();
+/** Decode the shipped browser loader exactly as stored, before any inline restoration. */
+function storedLoader():{loader:LWEngineExport.SourceLoader;stored:LWEngineExport.SourceBundle;decoded:Buffer}{
+ const loader=JSON.parse(fs.readFileSync(path.join(__dirname,'engine-source-loader.json'),'utf8')) as LWEngineExport.SourceLoader,decoded=gunzipSync(Buffer.from(loader.data,'base64'));
+ return {loader,stored:JSON.parse(decoded.toString()) as LWEngineExport.SourceBundle,decoded};
+}
 async function test(name:string,fn:()=>Promise<void>|void):Promise<void>{try{await fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,String(error));}}
 async function main():Promise<void>{
  const pack=X.builtins().find(value=>value.id==='office')!,before=JSON.stringify(pack),exchanged=await E.export(pack,pack.scenes[0]!.id),source=exchanged.sources;
@@ -70,7 +79,11 @@ async function main():Promise<void>{
   const archive=source.files.find(file=>file.path==='vendor/p5-source-2.3.4.tar.gz')!;assert.equal(archive.encoding,'base64');assert(gunzipSync(Buffer.from(archive.text,'base64')).byteLength>archive.bytes);
  });
  await test('Browser compressed loader expands into byte-identical Node bundle',()=>{
-  const loader=JSON.parse(fs.readFileSync(path.join(__dirname,'engine-source-loader.json'),'utf8')) as LWEngineExport.SourceLoader;const bytes=Buffer.from(loader.data,'base64'),decoded=gunzipSync(bytes);assert.equal(bytes.byteLength,loader.compressedBytes);assert.equal(decoded.byteLength,loader.decodedBytes);assert.deepEqual(decoded,fs.readFileSync(path.join(__dirname,'engine-source-bundle.json')));assert.deepEqual(JSON.parse(decoded.toString()),source);assert.equal(loader.identity,source.identity);
+  const {loader,stored,decoded}=storedLoader(),bytes=Buffer.from(loader.data,'base64');assert.equal(bytes.byteLength,loader.compressedBytes);assert.equal(decoded.byteLength,loader.decodedBytes);assert.equal(loader.identity,source.identity);
+  // Inline vendor scripts are stored empty; restoring the artifact's identical inline copies (the vendor files) is byte-identical.
+  assert.deepEqual((loader.inlineScripts??[]).map(entry=>entry.path).sort(),inlineVendor);assert.equal(inlineVendor.length,5);
+  for(const file of stored.files){const entry=loader.inlineScripts!.find(item=>item.path===file.path);if(!entry)continue;assert.equal(file.text,'');assert.equal(entry.bytes,file.bytes);assert.equal(entry.sha256,file.sha256);file.text=fs.readFileSync(path.join(project,file.path),'utf8');}
+  assert.deepEqual(Buffer.from(JSON.stringify(stored)),fs.readFileSync(path.join(__dirname,'engine-source-bundle.json')));assert.deepEqual(stored,source);
  });
  await test('Incomplete inventory, path traversal, hash tampering and derived manifest edits reject',async()=>{
   for(const mutate of [(value:LWEngineExport.Document)=>{value.sources.files.pop();},(value:LWEngineExport.Document)=>{value.sources.files[0]!.path='../engine.ts';},(value:LWEngineExport.Document)=>{value.sources.files[0]!.text+='\n//changed';},(value:LWEngineExport.Document)=>{value.sources.inventory.included.pop();},(value:LWEngineExport.Document)=>{value.godot.selectedSceneId='missing';}]){const changed=D.parse(exchanged) as LWEngineExport.Document;mutate(changed);assert.equal((await E.validate(changed)).ok,false);}assert.equal(JSON.stringify(pack),before);
@@ -85,6 +98,22 @@ async function main():Promise<void>{
   const engine=X.commitScene(X.prepareScene(pack,pack.scenes[0]!.id)) as LWContentPorts.ScenarioEngine&{advance(seconds:number):void};let paid=false;for(let i=0;i<1000;i++){engine.advance(.1);const buildings=engine.export().state.buildings as {storage?:{job?:{progress:number}}}[];if(buildings.some(building=>(building.storage?.job?.progress??0)>0)){paid=true;break;}}assert(paid);const captured=X.capture(engine),snapshot=engine.export(),value=await E.export(captured,captured.scenes[0]!.id);assert.deepEqual(value.pack,captured);assert.deepEqual(engine.export(),snapshot);assert.deepEqual(value.checkpoint.owners.find(owner=>owner.id===captured.scenes[0]!.id)!.state,captured.scenes[0]!.initialState);assert((await E.validate(value)).ok);const restored=X.commitScene(X.prepareScene(value.pack,value.sceneId)) as LWContentPorts.ScenarioEngine&{advance(seconds:number):void};engine.advance(1);restored.advance(1);assert.deepEqual(restored.export(),engine.export());
  });
 
+ await test('Inline vendor restoration needs the exact inline script bytes and never accepts a missing or altered copy',async()=>{
+  const loader=JSON.parse(fs.readFileSync(path.join(__dirname,'engine-source-loader.json'),'utf8')) as LWEngineExport.SourceLoader,scripts=inlineVendor.map(file=>'\n'+fs.readFileSync(path.join(project,file),'utf8')+'\n');
+  assert.deepEqual(await D.sources(loader,['\nunrelated();\n',...scripts]),source);
+  await assert.rejects(D.sources(loader,scripts.slice(1)),/is not inlined in this artifact; the engine-source payload is incomplete/);
+  const altered=scripts.map((text,index)=>index?text:text.slice(0,-2)+(text.at(-2)==='x'?'y':'x')+'\n');
+  await assert.rejects(D.sources(loader,altered),/is not inlined in this artifact/);await assert.rejects(D.sources(loader),/is not inlined in this artifact/);
+  const forged={...loader,inlineScripts:[{...loader.inlineScripts![0]!,path:'source/engine.ts'}]};await assert.rejects(D.sources(forged,scripts),/Invalid inline engine source reference: source\/engine\.ts/);
+  // The browser Godot opt-in reads the page's scripts (infrastructure adapter) and must publish the exact Node bundle bytes.
+  const browser=globalThis as unknown as {LWEngineSourceLoader?:unknown;document?:{scripts:{text:string}[]}};browser.LWEngineSourceLoader=loader;browser.document={scripts:scripts.map(text=>({text}))};
+  try{
+   require('./developer-sdk.cjs');const P=require('./wildlands-project.js') as {create():unknown},G=require('./wildlands-godot.js') as {compile(project:unknown,resources:unknown,options:{withEngineSources:boolean}):Promise<{files:{path:string;content:string}[]}>};
+   const resources={bundle:JSON.parse(fs.readFileSync(path.join(__dirname,'wildlands-runtime-bundle.json'),'utf8')) as unknown,templates:JSON.parse(fs.readFileSync(path.join(__dirname,'wildlands-godot-templates.json'),'utf8')) as unknown};
+   const compiled=await G.compile(P.create(),resources,{withEngineSources:true});
+   assert.equal(compiled.files.find(file=>file.path==='runtime/engine-source-bundle.json')?.content,fs.readFileSync(path.join(__dirname,'engine-source-bundle.json'),'utf8'));
+  }finally{delete browser.LWEngineSourceLoader;delete browser.document;}
+ });
  await test('Trimmed toolchain keeps exactly the declarations the project compiler loads and drops unloaded TypeScript files',()=>{
   const paths=new Set(source.files.map(file=>file.path)),toolchain=source.files.filter(file=>file.role==='toolchain'||file.path.startsWith('toolchain/'));
   assert.equal(source.build.compiler,'toolchain/typescript/lib/typescript.js');assert(paths.has(source.build.compiler));
@@ -109,6 +138,16 @@ async function main():Promise<void>{
    assert.deepEqual(emitted,authored);assert(emitted.length>200);
    for(const file of emitted)assert(fs.readFileSync(path.join(out,file)).equals(fs.readFileSync(path.join(__dirname,file))),'Rebuilt '+file+' differs from the gate build');
   }finally{fs.rmSync(directory,{recursive:true,force:true});}
+ });
+ await test('Engine-source payload profiles inline vendors verbatim and every p5 artifact carries its LGPL source',()=>{
+  for(const candidate of PROFILES)assert.deepEqual(payloadErrors(candidate),[],candidate.id);
+  const carrying=PROFILES.filter(candidate=>candidate.data.includes('LWEngineSourceLoader')).map(candidate=>candidate.id);assert.deepEqual(carrying,['showcase','studio']);
+  for(const candidate of PROFILES.filter(entry=>entry.kind==='play'))assert(!profileBundles(candidate).includes('animation-p5'),candidate.id);
+  assert(source.files.some(file=>file.path===P5_SOURCE_ARCHIVE&&file.role==='source-archive'));
+  const studio=PROFILES.find(candidate=>candidate.id==='studio')!,variant=(change:Partial<ArtifactProfile>):string[]=>payloadErrors({...studio,...change});
+  assert.match(variant({minify:true}).join('\n'),/must inline vendor scripts unminified/);
+  assert.match(variant({bundles:studio.bundles.filter(bundle=>bundle!=='renderers-2d')}).join('\n'),/does not inline PIXI_VENDOR/);
+  assert.match(variant({data:studio.data.filter(name=>name!=='LWEngineSourceLoader')}).join('\n'),/inlines p5 \(P5_VENDOR\) without its LGPL source offer/);
  });
 }
 main().catch(error=>{results.push({name:'Setup',passed:false,error:String(error)});}).finally(()=>{const report={suite:'engine-export',passed:results.filter(result=>result.passed).length,total:results.length,results};fs.writeFileSync(path.join(__dirname,'engine-export-results.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));if(results.some(result=>!result.passed))process.exitCode=1;});

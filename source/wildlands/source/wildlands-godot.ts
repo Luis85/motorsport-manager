@@ -12,7 +12,7 @@
  interface Options {withEngineSources?:boolean;}
  interface Project {format:'wildlands-project';schemaVersion:1;id:string;name:string;target:'godot';scenarioId:string;sceneId:string;pack:LWContentPorts.ScenarioPack;}
  interface Loader {encoding:'gzip-base64';decodedBytes:number;sha256?:string;data:string;}
- const root=inputRoot as {WildlandsGodotTemplates?:Record<string,string>;WildlandsGodotRuntimeBundle?:RuntimeBundle;WildlandsGodotRuntimeLoader?:Loader;LWEngineSourceLoader?:Loader;WildlandsProject?:{validate(input:unknown):{ok:boolean;project?:Project;errors:readonly string[]}};LWDeveloper?:LittlewildDeveloper.Toolbox;WildlandsGodot?:unknown};
+ const root=inputRoot as {WildlandsGodotTemplates?:Record<string,string>;WildlandsGodotRuntimeBundle?:RuntimeBundle;WildlandsGodotRuntimeLoader?:Loader;LWEngineSourceLoader?:Loader;LWEngineExportData?:LWEngineExport.Decoder;WildlandsProject?:{validate(input:unknown):{ok:boolean;project?:Project;errors:readonly string[]}};LWDeveloper?:LittlewildDeveloper.Toolbox;WildlandsGodot?:unknown};
  const encoder=new TextEncoder();
  let cachedBundle:RuntimeBundle|undefined;
  const pathPattern=/^[a-zA-Z0-9_./ -]+$/;
@@ -53,7 +53,10 @@
  }
  /** Exact engine-source bundle text for an explicit opt-in; never inflated otherwise. */
  async function engineSources(resources?:Resources):Promise<string>{
-  const text=resources?.engineSources??(root.LWEngineSourceLoader?await inflate(root.LWEngineSourceLoader):undefined);
+  // A browser artifact restores its loader through the engine-export decoder (inline vendor scripts included).
+  const decoder=root.LWEngineExportData,loader=root.LWEngineSourceLoader;
+  const scripts=():string[]=>typeof document==='undefined'?[]:Array.from(document.scripts,script=>script.text);
+  const text=resources?.engineSources??(loader&&decoder?JSON.stringify(await decoder.sources(loader,scripts())):undefined);
   if(text===undefined)throw Error(ENGINE_SOURCES_UNAVAILABLE);
   const bundle=JSON.parse(text) as {format?:unknown;identity?:unknown};
   if(bundle.format!=='littlewild-engine-sources'||typeof bundle.identity!=='string')throw Error('Trusted engine-source bundle is invalid. Rebuild Wildlands.');

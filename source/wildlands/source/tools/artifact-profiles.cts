@@ -161,6 +161,26 @@ function closureErrors(source: string, candidate: ArtifactProfile): string[] {
   return errors;
 }
 
+/** p5 is LGPL-2.1: wherever it is inlined, its corresponding source must ship in the same artifact. */
+export const P5_SOURCE_ARCHIVE = 'vendor/p5-source-2.3.4.tar.gz';
+/**
+ * Payload policy (ENGINE-EXPORT.md). The engine-source loader stores vendor scripts empty and the
+ * browser restores them from the artifact's identical inline scripts, so a profile carrying it must
+ * inline every vendor script verbatim (unminified). A profile that inlines p5 must carry the loader,
+ * whose inventory holds the matching p5 source archive (the LGPL source offer).
+ */
+export function payloadErrors(candidate: ArtifactProfile): string[] {
+  const errors: string[] = [], where = `Profile ${candidate.id}`, bundles = profileBundles(candidate);
+  const vendor = INSERTS.filter(insert => insert[2] === 'script' && insert[1].startsWith('../vendor/'));
+  if (candidate.data.includes('LWEngineSourceLoader')) {
+    if (candidate.minify) errors.push(`${where} carries the engine-source loader and must inline vendor scripts unminified.`);
+    for (const [name, , , bundle] of vendor) if (!bundles.includes(bundle)) errors.push(`${where} carries the engine-source loader but does not inline ${name} (bundle ${bundle}).`);
+  }
+  const p5 = vendor.filter(insert => /(^|\/)p5-[^/]*\.js$/.test(insert[1]) && bundles.includes(insert[3]));
+  if (p5.length && !candidate.data.includes('LWEngineSourceLoader')) errors.push(`${where} inlines p5 (${p5.map(insert => insert[0]).join(', ')}) without its LGPL source offer; declare LWEngineSourceLoader, which carries ${P5_SOURCE_ARCHIVE}.`);
+  return errors;
+}
+
 /** Structural contract between INSERTS, bundle tags, data globals, templates and profiles. */
 export function profileErrors(source: string): string[] {
   const errors: string[] = [], known = new Set<string>(BUNDLES), names = INSERTS.map(insert => insert[0]);
@@ -201,7 +221,7 @@ export function profileErrors(source: string): string[] {
     }
     const resolved = INSERTS.filter(insert => profileBundles(candidate).includes(insert[3])).map(insert => insert[0]);
     if (!subsequence(resolved, names)) errors.push(`${where} insert order is not a subsequence of INSERTS.`);
-    errors.push(...closureErrors(source, candidate));
+    errors.push(...closureErrors(source, candidate), ...payloadErrors(candidate));
     // The asset catalog starts empty without a bundled list; only the standalone pet admits its own.
     if (profileBundles(candidate).includes('colony-shell') && !candidate.data.includes('LWAssetDefinitions')) errors.push(`${where} runs the colony and must declare LWAssetDefinitions.`);
   }

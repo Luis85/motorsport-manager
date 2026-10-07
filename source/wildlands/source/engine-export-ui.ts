@@ -9,6 +9,8 @@ declare namespace LWEngineExportUI {
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {LWEngineExport?:LWEngineExport.Api;LWEngineExportUI?:LWEngineExportUI.Api;LWFiles:{downloadJSON(value:unknown,name:string):void}};
+ // DOM adapter for the engine-source loader: vendor scripts are restored from this page's identical inline copies.
+ if(typeof document!=='undefined')(root.LWEngineExport as (LWEngineExport.Api&Partial<LWEngineExport.InlineScriptPort>)|undefined)?.useInlineScripts?.(()=>Array.from(document.scripts,script=>script.text));
  function create(host:LWEngineExportUI.Host):LWEngineExportUI.Surface{
   let busy=false,token=0,expanded=false,notice='',error='';
   function cancel():void{token++;busy=false;}
