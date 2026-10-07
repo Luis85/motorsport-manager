@@ -8,7 +8,7 @@ import ts from "typescript";
 import { ownershipErrors, executableDataErrors, DataManifest } from "./architecture-data.cjs";
 import { contractErrors, ContractOwner } from "./architecture-contracts.cjs";
 import { analyzeRuntime, resolveRuntimeDependency } from "./architecture-analysis.cjs";
-import { profileErrors } from "./artifact-profiles.cjs";
+import { profileErrors, DATA_GLOBALS } from "./artifact-profiles.cjs";
 
 interface CheckResult { name: string; passed: boolean; error?: string; }
 
@@ -217,6 +217,32 @@ check("Bundled assets have one authoring source and canonical catalog projection
   defaultScenario(SOURCE, balancingDocument(SOURCE));
   for (const name of ['default-library','adventure-library','world-library','growth-library','building-interiors'])
     assert(!fs.existsSync(path.join(SOURCE,'content',name+'.json')), 'Duplicate content source: '+name);
+});
+
+/** Game content files: shipped definitions/packs and their build projections. Engine schemas are not game data. */
+function gameDataRequest(request: string): boolean {
+  return /^\.\.?\/(?:assets\/|content\/(?![^/]+\.schema\.json$))/.test(request) ||
+    /^\.\/(?:asset-definitions|pet-asset-definitions|creature-definitions|creature-config|creature-editor-fields|interaction-library)\.json$/.test(request);
+}
+check("Runtime modules read game content only through the installed content provider", () => {
+  const provider = "content-provider.ts";
+  const owner = DOMAIN_MAP.contexts.find(context => context.files.includes(provider));
+  assert(owner?.layer === "domain", "The content provider must be a domain-owned runtime module.");
+  assert(analyses.get(provider)!.globals.some(global => global.name === "LWContentProvider" && global.write), "The content provider must publish LWContentProvider.");
+  // Injected game data globals reach engine modules only as an installed profile. Engine-owned
+  // schemas and export payloads stay outside the profile; the library schema carries game vocabulary.
+  const gameGlobals = new Set(DATA_GLOBALS.filter(([name, group]) => group !== "export-payloads" && (!/Schema$/.test(name) || name === "LWContentSchema")).map(([name]) => name));
+  const probe = analyzeRuntime("probe.ts", "const a=require('./content/balancing.json'),b=require('./content/scenario.schema.json'),c=require('./creature-definitions.json');const d=root.LWDefaultBalancing;");
+  assert(probe.dependencies.filter(request => request !== null && gameDataRequest(request)).length === 2 && probe.globals.some(global => gameGlobals.has(global.name)),
+    "Game content regression probe must be detected.");
+  assert(gameDataRequest("../assets/items/wood/definition.json") && !gameDataRequest("./engine-source-bundle.json") && gameGlobals.has("LWScenarioPacks") && !gameGlobals.has("LWScenarioSchema"),
+    "Game content classification probe failed.");
+  const violations: string[] = [];
+  for (const [file, analysis] of analyses) {
+    for (const request of analysis.dependencies) if (request !== null && gameDataRequest(request)) violations.push(file + " requires game data " + request);
+    if (file !== provider) for (const global of analysis.globals) if (gameGlobals.has(global.name)) violations.push(file + " reads injected game data " + global.name);
+  }
+  assert(violations.length === 0, "Runtime module bypasses the content provider: " + violations.join("; "));
 });
 
 check("Project contracts and erased type dependencies follow inward ownership", () => {
