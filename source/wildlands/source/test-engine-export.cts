@@ -3,11 +3,15 @@
 /// <reference path="./animation-contracts.d.ts" />
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {gunzipSync} from 'node:zlib';
+import {spawnSync} from 'node:child_process';
+import ts from 'typescript';
 const X=require('./scenario-runtime.js') as LWContentPorts.ScenarioApi,E=require('./engine-export.js') as LWEngineExport.Api,D=require('./engine-export-data.js') as LWEngineExport.Decoder;
 const results:{name:string;passed:boolean;error?:string}[]=[];
+const project=path.resolve(__dirname,'..'),walk=(directory:string):string[]=>fs.readdirSync(directory,{withFileTypes:true}).flatMap(entry=>entry.isDirectory()?walk(path.join(directory,entry.name)):[path.join(directory,entry.name)]);
 async function test(name:string,fn:()=>Promise<void>|void):Promise<void>{try{await fn();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,String(error));}}
 async function main():Promise<void>{
  const pack=X.builtins().find(value=>value.id==='office')!,before=JSON.stringify(pack),exchanged=await E.export(pack,pack.scenes[0]!.id),source=exchanged.sources;
@@ -79,6 +83,32 @@ async function main():Promise<void>{
  });
  await test('Paid native work/actor fractional coordinates survive export without losing continuation state',async()=>{
   const engine=X.commitScene(X.prepareScene(pack,pack.scenes[0]!.id)) as LWContentPorts.ScenarioEngine&{advance(seconds:number):void};let paid=false;for(let i=0;i<1000;i++){engine.advance(.1);const buildings=engine.export().state.buildings as {storage?:{job?:{progress:number}}}[];if(buildings.some(building=>(building.storage?.job?.progress??0)>0)){paid=true;break;}}assert(paid);const captured=X.capture(engine),snapshot=engine.export(),value=await E.export(captured,captured.scenes[0]!.id);assert.deepEqual(value.pack,captured);assert.deepEqual(engine.export(),snapshot);assert.deepEqual(value.checkpoint.owners.find(owner=>owner.id===captured.scenes[0]!.id)!.state,captured.scenes[0]!.initialState);assert((await E.validate(value)).ok);const restored=X.commitScene(X.prepareScene(value.pack,value.sceneId)) as LWContentPorts.ScenarioEngine&{advance(seconds:number):void};engine.advance(1);restored.advance(1);assert.deepEqual(restored.export(),engine.export());
+ });
+
+ await test('Trimmed toolchain keeps exactly the declarations the project compiler loads and drops unloaded TypeScript files',()=>{
+  const paths=new Set(source.files.map(file=>file.path)),toolchain=source.files.filter(file=>file.role==='toolchain'||file.path.startsWith('toolchain/'));
+  assert.equal(source.build.compiler,'toolchain/typescript/lib/typescript.js');assert(paths.has(source.build.compiler));
+  for(const dropped of ['toolchain/typescript/lib/_tsc.js','toolchain/typescript/lib/tsc.js','toolchain/typescript/lib/_tsserver.js','toolchain/typescript/lib/lib.webworker.d.ts','toolchain/typescript/lib/de/diagnosticMessages.generated.json','toolchain/@types/node/ts5.6/index.d.ts']){assert(!paths.has(dropped),dropped);assert(source.inventory.excluded.includes(dropped),dropped);}
+  assert(!toolchain.some(file=>/diagnosticMessages|tsserver|typingsInstaller|\/ts5\.\d\//.test(file.path)));
+  for(const kept of ['toolchain/typescript/lib/lib.es2022.d.ts','toolchain/typescript/lib/lib.dom.iterable.d.ts','toolchain/typescript/lib/typescript.d.ts','toolchain/typescript/LICENSE.txt','toolchain/typescript/ThirdPartyNoticeText.txt','toolchain/undici-types/package.json'])assert(paths.has(kept),kept);
+  // Independent oracle: the real full-project program may load only inventoried toolchain declarations.
+  const config=ts.readConfigFile(path.join(project,'tsconfig.json'),ts.sys.readFile),parsed=ts.parseJsonConfigFileContent(config.config,ts.sys,project);
+  const modules=path.join(project,'node_modules'),loaded=ts.createProgram({rootNames:parsed.fileNames,options:{...parsed.options,noEmit:true}}).getSourceFiles().map(file=>path.relative(modules,path.resolve(file.fileName)).replaceAll(path.sep,'/')).filter(file=>/^(typescript|@types\/node|undici-types)\//.test(file));
+  assert(loaded.length>150);for(const file of loaded)assert(paths.has('toolchain/'+file),'Missing loaded declaration toolchain/'+file);
+  assert(toolchain.reduce((sum,file)=>sum+file.bytes,0)<16*1024*1024);
+ });
+ await test('Bundled sources and trimmed toolchain recompile to the gate\'s exact compiled JavaScript',()=>{
+  const directory=fs.mkdtempSync(path.join(os.tmpdir(),'wildlands-engine-rebuild-'));
+  try{
+   for(const file of source.files){const target=path.join(directory,file.path.startsWith('toolchain/')?'node_modules/'+file.path.slice('toolchain/'.length):file.path);fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,Buffer.from(file.text,file.encoding==='base64'?'base64':'utf8'));}
+   const compiler=path.join(directory,'node_modules',source.build.compiler.slice('toolchain/'.length)),out=path.join(directory,'rebuilt');
+   const child=spawnSync(process.execPath,['-e','const ts=require(process.argv[1]);ts.executeCommandLine(ts.sys,()=>{},process.argv.slice(2))',compiler,'-p','tsconfig.json','--outDir',out],{cwd:directory,encoding:'utf8',timeout:180000,maxBuffer:16*1024*1024});
+   assert.equal(child.status,0,child.stdout+child.stderr);
+   const authored=source.files.filter(file=>/^source\/.*\.c?ts$/.test(file.path)&&!file.path.endsWith('.d.ts')).map(file=>file.path.slice('source/'.length).replace(/\.ts$/,'.js').replace(/\.cts$/,'.cjs')).sort();
+   const emitted=walk(out).map(file=>path.relative(out,file).replaceAll(path.sep,'/')).sort();
+   assert.deepEqual(emitted,authored);assert(emitted.length>200);
+   for(const file of emitted)assert(fs.readFileSync(path.join(out,file)).equals(fs.readFileSync(path.join(__dirname,file))),'Rebuilt '+file+' differs from the gate build');
+  }finally{fs.rmSync(directory,{recursive:true,force:true});}
  });
 }
 main().catch(error=>{results.push({name:'Setup',passed:false,error:String(error)});}).finally(()=>{const report={suite:'engine-export',passed:results.filter(result=>result.passed).length,total:results.length,results};fs.writeFileSync(path.join(__dirname,'engine-export-results.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));if(results.some(result=>!result.passed))process.exitCode=1;});
