@@ -27,6 +27,10 @@
       "owner": "content-model"
     },
     {
+      "path": "content-provider-contracts.d.ts",
+      "owner": "content-provider"
+    },
+    {
       "path": "developer-contracts.d.ts",
       "owner": "developer-application"
     },

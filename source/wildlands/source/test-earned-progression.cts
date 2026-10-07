@@ -1,4 +1,6 @@
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 // An earned fresh story: no grants to coins, RP, prestige, levels, skills or inventory.
 const L=require('./simulation.cjs'),S=require('./story-codec.js'),fs=require('node:fs'),assert=require('node:assert/strict');
 const e=new L.Engine();e.s.started=true;e.s.paused=false;e.selectCreature('c1');

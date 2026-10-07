@@ -1,11 +1,13 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /// <reference path="./pet-contracts.d.ts" />
 /** Strict inert Pocket Pet catalog admission. Values are bounded; references are resolved before use. */
 (function(inputRoot:unknown){
  'use strict';
  type Plain=Record<string,unknown>;
  interface Asset {id?:unknown;category?:unknown;models?:unknown;}
- const root=inputRoot as {LWPetCatalog?:LWPetData.CatalogApi;LWPetDefinitions?:unknown;LWPetAssetDefinitions?:unknown};
+ const root=inputRoot as {LWPetCatalog?:LWPetData.CatalogApi;LWContentProvider?:LWContentProvider.Api};
  const node=typeof module!=='undefined'&&module.exports;
+ const Content=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api;
  const fail=(message:string):never=>{throw Error('Pet catalog: '+message);};
  const plain=(v:unknown):v is Plain=>v!==null&&typeof v==='object'&&!Array.isArray(v)&&[Object.prototype,null].includes(Object.getPrototypeOf(v));
  const copy=<T>(v:T):T=>JSON.parse(JSON.stringify(v)) as T;
@@ -30,7 +32,7 @@
  function spot(value:unknown,path:string):void{const s=fields(value,['x','z'],path);num(s.x,path+'.x',-2.2,2.2);num(s.z,path+'.z',-2.2,2.2);}
  /** Optional presentation cross-check: pet assets are bundled beside the catalog in the browser build. */
  function assets():Map<string,Set<string>>|null{
-  const raw=root.LWPetAssetDefinitions??(node?(():unknown=>{try{return require('./pet-asset-definitions.json') as unknown;}catch{return undefined;}})():undefined);
+  const raw=Content.installed()?Content.get().pet?.assets:undefined;
   if(!Array.isArray(raw))return null;
   return new Map((raw as Asset[]).filter(a=>a&&a.category==='pet'&&typeof a.id==='string'&&plain(a.models)).map(a=>[a.id as string,new Set(Object.keys(a.models as Plain))]));
  }
@@ -134,8 +136,11 @@
   return deepFreeze(data as LWPetData.Catalog);
  }
  function deepFreeze<T>(value:T):T{if(value&&typeof value==='object'&&!Object.isFrozen(value)){Object.freeze(value);for(const child of Object.values(value))deepFreeze(child);}return value;}
- const raw=root.LWPetDefinitions??(node?require('./content/pet-demo.json') as unknown:undefined);
- const api:LWPetData.CatalogApi=Object.freeze({defaults:validate(raw),validate});
+ // The installed game's pet catalog, admitted on first use or as soon as a pet game is installed.
+ let installed:LWPetData.Catalog|null=null;
+ const defaults=():LWPetData.Catalog=>installed??=validate(Content.get('the pet catalog').pet?.definitions);
+ const api:LWPetData.CatalogApi=Object.freeze({get defaults(){return defaults();},validate});
+ Content.whenInstalled(()=>{defaults();},'pet');
  root.LWPetCatalog=api;
  if(node)module.exports=api;
 })(globalThis);

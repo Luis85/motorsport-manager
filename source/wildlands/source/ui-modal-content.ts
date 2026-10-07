@@ -18,7 +18,7 @@
         else if (ui.modal === 'welcome') {
             m.classList.add('welcome');
             // The scenario library is an optional bundle; like the world menu, omit its entry when absent.
-            const experience=LWScenarios.builtins()[0];
+            const experience=LWScenarios.defaultPack();
             markup = `<div class="welcome-art"><canvas id="welcome-canvas" width="700" height="173" aria-hidden="true"></canvas><span class="eyebrow">LIVING WORLDS · ${esc(experience.name.toUpperCase())}</span></div><div class="modal-body"><div class="welcome-pill">${icon('leaf')}Autonomous lives. Shared possibilities.</div><h1 id="modal-title" tabindex="-1">Choose a beginning.</h1>${shell.loadWarning?'<div class="quality-notice">'+esc(shell.loadWarning)+'<button class="btn" data-act="recover">Review recovery</button></div>':''}<p class="intro">${esc(experience.description)}</p><div class="scenario-starts"><button class="btn primary" data-act="begin">${esc(experience.scenes[0].name)} ${icon('arrow')}</button><p>${esc(experience.scenes[0].description)}</p>${experience.scenes.length>1?'<button class="btn" data-act="land-demo">'+esc(experience.scenes[1].name)+' ↗</button><p>'+esc(experience.scenes[1].description)+'</p>':''}</div><div class="welcome-library-link">${shell.scenarioUI?'<button class="text-btn" data-act="scenarios">Worlds & scenarios · import your own ↗</button>':''}<button class="text-btn" data-act="import">Continue from a story JSON ↗</button></div><p class="footnote">This is a setting built on a reusable simulation. All play is local and offline. Export a JSON backup before replacing a story.</p></div>`;
         }
         else if (ui.modal === 'suggest') {

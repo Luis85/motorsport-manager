@@ -1,3 +1,4 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /* Immutable, executable-free creature archetype catalog. Creature state is data; systems own behavior. */
 (function(inputRoot: unknown){
  'use strict';
@@ -39,18 +40,25 @@
   seed(archetype:string,personality:string,mode:Mode,sequence:number):Plain;
   validate(input:unknown):Definition;
  }
- interface Root{LWCreatureConfig?:unknown;LWCreatureDefinitions?:unknown;LWCreatures?:Api;}
+ interface Root{LWContentProvider?:LWContentProvider.Api;LWCreatures?:Api;}
 
  const root=inputRoot as Root;
  const node=typeof module!=='undefined'&&module.exports;
- const authored:Api['defaults']={configuration:(root.LWCreatureConfig??(node?require('./creature-config.json'):undefined)) as Api['configuration'],definitions:(root.LWCreatureDefinitions??(node?require('./creature-definitions.json'):undefined)) as Definition[]};
- if(!authored.configuration||!authored.definitions)throw Error('Creature catalog configuration or definitions are missing.');
+ const provider=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api|undefined;
+ if(!provider)throw Error('Content provider is missing.');
+ const Content=provider;
  const balancer=(node?require('./creature-balancing.js'):(globalThis as unknown as {LWCreatureBalancing:unknown}).LWCreatureBalancing) as {merge(base:Api['defaults'],overlay:unknown):Api['defaults']};
- const browserDocument=(globalThis as unknown as {LWDefaultBalancing?:{creatures:unknown}}).LWDefaultBalancing;
- if(!node&&browserDocument!==undefined&&(!browserDocument||typeof browserDocument!=='object'||!Object.hasOwn(browserDocument,'creatures')))throw Error('Creature balancing overlay is missing.');
- if((node||browserDocument!==undefined)&&(!balancer||typeof balancer.merge!=='function'))throw Error('Creature balancing merge helper is missing.');
- const overlay=node?require('./content/balancing.json').creatures:browserDocument?.creatures;
- const balanced=!node&&browserDocument===undefined?authored:balancer.merge(authored,overlay),source:unknown=balanced.definitions,configSource:unknown=balanced.configuration;
+ /** Authored creatures of the installed game, tuned by its balancing overlay when the game declares balancing. */
+ function installedSources():{configSource:unknown;source:unknown}{
+  const profile=Content.get('the creature catalog'),creatures=profile.creatures;
+  const authored:Api['defaults']={configuration:creatures?.configuration as Api['configuration'],definitions:creatures?.definitions as Definition[]};
+  if(!authored.configuration||!authored.definitions)throw Error('Creature catalog configuration or definitions are missing.');
+  const document=profile.balancing;
+  if(document!==undefined&&(!document||typeof document!=='object'||!Object.hasOwn(document,'creatures')))throw Error('Creature balancing overlay is missing.');
+  if(document!==undefined&&(!balancer||typeof balancer.merge!=='function'))throw Error('Creature balancing merge helper is missing.');
+  const balanced=document===undefined?authored:balancer.merge(authored,(document as {creatures:unknown}).creatures);
+  return {configSource:balanced.configuration,source:balanced.definitions};
+ }
  const safeId=/^[a-z][a-z0-9_-]{0,60}$/;
  const safeField=/^[A-Za-z][A-Za-z0-9_]{0,60}$/;
  const safeComponent=/^[A-Z][A-Za-z0-9]{0,60}$/;
@@ -209,24 +217,34 @@
   let revision=2166136261;for(const ch of JSON.stringify([configuration,definitions])){revision^=ch.charCodeAt(0);revision=Math.imul(revision,16777619);}revision>>>=0;
   return {configuration,definitions,byId,revision};
  }
- let active=prepare({configuration:configSource,definitions:source});
- const defaults=clone({configuration:active.configuration,definitions:active.definitions});deepFreeze(defaults);
  // Compiled progression owns an optional actor field without inventing defaults in old saves.
  const optionalPersonalFields:readonly string[]=Object.freeze(['skillTrees','lastCuriosity']);
- const declaredPersonalFields:readonly string[]=Object.freeze([...new Set(active.definitions.flatMap(definition=>[...definition.state.personalFields]))]);
- const personalFields:readonly string[]=Object.freeze([...new Set([...declaredPersonalFields,...optionalPersonalFields])]);
- const personalities:readonly string[]=Object.freeze([...new Set(active.definitions.flatMap(definition=>[...definition.personalities]))]);
+ type Prepared=ReturnType<typeof prepare>;
+ interface Installed{defaults:Api['defaults'];declaredPersonalFields:readonly string[];personalFields:readonly string[];personalities:readonly string[];}
+ // The installed game's catalog is admitted on first use or as soon as a game is installed.
+ let installed:Installed|null=null,prepared:Prepared|null=null;
+ function load():Installed{
+  if(installed)return installed;
+  const {configSource,source}=installedSources(),first=prepare({configuration:configSource,definitions:source});
+  if(prepared===null)prepared=first;
+  const defaults=clone({configuration:first.configuration,definitions:first.definitions});deepFreeze(defaults);
+  const declaredPersonalFields:readonly string[]=Object.freeze([...new Set(first.definitions.flatMap(definition=>[...definition.state.personalFields]))]);
+  const personalFields:readonly string[]=Object.freeze([...new Set([...declaredPersonalFields,...optionalPersonalFields])]);
+  const personalities:readonly string[]=Object.freeze([...new Set(first.definitions.flatMap(definition=>[...definition.personalities]))]);
+  return installed={defaults,declaredPersonalFields,personalFields,personalities};
+ }
+ const active=():Prepared=>{load();return prepared!;};
  function replace(input:unknown):void{
-  const next=prepare(input);
+  const {declaredPersonalFields}=load(),next=prepare(input);
   // Existing actor proxies and their compiled persistence/creation contract keep these fields.
   for(const def of next.definitions)if(def.state.personalFields.some(field=>!declaredPersonalFields.includes(field))||declaredPersonalFields.some(field=>!def.state.personalFields.includes(field)))fail('scenario creatures must retain the supported personal fields');
-  active=next;
+  prepared=next;
  }
- function withDefinitions<T>(input:unknown,work:()=>T):T{const previous=active;try{replace(input);const result=work();if(result&&typeof (result as {then?:unknown}).then==='function')throw Error('Creature scope must be synchronous.');return result;}finally{active=previous;}}
- function all():readonly Definition[]{return active.definitions;}
- function get(id:string):Definition|null{return active.byId.get(id)||null;}
- function definition(id:string):Definition{return active.byId.get(id)??fail('unknown creature archetype '+id);}
- function supports(archetype:string,personality:string):boolean{return !!active.byId.get(archetype)?.personalities.includes(personality);}
+ function withDefinitions<T>(input:unknown,work:()=>T):T{const previous=active();try{replace(input);const result=work();if(result&&typeof (result as {then?:unknown}).then==='function')throw Error('Creature scope must be synchronous.');return result;}finally{prepared=previous;}}
+ function all():readonly Definition[]{return active().definitions;}
+ function get(id:string):Definition|null{return active().byId.get(id)||null;}
+ function definition(id:string):Definition{return active().byId.get(id)??fail('unknown creature archetype '+id);}
+ function supports(archetype:string,personality:string):boolean{return !!active().byId.get(archetype)?.personalities.includes(personality);}
  function componentBindings(archetype:string):readonly Binding[]{return definition(archetype).ecs.components;}
  function seed(archetype:string,personality:string,mode:Mode,sequence:number):Plain{
   if(mode!=='founder'&&mode!=='arrival')fail('invalid creature mode');
@@ -237,8 +255,9 @@
   const rpg=record(state.rpg,def.id+' RPG state');rpg.rng=(def.rng.base+Math.imul(sequence,def.rng.stride))>>>0;
   return state;
  }
- const api:Api=Object.freeze({get configuration(){return active.configuration;},get revision(){return active.revision;},defaults,
-  get defaultArchetype(){return active.configuration.defaultArchetype;},get defaultPersonality(){return definition(active.configuration.defaultArchetype).defaultPersonality;},
-  personalFields,optionalPersonalFields,personalities,all,get,supports,componentBindings,seed,validate,replace,withDefinitions});
+ const api:Api=Object.freeze({get configuration(){return active().configuration;},get revision(){return active().revision;},get defaults(){return load().defaults;},
+  get defaultArchetype(){return active().configuration.defaultArchetype;},get defaultPersonality(){return definition(active().configuration.defaultArchetype).defaultPersonality;},
+  get personalFields(){return load().personalFields;},optionalPersonalFields,get personalities(){return load().personalities;},all,get,supports,componentBindings,seed,validate,replace,withDefinitions});
+ Content.whenInstalled(()=>{load();},'creatures');
  root.LWCreatures=api;if(node)module.exports=api;
 })(globalThis);

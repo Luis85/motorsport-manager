@@ -14,9 +14,10 @@
         e.innerHTML = value; };
     const width = (id, n) => { const e = $(id); if (e)
         e.style.width = clamp(n, 0, 100) + '%'; };
-    // Saves are scoped per game. Without a game profile (or with the littlewild namespace)
+    // Saves are scoped per installed game (its content profile storage, carried in browser artifacts by
+    // LWGameProfile). Without a game namespace (or with the littlewild namespace)
     // the exact legacy keys littlewild.save.v5/littlewild.backup.v5 and their migrations apply.
-    const storageNamespace = LWStoryStorage.namespace(window.LWGameProfile);
+    const storageNamespace = LWStoryStorage.namespace(window.LWContentProvider?.installed() ? LWContentProvider.get() : undefined);
     const storage = new LWStoryStorage(()=>localStorage,LWStory.inspect,LWStoryStorage.keys(storageNamespace));
 
     let storyReadId = 0;
@@ -24,7 +25,7 @@
     engine.s.settings.reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     const loaded=storage.load();
     if(loaded.value)engine=LWStory.commit(loaded.value);
-    else {const pack=LWScenarios.builtins()[0];engine=LWScenarios.commitScene(LWScenarios.prepareScene(pack,pack.scenes[0].id));engine.s.started=false;}
+    else {const pack=LWScenarios.defaultPack();engine=LWScenarios.commitScene(LWScenarios.prepareScene(pack,pack.scenes[0].id));engine.s.started=false;}
     if(loaded.error==='unavailable')saveAvailable=false;
     if(loaded.error==='corrupt')loadWarning='The previous save could not be read and has not been overwritten. Review a recovery copy or import a backup. Starting a new story explicitly replaces it.';
     const ui = { tab: 'care', modal: null, modalId: null, tradeQty: 5, inspectUntil: 0, animationTime: 0, lastFocus: null, fullscreen: false, lastPaint: 0, lastSave: 0, toastTimes: new Map(), lastStory: '', dockSignature: '', requestQty: 6, lessonFilter: 'all', lessonSearch: '', journalTab: 'memories', pendingImport: null, confirmOrder: null, backupStatus: '', tourStep: 0, history: [], focusRequest: 0, panelScroll: new Map() };

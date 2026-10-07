@@ -1,5 +1,7 @@
 /// <reference path="./external-editor-contracts.d.ts" />
 /// <reference path="./building-interior-data-contracts.d.ts" />
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';

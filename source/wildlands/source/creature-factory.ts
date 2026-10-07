@@ -1,3 +1,4 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /* Actor creation service: immutable creature definitions -> mutable authoritative actor records. */
 (function(inputRoot: unknown){
  'use strict';
@@ -10,14 +11,15 @@
  interface Creatures{readonly defaultArchetype:string;readonly defaultPersonality:string;readonly personalFields:readonly string[];readonly personalities:readonly string[];all():readonly Definition[];get(id:string):Definition|null;supports(archetype:string,personality:string):boolean;seed(archetype:string,personality:string,mode:Mode,sequence:number):Plain;}
  interface Options{id:string;archetype:string;personality:string;mode:Mode;sequence:number;day:number;simTime:number;}
  interface Api{readonly defaultArchetype:string;readonly personalFields:readonly string[];readonly personalities:readonly string[];create(options:Options):Plain;hydrate(base:Plain,options:Options):Plain;supportsPersonality(archetype:string,personality:string):boolean;definitionFor(actor:Plain):Definition;}
- interface Root{LWBehaviorTree?:unknown;LWAdventure?:Adventure;LWContent?:Content;LWCreatures?:Creatures;LWCreatureFactory?:Api;}
+ interface Root{LWBehaviorTree?:unknown;LWAdventure?:Adventure;LWContent?:Content;LWContentProvider?:LWContentProvider.Api;LWCreatures?:Creatures;LWCreatureFactory?:Api;}
 
  const root=inputRoot as Root,node=typeof module!=='undefined'&&module.exports;
  if(node&&!root.LWBehaviorTree)require('./behavior-tree.js');
  const creatures=(node?require('./creature-catalog.js'):root.LWCreatures) as Creatures|undefined;
  const content=(node?require('./content-runtime.js'):root.LWContent) as Content|undefined;
  const adventure=(node?require('./adventure-content.js'):root.LWAdventure) as Adventure|undefined;
- if(!creatures||!content||!adventure)throw Error('Creature factory dependencies are missing.');
+ const provider=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api|undefined;
+ if(!creatures||!content||!adventure||!provider)throw Error('Creature factory dependencies are missing.');
  const Creatures:Creatures=creatures,C:Content=content,A:Adventure=adventure;
  const plain=(value:unknown):value is Plain=>value!==null&&typeof value==='object'&&!Array.isArray(value);
  const copy=<T>(value:T):T=>C.copy(value);
@@ -47,17 +49,25 @@
   return state;
  }
  function hydrate(base:Plain,options:Options):Plain{
+  verify();
   if(!options||(options.mode!=='founder'&&options.mode!=='arrival')||typeof options.id!=='string'||!/^c[1-9][0-9]*$/.test(options.id)||typeof options.archetype!=='string'||typeof options.personality!=='string'||!Number.isSafeInteger(options.sequence)||options.sequence<0||!Number.isSafeInteger(options.day)||options.day<1||!Number.isFinite(options.simTime)||options.simTime<0)throw Error('Creature factory: invalid creation options');
   if(!Creatures.supports(options.archetype,options.personality))throw Error('Creature factory: unsupported archetype/personality pairing');
   return normalize(merge(Creatures.seed(options.archetype,options.personality,options.mode,options.sequence),base),options);
  }
  function create(options:Options):Plain{return hydrate({},options);}
  function supportsPersonality(archetype:string,personality:string):boolean{return Creatures.supports(archetype,personality);}
+ /** Cross-check the installed game's creatures against its adventure profiles once, before first use. */
+ let verified=false;
+ function verify():void{
+  if(verified)return;
  for(const definition of Creatures.all()){
   for(const personality of definition.personalities)profile(personality);
   const sample=Creatures.seed(definition.id,definition.defaultPersonality,'founder',0),equipment=sample.equipment;
   if(!plain(equipment)||A.slots.some(slot=>!Object.hasOwn(equipment,slot)))throw Error('Creature factory: '+definition.id+' does not define every equipment slot');
  }
- const api:Api=Object.freeze({defaultArchetype:Creatures.defaultArchetype,personalFields:Creatures.personalFields,personalities:Creatures.personalities,create,hydrate,supportsPersonality,definitionFor});
+  verified=true;
+ }
+ const api:Api=Object.freeze({get defaultArchetype(){return Creatures.defaultArchetype;},get personalFields(){return Creatures.personalFields;},get personalities(){return Creatures.personalities;},create,hydrate,supportsPersonality,definitionFor});
+ provider.whenInstalled(verify,'creatures');
  root.LWCreatureFactory=api;if(node)module.exports=api;
 })(globalThis);

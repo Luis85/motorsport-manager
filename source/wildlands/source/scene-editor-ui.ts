@@ -39,7 +39,7 @@
   function open(pack?:LWContentPorts.ScenarioPack):void {
    state.readId++;exchange?.cancel();engineExport?.cancel();storytelling?.cancel();
    if(pack&&session&&pack.id!==sourcePackId&&session.revision>0){pendingPack=pack;ctx.open('scene-editor');document.querySelector<HTMLButtonElement>('[data-scene-editor=cancel-replace]')?.focus();return;}
-   if(!session||pack&&pack.id!==sourcePackId){const next=pack||root.LWScenarios.builtins()[0]!;session=root.LWSceneEditor.create(next);sourcePackId=next.id;select('scene',session.snapshot().scenes[0]?.id||'');}
+   if(!session||pack&&pack.id!==sourcePackId){const next=pack||root.LWScenarios.defaultPack();session=root.LWSceneEditor.create(next);sourcePackId=next.id;select('scene',session.snapshot().scenes[0]?.id||'');}
    ctx.open('scene-editor');
   }
   function creation():string {
@@ -57,7 +57,7 @@
   }
   function render(type='scene-editor'):string|null {
    if(type!=='scene-editor')return null;
-   if(!session){const pack=root.LWScenarios.builtins()[0]!;session=root.LWSceneEditor.create(pack);sourcePackId=pack.id;}
+   if(!session){const pack=root.LWScenarios.defaultPack();session=root.LWSceneEditor.create(pack);sourcePackId=pack.id;}
    const p=current();if(!state.selection.id)state.selection.id=p.scenes[0]?.id||p.worlds[0]?.id||'';
    let entities:LWSceneGraph.Entity[]=[];try{if(state.selection.type==='scene')entities=session.entities(state.selection.id);}catch(error){state.errors=[error instanceof Error?error.message:String(error)];}
    if(state.entityId&&!entities.some(c=>c.category===state.category&&c.id===state.entityId))state.entityId='';

@@ -1,6 +1,8 @@
 /// <reference path="../pet-contracts.d.ts" />
 /** JSON-only Pocket Pet catalog and bounded care-experiment adapter. Outputs are explicit files. */
 import {emit,helpRequested,readJsonFile,writeJsonFile} from './cli-io.cjs';
+import {installTemplate} from '../test-support/template-games.cjs';
+// Transitional: the bundled template game is installed (inside the JSON error boundary) until game folders supply profiles.
 interface Tools {
  discover():unknown;catalog():LWPetData.Catalog;
  validate(input:unknown):{ok:boolean;errors:string[];catalog:LWPetData.Catalog|null};
@@ -13,7 +15,7 @@ try {
  if(helpRequested(args)){emit({ok:true,usage,exitCodes:{accepted:0,rejected:1,usageOrIO:2}});process.exit(0);}
  const valid=action==='discover'?rest.length===0:action==='catalog'?rest.length<=1:action==='validate'?rest.length===1:action==='simulate'&&rest.length>=2&&rest.length<=5;
  if(!valid)throw Error(usage);
- require('../ecs.js');require('../pet-catalog.js');require('../pet-systems.js');require('../pet-session.js');
+ installTemplate('pet');require('../ecs.js');require('../pet-catalog.js');require('../pet-systems.js');require('../pet-session.js');
  const tools=require('../pet-tools.js') as Tools;
  if(action==='discover')emit({ok:true,...tools.discover() as object});
  else if(action==='catalog')emit(rest[0]?{ok:true,output:writeJsonFile(rest[0],tools.catalog())}:{ok:true,catalog:tools.catalog()});

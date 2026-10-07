@@ -1,3 +1,4 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /* Actor ECS: authoritative vitals and activity progression for data-defined creatures.
  * Components bind by reference to existing serialized actor records. Creature, Activity and
  * Intent are transient projections; no ECS-only state is serialized.
@@ -32,15 +33,18 @@
  interface ContentApi{parse(input:unknown,limit:number):unknown;}
  interface ActorEcsRuntime{readonly world:WorldApi;readonly scheduler:SchedulerApi;readonly dynamics:SchedulerApi;readonly activity:SchedulerApi;readonly rules:ActorRules;sync(actors:readonly ActorRecord[]):void;step(actor:ActorRecord,dt:number,inputs:StepInputs):{studying:boolean};advanceActivity(actor:ActorRecord,dt:number,inputs:ActivityInputs):ActivityOutcome;componentBindings(actor:ActorRecord):readonly Binding[];forget(id:string):boolean;}
  interface ActorEcsApi{create(rules?:unknown):ActorEcsRuntime;validateRules(input:unknown):ActorRules;}
- interface Root{LWECS?:EcsApi;LWContent?:ContentApi;LWActorRules?:unknown;LWCreatures?:CreatureCatalog;LWActorECS?:ActorEcsApi;}
+ interface Root{LWECS?:EcsApi;LWContent?:ContentApi;LWContentProvider?:LWContentProvider.Api;LWCreatures?:CreatureCatalog;LWActorECS?:ActorEcsApi;}
 
  const root=inputRoot as Root,node=typeof module!=='undefined'&&module.exports;
  const ecs=(node?require('./ecs.js'):root.LWECS) as EcsApi|undefined;
  const content=(node?require('./content-runtime.js'):root.LWContent) as ContentApi|undefined;
  const creatures=(node?require('./creature-catalog.js'):root.LWCreatures) as CreatureCatalog|undefined;
- const DEFAULT=node?require('./content/balancing.json').simulation.rules.actor as unknown:root.LWActorRules;
- if(!ecs||!content||!creatures||DEFAULT===undefined)throw Error('Actor ECS dependencies are missing.');
- const E:EcsApi=ecs,C:ContentApi=content,Creatures:CreatureCatalog=creatures;
+ const provider=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api|undefined;
+ if(!ecs||!content||!creatures||!provider)throw Error('Actor ECS dependencies are missing.');
+ const E:EcsApi=ecs,C:ContentApi=content,Creatures:CreatureCatalog=creatures,Content:LWContentProvider.Api=provider;
+ const dig=(value:unknown,...keys:string[]):unknown=>keys.reduce<unknown>((at,key)=>at!==null&&typeof at==='object'?(at as Record<string,unknown>)[key]:undefined,value);
+ /** Canonical actor rules of the installed game, read when a runtime is created without rules. */
+ function defaults():unknown{const rules=dig(Content.get('actor ECS rules').balancing,'simulation','rules','actor');if(rules===undefined)throw Error('Actor ECS dependencies are missing.');return rules;}
  const clamp=(value:number):number=>Math.max(0,Math.min(100,value));
  const plain=(value:unknown):value is Record<string,unknown>=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
  const exact=(value:unknown,expected:readonly string[],label:string):Record<string,unknown>=>{if(!plain(value)||Object.keys(value).length!==expected.length||expected.some(key=>!Object.hasOwn(value,key)))throw Error('Invalid '+label+' schema.');return value;};
@@ -63,7 +67,7 @@
   return Object.freeze({format:'littlewild-actor-rules',schemaVersion:1,learning:Object.freeze(checkedLearning),feelings:Object.freeze(checkedFeelings),needs:Object.freeze({workingKinds:Object.freeze([...workingKinds] as string[]),foodWork:needsNumber('foodWork'),foodIdle:needsNumber('foodIdle'),waterWork:needsNumber('waterWork'),waterIdle:needsNumber('waterIdle'),energyWork:needsNumber('energyWork'),energyIdle:needsNumber('energyIdle'),walkLoadFactor:needsNumber('walkLoadFactor'),comfortShelter:needsNumber('comfortShelter'),comfortWithoutShelter:needsNumber('comfortWithoutShelter'),joyRate:needsNumber('joyRate')})});
  }
 
- function create(rules:unknown=DEFAULT):ActorEcsRuntime {
+ function create(rules:unknown=defaults()):ActorEcsRuntime {
   const tuning=validateRules(rules),world=new E.World(),dynamics=new E.Scheduler(),activity=new E.Scheduler(),workingKinds=new Set(tuning.needs.workingKinds);
   const physiology=(w:WorldApi,id:string):CreatureDefinition['physiology']=>{const marker=required<CreatureMarker>(w,id,'Creature'),definition=Creatures.get(marker.archetype);if(!definition)throw Error('Unknown creature physiology.');return definition.physiology;};
   const markers=new Map<string,CreatureMarker>(),boundTypes=new Map<string,Set<string>>(),boundRefs=new Map<string,Map<string,ComponentData>>();

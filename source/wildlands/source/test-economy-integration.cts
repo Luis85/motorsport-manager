@@ -1,4 +1,6 @@
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 /* Real-facade checks for the M4 authorization -> settlement -> presentation boundary. */
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const L=require('./simulation.cjs'),E=require('./ecs.js'),S=require('./story-codec.js');

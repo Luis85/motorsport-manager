@@ -1,10 +1,13 @@
 /// <reference path="../engine-export-contracts.d.ts" />
 /** Atomic local code-generator export and integrity checking; no code is executed. */
 import {readJsonFile,writeJsonFile,emit} from './cli-io.cjs';
+import {installLittlewild} from '../test-support/littlewild-game.cjs';
 export async function run(args:readonly string[]):Promise<void>{
  const [command,input,sceneId,output]=args;
  try{
   if(!((command==='engine-export'&&args.length===4)||(command==='engine-export-validate'&&args.length===2)))throw Error('Usage: engine-export pack.json scene-id output.engine.json | engine-export-validate engine.json');
+  // Transitional: the bundled Littlewild game is installed until game folders supply profiles.
+  installLittlewild();
   const E=require('../engine-export.js') as LWEngineExport.Api;
   if(command==='engine-export'&&args.length===4){const exchanged=await E.export(readJsonFile(input!,8*1024*1024),sceneId!);writeJsonFile(output!,exchanged,[input!]);emit({ok:true,output,sourceIdentity:exchanged.sourceIdentity,files:exchanged.sources.files.length,limitations:exchanged.limitations});}
   else if(command==='engine-export-validate'&&args.length===2){const checked=await E.validate(readJsonFile(input!,E.maxBytes));emit(checked.ok?{ok:true,sourceIdentity:checked.document.sourceIdentity,files:checked.document.sources.files.length}:checked);if(!checked.ok)process.exitCode=1;}

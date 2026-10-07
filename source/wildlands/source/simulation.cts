@@ -1,3 +1,5 @@
+// The content provider loads first; callers install the game before requesting content.
+require('./content-provider.js');
 require('./balancing-rules.js');
 require('./content-runtime.js');
 require('./creature-balancing.js');

@@ -1,4 +1,6 @@
 /// <reference path="./scene-editor-contracts.d.ts" />
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import Ajv2020 from 'ajv/dist/2020';

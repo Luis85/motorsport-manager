@@ -1,3 +1,5 @@
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -7,7 +9,8 @@ import {spawnSync} from 'node:child_process';
 const results:{name:string;passed:boolean;error?:string}[]=[];
 function test(name:string,source:string):void{
  try{
-  const run=spawnSync(process.execPath,['-e',"const assert=require('node:assert/strict');\n"+source],{cwd:__dirname,encoding:'utf8',timeout:60000});
+  // A fresh process installs the bundled showcase game first, as every Node entry point must.
+  const run=spawnSync(process.execPath,['-e',"const assert=require('node:assert/strict');require('./test-support/install-games.cjs');\n"+source],{cwd:__dirname,encoding:'utf8',timeout:60000});
   if(run.error)throw run.error;
   assert.equal(run.status,0,run.stderr||run.stdout||'Fresh process exited without a result.');
   results.push({name,passed:true});
@@ -51,7 +54,7 @@ test('Creature catalog cold load produces a detached canonical actor seed',`
  actor.needs.energy=0;assert.notEqual(next.needs.energy,0);assert.equal(actor.archetype,C.defaultArchetype);
 `);
 test('Bare browser manifests remain valid while present incomplete balancing documents reject',`
- const vm=require('node:vm'),fs=require('node:fs'),source=fs.readFileSync('./creature-catalog.js','utf8');
+ const vm=require('node:vm'),fs=require('node:fs'),source=fs.readFileSync('./content-provider.js','utf8')+'\\n'+fs.readFileSync('./creature-catalog.js','utf8');
  const authored=JSON.stringify({configuration:require('./creature-config.json'),definitions:require('./creature-definitions.json')});
  function realm(balance){const context=vm.createContext({});vm.runInContext('const authored=JSON.parse('+JSON.stringify(authored)+');LWCreatureConfig=authored.configuration;LWCreatureDefinitions=authored.definitions;',context);if(balance!==undefined)vm.runInContext('LWDefaultBalancing=JSON.parse('+JSON.stringify(JSON.stringify(balance))+');',context);return context;}
  const bare=realm();vm.runInContext(source,bare);assert(bare.LWCreatures.all().length>0);assert(Object.isFrozen(bare.LWCreatures.all()));

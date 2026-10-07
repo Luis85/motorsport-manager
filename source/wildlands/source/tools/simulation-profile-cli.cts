@@ -2,12 +2,15 @@
 /* Local simulation-profile authoring utility. It parses data only and never executes profile content. */
 'use strict';
 const {readJsonFile,writeJsonFile,helpRequested,emit}=require('./cli-io.cjs');
+// Transitional: the bundled Littlewild game is installed (inside the JSON error boundary, after
+// help) until game folders supply profiles.
+const {installLittlewild}=require('../test-support/littlewild-game.cjs');
 const args=process.argv.slice(2),[command,input]=args;
 const usage='simulation-profile-cli.cjs validate profile.json | fingerprint profile.json | export output.json | schema';
 try{
   if(helpRequested(args)){emit({ok:true,usage});process.exit(0);}
   if(!['validate','fingerprint','export','schema'].includes(command)||args.length!==(command==='schema'?1:2))throw Error('Usage: '+usage);
-  require('../simulation.cjs');const P=global.LWSimulationProfile,C=global.LWContent;
+  installLittlewild();require('../simulation.cjs');const P=global.LWSimulationProfile,C=global.LWContent;
   if(command==='validate'||command==='fingerprint'){
     const source=readJsonFile(input,256*1024);
     try{const profile=P.validate(source);emit({ok:true,profile:profile.id,version:profile.version,archetype:profile.archetype.id,fingerprint:P.fingerprint(profile)});}

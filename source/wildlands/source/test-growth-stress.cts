@@ -1,4 +1,6 @@
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 const fs=require('node:fs'),assert=require('node:assert/strict'),L=require('./simulation.cjs'),S=require('./story-codec.js'),C=global.LWGrowth,G=global.LWGeography,P=global.LWPlanner;
 const results=[],test=(name,fn)=>{let now=performance.now();try{fn();results.push({name,passed:true,ms:performance.now()-now});}catch(e){console.error('FAIL',name,e.message);results.push({name,passed:false,error:e.stack});}};
 function openAll(e){for(const research of C.content.research){e.s.progression.research[research.id]=true;if(research.grants)e.s.progression.features[research.grants.feature]=Math.max(e.s.progression.features[research.grants.feature]||0,research.grants.rank);}}

@@ -1,10 +1,12 @@
+/// <reference path="./content-provider-contracts.d.ts" />
 /// <reference path="./balancing-tools-contracts.d.ts" />
 /* Review transactions edit detached whole packs; no active registries or host leases are acquired. */
 (function(inputRoot:unknown){
  'use strict';
- const root=inputRoot as {LWDefaultBalancing?:unknown;LWContent:LWContentPorts.ContentApi;LWScenarios:LWContentPorts.ScenarioApi;LWSceneGraph:LWSceneGraph.Api;LWSimulationProfile:{validate(input:unknown):LWContentPorts.SimulationProfile};LWScenarioResources:{validate(input:unknown):LWContentPorts.Resources;defaults():LWContentPorts.Resources};LWInteractions:LWInteraction.Catalog;LWInteriors:LWInterior.CatalogApi;LWBalancingCore?:LWBalancing.Core};
+ const root=inputRoot as {LWContentProvider?:LWContentProvider.Api;LWContent:LWContentPorts.ContentApi;LWScenarios:LWContentPorts.ScenarioApi;LWSceneGraph:LWSceneGraph.Api;LWSimulationProfile:{validate(input:unknown):LWContentPorts.SimulationProfile};LWScenarioResources:{validate(input:unknown):LWContentPorts.Resources;defaults():LWContentPorts.Resources};LWInteractions:LWInteraction.Catalog;LWInteriors:LWInterior.CatalogApi;LWBalancingCore?:LWBalancing.Core};
  const C=root.LWContent,X=root.LWScenarios,node=typeof module!=='undefined'&&module.exports;
- const source=node?require('./content/balancing.json'):root.LWDefaultBalancing;
+ const Content=(node?require('./content-provider.js'):root.LWContentProvider) as LWContentProvider.Api;
+ const game=(what:string):LWContentProvider.Profile=>Content.get(what);
  const reviews=new WeakMap<object,{base:string;candidate:LWContentPorts.ScenarioPack}>();
  const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object'&&!Array.isArray(v);
  const hash=(v:unknown):string=>C.fingerprint({schemaVersion:1,components:v});
@@ -13,7 +15,7 @@
   const data=C.parse(input,12*1024*1024),keys=['format','schemaVersion','libraries','simulation','world','creatures','interactions','interiors','startingScenes','sceneId'];
   if(!object(data)||Object.keys(data).length!==keys.length||keys.some(k=>!Object.hasOwn(data,k))||data.format!=='littlewild-balancing'||data.schemaVersion!==1||typeof data.sceneId!=='string')throw Error('Expected a complete littlewild-balancing schema-1 document.');
   if(object(data.creatures)&&data.creatures.format==='littlewild-creature-balancing'){
-   const authored={configuration:node?require('./creature-config.json'):(globalThis as unknown as {LWCreatureConfig:unknown}).LWCreatureConfig,definitions:(node?require('./creature-definitions.json'):(globalThis as unknown as {LWCreatureDefinitions:unknown[]}).LWCreatureDefinitions) as unknown[]};
+   const creatures=game('authored creature definitions').creatures,authored={configuration:creatures?.configuration,definitions:creatures?.definitions as unknown[]};
    const balancer=(node?require('./creature-balancing.js'):(globalThis as unknown as {LWCreatureBalancing:unknown}).LWCreatureBalancing) as {merge(base:LWContentPorts.Resources['creatures'],overlay:unknown):LWContentPorts.Resources['creatures']};data.creatures=balancer.merge(authored,data.creatures);
   }
   const checked=data as unknown as LWBalancing.Document;
@@ -22,8 +24,8 @@
   checked.interiors=root.LWInteriors.validate(checked.interiors);
   return C.copy(checked);
  }
- function defaults():LWBalancing.Document{return decodeBalance(source);}
- function baseline():LWContentPorts.ScenarioPack{const value=X.builtins().find(p=>p.id==='littlewild');if(!value)throw Error('Default balancing scenario unavailable.');return C.copy(value);}
+ function defaults():LWBalancing.Document{return decodeBalance(game('canonical balancing defaults').balancing);}
+ function baseline():LWContentPorts.ScenarioPack{const canonical=game('the canonical balancing scenario').scenarios?.canonicalId,value=canonical===undefined?undefined:X.builtins().find(p=>p.id===canonical);if(!value)throw Error('Default balancing scenario unavailable.');return C.copy(value);}
  function capture(input:unknown,sceneId?:string):LWBalancing.Document{
   const value=pack(input),scene=value.scenes.find(s=>s.id===(sceneId??value.scenes[0]?.id));if(!scene)throw Error('Choose a scene in this pack.');
   const world=value.worlds.find(w=>w.id===scene.worldId);if(!world)throw Error('Scene world missing.');

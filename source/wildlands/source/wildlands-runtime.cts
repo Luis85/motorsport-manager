@@ -4,6 +4,7 @@ import {AuthoringHandles,record,text,invoke} from './wildlands-runtime-authoring
 
 const content=require('./content-runtime.js') as LWContentPorts.ContentApi;
 const decoder=require('./engine-export-data.js') as LWEngineExport.Decoder;
+const scenarios=require('./scenario-runtime.js') as LWContentPorts.ScenarioApi;
 
 export const MAX_REQUEST_BYTES=64*1024*1024;
 export const MAX_RESPONSE_BYTES=64*1024*1024;
@@ -103,7 +104,7 @@ export class WildlandsRuntime {
    this.replace(()=>toolbox.createScenario(validation.data,sceneId));
    this.authoredPack=validation.data as unknown as LWContentPorts.ScenarioPack;
   }else {
-   const scenarioId=text(params.scenarioId??'littlewild','Scenario ID');
+   const scenarioId=text(params.scenarioId??scenarios.defaultId(),'Scenario ID');
    const sceneId=params.sceneId===undefined?undefined:text(params.sceneId,'Scene ID');
    const project=projects.create(sceneId===undefined?{scenarioId}:{scenarioId,sceneId});
    this.replace(()=>toolbox.createScenario(project.pack,project.sceneId));this.authoredPack=project.pack;

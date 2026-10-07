@@ -1,6 +1,8 @@
 /// <reference path="./rts-contracts.d.ts" />
 /// <reference path="./rts-runtime-contracts.d.ts" />
 /** Experiments retain authoritative clocks and explicit rejection/continuation receipts. */
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';

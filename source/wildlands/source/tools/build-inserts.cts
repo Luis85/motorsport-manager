@@ -42,6 +42,7 @@ export const INSERTS: readonly Insert[] = [
   ["QUALITY_CSS", "quality.css", "style", "colony-styles"],
   ["VILLAGE_CSS", "village.css", "style", "colony-styles"],
   ["CARTOGRAPHY_CSS", "cartography.css", "style", "colony-styles"],
+  ["CONTENT_PROVIDER", "content-provider.js", "script", "engine-kernel"],
   ["BALANCING_RULES", "balancing-rules.js", "script", "core-sim"],
   ["CONTENT_RUNTIME", "content-runtime.js", "script", "core-sim"],
   ["CREATURE_BALANCING", "creature-balancing.js", "script", "core-sim"],

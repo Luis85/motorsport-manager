@@ -1,3 +1,5 @@
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+import './test-support/install-games.cjs';
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
@@ -49,7 +51,7 @@ try {
   });
   test("Scenario CLI retains the full runtime pack and story input budgets",()=>{
     const pack=path.join(temp,"large.pack.json");fs.writeFileSync(pack,fs.readFileSync(path.join(ROOT,".generated/content/littlewild.pack.json"),"utf8")+" ".repeat(4*1024*1024));assert.equal(cli("scenario-cli",["validate",pack]).status,0);
-    const fixture=spawnSync(process.execPath,["-e",`const L=require(${JSON.stringify(path.join(__dirname,"simulation.cjs"))}),S=require(${JSON.stringify(path.join(__dirname,"story-codec.js"))});process.stdout.write(JSON.stringify(S.encode(L.createWorldDemo())));`],{cwd:ROOT,encoding:"utf8",timeout:15000});assert.equal(fixture.status,0,fixture.stderr);
+    const fixture=spawnSync(process.execPath,["-e",`require(${JSON.stringify(path.join(__dirname,"test-support","install-games.cjs"))});const L=require(${JSON.stringify(path.join(__dirname,"simulation.cjs"))}),S=require(${JSON.stringify(path.join(__dirname,"story-codec.js"))});process.stdout.write(JSON.stringify(S.encode(L.createWorldDemo())));`],{cwd:ROOT,encoding:"utf8",timeout:15000});assert.equal(fixture.status,0,fixture.stderr);
     const story=path.join(temp,"large-story.json"),output=path.join(temp,"captured.pack.json");fs.writeFileSync(story,fixture.stdout+" ".repeat(4*1024*1024));const captured=cli("scenario-cli",["capture",story,output]);assert.equal(captured.status,0);assert.equal(captured.payload.ok,true);assert.equal(JSON.parse(fs.readFileSync(output,"utf8")).schemaVersion,2);
   });
   test("Content CLI text bounds match Unicode code-point limits",()=>{

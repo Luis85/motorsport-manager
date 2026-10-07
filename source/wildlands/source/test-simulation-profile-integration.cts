@@ -1,4 +1,6 @@
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const X=require('./scenario-runtime.js'),S=require('./scenario-story.js');
 const C=global.LWContent,P=global.LWSimulationProfile,W=global.LWWorldProfile,L=global.LW,results=[];

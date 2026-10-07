@@ -1,5 +1,7 @@
 /* Current pause-policy behavior and preference isolation. Historical story migrations are intentionally outside the current-only contract. */
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs');
 const P=require('./interface-pause.js'),L=require('./simulation.cjs');
 const out=[];function test(name,fn){try{fn();out.push({name,passed:true});}catch(e){out.push({name,passed:false,error:e.stack});console.error(name,e.message);}}

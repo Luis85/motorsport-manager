@@ -1,4 +1,6 @@
 'use strict';
+// Tests run the composite showcase game: install its content profile before any engine module loads.
+require('./test-support/install-games.cjs');
 const fs=require('node:fs'),assert=require('node:assert/strict'),crypto=require('node:crypto'),cp=require('node:child_process'),path=require('node:path');
 const {executableFiles,assertAuthoredTypescript}=require('./verification/release-integrity.js');
 const L=require('./simulation.cjs'),S=require('./story-codec.js'),G=require('./growth-content.js'),root=path.resolve(__dirname,'..'),sourceRoot=path.join(root,'source');const results=[];
