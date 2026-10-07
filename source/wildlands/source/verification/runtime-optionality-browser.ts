@@ -197,7 +197,8 @@ async function main():Promise<void>{
    await page.evaluate('WildlandsPet.close()');
    const launcher=page.locator('[data-wildlands-pet=open]');
    assert.equal(await launcher.textContent(),'Open Pocket Pet');assert.equal(await launcher.evaluate(el=>el===document.activeElement),true);
-   await launcher.click();assert.equal(await value(page,'WildlandsPet.status().active'),true);
+   // Reopening builds the WebGL pet room inside the click handler.
+   await launcher.click({timeout:TRANSITION_TIMEOUT_MS});assert.equal(await value(page,'WildlandsPet.status().active'),true);
    await page.close();
   });
   await check('Optional-bundle pages generate no script errors or network requests',async()=>{assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.requests,[]);});
