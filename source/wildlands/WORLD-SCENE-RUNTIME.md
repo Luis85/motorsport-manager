@@ -89,9 +89,10 @@ connections. Capturing does not mutate the current journey or advance simulation
 `source/test-scene-navigation.cts` exercises cross-world revisits, real paid upstairs
 production across bound entry/return, owned-island focus, world-owned settings,
 entry gates and events, consumed/stale/forged reviews, activation rollback and retry,
-invalid saved checkpoints, aggregate limits, portable story restoration and complete
-pack capture. Full Office catalogs additionally cross two independent worlds and
-an actual upstairs binding through the SDK, preserving exact progress across a
-portable story roundtrip. These headless tests exercise native simulation and application
+invalid saved checkpoints and aggregate limits; `source/test-scene-journeys.cts` (the
+`scene-journeys` suite, sharing `source/test-support/scene-journeys.cts`) covers portable
+story restoration and complete pack capture. Full Office catalogs additionally cross two
+independent worlds and an actual upstairs binding through the SDK, preserving exact
+progress across a portable story roundtrip. These headless tests exercise native simulation and application
 admission; browser focus, camera restoration and human usability need their own
 presentation evidence.
