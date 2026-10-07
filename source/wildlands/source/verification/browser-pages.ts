@@ -1,6 +1,6 @@
 import path from "node:path";
 import type { BrowserContext, Locator, Page } from "playwright";
-import { advanceClock, ARTIFACT_FIXTURE_URL, monitorContext, openArtifact, pauseClockAt, READY_TIMEOUT_MS, waitForReady } from "./browser-harness";
+import { advanceClock, ARTIFACT_FIXTURE_URL, monitorContext, nextFrames, openArtifact, pauseClockAt, READY_TIMEOUT_MS, TRANSITION_TIMEOUT_MS, waitForReady } from "./browser-harness";
 
 /**
  * Artifact selection and page setup shared by the editor, export and renderer browser suites.
@@ -43,17 +43,11 @@ export async function openColony(page: Page, artifact: string, options: { action
 }
 
 /**
- * Wait until the page has completed `count` rendering frames. Layout, ResizeObserver delivery and
- * the application's own requestAnimationFrame work for a frame all finish before the next frame's
- * callbacks run, so this waits for an event rather than for an assumed duration.
+ * Wait until the page has completed `count` rendering frames (the harness's `nextFrames`). Layout,
+ * ResizeObserver delivery and the application's own requestAnimationFrame work for a frame all
+ * finish before the next frame's callbacks run, so this waits for an event, not a duration.
  */
-export async function renderingFrames(page: Page, count = 2): Promise<void> {
-  await page.evaluate(frames => new Promise<void>(resolve => {
-    let remaining = frames;
-    const next = (): void => { if (--remaining <= 0) resolve(); else requestAnimationFrame(next); };
-    requestAnimationFrame(next);
-  }), count);
-}
+export const renderingFrames: (page: Page, count?: number) => Promise<void> = nextFrames;
 
 /**
  * Budget for one synchronous domain operation triggered by a click: beginning the story, opening an
@@ -63,7 +57,7 @@ export async function renderingFrames(page: Page, count = 2): Promise<void> {
  * is CPU work rather than user-interface responsiveness; it is separate from the suite's short action
  * timeout, which still bounds finding the control visible, enabled, stable and receiving events.
  */
-export const ADMISSION_TIMEOUT_MS = 60_000;
+export const ADMISSION_TIMEOUT_MS = TRANSITION_TIMEOUT_MS;
 
 /** Wait for an actionable control with the page's action timeout, then click it with the admission budget. */
 export async function admit(control: Locator): Promise<void> {
