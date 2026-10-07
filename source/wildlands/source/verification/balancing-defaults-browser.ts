@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {ARTIFACT_FIXTURE_URL,launchBrowser} from './browser-harness';
-import {monitorArtifacts,openColony,type ArtifactObservations} from './browser-pages';
+import {admit,type ArtifactObservations,monitorArtifacts,openColony} from './browser-pages';
 import {BUNDLED_GAMES,gameDirectory} from '../tools/game-folder.cjs';
 const ROOT=path.resolve(__dirname,'../..'),OUT=process.env.LITTLEWILD_BALANCING_OUT||path.join(ROOT,'verification','v15');
 interface Balance {libraries:{base:{components:{items:{id:string;price:number}[];recipes:{id:string;cost:Record<string,number>}[]}}};simulation:{rules:{actor:{needs:{foodWork:number}}}};startingScenes:{initialState:{player:{coins:number}}}[];creatures:{definitions:{movement:{baseSpeed:number}}[]};}
@@ -37,7 +37,7 @@ async function main():Promise<void>{
    await check('Built Node defaults use changed prices, recipes, need effects, starts and folder identities',()=>{const node=spawnSync(process.execPath,[script],{cwd:temporary,encoding:'utf8',timeout:30000,maxBuffer:1024*1024});assert.equal(node.status,0,node.stderr);});
    await check('Standalone browser defaults use the same changed values and actual native need effects',async()=>{
     // The isolated build's standalone colony play artifact carries exactly the edited game defaults.
-    const browser=await launchBrowser(),context=await browser.newContext();diagnostics=monitorArtifacts(context);try{const page=await context.newPage();await openColony(page,path.join(temporary,'.generated/artifacts/colony-play.html'));await page.locator('[data-act=begin]').click();
+    const browser=await launchBrowser(),context=await browser.newContext();diagnostics=monitorArtifacts(context);try{const page=await context.newPage();await openColony(page,path.join(temporary,'.generated/artifacts/colony-play.html'));await admit(page.locator('[data-act=begin]'));
      const values=await page.evaluate(`(()=>{const p=LWScenarios.builtins().find(p=>p.id==='littlewild'),e=LWScenarios.prepareScene(p,'first-morning').engine,c=e.creatures[0],before=c.needs.food;c.task={kind:'gather',phase:'work',duration:100,elapsed:0};e.ecs.step(c,.1,{day:e.s.day,socialPreference:0,loadLevel:0,hasShelter:true});return {price:LWContent.tables.RES.berries.price,recipe:LWContent.tables.RECIPES.planks.cost.wood,coins:e.s.player.coins,name:LWCreatures.get('sproutling').name,speed:LWCreatures.get('sproutling').movement.baseSpeed,added:!!LWCreatures.get('proofling'),addedItem:!!LWContent.tables.RES.proof_plank&&!!LWAssets.item('proof_plank'),decay:before-c.needs.food}})()` ) as {decay:number};assert(Math.abs(values.decay-.029)<1e-9);assert.deepEqual({...values,decay:.029},{price:13,recipe:7,coins:103,name:'Folder proof sprout',speed:2.3,added:true,addedItem:true,decay:.029});assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.consoleProblems,[]);assert.deepEqual(diagnostics.requests,[]);assert.deepEqual(diagnostics.fixtureRequests,[ARTIFACT_FIXTURE_URL]);
     }finally{await context.close();await browser.close();}
    });

@@ -56,11 +56,12 @@ export async function renderingFrames(page: Page, count = 2): Promise<void> {
 }
 
 /**
- * Budget for one synchronous domain operation triggered by a click: beginning the story, reviewing
- * or launching an authored scene and reviewing or entering a connected one. The handler builds or
- * validates and imports the native world before the click completes, so its duration is CPU work
- * rather than user-interface responsiveness; it is separate from the short action timeout that still
- * bounds finding an actionable control.
+ * Budget for one synchronous domain operation triggered by a click: beginning the story, opening an
+ * editor over a captured pack, reviewing, launching or entering a scene, applying an import or
+ * conversion, starting cinematic transport, ordering production or visiting a building floor. The
+ * handler validates, imports or projects native state before the click completes, so its duration
+ * is CPU work rather than user-interface responsiveness; it is separate from the suite's short action
+ * timeout, which still bounds finding the control visible, enabled, stable and receiving events.
  */
 export const ADMISSION_TIMEOUT_MS = 60_000;
 
