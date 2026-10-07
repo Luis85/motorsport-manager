@@ -10,7 +10,8 @@
  interface Resources {bundle:RuntimeBundle;templates:Record<string,string>;engineSources?:string;}
  /** Engine sources are an opt-in payload: a default project is runnable without them. */
  interface Options {withEngineSources?:boolean;}
- interface Project {format:'wildlands-project';schemaVersion:1;id:string;name:string;target:'godot';scenarioId:string;sceneId:string;pack:LWContentPorts.ScenarioPack;}
+ /** Godot projects carry their game: only schemaVersion 2 documents (with the embedded profile) compile. */
+ interface Project {format:'wildlands-project';schemaVersion:1|2;id:string;name:string;target:'godot';scenarioId:string;sceneId:string;pack:LWContentPorts.ScenarioPack;game?:unknown;}
  interface Loader {encoding:'gzip-base64';decodedBytes:number;sha256?:string;data:string;}
  const root=inputRoot as {WildlandsGodotTemplates?:Record<string,string>;WildlandsGodotRuntimeBundle?:RuntimeBundle;WildlandsGodotRuntimeLoader?:Loader;LWEngineSourceLoader?:Loader;LWEngineExportData?:LWEngineExport.Decoder;WildlandsProject?:{validate(input:unknown):{ok:boolean;project?:Project;errors:readonly string[]}};LWDeveloper?:LittlewildDeveloper.Toolbox;WildlandsGodot?:unknown};
  const encoder=new TextEncoder();
@@ -35,6 +36,7 @@
  const ENGINE_SOURCES_UNAVAILABLE='Shared trusted engine sources are unavailable. Godot export needs the engine-source payload, which is not included in this build; rebuild with the engine-source payload enabled.';
  const RUNTIME_UNAVAILABLE='Godot export is unavailable in this build: the trusted Godot runtime payload is not included. Rebuild with the Godot export payload enabled.';
  const TEMPLATES_UNAVAILABLE='Godot export is unavailable in this build: the Godot scene templates are not included. Rebuild with the Godot export payload enabled.';
+ const LEGACY_PROJECT='Godot compilation needs a schemaVersion 2 project, which embeds its game; this schemaVersion 1 project does not. Upgrade it first (wildlands compile or upgrade with --game DIR, or WildlandsProject.upgrade).';
  const VALIDATOR_UNAVAILABLE='Godot export is unavailable in this build: the Wildlands project validator is not included.';
  /** Report, without inflating any payload, whether this artifact can compile Godot projects. */
  function capability():{available:boolean;reason?:string}{
@@ -69,6 +71,8 @@
   if(!resources?.templates&&!root.WildlandsGodotTemplates)throw Error(TEMPLATES_UNAVAILABLE);
   const project=checked.project,bundle=resources?.bundle??await runtimeBundle(),templates=resources?.templates??root.WildlandsGodotTemplates;
   if(!bundle||bundle.format!=='wildlands-runtime-bundle'||bundle.schemaVersion!==1||!Array.isArray(bundle.files)||!templates)throw Error('Trusted Godot runtime bundle is unavailable. Rebuild Wildlands.');
+  // The trusted runtime bundle carries no game: the compiled project installs the one it embeds.
+  if(project.schemaVersion!==2)throw Error(LEGACY_PROJECT);
   const renderers=project.pack.scenes.map(scene=>scene.graph?.rendering?.rendererId??'basic');
   if(renderers.some(id=>!['basic','pixi-2d','excalibur-2d'].includes(id)))throw Error('Custom renderer extensions require an explicit native adapter before Godot compilation.');
   if((project.pack.storytelling?.cutscenes??[]).some(clip=>(clip.animations??[]).some(animation=>!['sparkles','orbit','ripple'].includes(animation.presetId))))throw Error('Custom animation extensions require an explicit native adapter before Godot compilation.');

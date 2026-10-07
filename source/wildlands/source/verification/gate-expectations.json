@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
-  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser"],
-  "totalChecks": 1846,
+  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser"],
+  "totalChecks": 1861,
   "reviewedAdditions": [
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
@@ -51,7 +51,7 @@
     {"suite": "wildlands-cli", "name": "Bootstrap errors remain one structured diagnostic while help remains available"},
     {"suite": "wildlands-cli", "name": "Project fingerprints identify complete content independent of key order and command"},
     {"suite": "wildlands-acceptance", "name": "A new terminal project preloads Littlewild and discovery describes its actual commands"},
-    {"suite": "wildlands-acceptance", "name": "Every discovered built-in scenario compiles complete resources with verified manifest hashes"},
+    {"suite": "wildlands-acceptance", "name": "Every discovered game folder scenario compiles complete resources with verified manifest hashes"},
     {"suite": "wildlands-acceptance", "name": "Repeated bounded recipes produce the same game state without changing the source project"},
     {"suite": "wildlands-acceptance", "name": "Scene editor recipes change authored data through the same portable validation boundary"},
     {"suite": "wildlands-acceptance", "name": "Invalid projects and malformed flags produce one JSON diagnostic and preserve prior output"},
@@ -307,9 +307,26 @@
     {"suite": "game-folders", "name": "Emberworks folder validates, keeps a closed inventory and equals its pre-move profile"},
     {"suite": "game-folders", "name": "Office folder validates, keeps a closed inventory and equals its pre-move profile"},
     {"suite": "game-folders", "name": "RTS Frontier folder validates, keeps a closed inventory and equals its pre-move profile"},
-    {"suite": "game-folders", "name": "Pocket Pet folder validates, keeps a closed inventory and equals its pre-move profile"}
+    {"suite": "game-folders", "name": "Pocket Pet folder validates, keeps a closed inventory and equals its pre-move profile"},
+    {"suite": "wildlands-project", "name": "Schema version 2 projects embed the colony sections of the installed game and round-trip"},
+    {"suite": "wildlands-project", "name": "Legacy schemaVersion 1 projects stay readable and every write upgrades them to the installed game"},
+    {"suite": "wildlands-project", "name": "Engine distributions install no game: the engine-only installer leaves the game to its entry point"},
+    {"suite": "wildlands-cli", "name": "Create, scenarios and legacy projects without --game fail with a game-required diagnostic naming the handbook"},
+    {"suite": "wildlands-cli", "name": "Legacy schemaVersion 1 projects validate with --game and upgrade or compile to self-contained schemaVersion 2 projects"},
+    {"suite": "wildlands-cli", "name": "validate-game and inspect-game report a game folder's identity, inventory and profile section sizes"},
+    {"suite": "wildlands-cli", "name": "build-game builds deterministic play artifacts for colony, RTS and Pocket Pet folders and --check detects staleness"},
+    {"suite": "wildlands-cli", "name": "build-game enforces the play budget and writes nothing over it"},
+    {"suite": "wildlands-cli", "name": "build-game builds the studio on demand with editors and export payloads; Pocket Pet has no studio profile"},
+    {"suite": "cli-contracts", "name": "Wildlands game commands keep the JSON protocol: usage errors exit 2 and rejected games exit 1"},
+    {"suite": "cli-contracts", "name": "Game builds place exactly what the build assembler places for the same profile"},
+    {"suite": "cli-contracts", "name": "Engine distributions carry no game: engine-only sources, runtime closure and kit hold engine data only"},
+    {"suite": "game-demos-browser", "name": "CLI-built Littlewild demo boots from file:// with its own game profile and no requests"},
+    {"suite": "game-demos-browser", "name": "CLI-built RTS and Pocket Pet demos boot standalone under their own storage namespaces"},
+    {"suite": "game-demos-browser", "name": "CLI-built studio boots the colony with editors and export tools on demand"}
   ],
-  "renames": [],
+  "renames": [
+    {"suite": "wildlands-acceptance", "from": "Every discovered built-in scenario compiles complete resources with verified manifest hashes", "to": "Every discovered game folder scenario compiles complete resources with verified manifest hashes", "reason": "Phase 4A (decision D1): the engine CLI has no built-in scenarios. The check now compiles every scenario of every colony game folder (scenarios --game DIR) instead of the three former built-in packs; its assertions on complete resources and manifest hashes are unchanged."}
+  ],
   "retirements": [],
   "inventory": {
     "skill-trees": [
@@ -478,7 +495,10 @@
       "Rejected native commands release their session and preserve input project",
       "Scene authoring recipes use native revisions and validators",
       "Runtime builds preserve owned data and ignore generated verification artifacts and stale executables",
-      "Godot runtime bundle is exactly the static require closure of the bridge entry points"
+      "Godot runtime bundle is exactly the static require closure of the bridge entry points",
+      "Schema version 2 projects embed the colony sections of the installed game and round-trip",
+      "Legacy schemaVersion 1 projects stay readable and every write upgrades them to the installed game",
+      "Engine distributions install no game: the engine-only installer leaves the game to its entry point"
     ],
     "wildlands-cli": [
       "Cold help and discovery are structured, versioned and machine readable",
@@ -492,11 +512,17 @@
       "Bootstrap errors remain one structured diagnostic while help remains available",
       "Default compile writes a runnable Godot project without the engine-source payload",
       "Opt-in --with-engine-sources adds the exact engine-source bundle and enables engine export in the compiled runtime",
-      "Godot compilation is deterministic and the engine-source switch is a strict value-less flag"
+      "Godot compilation is deterministic and the engine-source switch is a strict value-less flag",
+      "Create, scenarios and legacy projects without --game fail with a game-required diagnostic naming the handbook",
+      "Legacy schemaVersion 1 projects validate with --game and upgrade or compile to self-contained schemaVersion 2 projects",
+      "validate-game and inspect-game report a game folder's identity, inventory and profile section sizes",
+      "build-game builds deterministic play artifacts for colony, RTS and Pocket Pet folders and --check detects staleness",
+      "build-game enforces the play budget and writes nothing over it",
+      "build-game builds the studio on demand with editors and export payloads; Pocket Pet has no studio profile"
     ],
     "wildlands-acceptance": [
       "A new terminal project preloads Littlewild and discovery describes its actual commands",
-      "Every discovered built-in scenario compiles complete resources with verified manifest hashes",
+      "Every discovered game folder scenario compiles complete resources with verified manifest hashes",
       "Repeated bounded recipes produce the same game state without changing the source project",
       "Scene editor recipes change authored data through the same portable validation boundary",
       "Invalid projects and malformed flags produce one JSON diagnostic and preserve prior output",
@@ -973,7 +999,10 @@
       "Content CLI text bounds match Unicode code-point limits",
       "Build help and usage failure do not compile or rewrite output",
       "Build rejects symlinked protected parents before compiling or writing",
-      "Gate help and rejected flags preserve existing verification evidence"
+      "Gate help and rejected flags preserve existing verification evidence",
+      "Wildlands game commands keep the JSON protocol: usage errors exit 2 and rejected games exit 1",
+      "Game builds place exactly what the build assembler places for the same profile",
+      "Engine distributions carry no game: engine-only sources, runtime closure and kit hold engine data only"
     ],
     "typescript-architecture": [
       "All authored executable Littlewild code is TypeScript",
@@ -2361,6 +2390,11 @@
       "Pet play artifact boots standalone and renders the WebGL room",
       "Colony play artifact boots the colony and starts a story",
       "Studio artifact boots the colony with editors and export tools"
+    ],
+    "game-demos-browser": [
+      "CLI-built Littlewild demo boots from file:// with its own game profile and no requests",
+      "CLI-built RTS and Pocket Pet demos boot standalone under their own storage namespaces",
+      "CLI-built studio boots the colony with editors and export tools on demand"
     ]
   }
 }

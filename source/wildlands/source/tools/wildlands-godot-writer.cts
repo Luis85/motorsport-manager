@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
+import {engineOnlySources} from './engine-sources.cjs';
 interface File {path:string;encoding:'utf8'|'base64';content:string;}
 interface Result {files:File[];manifest:Record<string,unknown>;}
 /** The engine-source bundle (code-generator input) is opt-in; a default project runs without it. */
@@ -13,8 +14,9 @@ export function godotResources(options:GodotWriteOptions={}):Resources{
  const bundle=require('../wildlands-runtime-bundle.json') as unknown;
  const templates=require('../wildlands-godot-templates.json') as Record<string,string>;
  if(options.withEngineSources!==true)return {bundle,templates};
- // Built by JSON.stringify, so re-serializing the parsed bundle reproduces its exact bytes.
- return {bundle,templates,engineSources:JSON.stringify(require('../engine-source-bundle.json'))};
+ // Built by JSON.stringify, so re-serializing the parsed bundle reproduces its exact bytes. Engine
+ // distributions carry no game: the build's bundled game folders (games/<id>) are not shipped.
+ return {bundle,templates,engineSources:engineOnlySources(JSON.stringify(require('../engine-source-bundle.json')))};
 }
 export async function writeGodotProject(project:unknown,output:string,options:GodotWriteOptions={}):Promise<{output:string;files:number;engineSources:boolean;manifest:Record<string,unknown>}>{
  if(typeof output!=='string'||!output.trim())throw Error('Godot output directory is required.');

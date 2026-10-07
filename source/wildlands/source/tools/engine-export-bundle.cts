@@ -6,8 +6,8 @@ import {createHash} from 'node:crypto';
 import ts from 'typescript';
 import {INSERTS} from './build-inserts.cjs';
 import {BUNDLED_GAMES, gameDirectory, loadGame} from './game-folder.cjs';
-// pako ships no declarations; the pinned pure-JS encoder keeps payload bytes independent of Node's zlib.
-const pako=require('pako') as {gzip(data:string|Uint8Array,options:{level:number}):Uint8Array};
+import {sourceLoader} from './engine-sources.cjs';
+export {inlineVendorScripts} from './engine-sources.cjs';
 const compare=(a:string,b:string):number=>a<b?-1:a>b?1:0;
 const digest=(text:string|Uint8Array):string=>createHash('sha256').update(text).digest('hex');
 function walk(directory:string):string[]{return fs.readdirSync(directory,{withFileTypes:true}).sort((a,b)=>compare(a.name,b.name)).flatMap(entry=>entry.isDirectory()?walk(path.join(directory,entry.name)):entry.isFile()?[path.join(directory,entry.name)]:[]);}
@@ -74,20 +74,8 @@ export function createSourceBundle(project:string):LWEngineExport.SourceBundle{
  const packageData=JSON.parse(source('package.json')) as {dependencies?:Record<string,unknown>;devDependencies?:Record<string,unknown>};
  return {format:'littlewild-engine-sources',schemaVersion:1,identity:digest(files.map(file=>file.path+'\0'+file.sha256+'\n').join('')),files,inventory:{included:files.map(file=>file.path),excluded:excluded.sort(),policy:'All authoritative source, contracts, data, schemas, build tools, the bundled game folders (games/<id>, rebuilt with WILDLANDS_GAMES_DIR), offline vendors, gate-covered source/vendor documentation and a trimmed installed toolchain: the TypeScript compiler API module (its executeCommandLine is tsc) with exactly the library, Node and Undici declarations the project tsconfig files load, plus package manifests and licenses; other build dependencies remain exact locked metadata; excludes tests, generated suite results and browser verification evidence, generated artifacts, unloaded toolchain files (localized diagnostics, unused libraries, tsserver, the duplicate _tsc.js command bundle, typesVersions fallbacks), node_modules outside the named toolchain, credentials and repository internals.'},architecture,build:{browserOrder,compiler:'toolchain/'+COMPILER,dependencies:{...packageData.dependencies,...packageData.devDependencies}}};
 }
-/**
- * Vendor scripts the HTML artifacts inline verbatim. Profiles that declare the loader must inline
- * them unminified (artifact-profiles.cts checks this), so the browser loader stores them empty and
- * restores each from its identical inline script by length and SHA-256. Text the HTML parser would
- * normalize (CR, NUL) is never deduplicated.
- */
-export function inlineVendorScripts(bundle:LWEngineExport.SourceBundle):LWEngineExport.InlineSource[]{
- const inlined=new Set(INSERTS.filter(insert=>insert[2]==='script'&&insert[1].startsWith('../vendor/')).map(insert=>insert[1].slice(3)));
- return bundle.files.filter(file=>inlined.has(file.path)&&file.encoding==='utf8'&&!/[\r\0]/.test(file.text)).map(file=>({path:file.path,bytes:file.bytes,sha256:file.sha256}));
-}
 export function writeSourceBundle(project:string,generated:string):LWEngineExport.SourceLoader{
- const bundle=createSourceBundle(project),text=JSON.stringify(bundle),inlineScripts=inlineVendorScripts(bundle),shared=new Set(inlineScripts.map(entry=>entry.path));
- const stored=JSON.stringify({...bundle,files:bundle.files.map(file=>shared.has(file.path)?{...file,text:''}:file)}),compressed=Buffer.from(pako.gzip(stored,{level:9}));
- const loader:LWEngineExport.SourceLoader={format:'littlewild-engine-source-loader',schemaVersion:1,identity:bundle.identity,decodedBytes:Buffer.byteLength(stored),compressedBytes:compressed.byteLength,encoding:'gzip-base64',data:compressed.toString('base64'),inlineScripts};
+ const bundle=createSourceBundle(project),text=JSON.stringify(bundle),loader=sourceLoader(bundle);
  if(Buffer.byteLength(text)>64*1024*1024)throw Error('Engine source bundle exceeds64MiB.');
  fs.mkdirSync(generated,{recursive:true});fs.writeFileSync(path.join(generated,'engine-source-bundle.json'),text);fs.writeFileSync(path.join(generated,'engine-source-loader.json'),JSON.stringify(loader)+'\n');return loader;
 }

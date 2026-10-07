@@ -78,8 +78,8 @@ export interface ContentSources {
  readonly balancing: string;
  /** The canonical template pack that inherits the balancing defaults; absent when every pack is complete. */
  readonly templatePack?: string;
- /** Engine-owned library schema template. */
- readonly librarySchema: string;
+ /** Engine-owned library schema template: a file, or the already loaded document. */
+ readonly librarySchema: string | {readonly document: unknown};
  /** Directories that must not hold standalone library mirrors (engine content and the game's content). */
  readonly contentDirectories: readonly string[];
  readonly packages: readonly Definition[];
@@ -94,7 +94,7 @@ export function contentDocuments(sources: ContentSources): RecordValue {
  if (!record(libraries)) throw Error('Missing canonical libraries.');
  const template = sources.templatePack === undefined ? null : path.basename(sources.templatePack, '.json');
  return {
-  'library.schema': librarySchema(read(sources.librarySchema), balance),
+  'library.schema': librarySchema(typeof sources.librarySchema === 'string' ? read(sources.librarySchema) : sources.librarySchema.document, balance),
   'balancing': balance, 'default-library': libraries.base, 'adventure-library': libraries.adventure,
   'world-library': libraries.world, 'growth-library': libraries.growth, 'building-interiors': balance.interiors,
   ...template === null ? {} : {[template]: defaultScenario(sources.templatePack!, balance)}

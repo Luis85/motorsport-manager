@@ -36,8 +36,9 @@ The complete source bundle is gzip/base64 in the standalone HTML and only inflat
 | --- | --- |
 | Play artifacts (`colony-play`, `rts-play`, `pet-play`) | Never included; engine export reports itself unavailable. |
 | Studio and the showcase fixture | Compressed loader with inline vendor scripts deduplicated against the page. |
-| `bin/wildlands` | Separate raw-deflate payload, inflated only for engine export or `compile --with-engine-sources`. |
-| Compiled Godot projects | Omitted by default; `compile`/`export --with-engine-sources` (SDK `compileGodot(project, {withEngineSources: true})`) adds the exact `runtime/engine-source-bundle.json`. |
+| `bin/wildlands` | Separate raw-deflate payload of the engine-only bundle (the build's `games/<id>` folders and pending game data removed, identity recomputed), inflated only for engine export, `build-game --profile studio` or `compile --with-engine-sources`. |
+| `build-game --profile studio` | The engine-only loader, with inline vendor scripts deduplicated against the page as above. |
+| Compiled Godot projects | Omitted by default; `compile`/`export --with-engine-sources` (SDK `compileGodot(project, {withEngineSources: true})`) adds the exact engine-only `runtime/engine-source-bundle.json`. |
 
 p5 is LGPL-2.1, so every artifact that inlines it must carry its corresponding source. Today only the studio and showcase inline p5, and both carry the loader whose inventory contains `vendor/p5-source-2.3.4.tar.gz`; the profile check rejects a p5 artifact without it. The studio's Godot ZIP download omits engine sources; programmatic `WildlandsGodot.compile(project, undefined, {withEngineSources: true})` restores them from the page's loader exactly as engine export does.
 

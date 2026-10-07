@@ -7,6 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawnSync} from 'node:child_process';
+import {gameDirectory,gamesRoot} from './tools/game-folder.cjs';
 
 const temporary=fs.mkdtempSync(path.join(os.tmpdir(),'wildlands-acceptance-'));
 const cli=path.join(__dirname,'tools/wildlands-cli.cjs');
@@ -24,23 +25,28 @@ function run(args:readonly string[],expected=0):Record<string,unknown>{
  return output;
 }
 function read(file:string):Wildlands.Project{return JSON.parse(fs.readFileSync(file,'utf8')) as Wildlands.Project;}
-const original=path.join(temporary,'default.wildlands.json');
+const original=path.join(temporary,'default.wildlands.json'),littlewild=gameDirectory('littlewild');
 check('A new terminal project preloads Littlewild and discovery describes its actual commands',()=>{
- const discovery=run(['discover']);assert.equal(discovery.name,'wildlands');assert.equal(discovery.defaultScenario,'littlewild');
+ // The engine CLI has no built-in game: a terminal project starts from the Littlewild game folder.
+ const discovery=run(['discover','--game',littlewild]);assert.equal(discovery.name,'wildlands');assert.equal((discovery.game as {defaultScenario:string}).defaultScenario,'littlewild');
  const operations=discovery.operations as {operation:string}[];
  for(const operation of ['create','inspect','validate','scenario','run','edit','compile'])assert(operations.some(row=>row.operation===operation));
- run(['create','--output',original]);const project=read(original);
+ run(['create','--game',littlewild,'--output',original]);const project=read(original);assert.equal(project.game.id,'littlewild');
  assert.equal(project.scenarioId,'littlewild');assert.equal(project.target,'godot');
  assert.equal(project.sceneId,project.pack.scenes[0]!.id);
  const inspected=run(['inspect','--project',original]),validated=run(['validate','--project',original]);
  assert.equal(inspected.fingerprint,validated.fingerprint);
 });
-check('Every discovered built-in scenario compiles complete resources with verified manifest hashes',()=>{
- const scenarios=run(['scenarios']).scenarios as {id:string;scenes:{id:string}[]}[];
- assert.deepEqual(scenarios.map(row=>row.id).sort(),['emberworks','littlewild','office']);
+check('Every discovered game folder scenario compiles complete resources with verified manifest hashes',()=>{
+ const root=gamesRoot(),colonies=fs.readdirSync(root).sort().filter(id=>fs.existsSync(path.join(root,id,'game.json'))&&(JSON.parse(fs.readFileSync(path.join(root,id,'game.json'),'utf8')) as {template:string}).template==='colony');
+ assert(colonies.includes('littlewild'));
+ for(const game of colonies){
+ const base=path.join(temporary,game+'.base.json');run(['create','--game',path.join(root,game),'--output',base]);
+ const scenarios=run(['scenarios','--game',path.join(root,game)]).scenarios as {id:string;scenes:{id:string}[]}[];
+ assert(scenarios.length>0,game);
  for(const scenario of scenarios){
-  const selected=path.join(temporary,scenario.id+'.json'),directory=path.join(temporary,'godot-'+scenario.id);
-  run(['scenario','--project',original,'--scenario',scenario.id,'--scene',scenario.scenes[0]!.id,'--output',selected]);
+  const selected=path.join(temporary,game+'-'+scenario.id+'.json'),directory=path.join(temporary,'godot-'+game+'-'+scenario.id);
+  run(['scenario','--project',base,'--scenario',scenario.id,'--scene',scenario.scenes[0]!.id,'--output',selected]);
   const result=run(['compile','--project',selected,'--output',directory]);assert.equal(result.output,directory);
   assert.deepEqual(read(path.join(directory,'wildlands.project.json')),read(selected));
   const manifest=JSON.parse(fs.readFileSync(path.join(directory,'wildlands.manifest.json'),'utf8')) as {scenarioId:string;files:{path:string;bytes:number;sha256:string}[];runtime:string;limitations:string[]};
@@ -52,6 +58,7 @@ check('Every discovered built-in scenario compiles complete resources with verif
   assert(manifest.files.some(file=>file.path==='project.godot'));
   assert(manifest.files.some(file=>file.path==='runtime/tools/wildlands-runtime.cjs'));
   assert(fs.readFileSync(path.join(directory,'project.godot'),'utf8').includes('run/main_scene="res://main.tscn"'));
+ }
  }
 });
 check('Repeated bounded recipes produce the same game state without changing the source project',()=>{
@@ -78,9 +85,10 @@ check('Invalid projects and malformed flags produce one JSON diagnostic and pres
  const bad=path.join(temporary,'invalid.json'),retained=path.join(temporary,'retained.json');fs.writeFileSync(retained,'retain');
  const project=read(original);fs.writeFileSync(bad,JSON.stringify({...project,target:'unimplemented'}));
  assert(Array.isArray(run(['validate','--project',bad],1).errors));
- run(['create','--scenario','missing','--output',retained],2);
- run(['create','--output',retained,'--output',retained],2);
- run(['create','--output',retained,'--unexpected','true'],2);
+ run(['create','--game',littlewild,'--scenario','missing','--output',retained],2);
+ run(['create','--game',littlewild,'--output',retained,'--output',retained],2);
+ run(['create','--game',littlewild,'--output',retained,'--unexpected','true'],2);
+ run(['create','--output',retained],2);
  assert.equal(fs.readFileSync(retained,'utf8'),'retain');
 });
 check('Rejected editor and clock recipes cannot publish partial edits',()=>{
@@ -92,9 +100,9 @@ check('Rejected editor and clock recipes cannot publish partial edits',()=>{
  assert.equal(fs.readFileSync(output,'utf8'),'retain');
 });
 check('CLI refuses input aliases and compiled directory replacement',()=>{
- const project=fs.readFileSync(original);run(['scenario','--project',original,'--scenario','office','--output',original],2);
+ const project=fs.readFileSync(original);run(['scenario','--project',original,'--scenario','littlewild','--output',original],2);
  assert.deepEqual(fs.readFileSync(original),project);
- const directory=path.join(temporary,'godot-office'),before=fs.readFileSync(path.join(directory,'wildlands.project.json'));
+ const directory=path.join(temporary,'godot-littlewild-littlewild'),before=fs.readFileSync(path.join(directory,'wildlands.project.json'));
  run(['compile','--project',original,'--output',directory],2);
  assert.deepEqual(fs.readFileSync(path.join(directory,'wildlands.project.json')),before);
  assert(!fs.readdirSync(temporary).some(file=>file.includes('.wildlands-')));

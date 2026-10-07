@@ -168,7 +168,8 @@ declare namespace WildlandsUI {
     if(uploaded.size>root.WildlandsProject.maxBytes)throw Error('Project is too large. Choose a JSON project smaller than '+Math.floor(root.WildlandsProject.maxBytes/1024/1024)+' MiB.');
     const input=await uploaded.text();if(token!==readId)return;
     const checked=root.WildlandsProject.validate(input);if(!checked.ok)throw Error('Project was not opened: '+checked.errors.slice(0,3).join(' '));
-    pending=checked.project;host.scenarios.reviewPack(pending.pack,pending.sceneId);
+    // A legacy schemaVersion 1 project opens as its upgrade, embedding this artifact's game.
+    const opened=root.WildlandsProject.upgrade(checked.project);pending=opened;host.scenarios.reviewPack(opened.pack,opened.sceneId);
     const preview=host.scenarios.state.preview;if(!preview)throw Error('The project has no reviewed scene admission.');
     pendingAdmission={context:root.LWContent.stable(preview.context),state:root.LWContent.stable(preview.engine.export().state)};refresh();
     status('Project validated. Review the scene and choose Start this scene to open it.');

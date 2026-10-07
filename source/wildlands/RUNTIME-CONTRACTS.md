@@ -151,14 +151,21 @@ both rules with regression probes.
 - Browser transport: artifacts still declare their data globals ahead of every module; the
   engine-kernel bundle loads the provider first (`CONTENT_PROVIDER`), and it installs the
   profile adopted from those globals (`fromGlobals`; `LWGameProfile` carries `storage`).
-- Node: entry points install before using content. `developer-sdk` (and through it the project
-  SDK, `wildlands-runtime`, the Godot runtime and `bin/wildlands`) and the colony CLIs install the
+- Node: entry points install before using content. Engine distributions carry no game:
+  `bin/wildlands` installs the folder named by `--game` (or the game a schemaVersion 2 project
+  embeds) before any engine module loads, and the compiled Godot runtime installs the game its
+  `wildlands.project.json` embeds. In both, the transitional installers resolve to the engine-only
+  installer `source/tools/engine-installer.cts`, which installs nothing (the CLI bundle redirects
+  them; the Godot runtime bundle ships a shim of it), and only engine-owned JSON (schemas) is
+  embedded. In a source checkout, `developer-sdk` (and through it the project SDK and
+  `wildlands-runtime`) and the colony CLIs install the
   bundled Littlewild profile from `source/content-installers/littlewild-game.cts` when nothing
   is installed; `rts-cli`/`pet-cli` install their template game from
   `source/content-installers/template-games.cts`, which reads the compiled RTS Frontier and
-  Pocket Pet folder profiles the build writes to `.generated/games/<id>.profile.json`. These runtime installers are part of the
-  Godot runtime closure and the CLI bundle, so they live outside `source/test-support/`, which
-  holds only test code: every Node suite first requires `source/test-support/install-games.cts`,
+  Pocket Pet folder profiles the build writes to `.generated/games/<id>.profile.json`. These
+  runtime installers are runtime code (their paths are part of the Godot runtime closure), so they
+  live outside `source/test-support/`, which holds only test code: every Node suite first requires
+  `source/test-support/install-games.cts`,
   the composite showcase profile. `simulation.cjs` loads the provider but installs nothing. The
   bundled installers are transitional until game folders supply profiles.
 

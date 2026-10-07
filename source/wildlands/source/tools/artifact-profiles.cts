@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {BUNDLES, INSERTS, type BundleTag} from './build-inserts.cjs';
+import {TEMPLATE_FEATURES, type Template} from './game-manifest.cjs';
 
 export type DataGroup = 'game-profile' | 'export-payloads' | 'colony-content' | 'asset-catalog' | 'rts-content' | 'pet-content';
 export type ProfileKind = 'fixture' | 'studio' | 'play';
@@ -178,6 +179,74 @@ export function payloadErrors(candidate: ArtifactProfile): string[] {
   }
   const p5 = vendor.filter(insert => /(^|\/)p5-[^/]*\.js$/.test(insert[1]) && bundles.includes(insert[3]));
   if (p5.length && !candidate.data.includes('LWEngineSourceLoader')) errors.push(`${where} inlines p5 (${p5.map(insert => insert[0]).join(', ')}) without its LGPL source offer; declare LWEngineSourceLoader, which carries ${P5_SOURCE_ARCHIVE}.`);
+  return errors;
+}
+
+/** What a game build needs from its manifest (`game.json`): template, features, presentation and storage. */
+export interface GameDescription {
+  readonly id: string;
+  readonly template: Template;
+  readonly features?: readonly string[];
+  readonly presentation: {readonly title: string; readonly description?: string};
+  readonly storage: {readonly namespace: string};
+}
+export type GameBuildKind = 'play' | 'studio';
+/** Optional data globals a game may omit (a pet game without presentation assets). */
+const OPTIONAL_GAME_DATA = new Set(['LWPetAssetDefinitions']);
+/** Build kinds each template offers; Pocket Pet has no editor bundle, so it has no studio. */
+export const GAME_BUILD_KINDS: Readonly<Record<Template, readonly GameBuildKind[]>> = Object.freeze({colony: ['play', 'studio'], rts: ['play', 'studio'], pet: ['play']});
+
+/**
+ * The artifact profile of one game build (`wildlands build-game`). It derives from the engine's
+ * template profiles: play is the per-template play profile (colony-play, rts-play, pet-play) plus
+ * the optional feature bundles the game declares; studio adds the editors and
+ * export tools (colony: the studio profile; RTS: the mission editor), unminified and built on demand.
+ * Every game build declares LWGameProfile (its storage namespace) and the game's presentation text.
+ * `available` names the data globals the game folder compiles to (optional globals it lacks are dropped).
+ */
+export function gameProfile(game: GameDescription, kind: GameBuildKind, available?: ReadonlySet<string>): ArtifactProfile {
+  if (!GAME_BUILD_KINDS[game.template].includes(kind)) throw Error(`The ${game.template} template has no ${kind} profile; build it with --profile ${GAME_BUILD_KINDS[game.template].join(' or --profile ')}.`);
+  const features = game.features ?? [];
+  const optional = TEMPLATE_FEATURES[game.template];
+  for (const feature of features) if (!optional.includes(feature)) throw Error(`Feature ${feature} is not an optional feature of the ${game.template} template.`);
+  const base = profile(game.template === 'colony' ? (kind === 'play' ? 'colony-play' : 'studio') : game.template + '-play');
+  // The colony play profile keeps the storytelling player: its renderer host requires the storytelling
+  // projection, so declaring that feature changes nothing; renderers-2d is the colony's one opt-in bundle.
+  const wanted = new Set<BundleTag>([...base.bundles,
+    ...(kind === 'play' ? features as BundleTag[] : []), ...(kind === 'studio' && game.template === 'rts' ? ['rts-editor' as const] : [])]);
+  const names = game.template === 'colony' ? groups('game-profile', ...(kind === 'studio' ? ['export-payloads' as const] : []), 'colony-content', 'asset-catalog')
+    : ['LWGameProfile', ...base.data];
+  const description = game.presentation.description ?? game.presentation.title;
+  return {id: `${game.template}-${kind}`, kind, template: base.template, minify: kind === 'play',
+    variables: base.template === 'templates/standalone.html' ? {APP: base.variables.APP!, TITLE: game.presentation.title, DESCRIPTION: description} : {TITLE: game.presentation.title, DESCRIPTION: description},
+    bundles: BUNDLES.filter(bundle => wanted.has(bundle)), game: {storage: {namespace: game.storage.namespace}},
+    data: names.filter(name => !OPTIONAL_GAME_DATA.has(name) || !available || available.has(name))};
+}
+
+/** Every template feature combination (the power set of its optional features, canonical order). */
+export function featureSets(template: Template): string[][] {
+  return TEMPLATE_FEATURES[template].reduce<string[][]>((sets, feature) => [...sets, ...sets.map(set => [...set, feature])], [[]]);
+}
+
+/**
+ * Structural contract of every game build profile: each template, build kind and feature set must
+ * resolve to a closed, ordered, payload-correct profile. Declared play features may include bundles a
+ * play profile otherwise excludes; every other play rule (minified, no export payload) still holds.
+ */
+export function gameProfileErrors(source: string): string[] {
+  const errors: string[] = [], dataNames = DATA_GLOBALS.map(([name]) => name);
+  for (const template of ['colony', 'rts', 'pet'] as const) for (const kind of GAME_BUILD_KINDS[template]) for (const features of featureSets(template)) {
+    const candidate = gameProfile({id: 'probe', template, features, presentation: {title: 'Probe'}, storage: {namespace: 'wildlands.probe'}}, kind);
+    const where = `Game profile ${candidate.id} [${features.join(', ') || 'no features'}]`;
+    if (!subsequence(candidate.data, dataNames)) errors.push(`${where} data globals are unknown or not in canonical order.`);
+    if (!candidate.data.includes('LWGameProfile')) errors.push(`${where} must declare LWGameProfile.`);
+    if (kind === 'play') {
+      for (const bundle of candidate.bundles) if (PLAY_EXCLUDED_BUNDLES.includes(bundle) && !features.includes(bundle)) errors.push(`${where} requires excluded bundle ${bundle}.`);
+      for (const name of candidate.data) if (DATA_GLOBALS.find(([data]) => data === name)?.[1] === 'export-payloads') errors.push(`${where} must not embed export payload ${name}.`);
+    }
+    if (profileBundles(candidate).includes('colony-shell') && !candidate.data.includes('LWAssetDefinitions')) errors.push(`${where} runs the colony and must declare LWAssetDefinitions.`);
+    errors.push(...closureErrors(source, candidate).map(error => `${where}: ${error}`), ...payloadErrors(candidate).map(error => `${where}: ${error}`));
+  }
   return errors;
 }
 

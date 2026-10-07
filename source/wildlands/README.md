@@ -4,7 +4,7 @@ Wildlands is a standalone TypeScript game prototype maker. **Littlewild** is its
 
 Development stays in `source/wildlands/` inside Motorsport Manager. This folder remains a separate npm project with its own build, tools and verification; it does not share the native Motorsport Manager game's simulation or UI. Existing `LW*` APIs, scenario IDs and versioned save formats remain compatible.
 
-To script projects without installing anything, run the checked-in single-file CLI `bin/wildlands` from the repository root with Node.js 22+; the [Wildlands CLI handbook](../../docs/reference/wildlands-cli.md) covers every command.
+To script projects or build games without installing anything, run the checked-in single-file engine CLI `bin/wildlands` from the repository root with Node.js 22+. It carries no game: games are data-only folders under [`docs/concepts/`](../../docs/concepts/README.md), and `bin/wildlands build-game --game docs/concepts/<id> --output demos/<id>.html` turns one into a self-contained, ready-to-play HTML file (the checked-in [`demos/`](../../demos/README.md)). The [Wildlands CLI handbook](../../docs/reference/wildlands-cli.md) covers every command.
 
 See [WILDLANDS.md](WILDLANDS.md) for the project workflow, terminal interface, Godot compiler contract and current limits. The [documentation index](DOCUMENTATION.md) separates task guides and contracts from source-bound Littlewild records.
 

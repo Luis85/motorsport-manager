@@ -61,9 +61,13 @@ Two separate TypeScript projects ship checked-in, self-contained command-line
 bundles under `bin/`. Each needs only Node.js 22 or newer and runs from a fresh
 clone without `npm ci` or `node_modules`:
 
-- [`bin/wildlands`](wildlands-cli.md) creates, validates, inspects, plays, edits
-  and compiles portable Wildlands projects from `source/wildlands/`. Running a
-  compiled or exported Godot project requires Godot.
+- [`bin/wildlands`](wildlands-cli.md) is the Wildlands engine from
+  `source/wildlands/` without any game content. It validates, inspects and builds
+  game folders (`docs/concepts/<id>/`) into self-contained HTML files (the
+  checked-in [`demos/`](../../demos/README.md), currently Littlewild), and
+  creates, validates, inspects, plays, edits and compiles portable projects,
+  which embed their game, into Godot desktop projects. Running a compiled or
+  exported Godot project requires Godot.
 - [`bin/scene-forge`](scene-forge-cli.md) authors, validates and exports
   declarative 3D projects from `source/scene-forge/`. Its `screenshot` and
   `review` capture commands additionally need Playwright and Chromium; `doctor`

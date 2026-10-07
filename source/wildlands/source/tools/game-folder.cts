@@ -148,7 +148,29 @@ export function loadGame(directory: string): LoadedGame {
  return {root, manifest, files: inventory, digest: digest(inventory)};
 }
 
-const engineSchema = (name: string): unknown => read(path.join(ENGINE_SOURCE, 'content', name));
+/**
+ * Engine-owned schemas as literal requires (detached copies), so a bundled distribution
+ * (`bin/wildlands`, tools/cli-bundle.cts) embeds exactly these engine documents and builds games
+ * without a source checkout. Resolves to source/content under tsx and .generated/content compiled.
+ */
+const ENGINE_SCHEMAS: Readonly<Record<string, () => unknown>> = {
+ 'library.schema.json': () => require('../content/library.schema.json'),
+ 'adventure.schema.json': () => require('../content/adventure.schema.json'),
+ 'world.schema.json': () => require('../content/world.schema.json'),
+ 'simulation.schema.json': () => require('../content/simulation.schema.json'),
+ 'growth.schema.json': () => require('../content/growth.schema.json'),
+ 'scenario.schema.json': () => require('../content/scenario.schema.json')
+};
+const engineSchema = (name: string): unknown => plain(ENGINE_SCHEMAS[name]!());
+
+/**
+ * The authored engine content directory, checked for standalone library mirrors, when this is a
+ * checkout. A bundled distribution has no such tree (and may not be allowed to look for one).
+ */
+function engineContent(): string[] {
+ const directory = path.join(ENGINE_SOURCE, 'content');
+ try { return fs.statSync(directory).isDirectory() ? [directory] : []; } catch { return []; }
+}
 
 /** Colony projection: balancing defaults, compiled library schema, creature/asset catalogs and the scenario catalog. */
 function colony(game: LoadedGame): CompiledGame {
@@ -159,7 +181,7 @@ function colony(game: LoadedGame): CompiledGame {
  const canonical = content.canonicalId === undefined ? undefined : content.packs[ids.indexOf(content.canonicalId)]!;
  const packages = definitions(file(content.assets));
  const documents = contentDocuments({balancing: file(content.balancing), ...canonical ? {templatePack: file(canonical)} : {},
-  librarySchema: path.join(ENGINE_SOURCE, 'content/library.schema.json'), contentDirectories: [path.join(ENGINE_SOURCE, 'content'), file('content')], packages});
+  librarySchema: {document: engineSchema('library.schema.json')}, contentDirectories: [...engineContent(), file('content')], packages});
  const balance = documents.balancing as RecordValue & {libraries: RecordValue & {base: unknown; adventure: unknown; world: unknown; growth: unknown}; simulation: RecordValue & {rules: {actor: unknown; economy: unknown}}};
  // Skill tree and adventure examples are not profile sections: parse them here, admit the tree in validateGame.
  for (const relative of [...content.skillTree ? [content.skillTree] : [], ...content.adventureExamples ?? []]) json(game.root, relative);

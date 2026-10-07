@@ -80,6 +80,8 @@ test('The actual architecture policy rejects asset-catalog DOM/platform and pres
    'definition-source.cjs','bundled-content.cjs','bundled-assets.cjs','bundled-library-schema.cjs','artifact-profiles.cjs','build-inserts.cjs',
    'game-folder.cjs','game-manifest.cjs'];
   for(const file of checkerFiles)fs.copyFileSync(path.join(__dirname,'tools',file),path.join(tools,file));
+  // game-folder.cjs requires the compiled engine schemas (content/*.schema.json) relative to itself.
+  fs.cpSync(path.join(__dirname,'content'),path.join(fixture,'.generated','content'),{recursive:true});
   const map=JSON.parse(fs.readFileSync(path.join(fixture,'source','architecture','domain-map.json'),'utf8')) as {contexts:{layer:string;files:string[]}[]};
   assert.equal(map.contexts.find(context=>context.files.includes('asset-catalog.ts'))?.layer,'domain');
   const run=():{status:number|null;report:PolicyResult}=>{

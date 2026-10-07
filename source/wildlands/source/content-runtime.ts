@@ -45,15 +45,16 @@
     }
     return value;
   }
-  function copy<T>(value:T):T { return inspectJson(value, true); }
+  /** Detached JSON copy; `maxNodes` raises the value budget for documents that embed whole profiles (projects). */
+  function copy<T>(value:T, maxNodes = MAX_NODES):T { return inspectJson(value, true, maxNodes); }
   const pointer = (key:PropertyKey) => { const text=String(key); return text.includes('~') || text.includes('/') ? text.replace(/~/g, '~0').replace(/\//g, '~1') : text; };
   const freeze = <T>(value:T):T => { if (value && typeof value === 'object' && !Object.isFrozen(value)) { Object.values(value).forEach(freeze); Object.freeze(value); } return value; };
   function stable(value:object):string;
   function stable(value:unknown):string|undefined;
   function stable(value:unknown):string|undefined {return Array.isArray(value) ? '[' + value.map(entry=>stable(entry)).join(',') + ']' : isRecord(value) ? '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stable(value[k])).join(',') + '}' : JSON.stringify(value);}
   /** An opaque, deterministic change identifier; NOT a cryptographic signature. */
-  function fingerprint(doc:unknown):string {
-    const value=copy(doc);
+  function fingerprint(doc:unknown, maxNodes = MAX_NODES):string {
+    const value=copy(doc, maxNodes);
     const safe=isRecord(value)?value:{};
     const s = stable({schemaVersion: safe.schemaVersion, library: safe.library, components: safe.components});
     let a = 2166136261, b = 0x9e3779b9;
@@ -86,12 +87,12 @@
       }
     }
   }
-  function inspectJson<T>(value:T, detach=false):T {
+  function inspectJson<T>(value:T, detach=false, maxNodes=MAX_NODES):T {
     let count = 0;
     const ancestors = new Set<unknown>();
     function invalid(path:string, message:string):never { throw new ContentError([diagnostic('JSON_ONLY', path, message)]); }
     function walk(v:unknown, path:string, depth:number):unknown {
-      if (++count > MAX_NODES || depth > MAX_DEPTH) throw new ContentError([diagnostic('COMPLEXITY_LIMIT', path, 'This file is too deeply nested or contains too many values.')]);
+      if (++count > maxNodes || depth > MAX_DEPTH) throw new ContentError([diagnostic('COMPLEXITY_LIMIT', path, 'This file is too deeply nested or contains too many values.')]);
       if (v === null || typeof v === 'boolean') return v;
       if (typeof v === 'number') { if (!Number.isFinite(v)) throw new ContentError([diagnostic('FINITE_NUMBER', path, 'Numbers must be finite.')]); return v; }
       if (typeof v === 'string') { if (v.length > 10000 && [...v].length > 10000) throw new ContentError([diagnostic('TEXT_LIMIT', path, 'This text exceeds 10,000 characters.')]); return v; }
@@ -129,12 +130,12 @@
     }
     return walk(value, '', 0) as T;
   }
-  function parse(input:unknown, limit = MAX_BYTES):unknown {
-    if (typeof input !== 'string') { const value=copy(input),serialized = JSON.stringify(value); if (new TextEncoder().encode(serialized).length > limit) throw new ContentError([diagnostic('FILE_LIMIT', '/', 'Content exceeds the file size limit.')]); return value; }
+  function parse(input:unknown, limit = MAX_BYTES, maxNodes = MAX_NODES):unknown {
+    if (typeof input !== 'string') { const value=copy(input, maxNodes),serialized = JSON.stringify(value); if (new TextEncoder().encode(serialized).length > limit) throw new ContentError([diagnostic('FILE_LIMIT', '/', 'Content exceeds the file size limit.')]); return value; }
     if (new TextEncoder().encode(input).length > limit) throw new ContentError([diagnostic('FILE_LIMIT', '/', 'Content exceeds the ' + Math.round(limit / 1024) + ' KiB file size limit.')]);
     let value:unknown;
     try { value = JSON.parse(input.replace(/^\uFEFF/, '')); } catch (error) { throw new ContentError([diagnostic('JSON_SYNTAX', '/', 'Could not read JSON: ' + (error instanceof Error?error.message:String(error)), 'Export UTF-8 JSON with no comments or trailing commas.')]); }
-    rejectDuplicateKeys(input); inspectJson(value); return value;
+    rejectDuplicateKeys(input); inspectJson(value, false, maxNodes); return value;
   }
   /** Evaluates only the documented JSON Schema keywords used by our own offline contract.
    * It is intentionally NOT an arbitrary-schema validator. No remote references are resolved.

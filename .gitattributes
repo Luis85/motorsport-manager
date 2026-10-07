@@ -4,3 +4,6 @@
 # Generated CLI bundles are byte-checked against their builds; store verbatim.
 bin/* -text linguist-generated=true
 bin/README.md text
+# Generated demos are byte-checked against fresh game builds (npm run check:demos); store verbatim.
+demos/* -text linguist-generated=true
+demos/README.md text

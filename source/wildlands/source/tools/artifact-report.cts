@@ -106,11 +106,11 @@ function htmlReport(file: string, top: number): Record<string, unknown> {
     largestInserts: segments.filter(segment => segment.kind !== 'data').sort((a, b) => b.bytes - a.bytes).slice(0, top), payloads};
 }
 
-/** The bundled CLI embeds `RUNTIME = {...};` and `ENGINE = {...};` raw-deflate payloads (esbuild may indent them). */
+/** The bundled CLI embeds `RUNTIME = {...};`, `ENGINE = {...};` and `KIT = {...};` raw-deflate payloads (esbuild may indent them). */
 function cliReport(file: string, top: number): Record<string, unknown> {
   const text = fs.readFileSync(file, 'utf8'), payloads: Record<string, PayloadReport> = {};
   let payloadBytes = 0;
-  for (const match of text.matchAll(/^[ \t]*(?:const|var|let) (RUNTIME|ENGINE) = (\{.*\});$/gm)) {
+  for (const match of text.matchAll(/^[ \t]*(?:const|var|let) (RUNTIME|ENGINE|KIT) = (\{.*\});$/gm)) {
     const item = JSON.parse(match[2]!) as {bytes: number; sha256: string; data: string};
     const compressed = Buffer.from(item.data, 'base64'), raw = inflateRawSync(compressed, {maxOutputLength: MAX_DECODED});
     if (raw.length !== item.bytes || sha256(raw) !== item.sha256) throw Error(`${file} ${match[1]} payload integrity failed.`);
