@@ -158,6 +158,8 @@ function colony(game: LoadedGame): CompiledGame {
  const documents = contentDocuments({balancing: file(content.balancing), ...canonical ? {templatePack: file(canonical)} : {},
   librarySchema: path.join(ENGINE_SOURCE, 'content/library.schema.json'), contentDirectories: [path.join(ENGINE_SOURCE, 'content'), file('content')], packages});
  const balance = documents.balancing as RecordValue & {libraries: RecordValue & {base: unknown; adventure: unknown; world: unknown; growth: unknown}; simulation: RecordValue & {rules: {actor: unknown; economy: unknown}}};
+ // Skill tree and adventure examples are not profile sections: parse them here, admit the tree in validateGame.
+ for (const relative of [...content.skillTree ? [content.skillTree] : [], ...content.adventureExamples ?? []]) json(game.root, relative);
  const interactions = json(game.root, content.interactions);
  if (JSON.stringify(interactions) !== JSON.stringify(balance.interactions)) throw Error('The interaction catalog must equal the balancing interactions section (one authority).');
  const template = canonical ? path.posix.basename(canonical, '.json') : null;

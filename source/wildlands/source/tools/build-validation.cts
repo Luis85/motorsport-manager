@@ -25,8 +25,9 @@ function validateColony(game:CompiledGame,profile:LWContentProvider.Profile):voi
  const api=require('../developer-sdk.cjs') as {toolbox:LittlewildDeveloper.Toolbox};
  const scenarios=require('../scenario-runtime.js') as LWContentPorts.ScenarioApi;
  if(content.skillTree)(require('../skill-trees.js') as LWSkillTrees.Api).validate(read(path.join(game.root,content.skillTree)));
- const adventure=require('../adventure-content.js') as LWContentPorts.AdventureApi;
- for(const example of content.adventureExamples??[]){const result=adventure.validate(read(path.join(game.root,example)));if(!result.ok)throw Error('Adventure example '+example+': '+result.errors.join('; '));}
+ // Adventure examples are reference documents written against the item set of their time: an added
+ // item makes a complete example library stale without making the game invalid, so they are parsed
+ // (game-folder.cts) but not admitted here, exactly as the build never admitted them before.
  const interactions=api.toolbox.validateInteractionLibrary(read(path.join(game.root,content.interactions)));
  if(!interactions.ok)throw Error('Interaction catalog: '+interactions.errors.join('; '));
  const balance=api.toolbox.balancing.validate(profile.balancing);if(!balance.ok)throw Error('Canonical balancing defaults: '+balance.errors.map(error=>error.path+': '+error.message).join('; '));

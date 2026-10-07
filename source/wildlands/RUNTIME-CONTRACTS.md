@@ -181,7 +181,9 @@ Folders are data only and are never executed. `source/tools/game-folder.cts` (bu
   schemas) using the bundled build's projections. The canonical pack (`content.canonicalId`)
   inherits balancing defaults; the interaction catalog must equal the balancing `interactions`.
 - `validateGame(dir)` adds the engine's runtime validators in a fresh process (one game per
-  realm) and returns `{ok, id, digest, errors}`.
+  realm: balancing, every scenario pack, skill tree, interaction library, RTS/pet catalog, the
+  creature/asset/interior owners on install and the balancing audit) and returns
+  `{ok, id, digest, errors}`. Adventure examples are parsed reference documents, not admitted.
 
 The transitional Littlewild installer reads the `.generated` documents the build compiles from
 the Littlewild folder, plus the pending Emberworks/Office packs.

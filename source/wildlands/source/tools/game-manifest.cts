@@ -20,6 +20,7 @@ export interface ColonyContent {
  /** Pack that inherits libraries, simulation, starting scenes and default world from `balancing`. */
  readonly canonicalId?: string;
  readonly skillTree?: string;
+ /** Reference adventure libraries: parsed, not admitted (they are written against the item set of their time). */
  readonly adventureExamples?: readonly string[];
 }
 export interface RtsContent {readonly catalog: string;}
