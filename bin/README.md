@@ -52,5 +52,8 @@ executable; CI runs it, and also validates every game folder with the
 checked-in `bin/wildlands` alone, before installing any dependency.
 In `source/wildlands/`, plain `npm run build` does not refresh `bin/wildlands`.
 The checked-in [`demos/`](../demos/README.md) are built by that same candidate:
-`npm run build:demos` refreshes them and `npm run check:demos` fails when any
-demo, its manifest or README differs from a fresh build.
+`npm run build:demos` (after `npm run build:cli`) refreshes them and
+`npm run check:demos` fails when any demo, its manifest or README differs from a
+fresh build. Every demo records the engine identity, so any engine change needs
+rebuilt demos as well; a game folder change needs them unless it only edits a
+`README.md`, which is not part of the folder digest.

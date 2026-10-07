@@ -140,6 +140,19 @@ Read `bin/README.md` and the handbook (`docs/reference/wildlands-cli.md`,
 rebuild with `npm run build:cli` in the source project, verify with
 `npm run check:cli`, and commit the regenerated bundle with the source change.
 
+Wildlands games live in `docs/concepts/<id>/`: data only, never code; a folder's
+`README.md` is documentation outside its digest (`PROVENANCE.md`/`LICENSE*` are
+in it). Validate a changed folder with
+`bin/wildlands validate-game --game docs/concepts/<id>`. `demos/` is generated
+and checked in; never hand-edit it: rebuild with `npm run build:demos` (after
+`build:cli`) and verify with `npm run check:demos`. Any engine change changes
+every demo's engine identity, so rebuild and commit demos with engine changes.
+Wildlands tests: `npm test` is the fast tier, `npm run verify` the complete
+parallel gate. `source/verification/suites.json` and `gate-expectations.json`
+are the authority for suites and named checks; add, rename or retire a check
+only through their reviewed entries, never weaken an assertion, and never add
+`waitForTimeout` (its allowlist is empty).
+
 ## Documentation housekeeping
 
 Read `docs/how-to/maintaining-documentation.md` before adding or reorganizing docs.
