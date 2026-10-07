@@ -3,6 +3,9 @@
  * Transitional runtime game installer (not test code): the Littlewild colony content profile, assembled from the
  * compiled `.generated` content exactly as the browser build injects it (balancing defaults,
  * compiled library schema, creature catalog, asset catalog and the three colony scenario packs).
+ * build.ts compiles these documents from the Littlewild game folder and copies the Emberworks and
+ * Office packs from their own folders (docs/concepts/<id>/content), whose colony documents equal
+ * Littlewild's, so the composite is the profile every colony pack ran with before the folders existed.
  *
  * Engine modules never load these files; Node entry points (SDKs, CLIs, the Godot runtime) and
  * tests install this profile until game folders provide profiles (Phase 3/4). JSON is read with

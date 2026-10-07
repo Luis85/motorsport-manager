@@ -33,10 +33,25 @@
   for(const scene of pack.scenes){const rendering=scene.graph?.rendering;if(!rendering)continue;const descriptor=builtinRenderers.find(row=>row.id===rendering.rendererId)??snapshot.renderers.find(row=>row.id===rendering.rendererId)?.metadata;if(descriptor?.dimensions&&!descriptor.dimensions.includes(rendering.dimension))throw Error('Captured renderer '+rendering.rendererId+' does not support authored dimension '+rendering.dimension+'.');}
   return snapshot;
  }
+ /**
+  * Canonical balancing defaults come from the bundled colony game folder that declares a canonical pack
+  * (games/<id>/game.json content.canonicalId); other colony folders carry their own copies (D4).
+  */
+ function canonicalDefaults(bundle:LWEngineExport.SourceBundle):{document:string|null;definitions:string[]}{
+  for(const file of bundle.files){
+   const game=/^(games\/[^/]+\/)game\.json$/.exec(file.path)?.[1];if(!game)continue;
+   const content=record(record(JSON.parse(file.text) as unknown).content);
+   if(typeof content.canonicalId!=='string'||typeof content.balancing!=='string'||typeof content.assets!=='string')continue;
+   const balancing=game+content.balancing,assets=game+content.assets+'/';
+   return {document:bundle.files.some(entry=>entry.path===balancing)?balancing:null,definitions:bundle.files.filter(entry=>entry.path.startsWith(assets)&&/^(items|buildings|creatures)\/[^/]+\/definition\.json$/.test(entry.path.slice(assets.length))).map(entry=>entry.path)};
+  }
+  return {document:null,definitions:[]};
+ }
  function create(pack:LWContentPorts.ScenarioPack,sceneId:string,bundle:LWEngineExport.SourceBundle,snapshot:LWEngineExport.Extensions):ReturnType<LWEngineExport.ManifestApi['create']>{
   const catalogs:Record<string,unknown>={},sources=new Map(bundle.files.map(file=>[file.path,file]));
-  // Pocket Pet meshes belong to a separate demo application; they stay exported as source text, not colony catalogs.
-  for(const file of bundle.files)if(file.path.endsWith('.json')&&/^source\/(assets|content|schemas)\//.test(file.path)&&!/^source\/(assets\/pets\/|content\/pet-demo\.json$)/.test(file.path))catalogs[file.path]=JSON.parse(file.text) as unknown;
+  // Engine data only: game folders (games/<id>/, including Pocket Pet meshes) stay exported as source text, not catalogs.
+  for(const file of bundle.files)if(file.path.endsWith('.json')&&/^source\/(assets|content|schemas)\//.test(file.path))catalogs[file.path]=JSON.parse(file.text) as unknown;
+  const defaults=canonicalDefaults(bundle);
   const commandText=sources.get('source/command-router.ts')?.text??'',scheduleText=sources.get('source/simulation-pipeline.ts')?.text??'';
   const commands=[...commandText.matchAll(/\{id:'([^']+)',method:'([^']+)',scope:'([^']+)',maxArgs:(\d+),away:(true|false)\}/g)].map(match=>({id:match[1],method:match[2],scope:match[3],maxArgs:Number(match[4]),away:match[5]==='true'}));
   const schedule=[...scheduleText.matchAll(/\{id:'([^']+)',scope:'([^']+)',order:(\d+),owner:'([^']+)'\}/g)].map(match=>({id:match[1],scope:match[2],order:Number(match[3]),owner:match[4]}));
@@ -71,7 +86,7 @@
    schedule:{compiled:schedule,source:'source/simulation-pipeline.ts',actorOrder:'Actor-major, stable native creature order; each actor dynamics then activity; world/economy transactions settle through their ordered ECS systems.'},
    persistence:{native:{app:'littlewild',version:8,source:'source/engine.ts'},story:{version:10,source:'source/scenario-story.ts'},journey:{source:'source/scene-navigation.ts',checkpoints:'Canonical owner state per root scene; shared child scenes retain their owner identity.'},pack:{format:'living-worlds-pack',schemaVersion:2}},
    determinism:{fixedStepSeconds:0.1,maxPendingSteps:32,maxFrameSeconds:0.1,maxSpeed:16,clockSource:'source/simulation-clock.ts',rng:{algorithm:'Mulberry32',state:'unsigned32-bit seed',increment:1831565813,divisor:4294967296,source:'source/rpg.ts',streams:'Separate actor.rpg.rng, world colony.rng and creatureInteractions.rng (decision stream seeded from colony.rng XOR0x9e3779b9); preserve every seed and draw order.',streamSources:['source/colony.ts','source/interaction-triggers.ts']},transactions:'Paid reservations, jobs, transfer/settlement receipts and outboxes are canonical state. Port validate/reserve/update/settle ordering and idempotency before promising continuation parity.',transactionSources:['source/world-ecs.ts','source/economy-ecs.ts','source/physical-ecs-contracts.d.ts']},
-   balancing:{document:bundle.files.find(file=>/^games\/[^/]+\/content\/balancing\.json$/.test(file.path))?.path??null,assembly:'source/tools/bundled-content.cts',definitions:bundle.files.filter(file=>/^games\/[^/]+\/assets\/(items|buildings|creatures)\/[^/]+\/definition\.json$/.test(file.path)).map(file=>file.path),inventory:'source/content/balancing-inventory.json',policy:'Assemble canonical defaults from the authoring document and discovered definition facets; catalog selectors are build-only and portable documents contain complete values. Explicit pack overrides remain authoritative; mathematical, serialization and grid invariants are classified separately.'},
+   balancing:{document:defaults.document,assembly:'source/tools/bundled-content.cts',definitions:defaults.definitions,inventory:'source/content/balancing-inventory.json',policy:'Assemble canonical defaults from the authoring document and discovered definition facets; catalog selectors are build-only and portable documents contain complete values. Explicit pack overrides remain authoritative; mathematical, serialization and grid invariants are classified separately.'},
    sourceDependencies:bundle.files.filter(file=>file.dependencies.length).map(file=>({source:file.path,dependencies:file.dependencies})),architecture:bundle.architecture
   };
   const godot:Record<string,unknown>={

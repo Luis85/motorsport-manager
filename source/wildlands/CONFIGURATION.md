@@ -43,7 +43,7 @@ A terrain row contains `.` for land and `~` for water. Keep row 9 and column 9 t
 npm ci --no-audit --no-fund
 npm run build
 
-node .generated/tools/scenario-cli.cjs validate source/content/emberworks.pack.json
+node .generated/tools/scenario-cli.cjs validate ../../docs/concepts/emberworks/content/emberworks.pack.json
 node .generated/tools/scenario-cli.cjs export littlewild my-setting.pack.json
 node .generated/tools/scenario-cli.cjs capture my-story.json captured.pack.json
 node .generated/tools/simulation-profile-cli.cjs validate source/content/simulation-profile.json

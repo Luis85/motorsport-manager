@@ -43,7 +43,7 @@
     },
     {
       "id": "emberworks-pack",
-      "pattern": "content/emberworks.pack.json",
+      "pattern": "games/emberworks/content/emberworks.pack.json",
       "owner": "experience-application",
       "kind": "scenario",
       "validatorRole": "scenario"
@@ -73,7 +73,7 @@
     },
     {
       "id": "office-pack",
-      "pattern": "content/office.pack.json",
+      "pattern": "games/office/content/office.pack.json",
       "owner": "experience-application",
       "kind": "scenario",
       "validatorRole": "scenario"
@@ -155,7 +155,7 @@
     },
     {
       "id": "pet-assets",
-      "pattern": "assets/pets/*/definition.json",
+      "pattern": "games/*/assets/pets/*/definition.json",
       "owner": "content-model",
       "kind": "definitions",
       "validatorRole": "definitionSource"
@@ -206,7 +206,7 @@
     },
     {
       "id": "rts-demo",
-      "pattern": "content/rts-demo.json",
+      "pattern": "games/rts-frontier/content/rts.json",
       "owner": "content-model",
       "kind": "definitions",
       "validatorRole": "rts",
@@ -221,7 +221,7 @@
     },
     {
       "id": "pet-demo",
-      "pattern": "content/pet-demo.json",
+      "pattern": "games/pocket-pet/content/pet.json",
       "owner": "content-model",
       "kind": "definitions",
       "validatorRole": "pet",

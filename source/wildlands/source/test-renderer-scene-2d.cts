@@ -9,7 +9,7 @@ const results:Result[]=[];
 function test(name:string,work:()=>void):void {try{work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
 const painter=require('./renderer-scene-2d.js') as LittlewildRenderer2D.Api;
 function freeze<T>(value:T):T {if(value&&typeof value==='object'){for(const item of Object.values(value))freeze(item);Object.freeze(value);}return value;}
-const littlewild=(require('./tools/game-folder.cjs') as typeof import('./tools/game-folder.cjs')).gameDirectory('littlewild');
+const {gameDirectory}=require('./tools/game-folder.cjs') as typeof import('./tools/game-folder.cjs'),littlewild=gameDirectory('littlewild');
 const asset=freeze(JSON.parse(fs.readFileSync(path.join(littlewild,'assets/creatures/sproutling/definition.json'),'utf8')).visual as LittlewildDeveloper.Document);
 const bench=freeze(JSON.parse(fs.readFileSync(path.join(littlewild,'assets/buildings/bench/definition.json'),'utf8')).visual as LittlewildDeveloper.Document);
 const satchel=freeze(JSON.parse(fs.readFileSync(path.join(littlewild,'assets/items/field_satchel/definition.json'),'utf8')).visual as LittlewildDeveloper.Document);
@@ -84,7 +84,7 @@ test('Room-local projection and picking select only workers on the visible nativ
  assert.equal(painter.hitTest({x:0,y:0},interior),null);assert.equal(painter.hitTest(painter.project({x:9,y:9},interior),interior),null);
 });
 test('Office cutaway consumes detached authored background, floor, trim and window colors within its native scene footprint',()=>{
- const pack=JSON.parse(fs.readFileSync(path.resolve('source/content/office.pack.json'),'utf8')) as {worlds:{id:string;environment:LittlewildDeveloper.Document}[]},environment=pack.worlds.find(world=>world.id==='office-floor')!.environment;
+ const pack=JSON.parse(fs.readFileSync(path.join(gameDirectory('office'),'content/office.pack.json'),'utf8')) as {worlds:{id:string;environment:LittlewildDeveloper.Document}[]},environment=pack.worlds.find(world=>world.id==='office-floor')!.environment;
  const indoor=freeze({...frame,environment,scene:{id:'office',name:'Office',dimension:'2d' as const,bounds:{x:5,y:5,width:4,height:3}},tiles:Array.from({length:361},(_,index)=>({x:index%19,y:Math.floor(index/19),height:0,ground:'grass'})),actors:[],buildings:[],props:[]}),drawing=capture(),before=JSON.stringify(indoor);
  painter.draw(indoor,context,drawing.output);assert.equal(drawing.polygons[0]!.color,environment.background);
  const floors=drawing.polygons.filter(poly=>poly.color===environment.floor||poly.color===environment.alternateFloor);assert.equal(floors.length,12);assert(floors.some(poly=>poly.color===environment.floor));assert(floors.some(poly=>poly.color===environment.alternateFloor));

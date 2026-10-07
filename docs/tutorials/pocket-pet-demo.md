@@ -4,6 +4,7 @@ This tutorial uses the TypeScript Wildlands maker in
 [`source/wildlands/`](../../source/wildlands/README.md). Pocket Pet is an
 original virtual-pet demonstration in the tamagotchi genre. It runs on the same
 ECS as the colony and RTS demos, but owns its own catalog, clock and checkpoints.
+Its data lives in the [Pocket Pet game folder](../concepts/pocket-pet/README.md).
 Every 3D model in its room was authored in
 [Scene Forge](../../source/scene-forge/README.md). See the
 [Pocket Pet reference](../reference/pet-engine.md) for exact rules and limits.

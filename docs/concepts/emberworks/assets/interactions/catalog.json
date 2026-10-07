@@ -1,0 +1,561 @@
+{
+  "format": "littlewild-interactions",
+  "schemaVersion": 1,
+  "id": "littlewild-friendly",
+  "version": 1,
+  "definitions": [
+    {
+      "id": "care-feed",
+      "label": "Offer food",
+      "description": "Offer food",
+      "executor": "care",
+      "sources": [
+        "player"
+      ],
+      "targets": [
+        "creature"
+      ],
+      "targetKinds": [],
+      "range": 100,
+      "cooldown": 0,
+      "minimumEnergy": 0,
+      "maximumAnger": 100,
+      "requireIdle": false,
+      "cost": {
+        "energy": 0,
+        "items": {}
+      },
+      "effects": {
+        "source": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        },
+        "target": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        }
+      },
+      "action": "feed",
+      "autonomous": false,
+      "duel": null
+    },
+    {
+      "id": "care-water",
+      "label": "Offer water",
+      "description": "Offer water",
+      "executor": "care",
+      "sources": [
+        "player"
+      ],
+      "targets": [
+        "creature"
+      ],
+      "targetKinds": [],
+      "range": 100,
+      "cooldown": 0,
+      "minimumEnergy": 0,
+      "maximumAnger": 100,
+      "requireIdle": false,
+      "cost": {
+        "energy": 0,
+        "items": {}
+      },
+      "effects": {
+        "source": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        },
+        "target": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        }
+      },
+      "action": "water",
+      "autonomous": false,
+      "duel": null
+    },
+    {
+      "id": "care-bond",
+      "label": "Spend time together",
+      "description": "Spend time together",
+      "executor": "care",
+      "sources": [
+        "player"
+      ],
+      "targets": [
+        "creature"
+      ],
+      "targetKinds": [],
+      "range": 100,
+      "cooldown": 0,
+      "minimumEnergy": 0,
+      "maximumAnger": 100,
+      "requireIdle": false,
+      "cost": {
+        "energy": 0,
+        "items": {}
+      },
+      "effects": {
+        "source": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        },
+        "target": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        }
+      },
+      "action": "bond",
+      "autonomous": false,
+      "duel": null
+    },
+    {
+      "id": "care-praise",
+      "label": "Praise an achievement",
+      "description": "Praise an achievement",
+      "executor": "care",
+      "sources": [
+        "player"
+      ],
+      "targets": [
+        "creature"
+      ],
+      "targetKinds": [],
+      "range": 100,
+      "cooldown": 0,
+      "minimumEnergy": 0,
+      "maximumAnger": 100,
+      "requireIdle": false,
+      "cost": {
+        "energy": 0,
+        "items": {}
+      },
+      "effects": {
+        "source": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        },
+        "target": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        }
+      },
+      "action": "praise",
+      "autonomous": false,
+      "duel": null
+    },
+    {
+      "id": "care-soothe",
+      "label": "Offer reassurance",
+      "description": "Offer reassurance",
+      "executor": "care",
+      "sources": [
+        "player"
+      ],
+      "targets": [
+        "creature"
+      ],
+      "targetKinds": [],
+      "range": 100,
+      "cooldown": 0,
+      "minimumEnergy": 0,
+      "maximumAnger": 100,
+      "requireIdle": false,
+      "cost": {
+        "energy": 0,
+        "items": {}
+      },
+      "effects": {
+        "source": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        },
+        "target": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        }
+      },
+      "action": "soothe",
+      "autonomous": false,
+      "duel": null
+    },
+    {
+      "id": "care-space",
+      "label": "Give some space",
+      "description": "Give some space",
+      "executor": "care",
+      "sources": [
+        "player"
+      ],
+      "targets": [
+        "creature"
+      ],
+      "targetKinds": [],
+      "range": 100,
+      "cooldown": 0,
+      "minimumEnergy": 0,
+      "maximumAnger": 100,
+      "requireIdle": false,
+      "cost": {
+        "energy": 0,
+        "items": {}
+      },
+      "effects": {
+        "source": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        },
+        "target": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        }
+      },
+      "action": "space",
+      "autonomous": false,
+      "duel": null
+    },
+    {
+      "id": "friendly-duel",
+      "label": "Ask for a friendly duel",
+      "description": "A nonlethal contest of dexterity. Both creatures decide whether to join; three points or five rounds ends the match.",
+      "executor": "duel",
+      "sources": [
+        "creature"
+      ],
+      "targets": [
+        "creature"
+      ],
+      "targetKinds": [],
+      "range": 4,
+      "cooldown": 120,
+      "minimumEnergy": 35,
+      "maximumAnger": 35,
+      "requireIdle": true,
+      "cost": {
+        "energy": 2,
+        "items": {}
+      },
+      "effects": {
+        "source": {
+          "joy": 4,
+          "energy": 0,
+          "social": 8,
+          "anger": 0,
+          "bond": 0
+        },
+        "target": {
+          "joy": 4,
+          "energy": 0,
+          "social": 8,
+          "anger": 0,
+          "bond": 0
+        }
+      },
+      "action": null,
+      "autonomous": true,
+      "duel": {
+        "skill": "DX",
+        "maxRounds": 5,
+        "pointsToWin": 3,
+        "roundSeconds": 2,
+        "responseSeconds": 1,
+        "sourceModifier": 0,
+        "targetModifier": 0,
+        "scoring": "success-margin",
+        "sourceEnergyPerRound": 0.5,
+        "targetEnergyPerRound": 0.5
+      }
+    },
+    {
+      "id": "spend-time",
+      "label": "Suggest spending time together",
+      "description": "Use the existing shared social task: one friend walks over and both make time.",
+      "executor": "social",
+      "sources": [
+        "creature"
+      ],
+      "targets": [
+        "creature"
+      ],
+      "targetKinds": [],
+      "range": 4,
+      "cooldown": 0,
+      "minimumEnergy": 20,
+      "maximumAnger": 45,
+      "requireIdle": false,
+      "cost": {
+        "energy": 0,
+        "items": {}
+      },
+      "effects": {
+        "source": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        },
+        "target": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        }
+      },
+      "action": null,
+      "autonomous": false,
+      "duel": null
+    },
+    {
+      "id": "encourage",
+      "label": "Encourage a friend",
+      "description": "Share a small encouraging moment nearby.",
+      "executor": "effects",
+      "sources": [
+        "creature"
+      ],
+      "targets": [
+        "creature"
+      ],
+      "targetKinds": [],
+      "range": 4,
+      "cooldown": 60,
+      "minimumEnergy": 20,
+      "maximumAnger": 45,
+      "requireIdle": false,
+      "cost": {
+        "energy": 0,
+        "items": {}
+      },
+      "effects": {
+        "source": {
+          "joy": 2,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        },
+        "target": {
+          "joy": 5,
+          "energy": 0,
+          "social": 4,
+          "anger": 0,
+          "bond": 0
+        }
+      },
+      "action": null,
+      "autonomous": false,
+      "duel": null
+    },
+    {
+      "id": "notice-nature",
+      "label": "Notice the woodland",
+      "description": "Pause beside a resource in the world and appreciate it.",
+      "executor": "effects",
+      "sources": [
+        "creature"
+      ],
+      "targets": [
+        "node"
+      ],
+      "targetKinds": [],
+      "range": 4,
+      "cooldown": 90,
+      "minimumEnergy": 20,
+      "maximumAnger": 45,
+      "requireIdle": true,
+      "cost": {
+        "energy": 0,
+        "items": {}
+      },
+      "effects": {
+        "source": {
+          "joy": 3,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        },
+        "target": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        }
+      },
+      "action": null,
+      "autonomous": false,
+      "duel": null
+    },
+    {
+      "id": "visit-home",
+      "label": "Enjoy a quiet home",
+      "description": "Take a quiet moment beside a home or gathering place.",
+      "executor": "effects",
+      "sources": [
+        "creature"
+      ],
+      "targets": [
+        "building"
+      ],
+      "targetKinds": [
+        "shelter",
+        "cottage",
+        "bench",
+        "circle"
+      ],
+      "range": 4,
+      "cooldown": 90,
+      "minimumEnergy": 20,
+      "maximumAnger": 45,
+      "requireIdle": true,
+      "cost": {
+        "energy": 0,
+        "items": {}
+      },
+      "effects": {
+        "source": {
+          "joy": 3,
+          "energy": 0,
+          "social": 2,
+          "anger": 0,
+          "bond": 0
+        },
+        "target": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        }
+      },
+      "action": null,
+      "autonomous": false,
+      "duel": null
+    },
+    {
+      "id": "gather-at-node",
+      "label": "Gather from this node",
+      "description": "Walk to this exact source and gather into the creature\u2019s satchel. Stock, skill and carrying capacity are checked by the existing physical world system.",
+      "executor": "world-task",
+      "sources": [
+        "creature"
+      ],
+      "targets": [
+        "node"
+      ],
+      "targetKinds": [],
+      "range": 100,
+      "cooldown": 0,
+      "minimumEnergy": 20,
+      "maximumAnger": 45,
+      "requireIdle": true,
+      "cost": {
+        "energy": 0,
+        "items": {}
+      },
+      "effects": {
+        "source": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        },
+        "target": {
+          "joy": 0,
+          "energy": 0,
+          "social": 0,
+          "anger": 0,
+          "bond": 0
+        }
+      },
+      "action": "gather",
+      "autonomous": false,
+      "duel": null
+    }
+  ],
+  "triggers": [
+    {
+      "id": "friendly-neighbors",
+      "definitionId": "friendly-duel",
+      "priority": 10,
+      "intervalSeconds": 15,
+      "chancePercent": 100,
+      "source": [
+        {
+          "metric": "energy",
+          "operator": "gte",
+          "value": 35
+        },
+        {
+          "metric": "anger",
+          "operator": "lte",
+          "value": 35
+        },
+        {
+          "metric": "idle",
+          "operator": "eq",
+          "value": true
+        }
+      ],
+      "target": [
+        {
+          "metric": "energy",
+          "operator": "gte",
+          "value": 35
+        },
+        {
+          "metric": "anger",
+          "operator": "lte",
+          "value": 35
+        },
+        {
+          "metric": "idle",
+          "operator": "eq",
+          "value": true
+        }
+      ],
+      "maximumDistance": 4,
+      "minimumAffinity": -100
+    }
+  ]
+}

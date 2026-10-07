@@ -24,11 +24,16 @@ validators. Engine schemas stay in the engine; a game folder never copies them.
 | Game | Template | Folder |
 |---|---|---|
 | Littlewild | colony | [littlewild](littlewild/README.md) |
+| Emberworks | colony | [emberworks](emberworks/README.md) |
+| Office | colony | [office](office/README.md) |
+| RTS Frontier | rts | [rts-frontier](rts-frontier/README.md) |
+| Pocket Pet | pet | [pocket-pet](pocket-pet/README.md) |
 
-Emberworks (colony), Office (colony), RTS Frontier (rts) and Pocket Pet (pet)
-still ship as engine data under `source/wildlands/source/` and move into their
-own folders next; the engine's architecture check lists each pending file with
-the game it belongs to.
+No game data remains under `source/wildlands/source/`: the engine keeps only
+its schemas and engine metadata there, and its architecture check rejects any
+game file that is not in a game folder. Each folder is self-contained;
+Emberworks and Office carry their own copies of the Littlewild balancing and
+asset documents they were authored against.
 
 ## Working with a folder
 

@@ -25,8 +25,8 @@ const folders = (directory: string): string[] => fs.readdirSync(directory, {with
  .filter(entry => entry.isDirectory()).map(entry => entry.name).sort();
 
 /**
- * Discover the definitions of one asset directory (a game folder's `assets/`, or a pending engine
- * family). `interactions` holds a catalog document rather than definition folders.
+ * Discover the definitions of one asset directory (a game folder's `assets/`). `interactions`
+ * holds a catalog document rather than definition folders.
  */
 export function definitions(directory: string): Definition[] {
  const result: Definition[] = [];

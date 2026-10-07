@@ -1,0 +1,99 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "items",
+  "id": "water",
+  "visual": {
+    "format": "littlewild-3d-asset",
+    "schemaVersion": 1,
+    "category": "item",
+    "id": "water",
+    "name": "Water",
+    "materials": {
+      "bucket": "#809996",
+      "water": "#6faeb0",
+      "metal": "#687a75"
+    },
+    "models": {
+      "carry": {
+        "nodes": [
+          {
+            "primitive": "cylinder",
+            "id": "bucket",
+            "position": [
+              0,
+              0.13,
+              0
+            ],
+            "scale": [
+              0.105,
+              0.25,
+              0.105
+            ],
+            "material": "bucket"
+          },
+          {
+            "primitive": "cylinder",
+            "id": "water",
+            "position": [
+              0,
+              0.265,
+              0
+            ],
+            "scale": [
+              0.088,
+              0.02,
+              0.088
+            ],
+            "material": "water"
+          },
+          {
+            "primitive": "ring",
+            "id": "handle",
+            "position": [
+              0,
+              0.29,
+              0
+            ],
+            "scale": [
+              0.12,
+              0.14,
+              0.03
+            ],
+            "material": "metal",
+            "rotation": [
+              1.5707963267948966,
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "radius": 0.6
+    }
+  },
+  "item": {
+    "id": "water",
+    "name": "Water",
+    "icon": "water",
+    "price": 2
+  },
+  "weight": 500,
+  "node": {
+    "id": "water",
+    "name": "Freshwater spring",
+    "resource": "water",
+    "mode": "infinite",
+    "quantity": 999,
+    "batch": 3,
+    "seconds": 2.8,
+    "skill": null,
+    "direct": true
+  },
+  "itemRequirements": {
+    "playerLevel": 1,
+    "features": {}
+  }
+}

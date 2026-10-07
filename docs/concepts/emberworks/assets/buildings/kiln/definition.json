@@ -1,0 +1,140 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "buildings",
+  "id": "kiln",
+  "visual": {
+    "format": "littlewild-3d-asset",
+    "schemaVersion": 1,
+    "category": "building",
+    "id": "kiln",
+    "name": "Clay kiln",
+    "materials": {
+      "wood": "#bd9b70",
+      "dark": "#8d704f",
+      "paper": "#e2c69a",
+      "accent": "#778d7d",
+      "cloth": "#b78d76",
+      "metal": "#9da9a1",
+      "stone": "#b89b83",
+      "fire": {
+        "color": "#e5a15e",
+        "emissive": "#cb7541",
+        "emissiveIntensity": 0.45
+      }
+    },
+    "models": {
+      "world": {
+        "nodes": [
+          {
+            "primitive": "cylinder",
+            "id": "body",
+            "position": [
+              0,
+              0.43,
+              0
+            ],
+            "scale": [
+              0.46,
+              0.84,
+              0.46
+            ],
+            "material": "stone"
+          },
+          {
+            "primitive": "cone",
+            "id": "cap",
+            "position": [
+              0,
+              0.98,
+              0
+            ],
+            "scale": [
+              0.47,
+              0.56,
+              0.47
+            ],
+            "material": "dark"
+          },
+          {
+            "primitive": "box",
+            "id": "mouth",
+            "position": [
+              0,
+              0.28,
+              0.46
+            ],
+            "scale": [
+              0.34,
+              0.38,
+              0.025
+            ],
+            "material": "dark"
+          },
+          {
+            "primitive": "box",
+            "id": "fire",
+            "position": [
+              0,
+              0.18,
+              0.48
+            ],
+            "scale": [
+              0.24,
+              0.16,
+              0.02
+            ],
+            "material": "fire"
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "orientation": "none",
+      "indoor": false,
+      "hitHeight": 1.45,
+      "radius": 1.05
+    },
+    "behaviors": {
+      "smoke": {
+        "position": [
+          0.2,
+          1.28,
+          -0.12
+        ],
+        "always": false
+      }
+    }
+  },
+  "building": {
+    "id": "kiln",
+    "name": "Clay kiln",
+    "skill": "pottery",
+    "cost": {
+      "clay": 6,
+      "stone": 5,
+      "wood": 3
+    },
+    "time": 20,
+    "category": "workshops",
+    "effect": "Fires bricks and pots; later, fuses glass.",
+    "desc": "An earthy little oven for making things that last.",
+    "icon": "fire",
+    "unique": true
+  },
+  "physicalBuilding": {
+    "id": "kiln",
+    "requiresNode": null,
+    "inputCapacity": 24,
+    "outputCapacity": 16,
+    "production": null,
+    "defaultTarget": 0
+  },
+  "buildingRequirements": {
+    "playerLevel": 2,
+    "features": {
+      "making": 2
+    },
+    "research": "blueprint-kiln"
+  }
+}

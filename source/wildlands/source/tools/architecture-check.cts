@@ -1,5 +1,4 @@
 import {definitions} from './definition-source.cjs';
-import {petAssetDefinitions} from './bundled-assets.cjs';
 import {BUNDLED_GAMES, compileGame, gameDirectory, loadGame} from './game-folder.cjs';
 'use strict';
 import fs from "node:fs";
@@ -220,7 +219,7 @@ check("Shipped definitions and configuration have one declared owner and compile
 
 check("Bundled assets have one authoring source and canonical catalog projections", () => {
   for (const id of BUNDLED_GAMES) compileGame(gameDirectory(id));
-  petAssetDefinitions(definitions(path.join(SOURCE, "assets")));
+  assert(definitions(path.join(SOURCE, "assets")).length === 0, "Asset definitions belong to game folders, not to the engine assets directory.");
   for (const name of ['default-library','adventure-library','world-library','growth-library','building-interiors'])
     assert(!fs.existsSync(path.join(SOURCE,'content',name+'.json')), 'Duplicate content source: '+name);
 });

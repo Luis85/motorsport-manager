@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "littlewild-export",
-  "target": "../../../wildlands/source/assets",
+  "target": "../../../../docs/concepts/pocket-pet/assets",
   "assets": [
     {
       "id": "mochi",

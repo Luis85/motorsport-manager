@@ -3,6 +3,7 @@ import path from "node:path";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { launchBrowser, monitorContext, READY_TIMEOUT_MS, waitForReady } from "./browser-harness";
+import { gameDirectory } from "../tools/game-folder.cjs";
 
 interface Result{name:string;passed:boolean;error?:string;}
 const ROOT=path.resolve(__dirname,"../.."),OUT=path.join(ROOT,"verification","v15");
@@ -72,7 +73,7 @@ async function main():Promise<void>{
  await check("Changing expedition origin redraws its workspace exactly once",()=>eq(questFilter.redraws,1));
  await check("Expedition origin change preserves selection and keyboard focus",()=>{eq(questFilter.focused,true);eq(questFilter.value,questFilter.expected);});
  const artifact=path.join(OUT,"emberworks.html");
- const build=spawnSync("npm",["run","build","--silent","--","--pack","source/content/emberworks.pack.json","--output",artifact],{cwd:ROOT,encoding:"utf8",timeout:120000});
+ const build=spawnSync("npm",["run","build","--silent","--","--pack",path.join(gameDirectory("emberworks"),"content/emberworks.pack.json"),"--output",artifact],{cwd:ROOT,encoding:"utf8",timeout:120000});
  if(build.status!==0)throw new Error(build.stderr||build.stdout||"Custom build failed");
  page=await context.newPage();await page.setViewportSize({width:1280,height:800});await page.setContent(fs.readFileSync(artifact,"utf8"),{waitUntil:"load"});await waitForReady(page,{timeout:READY_TIMEOUT_MS});
  await check("Custom-build welcome is branded from its input pack",async()=>eq(await page.title(),"Wildlands · Emberworks"));

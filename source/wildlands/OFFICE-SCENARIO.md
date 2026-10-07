@@ -2,7 +2,7 @@
 
 Choose **More → Worlds & scenarios → Office → Angela, Phil and Marty → Review & start**. The scene replaces the active setting with an indoor office and fulfillment floor, its guide, furniture, creature definitions, libraries, rules, saved activity settings and autonomous work assignments. Export the current story before replacing a running world.
 
-The authored pack is [`source/content/office.pack.json`](source/content/office.pack.json). Its `resources.assets` list owns each Office furniture definition once, alongside the complete creature catalog. Edit that list or use the scenario editor; separate unused furniture mirrors have been removed. Recipients do not need a source directory or a previously installed Office pack. Supported assets use the existing primitive, material, rig and animation grammars. A pack cannot load JavaScript, shaders, URLs or new executable handlers.
+The authored pack is [`content/office.pack.json`](../../docs/concepts/office/content/office.pack.json) in the [Office game folder](../../docs/concepts/office/README.md). Its `resources.assets` list owns each Office furniture definition once, alongside the complete creature catalog. Edit that list or use the scenario editor; separate unused furniture mirrors have been removed. Recipients do not need a source directory or a previously installed Office pack. Supported assets use the existing primitive, material, rig and animation grammars. A pack cannot load JavaScript, shaders, URLs or new executable handlers.
 
 ## The working shift
 

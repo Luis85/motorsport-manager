@@ -1,7 +1,7 @@
 /// <reference path="./content-provider-contracts.d.ts" />
 /* Game folders: the data-only `docs/concepts/<id>/` source of a game. Manifest grammar, closed
- * inventory, byte digest, the Littlewild profile captured before its data moved, the artifact data
- * globals, template (RTS/pet) folders and full validation with the engine's runtime validators. */
+ * inventory, byte digest, the profile of every bundled game captured before its data moved, the
+ * artifact data globals, template (RTS/pet) folders and full validation with the engine's runtime validators. */
 // Tests run the composite showcase game: install its content profile before any engine module loads.
 import './test-support/install-games.cjs';
 import assert from 'node:assert/strict';
@@ -12,7 +12,7 @@ import vm from 'node:vm';
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import Ajv2020 from 'ajv/dist/2020';
-import {compileGame, dataGlobals, digest, gameDirectory, gamesRoot, LIMITS, loadGame, profile, validateGame} from './tools/game-folder.cjs';
+import {BUNDLED_GAMES, compileGame, dataGlobals, digest, gameDirectory, gamesRoot, LIMITS, loadGame, profile, validateGame} from './tools/game-folder.cjs';
 import {manifestErrors, type GameManifest} from './tools/game-manifest.cjs';
 import {DATA_GLOBALS} from './tools/artifact-profiles.cjs';
 
@@ -26,6 +26,7 @@ const source = path.resolve(__dirname, '../source'), littlewild = gameDirectory(
 const read = (file: string): unknown => JSON.parse(fs.readFileSync(file, 'utf8')) as unknown;
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 const manifest = read(path.join(littlewild, 'game.json')) as GameManifest & Plain;
+const compare = (a: string, b: string): number => a < b ? -1 : a > b ? 1 : 0;
 /** Sorted-key JSON digest: deep equality independent of key order (the fixture's encoding). */
 const canonical = (value: unknown): string => Array.isArray(value) ? '[' + value.map(canonical).join(',') + ']'
  : value && typeof value === 'object' ? '{' + Object.keys(value).sort().map(key => JSON.stringify(key) + ':' + canonical((value as Plain)[key])).join(',') + '}' : JSON.stringify(value);
@@ -36,26 +37,23 @@ function copy(work: (directory: string, root: string) => void, from = littlewild
  try {fs.cpSync(from, directory, {recursive: true}); work(directory, root);}
  finally {fs.rmSync(root, {recursive: true, force: true});}
 }
-/** A template game folder assembled from the still-pending engine data (Phase 3b moves it). */
-function template(kind: 'rts' | 'pet', work: (directory: string) => void): void {
- const id = kind === 'rts' ? 'rts-frontier' : 'pocket-pet', root = fs.mkdtempSync(path.join(os.tmpdir(), 'wildlands-template-')), directory = path.join(root, id);
- try {
-  fs.mkdirSync(path.join(directory, 'content'), {recursive: true});
-  fs.copyFileSync(path.join(source, 'content', kind === 'rts' ? 'rts-demo.json' : 'pet-demo.json'), path.join(directory, 'content', kind + '.json'));
-  if (kind === 'pet') fs.cpSync(path.join(source, 'assets/pets'), path.join(directory, 'assets/pets'), {recursive: true});
-  fs.writeFileSync(path.join(directory, 'game.json'), JSON.stringify({format: 'wildlands-game', schemaVersion: 1, id, name: id, version: '1.0.0', template: kind,
-   engine: {api: 1}, content: kind === 'rts' ? {catalog: 'content/rts.json'} : {catalog: 'content/pet.json', assets: 'assets'},
-   presentation: {title: id}, storage: {namespace: 'wildlands.' + id}, targets: {html: {output: `demos/${id}.html`, budgetBytes: 4194304}}}, null, 2) + '\n');
-  fs.writeFileSync(path.join(directory, 'README.md'), '# ' + id + '\n');
-  work(directory);
- } finally {fs.rmSync(root, {recursive: true, force: true});}
+type Fixture = {id: string; profile: string; sections: Record<string, string>; scenarios?: {order: string[]; defaultId: string; canonicalId?: string; packs: Record<string, string>}};
+/** Pre-move digest fixture of a game (`fixtures/<id>-profile.sha256.json`). */
+const fixture = (id: string): Fixture => read(path.join(__dirname, 'fixtures', id + '-profile.sha256.json')) as Fixture;
+/** The profile id and every captured section digest equal the fixture. */
+function sections(value: LWContentProvider.Profile, expected: Fixture): void {
+ const plain = value as LWContentProvider.Profile & Plain;
+ assert.equal(plain.id, expected.id);
+ for (const [section, digest] of Object.entries(expected.sections)) {
+  const [name, nested] = section.split('.'); assert.equal(sha(nested ? (plain[name!] as Plain)[nested] : plain[name!]), digest, section);
+ }
 }
 
 test('Game manifest schema and structural validator agree and stay closed and bounded', () => {
  const schema = read(path.join(source, 'schemas/game.schema.json')) as Plain, validate = new Ajv2020({strict: true, allErrors: true}).compile(schema);
  const both = (value: unknown): [boolean, boolean] => [validate(value), manifestErrors(value).length === 0];
  assert.deepEqual(both(manifest), [true, true], JSON.stringify([validate.errors, manifestErrors(manifest)]));
- for (const kind of ['rts', 'pet'] as const) template(kind, directory => assert.deepEqual(both(read(path.join(directory, 'game.json'))), [true, true]));
+ for (const id of BUNDLED_GAMES) {const value = read(path.join(gameDirectory(id), 'game.json')); assert.deepEqual(both(value), [true, true], id + ': ' + JSON.stringify([validate.errors, manifestErrors(value)]));}
  const mutate = (change: (value: Plain & {content: Plain; targets: Plain & {html: Plain}; presentation: Plain}) => void): Plain => {const value = clone(manifest) as Plain & {content: Plain; targets: Plain & {html: Plain}; presentation: Plain}; change(value); return value;};
  const rejected: [string, Plain][] = [
   ['unknown top-level field', mutate(value => {value.script = 'alert(1)';})], ['newer schema version', mutate(value => {value.schemaVersion = 2;})],
@@ -93,11 +91,12 @@ test('Manifest semantics bind id, folder name, storage namespace and demo output
  });
  // Only the declared canonical pack inherits balancing; without one every pack is used verbatim.
  copy(directory => {
-  fs.copyFileSync(path.join(source, 'content/emberworks.pack.json'), path.join(directory, 'content/emberworks.pack.json'));
+  const ember = path.join(gameDirectory('emberworks'), 'content/emberworks.pack.json');
+  fs.copyFileSync(ember, path.join(directory, 'content/emberworks.pack.json'));
   const {canonicalId: _canonical, ...content} = clone(manifest.content) as Plain;
   fs.writeFileSync(path.join(directory, 'game.json'), JSON.stringify({...clone(manifest), content: {...content, packs: ['content/littlewild.pack.json', 'content/emberworks.pack.json'], defaultId: 'emberworks'}}));
   const scenarios = compileGame(directory).profile.scenarios!;
-  assert.deepEqual(scenarios, {packs: [read(path.join(directory, 'content/littlewild.pack.json')), read(path.join(source, 'content/emberworks.pack.json'))], defaultId: 'emberworks'});
+  assert.deepEqual(scenarios, {packs: [read(path.join(directory, 'content/littlewild.pack.json')), read(ember)], defaultId: 'emberworks'});
   fs.writeFileSync(path.join(directory, 'game.json'), JSON.stringify({...clone(manifest), content: {...content, packs: ['content/littlewild.pack.json', 'content/emberworks.pack.json'], defaultId: 'office'}}));
   assert.throws(() => compileGame(directory), /Scenario catalog names an unknown pack: office/);
  });
@@ -146,22 +145,19 @@ test('Folder digest is byte-based, path-ordered and independent of where the fol
 });
 
 test('Littlewild folder profile equals the profile bundled before the move', () => {
- const fixture = read(path.join(__dirname, 'fixtures/littlewild-profile.sha256.json')) as {id: string; profile: string; sections: Record<string, string>; scenarios: {order: string[]; defaultId: string; canonicalId: string; packs: Record<string, string>}};
+ const captured = fixture('littlewild') as Fixture & {scenarios: NonNullable<Fixture['scenarios']>};
  const folder = profile(littlewild) as LWContentProvider.Profile & Plain, creatures = folder.creatures as Plain, scenarios = folder.scenarios!;
- assert.equal(folder.id, fixture.id);
- for (const [section, expected] of Object.entries(fixture.sections)) {
-  const [name, nested] = section.split('.'); assert.equal(sha(nested ? (folder[name!] as Plain)[nested] : folder[name!]), expected, section);
- }
+ sections(folder, captured);
  assert.deepEqual(Object.keys(folder).sort(), ['assets', 'balancing', 'creatures', 'format', 'id', 'librarySchema', 'scenarios', 'storage', 'version']);
  assert.deepEqual(Object.keys(creatures).sort(), ['configuration', 'definitions', 'editorFields']);
- // The folder owns only its own pack; Emberworks and Office stay pending engine data until Phase 3b.
- assert.deepEqual(scenarios.packs.map(pack => (pack as Plain).id), ['littlewild']); assert.equal(sha(scenarios.packs[0]), fixture.scenarios.packs.littlewild);
- assert.equal(scenarios.defaultId, fixture.scenarios.defaultId); assert.equal(scenarios.canonicalId, fixture.scenarios.canonicalId);
- // The transitional installer (folder output compiled by the build plus the pending packs) is exactly the captured profile.
+ // The folder owns only its own pack; Emberworks and Office have their own folders.
+ assert.deepEqual(scenarios.packs.map(pack => (pack as Plain).id), ['littlewild']); assert.equal(sha(scenarios.packs[0]), captured.scenarios.packs.littlewild);
+ assert.equal(scenarios.defaultId, captured.scenarios.defaultId); assert.equal(scenarios.canonicalId, captured.scenarios.canonicalId);
+ // The transitional installer (folder output compiled by the build plus the Emberworks and Office folders' packs) is exactly the captured profile.
  const installer = (require('./content-installers/littlewild-game.cjs') as {littlewildProfile(): LWContentProvider.Profile}).littlewildProfile();
- assert.equal(sha(installer), fixture.profile);
- assert.deepEqual(installer.scenarios!.packs.map(pack => (pack as Plain).id), fixture.scenarios.order);
- for (const pack of installer.scenarios!.packs) assert.equal(sha(pack), fixture.scenarios.packs[(pack as Plain).id as string]);
+ assert.equal(sha(installer), captured.profile);
+ assert.deepEqual(installer.scenarios!.packs.map(pack => (pack as Plain).id), captured.scenarios.order);
+ for (const pack of installer.scenarios!.packs) assert.equal(sha(pack), captured.scenarios.packs[(pack as Plain).id as string]);
  const {scenarios: _installed, ...installedSections} = clone(installer), {scenarios: _folder, ...folderSections} = clone(folder);
  assert.deepEqual(installedSections, folderSections);
 });
@@ -189,20 +185,23 @@ test('Artifact data globals are the folder profile plus engine-owned schemas and
 
 test('Template folders compile RTS and Pocket Pet catalogs into their profiles and validate', () => {
  const templates = require('./content-installers/template-games.cjs') as {rtsProfile(): LWContentProvider.Profile; petProfile(): LWContentProvider.Profile};
- template('rts', directory => {
-  const game = compileGame(directory);
-  assert.deepEqual(game.profile, {format: 'wildlands-content-profile', version: 1, id: 'rts-frontier', storage: {namespace: 'wildlands.rts-frontier'}, rts: templates.rtsProfile().rts});
-  assert.deepEqual([...game.data.keys()], ['LWGameProfile', 'LWRTSDefinitions']);
-  const result = validateGame(directory); assert.equal(result.ok, true, result.errors.join('\n')); assert.equal(result.digest, game.digest);
- });
- template('pet', directory => {
-  const game = compileGame(directory), pet = templates.petProfile().pet!;
-  assert.deepEqual(game.profile.pet, {definitions: pet.definitions, assets: pet.assets});
-  assert.deepEqual([...game.data.keys()], ['LWGameProfile', 'LWPetDefinitions', 'LWPetAssetDefinitions']);
-  const result = validateGame(directory); assert.equal(result.ok, true, result.errors.join('\n'));
+ const rts = gameDirectory('rts-frontier'), pet = gameDirectory('pocket-pet');
+ const rtsGame = compileGame(rts);
+ assert.deepEqual(rtsGame.profile, {format: 'wildlands-content-profile', version: 1, id: 'rts-frontier', storage: {namespace: 'wildlands.rts-frontier'}, rts: read(path.join(rts, 'content/rts.json'))});
+ assert.deepEqual([...rtsGame.data.keys()], ['LWGameProfile', 'LWRTSDefinitions']);
+ // The runtime installers are the folder profiles the build compiled.
+ assert.deepEqual(templates.rtsProfile(), clone(rtsGame.profile));
+ const rtsResult = validateGame(rts); assert.equal(rtsResult.ok, true, rtsResult.errors.join('\n')); assert.equal(rtsResult.digest, rtsGame.digest);
+ const petGame = compileGame(pet);
+ assert.deepEqual(petGame.profile.pet!.definitions, read(path.join(pet, 'content/pet.json')));
+ assert.deepEqual(petGame.profile.pet!.assets, read(path.join(__dirname, 'pet-asset-definitions.json')));
+ assert.deepEqual([...petGame.data.keys()], ['LWGameProfile', 'LWPetDefinitions', 'LWPetAssetDefinitions']);
+ assert.deepEqual(templates.petProfile(), clone(petGame.profile));
+ const petResult = validateGame(pet); assert.equal(petResult.ok, true, petResult.errors.join('\n')); assert.equal(petResult.digest, petGame.digest);
+ copy(directory => {
   fs.cpSync(path.join(littlewild, 'assets/items/wood'), path.join(directory, 'assets/items/wood'), {recursive: true});
   assert.throws(() => compileGame(directory), /only pets definitions/);
- });
+ }, pet, 'pocket-pet');
 });
 
 test('Full validation runs the engine validators in a fresh process and reports their rejection', () => {
@@ -232,6 +231,40 @@ test('Builds locate game folders through WILDLANDS_GAMES_DIR and fail clearly wi
  try {const run = probe({WILDLANDS_GAMES_DIR: empty}); assert.notEqual(run.status, 0); assert.match(String(run.stderr), /Game folder littlewild was not found at .*; set WILDLANDS_GAMES_DIR/);}
  finally {fs.rmSync(empty, {recursive: true, force: true});}
  assert.throws(() => gameDirectory('../littlewild'), /Invalid game id/);
+});
+
+/** Documents (other than asset definitions) and definition families of each folder that moved in after Littlewild. */
+const FOLDERS: readonly (readonly [id: string, name: string, documents: readonly string[], families: Readonly<Record<string, number | 'littlewild'>>])[] = [
+ ['emberworks', 'Emberworks', ['README.md', 'assets/creatures/catalog.json', 'assets/creatures/editor-fields.json', 'assets/interactions/catalog.json', 'content/balancing.json', 'content/emberworks.pack.json', 'game.json'], {buildings: 'littlewild', creatures: 'littlewild', items: 'littlewild'}],
+ ['office', 'Office', ['README.md', 'assets/creatures/catalog.json', 'assets/creatures/editor-fields.json', 'assets/interactions/catalog.json', 'content/balancing.json', 'content/office.pack.json', 'game.json'], {buildings: 'littlewild', creatures: 'littlewild', items: 'littlewild'}],
+ ['rts-frontier', 'RTS Frontier', ['README.md', 'content/rts.json', 'game.json'], {}],
+ ['pocket-pet', 'Pocket Pet', ['PROVENANCE.md', 'README.md', 'content/pet.json', 'game.json'], {pets: 18}]
+];
+const DEFINITION = /^assets\/([a-z]+)\/[^/]+\/definition\.json$/;
+const families = (files: readonly {path: string}[]): Record<string, number> => {
+ const counted: Record<string, number> = {};
+ for (const file of files) {const family = DEFINITION.exec(file.path)?.[1]; if (family) counted[family] = (counted[family] ?? 0) + 1;}
+ return counted;
+};
+for (const [id, name, documents, expected] of FOLDERS) test(`${name} folder validates, keeps a closed inventory and equals its pre-move profile`, () => {
+ const directory = gameDirectory(id), game = compileGame(directory), captured = fixture(id), littlewildFamilies = families(loadGame(littlewild).files);
+ // Closed inventory: exactly these documents plus asset definitions of the expected families. Emberworks
+ // and Office materialize the Littlewild definition set they were authored against (decision D4).
+ assert.deepEqual(game.files.map(file => file.path).filter(file => !DEFINITION.test(file)), [...documents].sort(compare));
+ assert.deepEqual(families(game.files), Object.fromEntries(Object.entries(expected).map(([family, count]) => [family, count === 'littlewild' ? littlewildFamilies[family] : count])));
+ copy(copied => {fs.writeFileSync(path.join(copied, 'content/extra.json'), '{}'); assert.throws(() => loadGame(copied), /not referenced by game\.json: content\/extra\.json/);}, directory, id);
+ // Profile: every section and the whole profile equal the digests captured before the data moved.
+ sections(game.profile, captured);
+ assert.equal(sha(game.profile), captured.profile);
+ assert.deepEqual(game.profile.storage, {namespace: 'wildlands.' + id});
+ if (captured.scenarios) {
+  const scenarios = game.profile.scenarios!;
+  assert.deepEqual(scenarios.packs.map(pack => (pack as Plain).id), captured.scenarios.order);
+  for (const pack of scenarios.packs) assert.equal(sha(pack), captured.scenarios.packs[(pack as Plain).id as string]);
+  assert.equal(scenarios.defaultId, captured.scenarios.defaultId); assert.equal(Object.hasOwn(scenarios, 'canonicalId'), false);
+ }
+ // Full validation with the engine's runtime validators in a fresh process.
+ assert.deepEqual(validateGame(directory), {ok: true, id, digest: game.digest, errors: []});
 });
 
 const report = {suite: 'game-folders', passed: results.filter(result => result.passed).length, total: results.length, results};

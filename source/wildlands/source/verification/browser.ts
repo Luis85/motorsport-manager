@@ -3,6 +3,7 @@ import path from "node:path";
 import assert from "node:assert/strict";
 import { type Page } from "playwright";
 import { launchBrowser, monitorContext, READY_TIMEOUT_MS, waitForReady } from "./browser-harness";
+import { gameDirectory } from "../tools/game-folder.cjs";
 
 interface Result { name:string; passed:boolean; error?:string; }
 
@@ -121,7 +122,7 @@ async function main():Promise<void>{
  const malformed=JSON.stringify({format:"living-worlds-pack",schemaVersion:99});
  await p.locator("#scenario-import-file").setInputFiles({name:"invalid.json",mimeType:"application/json",buffer:Buffer.from(malformed)});await p.waitForTimeout(150);
  await check("Rejected imports leave the world intact and explain errors",async()=>expect((await p.locator(".validation-issue").innerText()).includes("not applied")&&await p.evaluate("Littlewild.engine.scenarioContext.packId")===current));
- const custom=JSON.parse(fs.readFileSync(path.join(ROOT,"source","content","emberworks.pack.json"),"utf8"));custom.name="Tidewatch";custom.id="tidewatch";custom.presentation.title="Tidewatch";
+ const custom=JSON.parse(fs.readFileSync(path.join(gameDirectory("emberworks"),"content","emberworks.pack.json"),"utf8"));custom.name="Tidewatch";custom.id="tidewatch";custom.presentation.title="Tidewatch";
  await p.locator("#scenario-import-file").setInputFiles({name:"tidewatch.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(custom))});await p.waitForTimeout(200);
  await check("Valid imported pack enters catalog without replacing world",async()=>expect((await p.locator(".scenario-packs").innerText()).includes("Tidewatch")&&await p.evaluate("Littlewild.engine.scenarioContext.packId")===current));
  await p.locator("[data-scenario=review]").last().click();await p.locator("[data-scenario=launch]").click();await p.waitForTimeout(300);

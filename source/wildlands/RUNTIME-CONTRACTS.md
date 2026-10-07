@@ -155,7 +155,8 @@ both rules with regression probes.
   SDK, `wildlands-runtime`, the Godot runtime and `bin/wildlands`) and the colony CLIs install the
   bundled Littlewild profile from `source/content-installers/littlewild-game.cts` when nothing
   is installed; `rts-cli`/`pet-cli` install their template game from
-  `source/content-installers/template-games.cts`. These runtime installers are part of the
+  `source/content-installers/template-games.cts`, which reads the compiled RTS Frontier and
+  Pocket Pet folder profiles the build writes to `.generated/games/<id>.profile.json`. These runtime installers are part of the
   Godot runtime closure and the CLI bundle, so they live outside `source/test-support/`, which
   holds only test code: every Node suite first requires `source/test-support/install-games.cts`,
   the composite showcase profile. `simulation.cjs` loads the provider but installs nothing. The
@@ -186,7 +187,15 @@ Folders are data only and are never executed. `source/tools/game-folder.cts` (bu
   `{ok, id, digest, errors}`. Adventure examples are parsed reference documents, not admitted.
 
 The transitional Littlewild installer reads the `.generated` documents the build compiles from
-the Littlewild folder, plus the pending Emberworks/Office packs.
+the Littlewild folder, plus the Emberworks and Office packs copied from their own folders: the
+composite every colony pack ran with before the folders existed. The bundled games
+(`BUNDLED_GAMES`: littlewild, emberworks, office, rts-frontier, pocket-pet) also compose the
+showcase fixture's data globals and the engine-source payload (`games/<id>/`). Emberworks and
+Office are colony folders without a canonical pack whose balancing and asset documents are
+materialized copies of Littlewild's (decision D4), so each folder profile equals the profile its
+pack ran with; `source/fixtures/<id>-profile.sha256.json` records those pre-move digests and the
+`game-folders` suite compares every folder against its fixture. No game data remains under
+`source/content` or `source/assets` (`architecture/engine-data.json` has no pending entries).
 
 `test-content-provider.cts` (registered as `content-provider`) covers load-without-content,
 later installation, envelope admission, the browser adoption of data globals, the injected

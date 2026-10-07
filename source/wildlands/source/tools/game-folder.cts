@@ -27,10 +27,13 @@ type Profile = LWContentProvider.Profile;
 
 /** Project root (source/wildlands) from both `source/tools` (tsx) and `.generated/tools`. */
 const PROJECT = path.resolve(__dirname, '../..');
-/** Engine-owned authored source (schemas and pending engine data). */
+/** Engine-owned authored source (schemas and engine metadata; no game data). */
 export const ENGINE_SOURCE = path.join(PROJECT, 'source');
-/** Games the engine build composes into its fixtures and engine-source payload. */
-export const BUNDLED_GAMES = ['littlewild'] as const;
+/**
+ * Games the engine build composes into its fixtures (the composite showcase, the transitional
+ * installers) and engine-source payload, in showcase order: colony packs appear in this order.
+ */
+export const BUNDLED_GAMES = ['littlewild', 'emberworks', 'office', 'rts-frontier', 'pocket-pet'] as const;
 /** Inventory bounds: folders are reviewable data, not archives. */
 export const LIMITS = Object.freeze({files: 2048, fileBytes: 8 * 1024 * 1024, totalBytes: 32 * 1024 * 1024, depth: 8});
 const DOCUMENT = /^(?:README\.md|PROVENANCE\.md|LICENSE(?:[.-][A-Za-z0-9.-]{1,32})?)$/;
