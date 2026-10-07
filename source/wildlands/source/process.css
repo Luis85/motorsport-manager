@@ -41,7 +41,7 @@
 .process-step strong { display:block; font-size:12px; font-weight:600; overflow-wrap:anywhere; }
 .process-step small { display:block; font-size:11px; color:var(--muted); }
 .process-step i { width:5px; height:5px; border-radius:50%; margin-left:auto; flex-shrink:0; }
-.process-order { color:#9baabd; font-size:11px; font-variant-numeric:tabular-nums; }
+.process-order { color:#9baabd; font-size:11px; font-variant-numeric:tabular-nums; flex:none; min-width:2ch; white-space:nowrap; }
 .process-note { margin-top:18px!important; font-size:11px; }
 .process-stage { min-width:0; display:flex; flex-direction:column; }
 .process-stagebar { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 20px; }

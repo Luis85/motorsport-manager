@@ -41,7 +41,9 @@
  const dataView = root.LWProcessData.create(get('process-data'));
  const tuning = root.LWProcessTuning.create(get('tuning'), () => get<HTMLTextAreaElement>('draft').value, text => {get<HTMLTextAreaElement>('draft').value = text; get('draft').removeAttribute('aria-invalid'); get('diagnostics').textContent = ''; draftState();});
  let tuneTimer = 0, last = 0, elapsed = 0, frameId = 0, disposed = false, unavailable = '', activeDraft = '', previousStatus = '';
+ let guidance = false;
  const status = (message: string, error = false) => {
+  guidance = /^(Ready\.|Switched to|Run reset)/.test(message);
   get('message').textContent = message + (unavailable && message !== unavailable ? ' ' + unavailable : '');
   get('message').classList.toggle('error', error || !!unavailable);
  };
@@ -109,6 +111,7 @@
   for (const id of ['play', 'step', 'advance']) {const control = get<HTMLButtonElement>(id); if (stopped && !control.disabled && focused === control) refocusReset = true; control.disabled = !!stopped; control.title = stopped;}
   if (refocusReset) get('reset').focus({preventScroll: true});
   if (stopped && previousStatus !== q.status) status(stopped);
+  if (guidance && !stopped && q.minute > 0) status('Run started. Pause, step or choose a scene to inspect its work.');
   previousStatus = q.status;
   if (setHtml('steps', d.steps.map((s, i) => {const m = q.steps.find(m => m.id === s.id)!; return `<button data-step="${esc(s.id)}" class="process-step ${s.id === selected ? 'selected' : ''}" aria-current="${s.id === selected ? 'step' : 'false'}"><span class="process-order">${String(i + 1).padStart(2, '0')}</span><span><strong>${esc(s.name)}</strong><small>${esc(s.kind)}${m.active ? ' · ' + m.active + ' working' : ''}${m.queued ? ' · ' + m.queued + ' waiting' : ''}${m.timers.waiting ? ' · ' + m.timers.waiting + ' on timer' : ''}</small></span><i style="background:${s.scene.color}"></i></button>`;}).join(''))) get('steps').querySelectorAll<HTMLButtonElement>('button').forEach(b => b.onclick = () => command(() => app.select(b.dataset.step!)));
   get('overview').classList.toggle('selected', !selected); get('overview').setAttribute('aria-pressed', String(!selected)); if (!selected) get('overview').setAttribute('aria-current', 'true'); else get('overview').removeAttribute('aria-current'); get('scene-title').textContent = step?.name ?? 'Process overview';
