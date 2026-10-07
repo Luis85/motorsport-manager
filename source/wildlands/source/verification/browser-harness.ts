@@ -112,6 +112,10 @@ export async function waitForReady(page: Page, options: { timeout?: number; host
  * Install Playwright's controllable clock. Call it before `openArtifact` so timers, Date and
  * requestAnimationFrame are virtual from the first script; the page then advances only through
  * `advanceClock`, replacing fixed sleeps with exact simulated durations.
+ * Avoid it on pages whose animation frames are expensive (the colony world, the WebGL hosts): while
+ * virtual time flows, the clock catches up with real time by running every due frame back to back,
+ * which starves real rendering, so Playwright's actionability checks (which await real frames) stall.
+ * Count rendered frames with `nextFrames` there instead.
  */
 export async function installClock(page: Page, time: number | string | Date = 0): Promise<void> {
   await page.clock.install({ time });
@@ -141,23 +145,11 @@ export const ACTION_TIMEOUT_MS = 15_000;
  * transition rather than an ordinary user action. Use it only for such clicks.
  */
 export const TRANSITION_TIMEOUT_MS = 60_000;
-/** Fixed virtual start instant for suites that install the clock, so Date values are deterministic. */
-export const CLOCK_START = "2026-01-01T00:00:00.000Z";
-
-/** Freeze virtual time at the page's current virtual instant; timers and frames stop until resumed or advanced. */
-export async function pauseClock(page: Page): Promise<void> {
-  await page.clock.pauseAt(await page.evaluate(() => Date.now()));
-}
-
-/** Let virtual time flow with real time again after `pauseClock`/`pauseClockAt`. */
-export async function resumeClock(page: Page): Promise<void> {
-  await page.clock.resume();
-}
-
 /**
  * Resolve after the page has rendered `count` further animation frames (style, layout, resize
- * observers and paint run between them): an explicit rendering condition, not a duration. With an
- * installed clock the frames come from virtual time, so the clock must not be paused.
+ * observers and paint run between them): an explicit rendering condition, not a duration. Every
+ * application frame loop (colony, RTS, Pet) runs once per rendered frame, so this also counts
+ * application frames. With an installed clock the frames come from virtual time and must not be paused.
  */
 export async function nextFrames(page: Page, count = 2): Promise<void> {
   await page.evaluate(total => new Promise<void>(resolve => {
