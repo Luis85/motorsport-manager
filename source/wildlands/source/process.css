@@ -48,12 +48,12 @@
 .process-studio #export-items button { width:100%; text-align:left; border-color:transparent; background:transparent; }
 .process-studio #export-items button:hover,.process-studio #export-items button:focus-visible { background:var(--surface-2); }
 .process-studio #export-items button:focus-visible { outline-offset:-2px; }
-.process-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2) var(--s3); padding:var(--s2) var(--s5); border-bottom:1px solid var(--line); background:var(--bg); }
+.process-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); padding:var(--s2) var(--s4); border-bottom:1px solid var(--line); background:var(--bg); }
 .run-actions,.run-config,.run-status { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); }
-.run-config,.run-status { padding-left:var(--s3); border-left:1px solid var(--line); }
+.run-config,.run-status { padding-left:var(--s2); border-left:1px solid var(--line); }
 .run-status { margin-left:auto; }
 .run-config label { display:flex; align-items:center; gap:6px; color:var(--muted); }
-.run-seed input { width:6.5em; }
+.run-seed input { width:5em; }
 #horizon-custom { width:7em; }
 #play { min-width:132px; }
 .options-toggle,.panel-toggle { display:none; }
