@@ -1,7 +1,7 @@
 # Business process engine
 
-Definition-first contract for the Wildlands process extension, based on PR #40.
-The JSON document is the source of truth. A process is a graph of step scenes;
+Definition-first contract for the Wildlands process extension as implemented in
+the current checkout (introduced by PR #40 and extended since). The JSON document is the source of truth. A process is a graph of step scenes;
 case tokens execute that graph in the shared Wildlands ECS. Navigation and both
 renderers observe detached snapshots and never execute business work.
 
@@ -412,7 +412,9 @@ A task, touchpoint, machine or system step may declare
 `instances: {count: 2..50 | field: <case field>, mode: "parallel" | "sequential"}` (exactly
 one of `count` and `field`; with `field` the runtime reads a whole number 1..50 from the case
 data when the step is entered and otherwise fails the case, for example `... needs case field n
-as a whole number from 1 to 50 for its instances, but it is not set.`).
+as a whole number from 1 to 50 for its instances, but it is not set.`). Admission rejects `field`
+when no arrival or earlier step delivers it (a `needs` diagnostic at `/steps/N/instances/field`);
+a delivered value is still judged per case at run time.
 
 ```json
 {"id": "inspect", "kind": "task", "duration": 4, "cost": 10, "resources": {"auditors": 1},
@@ -459,7 +461,10 @@ or in the same minute, completes normally with no event.
 - `escalate` (non-interrupting): the work continues and completes normally; a new token is
   spawned on the deadline flow at the next settle step of that minute. Its route must reach an
   `end` and share no step with the normal route, cannot contain another escalating deadline (an
-  escalated token is not escalated again) and is checked at admission. The case finishes only
+  escalated token is not escalated again) and is checked at admission. The escalated token shares
+  case data with the work that continues (the normal route and, inside a fork region, sibling
+  branches). Admission rejects a field both sides write, and needs analysis lets each side see
+  every value the other may write. The case finishes only
   when the main and every escalated token are done; it counts the `outcome` of the main route's
   end (escalation ends' outcomes are not counted). At most 16 escalations per case: the 17th
   fails the case with `Case spawned more than 16 escalations.`
@@ -479,6 +484,9 @@ transition limit still protects loops. New random keys never depend on schedulin
 key by index, deadlines by case, step, visit and item, and combinator chance leaves by flow,
 leaf path, case and visit. An inclusive fork with chance conditions counts its own visits. Cases
 that were retained or pruned, and snapshots taken after one advance or many, are identical.
+A run that would pass 99,999,999 tokens stops before the transition changes anything (`The run
+created more than 99999999 tokens; start a new run.`), so a fork, an item group or an arrival is
+never half applied.
 
 ### BPMN mapping intent
 
@@ -494,7 +502,9 @@ that were retained or pruned, and snapshots taken after one advance or many, are
 
 ### Not supported
 
-Event-based gateway semantics beyond a race by chance, complex gateways, compensation, error
+Event-based gateway semantics beyond a race by chance, complex gateway semantics (the importer
+rejects them, or with `unsupported: drop` approximates them as an exclusive decision), timer
+calendars or working hours (every timer counts plain business minutes), compensation, error
 propagation across subprocess boundaries, message flows between pools (simulate them as timers or
 timed tasks), data objects (ignored), nested inclusive or exclusive gateways inside a fork region,
 escalation routes that rejoin the main path, deadlines on timers, and multi-instance completion
@@ -593,8 +603,9 @@ with every edit. Unapplied drafts and runs are not included.
 
 ## BPMN 2.0 interchange
 
-`process export-bpmn` and the studio's **Export BPMN** write BPMN 2.0 XML (model
-and diagram interchange); `process import-bpmn` and **Import JSON or BPMN** read it.
+`process export-bpmn` and the studio's **Export BPMN** (and **Export BPMN with BPSim**) write
+BPMN 2.0 XML (model and diagram interchange); `process import-bpmn` and the studio's
+**Import…** (through the **Import BPMN** dialog, see Presentation limits) read it.
 
 | Wildlands | BPMN 2.0 |
 | --- | --- |
@@ -629,19 +640,32 @@ and diagram interchange); `process import-bpmn` and **Import JSON or BPMN** read
 Values BPMN has no field for (durations, `until` minutes, costs, capacities, `set`, `add`,
 `needs`, `backlog`, `valueField` comparisons, arrivals, scene ids, colours, attached assets, the exact condition) travel in
 elements of the `urn:wildlands:process:1` namespace inside `extensionElements`. An
-export imports back to an identical definition (same fingerprint); other BPMN tools
-ignore the extension. Exported files are not executable BPMN (`isExecutable="false"`).
+export imports back to an identical definition (same fingerprint), including
+descriptions exactly as written (empty included) and containers present but empty, which
+the extension lists in an `empty` attribute of `<wl:step>`, `<wl:process>` or
+`<wl:arrival>`. Other BPMN tools ignore the extension. Exported files are not executable
+BPMN (`isExecutable="false"`).
 SIPOC parties stay in the extension: BPMN 2.0 has no SIPOC concept, and a `participant` would imply a collaboration with message flows that the engine does not model. The importer rejects unknown attributes or child elements, a missing or over-long `name`/`supplies`/`receives`, duplicate names within one list and more than 8 parties per list.
+
+Every `wl:` element is checked against the vocabulary the exporter writes for its BPMN
+element. Unknown elements or attributes, invalid `mode`, `op`, scalar `type` or boolean
+values, non-whole numbers and non-numeric scene coordinates are rejections; nothing is
+coerced. Attribute values carry tab, LF and CR as character references (`&#9;`, `&#10;`,
+`&#13;`) and text carries CR as `&#13;`. Export refuses characters XML 1.0 cannot
+represent, naming the character; the reader rejects them raw or as references.
 
 An `until` timer waits for an absolute business minute, which BPMN cannot express
 without a calendar. The exact minute travels in `<wl:step until="N"/>`; for tools that
 ignore the extension the event carries a standard `timeDate` showing minute N counted
 from the synthetic epoch `1970-01-01T00:00Z` (minute 200 is `1970-01-01T03:20:00Z`). That
 text is display only: import trusts `until` from the extension and refuses a `timeDate`
-without it. In `conditionExpression`, text values are always quoted (`${a == 'b'}`),
-while a bare word other than `true`, `false` or `null` names another case field
-(`${a < b}`); the exact comparison is in `<wl:when valueField="b"/>`. A field named
-`true`, `false` or `null` gets no expression at all so the word is never ambiguous.
+without it. In `conditionExpression`, a bare word other than `true`, `false` or `null`
+names another case field (`${a < b}`); the exact comparison is in
+`<wl:when valueField="b"/>`. Text values are single-quoted (`${a == 'b'}`), or
+double-quoted when the text holds an apostrophe. Text holding both quote kinds, a field
+named `true`, `false`, `null`, `and`/`or`/`not` (any case) or an operator word (`eq ne gt
+ge gte lt le lte`), and non-decimal numbers get no standard expression, so the visible text
+is never ambiguous; the extension still carries the exact condition.
 
 Random values follow the same rule: the extension carries the exact value and other tools
 ignore it. BPMN has no standard chance or probability expression, and an invented
@@ -680,11 +704,20 @@ mismatch warning, as for machine and system steps. Where an annotation applies (
 touchpoints only, outcome on end steps only, text lengths) stays with the engine validator
 and comes back as diagnostics, never repaired.
 
-Import accepts the constructs of the first table directly and maps a much wider set of foreign BPMN for simulation, described next. Timers keep the strict form (`timeDuration` `PT{n}M` or `PT{n}H`, n of at least 1; hours count 60 minutes); a `timeDate` timer needs the Wildlands `until` extension.
+Import accepts the constructs of the first table directly and maps a much wider set of foreign BPMN for simulation, described next. A `timeDate` timer needs the Wildlands `until` extension.
+
+**ISO-8601 durations.** Catch timers, boundary timers and BPSim `DurationParameter` share one
+ISO-8601 reading (`PnW`, `PnD`, `PTnH`, `PTnM`, `PTnS`, combinations such as `PT1H30M`, decimals
+allowed). A day is `minutesPerDay` and an hour `minutesPerHour` business minutes, a week 5 days,
+and the result is rounded to the nearest whole minute. A value under one minute (zero included)
+becomes 1 minute with the warning `Timer duration "PT30S" is under one minute and is rounded up
+to 1 minute.` Years, months, lower-case designators, negative or empty text are rejected naming
+the text. There are no calendars or working hours: a duration is a count of business minutes,
+not a span of dated time.
 
 ### Importing foreign BPMN for simulation
 
-`process import-bpmn`, the studio import and `LWProcessBpmn.import` / `analyze` turn a BPMN 2.0
+`process import-bpmn`, the studio's **Import BPMN** dialog and `LWProcessBpmn.import` / `analyze` turn a BPMN 2.0
 file from another tool into a definition the engine can run. A file the Wildlands exporter wrote
 is restored exactly from its extension (extension values always win). Anything else is mapped
 onto the constructs of Simulation semantics for BPMN-class processes, and **every foreign
@@ -703,7 +736,7 @@ Options (CLI flag / API name; all optional, validated before any work):
 | `--no-auto-system-pool` / `autoSystemPool` | on | On: service-type tasks become `system` steps on the pool `Automation`. Off: they stay plain tasks with a warning. |
 | `--system-capacity N` / `systemCapacity` | 4 | Capacity of system pools created from lanes or `Automation` (1-1000). `Automation` costs 1 per minute. |
 | `--default-duration N` / `defaultDuration` | 5 | Minutes for a task or wait without any duration (1-100000). |
-| `--minutes-per-day N`, `--minutes-per-hour N` / `minutesPerDay`, `minutesPerHour` | 480, 60 | Business minutes in a day and an hour, for `P1D`/`PT2H` durations and BPSim units (a week is 5 days). |
+| `--minutes-per-day N`, `--minutes-per-hour N` / `minutesPerDay`, `minutesPerHour` | 480, 60 | Business minutes in a day (1-1440) and an hour (1-60) for ISO-8601 timer durations and BPSim units; a week is 5 days. |
 | `--unsupported reject\|drop` / `unsupported` | `reject` | Reject lists unsupported constructs as rejections (no definition). Drop removes them with a warning each, bridges the flows of a dropped element that has one way out, prunes what the start can no longer reach, and fails if no end remains reachable or a remaining step has no route to an end. |
 | `--no-bpsim` / `bpsim` | on | Ignore BPSim scenarios. |
 | `--scenario ID` / `scenario` | first | BPSim scenario id or name; an unknown one is a rejection. |
@@ -727,9 +760,9 @@ What becomes what (foreign element, then engine construct):
 | `inclusiveGateway` pair | `fork` with `mode: "inclusive"` and its `join`. The region must be a clean single-entry, single-exit set of task/timer chains (a direct split-to-join flow is an empty branch); nested gateways, loops or a mismatched join are rejected naming the gateway and the element found |
 | `eventBasedGateway` | `decision` with chance routes (equal shares, or BPSim probabilities) and the warning `race between events simulated by chance` |
 | `complexGateway` | rejected; with `unsupported: drop` approximated as an exclusive gateway |
-| `intermediateCatchEvent` timer | `timer` as before (strict `PT{n}M` / `PT{n}H`); message, signal and conditional catch events become a `timer` of the BPSim `WaitTime` (or the default) with a warning; a link catch joins its link throw by name |
+| `intermediateCatchEvent` timer with `timeDuration` | `timer` of the ISO-8601 duration above (BPSim `WaitTime` on the event replaces it); message, signal and conditional catch events become a `timer` of the BPSim `WaitTime` (or the default) with a warning; a link catch joins its link throw by name |
 | `intermediateThrowEvent` (none, message, signal, escalation, link) | folded into the flow with a warning (link: a direct flow to the matching catch); compensation and the like are unsupported |
-| `boundaryEvent` timer with `timeDuration` (`PT90M`, `PT1H30M`, `P1D`; seconds round up to 1 minute) on a task | `deadline` and a flow `on: "deadline"`; `cancelActivity` true or absent is `interrupt`, false is `escalate`; BPSim `WaitTime` on the event replaces the duration. Error, escalation, message, signal, conditional, `timeDate` and `timeCycle` boundary events, boundary events on sub-processes or call activities, and a second deadline on one task are unsupported |
+| `boundaryEvent` timer with `timeDuration` (the ISO-8601 duration above, such as `PT90M`, `PT1H30M` or `P1D`) on a task | `deadline` and a flow `on: "deadline"`; `cancelActivity` true or absent is `interrupt`, false is `escalate`; BPSim `WaitTime` on the event replaces the duration, and a BPSim `WaitTime` distribution becomes the deadline `timing`. Error, escalation, message, signal, conditional, `timeDate` and `timeCycle` boundary events, boundary events on sub-processes or call activities, and a second deadline on one task are unsupported |
 | `startEvent` | the start; timer, message and signal definitions are ignored with a warning (arrivals come from BPSim or one default case) |
 | `endEvent` | `end`; terminate is a plain end with a warning, error is an end with `outcome: "lost"`, message, signal and escalation are plain ends with a warning; compensation and cancel are unsupported |
 | `documentation` | `description` (cut to 2000 characters with a warning) |
@@ -801,20 +834,30 @@ with one scenario in minutes (`baseTimeUnit="min"`): `ProcessingTime` for work s
 costs, `Probability` per flow (the marginal share for chained chance routes of a decision whose
 non-default flows are all plain chances; the percent for plain chance flows of an inclusive fork),
 `InterTriggerTimer` (the `gap` or the interval) and `TriggerCount` for the first arrival,
-the scenario `Duration` for an `until` arrival, and `Quantity` / `UnitCost` per pool. The extension
-stays authoritative: a definition exported with and without `--bpsim` imports back to the same
-fingerprint with no warning, and other BPSim-aware tools see the same numbers.
-Conformance of the BPSim dialect to the BPSim 1.0 schema was not verified.
+the scenario `Duration` (the span from minute 0, i.e. `until`) for an `until` arrival, and
+`Quantity` / `UnitCost` per pool. Deadlines travel only on the boundary event and in the
+extension, not as a BPSim parameter. The extension stays authoritative: a definition exported
+with and without `--bpsim` imports back to the same fingerprint with no warning, and other
+BPSim-aware tools see the same numbers.
+
+Exports are checked for well-formedness with the in-repository XML reader only; conformance to
+the OMG BPMN 2.0 and BPSim 1.0 XML Schemas (XSD) was not verified, because the schemas were not
+available to the verification environment.
 
 ## Explicit v1 boundaries
 
-This is an executable process simulation format; BPMN 2.0 interchange covers only
-the subset above. No external service execution, credentials, calendars, lognormal
+This is an executable process simulation format. BPMN 2.0 import maps the constructs
+listed above onto the engine (sub-processes and call activities are inlined, not executed
+as separate processes; an event-based gateway becomes a race by chance; a complex gateway
+is rejected, or approximated as an exclusive decision in drop mode) and rejects or drops
+the rest; it is not a BPMN execution engine. No external service execution, credentials,
+calendars or working hours, lognormal
 distributions, correlated or stateful random streams, failure injection on
-resources, nested parallel regions (nested gateways inside a region), event-based or complex gateways,
-recurring or calendar-aware timers (timers count plain business minutes), counters
-other than integer addition, persona libraries, attribution models, text sentiment, compensation, live process
-migration, saved-run restoration or native Godot process export is claimed.
+resources, nested parallel regions (nested gateways inside a region), event-driven
+gateway semantics, recurring or calendar-aware timers (timers count plain business
+minutes), counters other than integer addition, persona libraries, attribution models,
+text sentiment, compensation, live process migration, saved-run restoration, OMG XSD
+schema conformance of exported XML, or native Godot process export is claimed.
 Graph layout and scene presentation do not influence scheduling. Simulation
 results describe authored assumptions and are not measured project forecasts.
 
@@ -860,11 +903,15 @@ of active work, not staff allocation, additional capacity or travel time.
 Room props, shadows, task progress and occupancy labels are presentation only.
 The 3D camera supports pointer orbit/zoom, right-drag or Shift-drag pan, and keyboard arrows (orbit), Shift+arrows or WASD (pan), +/− and F to frame. The 2D map supports drag pan, wheel/pinch zoom, arrows, +/−, 0 and on-screen zoom buttons. Cameras are presentation-only and never tick the run.
 
-Rooms use a presentation theme (reception, office, design studio, test lab, workshop, review desk, records room, decision room, junction, dispatch dock) chosen from the step kind and a stable hash of the step id. A step with working tokens shows its animated task props and lit lamps; a step with none shows an idle variant (covered equipment, dimmed lamp, standby sign). Process Forge starter geometry (desk/monitor or podium/marker) yields to the themed room; custom attached geometry is drawn as authored.
+On touch devices (`pointer: coarse`) the camera hint under the stage uses touch wording ("Drag to orbit · Tap a room to enter it · Frame view resets the camera", "Drag to pan · Pinch or + − to zoom · Tap a scene to select it") instead of mouse and keyboard hints.
+
+**Readability.** Map text keeps a screen size, not a world size. The 2D map draws titles at their world size when zoomed in; zoomed out they stay at about 11 px in cards as wide as the neighbouring steps allow, on one or two lines of at least seven characters. When even that does not fit (large maps, phones), cards show their two-digit list number instead of the name, matching the order of the step list, and the hint reads "Card numbers match the step list · zoom in for names"; **Frame view** then frames the zoom at which numbered cards no longer touch, starting at the start step, rather than the whole map. Secondary lines and the text of pills and deadline tags appear only once they can be drawn at 9 px or larger. Below that, small cues (the deadline tag, the instance and deadline pills, the inclusive-fork marker, the outcome badge) hide their text but keep a glyph of at least 12 px, and their wording stays in the SVG title (tooltip) and the card's accessible name. For a count taken from a case field the 2D instance pill reads "× per case (field)" until items are live, then "× n"; the 3D caption keeps "× per case (field)" and its live line adds "× n now". A fixed count reads "× n". In 3D the room caption hangs below the room's front edge, clear of the queue rail and bench; captions grow until their lines reach 12 px, up to the width of a room (a selected room may widen its caption to most of the stage), and an overview caption that would still be smaller is not drawn, like the 2D map's secondary text; the inspector and step list keep the same counts. A portrait stage frames a selected room by its width.
+
+Rooms use a presentation theme chosen from the step kind: start (Reception), end (Dispatch dock), decision (Decision room), fork and join (Junction; a join with a backlog is the Backlog room), machine (Automation cell), system (Software system), timer (Waiting room), touchpoint (one room per channel, such as Website or Documents, else a generic Touchpoint kiosk), and a task one of Office, Design studio, Test lab, Workshop, Review desk and Records room by a stable hash of the step id. A step with working tokens shows its animated task props and lit lamps; a step with none shows an idle variant (covered equipment, dimmed lamp, standby sign). Process Forge starter geometry (desk/monitor or podium/marker) yields to the themed room; custom attached geometry is drawn as authored.
 
 Run length is a session option, not part of the definition or fingerprint. It defaults to the engine limit (100,000 minutes); `Runtime.create(definition, {horizon})` and `Session.setHorizon` accept a whole number of minutes or `null` for no clock limit. An unlimited run still stops when all work completes or cannot advance, and each clock command remains bounded to 100,000 minutes. A run with an `open` arrival stream never completes or blocks by itself: with no horizon it goes on until paused, and it reports `limit` only when a set horizon is reached. Case count and retained history limits are unchanged for `count` arrivals; streams use the active and retained caps described in Randomness, seeds and steady arrivals.
 
-The **Definition editor** edits the process as a whole in its own native modal `<dialog>` (`LWProcessDefinitionEditor`, size wide, 1000 px), opened with **Edit process…** in the header actions (`#open-definition`, before Import) or with the **unapplied draft chip** beside it (`#draft-chip`, for example "Unapplied draft · 3 steps, 1 resource changed", hidden while the draft matches the running definition). There is no bottom Definition tab any more. Opening it pauses a running simulation (a command, never a tick) and its subtitle says so ("<process name> · revision N · The run is paused while this window is open"); like every dialog of the studio it is one at a time, traps focus, closes with Escape or Close and returns focus to the opener. Both panes write the shared draft (`LWProcessDraft`) on every input, so closing can never lose text and there is deliberately no discard guard. Edits update the draft only; **Apply draft and reset run** validates through the catalog and starts a fresh paused run that keeps the chosen run length (when the run is past minute 0 an in-footer confirm first says "Applying starts a fresh paused run and discards minute N. Export the run report first if you need it." with **Back** and **Apply and reset**). **Restore active definition** is disabled while the draft matches and otherwise asks "Replace the draft with the running definition?" with **Download draft first**, **Restore** and **Keep draft** (the default); **Validate** reports "Valid definition. Applying starts a fresh paused run." or the problem count; **Export draft** saves the text exactly as written.
+The **Definition editor** edits the process as a whole in its own native modal `<dialog>` (`LWProcessDefinitionEditor`, size wide, 1000 px), opened with **Edit process…** in the header actions (`#open-definition`, before Import) or with the **unapplied draft chip** beside it (`#draft-chip`, for example "Unapplied draft · 3 steps, 1 resource changed", hidden while the draft matches the running definition). There is no bottom Definition tab any more. Opening it pauses a running simulation (a command, never a tick) and its subtitle says so ("<process name> · revision N · The run is paused while this window is open"); like every dialog of the studio it is one at a time, traps focus, closes with Escape or Close and returns focus to the opener. Both panes write the shared draft (`LWProcessDraft`) on every input, so closing can never lose text and there is deliberately no discard guard. Edits update the draft only; **Apply draft and reset run** validates through the catalog and starts a fresh paused run that keeps the chosen run length (when the run is past minute 0 the shared `LWProcessDialog.confirmApplyOverRun` in-footer confirm first says "Applying starts a fresh paused run and discards minute N (X cases). Export the run report first if you need it." with **Back** (default) and **Apply and reset**). **Restore active definition** is disabled while the draft matches and otherwise asks "Replace the draft with the running definition?" with **Download draft first**, **Restore** and **Keep draft** (the default); **Validate** reports "Valid definition. Applying starts a fresh paused run." or the problem count; **Export draft** saves the text exactly as written.
 
 On a desktop the modal has two columns, below 1000 px two tabs and at phone width a full sheet. **Tune values** (`LWProcessTuning`, with `LWProcessTuningFields` and `LWProcessTuningArrivals`) edits the process name, description and `seed` (a whole number from 0 to 2,147,483,647; empty leaves the seed out and the engine uses 1; "Same seed, same run. Change it to see another scenario."), the shared resources (name, kind People, Machine or System, capacity, cost per minute; `kind` is written only when it is not `people`, and resources can be added and removed) and each arrival: the end rule (**Fixed number of cases**, **Until a minute** or **Keeps arriving (open stream)**), first arrival minute, planning interval, an optional **Random gap** (None, Uniform, Triangular, Exponential), the typed case data fields and the random case fields (chance, weighted choice, whole-number range). The form never decides what is valid: the catalog's diagnostics are shown beside the field their path names, with `aria-invalid` on the control and a summary of the problems at the top; problems in steps or flows are counted and point to Raw JSON. The form also holds a **Process type** select (Business process, Customer journey or User journey, one sentence of help each; it writes `genre`, and leaves it out for a business process) and a **Tracked measures** section (`LWProcessTuningTrack`): up to six rows of a case field and an optional name, with Add and Remove, a field-name suggestion list built from the fields that steps and arrivals already write, and the explanation that the simulation averages these values when cases finish and at every step to draw the measured curve; Add is disabled with a visible reason at six. Raw JSON labels these paths as "Process › process type" and "Tracked measure 2 › field". The step-level form belongs to the step editor. **Raw JSON** shows the draft in a monospace textarea (no wrapping) with a synced line-number gutter, a status line ("Draft matches the running definition", "Unapplied draft: 3 steps, 1 resource changed" or "Invalid JSON: line 4, column 15 · …" using the pure `LWProcessJsonPath` scanner for the position), a details list of the changed steps, **Format JSON** (disabled while invalid), **Copy** (falls back to selecting all text when the clipboard is blocked) and the diagnostic list. `LWProcessCatalog.validate(draft, true)` returns every shape problem (up to 100) and stops there; the relationship checks (flows, needs, arrivals, draws) run only once the structure is valid, which the list says. Each entry reads "Step name › field" (paths are translated with the draft's step names) and is a button that selects the offending property in the textarea (the first line of a block, or the nearest block when the field is missing). Typing in Raw JSON updates the form after a short pause ("Updating form…" then "Form in sync"); while the JSON is invalid the form is disabled with "Fix the JSON to use the form".
 
@@ -872,7 +919,9 @@ A single step is edited in the **step editor**, a native modal `<dialog>` opened
 
 Every edit is checked live with `LWProcessCatalog.validate(candidate, true)`. Engine diagnostics for this step are rewritten in plain language that names the field and its range ("Task duration must be 1 or more"), appear beside the field with `aria-invalid` on the control, and show one problem per field (a local representation problem hides the engine message for the same field). The status area is empty when there are no problems; otherwise it lists "This step" problems as links that focus the field and an "Elsewhere in the draft" group with paths translated to names ("Discovery › duration"). Nothing blocks typing. Representation problems that no definition can express (a blank or repeated field name, a non-numeric number) disable the footer actions with a visible reason. **Save to draft** writes the candidate to the draft and closes; **Apply and reset run** requires a fully valid draft (otherwise the diagnostics stay in the dialog and the draft is not written) and applies exactly like **Apply draft & reset run**; when the run is past minute 0 an in-footer confirm first states "Applying starts a fresh paused run and discards minute N (X cases). Export the run report first if you need it." with **Back** (default) and **Apply and reset**. A banner summarises other unapplied changes outside this step. If the draft is not valid JSON, **Edit step…** opens the Definition editor on the JSON pane with the syntax error selected instead of opening the step editor, and the step editor's **Open the Definition editor** button closes it (asking first when it holds unsaved edits) and opens the Definition editor on the first problem. Opening the dialog pauses a running simulation (a command, never a tick).
 
-The dialog shell is the reusable `LWProcessDialog` (`process-dialog.ts`; its header comment is the contract for the Definition and Activity editors). It owns the native `showModal` dialog, the Tab trap, `inert` on the studio root, body scroll lock, sticky header and footer, focus on open (first `[autofocus]` control, else Close; read-only dialogs focus the heading) and focus restore to the invoker or a fallback, and **one dirty guard**: Escape, **Close**, a cancel action and a backdrop click all call `requestClose`, which closes a clean dialog and otherwise shows the in-footer "Keep editing / Discard changes" confirm that starts on **Keep editing**. Only one dialog may be open at a time (no stacking). Sizes are `form` (760 px), `wide` (1000 px, with a `.pd-split` two-column grid) and `list` (640 px); at 650 px and below every dialog is a full-screen sheet with stacked full-width footer buttons, and motion is used only when reduced motion is not requested. Dialog openers carry `aria-haspopup="dialog"`.
+The dialog shell is the reusable `LWProcessDialog` (`process-dialog.ts`; its header comment is the contract for the Definition and Activity editors). It owns the native `showModal` dialog, the Tab trap, `inert` on the studio root, body scroll lock, sticky header and footer, focus on open (first `[autofocus]` control, else Close; read-only dialogs focus the heading) and focus restore to the invoker or a fallback, and **one dirty guard**: Escape, **Close**, a cancel action and a backdrop click all call `requestClose`, which closes a clean dialog and otherwise shows the in-footer "Keep editing / Discard changes" confirm that starts on **Keep editing**. Only one dialog may be open at a time (no stacking). Sizes are `form` (760 px), `wide` (1000 px, with a `.pd-split` two-column grid) and `list` (640 px); at 650 px and below every dialog is a full-screen sheet with stacked full-width footer buttons, and motion is used only when reduced motion is not requested. In windows under 560 px tall (200% zoom on a laptop, a phone in landscape) every dialog except Activity becomes one full-screen sheet that scrolls as a single page: header, subtitle, footer reason and secondary actions scroll with the content and only the primary action stays in view at the bottom (the Activity list keeps its own scroller). Dialog openers carry `aria-haspopup="dialog"`. Dialog styles live in `process-dialogs.css` (the BPMN import dialog adds `process-bpmn-dialog.css`); the studio shell is `process.css` and the SIPOC and journey lenses `process-lenses.css`. All share the tokens at the top of `process.css`; type sizes are `rem`, so the browser's default font size is honoured. The studio has a single dark theme; there is no light theme.
+
+**BPMN import dialog.** In the studio, **Import…** (or **Import JSON or BPMN…** in the phone menu) still replaces the active process at once for a JSON file. A `.bpmn` or `.xml` file (or text starting with `<`) instead opens **Import BPMN** (`LWProcessBpmnDialog`, `process-bpmn-dialog.ts`, dialog id `bi`, size wide), with read-only markup from `LWProcessBpmnPreview` (`process-bpmn-preview.ts`). `LWProcessBpmn.inspect` fills the **Process** and **BPSim scenario** pickers (the scenario picker is disabled when the file has none or BPSim is off) and lists the chosen process's lanes and element counts. The options are **Lanes** (resource pools or ignore), **Unsupported constructs** (reject or drop), **People per lane pool**, **System pool capacity**, **Business minutes per day**, **Default duration in minutes**, **Use BPSim simulation parameters** and **Run service-type tasks on automated system pools**; each field is validated by `LWProcessBpmn.options` and shows its own problem (business minutes per hour is a CLI/API option only and keeps 60). Shortly after each change, a preview from `LWProcessBpmn.analyze` (a UI debounce, never a simulation clock) shows the verdict, whether the result is runnable (`ok`) and acceptable as a draft, the process, scenario, step, flow, pool and arrival counts, the suggested run length from the BPSim scenario `Duration` (shown, not applied: import keeps the current **Run until** setting), rejections with their element ids, definition problems, warnings and the mapping grouped by target (steps, flows, resource pools, case fields, arrivals, SIPOC, folded or ignored). **Import** is disabled with a visible reason while an option is invalid, the preview lists rejections or the definition cannot run. It re-runs `LWProcessBpmn.import` with the same options and applies the definition through the studio's replace path: a fresh paused run at minute 0 that never ticks. When that would discard a run past minute 0 or an unapplied draft, an in-footer confirm names what is lost and starts on **Cancel** (Escape also cancels), with **Import and replace**. Opening the dialog does not pause the run; Cancel, Close and Escape change nothing and return focus to the control that opened the file picker. The Export menu adds **Export BPMN with BPSim** (`<id>.bpsim.bpmn`, the same as `export-bpmn --bpsim`).
 
 `LWProcessDraft` (`process-draft.ts`) is the single source of truth for the unapplied draft text, one per process: `read`, `write(text, source)`, `parse`, `activeText`, `changed`, `diff` (counts of changed steps, flows, resources, arrival rules and process settings plus the names of changed steps), `describeDiff` ("Unapplied draft: 3 steps, 1 resource changed"), `subscribe`, and `enter`/`leave`/`restore` for apply, process switching and reset. The raw JSON textarea is a mirror of the store.
 Static paused scenes render only when the view or camera changes.
@@ -883,10 +932,19 @@ in the inspector. The latest 128 events are retained and listed in the Activity 
 
 **Studio layout and Activity.** Desktop windows (1100 px and wider, 600 px tall or more) use a
 `100dvh` grid: a header and toolbar band of two rows, then three columns that scroll
-internally; below that the page scrolls, and at 650 px and below the toolbar is a sticky run bar.
+internally; below that the page scrolls, and at 650 px and below the toolbar is a sticky run bar
+that stops being sticky while **Run options** is expanded. Short windows between 651 and 1099 px
+wide and under 600 px tall fold the secondary run controls under **Run options** like a phone. On
+a phone a SIPOC or journey lens grows with the page instead of scrolling inside the 45vh stage.
 `LWProcessMenu` (`process-menu.ts`) is the Export/overflow menu button; `LWProcessInspector`
 (`process-inspector.ts`) builds the overview, step and resource-meter markup from a detached
-view using `LWProcessRandomView` wording; `LWProcessActivity` (`process-activity.ts`, dialog id
+view using `LWProcessRandomView` wording. The overview adds an **Instances, deadlines and forks**
+summary when the process has any (multi-instance steps with items started and finished, deadline
+steps with escalated and interrupted counts, inclusive forks); a step adds **Branching** (the
+fork's description and its join), **Multiple instances** (items started and finished, visits in
+progress, the item count of the latest completed visit) and **Deadline** (the deadline path, its
+firing counters and the next pending deadline minute), and its next steps describe inclusive
+branches and the deadline path; `LWProcessActivity` (`process-activity.ts`, dialog id
 `act`, size list) owns the event tracker, the batched `#feed-announcer` (polite, atomic, at most
 one batch per five seconds, failures, blocked work and dropped arrivals at once) and the
 Activity modal. The engine's events have no sequence numbers, so the tracker counts appended
@@ -894,3 +952,27 @@ events by overlapping each new 128-event window with the previous one; the badge
 "latest N of M events" subtitle and the new-events pill derive from that count. The controller
 gains `seed(value | null)`: a fresh paused run with that seed (Reset keeps it; replace and
 process switch drop it). Neither the modal nor the menu ticks, pauses or retains the simulation.
+
+## Verification suites
+
+The process checks are registered Wildlands suites (see
+[`source/wildlands/VERIFICATION.md`](../../source/wildlands/VERIFICATION.md) for the gate):
+
+- `business-process` (Node): entry `source/test-process.cts`, which runs the check modules
+  `test-process-engine`, `-authoring`, `-steps`, `-random`, `-journeys` and `-semantics` (`.cts`)
+  with shared helpers in `test-process-helpers.cts`.
+- `business-process-bpmn` (Node): entry `source/test-process-bpmn.cts` (foreign BPMN mapping,
+  BPSim, standard export and the pinned numbers of the example files), after the extension round
+  trips in `test-process-bpmn-extensions.cts`, with helpers in `test-process-bpmn-helpers.cts`.
+- Browser suites, sources `source/verification/process-*-browser.ts` with the shared
+  `process-browser-fixture.ts` and `process-browser-models.ts`: `business-process-browser` (studio
+  shell, navigation, time controls, imports, exports, process switch),
+  `process-layout-browser` (responsive layout, including a check in the wider DejaVu Sans
+  fallback font), `process-step-editor-browser`,
+  `process-definition-browser`, `process-renderers-browser`,
+  `process-lenses-browser`, `process-bpmn-import-browser` (the import dialog and
+  BPSim export) and `process-readability-browser` (large maps, small cues, captions,
+  phone lenses and short-window dialogs, also in DejaVu Sans).
+
+Passing suites are automated evidence of the stated behaviour, not human usability,
+accessibility or visual-quality validation, and not validation of any imported model.

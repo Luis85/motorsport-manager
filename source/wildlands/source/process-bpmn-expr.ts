@@ -13,9 +13,9 @@ declare namespace LWProcessBpmnExpr {
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessBpmnExpr?: LWProcessBpmnExpr.Api};
- const OPS: Record<string, string> = {'==': 'eq', '=': 'eq', eq: 'eq', '!=': 'ne', ne: 'ne', '>': 'gt', gt: 'gt', '>=': 'gte', ge: 'gte', gte: 'gte', '<': 'lt', lt: 'lt', '<=': 'lte', le: 'lte', lte: 'lte'};
+ const OPS: Record<string, LWProcess.Op> = {'==': 'eq', '=': 'eq', eq: 'eq', '!=': 'ne', ne: 'ne', '>': 'gt', gt: 'gt', '>=': 'gte', ge: 'gte', gte: 'gte', '<': 'lt', lt: 'lt', '<=': 'lte', le: 'lte', lte: 'lte'};
  const SYMBOLS: Record<string, string> = {eq: '==', ne: '!=', gt: '>', gte: '>=', lt: '<', lte: '<='};
- const FLIP: Record<string, string> = {eq: 'eq', ne: 'ne', gt: 'lt', gte: 'lte', lt: 'gt', lte: 'gte'};
+ const FLIP: Record<LWProcess.Op, LWProcess.Op> = {eq: 'eq', ne: 'ne', gt: 'lt', gte: 'lte', lt: 'gt', lte: 'gte'};
  const FIELD = /^[a-z][a-zA-Z0-9_]{0,63}$/, MAX_LEAVES = 8, MAX_LEVELS = 3, MAX_LIST = 8;
  type Tok = {t: 'num' | 'str' | 'id' | 'cmp' | 'and' | 'or' | 'not' | 'open' | 'close' | 'lit'; v: string};
  function tokens(text: string): Tok[] {
@@ -58,12 +58,12 @@ declare namespace LWProcessBpmnExpr {
   const comparison = (): LWProcess.When => {
    const left = operand(), next = peek();
    if (!next || next.t !== 'cmp') {
-    if ('field' in left) return {field: left.field, op: 'eq', value: true} as LWProcess.When;
+    if ('field' in left) return {field: left.field, op: 'eq', value: true};
     throw Error('a value alone is not a condition');
    }
    take(); const right = operand(); let op = OPS[next.v.toLowerCase()]!;
-   if ('field' in left) return ('field' in right ? {field: left.field, op, valueField: right.field} : {field: left.field, op, value: right.value}) as LWProcess.When;
-   if ('field' in right) { op = FLIP[op]!; return {field: right.field, op, value: left.value} as LWProcess.When; }
+   if ('field' in left) return 'field' in right ? {field: left.field, op, valueField: right.field} : {field: left.field, op, value: right.value};
+   if ('field' in right) { op = FLIP[op]; return {field: right.field, op, value: left.value}; }
    throw Error('a comparison needs at least one case field');
   };
   const unary = (): LWProcess.When => {
@@ -76,7 +76,7 @@ declare namespace LWProcessBpmnExpr {
    const list = [next()];
    while (peek()?.t === stop) { take(); list.push(next()); }
    if (list.length === 1) return list[0]!;
-   return {[kind]: list.flatMap(c => c[kind] ?? [c])} as unknown as LWProcess.When;
+   return kind === 'all' ? {all: list.flatMap(c => c.all ?? [c])} : {any: list.flatMap(c => c.any ?? [c])};
   };
   const and = (): LWProcess.When => join('all', unary, 'and'), or = (): LWProcess.When => join('any', and, 'or');
   const result = or();
@@ -96,9 +96,13 @@ declare namespace LWProcessBpmnExpr {
   };
   walk(when, 1);
  }
+ /** A field name the grammar would read as something else (a literal, an operator word or and/or/not) has no standard expression. */
+ const plain = (name: string) => !['true', 'false', 'null'].includes(name) && !(Object.hasOwn(OPS, name) && /^[a-z]+$/.test(name)) && !['and', 'or', 'not'].includes(name.toLowerCase());
+ /** The right-hand side as grammar text: a plain field, a quoted text (single quotes, else double quotes; text holding both has none) or a plain number. */
  function operandText(c: LWProcess.Condition): string | undefined {
-  if (c.valueField !== undefined) return ['true', 'false', 'null'].includes(c.valueField) ? undefined : c.valueField;
-  return typeof c.value === 'string' ? "'" + c.value.replaceAll("'", '') + "'" : JSON.stringify(c.value);
+  if (c.valueField !== undefined) return plain(c.valueField) ? c.valueField : undefined;
+  if (typeof c.value === 'string') return !c.value.includes("'") ? "'" + c.value + "'" : !c.value.includes('"') ? '"' + c.value + '"' : undefined;
+  const t = JSON.stringify(c.value); return typeof c.value !== 'number' || /^-?\d+(?:\.\d+)?$/.test(t) ? t : undefined;
  }
  function format(when: LWProcess.When): string | undefined {
   if (when.chance !== undefined) return undefined;
@@ -108,8 +112,9 @@ declare namespace LWProcessBpmnExpr {
    const parts = list.map(c => { const t = format(c); return t === undefined ? undefined : c.all || c.any ? '(' + t + ')' : t; });
    return parts.some(p => p === undefined) ? undefined : parts.join(when.all ? ' && ' : ' || ');
   }
-  const c = when as LWProcess.Condition, right = operandText(c);
-  return right === undefined ? undefined : c.field + ' ' + SYMBOLS[c.op] + ' ' + right;
+  if (when.field === undefined || !plain(when.field)) return undefined;
+  const right = operandText(when);
+  return right === undefined ? undefined : when.field + ' ' + SYMBOLS[when.op] + ' ' + right;
  }
  root.LWProcessBpmnExpr = {parse, format, OPS, isField: (name: string) => FIELD.test(name)};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessBpmnExpr;

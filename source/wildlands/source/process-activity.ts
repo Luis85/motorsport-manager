@@ -48,6 +48,8 @@ declare namespace LWProcessActivity {
   create(host: HTMLElement, env: Env): Surface;
   /** Plain wording of an engine event kind: 'finished-task' becomes 'finished task', 'held' becomes 'blocked'. */
   kindText(kind: string): string;
+  /** The largest unseen-event count the opener badge shows as a number; more reads as `${MAX_BADGE}+`. */
+  MAX_BADGE: number;
  }
 }
 (function(inputRoot: unknown) {
@@ -183,6 +185,6 @@ declare namespace LWProcessActivity {
    dispose() { window.clearTimeout(speak); dialog.dispose(); },
   };
  }
- root.LWProcessActivity = {create, kindText};
+ root.LWProcessActivity = {create, kindText, MAX_BADGE};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessActivity;
 })(globalThis);

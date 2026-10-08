@@ -2,7 +2,7 @@
 /** Graph admission and deterministic branching are domain rules, independent of ECS and rendering. */
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessLimits: LWProcess.Limits; LWProcessNeeds: {check(d: LWProcess.Definition): LWProcess.Diagnostic[]}; LWProcessGraph?: {check(d: LWProcess.Definition): LWProcess.Diagnostic[]; matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean;
+ const root = inputRoot as {LWProcessLimits: LWProcess.Limits; LWProcessNeeds: {check(d: LWProcess.Definition, concurrent?: LWProcessNeeds.Concurrency): LWProcess.Diagnostic[]}; LWProcessGraph?: {check(d: LWProcess.Definition): LWProcess.Diagnostic[]; matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean;
   evaluate(data: LWProcess.Fields, when: LWProcess.When, chance: (path: string, percent: number) => boolean): boolean; hasChance(when: LWProcess.When | undefined): boolean}};
  function matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean {
   if (!Object.hasOwn(data, c.field)) return false;
@@ -102,19 +102,21 @@
   if (steps.get(d.start)?.kind !== 'start' || d.steps.filter(s => s.kind === 'start').length !== 1) fail('/start', 'Name the single start step.');
   if (!d.steps.some(s => s.kind === 'end')) fail('/steps', 'An end step is required.');
   // A condition is exactly one form: field comparison, chance, or all/any/not (at most 3 combinator levels and 8 leaves per `when`).
-  const checkWhen = (w: Record<string, unknown>, path: string, level: number, leaves: {n: number}): void => {
-   const combinators = ['all', 'any', 'not'].filter(k => w[k] !== undefined);
+  // Every key of every condition form, read loosely: admission judges data that only passed the structural schema.
+  type Loose = {[K in 'field' | 'op' | 'value' | 'valueField' | 'chance' | 'all' | 'any' | 'not']?: unknown};
+  const checkWhen = (w: Loose, path: string, level: number, leaves: {n: number}): void => {
+   const combinators = (['all', 'any', 'not'] as const).filter(k => w[k] !== undefined);
    if (combinators.length) {
-    if (combinators.length > 1 || ['field', 'op', 'value', 'valueField', 'chance'].some(k => w[k] !== undefined)) { fail(path, 'A condition uses exactly one form: a field comparison, chance, all, any or not.'); return; }
+    if (combinators.length > 1 || (['field', 'op', 'value', 'valueField', 'chance'] as const).some(k => w[k] !== undefined)) { fail(path, 'A condition uses exactly one form: a field comparison, chance, all, any or not.'); return; }
     if (level > 3) { fail(path, 'Conditions nest at most 3 combinators deep.'); return; }
     const kind = combinators[0]!, children = kind === 'not' ? [w.not] : w[kind] as unknown[];
     if (!Array.isArray(children) || !children.length) { fail(path + '/' + kind, 'The ' + kind + ' combinator needs a non-empty list of conditions.'); return; }
-    children.forEach((c, j) => checkWhen(c as Record<string, unknown>, path + '/' + (kind === 'not' ? 'not' : kind + '/' + j), level + 1, leaves));
+    children.forEach((c, j) => checkWhen(c as Loose, path + '/' + (kind === 'not' ? 'not' : kind + '/' + j), level + 1, leaves));
     return;
    }
    if (++leaves.n === 9) fail(path, 'A condition has at most 8 leaves (comparisons and chances).');
    if (w.chance !== undefined) {
-    if (['field', 'op', 'value', 'valueField'].some(k => w[k] !== undefined)) fail(path, 'A condition uses exactly one form: chance, or field and op with a value or valueField.');
+    if ((['field', 'op', 'value', 'valueField'] as const).some(k => w[k] !== undefined)) fail(path, 'A condition uses exactly one form: chance, or field and op with a value or valueField.');
     else if (typeof w.chance !== 'number' || !Number.isInteger(w.chance) || w.chance < 1 || w.chance > 99) fail(path + '/chance', 'A chance route needs a whole percent from 1 to 99.');
    } else if (w.field === undefined || w.op === undefined) fail(path, 'A condition needs a field and an operator, or a chance percent.');
    else if ((w.value === undefined) === (w.valueField === undefined)) fail(path, 'A condition compares to exactly one of a value or another case field (valueField).');
@@ -125,7 +127,7 @@
    if (f.on !== undefined && (!from?.deadline || from.deadline.flow !== f.id)) fail('/flows/' + i + '/on', 'A flow marked on "deadline" must leave a work step whose deadline names it (deadline.flow).');
    if (f.on !== undefined && f.when) fail('/flows/' + i + '/when', 'A deadline flow takes no condition.');
    if (f.when && f.on === undefined && !(from?.kind === 'decision' || from?.kind === 'fork' && from.mode === 'inclusive')) fail('/flows/' + i + '/when', 'Only decisions have conditions (flows leaving an inclusive fork may also carry one).');
-   if (f.when) checkWhen(f.when as unknown as Record<string, unknown>, '/flows/' + i + '/when', 1, {n: 0});
+   if (f.when) checkWhen(f.when, '/flows/' + i + '/when', 1, {n: 0});
   });
   d.steps.forEach((s, i) => {
    const path = '/steps/' + i, out = normal(s.id), into = incoming(s.id);
@@ -228,6 +230,10 @@
   }
   for (const join of d.steps.filter(s => s.kind === 'join')) if (!owners.has(join.id)) fail(at(join.id), 'Join needs one owning fork.');
   // Boundary deadlines: an interrupt must not strand a join, and an escalation needs its own route to an end that shares nothing with the normal route.
+  // An escalated token runs beside the work that continues (the normal route and, inside a fork region, the sibling branches) on the same case data:
+  // both sides may not write one field, and needs analysis widens what each side may read by the other side's writes.
+  const concurrent: LWProcessNeeds.Concurrency = new Map(), beside = (from: Iterable<string>, to: Iterable<string>) => { for (const x of from) { const set = concurrent.get(x) ?? new Set<string>(); concurrent.set(x, set); for (const y of to) set.add(y); } };
+  const writes = (ids: Iterable<string>) => new Set([...ids].flatMap(id => { const w = steps.get(id); return w ? Object.keys(w.set ?? {}).concat(Object.keys(w.add ?? {}), (w.draws ?? []).map(x => x.field)) : []; }));
   for (const s of d.steps) {
    const flow = s.deadline && outgoing(s.id).find(f => f.on === 'deadline' && f.id === s.deadline!.flow);
    if (!s.deadline || !flow || !steps.has(flow.to)) continue;
@@ -242,8 +248,14 @@
    const shared = [...away].filter(id => main.has(id));
    if (shared.length) fail(path, 'The escalation path must not share steps with the normal route (shared: ' + shared.join(', ') + ').');
    for (const id of away) if (steps.get(id)?.deadline?.mode === 'escalate') fail(path, 'An escalated token cannot be escalated again, but step "' + id + '" on the escalation path declares an escalating deadline.');
+   const region = regionOf.get(s.id), running = [...main, ...region === undefined ? [] : d.steps.filter(x => regionOf.get(x.id) === region).map(x => x.id)];
+   const raced = [...writes(away)].filter(field => writes(running).has(field));
+   if (raced.length) fail(path, 'The escalation path and the work that continues beside it both write ' + raced.join(', ') + '; the result would depend on timing. Give each side its own fields.');
+   // Several escalated tokens of one case may share the path: one per late item, or one per visit when the normal route loops back to this step.
+   const repeated = s.instances !== undefined || normal(s.id).some(f => visit(f.to, false).has(s.id));
+   beside(away, running); beside(running, away); if (repeated) beside(away, away);
   }
-  if (!errors.length) errors.push(...root.LWProcessNeeds.check(d));
+  if (!errors.length) errors.push(...root.LWProcessNeeds.check(d, concurrent));
   const cases = d.arrivals.reduce((n, a) => n + (a.count ?? 0), 0);
   if (cases > limits.cases) fail('/arrivals', 'At most ' + limits.cases + ' cases are supported in count arrivals; use until or open for longer streams.');
   d.arrivals.forEach((a, i) => {

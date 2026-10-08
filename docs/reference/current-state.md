@@ -86,12 +86,12 @@ validation.
 
 ## Ready-to-play Wildlands demos
 
-The repository's [`demos/`](../../demos/README.md) directory holds five
+The repository's [`demos/`](../../demos/README.md) directory holds six
 ready-to-play HTML files, one per [game folder](../concepts/README.md), each
 built by `bin/wildlands build-game` and opened directly from disk in a desktop
 browser (offline, no network requests, no install or build step): Littlewild,
-Emberworks and Office (`colony` template), RTS Frontier (`rts`) and Pocket Pet
-(`pet`, WebGL 2). Each file carries only its own game and stores saves under its
+Emberworks and Office (`colony` template), RTS Frontier (`rts`), Pocket Pet
+(`pet`, WebGL 2) and the Agency delivery lab (`process`). Each file carries only its own game and stores saves under its
 own namespace (`littlewild` keeps its legacy keys; the others use
 `wildlands.<id>`). Every demo stays within its folder's play budget and is
 byte-checked against a fresh build by `npm run check:demos` in
@@ -102,6 +102,50 @@ change needs rebuilt demos while a README-only edit does not. Editors and export
 automated evidence only, not human playtesting or balance validation. Like the Wildlands maker above, they are outside
 the native Motorsport Manager race/campaign inventory and do not read or write
 its saves or race/campaign state.
+
+## Wildlands business processes
+
+The Wildlands process extension (`template: process`) adds a versioned JSON
+process definition simulated as case tokens in the shared ECS: capacity-limited
+people, machine and system pools, typed decisions with chance routes and
+`all`/`any`/`not` conditions, parallel and inclusive forks with their joins,
+bounded rework loops, timers, counters, needs and backlogs, multi-instance work,
+boundary deadlines (interrupting or escalating), seeded random timing, outcomes
+and arrival streams, and customer and user journeys with touchpoints, outcomes,
+conversion and tracked measures. The studio shows one detached run in 2D, Three.js
+3D and a SIPOC or journey lens, with an Activity modal, a Definition editor, a step
+editor and offline HTML downloads; it has a dark theme only. Navigation, dialogs
+and lenses never tick the clock.
+
+The [agency delivery lab](../concepts/agency-delivery/README.md) holds six
+synthetic processes behind a **Process** switch (an agency pipeline, an agile
+vendor project, an order fulfilment line, a customer journey, a user journey and
+a loan application converted from BPMN 2.0/BPSim); all values are illustrative
+assumptions.
+
+BPMN 2.0 interchange covers a broad but explicit subset. Export writes BPMN with
+diagram layout and the exact Wildlands values in a namespaced extension, optionally
+with a BPSim scenario, and re-imports to the same fingerprint. Import of foreign
+BPMN maps tasks and their types, lanes (as pools), exclusive, parallel and
+inclusive gateways, event-based gateways (as a race by chance), multi-instance and
+standard loops, embedded sub-processes and call activities (both inlined), timer
+catch events and timer boundary events (as deadlines) with ISO-8601 durations, and
+reads BPSim times, distributions, probabilities, arrivals, capacities and costs. It
+reports every mapping and warning, and rejects unsupported constructs with their
+element ids or, in drop mode, removes or approximates them with a warning each. The
+CLI and the studio's **Import BPMN** dialog (options, live preview, Cancel-first
+replacement confirmation) share this importer. Exports are checked for
+well-formedness only; conformance to the OMG BPMN 2.0 and BPSim 1.0 XML Schemas
+is not verified.
+
+Not implemented: BPMN execution, external service execution, calendars or working
+hours for timers, event-driven gateway semantics, complex gateways beyond the drop
+approximation, compensation, nested gateways inside a fork region, process
+checkpoints or saved-run restoration, light theme and Godot process export. A
+mapped BPMN model, a seeded run and the passing process suites are automated
+scenario evidence, not a validated process model, forecast or human usability
+review. See the [contract](business-process-engine.md) and
+[authoring workflow](../how-to/business-process-authoring.md).
 
 ## Interface selection and retained specialist tools
 
@@ -196,8 +240,3 @@ relevant evidence.
 - [Historical handoffs and review ledgers](../_archive/README.md).
 
 **Change discipline:** no content definition may bypass its production consumer/validation; no UI may own authoritative race or campaign state/ticking; changing an actual sporting rule, campaign rule, save schema, financial/personnel/operations authority or provider state requires explicit versioning, characterization and separate scope.
-
-
-## Wildlands business processes
-
-The process extension adds a versioned JSON definition, shared-ECS case/token simulation, capacity queues, typed decisions, structured parallel task chains and joins, bounded rework, per-step scenes, 2D/Three.js views with captured case/task inputs and outputs, bounded per-visit history, playback-driven desk actors, keyboard camera controls and reduced-motion support, guarded agent edits, Scene Forge scaffold/asset attachment and offline HTML builds. The studio fits one desktop screen with an Export menu, a Seed field, an Activity modal (filters, step links, CSV/JSON export) and plain-language random behaviour in the inspector. The agency delivery example holds two synthetic processes (agency pipeline and agile vendor project) selectable in the studio through `content.definitions`, with per-process in-memory edits and a Download HTML that keeps all of them; timings are synthetic. It imports and exports a documented subset of BPMN 2.0 XML (events, tasks, exclusive and parallel gateways, resources, diagram layout) with Wildlands values in a namespaced extension, and does not implement sub-processes, boundary events, external service execution, nested parallel regions, process checkpoints or Godot process export. See the [contract](business-process-engine.md) and [authoring workflow](../how-to/business-process-authoring.md).

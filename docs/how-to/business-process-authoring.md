@@ -338,13 +338,18 @@ bin/wildlands process import-bpmn --input /tmp/process-work/review.bpmn --output
 ```
 
 Export carries durations, needs, backlogs and layout in a `wl:` extension, so a
-round trip is lossless. Importing BPMN from another tool lists every default or
+round trip is lossless: the re-imported definition has the same fingerprint, including
+descriptions and empty containers exactly as written. Import rejects unknown or invalid
+extension values instead of coercing them. Importing BPMN from another tool lists every default or
 folded element in `warnings`; add durations, resources and arrivals afterwards in
-**Edit process…** (Tune values) and **Edit step…**, or with guarded edits. Constructs the
-engine cannot simulate (transactions, compensation, error boundary events, complex gateways) are
-rejected with their element ids rather than approximated. The studio offers the same through
-**Export BPMN** and **Import JSON or BPMN**. Add `--bpsim` to `export-bpmn` to write a BPSim
-scenario beside the extension values.
+**Edit process…** (Tune values) and **Edit step…**, or with guarded edits. By default
+(`--unsupported reject`) constructs the engine cannot simulate (transactions, compensation, error
+boundary events, complex gateways) are rejected with their element ids and nothing is written;
+with `--unsupported drop` they are removed or approximated instead (a complex gateway becomes an
+exclusive decision), each with a warning. The studio offers the same through **Export BPMN**,
+**Export BPMN with BPSim** and **Import…** (the **Import BPMN** dialog below). Add `--bpsim` to
+`export-bpmn` to write a BPSim scenario beside the extension values. Exported XML is checked for
+well-formedness only; conformance to the OMG BPMN 2.0 and BPSim 1.0 XML Schemas was not verified.
 
 ## Import BPMN and its simulation parameters
 
@@ -372,17 +377,45 @@ bin/wildlands process run --input /tmp/process-work/loan.json --minutes 3000 --s
    rejected (mark a default flow, add probabilities, or import with `--unsupported drop` to share
    them equally) and one case arrives at minute 0. Conditions such as `${amount > 20000}` only
    route cases whose arrivals carry that field: give start-event properties in BPSim, or add
-   arrival `data` and `draws` afterwards in **Edit process…**.
-4. **Handle rejections.** Exit code 2 prints `rejections` with the element id and the reason.
-   Fix the model, or accept the approximation with `--unsupported drop`: every dropped element
-   gets a warning, the flows around a dropped element with one way out are bridged and paths that
-   only it reached are pruned.
+   arrival `data` and `draws` afterwards in **Edit process…**. Timer and BPSim durations are
+   ISO-8601 (`PT90M`, `PT1H30M`, `P1D`, `P1W`); `--minutes-per-day` (default 480) and
+   `--minutes-per-hour` (default 60) say how many business minutes a day and an hour are, and a
+   week is 5 days. There are no calendars or working hours: a timer counts business minutes.
+4. **Handle rejections.** Exit code 2 prints `rejections` with the element id and the reason;
+   nothing is written. Fix the model, or accept the approximation with `--unsupported drop`: every
+   dropped element gets a warning, the flows around a dropped element with one way out are
+   bridged and paths that only it reached are pruned; the import still fails if no end remains
+   reachable.
 5. **Run with a seed and compare.** `process run --seed N` is deterministic; vary the seed to see
    the spread. Treat the result as a scenario built on assumed distributions, not as a
    measurement of the original process.
 
 Edit the imported JSON like any definition (the guarded `edit` recipes, or the studio). An
 imported definition exports to BPMN again and re-imports to the same fingerprint.
+
+**In the studio.** Choose **Import…** (on a phone, **⋯** then **Import JSON or BPMN…**) and pick
+the `.bpmn` or `.xml` file. A JSON file still replaces the active process at once; a BPMN file
+opens the **Import BPMN** dialog instead, and nothing changes until you choose **Import**:
+
+1. Pick the **Process** and, with **Use BPSim simulation parameters** on, the **BPSim scenario**.
+   The dialog lists the process's lanes and element counts.
+2. Set **Lanes**, **Unsupported constructs** (reject or drop), **People per lane pool**,
+   **System pool capacity**, **Business minutes per day**, **Default duration in minutes** and
+   **Run service-type tasks on automated system pools**. A value out of range shows its problem
+   under the field. Business minutes per hour stays 60 here; use the CLI to change it.
+3. Read the **Preview**, which updates shortly after each change: whether the result is ready to
+   import, rejections with their element ids, warnings (the assumptions made) and the mapping
+   grouped into steps, flows, pools, case fields, arrivals and SIPOC. The suggested run length
+   from the BPSim scenario is shown only; set **Run until** yourself if you want it.
+4. Choose **Import**. It is disabled, with the reason in the footer, while an option is invalid,
+   the preview lists rejections or the result cannot run. If the current run is past minute 0
+   or you have an unapplied draft, the dialog first says what will be discarded and starts on
+   **Cancel**; choose **Import and replace** to continue. Export the run report or draft first if
+   you need them.
+
+The imported process replaces the active one with a fresh paused run at minute 0; time never
+advances by itself. **Cancel**, **Close** or Escape leaves everything as it was. **Export ▾ →
+Export BPMN with BPSim** writes the active process back out with a BPSim scenario.
 
 ## Run and build
 
@@ -456,9 +489,18 @@ under the metrics (open by default on screens 1600 px wide or more). The inspect
 **Random timing**, **Random outcomes** and the share of each chance route, or, for the whole
 process, the seed and the arrival streams. On a phone the header keeps **Edit** and a **⋯** menu,
 the run bar stays at the top with **Run options** holding the secondary controls, and steps
-become a horizontal scroller above the stage.
+become a horizontal scroller above the stage. In a short window (for example 200% zoom on a
+laptop) dialogs become one scrolling page with the main action kept at the bottom. The studio
+follows your browser's default font size and has a dark theme only.
 
-**Export ▾** holds **Export JSON**, **Export BPMN**, **Export run report** and **Download HTML**
+**Large maps.** When step names no longer fit on a zoomed-out 2D map, cards show their list
+number instead (the hint reads "Card numbers match the step list · zoom in for names"); zoom in,
+or select a step, to read names. Small cues such as deadline tags and instance pills keep a
+readable glyph; hover them for a tooltip, or select the step, for their wording. The inspector's
+overview counts multi-instance items, deadline firings and inclusive forks, and a step shows its
+branching, instances and deadline with live counters.
+
+**Export ▾** holds **Export JSON**, **Export BPMN**, **Export BPMN with BPSim**, **Export run report** and **Download HTML**
 (arrow keys, Home, End and Escape work; the menu closes after a choice). **Activity** opens the
 **Run activity** modal without pausing the run; its badge counts events since you last looked
 (99+ at most). Filter by kind, step or case, choose a step name to select that step and return
@@ -488,4 +530,7 @@ The build has no external scripts, fonts, asset requests or account dependency.
 5. Review actual Scene Forge views and both process projections where a browser
    is available; a headless simulation result does not certify visual quality.
 6. Build the HTML and reopen it offline, then export/reimport JSON and HTML.
-7. Report the source identity, executed tests, assumptions and unsupported rules.
+7. Report the source identity, executed tests, assumptions and unsupported rules. For engine
+   or studio changes, the registered process suites are listed under
+   [Verification suites](../reference/business-process-engine.md#verification-suites); a bounded
+   run or a passing suite is not human or balance validation.

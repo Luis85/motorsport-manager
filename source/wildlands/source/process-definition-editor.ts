@@ -69,7 +69,7 @@ declare namespace LWProcessDefinitionEditor {
   const q = <T extends HTMLElement = HTMLElement>(id: string) => dialog.el.querySelector<T>('#' + id)!;
   const tuning = root.LWProcessTuning.create(q('tuning'), () => draft.read(), text => draft.write(text, 'tuning'));
   const json = root.LWProcessDefinitionJson.create(q('de-pane-json'), draft);
-  let opener: HTMLElement | null = null, timer = 0, stale = true;
+  let opener: HTMLElement | null = null, timer = 0;
   const showTab = (tab: 'form' | 'json') => { q('de-split').dataset.tab = tab; q('de-tab-form').setAttribute('aria-pressed', String(tab === 'form')); q('de-tab-json').setAttribute('aria-pressed', String(tab === 'json')); };
   const message = (text: string) => { const m = q('de-message'); if (m.textContent !== text) m.textContent = text; };
   const parsed = (): unknown => { try { return JSON.parse(draft.read()); } catch { return undefined; } };
@@ -93,11 +93,10 @@ declare namespace LWProcessDefinitionEditor {
    json.setDiagnostics(result.diagnostics, result.stage);
    const sync = q('de-sync'), text = result.syntax || !form ? 'Fix the JSON to use the form' : 'Form in sync';
    if (sync.textContent !== text) sync.textContent = text; sync.classList.toggle('bad', text !== 'Form in sync');
-   stale = false;
   }
   const unsubscribe = draft.subscribe(e => {
    const area = json.textarea;
-   if (!dialog.isOpen()) { if (e.source !== 'raw' && area.value !== e.text) area.value = e.text; stale = true; return; }
+   if (!dialog.isOpen()) { if (e.source !== 'raw' && area.value !== e.text) area.value = e.text; return; }
    message(''); dialog.setStatus(''); header(); footer(); json.render(e.source);
    window.clearTimeout(timer);
    if (e.source === 'raw') { q('de-sync').textContent = 'Updating form…'; timer = window.setTimeout(() => recompute(false), DEBOUNCE); } else recompute(e.source === 'tuning');
@@ -127,8 +126,7 @@ declare namespace LWProcessDefinitionEditor {
    let result = inspect(); if (result.syntax || result.diagnostics.length) { refuse(result.syntax, result.diagnostics); return; }
    const run = env.run();
    if (run.minute > 0) {
-    const choice = await dialog.confirm(`Applying starts a fresh paused run and discards minute ${run.minute.toLocaleString()}. Export the run report first if you need it.`, [{id: 'back', label: 'Back', default: true}, {id: 'apply-reset', label: 'Apply and reset'}]);
-    if (choice !== 'apply-reset' || !dialog.isOpen()) return;
+    if (!(await root.LWProcessDialog.confirmApplyOverRun(dialog, run))) return;
     result = inspect(); if (result.syntax || result.diagnostics.length) { refuse(result.syntax, result.diagnostics); return; }
    }
    dialog.setStatus('');

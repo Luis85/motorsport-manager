@@ -79,8 +79,9 @@ declare namespace LWProcessStepLogicSections {
  }
  function notes(m: M): Record<string, string> {
   const v = root.LWProcessRandomView, l = L(), out: Record<string, string> = {};
-  if (m.instances && m.instances.kind !== 'none') out['se-instances-note'] = v.describeInstances({instances: l.writeInstances(m.instances) as unknown as LWProcess.Instances});
-  if (m.deadline && m.deadline.kind !== 'none') out['se-deadline-note'] = v.describeDeadline({deadline: l.writeDeadline(m.deadline) as unknown as LWProcess.Deadline});
+  const instances = m.instances && l.writeInstances(m.instances), deadline = m.deadline && l.writeDeadline(m.deadline);
+  if (instances) out['se-instances-note'] = v.describeInstances({instances});
+  if (deadline) out['se-deadline-note'] = v.describeDeadline({deadline});
   if (m.branching) out['se-branching-note'] = v.describeFork({kind: 'fork', ...m.branching === 'inclusive' ? {mode: 'inclusive' as const} : {}});
   return out;
  }

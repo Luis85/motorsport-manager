@@ -6,9 +6,9 @@
  */
 declare namespace LWProcessInspector {
  interface Api {
-  /** Whole-process facts: description (clamped to three lines until `moreOpen`), counts, revision, seed and the arrival streams. */
+  /** Whole-process facts: description (clamped to three lines until `moreOpen`), counts, revision, seed, multiple-instance, deadline and inclusive-fork totals (only when present) and the arrival streams. */
   overview(view: LWProcessApp.View, moreOpen: boolean): string;
-  /** One step: description, timing, random timing and outcomes, needs, outputs, backlog and the steps that can follow. */
+  /** One step: description, timing, branching, multiple instances and deadline (with their live counters), random timing and outcomes, needs, outputs, backlog and the steps that can follow. */
   step(view: LWProcessApp.View, step: LWProcess.Step): string;
   /** The KPI strip cells under the stage: counts and cost, plus goals, lost, conversion and up to two tracked measures for journeys. HTML without the seed note. */
   kpis(view: LWProcessApp.View): string;
@@ -64,12 +64,18 @@ declare namespace LWProcessInspector {
   return (step.timing ? `<h3>Random timing</h3><p class="process-random">${esc(v.describeTiming(step))}</p>` : '') +
    (step.draws?.length ? `<h3>Random outcomes</h3><ul class="process-adds">${step.draws.map(d => `<li>${esc(v.describeDraw(d))}</li>`).join('')}</ul>` : '');
  }
- /** The next steps. A decision's routes also say how they are chosen; chance routes show their share and the fallback shows what is left. */
+ /** The deadline flow in the 2D map's own words: 'Deadline path (escalates: the work keeps going)'. */
+ const deadlinePath = (mode: LWProcess.Deadline['mode']) => `Deadline path (${mode === 'escalate' ? 'escalates: the work keeps going' : 'interrupts: the work is cancelled'})`;
+ /**
+  * The next steps. A decision's routes also say how they are chosen; chance routes show their share and the fallback shows what is left.
+  * An inclusive fork's branches show their condition (each is tested on its own, so no shares are summed) and a deadline flow says it is the deadline path.
+  */
  function nextHtml(view: LWProcessApp.View, step: LWProcess.Step): string {
   const d = view.definition, out = d.flows.filter(f => f.from === step.id), v = root.LWProcessRandomView, many = root.LWProcessTerms.of(d).many;
   const chances = out.filter(f => typeof f.when?.chance === 'number'), conditions = out.filter(f => f.when && typeof f.when.chance !== 'number');
   const left = chances.length && !conditions.length ? 100 - chances.reduce((sum, f) => sum + (f.when!.chance as number), 0) : undefined;
-  const how = (f: LWProcess.Flow) => step.kind !== 'decision' ? '' : f.when ? v.describeWhen(f.when, many) : left !== undefined ? `Otherwise, ${Math.round(left * 10) / 10}% of ${many}` : 'Otherwise';
+  const branch = (f: LWProcess.Flow) => f.when ? v.describeWhen(f.when, many) : 'Default branch: taken only when no condition is true';
+  const how = (f: LWProcess.Flow) => f.on === 'deadline' && step.deadline ? deadlinePath(step.deadline.mode) : step.kind === 'fork' && step.mode === 'inclusive' ? branch(f) : step.kind !== 'decision' ? '' : f.when ? v.describeWhen(f.when, many) : left !== undefined ? `Otherwise, ${Math.round(left * 10) / 10}% of ${many}` : 'Otherwise';
   return out.map(f => { const reason = how(f);
    return `<button class="next-step" data-next="${esc(f.to)}">${esc(d.steps.find(s => s.id === f.to)!.name)}${f.label ? ' · ' + esc(f.label) : ''}${reason ? `<small>${esc(reason)}</small>` : ''}</button>`; }).join('') || '<p>Process ends here.</p>';
  }
@@ -85,15 +91,48 @@ declare namespace LWProcessInspector {
   const notes = (s.pain ? `<h3>Pain point</h3><p>${esc(s.pain)}</p>` : '') + (s.opportunity ? `<h3>Opportunity</h3><p>${esc(s.opportunity)}</p>` : '');
   return (rows.length ? `<h3>${t.journey ? 'Journey' : 'Annotations'}</h3><dl class="process-journey">${rows.join('')}</dl>` : '') + notes;
  }
+ const row = (label: string, value: string) => `<dt>${label}</dt><dd>${value}</dd>`;
+ /**
+  * BPMN-class behaviour of one step in the editors' sentences: fork branching and its join, multiple instances with the cumulative
+  * item counters, the visits running now and the item count of the latest completed visit, and the boundary deadline with its
+  * path, firing counters and the next pending deadline minute. '' for a step with none of them.
+  */
+ function logicHtml(view: LWProcessApp.View, s: LWProcess.Step, m: LWProcess.StepMetric): string {
+  const v = root.LWProcessRandomView, d = view.definition, q = view.snapshot, name = (id: string | undefined) => d.steps.find(x => x.id === id)?.name;
+  let html = '';
+  if (s.kind === 'fork') html += `<h3>Branching</h3><p class="process-random">${esc(v.describeFork(s))}</p>${name(s.join) ? `<dl>${row('Joins at', esc(name(s.join)))}</dl>` : ''}`;
+  if (s.instances) {
+   const items = m.items ?? {started: 0, finished: 0}, last = [...q.receipts].reverse().find(r => r.stepId === s.id && r.instances !== undefined);
+   const visits = new Set(q.tokens.filter(t => t.stepId === s.id && t.group !== undefined).map(t => t.group)).size;
+   html += `<h3>Multiple instances</h3><p class="process-random">${esc(v.describeInstances(s))}</p><dl>${row('Items started', num(items.started))}${row('Items finished', num(items.finished))}${row('Visits in progress', num(visits))}${last ? row('Latest completed visit', `${num(last.instances!)} ${last.instances === 1 ? 'item' : 'items'}`) : ''}</dl>`;
+  }
+  if (s.deadline) {
+   const fired = m.deadlines ?? {interrupted: 0, escalated: 0}, target = name(d.flows.find(f => f.id === s.deadline!.flow)?.to);
+   const pending = q.tokens.filter(t => t.stepId === s.id && t.deadlineAt !== undefined).map(t => t.deadlineAt!);
+   const next = pending.length ? row('Next deadline', `Minute ${num(Math.min(...pending))}${pending.length > 1 ? ` · ${pending.length} pending` : ''}`) : '';
+   html += `<h3>Deadline</h3><p class="process-random">${esc(v.describeDeadline(s))}</p><dl>${target ? row('Deadline path to', esc(target)) : ''}${row('Escalated', num(fired.escalated))}${row('Interrupted', num(fired.interrupted))}${next}</dl>`;
+  }
+  return html;
+ }
  function step(view: LWProcessApp.View, s: LWProcess.Step): string {
-  const q = view.snapshot, m = q.steps.find(m => m.id === s.id)!;
-  return `<p>${esc(s.description ?? s.name)}</p>${automated(s) ? `<p class="process-auto">Runs automatically${s.technology ? ' on ' + esc(s.technology) : ''}. No people are needed.</p>` : ''}<dl>${timingHtml(s, m)}<dt>${automated(s) ? 'Running / waiting' : 'Working / waiting'}</dt><dd>${m.active} / ${m.queued}</dd><dt>Completed visits</dt><dd>${num(m.completed)}</dd><dt>Total queue time</dt><dd>${num(m.waitMinutes)} min</dd><dt>Fixed cost per visit</dt><dd>${num(s.cost ?? 0)}</dd></dl>${journeyHtml(view, s, m)}${randomHtml(s)}${needsHtml(view, s)}${outputsHtml(s, q)}${backlogHtml(s, q)}<h3>Next steps</h3>${nextHtml(view, s)}`;
+  const q = view.snapshot, m = q.steps.find(m => m.id === s.id)!, busy = (s.instances ? 'Items ' : '') + (automated(s) ? 'running / waiting' : 'working / waiting');
+  return `<p>${esc(s.description ?? s.name)}</p>${automated(s) ? `<p class="process-auto">Runs automatically${s.technology ? ' on ' + esc(s.technology) : ''}. No people are needed.</p>` : ''}<dl>${timingHtml(s, m)}<dt>${busy[0]!.toUpperCase() + busy.slice(1)}</dt><dd>${m.active} / ${m.queued}</dd><dt>Completed visits</dt><dd>${num(m.completed)}</dd><dt>Total queue time</dt><dd>${num(m.waitMinutes)} min</dd><dt>Fixed cost per visit</dt><dd>${num(s.cost ?? 0)}</dd></dl>${journeyHtml(view, s, m)}${logicHtml(view, s, m)}${randomHtml(s)}${needsHtml(view, s)}${outputsHtml(s, q)}${backlogHtml(s, q)}<h3>Next steps</h3>${nextHtml(view, s)}`;
+ }
+ /** Counts of the BPMN-class steps with their cumulative item and deadline counters; '' when the process has none. */
+ function logicSummary(view: LWProcessApp.View): string {
+  const d = view.definition, metrics = new Map(view.snapshot.steps.map(m => [m.id, m])), many = (n: number, one: string) => `${num(n)} ${n === 1 ? one : one + 's'}`;
+  const multi = d.steps.filter(s => s.instances), late = d.steps.filter(s => s.deadline), inclusive = d.steps.filter(s => s.kind === 'fork' && s.mode === 'inclusive');
+  const total = (list: LWProcess.Step[], pick: (m: LWProcess.StepMetric) => number) => list.reduce((n, s) => n + pick(metrics.get(s.id)!), 0);
+  const rows = [multi.length ? row('Multiple instances', `${many(multi.length, 'step')} · ${num(total(multi, m => m.items?.started ?? 0))} items started · ${num(total(multi, m => m.items?.finished ?? 0))} finished`) : '',
+   late.length ? row('Deadlines', `${many(late.length, 'step')} · ${num(total(late, m => m.deadlines?.escalated ?? 0))} escalated · ${num(total(late, m => m.deadlines?.interrupted ?? 0))} interrupted`) : '',
+   inclusive.length ? row('Inclusive forks', many(inclusive.length, 'fork')) : ''].join('');
+  return rows ? `<h3>Instances, deadlines and forks</h3><dl class="process-tracked">${rows}</dl>` : '';
  }
  function overview(view: LWProcessApp.View, moreOpen: boolean): string {
   const d = view.definition, seed = view.snapshot.seed, v = root.LWProcessRandomView, t = root.LWProcessTerms.of(d), tracked = trackedFinish(view);
   const text = d.description ?? `${t.Many} move through the process. Run the simulation to see work, queues and resource contention.`;
   return `<p id="process-desc" class="process-desc${moreOpen ? ' open' : ''}">${esc(text)}</p><button type="button" id="desc-more" class="process-more" aria-controls="process-desc" aria-expanded="${moreOpen}" hidden>${moreOpen ? 'Less' : 'More'}</button>
-   <dl><dt>Steps</dt><dd>${d.steps.length}</dd><dt>Connections</dt><dd>${d.flows.length}</dd><dt>Revision</dt><dd>${d.revision}</dd><dt>Seed</dt><dd>${seed}${seed !== (d.seed ?? 1) ? ' · set for this run' : ''}</dd>${t.journey ? `<dt>Process type</dt><dd>${t.label}</dd>` : ''}</dl>${tracked.length ? `<h3>Tracked measures</h3><dl class="process-tracked">${tracked.map(x => `<dt>${esc(x.label)}</dt><dd>${dec(x.mean)} average · ${dec(x.min!)} to ${dec(x.max!)} · ${num(x.n)} ${x.n === 1 ? t.one : t.many}</dd>`).join('')}</dl>` : ''}
+   <dl><dt>Steps</dt><dd>${d.steps.length}</dd><dt>Connections</dt><dd>${d.flows.length}</dd><dt>Revision</dt><dd>${d.revision}</dd><dt>Seed</dt><dd>${seed}${seed !== (d.seed ?? 1) ? ' · set for this run' : ''}</dd>${t.journey ? `<dt>Process type</dt><dd>${t.label}</dd>` : ''}</dl>${tracked.length ? `<h3>Tracked measures</h3><dl class="process-tracked">${tracked.map(x => `<dt>${esc(x.label)}</dt><dd>${dec(x.mean)} average · ${dec(x.min!)} to ${dec(x.max!)} · ${num(x.n)} ${x.n === 1 ? t.one : t.many}</dd>`).join('')}</dl>` : ''}${logicSummary(view)}
    <h3>Arrivals</h3>${d.arrivals.length ? `<ul class="process-adds" aria-label="Arrival streams">${d.arrivals.map(a => `<li>${esc(v.describeArrival(a, t))}</li>`).join('')}</ul>` : '<p>No arrivals defined.</p>'}`;
  }
  function pools(view: LWProcessApp.View): string {

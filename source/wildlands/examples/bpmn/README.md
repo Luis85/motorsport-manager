@@ -5,7 +5,8 @@ another modeler would save it: standard elements, a diagram, a BPSim scenario an
 extension, so every simulation setting below comes from BPMN or BPSim and the importer's mapping.
 All durations, probabilities, quantities and costs are synthetic demonstration assumptions: they
 do not describe a real bank, help desk or any measured behaviour, and the mapping was not
-verified against a BPMN conformance suite or a specific modeler. The BPSim dialect is the subset
+verified against a BPMN conformance suite, the OMG BPMN 2.0 / BPSim 1.0 XML Schemas or a
+specific modeler. The BPSim dialect is the subset
 the importer reads (see [BPMN 2.0 interchange](../../../../docs/reference/business-process-engine.md#bpmn-20-interchange)).
 
 | File | Shows |
@@ -25,6 +26,11 @@ assumptions made. With seed 7 the loan run ends at minute 984 with 32 cases comp
 2414 simulated units; 3 reviews, 1 SLA escalation) and the ticket run at minute 1094 with 20
 completed (cost 2671; 4 interrupted investigations). Other seeds give other draws; the checks in
 `source/test-process-bpmn.cts` pin these numbers.
+
+In a process studio, **Import…** opens the **Import BPMN** dialog with the same options (except minutes per hour, which stays 60) and a
+live preview of warnings, rejections and the mapping. The
+[agency delivery lab](../../../../docs/concepts/agency-delivery/README.md) carries the converted
+loan application as its sixth process.
 
 ## How each construct is simulated
 
@@ -64,7 +70,8 @@ Support ticket (14 steps, 15 flows):
   no conditions or probabilities; add `--unsupported drop` to share those flows equally.
 - `--lanes ignore`: tasks demand no pools, so cases never queue for staff.
 - `--default-capacity N`, `--system-capacity N`: pool sizes for lanes without BPSim `Quantity`.
-- `--minutes-per-day N`: how long a BPSim or ISO "day" is (default 480 business minutes).
+- `--minutes-per-day N`, `--minutes-per-hour N`: business minutes in a day (default 480) and an
+  hour (default 60) for ISO-8601 timer durations and BPSim units; a week is 5 days.
 - `--unsupported drop`: removes constructs the engine cannot simulate instead of rejecting the file.
 - `--process ID`, `--scenario ID`: choose one of several processes or BPSim scenarios.
 

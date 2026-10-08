@@ -91,7 +91,8 @@ declare namespace LWProcessStepModel {
  const isWork = (kind: LWProcess.Kind) => kind === 'task' || kind === 'touchpoint' || kind === 'machine' || kind === 'system';
  const poolKind = (kind: LWProcess.Kind): LWProcess.ResourceKind => kind === 'machine' ? 'machine' : kind === 'system' ? 'system' : 'people';
  const acceptsPool = (kind: LWProcess.Kind, pool: LWProcess.ResourceKind) => kind === 'touchpoint' || poolKind(kind) === pool;
- const assign = (target: Record<string, unknown>, key: string, value: unknown) => { if (value === undefined) delete target[key]; else target[key] = value; };
+ /** Sets an optional property, or removes it when `value` is undefined (absent, never an explicit undefined). */
+ function put<T extends object, K extends keyof T>(target: T, key: K, value: Exclude<T[K], undefined> | undefined): void { if (value === undefined) delete target[key]; else target[key] = value; }
  const text = (n: number | undefined) => n === undefined ? '' : String(n);
  const readDraw = (d: LWProcess.Draw): LWProcessStepModel.DrawRow => ({field: d.field, kind: d.kind, percent: text(d.percent), whenTrue: readValue(Object.hasOwn(d, 'whenTrue') ? d.whenTrue : true), whenFalse: readValue(Object.hasOwn(d, 'whenFalse') ? d.whenFalse : false),
   values: (d.values ?? []).map(v => ({value: readValue(v.value), weight: String(v.weight)})), min: text(d.min), max: text(d.max)});
@@ -106,15 +107,13 @@ declare namespace LWProcessStepModel {
  }
  const newDraw = (): LWProcessStepModel.DrawRow => ({field: '', kind: 'chance', percent: '10', whenTrue: {type: 'true', text: ''}, whenFalse: {type: 'false', text: ''}, values: [], min: '1', max: '6'});
  const timingNote = (m: LWProcessStepModel.Model): string => `Planning duration (${m.duration.trim() === '' ? '?' : m.duration.trim()} min) stays the average shown in estimates; each visit draws its own time.`;
- function writeDraw(r: LWProcessStepModel.DrawRow): Record<string, unknown> {
-  const out: Record<string, unknown> = {field: r.field, kind: r.kind};
+ function writeDraw(r: LWProcessStepModel.DrawRow): LWProcess.Draw {
   if (r.kind === 'chance') {
-   out.percent = whole(r.percent) ?? 0;
    const yes = writeValue(r.whenTrue), no = writeValue(r.whenFalse);
-   if (yes !== true) out.whenTrue = yes; if (no !== false) out.whenFalse = no;
-  } else if (r.kind === 'choice') out.values = r.values.map(v => ({value: writeValue(v.value), weight: whole(v.weight) ?? 0}));
-  else { out.min = whole(r.min) ?? 0; out.max = whole(r.max) ?? 0; }
-  return out;
+   return {field: r.field, kind: r.kind, percent: whole(r.percent) ?? 0, ...yes !== true ? {whenTrue: yes} : {}, ...no !== false ? {whenFalse: no} : {}};
+  }
+  if (r.kind === 'choice') return {field: r.field, kind: r.kind, values: r.values.map(v => ({value: writeValue(v.value), weight: whole(v.weight) ?? 0}))};
+  return {field: r.field, kind: r.kind, min: whole(r.min) ?? 0, max: whole(r.max) ?? 0};
  }
  function read(def: LWProcess.Definition, stepId: string): LWProcessStepModel.Model | undefined {
   const step = def.steps.find(s => s.id === stepId); if (!step) return undefined;
@@ -134,47 +133,46 @@ declare namespace LWProcessStepModel {
    branching: step.kind === 'fork' ? (step.mode === 'inclusive' ? 'inclusive' : 'parallel') : null, instances: isWork(step.kind) ? L.readInstances(step) : null, deadline: isWork(step.kind) ? L.readDeadline(step) : null};
  }
  function writeStep(step: LWProcess.Step, m: LWProcessStepModel.Model): void {
-  const s = step as unknown as Record<string, unknown>, work = isWork(step.kind), effects = work || step.kind === 'timer';
-  s.name = m.name; assign(s, 'description', m.description.trim() === '' ? undefined : m.description);
-  if (work) assign(s, 'duration', whole(m.duration));
-  if (timingAllowed(m)) assign(s, 'timing', L.writeTiming(m.timing)); else if (step.kind === 'timer') delete s.timing;
-  if (step.kind === 'timer') { assign(s, 'duration', m.mode === 'duration' ? whole(m.duration) : undefined); assign(s, 'until', m.mode === 'until' ? whole(m.until) : undefined); }
+  const work = isWork(step.kind), effects = work || step.kind === 'timer', trimmed = (text: string) => text.trim() === '' ? undefined : text.trim();
+  step.name = m.name; put(step, 'description', m.description.trim() === '' ? undefined : m.description);
+  if (work) put(step, 'duration', whole(m.duration));
+  if (timingAllowed(m)) put(step, 'timing', L.writeTiming(m.timing)); else if (step.kind === 'timer') put(step, 'timing', undefined);
+  if (step.kind === 'timer') { put(step, 'duration', m.mode === 'duration' ? whole(m.duration) : undefined); put(step, 'until', m.mode === 'until' ? whole(m.until) : undefined); }
   if (work) {
-   assign(s, 'cost', whole(m.cost)); const used = m.pools.filter(p => (whole(p.count) ?? 0) > 0);
-   assign(s, 'resources', used.length ? Object.fromEntries(used.map(p => [p.id, whole(p.count)!])) : undefined);
-   assign(s, 'outputs', m.outputs.length ? m.outputs.map(o => o.label.trim() === '' ? {field: o.field} : {field: o.field, label: o.label}) : undefined);
-   if (m.instances) assign(s, 'instances', L.writeInstances(m.instances));
-   if (m.deadline) assign(s, 'deadline', L.writeDeadline(m.deadline));
+   put(step, 'cost', whole(m.cost)); const used = m.pools.flatMap(p => { const n = whole(p.count) ?? 0; return n > 0 ? [[p.id, n] as const] : []; });
+   put(step, 'resources', used.length ? Object.fromEntries(used) : undefined);
+   put(step, 'outputs', m.outputs.length ? m.outputs.map(o => o.label.trim() === '' ? {field: o.field} : {field: o.field, label: o.label}) : undefined);
+   if (m.instances) put(step, 'instances', L.writeInstances(m.instances));
+   if (m.deadline) put(step, 'deadline', L.writeDeadline(m.deadline));
   }
-  if (step.kind === 'fork') assign(s, 'mode', m.branching === 'inclusive' ? 'inclusive' : undefined);
-  if (step.kind === 'machine' || step.kind === 'system') assign(s, 'technology', m.technology.trim() === '' ? undefined : m.technology.trim());
-  assign(s, 'phase', m.phase.trim() === '' ? undefined : m.phase.trim()); assign(s, 'emotion', whole(m.emotion)); assign(s, 'pain', m.pain.trim() === '' ? undefined : m.pain); assign(s, 'opportunity', m.opportunity.trim() === '' ? undefined : m.opportunity);
-  if (step.kind === 'touchpoint') assign(s, 'channel', m.channel === '' ? undefined : m.channel);
-  if (step.kind === 'end') assign(s, 'outcome', m.outcome === '' ? undefined : m.outcome);
+  if (step.kind === 'fork') put(step, 'mode', m.branching === 'inclusive' ? 'inclusive' : undefined);
+  if (step.kind === 'machine' || step.kind === 'system') put(step, 'technology', trimmed(m.technology));
+  put(step, 'phase', trimmed(m.phase)); put(step, 'emotion', whole(m.emotion)); put(step, 'pain', m.pain.trim() === '' ? undefined : m.pain); put(step, 'opportunity', m.opportunity.trim() === '' ? undefined : m.opportunity);
+  // Channel and outcome come from fixed option lists; the catalog still validates whatever the draft holds.
+  if (step.kind === 'touchpoint') put(step, 'channel', m.channel === '' ? undefined : m.channel as LWProcess.Channel);
+  if (step.kind === 'end') put(step, 'outcome', m.outcome === '' ? undefined : m.outcome as 'goal' | 'lost');
   if (effects) {
-   assign(s, 'set', m.set.length ? Object.fromEntries(m.set.map(r => [r.key, writeValue(r.value)])) : undefined);
-   assign(s, 'add', m.add.length ? Object.fromEntries(m.add.map(r => [r.key, whole(r.delta) ?? 0])) : undefined);
-   assign(s, 'draws', m.draws.length ? m.draws.map(writeDraw) : undefined);
+   put(step, 'set', m.set.length ? Object.fromEntries(m.set.map(r => [r.key, writeValue(r.value)])) : undefined);
+   put(step, 'add', m.add.length ? Object.fromEntries(m.add.map(r => [r.key, whole(r.delta) ?? 0])) : undefined);
+   put(step, 'draws', m.draws.length ? m.draws.map(writeDraw) : undefined);
   }
-  if (step.kind !== 'start') assign(s, 'needs', m.needs.length ? m.needs.map(n => {
-   const need: Record<string, unknown> = {field: n.field}; if (n.op) { need.op = n.op; need.value = writeValue(n.value); } if (n.label.trim() !== '') need.label = n.label; return need;
-  }) : undefined);
-  if (m.backlog) assign(s, 'backlog', !m.backlog.on ? undefined : (() => {
-   const b = m.backlog!, out: Record<string, unknown> = {capacity: whole(b.capacity) ?? 0, order: b.order};
-   if (b.order === 'priority') out.priority = b.priority; if (step.kind === 'join' && whole(b.pull) !== undefined) out.pull = whole(b.pull); return out;
-  })());
+  if (step.kind !== 'start') put(step, 'needs', m.needs.length ? m.needs.map((n): LWProcess.Need => ({field: n.field, ...n.op ? {op: n.op as LWProcess.Condition['op'], value: writeValue(n.value)} : {}, ...n.label.trim() !== '' ? {label: n.label} : {}})) : undefined);
+  if (m.backlog) {
+   const b = m.backlog, pull = step.kind === 'join' ? whole(b.pull) : undefined;
+   put(step, 'backlog', !b.on ? undefined : {capacity: whole(b.capacity) ?? 0, order: b.order, ...b.order === 'priority' ? {priority: b.priority} : {}, ...pull !== undefined ? {pull} : {}});
+  }
  }
  function write(def: LWProcess.Definition, stepId: string, m: LWProcessStepModel.Model): LWProcess.Definition {
   const next = clone(def), step = next.steps.find(s => s.id === stepId); if (!step) return next;
   writeStep(step, m);
   const slots = next.flows.flatMap((f, i) => f.from === stepId ? [i] : []), byId = new Map(next.flows.map(f => [f.id, f]));
   m.flows.forEach((row, k) => {
-   const flow = byId.get(row.id); if (!flow || slots[k] === undefined) return; const f = flow as unknown as Record<string, unknown>;
-   assign(f, 'label', row.label.trim() === '' ? undefined : row.label);
+   const flow = byId.get(row.id); if (!flow || slots[k] === undefined) return;
+   put(flow, 'label', row.label.trim() === '' ? undefined : row.label);
    const deadlineFlow = isWork(step.kind) && m.deadline !== null && L.isDeadlineFlow(m, row.id);
-   if (isWork(step.kind)) assign(f, 'on', deadlineFlow ? 'deadline' : undefined);
-   if (deadlineFlow) assign(f, 'when', undefined);
-   else if (step.kind === 'decision' || step.kind === 'fork' || row.cond.on) assign(f, 'when', !row.cond.on || step.kind === 'fork' && m.branching !== 'inclusive' ? undefined : L.writeCond(row.cond));
+   if (isWork(step.kind)) put(flow, 'on', deadlineFlow ? 'deadline' : undefined);
+   if (deadlineFlow) put(flow, 'when', undefined);
+   else if (step.kind === 'decision' || step.kind === 'fork' || row.cond.on) put(flow, 'when', !row.cond.on || step.kind === 'fork' && m.branching !== 'inclusive' ? undefined : L.writeCond(row.cond));
    next.flows[slots[k]!] = flow;
   });
   return next;
@@ -204,7 +202,6 @@ declare namespace LWProcessStepModel {
   m.draws.forEach((r, i) => drawProblems(m, r, i, out));
   return out;
  }
- const MAXM = () => root.LWProcessLimits?.minutes ?? 100000;
  const isInt = (t: string, lo: number, hi: number) => { const n = numeric(t); return n !== undefined && Number.isInteger(n) && n >= lo && n <= hi; };
  function drawProblems(m: LWProcessStepModel.Model, r: LWProcessStepModel.DrawRow, i: number, out: LWProcessStepModel.Problem[]): void {
   const at = (k: string, message: string) => out.push({key: `draws.${i}.${k}`, message}), name = r.field;
@@ -237,6 +234,8 @@ declare namespace LWProcessStepModel {
  function plain(def: LWProcess.Definition, step: LWProcess.Step, key: string, d: LWProcess.Diagnostic, parts: string[]): string {
   const kind = KIND_NAME[step.kind]?.[0] ?? 'Step', limits = root.LWProcessLimits, minutes = limits?.minutes ?? 100000, shape = d.code === 'shape', mapped = L.plain(key, d, parts);
   if (mapped) return mapped;
+  if (key === 'name' && shape) return step.name.trim() === '' ? 'Give the step a name (1 to 120 characters)' : 'Step name must be 120 characters or fewer';
+  if (key === 'description' && shape) return 'Description must be 2,000 characters or fewer';
   if (key === 'duration') {
    const label = step.kind === 'timer' ? 'Wait duration' : `${kind} duration`;
    if (/positive whole-minute duration/.test(d.message)) return `${label} must be 1 or more`;

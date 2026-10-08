@@ -27,8 +27,9 @@
  function write(d: LWProcess.Definition, ids: LWProcessBpmn.Ids, add: Add): void {
   const first = d.arrivals[0], block = (ref: string, inner: (depth: number) => void) => { add(2, `<bpsim:ElementParameters elementRef="${ref}">`); inner(3); add(2, '</bpsim:ElementParameters>'); };
   add(0, '<bpsim:BPSimData>'); add(1, `<bpsim:Scenario id="Scenario_${d.id}" name="Wildlands simulation">`);
+  // The scenario Duration is the simulated span from the scenario start (minute 0), so an `until` stream ends at that absolute minute; the importer reads it back as `until`.
   if (first?.until === undefined) add(2, '<bpsim:ScenarioParameters baseTimeUnit="min"/>');
-  else { add(2, '<bpsim:ScenarioParameters baseTimeUnit="min">'); add(3, `<bpsim:Duration><bpsim:DurationParameter value="PT${first.until - first.at}M"/></bpsim:Duration>`); add(2, '</bpsim:ScenarioParameters>'); }
+  else { add(2, '<bpsim:ScenarioParameters baseTimeUnit="min">'); add(3, `<bpsim:Duration><bpsim:DurationParameter value="PT${first.until}M"/></bpsim:Duration>`); add(2, '</bpsim:ScenarioParameters>'); }
   const wrap = (depth: number, group: string, name: string, inner: string) => { add(depth, `<bpsim:${group}>`); add(depth + 1, `<bpsim:${name}>${inner}</bpsim:${name}>`); add(depth, `</bpsim:${group}>`); };
   for (const s of d.steps) {
    const work = s.kind === 'task' || s.kind === 'touchpoint' || s.kind === 'machine' || s.kind === 'system', wait = s.kind === 'timer' && s.until === undefined;

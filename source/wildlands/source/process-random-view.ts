@@ -85,8 +85,8 @@ declare namespace LWProcessRandomView {
  /** One comparison or chance as a phrase without the leading 'If'. */
  function leafText(w: LWProcess.When, many: string): string {
   if (typeof w.chance === 'number') return `${w.chance}% of ${many}`;
-  const c = w as LWProcess.Condition;
-  return `${c.field} ${SYMBOL[c.op] ?? c.op} ${c.valueField !== undefined ? c.valueField : typeof c.value === 'string' ? `"${c.value}"` : scalar(c.value)}`;
+  if (w.field === undefined) return '?';
+  return `${w.field} ${SYMBOL[w.op] ?? w.op} ${w.valueField !== undefined ? w.valueField : typeof w.value === 'string' ? `"${w.value}"` : scalar(w.value)}`;
  }
  const isCombinator = (w: LWProcess.When) => w.all !== undefined || w.any !== undefined || w.not !== undefined;
  /** 'A and (B or not C)': a nested group of several tests is parenthesised, a single test is not. */

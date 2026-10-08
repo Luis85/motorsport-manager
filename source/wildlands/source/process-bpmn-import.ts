@@ -4,14 +4,13 @@
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessXml: LWProcessXml.Api; LWProcessCatalog: LWProcess.Catalog; LWProcessBpmnExport: {export(d: unknown, o?: {bpsim?: boolean}): string; vocabulary: LWProcessBpmn.Vocabulary}; LWProcessBpmnExt: LWProcessBpmnExt.Api;
-  LWProcessBpmnBpsim: LWProcessBpmnBpsim.Api; LWProcessBpmnGraph: LWProcessBpmnGraph.Api; LWProcessBpmnFlow: LWProcessBpmnFlow.Api; LWProcessBpmnImportParts?: LWProcessBpmnParts.Api; LWProcessBpmn?: LWProcessBpmn.Api};
- const {MODEL, DI, DC, UNIT, COLORS} = root.LWProcessBpmnExport.vocabulary;
- type X = LWProcessXml.Node; type Item = LWProcessBpmnGraph.Item; type Resolved = LWProcessBpmn.Info['options'];
- const E = () => root.LWProcessBpmnExt, kids = (n: X, l: string, ns?: string) => E().kids(n, l, ns), first = (n: X, l: string) => E().first(n, l), extensions = (n: X, l: string) => E().extensions(n, l);
- const PERFORMERS = new Set(['performer', 'humanPerformer', 'potentialOwner', 'resourceRole']);
+  LWProcessBpmnBpsim: LWProcessBpmnBpsim.Api; LWProcessBpmnImportParts?: LWProcessBpmnParts.Api; LWProcessBpmn?: LWProcessBpmn.Api};
+ const {MODEL} = root.LWProcessBpmnExport.vocabulary;
+ type X = LWProcessXml.Node; type Resolved = LWProcessBpmn.Info['options'];
+ const kids = (n: X, l: string, ns?: string) => root.LWProcessBpmnExt.kids(n, l, ns);
  const DEFAULTS: Resolved = {defaultDuration: 5, process: null, lanes: 'pools', defaultCapacity: 1, autoSystemPool: true, systemCapacity: 4, minutesPerDay: 480, minutesPerHour: 60, unsupported: 'reject', bpsim: true, scenario: null};
  /** Validates every option before any work; unknown options and out-of-range values throw. */
- function resolve(o: LWProcessBpmn.Options): Resolved {
+ function resolve(o: LWProcessBpmn.Options = {}): Resolved {
   const out: Resolved = {...DEFAULTS}, known = new Set(Object.keys(DEFAULTS));
   for (const k of Object.keys(o)) if (!known.has(k)) throw Error('Unknown import option: ' + k + '.');
   const whole = (name: 'defaultDuration' | 'defaultCapacity' | 'systemCapacity' | 'minutesPerDay' | 'minutesPerHour', low: number, high: number) => {
@@ -56,7 +55,6 @@
   return {processes: kids(doc, 'process').map(p => { const constructs: Record<string, number> = {}; count(p, constructs); return {id: p.attrs.id ?? '', name: p.attrs.name || refs.get(p.attrs.id ?? '') || p.attrs.id || '', executable: p.attrs.isExecutable === 'true', lanes: lanes(p), constructs}; }),
    scenarios: root.LWProcessBpmnBpsim.scenarios(doc), participants: (collab ? kids(collab, 'participant') : []).map(p => ({id: p.attrs.id ?? '', name: p.attrs.name ?? p.attrs.id ?? '', process: p.attrs.processRef ?? null}))};
  }
- void DI; void DC; void UNIT; void COLORS; void PERFORMERS; void first; void extensions;
  root.LWProcessBpmn = {export: root.LWProcessBpmnExport.export, import: importBpmn, analyze, inspect, options: resolve};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessBpmn;
 })(globalThis);

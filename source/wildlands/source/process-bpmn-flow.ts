@@ -15,8 +15,7 @@ declare namespace LWProcessBpmnFlow {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessBpmnExt: LWProcessBpmnExt.Api; LWProcessBpmnExpr: LWProcessBpmnExpr.Api; LWProcessBpmnExport: {vocabulary: LWProcessBpmn.Vocabulary}; LWProcessBpmnFlow?: LWProcessBpmnFlow.Api};
- const {WL} = root.LWProcessBpmnExport.vocabulary;
+ const root = inputRoot as {LWProcessBpmnExt: LWProcessBpmnExt.Api; LWProcessBpmnExpr: LWProcessBpmnExpr.Api; LWProcessBpmnFlow?: LWProcessBpmnFlow.Api};
  type Net = LWProcessBpmnGraph.Net; type Ctx = LWProcessBpmnGraph.Ctx; type Edge = LWProcessBpmnGraph.Edge; type Item = LWProcessBpmnGraph.Item;
  const ext = () => root.LWProcessBpmnExt;
  const outOf = (net: Net, k: string) => net.edges.filter(e => e.from === k && !e.deadline), into = (net: Net, k: string) => net.edges.filter(e => e.to === k);
@@ -71,6 +70,14 @@ declare namespace LWProcessBpmnFlow {
   }
   return {percents, exact};
  }
+ /** Nested same-kind lists flattened and one-item lists unwrapped, so `a && (b && c)` and `{all: [a, {all: [b, c]}]}` compare equal. */
+ function flat(w: LWProcess.When): LWProcess.When {
+  if (w.not) return {not: flat(w.not)};
+  const kind = w.all ? 'all' : w.any ? 'any' : undefined; if (!kind) return w;
+  const list = (w.all ?? w.any)!.map(flat).flatMap(c => c[kind] ?? [c]);
+  return list.length === 1 ? list[0]! : kind === 'all' ? {all: list} : {any: list};
+ }
+ const canonical = (w: LWProcess.When) => JSON.stringify(flat(w), ['all', 'any', 'not', 'field', 'op', 'value', 'valueField', 'chance']);
  const FIELD_HINT = 'Use comparisons of case fields with values or other fields, joined by and, or, not.';
  function conditions(ctx: Ctx, net: Net): void {
   const E = ext(), byKey = new Map(net.items.map(i => [i.key, i] as const)), pct = (n: number) => Math.round(n * 1000) / 10;
@@ -95,7 +102,7 @@ declare namespace LWProcessBpmnFlow {
      if (!exact) { if (ctx.o.unsupported === 'drop') { ctx.warn(message + ' The flow becomes a 50% chance.'); return {chance: 50}; } ctx.reject(e.xml, 'sequenceFlow', message); failed.add(e); return undefined; }
     }
    }
-   if (exact && parsed && JSON.stringify(exact).replaceAll("'", '') !== JSON.stringify(parsed).replaceAll("'", '')) ctx.warn('Flow ' + e.xml + ': the condition expression disagrees with the Wildlands extension; the extension wins.');
+   if (exact && parsed && canonical(exact) !== canonical(parsed)) ctx.warn('Flow ' + e.xml + ': the condition expression disagrees with the Wildlands extension; the extension wins.');
    return exact ?? parsed;
   }
   for (const e of net.edges) { const from = byKey.get(e.from); if (from && !e.deadline && !branches(from)) own(e, from); }
@@ -138,7 +145,6 @@ declare namespace LWProcessBpmnFlow {
    for (const e of out) if (prob(e) !== undefined && ctx.bps?.elements.get(e.xml)?.probability !== undefined) ctx.note(e.xml, 'bpsim:Probability', 'flow:' + e.id, 'share ' + pct(prob(e)!) + '%' + (e.when?.chance !== undefined ? ' -> chance ' + e.when.chance + '%' + (inclusive ? '' : ' (chained)') : fallback === e ? ' -> default flow' : ' (the Wildlands condition wins)'));
   }
  }
- void WL;
  root.LWProcessBpmnFlow = {roles, pair, conditions, chances};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessBpmnFlow;
 })(globalThis);

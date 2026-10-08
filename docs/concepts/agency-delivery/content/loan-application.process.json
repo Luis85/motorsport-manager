@@ -1,0 +1,672 @@
+{
+  "format": "wildlands-process",
+  "schemaVersion": 1,
+  "revision": 0,
+  "id": "loan-application",
+  "name": "Loan application (BPMN import)",
+  "description": "Converted from the illustrative BPMN 2.0 file examples/bpmn/loan-application.bpmn and its BPSim scenario with process import-bpmn (default options); afterwards only descriptions, phases, SIPOC and the scene layout were edited. Applications arrive with an exponential gap (mean 30 minutes) until minute 960, the scenario's 16 business hours, so the run completes by itself shortly afterwards; each draws a whole loan amount (1,000 to 50,000) and customer years (0 to 10). The embedded sub-process Document check verifies three documents in parallel (multi-instance), the call activity Fraud screening runs on the credit engine, and a risk decision sends 45% low, 55% of the rest medium and the rest high. Medium risk opens an inclusive gateway: income verification for amounts over 20,000, an employer check for customers under two years or amounts over 40,000, both, or neither. High risk goes to a manual review with a non-interrupting 90-minute SLA: a late review spawns an escalation that notifies the supervisor while the review continues; 70% of reviews approve. Lanes become pools (customer, three bank clerks, a four-slot credit engine); service tasks are simulated automated system steps and execute nothing. Every random value derives from the definition seed 7 and the case and step, so the same seed always gives the same run. All durations, probabilities, amounts, capacities and costs are synthetic illustrative assumptions, not a real bank, measured behaviour or a forecast.",
+  "seed": 7,
+  "start": "start-received",
+  "sipoc": {
+    "suppliers": [
+      {
+        "name": "Applicant",
+        "supplies": "Loan application, supporting documents and the signed contract"
+      },
+      {
+        "name": "Credit bureau",
+        "supplies": "Credit report"
+      }
+    ],
+    "customers": [
+      {
+        "name": "Applicant",
+        "receives": "Paid-out loan or a rejection letter"
+      },
+      {
+        "name": "Credit bureau",
+        "receives": "Credit report request"
+      },
+      {
+        "name": "Supervisor",
+        "receives": "Notice of a breached review SLA"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "id": "customer",
+      "name": "Customer",
+      "capacity": 50,
+      "costPerMinute": 0
+    },
+    {
+      "id": "bank-clerk",
+      "name": "Bank clerk",
+      "capacity": 3,
+      "costPerMinute": 2
+    },
+    {
+      "id": "credit-engine",
+      "name": "Credit engine",
+      "capacity": 4,
+      "costPerMinute": 1,
+      "kind": "system"
+    },
+    {
+      "id": "automation",
+      "name": "Automation",
+      "capacity": 4,
+      "costPerMinute": 1,
+      "kind": "system"
+    }
+  ],
+  "steps": [
+    {
+      "id": "start-received",
+      "name": "Application received",
+      "kind": "start",
+      "phase": "Application",
+      "scene": {
+        "id": "scene-start-received",
+        "position": [
+          0,
+          0
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "BPMN start event. Applications arrive from the BPSim InterTriggerTimer (exponential gap, mean 30 minutes) until minute 960, the scenario duration of 16 business hours; each draws a whole amount from 1,000 to 50,000 and customer years from 0 to 10 (BPSim start-event properties)."
+    },
+    {
+      "id": "task-submit",
+      "name": "Submit application",
+      "kind": "task",
+      "phase": "Application",
+      "scene": {
+        "id": "scene-task-submit",
+        "position": [
+          14,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "The customer fills in the loan form online and uploads the supporting documents.",
+      "duration": 9,
+      "timing": {
+        "dist": "triangular",
+        "min": 5,
+        "mode": 8,
+        "max": 15
+      },
+      "resources": {
+        "customer": 1
+      }
+    },
+    {
+      "id": "sub-docs-task-verify",
+      "name": "Verify document",
+      "kind": "task",
+      "phase": "Document check",
+      "scene": {
+        "id": "scene-sub-docs-task-verify",
+        "position": [
+          28,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "duration": 6,
+      "timing": {
+        "dist": "normal",
+        "mean": 6,
+        "sd": 1
+      },
+      "resources": {
+        "bank-clerk": 1
+      },
+      "instances": {
+        "count": 3,
+        "mode": "parallel"
+      },
+      "description": "Parallel multi-instance user task (loop cardinality 3) inside the embedded sub-process Document check: three documents are verified at once by bank clerks, each drawing its own BPSim normal time (mean 6, sd 1 minutes). The step completes once when all three are done."
+    },
+    {
+      "id": "sub-docs-task-archive",
+      "name": "Archive documents",
+      "kind": "system",
+      "phase": "Document check",
+      "scene": {
+        "id": "scene-sub-docs-task-archive",
+        "position": [
+          42,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "duration": 2,
+      "resources": {
+        "automation": 1
+      },
+      "description": "BPMN service task inside the sub-process Document check, run as an automated system step on the Automation pool for a fixed 2 minutes; nothing is executed."
+    },
+    {
+      "id": "call-fraud-task-rules",
+      "name": "Run fraud rules",
+      "kind": "system",
+      "phase": "Fraud screening",
+      "scene": {
+        "id": "scene-call-fraud-task-rules",
+        "position": [
+          56,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "duration": 1,
+      "resources": {
+        "credit-engine": 1
+      },
+      "description": "Service task of the called process Fraud screening (call activity, inlined). Its BPSim time of 30 seconds rounds up to 1 whole minute."
+    },
+    {
+      "id": "call-fraud-task-lists",
+      "name": "Match watch lists",
+      "kind": "system",
+      "phase": "Fraud screening",
+      "scene": {
+        "id": "scene-call-fraud-task-lists",
+        "position": [
+          70,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "duration": 2,
+      "timing": {
+        "dist": "uniform",
+        "min": 1,
+        "max": 3
+      },
+      "resources": {
+        "credit-engine": 1
+      },
+      "description": "Business rule task of the called process Fraud screening, an automated step on the credit engine (BPSim uniform 1 to 3 minutes)."
+    },
+    {
+      "id": "task-score",
+      "name": "Score credit",
+      "kind": "system",
+      "phase": "Credit decision",
+      "scene": {
+        "id": "scene-task-score",
+        "position": [
+          84,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "duration": 3,
+      "timing": {
+        "dist": "erlang",
+        "k": 2,
+        "mean": 3
+      },
+      "cost": 3,
+      "resources": {
+        "credit-engine": 1
+      },
+      "description": "Service task on the credit engine (BPSim Erlang, k 2, mean 3 minutes, fixed cost 3). The credit bureau message exchange is not simulated; it appears as a SIPOC supplier and customer."
+    },
+    {
+      "id": "gw-risk",
+      "name": "Risk level?",
+      "kind": "decision",
+      "phase": "Credit decision",
+      "scene": {
+        "id": "scene-gw-risk",
+        "position": [
+          98,
+          0
+        ],
+        "color": "#d6a2ce"
+      },
+      "description": "Exclusive gateway with BPSim probabilities 0.45 low, 0.30 medium and 0.25 high, imported as chained whole-percent chances: 45% low, then 55% of the rest medium (30.25% of all), the remaining high flow the default (24.75%)."
+    },
+    {
+      "id": "gw-extra",
+      "name": "Additional checks",
+      "kind": "fork",
+      "phase": "Credit decision",
+      "scene": {
+        "id": "scene-gw-extra",
+        "position": [
+          112,
+          20
+        ],
+        "color": "#91b9d5"
+      },
+      "join": "gw-extrajoin",
+      "mode": "inclusive",
+      "description": "Inclusive gateway: every flow whose condition holds is taken. Income is verified for amounts over 20,000 and the employer is checked for customers under two years or amounts over 40,000; with neither, the default flow goes straight to Checks done."
+    },
+    {
+      "id": "task-income",
+      "name": "Verify income",
+      "kind": "task",
+      "phase": "Credit decision",
+      "scene": {
+        "id": "scene-task-income",
+        "position": [
+          126,
+          12
+        ],
+        "color": "#ffbb73"
+      },
+      "duration": 15,
+      "timing": {
+        "dist": "uniform",
+        "min": 10,
+        "max": 20
+      },
+      "resources": {
+        "bank-clerk": 1
+      },
+      "description": "User task on the inclusive branch for large loans (BPSim uniform 10 to 20 minutes)."
+    },
+    {
+      "id": "task-employer",
+      "name": "Check employer",
+      "kind": "system",
+      "phase": "Credit decision",
+      "scene": {
+        "id": "scene-task-employer",
+        "position": [
+          126,
+          28
+        ],
+        "color": "#ffbb73"
+      },
+      "duration": 4,
+      "timing": {
+        "dist": "exponential",
+        "mean": 4
+      },
+      "resources": {
+        "credit-engine": 1
+      },
+      "description": "Service task on the inclusive branch for new customers or very large loans, an automated step on the credit engine (BPSim exponential, mean 4 minutes)."
+    },
+    {
+      "id": "gw-extrajoin",
+      "name": "Checks done",
+      "kind": "join",
+      "phase": "Credit decision",
+      "scene": {
+        "id": "scene-gw-extrajoin",
+        "position": [
+          140,
+          20
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "Converging inclusive gateway: waits for exactly the branches the fork activated."
+    },
+    {
+      "id": "task-review",
+      "name": "Manual review",
+      "kind": "task",
+      "phase": "Credit decision",
+      "scene": {
+        "id": "scene-task-review",
+        "position": [
+          112,
+          -14
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "A senior clerk reviews high-risk applications. The service level is 90 minutes.",
+      "duration": 90,
+      "timing": {
+        "dist": "normal",
+        "mean": 90,
+        "sd": 18
+      },
+      "resources": {
+        "bank-clerk": 1
+      },
+      "deadline": {
+        "mode": "escalate",
+        "flow": "f-sla",
+        "after": 90
+      }
+    },
+    {
+      "id": "gw-review",
+      "name": "Review outcome?",
+      "kind": "decision",
+      "phase": "Credit decision",
+      "scene": {
+        "id": "scene-gw-review",
+        "position": [
+          126,
+          -14
+        ],
+        "color": "#d6a2ce"
+      },
+      "description": "Exclusive gateway with BPSim probabilities 0.7 approved and 0.3 rejected."
+    },
+    {
+      "id": "task-rejectnotice",
+      "name": "Send rejection letter",
+      "kind": "task",
+      "phase": "Credit decision",
+      "scene": {
+        "id": "scene-task-rejectnotice",
+        "position": [
+          140,
+          -26
+        ],
+        "color": "#ffbb73"
+      },
+      "duration": 4,
+      "resources": {
+        "bank-clerk": 1
+      },
+      "description": "User task for rejected reviews (BPSim fixed 4 minutes)."
+    },
+    {
+      "id": "end-rejected",
+      "name": "Application rejected",
+      "kind": "end",
+      "phase": "Credit decision",
+      "scene": {
+        "id": "scene-end-rejected",
+        "position": [
+          154,
+          -26
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "End event of rejected applications."
+    },
+    {
+      "id": "task-notify",
+      "name": "Notify supervisor",
+      "kind": "task",
+      "phase": "Credit decision",
+      "scene": {
+        "id": "scene-task-notify",
+        "position": [
+          112,
+          -30
+        ],
+        "color": "#ffbb73"
+      },
+      "duration": 5,
+      "resources": {
+        "bank-clerk": 1
+      },
+      "description": "Escalation path of the non-interrupting 90-minute SLA timer. Its BPSim lognormal time is not supported, so the default 5 minutes applies."
+    },
+    {
+      "id": "end-breach",
+      "name": "SLA breach logged",
+      "kind": "end",
+      "phase": "Credit decision",
+      "scene": {
+        "id": "scene-end-breach",
+        "position": [
+          126,
+          -30
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "End of the escalation token; the case still finishes on its main route."
+    },
+    {
+      "id": "task-sign",
+      "name": "Sign contract",
+      "kind": "task",
+      "phase": "Contract and payout",
+      "scene": {
+        "id": "scene-task-sign",
+        "position": [
+          154,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "duration": 12,
+      "timing": {
+        "dist": "triangular",
+        "min": 5,
+        "mode": 10,
+        "max": 20
+      },
+      "resources": {
+        "customer": 1
+      },
+      "description": "User task in the customer lane (BPSim triangular 5, 10, 20 minutes). Low risk, finished additional checks and approved reviews all arrive here (the merge gateway was folded into its flows)."
+    },
+    {
+      "id": "task-disburse",
+      "name": "Disburse funds",
+      "kind": "system",
+      "phase": "Contract and payout",
+      "scene": {
+        "id": "scene-task-disburse",
+        "position": [
+          168,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "duration": 2,
+      "cost": 5,
+      "resources": {
+        "credit-engine": 1
+      },
+      "description": "Service task on the credit engine (fixed 2 minutes, fixed cost 5); no payment is executed."
+    },
+    {
+      "id": "end-paid",
+      "name": "Loan paid out",
+      "kind": "end",
+      "phase": "Contract and payout",
+      "scene": {
+        "id": "scene-end-paid",
+        "position": [
+          182,
+          0
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "End event of paid-out loans."
+    }
+  ],
+  "flows": [
+    {
+      "id": "sub-docs-d2",
+      "from": "sub-docs-task-verify",
+      "to": "sub-docs-task-archive"
+    },
+    {
+      "id": "sub-docs-d3",
+      "from": "sub-docs-task-archive",
+      "to": "call-fraud-task-rules"
+    },
+    {
+      "id": "call-fraud-g2",
+      "from": "call-fraud-task-rules",
+      "to": "call-fraud-task-lists"
+    },
+    {
+      "id": "call-fraud-g3",
+      "from": "call-fraud-task-lists",
+      "to": "task-score"
+    },
+    {
+      "id": "f1",
+      "from": "start-received",
+      "to": "task-submit"
+    },
+    {
+      "id": "f2",
+      "from": "task-submit",
+      "to": "sub-docs-task-verify"
+    },
+    {
+      "id": "f5",
+      "from": "task-score",
+      "to": "gw-risk"
+    },
+    {
+      "id": "f-low",
+      "from": "gw-risk",
+      "to": "task-sign",
+      "label": "low",
+      "when": {
+        "chance": 45
+      }
+    },
+    {
+      "id": "f-med",
+      "from": "gw-risk",
+      "to": "gw-extra",
+      "label": "medium",
+      "when": {
+        "chance": 55
+      }
+    },
+    {
+      "id": "f-high",
+      "from": "gw-risk",
+      "to": "task-review",
+      "label": "high"
+    },
+    {
+      "id": "f-income",
+      "from": "gw-extra",
+      "to": "task-income",
+      "label": "large loan",
+      "when": {
+        "field": "amount",
+        "op": "gt",
+        "value": 20000
+      }
+    },
+    {
+      "id": "f-employer",
+      "from": "gw-extra",
+      "to": "task-employer",
+      "label": "new customer or very large",
+      "when": {
+        "any": [
+          {
+            "field": "years",
+            "op": "lt",
+            "value": 2
+          },
+          {
+            "field": "amount",
+            "op": "gt",
+            "value": 40000
+          }
+        ]
+      }
+    },
+    {
+      "id": "f-extra-none",
+      "from": "gw-extra",
+      "to": "gw-extrajoin",
+      "label": "no extra check"
+    },
+    {
+      "id": "f-income-done",
+      "from": "task-income",
+      "to": "gw-extrajoin"
+    },
+    {
+      "id": "f-employer-done",
+      "from": "task-employer",
+      "to": "gw-extrajoin"
+    },
+    {
+      "id": "f-extra-end",
+      "from": "gw-extrajoin",
+      "to": "task-sign"
+    },
+    {
+      "id": "f-review",
+      "from": "task-review",
+      "to": "gw-review"
+    },
+    {
+      "id": "f-sla",
+      "from": "task-review",
+      "to": "task-notify",
+      "on": "deadline"
+    },
+    {
+      "id": "f-sla-end",
+      "from": "task-notify",
+      "to": "end-breach"
+    },
+    {
+      "id": "f-approved",
+      "from": "gw-review",
+      "to": "task-sign",
+      "label": "approved",
+      "when": {
+        "chance": 70
+      }
+    },
+    {
+      "id": "f-rejected",
+      "from": "gw-review",
+      "to": "task-rejectnotice",
+      "label": "rejected"
+    },
+    {
+      "id": "f-reject-end",
+      "from": "task-rejectnotice",
+      "to": "end-rejected"
+    },
+    {
+      "id": "f-pay",
+      "from": "task-sign",
+      "to": "task-disburse"
+    },
+    {
+      "id": "f-paid",
+      "from": "task-disburse",
+      "to": "end-paid"
+    }
+  ],
+  "arrivals": [
+    {
+      "at": 0,
+      "until": 960,
+      "interval": 30,
+      "gap": {
+        "dist": "exponential",
+        "mean": 30
+      },
+      "draws": [
+        {
+          "field": "amount",
+          "kind": "int",
+          "min": 1000,
+          "max": 50000
+        },
+        {
+          "field": "years",
+          "kind": "int",
+          "min": 0,
+          "max": 10
+        }
+      ],
+      "data": {}
+    }
+  ]
+}

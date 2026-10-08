@@ -12,8 +12,12 @@ declare namespace LWProcessBpmnBpsim {
  interface Api {
   read(doc: X, c: Context): Data | undefined;
   scenarios(doc: X): {id: string; name: string}[];
-  /** ISO-8601 duration (`P1DT2H30M`) in minutes (fractions allowed), or `undefined`; days count `minutesPerDay` business minutes. */
+  /** ISO-8601 duration (`P1DT2H30M`) in minutes (fractions allowed), or `undefined`; days count `minutesPerDay` business minutes, hours `minutesPerHour`, a week 5 days. */
   duration(text: string, c: Pick<Context, 'minutesPerDay' | 'minutesPerHour'>): number | undefined;
+  /** The one whole-minute rule of every imported time (BPMN timers, boundary deadlines, BPSim): under one minute (zero included) is 1 and calls `rounded`; otherwise the nearest whole minute. */
+  whole(minutes: number, rounded: () => void): number;
+  /** An ISO-8601 duration in whole minutes by `whole` (warning when rounded up), or `undefined` when the text is not a duration. */
+  isoMinutes(text: string, c: Pick<Context, 'minutesPerDay' | 'minutesPerHour' | 'warn'>): number | undefined;
  }
 }
 (function(inputRoot: unknown) {
@@ -31,6 +35,11 @@ declare namespace LWProcessBpmnBpsim {
   if (!m || m.slice(1).every(v => v === undefined) || /T$/.test(text.trim())) return undefined;
   const [w, d, h, min, s] = m.slice(1).map(v => v === undefined ? 0 : Number(v)) as [number, number, number, number, number];
   return (w * 5 + d) * c.minutesPerDay + h * c.minutesPerHour + min + s / 60;
+ }
+ const whole = (minutes: number, rounded: () => void): number => { if (minutes < 1) { rounded(); return 1; } return Math.round(minutes); };
+ function isoMinutes(text: string, c: Pick<LWProcessBpmnBpsim.Context, 'minutesPerDay' | 'minutesPerHour' | 'warn'>): number | undefined {
+  const m = duration(text, c);
+  return m === undefined ? undefined : whole(m, () => c.warn('Timer duration "' + text.trim() + '" is under one minute and is rounded up to 1 minute.'));
  }
  const CONSTANT = ['ConstantParam', 'ConstantParameter', 'FloatingParameter', 'NumericParameter', 'DurationParameter'];
  const UNSUPPORTED = ['PoissonDistribution', 'GammaDistribution', 'LogNormalDistribution', 'WeibullDistribution', 'BetaDistribution', 'BinomialDistribution', 'TruncatedNormalDistribution', 'UserDistribution', 'ExpressionParameter', 'JavaScript'];
@@ -54,8 +63,7 @@ declare namespace LWProcessBpmnBpsim {
   const valueOf = (n: X): string | undefined => n.attrs.value ?? n.children.find(k => k.attrs.value !== undefined)?.attrs.value ?? (n.text.trim() || undefined);
   const minutes = (x: number, ref: string): number | undefined => {
    if (!Number.isFinite(x) || x < 0) { c.warn('BPSim time of "' + ref + '" is not a positive number and is ignored.'); return undefined; }
-   if (x < 1) { c.warn('BPSim time of "' + ref + '" is under one minute and is rounded up to 1 minute.'); return 1; }
-   return Math.round(x);
+   return whole(x, () => c.warn('BPSim time of "' + ref + '" is under one minute and is rounded up to 1 minute.'));
   };
   const num = (n: X | undefined, ref: string, what: string): number | undefined => {
    const raw = n && valueOf(n.children[0] ?? n); if (raw === undefined) return undefined;
@@ -120,6 +128,6 @@ declare namespace LWProcessBpmnBpsim {
   }
   return {scenario: label(chosen), scenarios, horizon, elements};
  }
- root.LWProcessBpmnBpsim = {read, scenarios: doc => scenarioList(doc).map(label), duration};
+ root.LWProcessBpmnBpsim = {read, scenarios: doc => scenarioList(doc).map(label), duration, whole, isoMinutes};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessBpmnBpsim;
 })(globalThis);

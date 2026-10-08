@@ -49,8 +49,10 @@ declare namespace LWProcessBpmn {
  const WL = 'urn:wildlands:process:1', BPSIM = 'http://www.bpsim.org/schemas/1.0', UNIT = 10, SIZE: Record<string, [number, number]> = {event: [36, 36], gateway: [50, 50], task: [100, 80]};
  const COLORS: Record<string, string> = {start: '#77b5a0', end: '#77b5a0', task: '#ffbb73', timer: '#ffbb73', decision: '#d6a2ce', fork: '#91b9d5', join: '#91b9d5'};
  const xml = () => root.LWProcessXml, esc = (v: unknown) => xml().escape(v);
- /** Element text: only the characters XML requires are escaped, so quotes stay readable in expressions. */
- const text = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+ /** Expression text: only the characters XML requires are escaped, so quotes stay readable. */
+ const code = (v: string) => xml().text(v, false);
+ /** Names of containers that are present but empty; the extension lists them (`empty="..."`) so import restores them and the fingerprint holds. */
+ const emptied = (o: object, keys: readonly string[]) => keys.filter(k => { const v = (o as Record<string, unknown>)[k]; return Array.isArray(v) ? !v.length : !!v && typeof v === 'object' && !Object.keys(v).length; }).join(' ') || undefined;
 
  // ---------------------------------------------------------------- export
  /** Calendar text for business minute `m` counted from 1970-01-01T00:00Z (pure integer arithmetic, no clock). */
@@ -92,7 +94,7 @@ declare namespace LWProcessBpmn {
   const list = when.all ?? when.any, kind = when.all ? 'all' : when.any ? 'any' : when.not ? 'not' : undefined;
   if (kind) { add(depth, `<wl:when combine="${kind}">`); for (const c of list ?? [when.not!]) whenLines(c, depth + 1, add); add(depth, '</wl:when>'); }
   else if (when.chance !== undefined) add(depth, `<wl:when chance="${when.chance}"/>`);
-  else { const c = when as LWProcess.Condition; add(depth, `<wl:when field="${c.field}" op="${c.op}" ${c.valueField === undefined ? scalar('', c.value) : `valueField="${c.valueField}"`}/>`); }
+  else if (when.field !== undefined) add(depth, `<wl:when field="${when.field}" op="${when.op}" ${when.valueField === undefined ? scalar('', when.value) : `valueField="${when.valueField}"`}/>`);
  }
  function exportBpmn(input: unknown, options: {bpsim?: boolean} = {}): string {
   const d = root.LWProcessCatalog.validate(input, true).definition;
@@ -110,14 +112,15 @@ declare namespace LWProcessBpmn {
    add(3, `<wl:resource id="${r.id}" capacity="${r.capacity}" costPerMinute="${r.costPerMinute}"${r.kind ? ` kind="${r.kind}"` : ''}/>`); add(2, '</bpmn:extensionElements>'); add(1, '</bpmn:resource>');
   }
   add(1, `<bpmn:process id="${pid}" name="${esc(d.name)}" isExecutable="false">`);
-  if (d.description) add(2, `<bpmn:documentation>${esc(d.description)}</bpmn:documentation>`);
-  add(2, '<bpmn:extensionElements>'); add(3, `<wl:process id="${d.id}" revision="${d.revision}"${d.$schema ? ` schema="${esc(d.$schema)}"` : ''}${d.seed !== undefined ? ` seed="${d.seed}"` : ''}${d.genre !== undefined ? ` genre="${d.genre}"` : ''}/>`);
+  if (d.description !== undefined) add(2, `<bpmn:documentation>${xml().text(d.description)}</bpmn:documentation>`);
+  const processEmpty = emptied({track: d.track, sipoc: d.sipoc, suppliers: d.sipoc?.suppliers, customers: d.sipoc?.customers}, ['track', 'sipoc', 'suppliers', 'customers']);
+  add(2, '<bpmn:extensionElements>'); add(3, `<wl:process id="${d.id}" revision="${d.revision}"${d.$schema ? ` schema="${esc(d.$schema)}"` : ''}${d.seed !== undefined ? ` seed="${d.seed}"` : ''}${d.genre !== undefined ? ` genre="${d.genre}"` : ''}${attrs({empty: processEmpty})}/>`);
   for (const t of d.track ?? []) add(3, `<wl:track${attrs({field: t.field, label: t.label})}/>`);
   for (const p of d.sipoc?.suppliers ?? []) add(3, `<wl:supplier${attrs({name: p.name, supplies: p.supplies})}/>`);
   for (const p of d.sipoc?.customers ?? []) add(3, `<wl:customer${attrs({name: p.name, receives: p.receives})}/>`);
   for (const a of d.arrivals) {
    const inner = Object.keys(a.data).length > 0 || a.gap !== undefined || (a.draws?.length ?? 0) > 0;
-   add(3, `<wl:arrival${attrs({at: a.at, count: a.count, until: a.until, open: a.open === undefined ? undefined : 'true', interval: a.interval})}${inner ? '>' : '/>'}`);
+   add(3, `<wl:arrival${attrs({at: a.at, count: a.count, until: a.until, open: a.open === undefined ? undefined : 'true', interval: a.interval, empty: emptied(a, ['draws'])})}${inner ? '>' : '/>'}`);
    if (inner) {
     if (a.gap) add(4, `<wl:gap${distAttrs(a.gap)}/>`);
     drawLines(a.draws ?? [], 4, add);
@@ -145,10 +148,10 @@ declare namespace LWProcessBpmn {
    const incoming = d.flows.filter(f => f.to === s.id), outgoing = normal(s.id), fallback = s.kind === 'decision' || s.kind === 'fork' && s.mode === 'inclusive' ? outgoing.find(f => !f.when) : undefined;
    const gateway = isWork(s) || s.kind === 'timer' || s.kind === 'start' || s.kind === 'end' ? {} : {gatewayDirection: s.kind === 'join' ? 'Converging' : 'Diverging'};
    add(2, `<bpmn:${element}${attrs({id: nodeId(s), name: s.name, default: fallback ? 'Flow_' + fallback.id : undefined, ...gateway})}>`);
-   if (s.description) add(3, `<bpmn:documentation>${esc(s.description)}</bpmn:documentation>`);
+   if (s.description !== undefined) add(3, `<bpmn:documentation>${xml().text(s.description)}</bpmn:documentation>`);
    add(3, '<bpmn:extensionElements>');
    add(4, `<wl:step id="${s.id}"${attrs({kind: s.kind === 'machine' || s.kind === 'system' || s.kind === 'touchpoint' ? s.kind : undefined, duration: s.duration, until: s.until, cost: s.cost, join: s.join, technology: s.technology,
-    channel: s.channel, outcome: s.outcome, phase: s.phase, emotion: s.emotion, pain: s.pain, opportunity: s.opportunity})}/>`);
+    channel: s.channel, outcome: s.outcome, phase: s.phase, emotion: s.emotion, pain: s.pain, opportunity: s.opportunity, empty: emptied(s, ['set', 'add', 'resources', 'needs', 'outputs', 'draws'])})}/>`);
    if (s.timing) add(4, `<wl:timing${distAttrs(s.timing)}/>`);
    if (s.instances) add(4, `<wl:instances${attrs({count: s.instances.count, field: s.instances.field, mode: s.instances.mode})}/>`);
    drawLines(s.draws ?? [], 4, add);
@@ -193,7 +196,7 @@ declare namespace LWProcessBpmn {
    // A chance has no standard expression syntax; it uses the BPMN `language` attribute with a Wildlands language URI and the plain text `15%`.
    if (f.when?.chance !== undefined) add(3, `<bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" language="${WL}#chance">${f.when.chance}%</bpmn:conditionExpression>`);
    const expression = f.when && f.when.chance === undefined ? root.LWProcessBpmnExpr.format(f.when) : undefined;
-   if (expression !== undefined) add(3, `<bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">\${${text(expression)}}</bpmn:conditionExpression>`);
+   if (expression !== undefined) add(3, `<bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">\${${code(expression)}}</bpmn:conditionExpression>`);
    add(2, '</bpmn:sequenceFlow>');
   }
   add(1, '</bpmn:process>');

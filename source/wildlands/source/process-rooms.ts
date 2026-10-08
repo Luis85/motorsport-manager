@@ -48,7 +48,6 @@ declare namespace LWProcessRooms {
   let h = 0; for (const c of step.id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   return TASK_THEMES[h % TASK_THEMES.length]!;
  }
- type Kit = LWProcessRooms.Kit;
  type Builder = LWProcessRooms.Builder;
  type Ctx = LWProcessRooms.Ctx;
  const wave = (t: number, speed: number, shift = 0) => Math.sin(t * speed + shift);
@@ -111,7 +110,7 @@ declare namespace LWProcessRooms {
   },
   reception(c) {
    c.P(c.live.parent, 'box', 0, .55, -1.3, 4, 1.1, 1, '#5a7a96'); c.P(c.live.parent, 'box', 0, 1.12, -1.3, 4.2, .08, 1.2, '#cfd8e0');
-   const mail = [0, 1, 2].map(i => c.P(c.live, 'box', 0, 1.3, -1.3, .35, .02, .25, '#f6f1e4'));
+   const mail = [0, 1, 2].map(() => c.P(c.live, 'box', 0, 1.3, -1.3, .35, .02, .25, '#f6f1e4'));
    const bell = c.glow(c.P(c.live.parent, 'ball', 1.6, 1.3, -1.2, .15, .1, .15, '#e0c060'), '#e0c060', '#a0801c', .6);
    c.swing(t => {mail.forEach((m, i) => {const u = (t * .45 + i / 3) % 1; m.position.set(-3.5 + 3.8 * u, 1.3 + Math.sin(u * Math.PI) * .8, -1.3); m.rotation.z = u * 3;}); bell.scale.setScalar(.15 * (1 + Math.max(0, wave(t, 5)) * .3));});
    c.P(c.idle, 'box', 0, 1.35, -1.3, .9, .25, .05, '#d6a05a');
@@ -221,7 +220,7 @@ declare namespace LWProcessRooms {
    c.P(c.live.parent, 'cylinder', 0, .35, -.8, .9, .7, .9, '#4b6070');
    for (const a of [0, 1, 2, 3]) c.P(c.live.parent, 'box', Math.cos(a * Math.PI / 2) * 1.6, .25, -.8 + Math.sin(a * Math.PI / 2) * 1.6, a % 2 ? .4 : 2.2, .2, a % 2 ? 2.2 : .4, '#3b4d5b');
    const ring = c.glow(c.P(c.live, 'ring', 0, .9, -.8, 1, 1, 1, '#c79871'), '#c79871', '#9a6a3c', .9);
-   const pulses = [0, 1, 2, 3].map(i => c.glow(c.P(c.live, 'ball', 0, .45, -.8, .12, .12, .12, '#f0c89a'), '#f0c89a', '#d49a62', 1));
+   const pulses = [0, 1, 2, 3].map(() => c.glow(c.P(c.live, 'ball', 0, .45, -.8, .12, .12, .12, '#f0c89a'), '#f0c89a', '#d49a62', 1));
    c.swing(t => {ring.rotation.set(Math.PI / 2 + wave(t, 1.7) * .3, t * 2, 0); pulses.forEach((p, i) => {const u = (t * .5 + i * .25) % 1, a = i * Math.PI / 2; p.position.set(Math.cos(a) * 2.6 * u, .45, -.8 + Math.sin(a) * 2.6 * u);});});
    c.P(c.idle, 'cylinder', 0, .8, -.8, .95, .1, .95, '#5f6a74');
   },

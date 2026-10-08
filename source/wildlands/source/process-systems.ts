@@ -17,10 +17,11 @@
   s.world.create(token.id); s.world.set<LWProcess.Token>(token.id, 'process-token', token); s.tokenList = null;
  }
  function destroyToken(s: LWProcess.State, id: string): void { s.world.destroy(id); s.tokenList = null; }
- const nextSerial = (s: LWProcess.State) => {
-  if (s.clock.serial >= SERIAL_LIMIT) throw Error('The run created more than ' + SERIAL_LIMIT + ' tokens; start a new run.');
-  return 'token-' + String(++s.clock.serial).padStart(8, '0');
+ /** Throws before a transition that needs `count` new tokens would pass the serial limit, so no case is ever left half-forked or half-admitted. */
+ const reserve = (s: LWProcess.State, count: number) => {
+  if (s.clock.serial + count > SERIAL_LIMIT) throw Error('The run created more than ' + SERIAL_LIMIT + ' tokens; start a new run.');
  };
+ const nextSerial = (s: LWProcess.State) => { reserve(s, 1); return 'token-' + String(++s.clock.serial).padStart(8, '0'); };
  /** Per-case visit counter for a step; the number keys that visit's random draws, independent of scheduling order. */
  function visitOf(s: LWProcess.State, caseId: string, stepId: string): number {
   let byStep = s.visits.get(caseId); if (!byStep) { byStep = new Map(); s.visits.set(caseId, byStep); }
@@ -107,6 +108,7 @@
  function admit(s: LWProcess.State): void {
   for (let due = nextArrival(s); due !== null && due <= s.clock.minute; due = nextArrival(s)) {
    // Ties go to the earlier-declared stream, which equals a stable sort of the fully expanded schedule.
+   reserve(s, 1);
    const st = s.streams.find(x => x.at === due)!, def = st.def, k = st.k, id = 'case-' + String(++s.clock.arrival).padStart(4, '0');
    advanceStream(s, st);
    if (s.clock.arrived - s.clock.completed - s.clock.failed >= s.active) { s.clock.dropped++; event(s, 'arrival-dropped', id, s.definition.start, 'system full'); continue; }
@@ -158,6 +160,7 @@
    fail(s, c, 'Step "' + step.name + '" needs case field ' + spec.field + ' as a whole number from 1 to 50 for its instances, but it ' + (Object.hasOwn(c.data, spec.field!) ? 'holds ' + JSON.stringify(raw) : 'is not set') + '.');
    return false;
   }
+  if (spec.mode === 'parallel') reserve(s, raw - 1);
   const visit = visitOf(s, c.id, step.id);
   s.groups.set(t.id, {id: t.id, count: raw, done: 0, started: null, input: null, visit});
   Object.assign(t, {group: t.id, item: 1, items: raw, visit});
@@ -197,9 +200,10 @@
     const matched = out.filter(f => f.when && root.LWProcessGraph.evaluate(c.data, f.when, chanceOf(s, f, c.id, visit)));
     flows = matched.length ? matched : out.filter(f => !f.when);
     if (!flows.length) { fail(s, c, 'Inclusive fork "' + step.name + '" matched no outgoing flow.'); return; }
+    reserve(s, flows.length);
     event(s, 'forked', c.id, step.id, flows.map(f => f.id).join(','));
    }
-   station(s, step.id).completed++;
+   reserve(s, flows.length); station(s, step.id).completed++;
    const occurrence = step.id + '-' + (++s.clock.forkSerial);
    destroyToken(s, t.id);
    for (const flow of flows) spawn(s, c.id, flow.to, occurrence, flow.id, {...step.mode === 'inclusive' ? {expected: flows.length} : {}, ...t.escalated ? {escalated: true as const} : {}});
@@ -229,7 +233,7 @@
     if (batch.length !== (wanted ?? expected.length) || wanted === undefined && !expected.every(id => batch.some(t => t.branch === id))) continue;
     const first = batch[0]!, c = caseOf(s, first);
     if (step.backlog && inStore(s, step.id).length >= step.backlog.capacity) continue;
-    batch.forEach(t => destroyToken(s, t.id)); station(s, step.id).completed++; changed = true;
+    reserve(s, 1); batch.forEach(t => destroyToken(s, t.id)); station(s, step.id).completed++; changed = true;
     event(s, 'joined', first.caseId, step.id);
     const missing = unmet(s, c, step); if (missing) { failNeed(s, c, step, missing); continue; }
     const carried = first.escalated ? {escalated: true as const} : {};
@@ -288,6 +292,7 @@
   for (const sp of s.spawns.splice(0)) {
    const c = s.world.get<LWProcess.Case>(sp.caseId, 'process-case');
    if (!c || c.status !== 'active') continue;
+   reserve(s, 1);
    if (visitOf(s, c.id, '#escalations') > MAX_ESCALATIONS) { fail(s, c, 'Case spawned more than ' + MAX_ESCALATIONS + ' escalations.'); continue; }
    spawn(s, c.id, s.definition.flows.find(f => f.id === sp.flow)!.to, null, null, {escalated: true});
   }

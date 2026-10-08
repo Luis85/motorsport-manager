@@ -16,7 +16,7 @@ declare namespace LWProcessStepLogic {
   writeValue(v: LWProcessStepModel.Value): LWProcess.Scalar;
   /** Text-form of a distribution; `dist` '' means none. */
   readTiming(t: LWProcess.Dist | undefined): LWProcessStepModel.Timing;
-  writeTiming(t: LWProcessStepModel.Timing): Record<string, unknown> | undefined;
+  writeTiming(t: LWProcessStepModel.Timing): LWProcess.Dist | undefined;
   /** Fills empty parameters from `base` minutes so the chosen distribution is valid. `previous` tells a switch from another kind (normal bounds are then cleared). */
   chooseDist(t: LWProcessStepModel.Timing, base: number, dist: LWProcessStepModel.DistKind, previous?: LWProcessStepModel.DistKind): void;
   /** Local checks of a distribution; keys are `<prefix>.<parameter>`. */
@@ -24,7 +24,7 @@ declare namespace LWProcessStepLogic {
   /** One new comparison row. */
   newLeaf(): LWProcessStepModel.Cond;
   readCond(when: unknown): LWProcessStepModel.Cond;
-  writeCond(c: LWProcessStepModel.Cond): Record<string, unknown>;
+  writeCond(c: LWProcessStepModel.Cond): LWProcess.When;
   /** After the mode of `c` was set to its new value: keeps or creates the child rows. `previous` is the mode it had. */
   chooseCondMode(c: LWProcessStepModel.Cond, previous: LWProcessStepModel.Cond['mode']): void;
   condProblems(c: LWProcessStepModel.Cond, base: string, out: Problem[]): void;
@@ -34,11 +34,13 @@ declare namespace LWProcessStepLogic {
   leafCount(c: LWProcessStepModel.Cond): number;
   /** The condition at a dot path such as `flows.0.cond.items.1`, or undefined. */
   condAt(target: unknown, path: string): LWProcessStepModel.Cond | undefined;
+  /** The text-form distribution at a dot path (`timing` or `deadline.timing`), or undefined. */
+  timingAt(model: LWProcessStepModel.Model, path: string): LWProcessStepModel.Timing | undefined;
   readInstances(step: LWProcess.Step): LWProcessStepModel.Instances;
-  writeInstances(i: LWProcessStepModel.Instances): Record<string, unknown> | undefined;
+  writeInstances(i: LWProcessStepModel.Instances): LWProcess.Instances | undefined;
   instancesProblems(i: LWProcessStepModel.Instances, out: Problem[]): void;
   readDeadline(step: LWProcess.Step): LWProcessStepModel.Deadline;
-  writeDeadline(d: LWProcessStepModel.Deadline): Record<string, unknown> | undefined;
+  writeDeadline(d: LWProcessStepModel.Deadline): LWProcess.Deadline | undefined;
   /** After the deadline kind changed: fills minutes, a distribution and the deadline flow with working defaults. */
   chooseDeadline(m: LWProcessStepModel.Model): void;
   deadlineProblems(m: LWProcessStepModel.Model, out: Problem[]): void;
@@ -69,7 +71,7 @@ declare namespace LWProcessStepLogic {
  const show = (v: LWProcessStepModel.Value): string => v.type === 'text' ? `"${v.text}"` : v.type === 'number' ? v.text || '0' : v.type === 'null' ? 'empty' : v.type;
  // Distributions
  const readTiming = (t: LWProcess.Dist | undefined): Timing => ({dist: t?.dist ?? '', min: text(t?.min), mode: text(t?.mode), max: text(t?.max), mean: text(t?.mean), sd: text(t?.sd), k: text(t?.k)});
- function writeTiming(t: Timing): Record<string, unknown> | undefined {
+ function writeTiming(t: Timing): LWProcess.Dist | undefined {
   const n = (s: string) => whole(s) ?? 0;
   if (t.dist === 'uniform') return {dist: 'uniform', min: n(t.min), max: n(t.max)};
   if (t.dist === 'triangular') return {dist: 'triangular', min: n(t.min), mode: n(t.mode), max: n(t.max)};
@@ -121,11 +123,17 @@ declare namespace LWProcessStepLogic {
   const other = w.valueField !== undefined;
   return {...base, field: String(w.field ?? ''), op: String(w.op ?? 'eq'), mode: other ? 'field' : 'value', value: other ? newValue() : readValue(w.value as LWProcess.Scalar | undefined), valueField: other ? String(w.valueField) : ''};
  }
- function writeCond(c: Cond): Record<string, unknown> {
-  if (c.mode === 'all' || c.mode === 'any') return {[c.mode]: (c.items ?? []).map(writeCond)};
+ function writeCond(c: Cond): LWProcess.When {
+  if (c.mode === 'all') return {all: (c.items ?? []).map(writeCond)};
+  if (c.mode === 'any') return {any: (c.items ?? []).map(writeCond)};
   if (c.mode === 'not') return {not: writeCond(c.items?.[0] ?? newLeaf())};
   if (c.mode === 'chance') return {chance: whole(c.chance) ?? 0};
-  return c.mode === 'field' ? {field: c.field, op: c.op, valueField: c.valueField} : {field: c.field, op: c.op, value: writeValue(c.value)};
+  // The form offers only the six operators; the engine still validates whatever text a field carries.
+  const op = c.op as LWProcess.Condition['op'];
+  if (c.mode !== 'field') return {field: c.field, op, value: writeValue(c.value)};
+  // A field-to-field comparison carries no `value`, which the contract's single Condition shape cannot express yet.
+  const other: Omit<LWProcess.Condition, 'value'> = {field: c.field, op, valueField: c.valueField};
+  return other as LWProcess.Condition;
  }
  function chooseCondMode(c: Cond, previous: Cond['mode']): void {
   const was = previous === 'all' || previous === 'any' || previous === 'not';
@@ -169,16 +177,17 @@ declare namespace LWProcessStepLogic {
   for (const key of path.split('.')) at = at?.[key] as Record<string, unknown> | undefined;
   return at as unknown as Cond | undefined;
  }
+ const timingAt = (m: LWProcessStepModel.Model, path: string): Timing | undefined => path === 'timing' ? m.timing : path === 'deadline.timing' ? m.deadline?.timing : undefined;
  // Multiple instances
  const readInstances = (step: LWProcess.Step): LWProcessStepModel.Instances => ({kind: step.instances?.count !== undefined ? 'count' : step.instances?.field !== undefined ? 'field' : 'none', count: step.instances?.count === undefined ? '3' : String(step.instances.count), field: step.instances?.field ?? '', mode: step.instances?.mode ?? 'parallel'});
- const writeInstances = (i: LWProcessStepModel.Instances): Record<string, unknown> | undefined => i.kind === 'none' ? undefined : i.kind === 'count' ? {count: whole(i.count) ?? 0, mode: i.mode} : {field: i.field, mode: i.mode};
+ const writeInstances = (i: LWProcessStepModel.Instances): LWProcess.Instances | undefined => i.kind === 'none' ? undefined : i.kind === 'count' ? {count: whole(i.count) ?? 0, mode: i.mode} : {field: i.field, mode: i.mode};
  function instancesProblems(i: LWProcessStepModel.Instances, out: Out): void {
   if (i.kind === 'count' && !isInt(i.count, LIMITS.instancesMin, LIMITS.instancesMax)) out.push({key: 'instances.count', message: `Enter a whole number of instances from ${LIMITS.instancesMin} to ${LIMITS.instancesMax}.`});
   if (i.kind === 'field' && !FIELD.test(i.field)) out.push({key: 'instances.field', message: i.field.trim() === '' ? 'Name the case field that holds the number of instances.' : FIELD_HINT});
  }
  // Boundary deadlines
  const readDeadline = (step: LWProcess.Step): LWProcessStepModel.Deadline => ({kind: !step.deadline ? 'none' : step.deadline.after !== undefined ? 'after' : 'timing', after: text(step.deadline?.after), timing: readTiming(step.deadline?.timing), mode: step.deadline?.mode ?? 'interrupt', flow: step.deadline?.flow ?? ''});
- function writeDeadline(d: LWProcessStepModel.Deadline): Record<string, unknown> | undefined {
+ function writeDeadline(d: LWProcessStepModel.Deadline): LWProcess.Deadline | undefined {
   if (d.kind === 'none') return undefined;
   return d.kind === 'after' ? {after: whole(d.after) ?? 0, mode: d.mode, flow: d.flow} : {timing: writeTiming(d.timing) ?? {dist: 'exponential', mean: 1}, mode: d.mode, flow: d.flow};
  }
@@ -210,7 +219,7 @@ declare namespace LWProcessStepLogic {
   if (last === 'k' && /timing/.test(key)) return `Phases (k) must be a whole number from 1 to ${LIMITS.phases}`;
   return undefined;
  }
- root.LWProcessStepLogic = {numeric, whole, newValue, readValue, writeValue, readTiming, writeTiming, chooseDist, distProblems, newLeaf, readCond, writeCond, chooseCondMode, condProblems, condSummary, isGroup, leafCount, condAt,
+ root.LWProcessStepLogic = {numeric, whole, newValue, readValue, writeValue, readTiming, writeTiming, chooseDist, distProblems, newLeaf, readCond, writeCond, chooseCondMode, condProblems, condSummary, isGroup, leafCount, condAt, timingAt,
   readInstances, writeInstances, instancesProblems, readDeadline, writeDeadline, chooseDeadline, deadlineProblems, isDeadlineFlow, plain, LIMITS};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessStepLogic;
 })(globalThis);

@@ -28,6 +28,7 @@ validators. Engine schemas stay in the engine; a game folder never copies them.
 | Office | colony | [office](office/README.md) | [`demos/office.html`](../../demos/office.html) |
 | RTS Frontier | rts | [rts-frontier](rts-frontier/README.md) | [`demos/rts-frontier.html`](../../demos/rts-frontier.html) |
 | Pocket Pet | pet | [pocket-pet](pocket-pet/README.md) | [`demos/pocket-pet.html`](../../demos/pocket-pet.html) |
+| Agency delivery lab | process | [agency-delivery](agency-delivery/README.md) | [`demos/agency-delivery.html`](../../demos/agency-delivery.html) |
 
 No game data remains under `source/wildlands/source/`: the engine keeps only
 its schemas and engine metadata there, and its architecture check rejects any
@@ -74,4 +75,4 @@ for the placement rule and the Wildlands
 [runtime contracts](../../source/wildlands/RUNTIME-CONTRACTS.md) for how a
 folder becomes an installed content profile.
 
-- [Agency delivery lab](agency-delivery/README.md) — five synthetic processes with a process switch: an in-house agency pipeline (shared resources, parallel product and technical design, a pull backlog, step needs, QA rework), an agile vendor project (milestones, releases, iterations, bounded fix loop, CI/CD as automated system steps), an order fulfilment line (robots and software systems on their own pools, a human spot-check, a repack loop), a customer journey through an online shop (phases, emotions, drop-off and conversion) and a user journey through app onboarding (system steps, timers, a sessions counter); the journeys are synthetic scenario models.
+- [Agency delivery lab](agency-delivery/README.md) — six synthetic processes with a process switch: an in-house agency pipeline (shared resources, parallel product and technical design, a pull backlog, step needs, QA rework), an agile vendor project (milestones, releases, iterations, bounded fix loop, CI/CD as automated system steps), an order fulfilment line (robots and software systems on their own pools, a human spot-check, a repack loop), a customer journey through an online shop (phases, emotions, drop-off and conversion) and a user journey through app onboarding (system steps, timers, a sessions counter) and a loan application converted from a BPMN 2.0/BPSim example (a multi-instance task in an inlined sub-process, an inlined call activity, an inclusive gateway and a non-interrupting SLA deadline); the journeys and the loan application are synthetic scenario models.

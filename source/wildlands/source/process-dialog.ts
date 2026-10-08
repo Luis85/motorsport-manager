@@ -98,6 +98,11 @@ declare namespace LWProcessDialog {
   /** The open dialog, if any. */
   active(): Surface | null;
   escape(value: unknown): string;
+  /**
+   * The one "apply over a run in progress" question of every editor: resolves true at once for a run at minute 0, otherwise shows the
+   * in-footer confirm (Back first and default, then Apply and reset) and resolves true only for Apply and reset while `dialog` is still open.
+   */
+  confirmApplyOverRun(dialog: Surface, run: {minute: number; cases: number}): Promise<boolean>;
  }
 }
 (function(inputRoot: unknown) {
@@ -220,5 +225,11 @@ declare namespace LWProcessDialog {
   };
   return surface;
  }
- root.LWProcessDialog = {create, active: () => current, escape: esc};
+ async function confirmApplyOverRun(dialog: LWProcessDialog.Surface, run: {minute: number; cases: number}): Promise<boolean> {
+  if (run.minute <= 0) return true;
+  const cases = `${run.cases.toLocaleString()} ${run.cases === 1 ? 'case' : 'cases'}`;
+  const choice = await dialog.confirm(`Applying starts a fresh paused run and discards minute ${run.minute.toLocaleString()} (${cases}). Export the run report first if you need it.`, [{id: 'back', label: 'Back', default: true}, {id: 'apply-reset', label: 'Apply and reset'}]);
+  return choice === 'apply-reset' && dialog.isOpen();
+ }
+ root.LWProcessDialog = {create, active: () => current, escape: esc, confirmApplyOverRun};
 })(globalThis);

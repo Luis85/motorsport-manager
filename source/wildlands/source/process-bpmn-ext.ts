@@ -3,9 +3,19 @@
 declare namespace LWProcessBpmnExt {
  type X = LWProcessXml.Node;
  interface Api {
-  kids(n: X, local: string, ns?: string): X[]; documentation(n: X): string | undefined; extensions(n: X, local: string): X[]; first(n: X, local: string): X | undefined;
+  /** Foreign documentation is trimmed and empty parts dropped; `exact` (a Wildlands export) keeps the text as written, an empty text included. */
+  kids(n: X, local: string, ns?: string): X[]; documentation(n: X, exact?: boolean): string | undefined; extensions(n: X, local: string): X[]; first(n: X, local: string): X | undefined;
   typed(a: Record<string, string>): LWProcess.Scalar; sanitize(raw: string, taken: Set<string>, fallback: string): string;
   whole(a: Record<string, string>, name: string, where: string): number | undefined; onlyAttrs(n: X, allowed: string[], where: string): void;
+  /** A required attribute that must be one of `values`. */
+  oneOf<T extends string>(a: Record<string, string>, name: string, values: readonly T[], where: string): T;
+  /** Rejects any Wildlands element or attribute that `context` (the kind of BPMN element carrying the extension) does not define. */
+  vet(n: X, context: 'step' | 'process' | 'flow' | 'resource' | 'lane' | 'performer' | 'boundary', where: string): void;
+  /** The containers an export marked as present but empty (`empty="set needs"`), each one of `allowed`. */
+  empties<T extends string>(e: X | undefined, allowed: readonly T[], where: string): T[];
+  /** Comparable text of the distribution parameters BPSim can carry (bounds of exponential and normal forms do not travel). */
+  sig(d: LWProcess.Dist | undefined): string;
+  OPS: readonly LWProcess.Op[];
   distOf(n: X, where: string): LWProcess.Dist; single(nodes: X[], what: string, where: string): X | undefined; drawsOf(nodes: X[], where: string): LWProcess.Draw[];
   chanceOf(ext: X | undefined, expression: X | undefined, where: string): LWProcess.ChanceCondition | undefined; whenOf(n: X, where: string): LWProcess.When;
   journeyOf(ext: X, step: LWProcess.Step, where: string): void; trackOf(proc: X, meta: X | undefined, definition: LWProcess.Definition): void; sipocOf(proc: X, definition: LWProcess.Definition): void;
@@ -17,12 +27,16 @@ declare namespace LWProcessBpmnExt {
  const {MODEL, WL} = root.LWProcessBpmnExport.vocabulary;
  type X = LWProcessXml.Node;
  const kids = (n: X, local: string, ns = MODEL) => n.children.filter(c => c.local === local && c.ns === ns);
- const documentation = (n: X) => kids(n, 'documentation').map(d => d.text.trim()).filter(Boolean).join('\n\n') || undefined;
+ const documentation = (n: X, exact = false) => { const docs = kids(n, 'documentation'); return exact ? docs.length ? docs.map(d => d.text).join('\n\n') : undefined : docs.map(d => d.text.trim()).filter(Boolean).join('\n\n') || undefined; };
  const extensions = (n: X, local: string) => kids(n, 'extensionElements').flatMap(e => e.children.filter(c => c.ns === WL && c.local === local));
  const first = (n: X, local: string) => extensions(n, local)[0];
  const typed = (a: Record<string, string>): LWProcess.Scalar => {
   const v = a.value ?? '', t = a.type ?? 'string';
-  if (t === 'null') return null; if (t === 'boolean') return v === 'true'; if (t === 'number') { const n = Number(v); if (!Number.isFinite(n)) throw Error('Invalid number: ' + v); return n; } return v;
+  if (t === 'null') { if (v) throw Error('A null value must be empty, not "' + v + '".'); return null; }
+  if (t === 'boolean') { if (v !== 'true' && v !== 'false') throw Error('A boolean value must be true or false, not "' + v + '".'); return v === 'true'; }
+  if (t === 'number') { const n = Number(v); if (!v.trim() || !Number.isFinite(n)) throw Error('Invalid number: ' + v); return n; }
+  if (t !== 'string') throw Error('Value type "' + t + '" must be string, number, boolean or null.');
+  return v;
  };
  const sanitize = (raw: string, taken: Set<string>, fallback: string): string => {
   let id = raw.toLowerCase().replace(/[^a-z0-9-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60); if (!/^[a-z]/.test(id)) id = (fallback + '-' + id).replace(/-$/, '');
@@ -36,10 +50,39 @@ declare namespace LWProcessBpmnExt {
   return Number(v);
  };
  const onlyAttrs = (n: X, allowed: string[], where: string) => { for (const k of Object.keys(n.attrs)) if (!allowed.includes(k)) throw Error(where + ': unknown attribute ' + k + '.'); };
+ function oneOf<T extends string>(a: Record<string, string>, name: string, values: readonly T[], where: string): T {
+  const v = a[name]; if (!values.includes(v as T)) throw Error(where + ': ' + name + ' "' + (v ?? '') + '" must be ' + values.join(' or ') + '.');
+  return v as T;
+ }
+ const OPS = ['eq', 'ne', 'gt', 'gte', 'lt', 'lte'] as const;
+ const DIST_ATTRS = ['dist', 'min', 'mode', 'max', 'mean', 'sd', 'k'], DRAW_ATTRS = ['field', 'kind', 'percent', 'min', 'max'], SCALAR = ['type', 'value'];
+ /** Every Wildlands element and attribute an export writes, by the BPMN element that carries it; nested children are judged by their own readers. */
+ const VOCABULARY: Record<string, Record<string, string[]>> = {
+  step: {step: ['id', 'kind', 'duration', 'until', 'cost', 'join', 'technology', 'channel', 'outcome', 'phase', 'emotion', 'pain', 'opportunity', 'empty'], timing: DIST_ATTRS, instances: ['count', 'field', 'mode'],
+   draw: DRAW_ATTRS, output: ['field', 'label'], add: ['name', 'delta'], set: ['name', ...SCALAR], need: ['field', 'op', 'label', ...SCALAR], backlog: ['capacity', 'order', 'priority', 'pull'], scene: ['id', 'x', 'y', 'color']},
+  process: {process: ['id', 'revision', 'schema', 'seed', 'genre', 'empty'], track: ['field', 'label'], supplier: ['name', 'supplies'], customer: ['name', 'receives'], arrival: ['at', 'count', 'until', 'open', 'interval', 'empty']},
+  flow: {flow: ['id'], when: ['combine', 'chance', 'field', 'op', 'valueField', ...SCALAR]}, resource: {resource: ['id', 'capacity', 'costPerMinute', 'kind']}, lane: {lane: ['resource']},
+  performer: {demand: ['quantity']}, boundary: {deadline: ['mode', 'flow', 'after'], timing: DIST_ATTRS}};
+ /** Elements whose own readers judge their attributes and children (with their own messages); `vet` only admits them here. */
+ const NESTED = new Set(['draw', 'arrival', 'when', 'supplier', 'customer', 'track', 'timing']);
+ function vet(n: X, context: string, where: string): void {
+  for (const e of kids(n, 'extensionElements').flatMap(x => x.children.filter(c => c.ns === WL))) {
+   const allowed = VOCABULARY[context]![e.local]; if (!allowed) throw Error(where + ': unknown Wildlands element ' + e.local + '.');
+   if (NESTED.has(e.local)) continue;
+   onlyAttrs(e, allowed, where + ' ' + e.local);
+   const extra = e.children.find(c => !(e.local === 'scene' && c.ns === WL && c.local === 'asset')); if (extra) throw Error(where + ' ' + e.local + ': unknown element ' + extra.local + '.');
+  }
+ }
+ function empties<T extends string>(e: X | undefined, allowed: readonly T[], where: string): T[] {
+  const list = (e?.attrs.empty ?? '').split(' ').filter(Boolean) as T[];
+  for (const k of list) if (!allowed.includes(k)) throw Error(where + ': empty "' + k + '" must name one of ' + allowed.join(', ') + '.');
+  return list;
+ }
+ const sig = (d: LWProcess.Dist | undefined): string => !d ? '' : [d.dist, ...(d.dist === 'uniform' ? [d.min, d.max] : d.dist === 'triangular' ? [d.min, d.mode, d.max] : d.dist === 'normal' ? [d.mean, d.sd] : d.dist === 'erlang' ? [d.k, d.mean] : [d.mean])].join(':');
  const DISTS = ['uniform', 'triangular', 'exponential', 'normal', 'erlang'], DRAW_KINDS = ['chance', 'choice', 'int'];
  /** Reads `<wl:timing>` or `<wl:gap>`; the engine validator judges ranges, this judges shape. */
  function distOf(n: X, where: string): LWProcess.Dist {
-  onlyAttrs(n, ['dist', 'min', 'mode', 'max', 'mean', 'sd', 'k'], where);
+  onlyAttrs(n, DIST_ATTRS, where);
   if (!DISTS.includes(n.attrs.dist ?? '')) throw Error(where + ': dist "' + (n.attrs.dist ?? '') + '" must be uniform, triangular, exponential, normal or erlang.');
   const out: LWProcess.Dist = {dist: n.attrs.dist as LWProcess.Dist['dist']};
   for (const k of ['min', 'mode', 'max', 'mean', 'sd', 'k'] as const) { const v = whole(n.attrs, k, where); if (v !== undefined) out[k] = v; }
@@ -48,13 +91,13 @@ declare namespace LWProcessBpmnExt {
  const single = (nodes: X[], what: string, where: string): X | undefined => { if (nodes.length > 1) throw Error(where + ': ' + nodes.length + ' ' + what + ' elements; at most one is allowed.'); return nodes[0]; };
  function drawsOf(nodes: X[], where: string): LWProcess.Draw[] {
   return nodes.map((n, i) => {
-   const here = where + ' draw ' + (i + 1); onlyAttrs(n, ['field', 'kind', 'percent', 'min', 'max'], here);
+   const here = where + ' draw ' + (i + 1); onlyAttrs(n, DRAW_ATTRS, here);
    const kind = n.attrs.kind ?? ''; if (!DRAW_KINDS.includes(kind)) throw Error(here + ': kind "' + kind + '" must be chance, choice or int.');
    if (n.attrs.field === undefined) throw Error(here + ': field is required.');
    const draw: LWProcess.Draw = {field: n.attrs.field, kind: kind as LWProcess.Draw['kind']};
    for (const k of ['percent', 'min', 'max'] as const) { const v = whole(n.attrs, k, here); if (v !== undefined) draw[k] = v; }
    for (const c of n.children) if (c.ns !== WL || !['whenTrue', 'whenFalse', 'choice'].includes(c.local)) throw Error(here + ': unknown element ' + c.local + '.');
-   for (const t of ['whenTrue', 'whenFalse'] as const) { const c = single(n.children.filter(x => x.local === t), t, here); if (c) draw[t] = typed(c.attrs); }
+   for (const t of ['whenTrue', 'whenFalse'] as const) { const c = single(n.children.filter(x => x.local === t), t, here); if (c) { onlyAttrs(c, SCALAR, here + ' ' + t); draw[t] = typed(c.attrs); } }
    const values = n.children.filter(c => c.local === 'choice');
    if (values.length) draw.values = values.map(c => { onlyAttrs(c, ['type', 'value', 'weight'], here + ' choice'); const w = whole(c.attrs, 'weight', here + ' choice'); if (w === undefined) throw Error(here + ': choice needs a weight.'); return {value: typed(c.attrs), weight: w}; });
    return draw;
@@ -81,10 +124,13 @@ declare namespace LWProcessBpmnExt {
    const parts = n.children.map(c => { if (c.ns !== WL || c.local !== 'when') throw Error(where + ': unknown element ' + c.local + '.'); return c; });
    if (!parts.length || combine === 'not' && parts.length !== 1) throw Error(where + ': ' + combine + ' needs ' + (combine === 'not' ? 'exactly one' : 'at least one') + ' condition.');
    const list = parts.map((c, i) => whenOf(c, where + ' ' + combine + ' ' + (i + 1)));
-   return (combine === 'not' ? {not: list[0]!} : {[combine]: list}) as LWProcess.When;
+   return combine === 'not' ? {not: list[0]!} : combine === 'all' ? {all: list} : {any: list};
   }
   if (n.attrs.chance !== undefined) { onlyAttrs(n, ['chance'], where + ' chance'); return {chance: whole(n.attrs, 'chance', where)!}; }
-  return (n.attrs.valueField !== undefined ? {field: n.attrs.field!, op: n.attrs.op, valueField: n.attrs.valueField} : {field: n.attrs.field!, op: n.attrs.op as LWProcess.Condition['op'], value: typed(n.attrs)}) as LWProcess.When;
+  const field = n.attrs.valueField !== undefined; onlyAttrs(n, field ? ['field', 'op', 'valueField'] : ['field', 'op', ...SCALAR], where);
+  if (!n.attrs.field) throw Error(where + ': field is required.');
+  const op = oneOf(n.attrs, 'op', OPS, where);
+  return field ? {field: n.attrs.field, op, valueField: n.attrs.valueField!} : {field: n.attrs.field, op, value: typed(n.attrs)};
  }
  const CHANNELS = ['web', 'mobile', 'store', 'phone', 'chat', 'email', 'social', 'ads', 'delivery', 'document'], GENRES = ['process', 'customer-journey', 'user-journey'], OUTCOMES = ['goal', 'lost'];
  /** Journey annotations of `<wl:step>`: channel, outcome and the phase/emotion/pain/opportunity notes. Shape is judged here; kind applicability stays with the engine validator. */
@@ -128,6 +174,6 @@ declare namespace LWProcessBpmnExt {
   const suppliers = read('supplier', 'supplies'), customers = read('customer', 'receives');
   if (suppliers.length || customers.length) definition.sipoc = {...suppliers.length ? {suppliers} : {}, ...customers.length ? {customers} : {}};
  }
- root.LWProcessBpmnExt = {kids, documentation, extensions, first, typed, sanitize, whole, onlyAttrs, distOf, single, drawsOf, chanceOf, whenOf, journeyOf, trackOf, sipocOf};
+ root.LWProcessBpmnExt = {kids, documentation, extensions, first, typed, sanitize, whole, onlyAttrs, oneOf, vet, empties, sig, OPS, distOf, single, drawsOf, chanceOf, whenOf, journeyOf, trackOf, sipocOf};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessBpmnExt;
 })(globalThis);

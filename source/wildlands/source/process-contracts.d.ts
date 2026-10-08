@@ -14,7 +14,7 @@ declare namespace LWProcess {
  interface Sipoc { suppliers?: Party[]; customers?: Party[]; }
  interface Scene { id: string; position: [number, number]; color: string; asset?: unknown; }
  /** A value a step requires before it can run. `op` and `value` come together; without them the field only has to be delivered. */
- interface Need { field: string; op?: Condition['op']; value?: Scalar; label?: string; }
+ interface Need { field: string; op?: Op; value?: Scalar; label?: string; }
  /** A bounded store of waiting work at a task or join. `pull` (joins only) limits work in the next task before more is released. */
  /** A declared result field of a working step (task, touchpoint, machine or system); an interface declaration only. */
  interface Output { field: string; label?: string; }
@@ -50,8 +50,16 @@ declare namespace LWProcess {
   field: string; kind: 'chance' | 'choice' | 'int'; percent?: number; whenTrue?: Scalar; whenFalse?: Scalar;
   values?: {value: Scalar; weight: number}[]; min?: number; max?: number;
  }
- /** Compares a case field to `value`, or to another case field named by `valueField` (exactly one; `value` is then absent at runtime). */
- interface Condition { field: string; op: 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte'; value: Scalar; valueField?: string; chance?: undefined; all?: undefined; any?: undefined; not?: undefined; }
+ type Op = 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte';
+ /** Compares a case field to a literal `value`. */
+ interface ValueCondition { field: string; op: Op; value: Scalar; valueField?: undefined; chance?: undefined; all?: undefined; any?: undefined; not?: undefined; }
+ /** Compares a case field to another case field named by `valueField`. */
+ interface FieldCondition { field: string; op: Op; valueField: string; value?: undefined; chance?: undefined; all?: undefined; any?: undefined; not?: undefined; }
+ /**
+  * A comparison leaf: exactly one of `value` and `valueField`. `field !== undefined` narrows a `When` to it (every other form declares
+  * `field?: undefined`), and `valueField !== undefined` then tells the two forms apart, so no cast is needed.
+  */
+ type Condition = ValueCondition | FieldCondition;
  /** A route taken by a keyed random draw (flow id, case, visit) below `chance` percent; decision flows only. */
  interface ChanceCondition { chance: number; field?: undefined; op?: undefined; value?: undefined; valueField?: undefined; all?: undefined; any?: undefined; not?: undefined; }
  /** Combinators: `all` (and), `any` (or) of 1..8 conditions, `not` of one. At most 3 levels and 8 leaves per `when`; exactly one form per node. */

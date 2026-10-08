@@ -12,7 +12,6 @@ declare namespace LWProcessBpmnParts {
  type X = LWProcessXml.Node; type Item = LWProcessBpmnGraph.Item; type Ctx = LWProcessBpmnGraph.Ctx;
  const E = () => root.LWProcessBpmnExt, kids = (n: X, l: string, ns?: string) => E().kids(n, l, ns), first = (n: X, l: string) => E().first(n, l), extensions = (n: X, l: string) => E().extensions(n, l);
  const PERFORMERS = new Set(['performer', 'humanPerformer', 'potentialOwner', 'resourceRole']), SYSTEM_LANE = /system|service|automat|engine|robot|\bbot\b|\bapi\b|software|batch|server|platform|\bai\b/i;
- const sig = (d: LWProcess.Dist | undefined): string => !d ? '' : [d.dist, ...(d.dist === 'uniform' ? [d.min, d.max] : d.dist === 'triangular' ? [d.min, d.mode, d.max] : d.dist === 'normal' ? [d.mean, d.sd] : d.dist === 'erlang' ? [d.k, d.mean] : [d.mean])].join(':');
  function run(source: string, ctx: Ctx, info: LWProcessBpmn.Info, halt: () => void): LWProcess.Definition | undefined {
   const o = ctx.o, warn = ctx.warn, graph = root.LWProcessBpmnGraph, flow = root.LWProcessBpmnFlow, ext = E();
   const doc = root.LWProcessXml.parse(source);
@@ -52,12 +51,13 @@ declare namespace LWProcessBpmnParts {
   // ------------------------------------------------------------ resources
   const live = net.items;
   for (const r of kids(doc, 'resource')) {
-   const wl = first(r, 'resource'), xmlId = r.attrs.id ?? ''; if (!xmlId) continue;
+   const wl = first(r, 'resource'), xmlId = r.attrs.id ?? '', where = 'Resource ' + xmlId; if (!xmlId) continue;
+   ext.vet(r, 'resource', where);
    const id = wl?.attrs.id ?? E().sanitize(xmlId, taken.resources, 'resource'); taken.resources.add(id);
    const p = bp(xmlId), cost = p?.unitCost !== undefined ? Math.round(p.unitCost) : undefined;
    // A foreign resource only service-type tasks perform is a system pool; the extension (when present) is exact.
    const users = live.filter(i => i.kind === 'task' && i.node.children.some(c => c.ns === MODEL && PERFORMERS.has(c.local) && kids(c, 'resourceRef').some(x => x.text.trim().split(':').at(-1) === xmlId))), serviceOnly = o.autoSystemPool && users.length > 0 && users.every(i => i.system);
-   const pool: LWProcess.Resource = {id, name: (r.attrs.name || id).slice(0, 120), capacity: Number(wl?.attrs.capacity ?? p?.quantity ?? o.defaultCapacity), costPerMinute: Number(wl?.attrs.costPerMinute ?? cost ?? 0), ...wl?.attrs.kind !== undefined ? {kind: wl.attrs.kind as LWProcess.ResourceKind} : !wl && serviceOnly ? {kind: 'system' as const} : {}};
+   const pool: LWProcess.Resource = {id, name: (r.attrs.name || id).slice(0, 120), capacity: (wl && ext.whole(wl.attrs, 'capacity', where)) ?? p?.quantity ?? o.defaultCapacity, costPerMinute: (wl && ext.whole(wl.attrs, 'costPerMinute', where)) ?? cost ?? 0, ...wl?.attrs.kind !== undefined ? {kind: ext.oneOf(wl.attrs, 'kind', ['people', 'machine', 'system'] as const, where)} : !wl && serviceOnly ? {kind: 'system' as const} : {}};
    if (wl && p?.quantity !== undefined && p.quantity !== pool.capacity) warn('BPSim Quantity ' + p.quantity + ' of resource ' + xmlId + ' disagrees with the Wildlands capacity ' + pool.capacity + '; the extension wins.');
    if (wl && cost !== undefined && cost !== pool.costPerMinute) warn('BPSim UnitCost of resource ' + xmlId + ' disagrees with the Wildlands cost per minute ' + pool.costPerMinute + '; the extension wins.');
    resources.set(xmlId, pool); poolOf.set(id, pool);
@@ -102,7 +102,8 @@ declare namespace LWProcessBpmnParts {
    const b = shape.children.find(c => c.local === 'Bounds' && c.ns === DC); if (b && shape.attrs.bpmnElement) centers.set(shape.attrs.bpmnElement, [Number(b.attrs.x) + Number(b.attrs.width) / 2, Number(b.attrs.y) + Number(b.attrs.height) / 2]);
   }
   const placed = new Map<string, [number, number]>(), centerOf = (i: Item) => centers.get(i.near ? byKey.get(i.near)?.xml ?? '' : i.xml);
-  if (live.every(i => first(i.node, 'scene'))) live.forEach(i => { const s = first(i.node, 'scene')!; placed.set(i.key, [Number(s.attrs.x), Number(s.attrs.y)]); });
+  const coordinate = (i: Item, s: X, k: 'x' | 'y') => { const raw = s.attrs[k] ?? '', v = Number(raw); if (!raw.trim() || !Number.isFinite(v)) throw Error('Step ' + i.xml + ' scene: ' + k + ' "' + raw + '" must be a number.'); return v; };
+  if (live.every(i => first(i.node, 'scene'))) live.forEach(i => { const s = first(i.node, 'scene')!; placed.set(i.key, [coordinate(i, s, 'x'), coordinate(i, s, 'y')]); });
   else if (live.every(i => centerOf(i))) {
    const minX = Math.min(...live.map(i => centerOf(i)![0])), minY = Math.min(...live.map(i => centerOf(i)![1]));
    live.forEach(i => placed.set(i.key, [Math.round((centerOf(i)![0] - minX) / UNIT * 10) / 10 + (i.near ? 8 : 0), Math.round((centerOf(i)![1] - minY) / UNIT * 10) / 10 + (i.near ? 6 : 0)]));
@@ -116,18 +117,19 @@ declare namespace LWProcessBpmnParts {
   const defaultDuration = o.defaultDuration, automated: string[] = []; let defaulted = 0;
   const flowId = new Map(net.edges.map(e => [e, e.id!] as const));
   const steps: LWProcess.Step[] = live.map(i => {
+   const where = 'Step ' + i.xml; ext.vet(i.node, 'step', where);
    const sx = first(i.node, 'step'), scene = first(i.node, 'scene'), [x, y] = placed.get(i.key)!, asset = scene && extensions(i.node, 'scene')[0]?.children.find(c => c.local === 'asset'), p = bp(i.xml);
    const step: LWProcess.Step = {id: i.id!, name: (i.synthetic ? 'Repeat ' + (i.node.attrs.name || i.node.attrs.id) + '?' : i.node.attrs.name || i.xml).slice(0, 120), kind: i.kind as LWProcess.Kind, scene: {id: scene?.attrs.id ?? 'scene-' + i.id, position: [x, y], color: scene?.attrs.color ?? COLORS[i.kind]!, ...asset ? {asset: JSON.parse(asset.text) as object} : {}}};
-   const description = ext.documentation(i.node);
-   if (description) { step.description = description.slice(0, 2000); if (description.length > 2000) warn('Documentation of ' + i.xml + ' was cut to 2000 characters.'); }
+   const description = ext.documentation(i.node, sx !== undefined);
+   if (description !== undefined) { step.description = description.slice(0, 2000); if (description.length > 2000) warn('Documentation of ' + i.xml + ' was cut to 2000 characters.'); }
    if (i.phase) step.phase = i.phase.slice(0, 40);
    if (i.lost) step.outcome = 'lost';
    if (i.kind === 'task' || i.kind === 'timer') {
     const processing = p?.processing ?? (i.kind === 'timer' ? p?.wait : undefined);
     if (i.kind === 'task' || !i.timer) {
      if (sx?.attrs.duration) {
-      step.duration = Number(sx.attrs.duration);
-      const mismatch = processing && (processing.dist ? sig(processing.dist) !== sig(single(i)) : single(i) !== undefined || processing.mean !== step.duration);
+      step.duration = ext.whole(sx.attrs, 'duration', where)!;
+      const mismatch = processing && (processing.dist ? ext.sig(processing.dist) !== ext.sig(single(i)) : single(i) !== undefined || processing.mean !== step.duration);
       if (mismatch) warn('BPSim time of ' + i.xml + ' disagrees with the Wildlands duration/timing; the extension wins.');
      } else if (processing) { step.duration = processing.mean; if (processing.dist) step.timing = processing.dist; ctx.note(i.xml, 'bpsim:' + (i.kind === 'timer' ? 'WaitTime' : 'ProcessingTime'), 'step:' + i.id, (processing.dist ? processing.dist.dist + ' distribution -> timing' : 'constant -> duration') + ' of ' + processing.mean + ' min'); }
      else { step.duration = defaultDuration; defaulted++; }
@@ -137,7 +139,7 @@ declare namespace LWProcessBpmnParts {
      if (!given && processing) { step.duration = processing.mean; if (processing.dist) step.timing = processing.dist; ctx.note(i.xml, 'bpsim:WaitTime', 'step:' + i.id, 'wait ' + processing.mean + ' min replaces the BPMN timer duration'); }
      else { if (i.timer.duration !== undefined) step.duration = i.timer.duration; if (i.timer.until !== undefined) step.until = i.timer.until; }
     }
-    if (sx?.attrs.cost) step.cost = Number(sx.attrs.cost);
+    if (sx?.attrs.cost) step.cost = ext.whole(sx.attrs, 'cost', where)!;
     else if (p?.fixedCost !== undefined && !sx && i.kind === 'task') { step.cost = Math.max(0, Math.round(p.fixedCost)); ctx.note(i.xml, 'bpsim:FixedCost', 'step:' + i.id, 'fixed cost ' + step.cost + ' per task start'); }
     if (sx?.attrs.cost && p?.fixedCost !== undefined && Math.round(p.fixedCost) !== Number(sx.attrs.cost)) warn('BPSim FixedCost of ' + i.xml + ' disagrees with the Wildlands cost; the extension wins.');
     if (i.wait) {
@@ -152,7 +154,8 @@ declare namespace LWProcessBpmnParts {
      if (!ref) { warn('A performer of ' + i.xml + ' names no resourceRef and is ignored.'); continue; }
      const r = resources.get(ref.includes(':') ? ref.split(':').at(-1)! : ref);
      if (!r) { ctx.reject(i.xml, i.local, 'Task ' + i.xml + ' references an unknown resource ' + ref + '.'); continue; }
-     demand[r.id] = Number(first(perf, 'demand')?.attrs.quantity ?? 1) + (demand[r.id] ?? 0);
+     ext.vet(perf, 'performer', where + ' performer'); const wanted = first(perf, 'demand');
+     demand[r.id] = (wanted ? ext.whole(wanted.attrs, 'quantity', where + ' demand') ?? 1 : 1) + (demand[r.id] ?? 0);
     }
     const hasExt = sx !== undefined, explicit = Object.keys(demand).length > 0, kindExt = sx?.attrs.kind;
     if (kindExt !== undefined) {
@@ -180,20 +183,27 @@ declare namespace LWProcessBpmnParts {
      step.deadline = {mode: i.deadline.mode, flow: flowId.get(i.deadline.edge)!, ...i.deadline.after !== undefined ? {after: i.deadline.after} : {}, ...i.deadline.timing ? {timing: i.deadline.timing} : {}};
     }
    }
-   if (sx?.attrs.until !== undefined && i.kind === 'timer') step.until = Number(sx.attrs.until);
+   if (sx?.attrs.until !== undefined && i.kind === 'timer') step.until = ext.whole(sx.attrs, 'until', where)!;
    const set = extensions(i.node, 'set'); if (set.length) step.set = Object.fromEntries(set.map(s => [s.attrs.name!, ext.typed(s.attrs)]));
-   const adds = extensions(i.node, 'add'); if (adds.length) step.add = {...step.add, ...Object.fromEntries(adds.map(a => [a.attrs.name!, Number(a.attrs.delta)]))};
-   const needs = extensions(i.node, 'need'); if (needs.length) step.needs = needs.map(n => ({field: n.attrs.field!, ...n.attrs.op ? {op: n.attrs.op as LWProcess.Condition['op'], value: ext.typed(n.attrs)} : {}, ...n.attrs.label ? {label: n.attrs.label} : {}}));
-   const backlog = first(i.node, 'backlog'); if (backlog) step.backlog = {capacity: Number(backlog.attrs.capacity), ...backlog.attrs.order ? {order: backlog.attrs.order as 'fifo'} : {}, ...backlog.attrs.priority ? {priority: backlog.attrs.priority} : {}, ...backlog.attrs.pull ? {pull: Number(backlog.attrs.pull)} : {}};
+   const adds = extensions(i.node, 'add'); if (adds.length) step.add = {...step.add, ...Object.fromEntries(adds.map(a => [a.attrs.name!, ext.whole(a.attrs, 'delta', where + ' add') ?? NaN]))};
+   const needs = extensions(i.node, 'need'); if (needs.length) step.needs = needs.map(n => ({field: n.attrs.field!, ...n.attrs.op ? {op: ext.oneOf(n.attrs, 'op', ext.OPS, where + ' need'), value: ext.typed(n.attrs)} : {}, ...n.attrs.label ? {label: n.attrs.label} : {}}));
+   const backlog = first(i.node, 'backlog'), at = where + ' backlog';
+   if (backlog) step.backlog = {capacity: ext.whole(backlog.attrs, 'capacity', at) ?? NaN, ...backlog.attrs.order ? {order: ext.oneOf(backlog.attrs, 'order', ['fifo', 'lifo', 'priority'] as const, at)} : {}, ...backlog.attrs.priority ? {priority: backlog.attrs.priority} : {}, ...backlog.attrs.pull ? {pull: ext.whole(backlog.attrs, 'pull', at)!} : {}};
    if (sx) ext.journeyOf(sx, step, 'Step ' + i.xml);
    const timing = ext.single(extensions(i.node, 'timing'), 'timing', 'Step ' + i.xml); if (timing) step.timing = ext.distOf(timing, 'Step ' + i.xml + ' timing');
    const draws = extensions(i.node, 'draw'); if (draws.length) step.draws = ext.drawsOf(draws, 'Step ' + i.xml);
    if (i.kind === 'fork') { step.join = live.find(j => j.key === joins.get(i.key))!.id!; if (i.gateway === 'inclusive') { step.mode = 'inclusive'; } }
+   // Containers an export wrote as present but empty come back empty, so a valid definition keeps its fingerprint.
+   for (const k of ext.empties(sx, ['set', 'add', 'resources', 'needs', 'outputs', 'draws'] as const, where)) {
+    if (step[k] !== undefined) throw Error(where + ': ' + k + ' is marked empty but has entries.');
+    if (k === 'needs' || k === 'outputs' || k === 'draws') step[k] = []; else step[k] = {};
+   }
    return step;
   });
   halt();
   if (automated.length) warn(automated.length + ' service-type task(s) run as automated system steps; no behaviour is executed: ' + automated.join(', ') + '.');
   if (defaulted) warn(defaulted + ' task(s) had no duration and were given ' + defaultDuration + ' minutes; tune them in the editor.');
+  for (const e of net.edges) if (e.node) ext.vet(e.node, 'flow', 'Flow ' + e.xml);
   const flowList: LWProcess.Flow[] = net.edges.map(e => ({id: e.id!, from: byKey.get(e.from)!.id!, to: byKey.get(e.to)!.id!, ...e.label ? {label: e.label.slice(0, 120)} : {}, ...e.when ? {when: e.when} : {}, ...e.deadline ? {on: 'deadline' as const} : {}}));
   return root.LWProcessBpmnTail.finish(ctx, doc, proc, collab, participants, {steps, flows: flowList, resources: [...resources.values()], net, start, bp, used});
  }

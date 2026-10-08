@@ -24,7 +24,7 @@ declare namespace LWProcess3D {
   const scene = new T.Scene(), camera = new T.PerspectiveCamera(38, 1, .1, 3000), target = new T.Vector3();
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const stepIndex = new Map(definition.steps.map(s => [s.id, s]));
-  const rooms = new Map<string, LWProcessRooms.Room>(), moods: O[] = [], roomProgress = new Map<string, number>(), indicators = new Map<string, {bar: O; lamp: O; status: O; sub: string}>(), names: {sprite: O; text: string}[] = [];
+  const rooms = new Map<string, LWProcessRooms.Room>(), moods: O[] = [], roomProgress = new Map<string, number>(), indicators = new Map<string, {bar: O; lamp: O; status: O; sub: string; font: number}>(), names: {sprite: O; text: string}[] = [];
   let needsRender = true;
   const motionChanged = () => {needsRender = true;}; reducedMotion.addEventListener('change', motionChanged);
   let phase = 0, previousView: LWProcessApp.View | undefined;
@@ -124,7 +124,7 @@ declare namespace LWProcess3D {
    rooms.get(step.id)!.setActive(false);
    const name = label(step.name, '#edf2f7'); name.center.set(.5, 0); name.position.set(0, 4.6, -2.2); g.add(name); names.push({sprite: name, text: step.name});
    // The room kind sub-label shares the front caption pill with the count, so nothing floats over the props.
-   const sub = [theme.label, ...(step.kind === 'touchpoint' ? [] : [step.kind]), ...(step.technology ? [step.technology] : []), ...(step.instances ? ['x ' + (step.instances.count ?? step.instances.field)] : []), ...(step.deadline ? ['deadline ' + (step.deadline.after !== undefined ? step.deadline.after + ' min' : 'random') + ' ' + step.deadline.mode] : []), ...(step.kind === 'timer' ? [step.until !== undefined ? 'until minute ' + step.until : (step.duration ?? 0) + ' min'] : step.duration ? [step.duration + ' min'] : [])].join(' · ');
+   const sub = [theme.label, ...(step.kind === 'touchpoint' ? [] : [step.kind]), ...(step.technology ? [step.technology] : []), ...(step.instances ? [step.instances.count !== undefined ? '× ' + step.instances.count : `× per case (${step.instances.field})`] : []), ...(step.deadline ? ['deadline ' + (step.deadline.after !== undefined ? step.deadline.after + ' min' : 'random') + ' ' + step.deadline.mode] : []), ...(step.kind === 'timer' ? [step.until !== undefined ? 'until minute ' + step.until : (step.duration ?? 0) + ' min'] : step.duration ? [step.duration + ' min'] : [])].join(' · ');
    const lamp = kit.piece(g, 'ball', 4.35, 1.65, -4.25, .12, .12, .12, '#91b9d5');
    kit.piece(g, 'box', 0, .12, 4.2, 8, .07, .12, '#15222e');
    const bar = kit.piece(g, 'box', -4, .17, 4.2, .001, .07, .14, '#ffbb73');
@@ -133,15 +133,16 @@ declare namespace LWProcess3D {
     const diamond = kit.piece(g, 'box', -4.1, 2.25, -4.2, .85, .85, .14, '#c79871'); diamond.rotation.z = Math.PI / 4; diamond.userData.glyph = 'inclusive-fork';
     kit.piece(g, 'ring', -4.1, 2.25, -4.1, .3, .3, .3, '#13181f'); kit.piece(g, 'cylinder', -4.1, 1.35, -4.2, .05, 1.2, .05, '#c79871');
    }
-   const status = label(['Ready', sub], '#e3eaf2', step.instances || step.deadline ? 25 : 30); status.position.set(0, .45, 5.6); status.scale.multiplyScalar(.75); g.add(status);
-   indicators.set(step.id, {bar, lamp, status, sub});
+   // The caption hangs below the room's front edge (its top on the floor edge), clear of the queue rail and bench; layoutNames keeps it readable.
+   const font = step.instances || step.deadline ? 25 : 30, status = label(['Ready', sub], '#e3eaf2', font); status.center.set(.5, 1); status.position.set(0, .05, 5.9); status.scale.multiplyScalar(.75); g.add(status);
+   indicators.set(step.id, {bar, lamp, status, sub, font});
   }
   // Amber frame around the room entered by selection; the whole-process view has none.
   const focusFrame = kit.group(scene); focusFrame.visible = false;
   for (const [x, z, w, d] of [[0, -4.7, 10.4, .14], [0, 4.7, 10.4, .14], [-5.2, 0, .14, 9.4], [5.2, 0, .14, 9.4]] as const) kit.piece(focusFrame, 'box', x, .05, z, w, .08, d, '#ffbb73', 0, {emissive: '#ff9a3c', emissiveIntensity: .6});
   const links = new T.Group(); scene.add(links);
   for (const f of definition.flows) {
-   const a = definition.steps.find(s => s.id === f.from)!.scene.position, b = definition.steps.find(s => s.id === f.to)!.scene.position;
+   const a = stepIndex.get(f.from)?.scene.position, b = stepIndex.get(f.to)?.scene.position; if (!a || !b) continue;
    const from = new T.Vector3(a[0], .05, a[1]), to = new T.Vector3(b[0], .05, b[1]), direction = to.clone().sub(from), length = direction.length();
    if (length < .01) continue;
    const late = f.on === 'deadline', tone = TONE[definition.steps.find(s => s.id === f.from)?.deadline?.mode ?? 'interrupt']!;
@@ -150,16 +151,17 @@ declare namespace LWProcess3D {
   }
   function fit(resetOrbit: boolean): void {
    needsRender = true;
-   const visible = selected ? [definition.steps.find(s => s.id === selected)!] : definition.steps, lift = selected && stepIndex.get(selected)?.emotion !== undefined ? 1 : 0;
+   const chosen = selected ? stepIndex.get(selected) : undefined, visible = chosen ? [chosen] : definition.steps, lift = selected && stepIndex.get(selected)?.emotion !== undefined ? 1 : 0;
    const xs = visible.map(s => s.scene.position[0]), zs = visible.map(s => s.scene.position[1]);
    target.set((Math.min(...xs) + Math.max(...xs)) / 2, 0, (Math.min(...zs) + Math.max(...zs)) / 2);
    if (resetOrbit) {yaw = -.3; pitch = .65;}
    // The ground is foreshortened by the pitch, so depth counts at sin(pitch) plus the room height; a selected room also keeps its front caption in view.
-   const rangeX = Math.max(...xs) - Math.min(...xs), rangeZ = Math.max(...zs) - Math.min(...zs), spanX = rangeX * Math.abs(Math.cos(yaw)) + rangeZ * Math.abs(Math.sin(yaw)) + 11, spanZ = (rangeZ + (selected ? 12 + lift * 3.4 : 10)) * Math.sin(pitch) + 4;
+   // Width counts the rotated room footprint (10.4 x 9.4 with its frame), so a portrait stage frames the whole room by its width.
+   const rangeX = Math.max(...xs) - Math.min(...xs), rangeZ = Math.max(...zs) - Math.min(...zs), spanX = (rangeX + 10.4) * Math.abs(Math.cos(yaw)) + (rangeZ + 9.4) * Math.abs(Math.sin(yaw)) + 1, spanZ = (rangeZ + (selected ? 12 + lift * 3.4 : 10)) * Math.sin(pitch) + (selected ? 7.5 : 4);
    const aspect = Math.max(.3, canvas.clientWidth / Math.max(1, canvas.clientHeight));
    const vertical = camera.fov * Math.PI / 180, horizontal = 2 * Math.atan(Math.tan(vertical / 2) * aspect);
    distance = Math.max(spanX / (2 * Math.tan(horizontal / 2)), spanZ / (2 * Math.tan(vertical / 2))) * (selected ? 1.1 : 1.2);
-   target.y = selected ? 1.8 + lift * 1.7 : 0; if (selected) target.z += 1;
+   target.y = selected ? 1.8 + lift * 1.7 : 0; if (selected) target.z += 3;
    panBounds = {minX: Math.min(...xs) - 6, maxX: Math.max(...xs) + 6, minZ: Math.min(...zs) - 6, maxZ: Math.max(...zs) + 6};
    light.position.set(target.x + 10, 35, target.z + 15); light.target.position.copy(target);
    const shadowSpan = Math.max(spanX, spanZ) * .7;
@@ -242,7 +244,8 @@ declare namespace LWProcess3D {
    for (const token of tokens) {
     const working = token.status === 'active', counts = working ? activeCounts : queueCounts;
     const at = counts.get(token.stepId) ?? 0; counts.set(token.stepId, at + 1);
-    const step = stepIndex.get(token.stepId)!, detailed = working && !token.escalated && !AUTOMATED.has(step.kind) && at < 3 && actorCount++ < 32;
+    const step = stepIndex.get(token.stepId); if (!step) continue;
+    const detailed = working && !token.escalated && !AUTOMATED.has(step.kind) && at < 3 && actorCount++ < 32;
     let marker = markers.get(token.id);
     if (marker && !!marker.userData.actor !== detailed) {scene.remove(marker); markers.delete(token.id); marker = undefined;}
     if (!marker) {
@@ -253,19 +256,20 @@ declare namespace LWProcess3D {
     if (!detailed) marker.material = mat(token.escalated ? ESCALATED : working ? '#ffbb73' : token.status === 'held' ? '#e07a7a' : token.status === 'backlog' ? '#b79ad6' : token.status === 'timer' ? '#d9c58a' : '#91b9d5');
    }
    for (const [id, indicator] of indicators) {
-    const metric = view.snapshot.steps.find(s => s.id === id)!;
+    const metric = view.snapshot.steps.find(s => s.id === id), definitionStep = stepIndex.get(id), room = rooms.get(id); if (!metric || !definitionStep || !room) continue;
     const active = view.snapshot.tokens.filter(t => t.stepId === id && t.status === 'active');
-    const duration = stepIndex.get(id)!.duration ?? 1;
+    const duration = definitionStep.duration ?? 1;
     const progress = active.length ? active.reduce((n, t) => n + (duration - t.remaining) / duration, 0) / active.length : 0;
-    const definitionStep = stepIndex.get(id)!, stored = view.snapshot.tokens.filter(t => t.stepId === id && (t.status === 'backlog' || (definitionStep.kind === 'task' || AUTOMATED.has(definitionStep.kind)) && t.status === 'queued')).length;
-    roomProgress.set(id, progress); rooms.get(id)!.setActive(metric.active > 0 || metric.timers.waiting > 0 || definitionStep.kind === 'join' && stored > 0); rooms.get(id)!.setQueued(metric.queued); rooms.get(id)!.setBacklog(definitionStep.backlog ? stored : 0);
+    const stored = view.snapshot.tokens.filter(t => t.stepId === id && (t.status === 'backlog' || (definitionStep.kind === 'task' || AUTOMATED.has(definitionStep.kind)) && t.status === 'queued')).length;
+    roomProgress.set(id, progress); room.setActive(metric.active > 0 || metric.timers.waiting > 0 || definitionStep.kind === 'join' && stored > 0); room.setQueued(metric.queued); room.setBacklog(definitionStep.backlog ? stored : 0);
     indicator.bar.scale.x = Math.max(.001, progress * 8); indicator.bar.position.x = -4 + progress * 4;
     indicator.lamp.material = mat(metric.active ? '#ffbb73' : metric.timers.waiting ? '#d9c58a' : metric.queued ? '#91b9d5' : '#6d9585', {emissive: metric.active ? '#704c2d' : '#000000'});
     const timerText = metric.timers.waiting ? `${metric.timers.waiting} on timer · next due minute ${metric.timers.nextDue}` : '';
     const outcome = definitionStep.kind === 'end' && definitionStep.outcome ? (definitionStep.outcome === 'goal' ? 'Goal' : 'Lost') + ` · ${metric.reached} reached` : '';
     const touch = definitionStep.kind === 'touchpoint', waitText = touch ? 'waiting for a team' : 'waiting';
     const caption = outcome ? outcome : timerText ? timerText + (metric.completed ? ` · ${metric.completed} completed` : '') : definitionStep.backlog ? `Backlog ${stored}/${definitionStep.backlog.capacity}` + (metric.active ? ` · ${metric.active} working` : '') : metric.active ? touch ? `${metric.active} in this touchpoint` + (metric.queued ? ` · ${metric.queued} waiting` : '') : `${metric.active} working · ${metric.queued} waiting` : metric.queued ? `${metric.queued} ${waitText}` : metric.completed ? `${metric.completed} completed` : 'Ready';
-    const extra = [metric.items ? `items ${metric.items.started} started · ${metric.items.finished} done` : '', metric.deadlines ? `${metric.deadlines.escalated} escalated · ${metric.deadlines.interrupted} interrupted` : ''].filter(Boolean).join(' · ');
+    const live = definitionStep.instances?.count === undefined ? view.snapshot.tokens.find(t => t.stepId === id && t.items !== undefined)?.items : undefined;
+    const extra = [live !== undefined ? `× ${live} now` : '', metric.items ? `items ${metric.items.started} started · ${metric.items.finished} done` : '', metric.deadlines ? `${metric.deadlines.escalated} escalated · ${metric.deadlines.interrupted} interrupted` : ''].filter(Boolean).join(' · ');
     const lines = [caption, ...extra ? [extra] : [], indicator.sub], text = lines.join(' | ');
     if (indicator.status.userData.caption !== text) {
      indicator.status.userData.draw(lines); indicator.status.userData.caption = text;
@@ -273,10 +277,19 @@ declare namespace LWProcess3D {
    }
   }
   // Room names keep a minimum on-screen text size (about 11px) in the overview, wrapping to the room spacing so neighbours never collide.
-  let spacing = 14, nameScale = 0;
+  // Front captions grow until their lines reach 12px, up to the width of a room; a caption that would still be smaller (a zoomed-out
+  // overview) is not drawn, like the 2D map's secondary text, and the inspector and step list keep the same counts.
+  let spacing = 14, nameScale = 0, captionKey = '';
   for (const [i, a] of definition.steps.entries()) for (const b of definition.steps.slice(i + 1)) {const d = Math.hypot(a.scene.position[0] - b.scene.position[0], a.scene.position[1] - b.scene.position[1]); if (d > 1) spacing = Math.min(spacing, d);}
   function layoutNames(): void {
    const ppu = Math.max(1, canvas.clientHeight) / (2 * Math.tan(camera.fov * Math.PI / 360) * distance), k = Math.round(Math.max(1, Math.min(8, 11 / (.425 * ppu))) * 4) / 4;
+   // A selected room may widen its caption to most of the stage; in the overview a caption stays within the room spacing. A wider caption
+   // hangs further forward so its ends clear the rotated front edge.
+   const widest = selected ? Math.max(2, Math.max(1, canvas.clientWidth) * .92 / ppu / 6) : Math.min(spacing * .94, 12) / 6;
+   const captions = [...indicators.values()].map(i => Math.ceil(Math.max(1, 12 / (i.font * .009375 * ppu)) * 4) / 4), key = captions.map(c => c <= widest || selected ? Math.min(c, widest).toFixed(2) : 0).join();
+   if (key !== captionKey) {
+    captionKey = key; [...indicators.values()].forEach((i, n) => { const c = Math.min(captions[n]!, widest); i.status.visible = !!selected || captions[n]! <= widest; i.status.scale.set(6 * c, 1.2 * c, 1); i.status.position.z = 5.9 + (c - 1); });
+   }
    if (k === nameScale) return; nameScale = k;
    const maxWidth = Math.max(180, Math.min(580, Math.floor(spacing * .94 / k * 80) - 40));
    for (const n of names) {n.sprite.scale.set(8 * k, 1.6 * k, 1); n.sprite.userData.draw(n.text, maxWidth);}

@@ -32,17 +32,17 @@ declare namespace LWProcessBpmnGraph {
  const ARTIFACTS = new Set(['documentation', 'extensionElements', 'textAnnotation', 'association', 'group', 'dataObject', 'dataObjectReference', 'dataStoreReference', 'dataStore', 'property', 'ioSpecification', 'category', 'categoryValue', 'auditing', 'monitoring', 'resourceRole', 'correlationSubscription']);
  const MAX_DEPTH = 3;
  const defs = (n: X): string[] => n.children.filter(c => c.ns === MODEL && c.local.endsWith('EventDefinition')).map(c => c.local);
- /** The single timer definition of an event: `PT{n}M` or `PT{n}H` durations only; the Wildlands extension restores exact values. */
+ /** The single timer definition of an event: an ISO-8601 `timeDuration` read like a boundary timer; the Wildlands extension restores exact values. */
  function timerOf(ctx: Ctx, node: X, xmlId: string, item: Item): void {
   const list = node.children.filter(c => c.ns === MODEL && c.local === 'timerEventDefinition'), step = first(node, 'step');
   const fail = (why: string) => ctx.unsupported(item, xmlId, 'intermediateCatchEvent', 'Timer ' + xmlId + ' is not supported: ' + why);
   const forms = list[0]!.children.filter(c => c.ns === MODEL), form = forms[0];
   if (step?.attrs.until !== undefined) { item.timer = {until: Number(step.attrs.until)}; return; }
   if (forms.length !== 1) { fail('define exactly one timeDuration.'); return; }
-  if (form!.local !== 'timeDuration') { fail(form!.local + ' has no business-minute meaning; use timeDuration PT{n}M or PT{n}H.'); return; }
-  const m = /^PT(\d+)([MH])$/.exec(form!.text.trim()), minutes = m ? Number(m[1]) * (m[2] === 'H' ? 60 : 1) : 0;
-  if (!m || minutes < 1) { fail('duration "' + form!.text.trim() + '" must be PT{n}M or PT{n}H with n of at least 1.'); return; }
-  item.timer = {duration: step?.attrs.duration !== undefined ? Number(step.attrs.duration) : minutes};
+  if (form!.local !== 'timeDuration') { fail(form!.local + ' has no business-minute meaning; use an ISO-8601 timeDuration such as PT45M or PT1H30M.'); return; }
+  const minutes = isoMinutes(ctx, form!.text);
+  if (minutes === undefined) { fail(notIso(form!.text)); return; }
+  item.timer = {duration: step?.attrs.duration !== undefined ? ext().whole(step.attrs, 'duration', 'Step ' + xmlId)! : minutes};
  }
  const camel = (xml: string, suffix: string, taken: Set<string>): string => {
   let base = xml.replace(/[^A-Za-z0-9]/g, ''); base = (/^[A-Za-z]/.test(base) ? base : 'n' + base).replace(/^./, c => c.toLowerCase()).slice(0, 40) + suffix;
@@ -57,7 +57,7 @@ declare namespace LWProcessBpmnGraph {
   function laneMap(container: X): Map<string, string> {
    const out = new Map<string, string>();
    const walk = (set: X) => { for (const lane of kids(set, 'lane')) {
-    const id = lane.attrs.id ?? ''; net.lanes.set(id, lane.attrs.name || id);
+    const id = lane.attrs.id ?? ''; net.lanes.set(id, lane.attrs.name || id); ext().vet(lane, 'lane', 'Lane ' + id);
     for (const ref of kids(lane, 'flowNodeRef')) out.set(ref.text.trim(), id);
     for (const child of kids(lane, 'childLaneSet')) walk(child);
    } };
@@ -130,8 +130,8 @@ declare namespace LWProcessBpmnGraph {
     if (multi && standard) { ctx.reject(item.xml, item.local, item.local + ' ' + item.xml + ' declares both a standard and a multi-instance loop.'); return; }
     const wl = ext().extensions(node, 'instances')[0];
     if (wl) {
-     const count = ext().whole(wl.attrs, 'count', 'Step ' + item.xml + ' instances'), mode = wl.attrs.mode;
-     item.instances = {...count !== undefined ? {count} : {}, ...wl.attrs.field !== undefined ? {field: wl.attrs.field} : {}, mode: mode === 'sequential' ? 'sequential' : 'parallel'} as LWProcess.Instances; return;
+     const where = 'Step ' + item.xml + ' instances', count = ext().whole(wl.attrs, 'count', where), mode = ext().oneOf(wl.attrs, 'mode', ['parallel', 'sequential'], where);
+     item.instances = {...count !== undefined ? {count} : {}, ...wl.attrs.field !== undefined ? {field: wl.attrs.field} : {}, mode}; return;
     }
     if (multi) {
      const mode = multi.attrs.isSequential === 'true' ? 'sequential' : 'parallel', card = kids(multi, 'loopCardinality')[0]?.text.trim() ?? '';
@@ -208,20 +208,22 @@ declare namespace LWProcessBpmnGraph {
    if (target.deadline) { bad('task ' + target.xml + ' already has a deadline; the engine allows one per task.'); continue; }
    const form = b.node.children.find(c => c.local === 'timerEventDefinition')!.children.find(c => c.ns === MODEL), params = ctx.bps?.elements.get(b.xml), timing = wl ? first(b.node, 'timing') : undefined;
    const standard = form?.local === 'timeDuration' ? isoMinutes(ctx, form.text) : undefined;
-   const after = wl ? (wl.attrs.after !== undefined ? Number(wl.attrs.after) : undefined) : params?.wait?.mean ?? standard;
-   if (!(wl ? after !== undefined || timing !== undefined : after !== undefined)) { bad(form?.local === 'timeDuration' ? 'duration "' + form.text.trim() + '" is not an ISO-8601 duration of at least 1 minute.' : (form?.local ?? 'an empty timer') + ' has no business-minute meaning; use a timeDuration.'); continue; }
-   const mode: 'interrupt' | 'escalate' = wl ? (wl.attrs.mode === 'escalate' ? 'escalate' : 'interrupt') : b.node.attrs.cancelActivity === 'false' ? 'escalate' : 'interrupt', edge = out[0]!;
-   edge.from = target.key; edge.deadline = true; target.deadline = {mode, edge, ...after !== undefined ? {after} : {}, ...timing ? {timing: ext().distOf(timing, 'Deadline ' + id + ' timing')} : {}};
+   // Without the extension a BPSim WaitTime replaces the standard duration; a random one stays random as the deadline's timing.
+   const wait = wl ? undefined : params?.wait, where = 'Deadline ' + id;
+   if (wl) ext().vet(b.node, 'boundary', where);
+   const after = wl ? ext().whole(wl.attrs, 'after', where) : wait ? (wait.dist ? undefined : wait.mean) : standard;
+   if (!(wl ? after !== undefined || timing !== undefined : after !== undefined || wait?.dist)) { bad(form?.local === 'timeDuration' ? notIso(form.text) : (form?.local ?? 'an empty timer') + ' has no business-minute meaning; use a timeDuration.'); continue; }
+   const mode: 'interrupt' | 'escalate' = wl ? ext().oneOf(wl.attrs, 'mode', ['interrupt', 'escalate'], where) : b.node.attrs.cancelActivity === 'false' ? 'escalate' : 'interrupt', edge = out[0]!;
+   edge.from = target.key; edge.deadline = true; target.deadline = {mode, edge, ...after !== undefined ? {after} : {}, ...timing ? {timing: ext().distOf(timing, where + ' timing')} : wait?.dist ? {timing: wait.dist} : {}};
+   if (wait) ctx.note(id, 'bpsim:WaitTime', 'flow:' + (edge.xml || '?'), (wait.dist ? wait.dist.dist + ' distribution -> deadline timing' : 'constant -> deadline after') + ' (mean ' + wait.mean + ' min); replaces the timer duration');
    if (wl?.attrs.flow) edge.id = wl.attrs.flow;
    b.folded = 'boundary'; b.how = (mode === 'interrupt' ? 'interrupting' : 'non-interrupting') + ' timer boundary -> deadline (' + mode + ') on ' + target.xml;
    net.items.splice(net.items.indexOf(b), 1); ctx.note(id, 'boundaryEvent', 'flow:' + (edge.xml || '?'), b.how);
   }
  }
- function isoMinutes(ctx: Ctx, text: string): number | undefined {
-  const m = root.LWProcessBpmnBpsim.duration(text, {minutesPerDay: ctx.o.minutesPerDay, minutesPerHour: ctx.o.minutesPerHour});
-  if (m !== undefined && m < 1) ctx.warn('Timer duration "' + text.trim() + '" is under one minute and is rounded up to 1 minute.');
-  return m === undefined ? undefined : Math.max(1, Math.round(m));
- }
+ /** Catch and boundary timers share one ISO-8601 reading: weeks (5 days), days and hours in business minutes, sub-minute values rounded up to 1 with a warning. */
+ const isoMinutes = (ctx: Ctx, text: string) => root.LWProcessBpmnBpsim.isoMinutes(text, {minutesPerDay: ctx.o.minutesPerDay, minutesPerHour: ctx.o.minutesPerHour, warn: ctx.warn});
+ const notIso = (text: string) => 'duration "' + text.trim() + '" is not an ISO-8601 duration (PnW, PnD, PTnH, PTnM, PTnS or a combination such as PT1H30M; years and months have no business-minute meaning).';
  /** Link throw events jump straight to the catch event of the same name. */
  function links(ctx: Ctx, net: Net): void {
   const catches = new Map(net.items.filter(i => i.link === 'catch').map(i => [i.linkName ?? '', i] as const));

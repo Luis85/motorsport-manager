@@ -724,7 +724,7 @@ payloads.
 | `run` | `--input`, `--minutes`, `--output` | yes | Whole business minutes to advance; report JSON. |
 | | `--seed` | no | Non-negative whole number up to 2147483647 that replaces the definition's `seed` for this run (default: the definition's seed, else 1); validated before any work and reported as `seed`. Same definition, seed and minutes give the same report. |
 | `build` | `--input`, `--output` | yes | Output must end in `.html`. |
-| `export-bpmn` | `--input`, `--output` | yes | Definition JSON to BPMN 2.0 XML; output must end in `.bpmn` or `.xml`. |
+| `export-bpmn` | `--input`, `--output` | yes | Definition JSON to BPMN 2.0 XML; output must end in `.bpmn` or `.xml`. Text XML 1.0 cannot carry is refused, naming the character. The output is well-formed; conformance to the OMG BPMN 2.0 / BPSim 1.0 XSDs was not verified. |
 | | `--bpsim` | no | Also write a BPSim scenario (processing and wait times, probabilities, arrival timing, pool quantities and costs, in minutes). The Wildlands extension stays authoritative on re-import. |
 | `import-bpmn` | `--input`, `--output` | yes | BPMN 2.0 XML to a definition JSON. Prints the structured report: `output`, `runnable`, `diagnostics`, `warnings`, `process`, `scenario`, `horizon`, `options`, `mapping` (`total`, `byType`, `byTarget`) and `rejections` (`[]`). Rejected constructs exit 2 with `ok: false`, `code: "process-import-rejected"`, `rejections` (`id`, `type`, `message`) and `errors`; nothing is written. |
 | | `--draft` | no | Keep a definition that has graph diagnostics (`runnable: false`); without it such a file exits 1 with `diagnostics`. |
@@ -733,8 +733,8 @@ payloads.
 | | `--default-capacity N`, `--system-capacity N` | no | Capacity of pools made from lanes (default 1, system pools and `Automation` 4); 1-1000. |
 | | `--no-auto-system-pool` | no | Keep service, script, rule, send and receive tasks as plain tasks instead of `system` steps on `Automation`. |
 | | `--default-duration N` | no | Minutes for work without a duration (default 5). |
-| | `--minutes-per-day N`, `--minutes-per-hour N` | no | Business minutes per day (default 480, 1-1440) and hour (default 60, 1-60) for `P1D` / `PT2H` and BPSim units. |
-| | `--unsupported reject\|drop` | no | `reject` (default) fails with the offending element ids; `drop` removes unsupported constructs with a warning each, prunes what becomes unreachable and fails if no end remains reachable. |
+| | `--minutes-per-day N`, `--minutes-per-hour N` | no | Business minutes in a day (default 480, 1-1440) and an hour (default 60, 1-60) for ISO-8601 timer durations and BPSim units; a week is 5 days. |
+| | `--unsupported reject\|drop` | no | `reject` (default) fails with the offending element ids and writes nothing; `drop` removes or approximates unsupported constructs with a warning each, prunes what becomes unreachable and fails if no end remains reachable. |
 | | `--no-bpsim` | no | Ignore BPSim scenarios. |
 | | `--scenario ID` | no | BPSim scenario id or name (default: the first); an unknown one fails. Conflicts with `--no-bpsim`. |
 | | `--report FILE` | no | Also write the complete report (every `mapping` entry) as JSON; it must differ from the input. |

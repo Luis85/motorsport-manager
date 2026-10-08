@@ -87,7 +87,6 @@ declare namespace LWProcessStepEditor {
    if (keep) dialog.el.querySelector<HTMLElement>(keep)?.focus({preventScroll: false});
   }
   function save(): void { draft.write(JSON.stringify(candidate(), null, 2), 'step-editor'); dialog.close('action'); env.notify('Saved to the draft. Apply the draft to start a fresh run.'); }
-  const needsPlural = (n: number) => `${n.toLocaleString()} ${n === 1 ? 'case' : 'cases'}`;
   function refuse(result: LWProcess.Validation): void {
    const out = q('se-apply-errors'); out.hidden = false;
    out.innerHTML = `<p><strong>The draft cannot be applied yet.</strong> Fix ${result.diagnostics.length === 1 ? 'this problem' : 'these problems'} and try again.</p><ul>${result.diagnostics.map(d => `<li>${esc(api.describePath(candidate(), d.path))}: ${esc(d.message)}</li>`).join('')}</ul>`; out.focus();
@@ -96,8 +95,7 @@ declare namespace LWProcessStepEditor {
    let result = root.LWProcessCatalog.validate(candidate()); if (!result.ok) { refuse(result); return; }
    const run = env.run();
    if (run.minute > 0) {
-    const choice = await dialog.confirm(`Applying starts a fresh paused run and discards minute ${run.minute.toLocaleString()} (${needsPlural(run.cases)}). Export the run report first if you need it.`, [{id: 'back', label: 'Back', default: true}, {id: 'apply-reset', label: 'Apply and reset'}]);
-    if (choice !== 'apply-reset' || !dialog.isOpen()) return;
+    if (!(await root.LWProcessDialog.confirmApplyOverRun(dialog, run))) return;
     result = root.LWProcessCatalog.validate(candidate()); if (!result.ok) { refuse(result); return; }
    }
    const out = q('se-apply-errors'); out.hidden = true;
@@ -133,7 +131,7 @@ declare namespace LWProcessStepEditor {
    const t = e.target as HTMLInputElement; if (!t.dataset?.bind) return; const structural = t.dataset.rerender !== undefined;
    if (structural && e.type === 'input') return;
    const bind = t.dataset.bind, dist = /^(timing|deadline\.timing)\.dist$/.exec(bind), mode = /^(flows\.\d+\.cond(?:\.items\.\d+)*)\.mode$/.exec(bind);
-   const timing = dist ? logic.condAt(model, dist[1]!) as unknown as LWProcessStepModel.Timing : undefined, previous = timing?.dist, cond = mode ? logic.condAt(model, mode[1]!) : undefined, was = cond?.mode;
+   const timing = dist ? logic.timingAt(model, dist[1]!) : undefined, previous = timing?.dist, cond = mode ? logic.condAt(model, mode[1]!) : undefined, was = cond?.mode;
    setPath(model, bind, t.type === 'checkbox' ? t.checked : t.value);
    const kind = /^draws\.(\d+)\.kind$/.exec(bind);
    if (dist && timing) { if (dist[1] === 'timing') api.chooseTiming(model, t.value as LWProcessStepModel.DistKind, previous); else logic.chooseDist(timing, Math.max(1, Math.round((logic.whole(model.duration) ?? 2) / 2)), t.value as LWProcessStepModel.DistKind, previous); }
