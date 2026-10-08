@@ -311,7 +311,7 @@ test('Process manifests declare exactly one of definition or definitions (1-8 un
 
 test('Multi-process game folders inventory and digest every definition, emit LWProcessDefinitions and admit each entry by index', () => {
  const source = gameDirectory('agency-delivery'), game = compileGame(source), manifest = read(path.join(source, 'game.json')) as Plain & {content: {definitions: string[]}};
- assert.equal(manifest.content.definitions.length, 2); assert.equal(Object.hasOwn(manifest.content, 'definition'), false);
+ assert.equal(manifest.content.definitions.length, 3); assert.equal(Object.hasOwn(manifest.content, 'definition'), false);
  const documents = manifest.content.definitions.map(file => read(path.join(source, file)));
  assert.deepEqual([...game.data.keys()], ['LWGameProfile', 'LWProcessDefinition', 'LWProcessDefinitions']);
  assert.deepEqual(game.data.get('LWProcessDefinitions'), documents); assert.deepEqual(game.data.get('LWProcessDefinition'), documents[0]);
@@ -329,13 +329,13 @@ test('Multi-process game folders inventory and digest every definition, emit LWP
  // A game with a single `definition` keeps the original projection and declares no list global.
  copy(directory => {
   const file = path.join(directory, 'game.json'), value = clone(manifest) as Plain; value.content = {definition: manifest.content.definitions[0]};
-  fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n'); fs.rmSync(path.join(directory, manifest.content.definitions[1]!));
+  fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n'); for (const extra of manifest.content.definitions.slice(1)) fs.rmSync(path.join(directory, extra));
   const single = compileGame(directory); assert.deepEqual([...single.data.keys()], ['LWGameProfile', 'LWProcessDefinition']); assert.equal(Object.hasOwn(single.profile, 'processes'), false);
  }, source, 'agency-delivery');
  // Full admission validates every entry and names the failing index.
  copy(directory => {
   const second = path.join(directory, manifest.content.definitions[1]!), value = read(second) as Plain; value.start = 'no-such-step'; fs.writeFileSync(second, JSON.stringify(value));
-  const result = validateGame(directory); assert.equal(result.ok, false); assert.match(result.errors.join('\n'), /Process definition 1 of 2/);
+  const result = validateGame(directory); assert.equal(result.ok, false); assert.match(result.errors.join('\n'), /Process definition 1 of 3/);
  }, source, 'agency-delivery');
 });
 

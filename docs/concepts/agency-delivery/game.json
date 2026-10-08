@@ -11,12 +11,13 @@
   "content": {
     "definitions": [
       "content/agency.process.json",
-      "content/agile-vendor.process.json"
+      "content/agile-vendor.process.json",
+      "content/order-fulfilment.process.json"
     ]
   },
   "presentation": {
     "title": "Agency delivery lab",
-    "description": "Explore two synthetic delivery processes in 2D and 3D and switch between them: the in-house agency pipeline with shared resources, parallel design and rework, and an agile vendor pipeline.",
+    "description": "Explore three synthetic processes in 2D and 3D and switch between them: the in-house agency pipeline with shared resources, parallel design and rework, an agile vendor pipeline with CI/CD automation, and an order fulfilment line with robots, software systems and a human spot-check.",
     "accent": "#ffbb73"
   },
   "storage": {

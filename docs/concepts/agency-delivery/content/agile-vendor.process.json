@@ -4,7 +4,7 @@
   "revision": 0,
   "id": "agile-vendor-project",
   "name": "Agile vendor project",
-  "description": "We are the vendor running an agile software project for a customer whose project manager, product owner and subject-matter experts join in milestones, releases and iterations. After a contractual kickoff date and a roadmap, each project loops through releases; every release repeats iterations that each deliver a product increment, then acceptance testing with a bounded fix loop, then go-live. UX designers work in product design and in every iteration. Counters (iteration, increments, release) drive the loops; timers model the kickoff date, the customer review window and hypercare. All values are synthetic: one simulated minute stands in for a fraction of a working day, an iteration is 10 simulated minutes, and this is an illustrative model, not a forecast.",
+  "description": "We are the vendor running an agile software project for a customer whose project manager, product owner and subject-matter experts join in milestones, releases and iterations. After a contractual kickoff date and a roadmap, each project loops through releases; every release repeats iterations that each deliver a product increment, then acceptance testing with a bounded fix loop, then go-live. UX designers work in product design and in every iteration. Counters (iteration, increments, release) drive the loops; timers model the kickoff date, the customer review window and hypercare. CI/CD runs as automated system steps after every iteration and on release deployment, and a regression suite runs before acceptance testing. All values are synthetic: one simulated minute stands in for a fraction of a working day, an iteration is 10 simulated minutes, and this is an illustrative model, not a forecast.",
   "start": "intake",
   "resources": [
     {
@@ -54,6 +54,20 @@
       "name": "QA engineers",
       "capacity": 1,
       "costPerMinute": 2
+    },
+    {
+      "id": "ci-pipeline",
+      "name": "CI/CD pipeline runners",
+      "kind": "system",
+      "capacity": 2,
+      "costPerMinute": 1
+    },
+    {
+      "id": "test-automation",
+      "name": "Automated test grid",
+      "kind": "system",
+      "capacity": 2,
+      "costPerMinute": 1
     }
   ],
   "steps": [
@@ -88,7 +102,7 @@
     },
     {
       "id": "kickoff",
-      "name": "Milestone 1 · Kickoff",
+      "name": "Milestone 1 \u00b7 Kickoff",
       "kind": "task",
       "scene": {
         "id": "scene-kickoff",
@@ -249,7 +263,7 @@
     },
     {
       "id": "roadmap",
-      "name": "Milestone 2 · Roadmap agreed",
+      "name": "Milestone 2 \u00b7 Roadmap agreed",
       "kind": "task",
       "scene": {
         "id": "scene-roadmap",
@@ -280,7 +294,7 @@
       "scene": {
         "id": "scene-sprint-planning",
         "position": [
-          98,
+          112,
           28
         ],
         "color": "#ffbb73"
@@ -305,7 +319,7 @@
       "scene": {
         "id": "scene-sprint",
         "position": [
-          84,
+          98,
           28
         ],
         "color": "#ffbb73"
@@ -326,6 +340,34 @@
         "iteration": 1,
         "increments": 1
       }
+    },
+    {
+      "id": "ci-build",
+      "name": "CI build and tests",
+      "kind": "system",
+      "scene": {
+        "id": "scene-ci-build",
+        "position": [
+          84,
+          28
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The CI pipeline builds the increment and runs unit tests. Automated; no people are occupied.",
+      "duration": 2,
+      "technology": "CI pipeline",
+      "resources": {
+        "ci-pipeline": 1
+      },
+      "set": {
+        "buildGreen": true
+      },
+      "outputs": [
+        {
+          "field": "buildGreen",
+          "label": "Green build"
+        }
+      ]
     },
     {
       "id": "sprint-review",
@@ -374,6 +416,34 @@
         "color": "#91b9d5"
       },
       "description": "Loops back while the iteration counter is below this project's iterations per release."
+    },
+    {
+      "id": "regression-suite",
+      "name": "Automated regression suite",
+      "kind": "system",
+      "scene": {
+        "id": "scene-regression-suite",
+        "position": [
+          56,
+          60
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The automated test grid runs the regression suite on the release candidate before acceptance testing.",
+      "duration": 3,
+      "technology": "Automated test grid",
+      "resources": {
+        "test-automation": 1
+      },
+      "set": {
+        "regressionGreen": true
+      },
+      "outputs": [
+        {
+          "field": "regressionGreen",
+          "label": "Regression result"
+        }
+      ]
     },
     {
       "id": "release-uat",
@@ -438,7 +508,7 @@
     },
     {
       "id": "release-go-live",
-      "name": "Milestone · Release go-live",
+      "name": "Milestone \u00b7 Release go-live",
       "kind": "task",
       "scene": {
         "id": "scene-release-go-live",
@@ -470,13 +540,41 @@
       ]
     },
     {
+      "id": "auto-deploy",
+      "name": "Automated deployment",
+      "kind": "system",
+      "scene": {
+        "id": "scene-auto-deploy",
+        "position": [
+          0,
+          60
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "Deployment automation rolls the release out to production. Automated; no people are occupied.",
+      "duration": 2,
+      "technology": "Deployment automation",
+      "resources": {
+        "ci-pipeline": 1
+      },
+      "set": {
+        "releaseDeployed": true
+      },
+      "outputs": [
+        {
+          "field": "releaseDeployed",
+          "label": "Release deployed"
+        }
+      ]
+    },
+    {
       "id": "hypercare",
       "name": "Hypercare window",
       "kind": "timer",
       "scene": {
         "id": "scene-hypercare",
         "position": [
-          0,
+          -14,
           60
         ],
         "color": "#91b9d5"
@@ -596,8 +694,13 @@
       "to": "sprint"
     },
     {
-      "id": "sprint-sprint-review",
+      "id": "sprint-ci-build",
       "from": "sprint",
+      "to": "ci-build"
+    },
+    {
+      "id": "ci-build-sprint-review",
+      "from": "ci-build",
       "to": "sprint-review"
     },
     {
@@ -622,10 +725,15 @@
       }
     },
     {
-      "id": "more-iterations-release-uat",
+      "id": "more-iterations-regression-suite",
       "from": "more-iterations",
-      "to": "release-uat",
+      "to": "regression-suite",
       "label": "Release scope done"
+    },
+    {
+      "id": "regression-suite-release-uat",
+      "from": "regression-suite",
+      "to": "release-uat"
     },
     {
       "id": "release-uat-uat-result",
@@ -656,8 +764,13 @@
       "label": "Retest"
     },
     {
-      "id": "release-go-live-hypercare",
+      "id": "release-go-live-auto-deploy",
       "from": "release-go-live",
+      "to": "auto-deploy"
+    },
+    {
+      "id": "auto-deploy-hypercare",
+      "from": "auto-deploy",
       "to": "hypercare"
     },
     {

@@ -13,7 +13,7 @@ declare namespace LWProcessNeeds {
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessGraph: {matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean}; LWProcessNeeds?: LWProcessNeeds.Api};
- // A counter's exact value is data-dependent; the marker means "some whole number" and satisfies only a bare delivered need.
+ // A counter's or random draw's exact value is data-dependent; the marker means "some delivered value" and satisfies only a bare delivered need.
  const ABSENT = '∅', NUMBER = '#', SYMBOL: Record<string, string> = {eq: '=', ne: '≠', gt: '>', gte: '≥', lt: '<', lte: '≤'};
  type State = Map<string, Set<string>>;
  const describe = (n: LWProcess.Need) => n.field + (n.op ? ' ' + SYMBOL[n.op] + ' ' + JSON.stringify(n.value) : ' delivered');
@@ -29,23 +29,25 @@ declare namespace LWProcessNeeds {
  /** Possible values of every tracked field on entry to each reachable step. Absent fields are an explicit value. */
  function analyse(d: LWProcess.Definition): Map<string, State> {
   const steps = new Map(d.steps.map(s => [s.id, s])), fields = new Set<string>();
-  for (const a of d.arrivals) Object.keys(a.data).forEach(k => fields.add(k));
-  for (const s of d.steps) { Object.keys(s.set ?? {}).concat(Object.keys(s.add ?? {})).forEach(k => fields.add(k)); (s.needs ?? []).forEach(n => fields.add(n.field)); }
-  for (const f of d.flows) if (f.when) { fields.add(f.when.field); if (f.when.valueField !== undefined) fields.add(f.when.valueField); }
-  const start: State = new Map([...fields].map(f => [f, new Set(d.arrivals.map(a => Object.hasOwn(a.data, f) ? JSON.stringify(a.data[f]) : ABSENT))]));
+  for (const a of d.arrivals) Object.keys(a.data).concat((a.draws ?? []).map(x => x.field)).forEach(k => fields.add(k));
+  for (const s of d.steps) { Object.keys(s.set ?? {}).concat(Object.keys(s.add ?? {}), (s.draws ?? []).map(x => x.field)).forEach(k => fields.add(k)); (s.needs ?? []).forEach(n => fields.add(n.field)); }
+  for (const f of d.flows) if (f.when?.field !== undefined) { fields.add(f.when.field); if (f.when.valueField !== undefined) fields.add(f.when.valueField); }
+  const start: State = new Map([...fields].map(f => [f, new Set(d.arrivals.map(a => Object.hasOwn(a.data, f) ? JSON.stringify(a.data[f]) : (a.draws ?? []).some(x => x.field === f) ? NUMBER : ABSENT))]));
   const entry = new Map<string, State>([[d.start, start]]);
   const out = (s: LWProcess.Step, state: State): State => { const next = clone(state); for (const [k, v] of Object.entries(s.set ?? {})) next.set(k, new Set([JSON.stringify(v)]));
+   for (const x of s.draws ?? []) next.set(x.field, new Set([NUMBER]));
    for (const k of Object.keys(s.add ?? {})) next.set(k, new Set([NUMBER])); return next; };
   const edge = (flow: LWProcess.Flow): State | null => {
    const from = steps.get(flow.from)!, state = entry.get(flow.from); if (!state) return null;
    const next = out(from, state);
    if (from.kind === 'decision') {
-    const conditions = d.flows.filter(f => f.from === from.id && f.when).map(f => f.when!);
+    // Chance routes are random, so they never narrow a field; only field comparisons do.
+    const conditions = d.flows.filter(f => f.from === from.id && f.when?.field !== undefined).map(f => f.when as LWProcess.Condition);
     const keep = (field: string, test: (v: string) => boolean) => { const kept = new Set([...next.get(field) ?? []].filter(test)); next.set(field, kept); };
     // Counters and field-to-field comparisons cannot be narrowed statically, so both routes keep every possible value.
     const matches = (c: LWProcess.Condition, v: string) => v !== ABSENT && root.LWProcessGraph.matches({[c.field]: JSON.parse(v) as LWProcess.Scalar}, c);
     const open = (c: LWProcess.Condition, v: string) => v === NUMBER || c.valueField !== undefined && v !== ABSENT;
-    if (flow.when) keep(flow.when.field, v => open(flow.when!, v) || matches(flow.when!, v)); else for (const c of conditions) keep(c.field, v => open(c, v) || !matches(c, v));
+    if (flow.when?.field !== undefined) { const c = flow.when as LWProcess.Condition; keep(c.field, v => open(c, v) || matches(c, v)); } else if (!flow.when) for (const c of conditions) keep(c.field, v => open(c, v) || !matches(c, v));
     if ([...next.values()].some(v => !v.size)) return null;
    }
    return next;
@@ -58,7 +60,7 @@ declare namespace LWProcessNeeds {
    incoming.forEach((flow, i) => {
     let current = flow.from; const written = new Set<string>();
     for (let guard = 0; current !== fork.id && guard <= d.steps.length; guard++) {
-     const step = steps.get(current); if (!step) break; Object.keys(step.set ?? {}).concat(Object.keys(step.add ?? {})).forEach(k => written.add(k));
+     const step = steps.get(current); if (!step) break; Object.keys(step.set ?? {}).concat(Object.keys(step.add ?? {}), (step.draws ?? []).map(x => x.field)).forEach(k => written.add(k));
      current = d.flows.find(f => f.to === current)?.from ?? fork.id;
     }
     for (const k of written) result.set(k, new Set(states[i]!.get(k)));
@@ -86,7 +88,7 @@ declare namespace LWProcessNeeds {
    const values = [...state.get(need.field) ?? []], unmet = values.filter(v => !satisfied(need, v));
    if (!unmet.length) return;
    const by = deliveries(d, step.id).find(x => x.field === need.field), source = by && (by.steps.length || by.arrivals) ? 'Delivered only on some routes' : 'No earlier step or arrival delivers ' + need.field;
-   errors.push({path: '/steps/' + i + '/needs/' + j, code: 'needs', message: `Needs ${describe(need)}, but ${source}; possible values: ${values.map(v => v === ABSENT ? 'not delivered' : v === NUMBER ? 'a counter value' : v).join(', ')}.`});
+   errors.push({path: '/steps/' + i + '/needs/' + j, code: 'needs', message: `Needs ${describe(need)}, but ${source}; possible values: ${values.map(v => v === ABSENT ? 'not delivered' : v === NUMBER ? 'a counter or drawn value' : v).join(', ')}.`});
   }));
   return errors;
  }
@@ -94,7 +96,7 @@ declare namespace LWProcessNeeds {
   const upstream = new Set<string>(), queue = [stepId];
   while (queue.length) { const current = queue.shift(); for (const flow of d.flows.filter(f => f.to === current)) if (!upstream.has(flow.from)) { upstream.add(flow.from); queue.push(flow.from); } }
   return (d.steps.find(s => s.id === stepId)?.needs ?? []).map(need => ({field: need.field,
-   steps: d.steps.filter(s => upstream.has(s.id) && Object.hasOwn(s.set ?? {}, need.field) || Object.hasOwn(s.add ?? {}, need.field)).map(s => s.id), arrivals: d.arrivals.every(a => Object.hasOwn(a.data, need.field))}));
+   steps: d.steps.filter(s => upstream.has(s.id) && Object.hasOwn(s.set ?? {}, need.field) || Object.hasOwn(s.add ?? {}, need.field) || upstream.has(s.id) && (s.draws ?? []).some(x => x.field === need.field)).map(s => s.id), arrivals: d.arrivals.every(a => Object.hasOwn(a.data, need.field) || (a.draws ?? []).some(x => x.field === need.field))}));
  }
  root.LWProcessNeeds = {check, deliveries, describe, holds};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessNeeds;

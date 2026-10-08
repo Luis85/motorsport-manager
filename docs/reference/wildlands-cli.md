@@ -722,6 +722,7 @@ payloads.
 | | `--dry-run` | no | Write nothing; conflicts with `--output`. |
 | | `--draft` | no | Allow intermediate graph diagnostics. |
 | `run` | `--input`, `--minutes`, `--output` | yes | Whole business minutes to advance; report JSON. |
+| | `--seed` | no | Non-negative whole number up to 2147483647 that replaces the definition's `seed` for this run (default: the definition's seed, else 1); validated before any work and reported as `seed`. Same definition, seed and minutes give the same report. |
 | `build` | `--input`, `--output` | yes | Output must end in `.html`. |
 | `forge` | `--input`, `--output` | yes | New directory; its parent must exist and the directory must not. |
 | `attach` | `--input`, `--asset`, `--step`, `--expected-revision`, `--expected-fingerprint` | yes | Scene Forge asset for a step, with edit guards. |

@@ -94,7 +94,7 @@ async function main(): Promise<void> {
    await page.mouse.down(); await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2 + 40, {steps: 4}); await page.mouse.up(); assert.notEqual(await viewBox(), zoomed);
    await page.locator('#frame').click(); assert.equal(await viewBox(), fitted); assert.deepEqual((await query(page)).snapshot, before.snapshot);
    await page.locator('#horizon').selectOption('unlimited'); assert.equal((await query(page)).horizon, null); await page.locator('#horizon').selectOption('1440'); assert.equal((await query(page)).horizon, 1440);
-   await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step-inspector').click();
+   await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click();
    await page.locator('#se-duration').fill('77'); await page.locator('#se-save').click();
    assert.deepEqual((await query(page)).definition, before.definition); assert.match(await page.evaluate(() => (document.getElementById('draft') as HTMLTextAreaElement).value), /"duration": 77/);
    await page.locator('#show-definition').click(); await page.locator('#apply').click(); const applied = await query(page); assert.equal(applied.definition.steps.find(s => s.kind === 'task')!.duration, 77); assert.equal(applied.horizon, 1440); assert.equal(applied.snapshot.minute, 0);
@@ -108,10 +108,10 @@ async function main(): Promise<void> {
    await page.locator('[data-step="design-ready"]').click(); await page.locator('#edit-step').click();
    await page.locator('#se-backlog-capacity').fill('2'); await page.locator('#se-backlog-order').selectOption('lifo'); assert.equal(await page.locator('#se-backlog-priority').count(), 0); await page.locator('#se-save').click();
    const lifo = (await draftOf()).steps.find(s => s.id === 'design-ready')!.backlog!; assert.equal(lifo.capacity, 2); assert.equal(lifo.order, 'lifo'); assert.equal(lifo.priority, undefined);
-   await page.locator('[data-step="handover"]').click(); await page.locator('#edit-step-inspector').click();
+   await page.locator('[data-step="handover"]').click(); await page.locator('#edit-step').click();
    await page.locator('#se-add-need').click(); await page.locator('[data-bind="needs.2.field"]').fill('qaSignoff'); await page.locator('#se-save').click(); assert.equal((await draftOf()).steps[10]!.needs!.length, 3);
-   await page.locator('#edit-step-inspector').click(); await page.locator('[data-act="remove-need"]').last().click(); await page.locator('#se-save').click(); assert.equal((await draftOf()).steps[10]!.needs!.length, 2);
-   await page.locator('[data-step="design-ready"]').click(); await page.locator('#edit-step-inspector').click(); await page.locator('#se-backlog-on').uncheck(); await page.locator('#se-save').click(); assert.equal((await draftOf()).steps[5]!.backlog, undefined);
+   await page.locator('#edit-step').click(); await page.locator('[data-act="remove-need"]').last().click(); await page.locator('#se-save').click(); assert.equal((await draftOf()).steps[10]!.needs!.length, 2);
+   await page.locator('[data-step="design-ready"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-backlog-on').uncheck(); await page.locator('#se-save').click(); assert.equal((await draftOf()).steps[5]!.backlog, undefined);
    assert.deepEqual((await query(page)).definition, before.definition); await page.locator('#show-definition').click(); await page.locator('#restore-draft').click(); await page.locator('#show-events').click();
   });
   await check('BPMN 2.0 export imports losslessly in the browser and foreign or unsupported BPMN reports explicit notes or rejects', async () => {
@@ -221,12 +221,12 @@ async function main(): Promise<void> {
   };
   await check('Process switch lists each process of a multi-process game, switches without ticking and stays hidden for one process', async () => {
    await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
-   const first = await query(page); assert.equal(first.active, 0); assert.equal(first.processes.length, 2);
+   const first = await query(page); assert.equal(first.active, 0); assert.equal(first.processes.length, 3);
    assert.equal(await page.locator('#process-switch-label').isVisible(), true); assert.match(await page.locator('#process-switch-label').innerText(), /^Process/);
    assert.equal(await page.evaluate(() => (document.getElementById('process-switch') as HTMLSelectElement).labels![0]!.id), 'process-switch-label');
-   assert.equal(await page.locator('#process-switch option').count(), 2); assert.equal(await page.locator('#process-switch').inputValue(), '0');
+   assert.equal(await page.locator('#process-switch option').count(), 3); assert.equal(await page.locator('#process-switch').inputValue(), '0');
    assert.deepEqual(await page.locator('#process-switch option').allInnerTexts(), first.processes.map(p => p.name));
-   assert.match(await page.locator('#process-subtitle').innerText(), /Process 1 of 2/);
+   assert.match(await page.locator('#process-subtitle').innerText(), /Process 1 of 3/);
    assert.equal(await page.locator('#process-title').innerText(), first.definition.name); assert.equal(await page.locator('[data-step]').count(), first.definition.steps.length);
    await page.locator('#mode-2d').click(); await page.locator('#horizon').selectOption('1440'); await page.locator('#advance').click(); await page.locator('[data-step="discovery"]').click();
    assert.equal((await query(page)).snapshot.minute, 30);
@@ -242,11 +242,11 @@ async function main(): Promise<void> {
    assert.equal(await page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {definition(): {id: string}}}).LWProcessStudio.definition().id), second.definition.id);
    assert.equal(await page.evaluate(() => document.activeElement?.id), 'process-switch');
    assert.equal(await page.locator('#message').innerText(), `Switched to ${second.definition.name}. Paused at minute 0.`);
-   assert.equal(await page.locator('#map svg').count(), 1); assert.match(await page.locator('#process-subtitle').innerText(), /Process 2 of 2/);
+   assert.equal(await page.locator('#map svg').count(), 1); assert.match(await page.locator('#process-subtitle').innerText(), /Process 2 of 3/);
    assert.match(await page.locator('#process-data').innerText(), /Process inputs/);
    // A one-process game has no switch.
    const single = path.join(dir, 'single', 'agency-delivery'), singleHtml = path.join(dir, 'single.html'), source = path.resolve(PROJECT, '../../docs/concepts/agency-delivery');
-   fs.cpSync(source, single, {recursive: true}); fs.rmSync(path.join(single, 'content/agile-vendor.process.json'));
+   fs.cpSync(source, single, {recursive: true}); fs.rmSync(path.join(single, 'content/agile-vendor.process.json')); fs.rmSync(path.join(single, 'content/order-fulfilment.process.json'));
    const manifest = JSON.parse(fs.readFileSync(path.join(single, 'game.json'), 'utf8')); manifest.content = {definition: 'content/agency.process.json'}; fs.writeFileSync(path.join(single, 'game.json'), JSON.stringify(manifest, null, 2) + '\n');
    const made = spawnSync(process.execPath, [cli, 'build-game', '--game', single, '--output', singleHtml], {encoding: 'utf8', timeout: 300000}); assert.equal(made.status, 0, made.stderr + made.stdout);
    const other = await context.newPage(); await openArtifact(other, singleHtml, {url: fixtureUrls[4]!}); await waitForReady(other, {host: 'process'});
@@ -255,7 +255,7 @@ async function main(): Promise<void> {
   });
   await check('Editing one process survives switching away and back with its applied definition and unapplied draft', async () => {
    await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
-   const original = [await nameOf(0), await nameOf(1)], before = await query(page);
+   const original = [await nameOf(0), await nameOf(1), await nameOf(2)], before = await query(page);
    await applyDraft(d => {d.name = 'Edited agency';}); assert.equal((await query(page)).definition.revision, before.definition.revision + 1);
    await page.locator('#show-definition').click(); const raw = '{\n  "unfinished":'; await page.locator('#draft').fill(raw);
    await switchTo(1); assert.equal(await page.locator('#process-title').innerText(), original[1]); assert.match(await page.locator('#draft-state').innerText(), /matches the active definition/);
@@ -264,7 +264,7 @@ async function main(): Promise<void> {
    const vendor = (await query(page)).definition; vendor.name = 'Imported vendor';
    await page.locator('#file').setInputFiles({name: 'vendor.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(vendor))});
    await page.waitForFunction(() => document.getElementById('message')!.textContent!.includes('Imported vendor.json'));
-   assert.deepEqual(await page.locator('#process-switch option').allInnerTexts(), ['Edited agency', 'Imported vendor']); assert.equal((await query(page)).active, 1);
+   assert.deepEqual(await page.locator('#process-switch option').allInnerTexts(), ['Edited agency', 'Imported vendor', original[2]!]); assert.equal((await query(page)).active, 1);
    await switchTo(0); assert.equal(await page.locator('#process-title').innerText(), 'Edited agency'); assert.equal((await query(page)).definition.revision, before.definition.revision + 1);
    assert.equal(await page.locator('#draft').inputValue(), raw); assert.match(await page.locator('#draft-state').innerText(), /Unapplied draft/);
    assert.equal((await query(page)).snapshot.minute, 0); assert.equal((await query(page)).playing, false);
@@ -272,13 +272,13 @@ async function main(): Promise<void> {
   });
   await check('Downloaded HTML of a multi-process game reopens with every process in order and the applied edits', async () => {
    await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
-   const names = [await nameOf(0), await nameOf(1)]; await switchTo(1); await applyDraft(d => {d.name = 'Edited vendor';});
+   const names = [await nameOf(0), await nameOf(1), await nameOf(2)]; await switchTo(1); await applyDraft(d => {d.name = 'Edited vendor';});
    const pending = page.waitForEvent('download'); await page.locator('#html').click(); const download = await pending, exported = path.join(dir, 'multi-exported.html'); await download.saveAs(exported);
    const text = fs.readFileSync(exported, 'utf8'); assert.equal(download.suggestedFilename(), 'wildlands-processes.html');
    assert.equal((text.match(/^window\.LWProcessDefinition = /gm) ?? []).length, 1); assert.equal((text.match(/^window\.LWProcessDefinitions = /gm) ?? []).length, 1);
    const other = await context.newPage(); await openArtifact(other, exported, {url: fixtureUrls[3]!}); await waitForReady(other, {host: 'process'});
-   const reopened = await query(other); assert.deepEqual(reopened.processes.map(p => p.name), [names[0], 'Edited vendor']); assert.equal(reopened.active, 0); assert.equal(reopened.snapshot.minute, 0);
-   assert.equal(reopened.definition.name, names[0]); assert.equal(await other.locator('#process-switch option').count(), 2);
+   const reopened = await query(other); assert.deepEqual(reopened.processes.map(p => p.name), [names[0], 'Edited vendor', names[2]]); assert.equal(reopened.active, 0); assert.equal(reopened.snapshot.minute, 0);
+   assert.equal(reopened.definition.name, names[0]); assert.equal(await other.locator('#process-switch option').count(), 3);
    const listed = await other.evaluate(() => (globalThis as unknown as {LWProcessStudio: {definitions(): LWProcess.Definition[]}}).LWProcessStudio.definitions());
    assert.deepEqual(listed, await page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {definitions(): LWProcess.Definition[]}}).LWProcessStudio.definitions()));
    await other.locator('#process-switch').selectOption('1'); await other.waitForFunction(() => document.getElementById('process-title')!.textContent === 'Edited vendor');
@@ -347,26 +347,26 @@ async function main(): Promise<void> {
    assert.match(text, /Completed · \d+–\d+ min/); assert.match(text, /Step inputs/); assert.match(text, /waits/); assert.equal(await page.locator('#process-visit option').count(), 2);
    await page.locator('#process-written-toggle').click(); assert.match(await page.locator('.process-written').innerText(), /waits/);
    await page.locator('[data-step="until"]').click(); assert.match(await page.locator('#process-data').innerText(), /Completed · \d+–\d+ min/);
-   await page.locator('[data-step="wait"]').click(); await page.locator('#edit-step-inspector').click(); assert.equal(await page.locator('#se-duration').inputValue(), '30');
+   await page.locator('[data-step="wait"]').click(); await page.locator('#edit-step').click(); assert.equal(await page.locator('#se-duration').inputValue(), '30');
    assert.equal(await page.locator('[data-bind="add.0.delta"]').inputValue(), '1'); assert.equal(await page.locator('#se-cost').count(), 0);
-   await page.locator('#se-close').click(); assert.equal(await page.locator('dialog.se-dialog[open]').count(), 0);
+   await page.locator('#se-close').click(); assert.equal(await page.locator('dialog.pd-dialog[open]').count(), 0);
   });
   const draftText = () => page.evaluate(() => (document.getElementById('draft') as HTMLTextAreaElement).value);
   const freshStudio = async () => { await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'}); };
-  const dialogOpen = () => page.locator('dialog.se-dialog[open]').count();
+  const dialogOpen = () => page.locator('dialog.pd-dialog[open]').count();
   const activeId = () => page.evaluate(() => document.activeElement?.id ?? '');
   await check('Step editor opens as a modal from the inspector, traps focus, closes with Escape and restores the invoker focus', async () => {
    await freshStudio(); await page.locator('[data-step="discovery"]').click();
-   await page.locator('#edit-step-inspector').focus(); await page.keyboard.press('Enter');
+   await page.locator('#edit-step').focus(); await page.keyboard.press('Enter');
    const dialog = page.getByRole('dialog', {name: 'Discovery'}); await dialog.waitFor(); assert.equal(await dialogOpen(), 1);
-   assert.equal(await page.evaluate(() => document.querySelector('dialog.se-dialog')!.matches(':modal')), true);
-   assert.equal(await page.locator('#se-title').innerText(), 'Discovery'); assert.equal(await page.locator('#se-kind').innerText(), 'task'); assert.equal(await page.locator('#se-id').innerText(), 'discovery');
+   assert.equal(await page.evaluate(() => document.querySelector('dialog.pd-dialog')!.matches(':modal')), true);
+   assert.equal(await page.locator('#se-title').innerText(), 'Discovery'); assert.equal(await page.locator('#se-chip').innerText(), 'task'); assert.equal(await page.locator('#se-meta').innerText(), 'discovery');
    assert.equal(await activeId(), 'se-name'); assert.equal((await query(page)).selected, 'discovery');
    await assert.rejects(page.locator('#play').click({timeout: 700}), 'the page behind the modal is inert');
-   for (let i = 0; i < 70; i++) { await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => !!document.activeElement?.closest('dialog.se-dialog')), true, 'forward Tab stays inside at ' + i); }
-   for (let i = 0; i < 6; i++) { await page.keyboard.press('Shift+Tab'); assert.equal(await page.evaluate(() => !!document.activeElement?.closest('dialog.se-dialog')), true, 'Shift+Tab stays inside'); }
+   for (let i = 0; i < 70; i++) { await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => !!document.activeElement?.closest('dialog.pd-dialog')), true, 'forward Tab stays inside at ' + i); }
+   for (let i = 0; i < 6; i++) { await page.keyboard.press('Shift+Tab'); assert.equal(await page.evaluate(() => !!document.activeElement?.closest('dialog.pd-dialog')), true, 'Shift+Tab stays inside'); }
    assert.equal(await page.getByRole('button', {name: 'Close'}).count(), 1);
-   await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step-inspector');
+   await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step');
    await page.locator('#edit-step').focus(); await page.keyboard.press('Enter'); await dialog.waitFor(); await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step');
    await page.locator('#edit-step').click(); await page.locator('#se-close').click(); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step');
    await page.locator('#overview').click(); assert.equal(await page.locator('#edit-step').isHidden(), true);
@@ -374,15 +374,15 @@ async function main(): Promise<void> {
    await page.locator('[data-step="discovery"]').click(); await page.locator('#horizon').selectOption('1440'); await page.locator('#play').click();
    await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {snapshot: {minute: number}}}}).LWProcessStudio.query().snapshot.minute > 0);
    await page.locator('#edit-step').click(); await dialog.waitFor(); const frozen = await query(page); assert.equal(frozen.playing, false); await nextFrames(page, 45);
-   assert.equal((await query(page)).snapshot.minute, frozen.snapshot.minute); assert.match(await page.locator('#se-note').innerText(), /paused/);
+   assert.equal((await query(page)).snapshot.minute, frozen.snapshot.minute); assert.match(await page.locator('#se-subtitle').innerText(), /paused/);
    await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0);
   });
   await check('Step editor edits timing, resources, completion effects and flow conditions and applies a fresh paused run', async () => {
    await freshStudio(); await page.locator('#advance').click(); assert.equal((await query(page)).snapshot.minute, 30); const before = await query(page);
-   await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step-inspector').click();
+   await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click();
    await page.locator('#se-name').fill('Discovery workshop'); await page.locator('#se-duration').fill('20'); await page.locator('#se-cost').fill('12');
    assert.match(await page.locator('#se-needs-summary').innerText(), /^Needs: 1 Product owner$/);
-   await page.locator('dialog.se-dialog').getByLabel('Business analysts').fill('2'); assert.match(await page.locator('#se-needs-summary').innerText(), /^Needs: 1 Product owner, 2 Business analysts$/);
+   await page.locator('dialog.pd-dialog').getByLabel('Business analysts').fill('2'); assert.match(await page.locator('#se-needs-summary').innerText(), /^Needs: 1 Product owner, 2 Business analysts$/);
    await page.locator('#se-add-set').click(); await page.locator('[data-bind="set.1.key"]').fill('budgetApproved');
    await page.locator('#se-add-set').click(); await page.locator('[data-bind="set.2.key"]').fill('clientTone'); await page.locator('[data-bind="set.2.value.type"]').selectOption('text'); await page.locator('[data-bind="set.2.value.text"]').fill('calm');
    await page.locator('#se-add-add').click(); await page.locator('[data-bind="add.0.key"]').fill('attempts'); await page.locator('[data-bind="add.0.delta"]').fill('-2');
@@ -392,27 +392,27 @@ async function main(): Promise<void> {
    assert.equal(discovery.name, 'Discovery workshop'); assert.equal(discovery.duration, 20); assert.equal(discovery.cost, 12); assert.deepEqual(discovery.resources, {'product-owner': 1, 'business-analyst': 2});
    assert.deepEqual(discovery.set, {problemFramed: true, budgetApproved: true, clientTone: 'calm'}); assert.deepEqual(discovery.add, {attempts: -2});
    // A decision's conditions: compare with another field and save, then reopen, switch back to a value, reorder and apply. The draft also carries the discovery edits, which the modal announces.
-   await page.locator('[data-step="review-gate"]').click(); await page.locator('#edit-step-inspector').click();
+   await page.locator('[data-step="review-gate"]').click(); await page.locator('#edit-step').click();
    assert.match(await page.locator('#se-flows-0-label').inputValue(), /Findings/); assert.equal(await page.locator('#se-flows-1-cond-on').isChecked(), false); assert.equal(await page.locator('[data-act="up"][data-i="0"]').isDisabled(), true);
-   assert.match(await page.locator('.se-dialog').innerText(), /Cannot move up/); assert.match(await page.locator('.se-dialog').innerText(), /edit the raw JSON draft/);
+   assert.match(await page.locator('.pd-dialog').innerText(), /Cannot move up/); assert.match(await page.locator('.pd-dialog').innerText(), /edit the raw JSON draft/);
    await page.locator('#se-flows-0-cond-mode-field').check(); await page.locator('#se-flows-0-cond-valueField').fill('reworkLimit'); await page.locator('#se-flows-0-cond-op').selectOption('lt'); await page.locator('#se-flows-0-cond-field').fill('reworks'); await page.locator('#se-save').click();
    const gate = (JSON.parse(await draftText()) as LWProcess.Definition).flows.find(f => f.id === 'review-gate-rework')!; assert.deepEqual(gate.when, {field: 'reworks', op: 'lt', valueField: 'reworkLimit'});
-   await page.locator('#edit-step-inspector').click(); assert.equal(await page.locator('#se-other').isVisible(), true); assert.equal(await page.locator('#se-flows-0-cond-mode-field').isChecked(), true);
+   await page.locator('#edit-step').click(); assert.equal(await page.locator('#se-banner').isVisible(), true); assert.equal(await page.locator('#se-flows-0-cond-mode-field').isChecked(), true);
    await page.locator('#se-flows-0-cond-mode-value').check(); await page.locator('#se-flows-0-cond-field').fill('needsRework'); await page.locator('#se-flows-0-cond-op').selectOption('eq'); assert.equal(await page.locator('#se-flows-0-cond-value-type').inputValue(), 'true');
    await page.locator('#se-flows-0-label').fill('Findings to fix'); await page.locator('[data-act="down"][data-i="0"]').click();
    assert.equal(await page.locator('#se-flows-1-label').inputValue(), 'Findings to fix'); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.act), 'up');
-   await page.locator('#se-apply').click(); assert.equal(await dialogOpen(), 0);
+   await page.locator('#se-apply').click(); assert.equal(await page.locator('#se-confirm').isVisible(), true, 'a run past minute 0 asks before it is discarded'); await page.locator('#se-apply-reset').click(); assert.equal(await dialogOpen(), 0);
    const applied = await query(page); assert.equal(applied.snapshot.minute, 0); assert.equal(applied.playing, false); assert.equal(applied.definition.revision, before.definition.revision + 1);
    assert.equal(applied.definition.steps[1]!.name, 'Discovery workshop'); assert.equal(applied.definition.steps[1]!.duration, 20);
    const out = applied.definition.flows.filter(f => f.from === 'review-gate'); assert.deepEqual(out.map(f => f.to), ['handover', 'rework']);
    assert.deepEqual(out[1]!.when, {field: 'needsRework', op: 'eq', value: true}); assert.equal(out[1]!.label, 'Findings to fix'); assert.equal(await page.locator('#message').innerText(), 'Definition applied. New run is paused.');
-   assert.equal(await activeId(), ''); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.step), 'review-gate');
+   assert.equal(await activeId(), ''); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.step), 'review-gate', 'a fresh run clears the selection, so focus falls back to the step list item');
   });
   await check('Step editor shows engine diagnostics inline, keeps the draft on Cancel and asks before discarding changes', async () => {
    await freshStudio(); const before = await query(page), original = await draftText();
-   await page.locator('[data-step="implementation"]').click(); await page.locator('#edit-step-inspector').click();
-   assert.match(await page.locator('#se-summary').innerText(), /No problems/);
-   await page.locator('#se-duration').fill(''); assert.match(await page.locator('#se-err-duration').innerText(), /positive whole-minute duration/); assert.match(await page.locator('#se-summary').innerText(), /1 problem/);
+   await page.locator('[data-step="implementation"]').click(); await page.locator('#edit-step').click();
+   assert.equal(await page.locator('#se-status').innerText(), '', 'no problems means no status line'); assert.equal(await page.locator('#se-duration').getAttribute('aria-invalid'), null);
+   await page.locator('#se-duration').fill(''); assert.match(await page.locator('#se-err-duration').innerText(), /Task duration must be 1 or more/); assert.match(await page.locator('#se-status').innerText(), /1 problem in this step/); assert.equal(await page.locator('#se-duration').getAttribute('aria-invalid'), 'true');
    await page.locator('#se-save').waitFor(); await page.locator('#se-apply').click(); assert.equal(await page.locator('#se-apply-errors').isVisible(), true); assert.match(await page.locator('#se-apply-errors').innerText(), /duration/);
    assert.equal(await dialogOpen(), 1); assert.equal(await draftText(), original, 'a failed apply never writes the draft'); assert.deepEqual((await query(page)).snapshot, before.snapshot);
    await page.locator('#se-duration').fill('25'); assert.equal(await page.locator('#se-err-duration').innerText(), '');
@@ -425,18 +425,18 @@ async function main(): Promise<void> {
    await page.keyboard.press('Escape'); assert.equal(await page.locator('#se-confirm').isHidden(), true); assert.equal(await dialogOpen(), 1); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.bind), 'needs.0.field');
    await page.locator('#se-cancel').click(); assert.equal(await activeId(), 'se-keep'); await page.locator('#se-keep').click(); assert.equal(await activeId(), 'se-cancel'); assert.equal(await page.locator('[data-bind="needs.0.field"]').inputValue(), 'ghostField');
    await page.locator('#se-save').click(); assert.equal(await dialogOpen(), 0); assert.match(await draftText(), /ghostField/);
-   await page.locator('#edit-step-inspector').click(); assert.match(await page.locator('#se-err-needs-0').innerText(), /ghostField/);
+   await page.locator('#edit-step').click(); assert.match(await page.locator('#se-err-needs-0').innerText(), /ghostField/);
    await page.locator('#se-cancel').click(); assert.equal(await dialogOpen(), 0, 'Cancel with no new edits closes at once'); assert.match(await draftText(), /ghostField/);
-   await page.locator('#edit-step-inspector').click(); await page.locator('#se-name').fill('Renamed only in the modal'); await page.locator('#se-close').click();
-   assert.equal(await page.locator('#se-confirm').isVisible(), true); await page.locator('#se-discard').click(); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step-inspector');
+   await page.locator('#edit-step').click(); await page.locator('#se-name').fill('Renamed only in the modal'); await page.locator('#se-close').click();
+   assert.equal(await page.locator('#se-confirm').isVisible(), true); await page.locator('#se-discard').click(); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step');
    assert.doesNotMatch(await draftText(), /Renamed only/); assert.match(await draftText(), /ghostField/);
    await page.locator('#show-definition').click(); await page.locator('#restore-draft').click(); assert.equal(await draftText(), original); await page.locator('#show-events').click(); assert.deepEqual((await query(page)).definition, before.definition);
   });
   await check('Step editor reflows to a full-screen sheet at phone width without horizontal overflow', async () => {
    await freshStudio(); await page.locator('#mode-2d').click(); await page.setViewportSize({width: 390, height: 844}); await nextFrames(page);
-   await page.locator('[data-step="review-gate"]').click(); await page.locator('#edit-step-inspector').click(); await page.locator('dialog.se-dialog[open]').waitFor();
+   await page.locator('[data-step="review-gate"]').click(); await page.locator('#edit-step').click(); await page.locator('dialog.pd-dialog[open]').waitFor();
    const geometry = await page.evaluate(() => {
-    const d = document.querySelector('dialog.se-dialog') as HTMLElement, r = d.getBoundingClientRect(), body = d.querySelector('.se-body') as HTMLElement, foot = d.querySelector('.se-foot')!.getBoundingClientRect(), head = d.querySelector('.se-head')!.getBoundingClientRect();
+    const d = document.querySelector('dialog.pd-dialog') as HTMLElement, r = d.getBoundingClientRect(), body = d.querySelector('.pd-body') as HTMLElement, foot = d.querySelector('.pd-foot')!.getBoundingClientRect(), head = d.querySelector('.pd-head')!.getBoundingClientRect();
     const wide = [...d.querySelectorAll<HTMLElement>('input, select, textarea, button')].filter(n => n.getBoundingClientRect().right > r.right + 0.5 || n.getBoundingClientRect().left < r.left - 0.5).map(n => n.id || n.dataset.bind || n.textContent);
     return {x: r.x, y: r.y, w: r.width, h: r.height, vw: innerWidth, vh: innerHeight, page: document.documentElement.scrollWidth > innerWidth, own: d.scrollWidth > d.clientWidth, scrolls: body.scrollHeight > body.clientHeight, footBottom: foot.bottom, headTop: head.top, wide,
      label: parseFloat(getComputedStyle(d.querySelector('label')!).fontSize), help: parseFloat(getComputedStyle(d.querySelector('.se-help')!).fontSize), input: (d.querySelector('input[type=text]') as HTMLElement).getBoundingClientRect().height};
@@ -446,7 +446,7 @@ async function main(): Promise<void> {
    await page.screenshot({path: path.join(OUT, 'process-step-editor-mobile.png')});
    await page.locator('#se-flows-0-label').scrollIntoViewIfNeeded(); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
    await page.keyboard.press('Escape'); await page.setViewportSize({width: 1440, height: 1060}); await nextFrames(page);
-   await page.locator('#edit-step-inspector').click(); const wide = (await page.locator('dialog.se-dialog').boundingBox())!; assert(wide.width <= 760 && wide.width > 600, 'desktop dialog is a centred sheet, not full screen'); assert(wide.x > 100);
+   await page.locator('#edit-step').click(); const wide = (await page.locator('dialog.pd-dialog').boundingBox())!; assert(wide.width <= 760 && wide.width > 600, 'desktop dialog is a centred sheet, not full screen'); assert(wide.x > 100);
    await page.screenshot({path: path.join(OUT, 'process-step-editor-desktop.png')}); await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0);
   });
   await check('Selecting a step on the zoomed 2D map leaves no scaled focus ring around the card', async () => {
@@ -458,6 +458,207 @@ async function main(): Promise<void> {
    await page.locator('[id^="process-map-"]').first().focus(); await page.keyboard.press('Shift+Tab'); await page.keyboard.press('Tab');
    const stroke = await page.evaluate(() => { const g = document.activeElement as SVGGElement, rect = g.querySelector('rect')!; return {vector: getComputedStyle(rect).vectorEffect, width: getComputedStyle(rect).strokeWidth}; });
    assert.equal(stroke.vector, 'non-scaling-stroke', 'the keyboard focus ring must keep a screen-sized stroke'); assert.equal(stroke.width, '3px');
+  });
+  await check('Shared dialog funnels Escape, Close and backdrop through one dirty guard and restores focus', async () => {
+   await freshStudio(); await page.locator('[data-step="discovery"]').click(); const original = await draftText();
+   assert.equal(await page.locator('#edit-step').getAttribute('aria-haspopup'), 'dialog');
+   const shellInert = () => page.evaluate(() => (document.getElementById('process-shell') as HTMLElement).inert), locked = () => page.evaluate(() => document.documentElement.classList.contains('pd-locked'));
+   const open = async () => { await page.locator('#edit-step').focus(); await page.keyboard.press('Enter'); await page.locator('dialog.pd-dialog[open]').waitFor(); };
+   const backdrop = () => page.mouse.click(4, 4), confirmShown = () => page.locator('#se-confirm').isVisible();
+   await open(); assert.equal(await shellInert(), true); assert.equal(await locked(), true); assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).overflow), 'hidden');
+   await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step'); assert.equal(await shellInert(), false); assert.equal(await locked(), false);
+   await open(); await backdrop(); assert.equal(await dialogOpen(), 0, 'a clean dialog closes on a backdrop click'); assert.equal(await activeId(), 'edit-step');
+   await open(); await page.locator('#se-name').fill('Changed title');
+   await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 1); assert.equal(await confirmShown(), true); assert.equal(await activeId(), 'se-keep');
+   await page.keyboard.press('Escape'); assert.equal(await confirmShown(), false); assert.equal(await dialogOpen(), 1); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.bind), 'name');
+   await page.locator('#se-close').click(); assert.equal(await confirmShown(), true); assert.equal(await activeId(), 'se-keep');
+   await backdrop(); assert.equal(await confirmShown(), false, 'a backdrop click while the guard shows keeps editing'); assert.equal(await dialogOpen(), 1);
+   await backdrop(); assert.equal(await confirmShown(), true, 'a backdrop click on a dirty dialog raises the same guard'); assert.equal(await dialogOpen(), 1);
+   await page.locator('#se-discard').click(); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step'); assert.equal(await draftText(), original);
+   // The invoker may be hidden by the time the dialog closes; focus then falls back to the step list item. Only one modal may be open.
+   await open(); await page.evaluate(() => { (document.getElementById('edit-step') as HTMLElement).hidden = true; });
+   const stacked = await page.evaluate(() => { const D = (globalThis as any).LWProcessDialog, second = D.create(document.body, {id: 'x', size: 'list', title: 'Second', actions: [], onAction() {}}), blocked = second.open() === false, active = D.active() !== null; second.dispose(); return {blocked, active}; });
+   assert.deepEqual(stacked, {blocked: true, active: true}); await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0);
+   assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.step), 'discovery'); await page.evaluate(() => { (document.getElementById('edit-step') as HTMLElement).hidden = false; });
+   const sizes = await page.evaluate(() => {
+    const D = (globalThis as any).LWProcessDialog, make = (id: string, size: string, extra: object = {}) => D.create(document.body, {id, size, title: 'Probe ' + id, actions: [{id: 'ok', label: 'OK'}], onAction() {}, ...extra}), out: Record<string, unknown> = {};
+    const form = make('f', 'form'); form.open(); out.form = form.el.getBoundingClientRect().width; form.close(); form.dispose();
+    const wide = make('w', 'wide'); wide.body.insertAdjacentHTML('beforeend', '<div class="pd-split"><p>a</p><p>b</p></div>'); wide.open();
+    out.wide = wide.el.getBoundingClientRect().width; out.columns = getComputedStyle(wide.body.querySelector('.pd-split')!).gridTemplateColumns.split(' ').length; wide.close(); wide.dispose();
+    const list = make('l', 'list'); list.open(); out.list = list.el.getBoundingClientRect().width; list.close(); list.dispose();
+    const ro = make('r', 'form', {readOnly: true}); ro.open(); out.readOnlyFocus = document.activeElement?.id; ro.close(); ro.dispose(); return out;
+   });
+   assert.equal(sizes.form, 760); assert.equal(sizes.wide, 1000); assert.equal(sizes.columns, 2); assert.equal(sizes.list, 640); assert.equal(sizes.readOnlyFocus, 'r-title');
+  });
+  await check('Draft store keeps one unapplied draft per process and reports the diff for Save to draft', async () => {
+   await freshStudio();
+   const pure = await page.evaluate(() => {
+    const w = globalThis as any, store = w.LWProcessDraft.create(), def = JSON.parse(JSON.stringify(w.LWProcessStudio.definition())), other = JSON.parse(JSON.stringify(w.LWProcessStudio.definitions()[1])), events: string[] = [];
+    store.enter(0, def); store.subscribe((e: {source: string}) => events.push(e.source));
+    const next = JSON.parse(JSON.stringify(def)); next.steps[1].name += ' a'; next.steps[2].name += ' b'; next.steps[3].name += ' c'; next.resources[0].capacity += 1;
+    store.write(JSON.stringify(next, null, 2), 'definition'); store.write(JSON.stringify(next, null, 2), 'definition');
+    const out: Record<string, unknown> = {events: events.slice(), summary: store.describeDiff(), ignoring: store.diff({ignoreStep: def.steps[1].id}).steps, names: store.diff().changedSteps.map((s: {name: string}) => s.name).length};
+    store.leave(); store.enter(1, other); out.otherClean = !store.changed() && store.describeDiff() === ''; store.enter(0, def); out.restored = store.read() === JSON.stringify(next, null, 2) && store.changed();
+    store.write('{"unfinished":', 'raw'); out.invalid = store.diff().invalid; out.invalidText = store.describeDiff(); out.parsed = store.parse() === undefined;
+    store.restore(); out.reset = !store.changed() && store.describeDiff() === ''; store.write(JSON.stringify(next), 'definition'); store.enter(0, next); out.applied = !store.changed(); return out;
+   });
+   assert.deepEqual(pure.events, ['definition']); assert.equal(pure.summary, 'Unapplied draft: 3 steps, 1 resource changed'); assert.equal(pure.ignoring, 2); assert.equal(pure.names, 3);
+   assert.equal(pure.otherClean, true); assert.equal(pure.restored, true); assert.equal(pure.invalid, true); assert.equal(pure.invalidText, 'Unapplied draft: not valid process JSON yet'); assert.equal(pure.parsed, true); assert.equal(pure.reset, true); assert.equal(pure.applied, true);
+   const unapplied = (n: string) => `Unapplied draft: ${n}. Export JSON and Download HTML use the active definition. Export draft saves these edits.`;
+   await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-name').fill('Discovery workshop'); await page.locator('#se-save').click();
+   assert.equal(await page.locator('#draft-state').innerText(), unapplied('1 step changed')); assert.match(await draftText(), /Discovery workshop/);
+   await page.locator('#process-switch').selectOption('1'); await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === 1);
+   assert.match(await page.locator('#draft-state').innerText(), /matches the active definition/); assert.doesNotMatch(await draftText(), /Discovery workshop/);
+   const work = (await query(page)).definition.steps.find(s => s.kind === 'task')!;
+   await page.locator(`[data-step="${work.id}"]`).click(); await page.locator('#edit-step').click(); await page.locator('#se-name').fill('Vendor edit'); await page.locator('#se-save').click();
+   assert.equal(await page.locator('#draft-state').innerText(), unapplied('1 step changed')); assert.match(await draftText(), /Vendor edit/);
+   await page.locator('#process-switch').selectOption('0'); await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === 0);
+   assert.equal(await page.locator('#draft-state').innerText(), unapplied('1 step changed')); assert.match(await draftText(), /Discovery workshop/); assert.doesNotMatch(await draftText(), /Vendor edit/);
+   await page.locator('#process-switch').selectOption('1'); await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === 1);
+   assert.match(await draftText(), /Vendor edit/); await page.locator('#show-definition').click(); await page.locator('#apply').click();
+   assert.match(await page.locator('#draft-state').innerText(), /matches the active definition/); assert.equal((await query(page)).definition.steps.find(s => s.id === work.id)!.name, 'Vendor edit'); await page.locator('#show-events').click();
+   await page.locator('#process-switch').selectOption('0'); await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === 0);
+   assert.equal(await page.locator('#draft-state').innerText(), unapplied('1 step changed'));
+  });
+  const scene = (id: string, x: number) => ({id: 'scene-' + id, position: [x, 0] as [number, number], color: '#ffbb73'});
+  const autoLine = () => ({format: 'wildlands-process', schemaVersion: 1, revision: 1, id: 'auto-line', name: 'Automated line', start: 'start',
+   resources: [{id: 'crew', name: 'Operators', capacity: 2, costPerMinute: 1}, {id: 'welding', name: 'Welding cell', capacity: 2, costPerMinute: 2, kind: 'machine'}, {id: 'runners', name: 'CI runners', capacity: 3, costPerMinute: 1, kind: 'system'}],
+   steps: [{id: 'start', name: 'Start', kind: 'start', scene: scene('start', 0)}, {id: 'prep', name: 'Prepare parts', kind: 'task', duration: 5, cost: 2, resources: {crew: 1}, set: {prepared: true}, scene: scene('prep', 14)},
+    {id: 'weld', name: 'Weld frame', kind: 'machine', duration: 10, cost: 3, resources: {welding: 1}, technology: 'Robot arm', set: {welded: true}, outputs: [{field: 'welded', label: 'Welded part'}], scene: scene('weld', 28)},
+    {id: 'verify', name: 'Verify build', kind: 'system', duration: 4, resources: {runners: 1}, add: {checks: 1}, technology: 'CI pipeline', outputs: [{field: 'checks'}], scene: scene('verify', 42)}, {id: 'end', name: 'Done', kind: 'end', scene: scene('end', 56)}],
+   flows: [{id: 'f1', from: 'start', to: 'prep'}, {id: 'f2', from: 'prep', to: 'weld'}, {id: 'f3', from: 'weld', to: 'verify'}, {id: 'f4', from: 'verify', to: 'end'}], arrivals: [{at: 0, count: 2, interval: 0, data: {}}]});
+  await check('Step editor edits machine and system steps with matching pool kinds, technology and declared outputs', async () => {
+   await freshStudio(); const name = 'auto-line.json';
+   await page.locator('#file').setInputFiles({name, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(autoLine()))});
+   await page.waitForFunction(n => document.getElementById('message')!.textContent!.includes('Imported ' + n), name);
+   const dlg = page.locator('dialog.pd-dialog'), openStep = async (id: string) => { await page.locator(`[data-step="${id}"]`).click(); await page.locator('#edit-step').click(); await dlg.waitFor(); };
+   await openStep('weld'); assert.equal(await page.locator('#se-chip').innerText(), 'machine'); assert.equal(await page.locator('#se-h-automation').count(), 1);
+   assert.equal(await page.locator('#se-technology').inputValue(), 'Robot arm'); assert.equal(await page.locator('#se-technology-count').innerText(), '9 / 80 characters');
+   assert.equal(await dlg.getByLabel('Welding cell').count(), 1); assert.equal(await dlg.getByLabel('Operators').count(), 0); assert.equal(await dlg.getByLabel('CI runners').count(), 0);
+   assert.equal(await page.locator('#se-pools-1-count-help').innerText(), '2 available · 0 = not needed'); assert.match(await dlg.innerText(), /Machine step duration/);
+   await page.locator('#se-technology').fill('Laser welder'); assert.equal(await page.locator('#se-technology-count').innerText(), '12 / 80 characters');
+   await page.locator('#se-add-output').click(); assert.equal(await activeId(), 'se-outputs-1-field'); await page.locator('#se-outputs-1-field').fill('checked');
+   assert.match(await page.locator('#se-err-outputs-1').innerText(), /does not deliver it/); assert.equal(await page.locator('#se-outputs-1-field').getAttribute('aria-invalid'), 'true');
+   assert.equal(await page.locator('#se-err-outputs-1 .se-err').count(), 1, 'one problem per field'); await page.locator('#se-status a[data-goto="se-outputs-1-field"]').click(); assert.equal(await activeId(), 'se-outputs-1-field');
+   await page.locator('#se-add-add').click(); await page.locator('[data-bind="add.0.key"]').fill('checked'); assert.equal(await page.locator('#se-err-outputs-1').innerText(), ''); assert.equal(await page.locator('#se-outputs-1-field').getAttribute('aria-invalid'), null);
+   await page.locator('#se-outputs-1-label').fill('Checks passed'); await page.locator('#se-save').click(); assert.equal(await dialogOpen(), 0);
+   const saved = (JSON.parse(await draftText()) as LWProcess.Definition).steps.find(s => s.id === 'weld')!;
+   assert.equal(saved.technology, 'Laser welder'); assert.deepEqual(saved.outputs, [{field: 'welded', label: 'Welded part'}, {field: 'checked', label: 'Checks passed'}]); assert.deepEqual(saved.add, {checked: 1}); assert.deepEqual(saved.resources, {welding: 1});
+   await openStep('prep'); assert.equal(await page.locator('#se-chip').innerText(), 'task'); assert.equal(await page.locator('#se-h-automation').count(), 0); assert.equal(await page.locator('#se-technology').count(), 0);
+   assert.equal(await dlg.getByLabel('Operators').count(), 1); assert.equal(await dlg.getByLabel('Welding cell').count(), 0); assert.equal(await dlg.getByLabel('CI runners').count(), 0); assert.equal(await page.locator('#se-h-outputs').count(), 1);
+   await page.locator('#se-close').click(); assert.equal(await dialogOpen(), 0);
+   await openStep('verify'); assert.equal(await page.locator('#se-chip').innerText(), 'system'); assert.equal(await page.locator('#se-technology').inputValue(), 'CI pipeline');
+   assert.equal(await dlg.getByLabel('CI runners').count(), 1); assert.equal(await dlg.getByLabel('Operators').count(), 0); assert.equal(await dlg.getByLabel('Welding cell').count(), 0); await page.locator('#se-close').click();
+   // A pool of the wrong kind is shown with its problem, and a missing kind is explained.
+   const broken = autoLine(); broken.resources[1]!.kind = 'people'; await page.locator('#show-definition').click(); await page.locator('#draft').fill(JSON.stringify(broken)); await page.locator('#show-events').click();
+   await openStep('weld'); assert.match(await page.locator('#se-no-pools').innerText(), /Add a machine pool in the Definition editor/);
+   assert.equal(await page.locator('#se-pools-1-count').getAttribute('aria-invalid'), 'true'); assert.match(await page.locator('#se-err-pools-1').innerText(), /Welding cell is a people pool, but machine steps may use only machine pools/);
+   await page.locator('#se-close').click(); assert.equal(await dialogOpen(), 0);
+  });
+  await check('Step editor confirms before applying over a run in progress and links errors to their fields', async () => {
+   await freshStudio(); await page.locator('#advance').click(); const before = await query(page); assert.equal(before.snapshot.minute, 30);
+   await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-duration').fill('20'); await page.locator('#se-apply').click();
+   assert.equal(await page.locator('#se-confirm').isVisible(), true); assert.match(await page.locator('#se-confirm-title').innerText(), /^Applying starts a fresh paused run and discards minute 30 \(\d+ cases?\)\. Export the run report first if you need it\.$/);
+   assert.equal(await activeId(), 'se-back'); assert.equal(await page.locator('#se-apply-reset').innerText(), 'Apply and reset'); assert.deepEqual((await query(page)).definition, before.definition);
+   await page.keyboard.press('Escape'); assert.equal(await page.locator('#se-confirm').isHidden(), true); assert.equal(await dialogOpen(), 1); assert.equal((await query(page)).snapshot.minute, 30);
+   await page.locator('#se-apply').click(); await page.locator('#se-apply-reset').click(); assert.equal(await dialogOpen(), 0);
+   const applied = await query(page); assert.equal(applied.snapshot.minute, 0); assert.equal(applied.definition.steps[1]!.duration, 20); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.step), 'discovery');
+   // Errors link to fields, each field shows one problem, and problems elsewhere in the draft are listed with names.
+   await page.locator('#show-definition').click(); const raw = JSON.parse(await draftText()) as LWProcess.Definition; delete raw.steps[1]!.duration; await page.locator('#draft').fill(JSON.stringify(raw)); await page.locator('#show-events').click();
+   await page.locator('[data-step="implementation"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-duration').fill('');
+   assert.equal(await page.locator('#se-err-duration .se-err').count(), 1); assert.equal(await page.locator('#se-duration').getAttribute('aria-invalid'), 'true');
+   await page.locator('#se-status a[data-goto="se-duration"]').click(); assert.equal(await activeId(), 'se-duration');
+   const elsewhere = await page.locator('#se-status').innerText(); assert.match(elsewhere, /1 problem in this step/); assert.match(elsewhere, /Task duration must be 1 or more/); assert.match(elsewhere, /Elsewhere in the draft \(1\)/); assert.match(elsewhere, /Discovery › duration/); assert.match(elsewhere, /Definition editor/);
+   await page.locator('#se-add-set').click(); await page.locator('[data-bind="set.1.key"]').fill(''); assert.equal(await page.locator('[data-bind="set.1.key"]').getAttribute('aria-invalid'), 'true'); assert.match(await page.locator('#se-status').innerText(), /Value 2: Name the field or remove this row/);
+   await page.locator('[data-bind="set.1.key"]').fill('extra'); await page.locator('#se-duration').fill('25'); assert.doesNotMatch(await page.locator('#se-status').innerText(), /in this step/);
+   await page.locator('#se-apply').click(); assert.equal(await page.locator('#se-apply-errors').isVisible(), true); assert.match(await page.locator('#se-apply-errors').innerText(), /Discovery › duration/); assert.equal(await dialogOpen(), 1);
+   await page.locator('#se-cancel').click(); await page.locator('#se-discard').click(); assert.equal(await dialogOpen(), 0);
+   // An unparseable draft cannot be edited: the page status line points to the Definition editor.
+   await page.locator('#show-definition').click(); await page.locator('#draft').fill('{bad'); await page.locator('#show-events').click(); await page.locator('#edit-step').click();
+   assert.equal(await dialogOpen(), 0); assert.match(await page.locator('#message').innerText(), /not valid process JSON.*Definition editor/); assert.equal(await page.locator('#message').getAttribute('aria-live'), 'assertive');
+   await page.locator('#show-definition').click(); await page.locator('#restore-draft').click(); await page.locator('#show-events').click();
+  });
+  const automationFixture = (d: LWProcess.Definition) => {
+   const scene = (id: string, x: number) => ({id: 'scene-' + id, position: [x, 0] as [number, number], color: '#91b9d5'});
+   Object.assign(d, {id: 'automation-fixture', name: 'Automation fixture', description: 'A people task, a machine step and a system step.', start: 'begin', arrivals: [{at: 0, count: 4, interval: 0, data: {}}],
+    resources: [{id: 'team', name: 'Team', capacity: 2, costPerMinute: 1}, {id: 'arm', name: 'Robot arm', capacity: 1, costPerMinute: 2, kind: 'machine'}, {id: 'ci', name: 'CI runners', capacity: 1, costPerMinute: 1, kind: 'system'}],
+    steps: [{id: 'begin', name: 'Begin', kind: 'start', scene: scene('begin', 0)}, {id: 'plan', name: 'Plan the order', kind: 'task', duration: 10, resources: {team: 1}, scene: scene('plan', 14)},
+     {id: 'pack', name: 'Pack boxes', kind: 'machine', technology: 'Robot arm', duration: 20, resources: {arm: 1}, scene: scene('pack', 28)}, {id: 'build', name: 'Build and test the release', kind: 'system', technology: 'CI/CD pipeline', duration: 20, resources: {ci: 1}, scene: scene('build', 42)},
+     {id: 'finish', name: 'Finish', kind: 'end', scene: scene('finish', 56)}],
+    flows: [{id: 'f1', from: 'begin', to: 'plan'}, {id: 'f2', from: 'plan', to: 'pack'}, {id: 'f3', from: 'pack', to: 'build'}, {id: 'f4', from: 'build', to: 'finish'}]});
+  };
+  /** Draws one room in a throw-away 3D surface and reports its text signs and whether its visible props moved between frames (playing), stayed put when paused, and left the run untouched. */
+  const roomMotion = (stepId: string) => page.evaluate(id => {
+   const w = globalThis as any, T = w.THREE, view = w.LWProcessStudio.query(), before = JSON.stringify(view.snapshot);
+   const canvas = document.createElement('canvas'); canvas.style.cssText = 'width:400px;height:300px'; document.body.append(canvas);
+   let captured: any; const Original = T.WebGLRenderer;
+   T.WebGLRenderer = class extends Original {constructor(options: any) {super(options); const render = this.render; this.render = (scene: any, camera: any) => {captured = scene; return render.call(this, scene, camera);};}};
+   const surface = w.LWProcess3D.create(canvas, view.definition, () => {});
+   try {
+    view.selected = id; view.playing = true; surface.draw(view, .01);
+    let station: any; captured.traverse((o: any) => {if (o.isGroup && o.userData.stepId === id) station = o;});
+    const signs: string[] = []; let meshes = 0; station.traverse((o: any) => {if (o.userData.signText) signs.push(o.userData.signText); if (o.isMesh) meshes++;});
+    const pose = () => {const out: number[] = []; const walk = (o: any) => {if (!o.visible || o.isSprite) return; out.push(o.position.x, o.position.y, o.position.z, o.rotation.x, o.rotation.y, o.rotation.z, o.scale.x, o.scale.y, o.scale.z); o.children.forEach(walk);}; walk(station); return out.map(n => Math.round(n * 1e5)).join(',');};
+    const first = pose(); surface.draw(view, .1); const second = pose(); view.playing = false; surface.draw(view, .1); const paused = pose(); surface.draw(view, .1);
+    return {signs, meshes, moved: first !== second, frozen: second === paused && paused === pose(), unchanged: before === JSON.stringify(w.LWProcessStudio.query().snapshot)};
+   } finally {surface.dispose(); canvas.remove(); T.WebGLRenderer = Original;}
+  }, stepId);
+  await check('Machine and system rooms render dedicated models and animate only during playback', async () => {
+   await freshStudio(); await applyDraft(automationFixture); assert.equal((await query(page)).definition.id, 'automation-fixture');
+   const idle = {pack: await roomMotion('pack'), build: await roomMotion('build'), plan: await roomMotion('plan')};
+   assert.deepEqual([idle.pack.moved, idle.build.moved, idle.pack.frozen, idle.build.frozen], [false, false, true, true], 'idle machine and system rooms stay quiet even while the clock plays');
+   assert.deepEqual(idle.pack.signs, ['Robot arm']); assert.deepEqual(idle.build.signs, ['CI/CD pipeline']); assert.deepEqual(idle.plan.signs, []);
+   for (const room of [idle.pack, idle.build]) assert(room.meshes > 40 && room.meshes < 160, `dedicated model with a bounded mesh count (${room.meshes})`);
+   await page.locator('#advance').click(); for (let i = 0; i < 2; i++) await page.locator('#step').click();
+   const running = (await query(page)).snapshot; assert.equal(running.minute, 32); assert(running.steps.find(s => s.id === 'pack')!.active > 0 && running.steps.find(s => s.id === 'build')!.active > 0);
+   for (const id of ['pack', 'build'] as const) {
+    const live = await roomMotion(id); assert.deepEqual([live.moved, live.frozen, live.unchanged], [true, true, true], id + ' animates while playing and freezes when paused');
+    await page.emulateMedia({reducedMotion: 'reduce'}); const calm = await roomMotion(id); await page.emulateMedia({reducedMotion: 'no-preference'});
+    assert.deepEqual([calm.moved, calm.frozen, calm.unchanged], [false, true, true], id + ' stays still with reduced motion');
+   }
+   await page.locator('#mode-2d').click(); await page.locator('[data-step="pack"]').click();
+   const pack = await page.locator('#map svg').textContent() ?? ''; assert.match(pack, /Running automatically/); assert.match(pack, /machine · 20 min/); assert.match(pack, /Robot arm/); assert.doesNotMatch(pack, /Typing|Drafting|Building/);
+   await page.locator('[data-step="build"]').click(); const build = await page.locator('#map svg').textContent() ?? ''; assert.match(build, /Running automatically/); assert.match(build, /system · 20 min/); assert.match(build, /CI\/CD pipeline/);
+   assert.match(await page.locator('#map svg g[role=button]').getAttribute('aria-label') ?? '', /\(system, CI\/CD pipeline\)/);
+   await page.locator('#mode-3d').click(); await nextFrames(page); await page.locator('#overview').click(); await nextFrames(page);
+  });
+  await check('2D map keeps titles legible at fit zoom and hides secondary text until zoomed', async () => {
+   await freshStudio(); await switchTo(1); await page.locator('#mode-2d').click();
+   const total = (await query(page)).definition.steps.length; await page.waitForFunction(n => document.querySelectorAll('#map svg .pm-title').length === n, total); assert(total >= 22);
+   const titles = () => page.evaluate(() => { const svg = document.querySelector('#map svg') as SVGSVGElement, t = svg.querySelector('.pm-title') as SVGTextElement; return {px: parseFloat(t.getAttribute('font-size')!) * svg.getScreenCTM()!.a, box: t.getBoundingClientRect().height, secondary: [...svg.querySelectorAll('.pm-secondary')].some(n => getComputedStyle(n).display !== 'none'), hint: !(document.getElementById('map-zoom-hint') as HTMLElement).hidden, squeezed: svg.querySelectorAll('[textLength],[lengthAdjust]').length}; });
+   const fitted = await titles(); assert(fitted.px >= 10.9, `title is ${fitted.px}px on screen at fit`); assert(fitted.box >= 10); assert.equal(fitted.secondary, false); assert.equal(fitted.hint, true); assert.equal(fitted.squeezed, 0);
+   assert.equal(await page.evaluate(() => document.getElementById('map-zoom-hint')!.textContent), 'Zoom in for details');
+   const box = (await page.locator('#map').boundingBox())!; await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+   for (let i = 0; i < 4 && !(await titles()).secondary; i++) await page.mouse.wheel(0, -500);
+   await page.waitForFunction(() => [...document.querySelectorAll('#map svg .pm-secondary')].some(n => getComputedStyle(n).display !== 'none'));
+   const zoomed = await titles(); assert(zoomed.px >= 10.9 && zoomed.secondary && !zoomed.hint, 'secondary lines appear and the hint goes once zoomed');
+   await page.locator('button[aria-label="Reset map view"]').click(); await page.waitForFunction(() => ![...document.querySelectorAll('#map svg .pm-secondary')].some(n => getComputedStyle(n).display !== 'none'));
+   assert.equal((await titles()).hint, true);
+   await page.locator('button[aria-label="Zoom in"]').click(); await page.locator('button[aria-label="Zoom in"]').click(); assert.equal((await titles()).secondary, false, 'two small steps are still below the 9px secondary size');
+   const long = await page.evaluate(() => { const d = (globalThis as any).LWProcessStudio.query().definition.steps.reduce((a: any, s: any) => s.name.length > a.name.length ? s : a); const g = document.getElementById('process-map-' + d.id)!; return {full: d.name, tip: g.querySelector('title')!.textContent, shown: g.querySelector('.pm-title')!.textContent!}; });
+   assert.equal(long.tip, long.full); assert(long.full.length > 20 && long.shown.length < long.full.length && long.shown.includes('…'), 'long names are truncated with an ellipsis and keep the full name in the title');
+   const idle = await page.evaluate(() => { const card = document.querySelector('#map svg .pm-card.pm-idle') as SVGRectElement; return {stroke: getComputedStyle(card).stroke, dash: getComputedStyle(card).strokeDasharray}; });
+   assert.equal(idle.stroke, 'rgb(54, 65, 80)'); assert.notEqual(idle.dash, 'none');
+   assert.equal(await page.locator('#map svg').getAttribute('aria-describedby'), 'camera-hint'); assert.equal(await page.locator('#camera-hint').count(), 1);
+   await page.locator('[id^="process-map-"]').first().focus(); await page.keyboard.press('Shift+Tab'); await page.keyboard.press('Tab');
+   const ring = await page.evaluate(() => { const g = document.activeElement as SVGGElement, outer = getComputedStyle(g.querySelector('.pm-focus-ring')!), card = getComputedStyle(g.querySelector('rect')!); return {display: outer.display, outer: outer.stroke, width: outer.strokeWidth, inner: card.stroke}; });
+   assert.deepEqual(ring, {display: 'inline', outer: 'rgb(255, 255, 255)', width: '7px', inner: 'rgb(255, 187, 115)'});
+  });
+  await check('3D room captions never sit under props', async () => {
+   await freshStudio(); await applyDraft(automationFixture);
+   const sprites = await page.evaluate(() => {
+    const w = globalThis as any, T = w.THREE, view = w.LWProcessStudio.query(), canvas = document.createElement('canvas'); canvas.style.cssText = 'width:400px;height:300px'; document.body.append(canvas);
+    let captured: any; const Original = T.WebGLRenderer;
+    T.WebGLRenderer = class extends Original {constructor(options: any) {super(options); const render = this.render; this.render = (scene: any, camera: any) => {captured = scene; return render.call(this, scene, camera);};}};
+    const surface = w.LWProcess3D.create(canvas, view.definition, () => {});
+    try {
+     surface.draw(view, .01); const found: any[] = [];
+     captured.traverse((o: any) => {if (o.isSprite) { const c = o.material.map.image as HTMLCanvasElement, alpha = c.getContext('2d')!.getImageData(c.width / 2, 40, 1, 1).data[3]; found.push({depthTest: o.material.depthTest, depthWrite: o.material.depthWrite, transparent: o.material.transparent, order: o.renderOrder, alpha});}});
+     return {found, steps: view.definition.steps.length};
+    } finally {surface.dispose(); canvas.remove(); T.WebGLRenderer = Original;}
+   });
+   assert.equal(sprites.found.length, sprites.steps * 2, 'one name pill and one front caption per room; the floating sub-label is folded into the caption');
+   for (const s of sprites.found) assert.deepEqual([s.depthTest, s.depthWrite, s.transparent, s.order >= 20, s.alpha > 150], [false, false, true, true, true], 'captions ignore depth, draw last and sit on a dark pill');
   });
   await check('Process browser lifecycle emits no runtime errors or network requests', async () => {
    assert.deepEqual(diagnostics.errors, []); assert.deepEqual(diagnostics.requests, []);

@@ -1,14 +1,24 @@
 # Agency delivery lab
 
-This game holds two synthetic processes (`content.definitions`), switchable in
+This game holds three synthetic processes (`content.definitions`), switchable in
 the studio with the **Process** selector: the agency pipeline below, first and
-initially active, and `content/agile-vendor.process.json`, a vendor running an agile
+initially active; `content/agile-vendor.process.json`, a vendor running an agile
 project (an absolute contractual kickoff-date timer, then a release loop built from
 counters: per-project iterations per release and releases, iteration and increment
 counters, a customer review-window timer, UAT with one bounded fix loop, release
-go-live and handover; a customer product owner and experts take part). Neither models a real company;
-all values are authored examples. Switching restarts the chosen process paused at
-minute 0; Download HTML keeps both with your edits.
+go-live and handover; a customer product owner and experts take part). CI/CD runs
+there as automated `system` steps (CI build after each iteration, a regression
+suite before UAT, automated deployment after go-live) on software pools, so they
+occupy no people; and `content/order-fulfilment.process.json`, an order fulfilment
+line with software systems (order validation, fraud scoring, documents,
+notifications), `machine` steps (picking robots, packing line, label applicator),
+a human spot-check and a bounded repack loop. Orders arrive as a steady open stream with random gaps (seed 20260607), a drawn
+priority and a 12% chance of a defect; picking, packing and the spot-check take random
+minutes, and a further 6% chance route sends a parcel to repack. It is meant to run
+unlimited; three packing lanes run at roughly three quarters of capacity. None of them models a real company, warehouse or
+vendor; all values are authored, illustrative and synthetic, and the automated steps
+are simulated assumptions, not integrations. Switching restarts the chosen process
+paused at minute 0; Download HTML keeps all three with your edits.
 
 The agency process is a synthetic agency process demonstrating step scenes, parallel product/technical design
 (business analysts and requirements engineers), a prioritised Ready to build backlog

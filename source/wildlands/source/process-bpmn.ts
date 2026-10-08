@@ -35,38 +35,62 @@ declare namespace LWProcessBpmn {
   else add(4, `<bpmn:timeDate xsi:type="bpmn:tFormalExpression">${epochInstant(s.until)}</bpmn:timeDate>`);
   add(3, '</bpmn:timerEventDefinition>');
  }
+ /** Work steps run like tasks: task, machine and system. */
+ const isWork = (s: LWProcess.Step) => s.kind === 'task' || s.kind === 'machine' || s.kind === 'system';
  const scalar = (name: string, v: LWProcess.Scalar) => `${name}type="${v === null ? 'null' : typeof v}" ${name}value="${esc(v === null ? '' : v)}"`.replace(/^ /, '');
+ const attrs = (o: Record<string, unknown>) => Object.entries(o).filter(([, v]) => v !== undefined).map(([k, v]) => ` ${k}="${esc(v)}"`).join('');
+ const distAttrs = (x: LWProcess.Dist) => attrs({dist: x.dist, min: x.min, mode: x.mode, max: x.max, mean: x.mean});
+ /** Random case fields as `<wl:draw>`; true/false results and choice values keep their exact scalar type. */
+ function drawLines(draws: LWProcess.Draw[], depth: number, add: (depth: number, line: string) => void): void {
+  for (const x of draws) {
+   const head = `<wl:draw${attrs({field: x.field, kind: x.kind, percent: x.percent, min: x.min, max: x.max})}`;
+   if (x.whenTrue === undefined && x.whenFalse === undefined && !x.values) { add(depth, head + '/>'); continue; }
+   add(depth, head + '>');
+   if (x.whenTrue !== undefined) add(depth + 1, `<wl:whenTrue ${scalar('', x.whenTrue)}/>`);
+   if (x.whenFalse !== undefined) add(depth + 1, `<wl:whenFalse ${scalar('', x.whenFalse)}/>`);
+   for (const v of x.values ?? []) add(depth + 1, `<wl:choice weight="${v.weight}" ${scalar('', v.value)}/>`);
+   add(depth, '</wl:draw>');
+  }
+ }
  function exportBpmn(input: unknown): string {
   const d = root.LWProcessCatalog.validate(input, true).definition;
   if (!d) throw Error('Only a structurally valid process definition can be exported.');
   const steps = new Map(d.steps.map(s => [s.id, s])), xs = d.steps.map(s => s.scene.position[0]), ys = d.steps.map(s => s.scene.position[1]);
   const minX = Math.min(...xs), minY = Math.min(...ys), pid = 'Process_' + d.id;
-  const nodeId = (s: LWProcess.Step) => (s.kind === 'start' ? 'StartEvent_' : s.kind === 'end' ? 'EndEvent_' : s.kind === 'timer' ? 'Event_' : s.kind === 'task' ? 'Activity_' : 'Gateway_') + s.id;
+  const nodeId = (s: LWProcess.Step) => (s.kind === 'start' ? 'StartEvent_' : s.kind === 'end' ? 'EndEvent_' : s.kind === 'timer' ? 'Event_' : isWork(s) ? 'Activity_' : 'Gateway_') + s.id;
   const out: string[] = [], add = (depth: number, line: string) => out.push(' '.repeat(depth * 2) + line);
-  const attrs = (o: Record<string, unknown>) => Object.entries(o).filter(([, v]) => v !== undefined).map(([k, v]) => ` ${k}="${esc(v)}"`).join('');
   add(0, '<?xml version="1.0" encoding="UTF-8"?>');
   add(0, `<bpmn:definitions xmlns:bpmn="${MODEL}" xmlns:bpmndi="${DI}" xmlns:dc="${DC}" xmlns:di="${DIAG}" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:wl="${WL}"` +
    attrs({id: 'Definitions_' + d.id, name: d.name, targetNamespace: 'urn:wildlands:process:' + d.id, exporter: 'Wildlands Process Studio', exporterVersion: '1'}) + '>');
   for (const r of d.resources) {
    add(1, `<bpmn:resource id="Resource_${r.id}" name="${esc(r.name)}">`); add(2, '<bpmn:extensionElements>');
-   add(3, `<wl:resource id="${r.id}" capacity="${r.capacity}" costPerMinute="${r.costPerMinute}"/>`); add(2, '</bpmn:extensionElements>'); add(1, '</bpmn:resource>');
+   add(3, `<wl:resource id="${r.id}" capacity="${r.capacity}" costPerMinute="${r.costPerMinute}"${r.kind ? ` kind="${r.kind}"` : ''}/>`); add(2, '</bpmn:extensionElements>'); add(1, '</bpmn:resource>');
   }
   add(1, `<bpmn:process id="${pid}" name="${esc(d.name)}" isExecutable="false">`);
   if (d.description) add(2, `<bpmn:documentation>${esc(d.description)}</bpmn:documentation>`);
-  add(2, '<bpmn:extensionElements>'); add(3, `<wl:process id="${d.id}" revision="${d.revision}"${d.$schema ? ` schema="${esc(d.$schema)}"` : ''}/>`);
+  add(2, '<bpmn:extensionElements>'); add(3, `<wl:process id="${d.id}" revision="${d.revision}"${d.$schema ? ` schema="${esc(d.$schema)}"` : ''}${d.seed !== undefined ? ` seed="${d.seed}"` : ''}/>`);
   for (const a of d.arrivals) {
-   add(3, `<wl:arrival at="${a.at}" count="${a.count}" interval="${a.interval}"${Object.keys(a.data).length ? '>' : '/>'}`);
-   if (Object.keys(a.data).length) { for (const [k, v] of Object.entries(a.data)) add(4, `<wl:data name="${k}" ${scalar('', v)}/>`); add(3, '</wl:arrival>'); }
+   const inner = Object.keys(a.data).length > 0 || a.gap !== undefined || (a.draws?.length ?? 0) > 0;
+   add(3, `<wl:arrival${attrs({at: a.at, count: a.count, until: a.until, open: a.open === undefined ? undefined : 'true', interval: a.interval})}${inner ? '>' : '/>'}`);
+   if (inner) {
+    if (a.gap) add(4, `<wl:gap${distAttrs(a.gap)}/>`);
+    drawLines(a.draws ?? [], 4, add);
+    for (const [k, v] of Object.entries(a.data)) add(4, `<wl:data name="${k}" ${scalar('', v)}/>`);
+    add(3, '</wl:arrival>');
+   }
   }
   add(2, '</bpmn:extensionElements>');
   for (const s of d.steps) {
-   const element = s.kind === 'start' ? 'startEvent' : s.kind === 'end' ? 'endEvent' : s.kind === 'task' ? 'task' : s.kind === 'timer' ? 'intermediateCatchEvent' : s.kind === 'decision' ? 'exclusiveGateway' : 'parallelGateway';
+   const element = s.kind === 'start' ? 'startEvent' : s.kind === 'end' ? 'endEvent' : s.kind === 'system' ? 'serviceTask' : isWork(s) ? 'task' : s.kind === 'timer' ? 'intermediateCatchEvent' : s.kind === 'decision' ? 'exclusiveGateway' : 'parallelGateway';
    const incoming = d.flows.filter(f => f.to === s.id), outgoing = d.flows.filter(f => f.from === s.id), fallback = s.kind === 'decision' ? outgoing.find(f => !f.when) : undefined;
-   const gateway = s.kind === 'task' || s.kind === 'timer' || s.kind === 'start' || s.kind === 'end' ? {} : {gatewayDirection: s.kind === 'join' ? 'Converging' : 'Diverging'};
+   const gateway = isWork(s) || s.kind === 'timer' || s.kind === 'start' || s.kind === 'end' ? {} : {gatewayDirection: s.kind === 'join' ? 'Converging' : 'Diverging'};
    add(2, `<bpmn:${element}${attrs({id: nodeId(s), name: s.name, default: fallback ? 'Flow_' + fallback.id : undefined, ...gateway})}>`);
    if (s.description) add(3, `<bpmn:documentation>${esc(s.description)}</bpmn:documentation>`);
    add(3, '<bpmn:extensionElements>');
-   add(4, `<wl:step id="${s.id}"${attrs({duration: s.duration, until: s.until, cost: s.cost, join: s.join})}/>`);
+   add(4, `<wl:step id="${s.id}"${attrs({kind: s.kind === 'machine' || s.kind === 'system' ? s.kind : undefined, duration: s.duration, until: s.until, cost: s.cost, join: s.join, technology: s.technology})}/>`);
+   if (s.timing) add(4, `<wl:timing${distAttrs(s.timing)}/>`);
+   drawLines(s.draws ?? [], 4, add);
+   for (const o of s.outputs ?? []) add(4, `<wl:output${attrs({field: o.field, label: o.label})}/>`);
    for (const [k, v] of Object.entries(s.add ?? {})) add(4, `<wl:add name="${k}" delta="${v}"/>`);
    for (const [k, v] of Object.entries(s.set ?? {})) add(4, `<wl:set name="${k}" ${scalar('', v)}/>`);
    for (const n of s.needs ?? []) add(4, `<wl:need field="${n.field}"${n.op ? ` op="${n.op}" ${scalar('', n.value ?? null)}` : ''}${n.label ? ` label="${esc(n.label)}"` : ''}/>`);
@@ -87,14 +111,18 @@ declare namespace LWProcessBpmn {
   for (const f of d.flows) {
    add(2, `<bpmn:sequenceFlow id="Flow_${f.id}"${attrs({name: f.label, sourceRef: nodeId(steps.get(f.from)!), targetRef: nodeId(steps.get(f.to)!)})}>`);
    add(3, '<bpmn:extensionElements>'); add(4, `<wl:flow id="${f.id}"/>`);
-   if (f.when) add(4, `<wl:when field="${f.when.field}" op="${f.when.op}" ${f.when.valueField === undefined ? scalar('', f.when.value) : `valueField="${f.when.valueField}"`}/>`);
+   const when = f.when, chance = when?.chance, field = when && when.chance === undefined ? when : undefined;
+   if (chance !== undefined) add(4, `<wl:when chance="${chance}"/>`);
+   else if (field) add(4, `<wl:when field="${field.field}" op="${field.op}" ${field.valueField === undefined ? scalar('', field.value) : `valueField="${field.valueField}"`}/>`);
    add(3, '</bpmn:extensionElements>');
-   const operand = f.when && conditionOperand(f.when);
-   if (f.when && operand !== undefined) add(3, `<bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">\${${f.when.field} ${esc(SYMBOLS[f.when.op])} ${operand}}</bpmn:conditionExpression>`);
+   // A chance has no standard expression syntax; it uses the BPMN `language` attribute with a Wildlands language URI and the plain text `15%`.
+   if (chance !== undefined) add(3, `<bpmn:conditionExpression xsi:type="bpmn:tFormalExpression" language="${WL}#chance">${chance}%</bpmn:conditionExpression>`);
+   const operand = field && conditionOperand(field);
+   if (field && operand !== undefined) add(3, `<bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">\${${field.field} ${esc(SYMBOLS[field.op])} ${operand}}</bpmn:conditionExpression>`);
    add(2, '</bpmn:sequenceFlow>');
   }
   add(1, '</bpmn:process>');
-  const shape = (s: LWProcess.Step) => { const [w, h] = SIZE[s.kind === 'task' ? 'task' : s.kind === 'start' || s.kind === 'end' || s.kind === 'timer' ? 'event' : 'gateway']!; return {w, h, cx: 150 + (s.scene.position[0] - minX) * UNIT, cy: 120 + (s.scene.position[1] - minY) * UNIT}; };
+  const shape = (s: LWProcess.Step) => { const [w, h] = SIZE[isWork(s) ? 'task' : s.kind === 'start' || s.kind === 'end' || s.kind === 'timer' ? 'event' : 'gateway']!; return {w, h, cx: 150 + (s.scene.position[0] - minX) * UNIT, cy: 120 + (s.scene.position[1] - minY) * UNIT}; };
   add(1, '<bpmndi:BPMNDiagram id="Diagram_1">'); add(2, `<bpmndi:BPMNPlane id="Plane_1" bpmnElement="${pid}">`);
   for (const s of d.steps) {
    const b = shape(s); add(3, `<bpmndi:BPMNShape id="${nodeId(s)}_di" bpmnElement="${nodeId(s)}"${s.kind === 'decision' ? ' isMarkerVisible="true"' : ''}>`);

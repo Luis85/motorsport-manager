@@ -77,6 +77,29 @@ and `rename` complete the supported edit vocabulary.
 - Resource demands are simultaneous. A task needing a business analyst and a
   requirements engineer waits until both are available. There is no hidden staff capacity.
 
+## Add machines and systems
+
+Mark pools with a `kind` and demand them from `machine` or `system` steps. Tasks keep
+using `people` pools (the default); a machine step may demand only machine pools and a
+system step only system pools, and each must demand at least one.
+
+```json
+"resources": [
+  {"id": "staff", "name": "Staff", "capacity": 1, "costPerMinute": 2},
+  {"id": "robot", "name": "Robot cell", "capacity": 1, "costPerMinute": 5, "kind": "machine"},
+  {"id": "ci", "name": "Build farm", "capacity": 2, "costPerMinute": 1, "kind": "system"}
+],
+"steps": [
+  {"id": "weld", "name": "Weld frame", "kind": "machine", "duration": 6, "resources": {"robot": 1},
+   "technology": "Robot arm", "set": {"welded": true}, "outputs": [{"field": "welded", "label": "Welded frame"}]},
+  {"id": "build", "name": "Run build", "kind": "system", "duration": 5, "resources": {"ci": 1},
+   "technology": "CI/CD pipeline", "needs": [{"field": "welded"}], "set": {"built": true}, "outputs": [{"field": "built"}]}
+]
+```
+
+`technology` is a label only and `outputs` must each be delivered by the same step's
+`set` or `add`. These are simulated assumptions; nothing is executed or integrated.
+
 ## Declare needs and backlogs
 
 - A step delivers data with `set` (for example `"set": {"requirementsReady": true}`)
@@ -118,6 +141,61 @@ finished. Timers cannot be interrupted or cancelled and have no calendars.
 
 The complete [agency example](../concepts/agency-delivery/README.md) demonstrates
 all of these rules in its [JSON definition](../concepts/agency-delivery/content/agency.process.json).
+
+## Simulate steady demand and random outcomes
+
+By default every arrival is a finite batch, so the process drains and completes.
+For steady demand, give an arrival entry one end rule: `count` (the batch, 1 to
+200), `until` (an absolute minute) or `open: true` (for the whole run). Randomness is
+opt-in and always comes from the definition's `seed` (or `process run --seed N`):
+the same seed reproduces the same run, a different seed gives another one. Results
+are scenario assumptions, not forecasts. The full rules are in
+[Randomness, seeds and steady arrivals](../reference/business-process-engine.md).
+
+A steady open stream with a random gap and a route that sends 15% of the work to
+rework (the 15% is drawn per case; `check` takes the first matching flow, then the
+fallback):
+
+```json
+{
+  "seed": 42,
+  "arrivals": [
+    {"at": 0, "open": true, "interval": 6,
+     "gap": {"dist": "exponential", "mean": 6, "max": 30}, "data": {}}
+  ],
+  "steps": [
+    {"id": "check", "name": "Quality check", "kind": "decision", "scene": {"id": "scene-check", "position": [24, 0], "color": "#ffffff"}}
+  ],
+  "flows": [
+    {"id": "check-rework", "from": "check", "to": "rework", "label": "Defect", "when": {"chance": 15}},
+    {"id": "check-ship", "from": "check", "to": "ship"}
+  ]
+}
+```
+
+`interval` stays required as the mean spacing. Run it unlimited (Run length
+"Unlimited" in the page, `horizon: null` in code) and it keeps going until you pause;
+at 500 unfinished cases further arrivals are refused (event `arrival-dropped`,
+metric `dropped`) and only the 200 newest finished cases stay in the case list while
+the totals remain exact.
+
+Uniform task timing with a random case attribute written at completion:
+
+```json
+{
+  "id": "build", "name": "Build", "kind": "task", "duration": 8,
+  "timing": {"dist": "uniform", "min": 4, "max": 12},
+  "resources": {"dev": 1},
+  "draws": [{"field": "severity", "kind": "choice",
+             "values": [{"value": "minor", "weight": 3}, {"value": "major", "weight": 1}]}],
+  "scene": {"id": "scene-build", "position": [12, 0], "color": "#ffbb73"}
+}
+```
+
+`duration` stays as the planning value (8 minutes); each visit draws 4 to 12 whole
+minutes when its work starts and the receipt records the realized `duration`. The
+drawn `severity` appears in the receipt `changes` and can feed a later bare `needs`
+entry or a decision condition.
 
 ## Author each step scene with Scene Forge
 
@@ -186,7 +264,7 @@ Open the HTML directly. Use **Run simulation**, **Pause**, **Step 1 min**,
 **Advance 30 min**, and **Reset run**. **2D** and **3D** show one simulation;
 **Step scenes** and **Whole process** change the view without advancing time.
 **Definition editor** offers validation before **Apply draft & reset run**.
-To change one step, select it and choose **Edit step…** (in the inspector or beside **Frame view**). The step editor opens as a dialog with sections for basics, timing, people and capacity, completion values and counters, needs from earlier steps, backlog and outgoing flows (conditions on decisions). Problems the engine finds for that step appear beside the fields as you type. **Save to draft** keeps your edits in the draft without starting anything; **Apply and reset run** applies the whole draft (including other unapplied edits, which the dialog announces) and starts a fresh paused run. **Cancel**, Escape and **Close** ask before throwing edits away. The run pauses while the dialog is open. Adding or removing flows and steps is still done in the raw JSON draft.
+To change one step, select it and choose **Edit step…** beside **Frame view**. The step editor opens as a dialog whose sections follow the kind of step: basics, timing and cost, people and capacity (tasks), equipment (machine steps) or systems (system steps), completion values and counters, declared outputs, needs from earlier steps, backlog and outgoing flows (conditions on decisions, with a short summary of the order the paths are checked). Machine and system steps add an **Automation** section for the optional technology label and list only pools of their own kind; if the process has no machine or system pool yet, the dialog says so and points to the Definition editor. Problems the engine finds for the step appear beside the fields as you type, and the problem list at the top links to each field. **Save to draft** keeps your edits in the draft without starting anything and the draft summary reads, for example, "Unapplied draft: 1 step changed". **Apply and reset run** applies the whole draft (including other unapplied edits, which a banner announces); when a run is already in progress it first asks you to confirm that the run will be discarded, so export the run report beforehand if you need it. **Cancel**, Escape, **Close** and a click outside the dialog all ask before throwing edits away. The run pauses while the dialog is open. Adding or removing flows and steps is still done in the raw JSON draft.
 Unapplied edits stay in the draft when you switch to Activity. **Export draft**
 saves that text exactly, including unfinished JSON. **Export JSON** and
 **Download HTML** continue to use the active definition until you apply a valid

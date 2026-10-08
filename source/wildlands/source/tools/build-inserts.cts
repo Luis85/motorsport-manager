@@ -285,6 +285,7 @@ export const INSERTS: readonly Insert[] = [
   ["PLAY_CSS", "play.css", "style", "play-boot"],
   ["PLAY_BOOT", "play-boot.js", "script", "play-boot"],
   ["PROCESS_SCHEMA", "process-schema.js", "script", "template-process"],
+  ["PROCESS_RANDOM", "process-random.js", "script", "template-process"],
   ["PROCESS_NEEDS", "process-needs.js", "script", "template-process"],
   ["PROCESS_GRAPH", "process-graph.js", "script", "template-process"],
   ["PROCESS_CATALOG", "process-catalog.js", "script", "template-process"],
@@ -300,7 +301,10 @@ export const INSERTS: readonly Insert[] = [
   ["PROCESS_RENDERER_3D", "process-renderer-3d.js", "script", "template-process"],
   ["PROCESS_DATA_VIEW", "process-data-view.js", "script", "template-process"],
   ["PROCESS_TUNING", "process-tuning.js", "script", "template-process"],
+  ["PROCESS_DRAFT", "process-draft.js", "script", "template-process"],
+  ["PROCESS_DIALOG", "process-dialog.js", "script", "template-process"],
   ["PROCESS_STEP_MODEL", "process-step-model.js", "script", "template-process"],
+  ["PROCESS_STEP_SECTIONS", "process-step-sections.js", "script", "template-process"],
   ["PROCESS_STEP_EDITOR", "process-step-editor.js", "script", "template-process"],
   ["PROCESS_UI", "process-ui.js", "script", "template-process"],
   ["PROCESS_CSS", "process.css", "style", "template-process"]

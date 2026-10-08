@@ -3,8 +3,10 @@
 declare namespace LWProcessRooms {
  interface Theme {id: string; label: string; floor: string; wall: string; accent: string; task: string}
  /** Subset of the 3D renderer's piece kit that room builders need. */
- interface Kit {T: any; mat(color: string, extra?: Record<string, unknown>): any; group(parent: any): any; piece(parent: any, kind: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, rotation?: number, extra?: Record<string, unknown>): any;}
- interface Room {setActive(active: boolean): void; setBacklog(items: number): void; animate(t: number, progress: number): void;}
+ interface Kit {T: any; mat(color: string, extra?: Record<string, unknown>): any; group(parent: any): any; piece(parent: any, kind: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, rotation?: number, extra?: Record<string, unknown>): any;
+  /** Lit text plate facing the front; `userData.signText` carries the displayed text. */
+  sign(parent: any, text: string, x: number, y: number, z: number, width: number, height: number, accent: string): any;}
+ interface Room {setActive(active: boolean): void; setQueued(items: number): void; setBacklog(items: number): void; animate(t: number, progress: number): void;}
  interface Api {theme(step: LWProcess.Step): Theme; build(kit: Kit, parent: any, step: LWProcess.Step, furnished: boolean): Room;}
 }
 (function(inputRoot: unknown) {
@@ -20,6 +22,8 @@ declare namespace LWProcessRooms {
   start: T('reception', 'Reception', '#2f4157', '#3b536c', '#91b9d5', 'Receiving requests'), end: T('dispatch', 'Dispatch dock', '#38404a', '#4a5563', '#8fc9a2', 'Delivering results'),
   decision: T('council', 'Decision room', '#3f3a33', '#574d41', '#e6c06e', 'Deliberating'), fork: T('junction', 'Junction', '#2b3a46', '#35495a', '#c79871', 'Routing work'),
   join: T('junction', 'Junction', '#2b3a46', '#35495a', '#c79871', 'Merging work'),
+  machine: T('machine', 'Automation cell', '#343a41', '#464e57', '#ff8f5a', 'Running automatically'),
+  system: T('system', 'Software system', '#232c45', '#2d3a5e', '#4fc3ff', 'Running automatically'),
   timer: T('clock', 'Waiting room', '#33384a', '#434a62', '#d9c58a', 'Waiting for the due minute'),
  };
  const BACKLOG_THEME = T('backlog', 'Backlog room', '#33405a', '#46527a', '#9db4ff', 'Holding ready work');
@@ -30,7 +34,10 @@ declare namespace LWProcessRooms {
   return TASK_THEMES[h % TASK_THEMES.length]!;
  }
  interface Ctx {G(parent: any): any; P(parent: any, kind: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, extra?: Record<string, unknown>): any;
-  live: any; idle: any; glow(mesh: any, color: string, emissive: string, strength?: number, off?: string): any; swing(fn: (t: number, progress: number) => void): void; state(fn: (on: boolean) => void): void;}
+  live: any; idle: any; step: LWProcess.Step; readonly on: boolean; mat: Kit['mat']; sign(parent: any, text: string, x: number, y: number, z: number, width: number, height: number): any;
+  glow(mesh: any, color: string, emissive: string, strength?: number, off?: string): any; lamp(mesh: any, color: string, emissive: string, when: (on: boolean, queued: number) => boolean, strength?: number): any;
+  swing(fn: (t: number, progress: number) => void): void; state(fn: (on: boolean, queued: number) => void): void;}
+ type Kit = LWProcessRooms.Kit;
  type Builder = (c: Ctx) => void;
  const wave = (t: number, speed: number, shift = 0) => Math.sin(t * speed + shift);
  const BUILDERS: Record<string, Builder> = {
@@ -114,6 +121,77 @@ declare namespace LWProcessRooms {
    c.swing(t => {ring.rotation.set(Math.PI / 2 + wave(t, 1.1) * .35, t * 1.4, 0); ring.position.y = 1.7 + wave(t, 2) * .1; lamps.forEach((l, i) => l.scale.setScalar(.1 * (.7 + Math.max(0, wave(t, 2.5, i * 1.3)) * .9)));});
    c.P(c.idle, 'box', 0, 1, -.8, 2.1, .1, 2.1, '#6b6358');
   },
+  machine(c) {
+   const root = c.live.parent, A = '#ff8f5a', steel = '#e9eef2';
+   // Factory cell: conveyor, articulated arm, stack light and safety cage. Idle parks the arm folded with the belt still.
+   c.P(root, 'box', 0, .45, -1.5, 9.2, .22, 1.3, '#2d3239'); c.P(root, 'box', 0, .58, -1.5, 9, .06, 1, '#1a1d21');
+   for (const z of [-2.18, -.82]) c.P(root, 'box', 0, .66, z, 9.2, .12, .1, '#5d6670');
+   for (const x of [-4.2, -1.4, 1.4, 4.2]) for (const z of [-2, -1]) c.P(root, 'box', x, .2, z, .14, .4, .14, '#454c55');
+   const stripes = Array.from({length: 9}, (_, i) => c.P(c.live, 'box', -4.4 + i, .62, -1.5, .08, .015, .96, '#3a424b'));
+   const crates = [0, 1, 2].map(i => {const g = c.G(c.live); c.P(g, 'box', 0, .3, 0, .7, .5, .6, i % 2 ? '#d8b074' : '#c99a5a'); c.P(g, 'box', 0, .56, 0, .74, .04, .12, '#8a6a3a'); return g;});
+   for (const x of [-3.2, 2.9]) {const g = c.G(c.idle); g.position.set(x, .62, -1.5); c.P(g, 'box', 0, .25, 0, .7, .5, .6, '#c99a5a');}
+   c.P(root, 'cylinder', 1.5, .2, -3.1, .75, .4, .75, '#3a4048'); c.P(root, 'cylinder', 1.5, .42, -3.1, .55, .1, .55, A);
+   const turret = c.G(root), shoulder = c.G(turret), elbow = c.G(shoulder), wrist = c.G(elbow);
+   turret.position.set(1.5, .5, -3.1); shoulder.position.y = .4; elbow.position.y = 1.4; wrist.position.y = 1.2;
+   c.P(turret, 'cylinder', 0, .2, 0, .4, .4, .4, '#4a525c'); c.P(shoulder, 'ball', 0, 0, 0, .26, .26, .26, A); c.P(shoulder, 'box', 0, .7, 0, .3, 1.4, .3, steel);
+   c.P(elbow, 'ball', 0, 0, 0, .22, .22, .22, A); c.P(elbow, 'box', 0, .6, 0, .24, 1.2, .24, steel); c.P(wrist, 'ball', 0, 0, 0, .16, .16, .16, A); c.P(wrist, 'box', 0, .18, 0, .4, .14, .18, '#2b3036');
+   const fingers = [-1, 1].map(s => c.P(wrist, 'box', s * .15, .4, 0, .06, .3, .14, '#aab3bd')), held = c.P(wrist, 'box', 0, .62, 0, .3, .26, .3, '#c99a5a'); held.visible = false;
+   c.state(on => {held.visible = on;});
+   const pose = (rest: number, work: number, k: number) => rest + (work - rest) * k;
+   c.swing(t => {
+    const k = c.on ? 1 : 0, s = Math.sin(t * .9) * k, w = Math.sin(t * 1.8) * k;
+    turret.rotation.y = pose(-Math.PI / 2 - .5, -Math.PI / 2, k) + .75 * s; shoulder.rotation.z = pose(-.15, -.5, k) - .15 * w; elbow.rotation.z = pose(-1.5, -.95, k) - .3 * w; wrist.rotation.z = pose(.3, -.45, k) + .25 * w;
+    fingers.forEach((f, i) => {f.position.x = (i ? 1 : -1) * (.13 + .05 * Math.max(0, w) * k);});
+    stripes.forEach((b, i) => {b.position.x = -4.4 + (i + (t * .6) % 1) % 9;});
+    crates.forEach((g, i) => {const u = (t * .22 + i / 3) % 1; g.position.set(-4.2 + 8.4 * u, .62, -1.5);});
+   });
+   const lampMat = (mesh: any, col: string, glow: string, when: (on: boolean, q: number) => boolean) => c.lamp(mesh, col, glow, when, 1.1);
+   c.P(root, 'cylinder', 4.15, 1.05, -3.7, .06, 2.1, .06, '#59616b'); c.P(root, 'cylinder', 4.15, 2.15, -3.7, .15, .1, .15, '#2b3036');
+   lampMat(c.P(root, 'cylinder', 4.15, 2.3, -3.7, .15, .2, .15, '#193b25'), '#5af58c', '#2fbf63', on => on); lampMat(c.P(root, 'cylinder', 4.15, 2.52, -3.7, .15, .2, .15, '#4a3a17'), '#ffc23d', '#c98a00', (on, q) => !on && q > 0);
+   c.P(root, 'cylinder', 4.15, 2.74, -3.7, .15, .2, .15, '#401d1d');
+   for (const x of [-4.5, -1.5, 1.5, 4.5]) c.P(root, 'box', x, .9, -.1, .12, 1.8, .12, '#f2c230');
+   for (const y of [.9, 1.8]) c.P(root, 'box', 0, y, -.1, 9, .07, .07, '#2b3036');
+   c.P(root, 'box', 0, 1.35, -.1, 9, .9, .02, '#ffd24a', {transparent: true, opacity: .14, depthWrite: false});
+   c.P(root, 'box', -4.1, .9, -3.4, 1.1, 1.8, .9, '#4a5058'); lampMat(c.P(root, 'box', -4.1, 1.5, -2.93, .5, .3, .03, '#10171d'), '#8cf5b0', '#2fbf63', on => on);
+   for (const x of [-2.2, 2.2]) c.P(root, 'cylinder', x, 2.05, -4.2, .04, 1.3, .04, '#59616b');
+   c.sign(root, c.step.technology ?? 'Machine', 0, 3.1, -4.2, 4.6, .9);
+  },
+  system(c) {
+   const root = c.live.parent, B = '#4fc3ff', dark = c.mat('#101521'), tones = [c.mat('#5af58c', {emissive: '#2fbf63', emissiveIntensity: 1}), c.mat(B, {emissive: '#1d7fb5', emissiveIntensity: 1})];
+   // Server racks with blinking LED rows, a terminal wall with scrolling lines, a cable run carrying packets and a status beacon.
+   const leds: {mesh: any; seed: number}[] = [];
+   for (const [ri, x] of [-3.6, -2.3].entries()) {
+    c.P(root, 'box', x, 1.35, -3.2, 1.1, 2.7, 1, '#1e2638');
+    for (let r = 0; r < 8; r++) {
+     c.P(root, 'box', x, .35 + r * .31, -2.68, .96, .24, .04, '#2c3852'); c.P(root, 'box', x + .1, .35 + r * .31, -2.655, .4, .03, .01, '#161d2c');
+     for (const dx of [-.34, -.22]) leds.push({mesh: c.P(root, 'box', x + dx, .35 + r * .31, -2.65, .08, .07, .03, '#101521'), seed: ri * 17 + r * 3 + (dx < -.3 ? 1 : 2)});
+    }
+   }
+   c.P(root, 'box', 2.3, 2, -4.08, 3.9, 1.6, .02, '#0b111a');
+   c.P(root, 'box', 2.3, 2, -4.17, 4.2, 1.9, .12, '#141a26'); for (const x of [.7, 4.1]) c.P(root, 'box', x, .52, -4.2, .15, 1.05, .15, '#252f45');
+   c.P(c.live, 'box', 2.3, 2, -4.06, 3.9, 1.6, .02, '#0f2d4a', {emissive: '#1c5f96', emissiveIntensity: .55});
+   const widths = [2.4, 1.6, 3, 2, 2.7, 1.2, 2.2], rows = widths.map((w, i) => c.P(c.live, 'box', .55 + w / 2, 2.4, -4.04, w, .07, .01, i % 3 ? '#7fd8ff' : '#9bf5c0'));
+   c.P(c.live, 'box', 2.3, 1.38, -4.05, 3.4, .1, .01, '#1b2a3d'); const bar = c.P(c.live, 'box', .6, 1.38, -4.04, .001, .1, .015, B, {emissive: '#1d7fb5', emissiveIntensity: 1});
+   c.P(c.idle, 'box', 1.6, 2.4, -4.05, 1.2, .05, .01, '#2a3b55'); c.P(c.idle, 'box', 1.1, 2.1, -4.05, .1, .12, .01, '#2a3b55');
+   c.P(root, 'box', 2, .75, -2.7, 3, .12, 1, '#2b3448'); for (const x of [.6, 3.4]) c.P(root, 'box', x, .38, -2.7, .12, .75, .9, '#1e2638'); c.P(root, 'box', 2, .84, -2.4, .9, .04, .3, '#3c4a68');
+   const path: [number, number][] = [[-2.95, -2.55], [-2.95, -1.5], [1, -1.5], [1, -2.3]], lengths = [1.05, 3.95, .8], total = 5.8;
+   c.P(root, 'box', -2.95, .05, -2.02, .09, .05, 1.07, '#1a2234'); c.P(root, 'box', -.975, .05, -1.5, 4, .05, .09, '#1a2234'); c.P(root, 'box', 1, .05, -1.9, .09, .05, .82, '#1a2234');
+   const packets = [0, 1, 2, 3, 4].map(() => c.glow(c.P(c.live, 'ball', 0, .14, 0, .09, .09, .09, '#a8e6ff'), '#a8e6ff', B, 1.4));
+   c.P(root, 'cylinder', -2.95, 2.8, -3.2, .05, .22, .05, '#59616b');
+   c.lamp(c.P(root, 'ball', -2.95, 3.02, -3.2, .2, .2, .2, '#1d2a40'), '#6fd6ff', B, (on, q) => on || q > 0, 1.4);
+   c.swing((t, p) => {
+    const k = c.on;
+    leds.forEach((l, i) => {l.mesh.material = k && Math.sin(t * 3 + l.seed * 1.9 + l.seed % 3 * .7) > .1 ? tones[l.seed % 2]! : !k && i === 0 ? tones[0]! : dark;});
+    rows.forEach((r, i) => {const u = (t * .4 + i / rows.length) % 1; r.position.y = 2.7 - u * 1.3; r.scale.y = .07 * Math.max(.02, Math.min(1, Math.min(u, 1 - u) * 6));});
+    bar.scale.x = Math.max(.001, p * 3.4); bar.position.x = .6 + bar.scale.x / 2;
+    packets.forEach((m, i) => {
+     let d = ((t * 1.2 + i * total / packets.length) % total), seg = 0; while (seg < 2 && d > lengths[seg]!) d -= lengths[seg++]!;
+     const a = path[seg]!, b = path[seg + 1]!, u = d / lengths[seg]!; m.position.set(a[0] + (b[0] - a[0]) * u, .14, a[1] + (b[1] - a[1]) * u);
+    });
+   });
+   for (const x of [-.7, 3.1]) c.P(root, 'cylinder', x, 2.3, -4.28, .04, 1.8, .04, '#59616b');
+   c.sign(root, c.step.technology ?? 'System', 1.2, 3.6, -4.2, 4.4, .85);
+  },
   backlog(c) {
    c.P(c.live.parent, 'box', 3.2, .3, -1.4, 3, .3, 1, '#4a5578'); c.P(c.live.parent, 'box', 1.5, .65, -1.4, .2, .7, 1.2, '#9db4ff');
    const card = c.P(c.live, 'box', 0, .6, -1.4, .5, .08, .36, '#e7edff');
@@ -138,9 +216,14 @@ declare namespace LWProcessRooms {
  };
  /** Every room gets a wall lamp and idle standby sign; `furnished` rooms also get a themed workstation (authored assets replace it). */
  function build(kit: LWProcessRooms.Kit, parent: any, step: LWProcess.Step, furnished: boolean): LWProcessRooms.Room {
-  const th = theme(step), live = kit.group(parent), idle = kit.group(parent), swings: ((t: number, progress: number) => void)[] = [], states: ((on: boolean) => void)[] = [];
+  const th = theme(step), live = kit.group(parent), idle = kit.group(parent), swings: ((t: number, progress: number) => void)[] = [], states: ((on: boolean, queued: number) => void)[] = [];
+  let on = false, waiting = 0;
   const P = (p: any, kind: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, extra?: Record<string, unknown>) => kit.piece(p, kind, x, y, z, sx, sy, sz, color, 0, extra);
-  const ctx: Ctx = {P, G: p => kit.group(p), live, idle, swing: fn => {swings.push(fn);}, state: fn => {states.push(fn);},
+  const lamp: Ctx['lamp'] = (mesh, color, emissive, when, strength = .6) => {
+   const dark = mesh.material, lit = kit.mat(color, {emissive, emissiveIntensity: strength}); states.push((active, queued) => {mesh.material = when(active, queued) ? lit : dark;}); return mesh;
+  };
+  const ctx: Ctx = {P, G: p => kit.group(p), live, idle, step, mat: kit.mat, swing: fn => {swings.push(fn);}, state: fn => {states.push(fn);}, lamp,
+   get on() {return on;}, sign: (p, text, x, y, z, w, h) => kit.sign(p, text, x, y, z, w, h, th.accent),
    glow(mesh, color, emissive, strength = .6, off) {
     const dark = off ? kit.mat(off) : mesh.material, lit = kit.mat(color, {emissive, emissiveIntensity: strength});
     states.push(active => {mesh.material = active ? lit : dark;}); return mesh;
@@ -161,7 +244,8 @@ declare namespace LWProcessRooms {
   ctx.glow(P(idle, 'ball', -3.3, .75, 1.8, .06, .06, .06, th.accent), th.accent, th.accent, 1.2);
   return {
    setBacklog(items) {const shown = items <= 0 ? 0 : capacity <= cards.length ? Math.min(items, cards.length) : Math.max(1, Math.round(items / capacity * cards.length)); cards.forEach((c, i) => {c.visible = i < shown;});},
-   setActive(active) {live.visible = active; idle.visible = !active; for (const s of states) s(active);},
+   setActive(active) {on = active; live.visible = active; idle.visible = !active; for (const s of states) s(active, waiting);},
+   setQueued(items) {waiting = items; for (const s of states) s(on, items);},
    animate(t, progress) {for (const s of swings) s(t, progress);},
   };
  }

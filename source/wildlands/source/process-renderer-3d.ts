@@ -22,7 +22,7 @@ declare namespace LWProcess3D {
   const scene = new T.Scene(), camera = new T.PerspectiveCamera(38, 1, .1, 3000), target = new T.Vector3();
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const stepIndex = new Map(definition.steps.map(s => [s.id, s]));
-  const rooms = new Map<string, LWProcessRooms.Room>(), roomProgress = new Map<string, number>(), indicators = new Map<string, {bar: O; lamp: O; status: O}>();
+  const rooms = new Map<string, LWProcessRooms.Room>(), roomProgress = new Map<string, number>(), indicators = new Map<string, {bar: O; lamp: O; status: O; sub: string}>(), names: {sprite: O; text: string}[] = [];
   let needsRender = true;
   const motionChanged = () => {needsRender = true;}; reducedMotion.addEventListener('change', motionChanged);
   let phase = 0, previousView: LWProcessApp.View | undefined;
@@ -46,7 +46,7 @@ declare namespace LWProcess3D {
    if (!materials.has(key)) materials.set(key, new T.MeshStandardMaterial({color, roughness: .8, ...extra}));
    return materials.get(key);
   }
-  const kit = {T, mat, group(parent: O) {const g = new T.Group(); parent.add(g); return g;},
+  const kit: O = {T, mat, group(parent: O) {const g = new T.Group(); parent.add(g); return g;},
    piece(parent: O, kind: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, _rotation = 0, extra = {}) {
     const mesh = new T.Mesh(geometry(kind), mat(color, extra)); mesh.position.set(x, y, z); mesh.scale.set(sx, sy, sz); mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh;
    }};
@@ -54,13 +54,41 @@ declare namespace LWProcess3D {
   const light = new T.DirectionalLight('#fff1df', 1.8); light.position.set(10, 40, 20); light.castShadow = true; light.shadow.mapSize.set(2048, 2048);
   light.shadow.bias = -.0004; light.shadow.normalBias = .04; scene.add(light); scene.add(light.target);
   const fill = new T.DirectionalLight('#a9cddd', 1.2); fill.position.set(-20, 15, -25); scene.add(fill);
-  function label(text: string, color: string): O {
-   const c = document.createElement('canvas'); c.width = 640; c.height = 100;
-   const ctx = c.getContext('2d')!; ctx.fillStyle = color; ctx.font = '500 33px system-ui'; ctx.textAlign = 'center'; ctx.fillText(text, 320, 56, 615);
+  /** Caption sprite on a dark pill: never depth-tested and drawn last, so props can neither strike through nor hide it. `draw` re-renders the pill (a string wraps to two lines, an array is one line each). */
+  function label(text: string | string[], color: string, font = 34): O {
+   const c = document.createElement('canvas'); c.width = 640; c.height = 128;
    const texture = new T.CanvasTexture(c); textures.push(texture);
-   const m = new T.SpriteMaterial({map: texture, transparent: true, depthTest: false}); materials.set('label-' + materials.size, m);
-   const sprite = new T.Sprite(m); sprite.scale.set(8, 1.25, 1); return sprite;
+   const m = new T.SpriteMaterial({map: texture, transparent: true, depthTest: false, depthWrite: false}); materials.set('label-' + materials.size, m);
+   const sprite = new T.Sprite(m); sprite.renderOrder = 20; sprite.scale.set(8, 1.6, 1);
+   sprite.userData.draw = (value: string | string[], maxWidth = 580) => {
+    const ctx = c.getContext('2d')!; ctx.clearRect(0, 0, c.width, c.height); ctx.font = `600 ${font}px system-ui`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const ellipsis = (s: string) => {while (s.length > 1 && ctx.measureText(s).width > maxWidth) s = s.slice(0, -2).trimEnd() + '…'; return s;};
+    const shorten = (s: string) => ctx.measureText(s).width <= maxWidth ? s : ellipsis(s.replace(/…$/, ''));
+    let lines: string[];
+    if (Array.isArray(value)) lines = value.map(shorten);
+    else {
+     const words = value.split(' '); let first = '', i = 0;
+     for (; i < words.length; i++) {const next = first ? first + ' ' + words[i] : words[i]!; if (first && ctx.measureText(next).width > maxWidth) break; first = next;}
+     lines = [shorten(first)]; if (i < words.length) lines.push(shorten(words.slice(i).join(' ')));
+    }
+    const lineHeight = font * 1.25, width = Math.min(c.width - 4, Math.max(...lines.map(l => ctx.measureText(l).width)) + 36), height = lines.length * lineHeight + 18, x = (c.width - width) / 2, y = (c.height - height) / 2, r = 14;
+    ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + width, y, x + width, y + height, r); ctx.arcTo(x + width, y + height, x, y + height, r); ctx.arcTo(x, y + height, x, y, r); ctx.arcTo(x, y, x + width, y, r); ctx.closePath();
+    ctx.fillStyle = 'rgba(14,18,24,.9)'; ctx.fill(); ctx.strokeStyle = 'rgba(177,189,205,.5)'; ctx.lineWidth = 2; ctx.stroke();
+    lines.forEach((l, k) => {ctx.fillStyle = k ? '#9fb0c4' : color; ctx.fillText(l, c.width / 2, c.height / 2 + (k - (lines.length - 1) / 2) * lineHeight, maxWidth);});
+    texture.needsUpdate = true;
+   };
+   sprite.userData.draw(text); return sprite;
   }
+  /** Lit front-facing text plate for automated rooms; the displayed text is also kept in `userData.signText`. */
+  kit.sign = (parent: O, text: string, x: number, y: number, z: number, width: number, height: number, accent: string): O => {
+   const c = document.createElement('canvas'); c.width = 512; c.height = Math.max(64, Math.round(512 * height / width)); const ctx = c.getContext('2d')!;
+   ctx.fillStyle = '#10161f'; ctx.fillRect(0, 0, c.width, c.height); ctx.strokeStyle = accent; ctx.lineWidth = 10; ctx.strokeRect(5, 5, c.width - 10, c.height - 10);
+   let size = Math.round(c.height * .5); ctx.font = `700 ${size}px system-ui`; while (size > 14 && ctx.measureText(text).width > c.width - 44) {size -= 2; ctx.font = `700 ${size}px system-ui`;}
+   ctx.fillStyle = '#f4f7fb'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, c.width / 2, c.height / 2 + 2, c.width - 44);
+   const texture = new T.CanvasTexture(c); textures.push(texture);
+   const mesh = new T.Mesh(new T.PlaneGeometry(width, height), new T.MeshBasicMaterial({map: texture, toneMapped: false})); mesh.position.set(x, y, z + .08); mesh.userData.signText = text; parent.add(mesh);
+   kit.piece(parent, 'box', x, y, z, width + .12, height + .12, .1, '#0a0e14'); return mesh;
+  };
   for (const step of definition.steps) {
    const g = kit.group(scene); g.position.set(step.scene.position[0], 0, step.scene.position[1]); g.userData.stepId = step.id; stations.set(step.id, g);
    const floor = kit.piece(g, 'box', 0, -.16, 0, 10, .3, 9, '#293544'); floor.userData.stepId = step.id; objects.push(floor);
@@ -78,14 +106,18 @@ declare namespace LWProcess3D {
    if (custom) root.LWAssetRenderer.createFromDefinition(kit, g, step.scene.asset, 'world');
    rooms.set(step.id, root.LWProcessRooms.build(kit, g, step, !custom));
    rooms.get(step.id)!.setActive(false);
-   const name = label(step.name, '#edf2f7'); name.position.set(0, 4.8, -1); g.add(name);
-   const role = label(theme.label + ' · ' + step.kind + (step.kind === 'timer' ? (step.until !== undefined ? ' · until minute ' + step.until : ' · ' + (step.duration ?? 0) + ' min') : step.duration ? ' · ' + step.duration + ' min' : ''), '#b1bdcd'); role.position.set(0, 4.05, -1); role.scale.multiplyScalar(.67); g.add(role);
+   const name = label(step.name, '#edf2f7'); name.center.set(.5, 0); name.position.set(0, 4.6, -2.2); g.add(name); names.push({sprite: name, text: step.name});
+   // The room kind sub-label shares the front caption pill with the count, so nothing floats over the props.
+   const sub = [theme.label, step.kind, ...(step.technology ? [step.technology] : []), ...(step.kind === 'timer' ? [step.until !== undefined ? 'until minute ' + step.until : (step.duration ?? 0) + ' min'] : step.duration ? [step.duration + ' min'] : [])].join(' · ');
    const lamp = kit.piece(g, 'ball', 4.35, 1.65, -4.25, .12, .12, .12, '#91b9d5');
    kit.piece(g, 'box', 0, .12, 4.2, 8, .07, .12, '#15222e');
    const bar = kit.piece(g, 'box', -4, .17, 4.2, .001, .07, .14, '#ffbb73');
-   const status = label('Ready', '#b1bdcd'); status.position.set(0, .25, 5.3); status.scale.multiplyScalar(.75); g.add(status);
-   indicators.set(step.id, {bar, lamp, status});
+   const status = label(['Ready', sub], '#e3eaf2', 30); status.position.set(0, .45, 5.6); status.scale.multiplyScalar(.75); g.add(status);
+   indicators.set(step.id, {bar, lamp, status, sub});
   }
+  // Amber frame around the room entered by selection; the whole-process view has none.
+  const focusFrame = kit.group(scene); focusFrame.visible = false;
+  for (const [x, z, w, d] of [[0, -4.7, 10.4, .14], [0, 4.7, 10.4, .14], [-5.2, 0, .14, 9.4], [5.2, 0, .14, 9.4]] as const) kit.piece(focusFrame, 'box', x, .05, z, w, .08, d, '#ffbb73', 0, {emissive: '#ff9a3c', emissiveIntensity: .6});
   const links = new T.Group(); scene.add(links);
   for (const f of definition.flows) {
    const a = definition.steps.find(s => s.id === f.from)!.scene.position, b = definition.steps.find(s => s.id === f.to)!.scene.position;
@@ -98,17 +130,18 @@ declare namespace LWProcess3D {
    const visible = selected ? [definition.steps.find(s => s.id === selected)!] : definition.steps;
    const xs = visible.map(s => s.scene.position[0]), zs = visible.map(s => s.scene.position[1]);
    target.set((Math.min(...xs) + Math.max(...xs)) / 2, 0, (Math.min(...zs) + Math.max(...zs)) / 2);
-   const spanX = Math.max(...xs) - Math.min(...xs) + 12, spanZ = Math.max(...zs) - Math.min(...zs) + 12;
+   if (resetOrbit) {yaw = -.3; pitch = .65;}
+   // The ground is foreshortened by the pitch, so depth counts at sin(pitch) plus the room height; a selected room also keeps its front caption in view.
+   const rangeX = Math.max(...xs) - Math.min(...xs), rangeZ = Math.max(...zs) - Math.min(...zs), spanX = rangeX * Math.abs(Math.cos(yaw)) + rangeZ * Math.abs(Math.sin(yaw)) + 11, spanZ = (rangeZ + (selected ? 12 : 10)) * Math.sin(pitch) + 4;
    const aspect = Math.max(.3, canvas.clientWidth / Math.max(1, canvas.clientHeight));
    const vertical = camera.fov * Math.PI / 180, horizontal = 2 * Math.atan(Math.tan(vertical / 2) * aspect);
-   distance = Math.max(spanX / (2 * Math.tan(horizontal / 2)), spanZ / (2 * Math.tan(vertical / 2))) * 1.25;
-   target.y = selected ? 1 : 0;
+   distance = Math.max(spanX / (2 * Math.tan(horizontal / 2)), spanZ / (2 * Math.tan(vertical / 2))) * (selected ? 1.1 : 1.2);
+   target.y = selected ? 1.8 : 0; if (selected) target.z += 1;
    panBounds = {minX: Math.min(...xs) - 6, maxX: Math.max(...xs) + 6, minZ: Math.min(...zs) - 6, maxZ: Math.max(...zs) + 6};
    light.position.set(target.x + 10, 35, target.z + 15); light.target.position.copy(target);
    const shadowSpan = Math.max(spanX, spanZ) * .7;
    Object.assign(light.shadow.camera, {left: -shadowSpan, right: shadowSpan, top: shadowSpan, bottom: -shadowSpan, far: shadowSpan * 3 + 100});
    light.shadow.camera.updateProjectionMatrix();
-   if (resetOrbit) {yaw = -.3; pitch = .65;}
   }
   const frame = () => fit(true);
   const clampTarget = () => {target.x = Math.max(panBounds.minX, Math.min(panBounds.maxX, target.x)); target.z = Math.max(panBounds.minZ, Math.min(panBounds.maxZ, target.z));};
@@ -147,6 +180,7 @@ declare namespace LWProcess3D {
   };
   canvas.addEventListener('pointercancel', cancel); canvas.addEventListener('lostpointercapture', cancel); canvas.addEventListener('keydown', keyboard); canvas.addEventListener('contextmenu', contextMenu);
   const wheel = (e: WheelEvent) => {e.preventDefault(); needsRender = true; distance = Math.max(10, Math.min(200000, distance * Math.exp(e.deltaY * .001)));};
+  if (document.getElementById('camera-hint')) canvas.setAttribute('aria-describedby', 'camera-hint');
   canvas.addEventListener('pointerdown', pointerDown); canvas.addEventListener('pointermove', pointerMove); canvas.addEventListener('pointerup', pointerUp); canvas.addEventListener('wheel', wheel, {passive: false});
   function actor(): O {
    const g = kit.group(scene), body = kit.group(g);
@@ -185,8 +219,7 @@ declare namespace LWProcess3D {
    for (const token of tokens) {
     const working = token.status === 'active', counts = working ? activeCounts : queueCounts;
     const at = counts.get(token.stepId) ?? 0; counts.set(token.stepId, at + 1);
-    const detailed = working && at < 3 && actorCount++ < 32;
-    const step = stepIndex.get(token.stepId)!;
+    const step = stepIndex.get(token.stepId)!, detailed = working && step.kind !== 'machine' && step.kind !== 'system' && at < 3 && actorCount++ < 32;
     let marker = markers.get(token.id);
     if (marker && !!marker.userData.actor !== detailed) {scene.remove(marker); markers.delete(token.id); marker = undefined;}
     if (!marker) {
@@ -201,20 +234,31 @@ declare namespace LWProcess3D {
     const active = view.snapshot.tokens.filter(t => t.stepId === id && t.status === 'active');
     const duration = stepIndex.get(id)!.duration ?? 1;
     const progress = active.length ? active.reduce((n, t) => n + (duration - t.remaining) / duration, 0) / active.length : 0;
-    const definitionStep = stepIndex.get(id)!, stored = view.snapshot.tokens.filter(t => t.stepId === id && (t.status === 'backlog' || definitionStep.kind === 'task' && t.status === 'queued')).length;
-    roomProgress.set(id, progress); rooms.get(id)!.setActive(metric.active > 0 || metric.timers.waiting > 0 || definitionStep.kind === 'join' && stored > 0); rooms.get(id)!.setBacklog(definitionStep.backlog ? stored : 0);
+    const definitionStep = stepIndex.get(id)!, stored = view.snapshot.tokens.filter(t => t.stepId === id && (t.status === 'backlog' || (definitionStep.kind === 'task' || definitionStep.kind === 'machine' || definitionStep.kind === 'system') && t.status === 'queued')).length;
+    roomProgress.set(id, progress); rooms.get(id)!.setActive(metric.active > 0 || metric.timers.waiting > 0 || definitionStep.kind === 'join' && stored > 0); rooms.get(id)!.setQueued(metric.queued); rooms.get(id)!.setBacklog(definitionStep.backlog ? stored : 0);
     indicator.bar.scale.x = Math.max(.001, progress * 8); indicator.bar.position.x = -4 + progress * 4;
     indicator.lamp.material = mat(metric.active ? '#ffbb73' : metric.timers.waiting ? '#d9c58a' : metric.queued ? '#91b9d5' : '#6d9585', {emissive: metric.active ? '#704c2d' : '#000000'});
     const timerText = metric.timers.waiting ? `${metric.timers.waiting} on timer · next due minute ${metric.timers.nextDue}` : '';
     const caption = timerText ? timerText + (metric.completed ? ` · ${metric.completed} completed` : '') : definitionStep.backlog ? `Backlog ${stored}/${definitionStep.backlog.capacity}` + (metric.active ? ` · ${metric.active} working` : '') : metric.active ? `${metric.active} working · ${metric.queued} waiting` : metric.queued ? `${metric.queued} waiting` : metric.completed ? `${metric.completed} completed` : 'Ready';
     if (indicator.status.userData.caption !== caption) {
-     const texture = indicator.status.material.map, c = texture.image as HTMLCanvasElement, ctx = c.getContext('2d')!;
-     ctx.clearRect(0, 0, c.width, c.height); ctx.fillText(caption, 320, 56, 615); texture.needsUpdate = true; indicator.status.userData.caption = caption;
+     indicator.status.userData.draw([caption, indicator.sub]); indicator.status.userData.caption = caption;
     }
    }
   }
+  // Room names keep a minimum on-screen text size (about 11px) in the overview, wrapping to the room spacing so neighbours never collide.
+  let spacing = 14, nameScale = 0;
+  for (const [i, a] of definition.steps.entries()) for (const b of definition.steps.slice(i + 1)) {const d = Math.hypot(a.scene.position[0] - b.scene.position[0], a.scene.position[1] - b.scene.position[1]); if (d > 1) spacing = Math.min(spacing, d);}
+  function layoutNames(): void {
+   const ppu = Math.max(1, canvas.clientHeight) / (2 * Math.tan(camera.fov * Math.PI / 360) * distance), k = Math.round(Math.max(1, Math.min(8, 11 / (.425 * ppu))) * 4) / 4;
+   if (k === nameScale) return; nameScale = k;
+   const maxWidth = Math.max(180, Math.min(580, Math.floor(spacing * .94 / k * 80) - 40));
+   for (const n of names) {n.sprite.scale.set(8 * k, 1.6 * k, 1); n.sprite.userData.draw(n.text, maxWidth);}
+  }
   function draw(view: LWProcessApp.View, delta: number): void {
-   if (selected !== view.selected) {selected = view.selected; frame();}
+   if (selected !== view.selected) {
+    selected = view.selected; frame(); const chosen = selected ? stepIndex.get(selected) : undefined;
+    focusFrame.visible = !!chosen; if (chosen) focusFrame.position.set(chosen.scene.position[0], 0, chosen.scene.position[1]);
+   }
    if (previousView !== view) {sync(view); previousView = view;}
    const moving = view.playing && !reducedMotion.matches;
    if (moving) phase += Math.min(delta, .1);
@@ -231,7 +275,7 @@ declare namespace LWProcess3D {
     viewportWidth = width; viewportHeight = height; renderer.setSize(width, height, false); fit(false);
    }
    if (!needsRender && !moving) return;
-   needsRender = false;
+   needsRender = false; layoutNames();
    camera.aspect = width / height; camera.near = Math.max(.1, distance / 10000); camera.far = Math.max(3000, distance * 3); camera.updateProjectionMatrix();
    camera.position.set(target.x + Math.sin(yaw) * Math.cos(pitch) * distance, target.y + Math.sin(pitch) * distance, target.z + Math.cos(yaw) * Math.cos(pitch) * distance);
    camera.lookAt(target); renderer.render(scene, camera);
