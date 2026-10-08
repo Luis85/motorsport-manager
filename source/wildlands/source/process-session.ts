@@ -19,19 +19,24 @@
   if (!Number.isSafeInteger(active) || active < 1 || active > limits.active) throw Error('Active case cap must be a whole number from 1 to ' + limits.active + '.');
   if (!Number.isSafeInteger(retained) || retained < 1 || retained > MAX_RETAINED) throw Error('Retained finished cases must be a whole number from 1 to ' + MAX_RETAINED + '.');
   const world = new root.LWECS.World(), scheduler = new root.LWECS.Scheduler();
-  const clock: LWProcess.Clock = {minute: 0, serial: 0, forkSerial: 0, arrival: 0, cost: 0, arrived: 0, completed: 0, failed: 0, dropped: 0, cycle: 0, pruned: 0};
+  const clock: LWProcess.Clock = {minute: 0, serial: 0, forkSerial: 0, arrival: 0, cost: 0, arrived: 0, completed: 0, failed: 0, dropped: 0, cycle: 0, pruned: 0, goals: 0, lost: 0};
   world.create('process-clock'); world.set('process-clock', 'process-clock', clock);
   for (const r of definition.resources) { world.create('pool-' + r.id); world.set('pool-' + r.id, 'process-pool', {...r, busy: 0, busyMinutes: 0}); }
-  for (const step of definition.steps) { world.create('station-' + step.id); world.set('station-' + step.id, 'process-station', {id: step.id, visits: 0, completed: 0, waitMinutes: 0}); }
+  for (const step of definition.steps) { world.create('station-' + step.id); world.set('station-' + step.id, 'process-station', {id: step.id, visits: 0, completed: 0, waitMinutes: 0, reached: 0,
+   ...step.deadline ? {deadlines: {interrupted: 0, escalated: 0}} : {}, ...step.instances ? {items: {started: 0, finished: 0}} : {}}); }
   const state: LWProcess.State = {world, definition, clock, events: [], receipts: [], receiptsDropped: 0, failures: [], steps: new Map(definition.steps.map(s => [s.id, s])),
-   outgoing: new Map(definition.steps.map(s => [s.id, definition.flows.filter(f => f.from === s.id)])),
+   // A deadline flow is not the step's normal route: `outgoing` holds only the flows a completed visit may take.
+   outgoing: new Map(definition.steps.map(s => [s.id, definition.flows.filter(f => f.from === s.id && f.on !== 'deadline')])),
+   deadlines: new Map(definition.flows.filter(f => f.on === 'deadline').map(f => [f.from, f])), groups: new Map(), spawns: [], outcomes: new Map(),
    // Arrival streams are lazy cursors: each next minute is computed on demand, so open streams never expand a list.
-   streams: definition.arrivals.map((def, index) => ({def, index, k: 0, at: def.at})), seed, active, retained, finished: [], visits: new Map(), tokenList: null, poolList: null};
+   streams: definition.arrivals.map((def, index) => ({def, index, k: 0, at: def.at})), seed, active, retained, finished: [], visits: new Map(), tokenList: null, poolList: null, seen: new Map(), finishAgg: new Map(), entryAgg: new Map()};
   // Scheduler owns timed ECS value updates; graph/structural changes happen after it releases its lock.
   scheduler.register({id: 'process-work', phase: 'simulate', order: 1, query: ['process-clock'], update: () => root.LWProcessSystems.work(state)});
   root.LWProcessSystems.admit(state); root.LWProcessSystems.settle(state);
   let disposed = false;
   const alive = () => { if (disposed) throw Error('Process session is disposed.'); };
+  // Means are rounded to 3 decimals; an empty aggregate has no mean.
+  const mean = (a: LWProcess.Aggregate | undefined) => a ? Math.round(a.sum / a.n * 1000) / 1000 : null;
   function query(): LWProcess.Snapshot {
    alive();
    const cases = world.query(['process-case']).map(id => world.get<LWProcess.Case>(id, 'process-case')!).sort((a, b) => a.id.length - b.id.length || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
@@ -44,11 +49,14 @@
    return copy({minute: clock.minute, status, cases, tokens, events: state.events, receipts: state.receipts, receiptsDropped: state.receiptsDropped,
     steps: definition.steps.map(step => ({...world.get<LWProcess.Station>('station-' + step.id, 'process-station')!,
      queued: tokens.filter(t => t.stepId === step.id && t.status !== 'active' && t.status !== 'timer').length, active: tokens.filter(t => t.stepId === step.id && t.status === 'active').length,
-     timers: timers(step.id)})),
+     entered: world.get<LWProcess.Station>('station-' + step.id, 'process-station')!.visits, timers: timers(step.id),
+     tracked: Object.fromEntries((definition.track ?? []).map(t => { const a = state.entryAgg.get(step.id + '|' + t.field); return [t.field, {n: a?.n ?? 0, mean: mean(a)}]; }))})),
     resources: definition.resources.map(r => { const p = world.get<LWProcess.Pool>('pool-' + r.id, 'process-pool')!;
      return {id: r.id, kind: r.kind ?? 'people', capacity: p.capacity, busy: p.busy, busyMinutes: p.busyMinutes, utilization: clock.minute ? p.busyMinutes / (clock.minute * p.capacity) : 0}; }),
     metrics: {arrived: clock.arrived, completed: clock.completed, failed: clock.failed, dropped: clock.dropped, active: live, cost: clock.cost,
-     meanCycleMinutes: clock.completed ? clock.cycle / clock.completed : 0, throughputPerHour: clock.minute ? clock.completed * 60 / clock.minute : 0},
+     meanCycleMinutes: clock.completed ? clock.cycle / clock.completed : 0, throughputPerHour: clock.minute ? clock.completed * 60 / clock.minute : 0,
+     goals: clock.goals, lost: clock.lost, conversion: clock.goals + clock.lost ? Math.floor((2000 * clock.goals + clock.goals + clock.lost) / (2 * (clock.goals + clock.lost))) : null,
+     tracked: Object.fromEntries((definition.track ?? []).map(t => { const a = state.finishAgg.get(t.field); return [t.field, {label: t.label ?? t.field, n: a?.n ?? 0, mean: mean(a), min: a?.min ?? null, max: a?.max ?? null}]; }))},
     seed, retention: {finishedDropped: clock.pruned}});
   }
   function advance(minutes: number): LWProcess.Snapshot {

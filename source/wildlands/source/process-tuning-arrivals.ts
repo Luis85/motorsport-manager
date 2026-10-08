@@ -23,14 +23,16 @@ declare namespace LWProcessTuningArrivals {
  const F = root.LWProcessTuningFields, esc = F.esc, MINUTES = 100000;
  type Result = LWProcessTuningArrivals.Result;
  const NAME = /^[a-z][a-zA-Z0-9_]{0,63}$/, SAFE = /^[A-Za-z0-9_]+$/, NAME_HINT = 'Start with a lowercase letter, then letters, digits or underscores (up to 64).';
- const DISTS: [string, string][] = [['none', 'None (exact spacing)'], ['uniform', 'Uniform (min to max)'], ['triangular', 'Triangular (min, most likely, max)'], ['exponential', 'Exponential (average, optional cap)']];
+ const DISTS: [string, string][] = [['none', 'None (exact spacing)'], ['uniform', 'Uniform (min to max)'], ['triangular', 'Triangular (min, most likely, max)'], ['exponential', 'Exponential (average, optional cap)'], ['normal', 'Normal (average and spread, optional bounds)'], ['erlang', 'Erlang (phases and average)']];
  const KINDS: [string, string][] = [['chance', 'Chance (happens or not)'], ['choice', 'Weighted choice'], ['int', 'Whole number in a range']];
  const mins = (id: string, label: string, path: string, value: number | undefined, extra: {optional?: boolean; help?: string} = {}) => F.int(id, label, path, value, {min: 1, max: MINUTES, unit: 'minutes', ...extra});
  function gap(a: LWProcess.Arrival, p: string, id: string): string {
   const g = a.gap, d = g?.dist ?? 'none';
   const params = d === 'uniform' ? mins(id + '-min', 'Shortest gap', p + '.gap.min', g?.min) + mins(id + '-max', 'Longest gap', p + '.gap.max', g?.max)
    : d === 'triangular' ? mins(id + '-min', 'Shortest gap', p + '.gap.min', g?.min) + mins(id + '-mode', 'Most likely gap', p + '.gap.mode', g?.mode) + mins(id + '-max', 'Longest gap', p + '.gap.max', g?.max)
-   : d === 'exponential' ? mins(id + '-mean', 'Average gap', p + '.gap.mean', g?.mean) + mins(id + '-max', 'Longest gap (optional cap)', p + '.gap.max', g?.max, {optional: true}) : '';
+   : d === 'exponential' ? mins(id + '-mean', 'Average gap', p + '.gap.mean', g?.mean) + mins(id + '-max', 'Longest gap (optional cap)', p + '.gap.max', g?.max, {optional: true})
+   : d === 'normal' ? mins(id + '-mean', 'Average gap', p + '.gap.mean', g?.mean) + mins(id + '-sd', 'Spread of the gap (standard deviation, at least 1)', p + '.gap.sd', g?.sd) + mins(id + '-min', 'Shortest gap (optional, default 1)', p + '.gap.min', g?.min, {optional: true}) + mins(id + '-max', 'Longest gap (optional, default average + 6 × spread)', p + '.gap.max', g?.max, {optional: true})
+   : d === 'erlang' ? F.int(id + '-k', 'Phases k', p + '.gap.k', g?.k, {min: 1, max: 32, help: 'Whole number from 1 to 32. More phases make the gaps more regular; one phase is exponential.'}) + mins(id + '-mean', 'Average gap', p + '.gap.mean', g?.mean) : '';
   return F.choice(id + '-dist', 'Random gap between arrivals', p + '.gap.dist', d, DISTS, 'With a random gap, the planning interval above is the average spacing and each gap is drawn from this distribution.')
    + (params ? `<div class="de-grid de-gap-params" role="group" aria-label="Random gap values (minutes)">${params}</div>` : '') + `<div class="de-errs" id="${id}-group-err" data-errs="${esc(p)}.gap"></div>`;
  }
@@ -80,7 +82,7 @@ declare namespace LWProcessTuningArrivals {
   }
   if (kind === 'choice' && parts[2] === 'gap') {
    const v = (el as HTMLSelectElement).value;
-   if (v === 'none') delete a.gap; else a.gap = v === 'uniform' ? {dist: 'uniform', min: 1, max: Math.max(a.interval * 2, 2)} : v === 'triangular' ? {dist: 'triangular', min: 1, mode: Math.max(a.interval, 1), max: Math.max(a.interval * 2, 2)} : {dist: 'exponential', mean: Math.max(a.interval, 1)};
+   if (v === 'none') delete a.gap; else a.gap = v === 'uniform' ? {dist: 'uniform', min: 1, max: Math.max(a.interval * 2, 2)} : v === 'triangular' ? {dist: 'triangular', min: 1, mode: Math.max(a.interval, 1), max: Math.max(a.interval * 2, 2)} : v === 'normal' ? {dist: 'normal', mean: Math.max(a.interval, 1), sd: Math.max(1, Math.round(a.interval / 4))} : v === 'erlang' ? {dist: 'erlang', k: 3, mean: Math.max(a.interval, 1)} : {dist: 'exponential', mean: Math.max(a.interval, 1)};
    if (v !== 'none' && a.interval < 1) a.interval = Math.max(a.gap!.mean ?? a.gap!.mode ?? a.gap!.max ?? 1, 1);
    return {write: true, rerender: true, focus: `#${id}-gap-dist`};
   }

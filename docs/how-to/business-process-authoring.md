@@ -100,6 +100,68 @@ system step only system pools, and each must demand at least one.
 `technology` is a label only and `outputs` must each be delivered by the same step's
 `set` or `add`. These are simulated assumptions; nothing is executed or integrated.
 
+## Map a customer or user journey
+
+A journey is a process whose cases are customers. Set `genre` to `customer-journey` or
+`user-journey` (a display preset only), use `touchpoint` steps for the interactions,
+annotate steps with `phase`, `emotion` (-3 to 3), `pain` and `opportunity`, and end the
+journey with `outcome: "goal"` or `"lost"` steps. A touchpoint works like a task but
+may use pools of any kind, or none, and may name a `channel` (`web`, `mobile`, `store`,
+`phone`, `chat`, `email`, `social`, `ads`, `delivery`, `document`). List up to six
+`track` fields to get measured averages. This small web shop loses 30% of visitors
+after browsing, counts mood with a counter, and runs an open stream of visitors:
+
+```json
+{
+  "format": "wildlands-process", "schemaVersion": 1, "revision": 0, "id": "web-shop", "name": "Web shop purchase", "seed": 7,
+  "genre": "customer-journey", "track": [{"field": "mood", "label": "Mood"}],
+  "start": "start",
+  "resources": [{"id": "shop", "name": "Shop platform", "capacity": 2, "costPerMinute": 1, "kind": "system"}],
+  "steps": [
+    {"id": "start", "name": "Visitor arrives", "kind": "start", "phase": "Awareness", "scene": {"id": "scene-start", "position": [0, 0], "color": "#77b5a0"}},
+    {"id": "browse", "name": "Browses the shop", "kind": "touchpoint", "channel": "web", "phase": "Consideration", "emotion": 1, "duration": 3,
+     "add": {"mood": 1}, "pain": "Search results are slow.", "opportunity": "Show best sellers first.", "scene": {"id": "scene-browse", "position": [12, 0], "color": "#ffbb73"}},
+    {"id": "intent", "name": "Interested?", "kind": "decision", "phase": "Consideration", "scene": {"id": "scene-intent", "position": [24, 0], "color": "#ffffff"}},
+    {"id": "checkout", "name": "Checks out", "kind": "touchpoint", "channel": "web", "phase": "Purchase", "emotion": -1, "duration": 4,
+     "resources": {"shop": 1}, "add": {"mood": -1}, "pain": "Account creation is required.", "scene": {"id": "scene-checkout", "position": [36, 0], "color": "#ffbb73"}},
+    {"id": "delivery", "name": "Receives the parcel", "kind": "touchpoint", "channel": "delivery", "phase": "Delivery", "emotion": 2, "duration": 10,
+     "timing": {"dist": "uniform", "min": 6, "max": 14}, "add": {"mood": 2}, "scene": {"id": "scene-delivery", "position": [48, 0], "color": "#ffbb73"}},
+    {"id": "won", "name": "Order delivered", "kind": "end", "outcome": "goal", "phase": "Delivery", "scene": {"id": "scene-won", "position": [60, 0], "color": "#77b5a0"}},
+    {"id": "lost", "name": "Left the shop", "kind": "end", "outcome": "lost", "scene": {"id": "scene-lost", "position": [36, 12], "color": "#d9777f"}}
+  ],
+  "flows": [
+    {"id": "f1", "from": "start", "to": "browse"}, {"id": "f2", "from": "browse", "to": "intent"},
+    {"id": "f3", "from": "intent", "to": "lost", "label": "Bounces", "when": {"chance": 30}}, {"id": "f4", "from": "intent", "to": "checkout"},
+    {"id": "f5", "from": "checkout", "to": "delivery"}, {"id": "f6", "from": "delivery", "to": "won"}
+  ],
+  "arrivals": [{"at": 0, "open": true, "interval": 4, "gap": {"dist": "exponential", "mean": 4, "max": 30}, "draws": [{"field": "mood", "kind": "int", "min": -1, "max": 1}], "data": {}}]
+}
+```
+
+Run it unlimited for a while (`wildlands process run --input shop.json --minutes 2000 --output report.json`)
+and read the snapshot: `metrics.goals`, `metrics.lost` and `metrics.conversion` (permille;
+676 means 67.6%), `metrics.tracked.mood` at the finish, and for each step `reached`
+(distinct visitors who got that far), `entered` (visits) and `tracked.mood` (average mood
+on entry, a measured curve per touchpoint). Drop-off between two steps is the difference
+of their `reached`. To model more drop-off, add another decision with a `chance` route
+to the same `lost` end; to model waiting, add a `timer` or give the touchpoint `timing`.
+The numbers are scenario assumptions for one seed, not a forecast. Persona libraries,
+attribution models and text sentiment are not supported; see
+[Customer and user journeys](../reference/business-process-engine.md).
+
+## Describe suppliers and customers (SIPOC)
+
+Add the optional, descriptive `sipoc` to name who supplies the process and who receives
+its result; it never changes a run. Inputs, process stages, outputs and measures are
+derived by the view, so fill in only the parties (in the Definition editor: **Suppliers and customers (SIPOC)**, up to 8 of each, name up to 60 and what they supply or receive up to 160 characters):
+
+```json
+"sipoc": {"suppliers": [{"name": "Warehouse", "supplies": "Stock"}],
+          "customers": [{"name": "Shopper", "receives": "Parcel"}]}
+```
+
+Up to 8 entries per list, names 1-60 characters, no duplicate name within a list.
+
 ## Declare needs and backlogs
 
 - A step delivers data with `set` (for example `"set": {"requirementsReady": true}`)
@@ -197,6 +259,44 @@ minutes when its work starts and the receipt records the realized `duration`. Th
 drawn `severity` appears in the receipt `changes` and can feed a later bare `needs`
 entry or a decision condition.
 
+## Model BPMN-class behaviour
+
+Four optional fields cover what a BPMN model needs to be simulated; the full rules and
+limits are in
+[Simulation semantics for BPMN-class processes](../reference/business-process-engine.md).
+
+Normal and Erlang durations: `"timing": {"dist": "normal", "mean": 30, "sd": 5}` or
+`{"dist": "erlang", "k": 3, "mean": 30}`.
+
+A condition built with `all`, `any` and `not` (the BPMN `&&`, `||` and `!`):
+
+```json
+{"id": "to-review", "from": "gate", "to": "review",
+ "when": {"all": [{"field": "amount", "op": "gte", "value": 1000},
+                  {"not": {"field": "vip", "op": "eq", "value": true}}]}}
+```
+
+An inclusive gateway: the fork names its join and activates every flow whose condition holds
+(the flow without `when` is the default when none does); the join waits for exactly those
+branches. Fields written on only some branches are not guaranteed after the join.
+
+```json
+{"id": "ship", "name": "Ship", "kind": "fork", "join": "shipped", "mode": "inclusive", "scene": {"id": "scene-ship", "position": [36, 0], "color": "#ffffff"}}
+```
+
+Multi-instance work (one receipt per visit, items counted in `queued` and `active`):
+`"instances": {"count": 5, "mode": "parallel"}` or `{"field": "lines", "mode": "sequential"}`.
+
+A boundary deadline, here non-interrupting: after 20 working minutes a new token follows
+the flow marked `on: "deadline"` to its own end while the work continues. Use `"mode": "interrupt"`
+to cancel the work and route the token along that flow instead.
+
+```json
+{"id": "approve", "kind": "task", "duration": 30, "resources": {"clerks": 1},
+ "deadline": {"after": 20, "mode": "escalate", "flow": "approve-late"}}
+{"id": "approve-late", "from": "approve", "to": "alert-end", "on": "deadline"}
+```
+
 ## Author each step scene with Scene Forge
 
 ```sh
@@ -240,9 +340,49 @@ bin/wildlands process import-bpmn --input /tmp/process-work/review.bpmn --output
 Export carries durations, needs, backlogs and layout in a `wl:` extension, so a
 round trip is lossless. Importing BPMN from another tool lists every default or
 folded element in `warnings`; add durations, resources and arrivals afterwards in
-**Edit process…** (Tune values) and **Edit step…**, or with guarded edits. Unsupported constructs (sub-processes,
-boundary events, inclusive gateways) are rejected rather than approximated. The studio
-offers the same through **Export BPMN** and **Import JSON or BPMN**.
+**Edit process…** (Tune values) and **Edit step…**, or with guarded edits. Constructs the
+engine cannot simulate (transactions, compensation, error boundary events, complex gateways) are
+rejected with their element ids rather than approximated. The studio offers the same through
+**Export BPMN** and **Import JSON or BPMN**. Add `--bpsim` to `export-bpmn` to write a BPSim
+scenario beside the extension values.
+
+## Import BPMN and its simulation parameters
+
+Foreign BPMN (from a modeler, with or without a BPSim scenario) can be simulated, not just
+drawn. Two illustrative files are in
+[`source/wildlands/examples/bpmn/`](../../source/wildlands/examples/bpmn/README.md): a loan
+application and a support ticket. Their numbers are synthetic.
+
+```sh
+bin/wildlands process import-bpmn --input source/wildlands/examples/bpmn/loan-application.bpmn --output /tmp/process-work/loan.json --report /tmp/process-work/loan-report.json
+bin/wildlands process run --input /tmp/process-work/loan.json --minutes 3000 --seed 7 --output /tmp/process-work/loan-run.json
+```
+
+1. **Read the printed report.** `warnings` states every assumption (defaulted durations, folded
+   merge gateways, service tasks run as automated steps, message waits, event races simulated
+   by chance, rounded probabilities). `mapping` counts what each foreign element became;
+   `--report FILE` writes every entry (`id`, `type`, `target`, `how`).
+2. **Choose the process and the pools.** With several processes use `--process ID` (a call
+   activity inlines its callee automatically). Lanes become pools named after them with
+   `--default-capacity` people each; `--lanes ignore` leaves tasks unconstrained and
+   `--no-auto-system-pool` keeps service tasks as plain tasks.
+3. **Supply the numbers BPMN lacks.** Durations, probabilities, arrivals, capacities and costs
+   come from a BPSim scenario (`--scenario ID` picks one; `--no-bpsim` ignores it). Without
+   one, tasks get `--default-duration`, an exclusive gateway with several unconditioned flows is
+   rejected (mark a default flow, add probabilities, or import with `--unsupported drop` to share
+   them equally) and one case arrives at minute 0. Conditions such as `${amount > 20000}` only
+   route cases whose arrivals carry that field: give start-event properties in BPSim, or add
+   arrival `data` and `draws` afterwards in **Edit process…**.
+4. **Handle rejections.** Exit code 2 prints `rejections` with the element id and the reason.
+   Fix the model, or accept the approximation with `--unsupported drop`: every dropped element
+   gets a warning, the flows around a dropped element with one way out are bridged and paths that
+   only it reached are pruned.
+5. **Run with a seed and compare.** `process run --seed N` is deterministic; vary the seed to see
+   the spread. Treat the result as a scenario built on assumed distributions, not as a
+   measurement of the original process.
+
+Edit the imported JSON like any definition (the guarded `edit` recipes, or the studio). An
+imported definition exports to BPMN again and re-imports to the same fingerprint.
 
 ## Run and build
 
@@ -262,11 +402,18 @@ real services or update external systems.
 
 Open the HTML directly. Use **Run simulation**, **Pause**, **Step 1 min**,
 **Advance 30 min**, and **Reset run**. **2D** and **3D** show one simulation;
+a third button shows the process-type lens over the same simulation: **SIPOC** for a
+business process, **Journey map** for a customer or user journey (the lens never offers
+the other one). A journey opens on its map; switching to another process keeps the lens
+for a process of the same kind and otherwise returns to your last 2D or 3D choice.
+Selecting a card or stage selects its step, and Escape clears it. Journeys also say
+customers or users instead of cases, show Finished, Goals, Lost and Conversion, and up
+to two tracked averages next to the run numbers.
 **Step scenes** and **Whole process** change the view without advancing time.
 **Edit process…** in the header opens the **Definition editor** (validation before **Apply draft and reset run**, see below); a chip beside it names an unapplied draft.
-To change one step, select it and choose **Edit step…** beside **Frame view**. The step editor opens as a dialog whose sections follow the kind of step: basics, timing and cost, people and capacity (tasks), equipment (machine steps) or systems (system steps), completion values and counters, declared outputs, needs from earlier steps, backlog and outgoing flows (conditions on decisions, with a short summary of the order the paths are checked). Work steps and duration timers also offer **Random timing** (the planning duration stays the average shown in estimates while each visit draws its own time) and **Random outcomes (draws)** for chance, weighted-choice and whole-number fields; a decision path can take a random share of cases instead of testing a field. Inconsistent numbers are reported next to the field. Machine and system steps add an **Automation** section for the optional technology label and list only pools of their own kind; if the process has no machine or system pool yet, the dialog says so and points to the Definition editor. Problems the engine finds for the step appear beside the fields as you type, and the problem list at the top links to each field. **Save to draft** keeps your edits in the draft without starting anything and the draft summary reads, for example, "Unapplied draft: 1 step changed". **Apply and reset run** applies the whole draft (including other unapplied edits, which a banner announces); when a run is already in progress it first asks you to confirm that the run will be discarded, so export the run report beforehand if you need it. **Cancel**, Escape, **Close** and a click outside the dialog all ask before throwing edits away. The run pauses while the dialog is open. Adding or removing flows and steps is still done in the raw JSON draft.
+To change one step, select it and choose **Edit step…** beside **Frame view**. The step editor opens as a dialog whose sections follow the kind of step: basics, timing and cost, people and capacity (tasks), equipment (machine steps) or systems (system steps), completion values and counters, declared outputs, needs from earlier steps, backlog and outgoing flows (conditions on decisions, with a short summary of the order the paths are checked). Work steps and duration timers also offer **Random timing** (the planning duration stays the average shown in estimates while each visit draws its own time) and **Random outcomes (draws)** for chance, weighted-choice and whole-number fields; a decision path can take a random share of cases instead of testing a field. Inconsistent numbers are reported next to the field. Machine and system steps add an **Automation** section for the optional technology label and list only pools of their own kind; if the process has no machine or system pool yet, the dialog says so and points to the Definition editor. Problems the engine finds for the step appear beside the fields as you type, and the problem list at the top links to each field. **Save to draft** keeps your edits in the draft without starting anything and the draft summary reads, for example, "Unapplied draft: 1 step changed". **Apply and reset run** applies the whole draft (including other unapplied edits, which a banner announces); when a run is already in progress it first asks you to confirm that the run will be discarded, so export the run report beforehand if you need it. **Cancel**, Escape, **Close** and a click outside the dialog all ask before throwing edits away. The run pauses while the dialog is open. Touchpoints (customer or user interactions) have a **Journey** section for phase, channel, feeling, pain point and opportunity and list backstage teams and systems of any kind as optional; every other step has collapsed **Journey notes**, and end steps choose an **Outcome** (None, Goal reached or Customer or user lost). Adding or removing flows and steps is still done in the raw JSON draft. Forks add **Branching** (parallel, or inclusive with conditions on its paths), work steps add **Multiple instances** and a **Deadline** with its interrupt or escalate path, and any condition can be combined with **All of these**, **Any of these** or **Not**; **Random timing** and the arrival gap also offer Normal and Erlang distributions. The step editor never adds a flow: for a deadline it lets you choose among the step's existing flows and explains where to add the flow in the JSON when there is none.
 The Definition editor is a dialog with two panes: **Tune values** (process name,
-description and **Seed**, shared resources with their kind People, Machine or System,
+description, **Process type** (business process, customer journey or user journey) and **Seed**, up to six **Tracked measures** that the simulation averages to draw the measured curve, shared resources with their kind People, Machine or System,
 and each arrival's end rule, first arrival, planning interval, optional random gap,
 case data and random case fields) and **Raw JSON** (the draft with line numbers, the
 exact line and column of a syntax error, every problem the catalog reports as a button
@@ -295,6 +442,31 @@ In 3D, active work appears as desk actors typing and reviewing screens while
 playback runs. Pause freezes their motion; reduced-motion preferences disable
 it. Additional work uses bounded markers, with counts preserving total activity.
 Focus the canvas to orbit with arrow keys, pan with Shift+arrows or WASD (or right-drag), zoom with +/−, or frame with F. In 2D, drag to pan, scroll or pinch to zoom, and press 0 to reset. Use **Run until** in the toolbar to choose a run length or Unlimited, and the **Tune values** pane of the Definition editor (**Edit process…**: name, seed, resources, arrivals) or **Edit step…** (one step) to fine-tune an agent-built process before applying it.
+
+**Studio layout.** On a window 1100 px wide or more the studio fits one screen: a compact
+header and run toolbar, the step list on the left, the stage in the middle and the inspector on
+the right, each column scrolling inside itself. **Run simulation** (**Pause** while playing) is
+the only amber button; **Step 1 min**, **Advance 30 min** and **Reset run** follow, then
+**Speed**, **Run until** and **Seed**, and finally **Activity**, the clock and the run state.
+Typing a **Seed** (0 to 2,147,483,647) starts a fresh paused run that uses it ("Seed 7 · fresh
+paused run"); Reset keeps it, importing or applying a definition returns to that definition's
+seed. The status message sits under the stage title. **Inputs & outputs** is a collapsible panel
+under the metrics (open by default on screens 1600 px wide or more). The inspector lists
+**Shared resources** first (utilisation bars with percentages), then the step's details, including
+**Random timing**, **Random outcomes** and the share of each chance route, or, for the whole
+process, the seed and the arrival streams. On a phone the header keeps **Edit** and a **⋯** menu,
+the run bar stays at the top with **Run options** holding the secondary controls, and steps
+become a horizontal scroller above the stage.
+
+**Export ▾** holds **Export JSON**, **Export BPMN**, **Export run report** and **Download HTML**
+(arrow keys, Home, End and Escape work; the menu closes after a choice). **Activity** opens the
+**Run activity** modal without pausing the run; its badge counts events since you last looked
+(99+ at most). Filter by kind, step or case, choose a step name to select that step and return
+to it in the list, and **Export CSV** or **Export JSON** the filtered events (`<process-id>.events.csv`
+or `.json`, oldest first; text cells that start with `=`, `+`, `-` or `@` get a leading apostrophe).
+The engine keeps its latest 128 events, and the modal says when earlier ones are not kept. While
+the run plays the list follows it only when scrolled to the top with no filter focused;
+otherwise a "N new events — Show" button waits.
 
 **Export run report** downloads observed results, including retained task I/O. **Download HTML** embeds the
 active definition (for a multi-process game, every applied process in list order)

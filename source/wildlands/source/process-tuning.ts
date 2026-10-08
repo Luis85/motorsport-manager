@@ -1,10 +1,12 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-tuning-fields.ts" />
 /// <reference path="./process-tuning-arrivals.ts" />
+/// <reference path="./process-tuning-track.ts" />
+/// <reference path="./process-tuning-sipoc.ts" />
 /// <reference path="./process-json-path.ts" />
 /**
- * The "Tune values" form of the Definition editor: process name, description and seed, shared resources (name, kind,
- * capacity, cost) and case arrivals. It edits the unapplied draft TEXT through the `write` callback; applying still goes through
+ * The "Tune values" form of the Definition editor: process name, description, process type and seed, shared resources (name, kind,
+ * capacity, cost), case arrivals, tracked measures and the SIPOC suppliers and customers. It edits the unapplied draft TEXT through the `write` callback; applying still goes through
  * catalog admission and resets the run. The catalog's diagnostics are handed in with `setDiagnostics` and shown beside the field
  * they name, with `aria-invalid` on the control; the form never decides what is valid. Per-step values belong to the step editor.
  */
@@ -24,8 +26,8 @@ declare namespace LWProcessTuning {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessTuningFields: LWProcessTuningFields.Api; LWProcessTuningArrivals: LWProcessTuningArrivals.Api; LWProcessJsonPath: LWProcessJsonPath.Api; LWProcessTuning?: LWProcessTuning.Api};
- const F = root.LWProcessTuningFields, A = root.LWProcessTuningArrivals, esc = F.esc;
+ const root = inputRoot as {LWProcessTuningFields: LWProcessTuningFields.Api; LWProcessTuningArrivals: LWProcessTuningArrivals.Api; LWProcessTuningTrack: LWProcessTuningTrack.Api; LWProcessTuningSipoc: LWProcessTuningSipoc.Api; LWProcessJsonPath: LWProcessJsonPath.Api; LWProcessTuning?: LWProcessTuning.Api};
+ const F = root.LWProcessTuningFields, A = root.LWProcessTuningArrivals, T = root.LWProcessTuningTrack, P = root.LWProcessTuningSipoc, esc = F.esc;
  const KINDS: [string, string][] = [['people', 'People'], ['machine', 'Machine'], ['system', 'System']];
  const SEED = 2147483647;
  function resource(r: LWProcess.Resource, i: number, total: number): string {
@@ -41,9 +43,11 @@ declare namespace LWProcessTuning {
   return `<div id="tune-summary" class="de-summary"></div>
    <section class="de-sec" aria-labelledby="tune-h-process"><h4 id="tune-h-process" tabindex="-1">Process</h4><div class="de-errs" id="tune-err" data-errs=""></div>
     ${F.text('tune-name', 'Name', 'name', d.name)}${F.text('tune-desc', 'Description', 'description', d.description, {max: 4000, long: true})}
-    ${F.int('tune-seed', 'Seed', 'seed', d.seed, {min: 0, max: SEED, optional: true, help: 'Same seed, same run. Change it to see another scenario. Leave empty for the default seed (1).'})}</section>
+    ${T.genreMarkup(d)}${F.int('tune-seed', 'Seed', 'seed', d.seed, {min: 0, max: SEED, optional: true, help: 'Same seed, same run. Change it to see another scenario. Leave empty for the default seed (1).'})}</section>
    <section class="de-sec" aria-labelledby="tune-h-res"><h4 id="tune-h-res" tabindex="-1">Shared resources</h4><div class="de-errs" id="tune-res-err" data-errs="resources"></div><p class="de-help">Pools of people, machines or systems that steps wait for.</p>${res}<button type="button" class="de-add" id="tune-res-add" data-act="res-add">Add resource</button></section>
    <section class="de-sec" aria-labelledby="tune-h-arr"><h4 id="tune-h-arr" tabindex="-1">Case arrivals</h4><div class="de-errs" id="tune-arr-err" data-errs="arrivals"></div><p class="de-help">When new cases enter the process.</p>${arrivals || '<p class="de-help">No arrivals are defined.</p>'}<button type="button" class="de-add" id="tune-arr-add" data-act="arr-add">Add arrival</button></section>
+   ${T.trackMarkup(d)}
+   ${P.markup(d)}
    <p class="de-help">Steps and flows are edited with Edit step… or in Raw JSON.</p>`;
  }
  function setPath(target: unknown, path: string, value: unknown): void {
@@ -109,7 +113,7 @@ declare namespace LWProcessTuning {
    const el = e.target as HTMLInputElement, kind = el.dataset?.kind, path = el.dataset?.path; if (!kind || !path) return;
    if (WAIT_FOR_CHANGE.has(kind) !== (e.type === 'change')) return;
    const def = parse(); if (!def) { render(); return; }
-   const special = A.special(def, el);
+   const special = T.special(def, el) ?? A.special(def, el);
    if (special) { if (special.local) { local.set(...special.local); show(); } else { local.delete(path); if (special.write) commit(def, special.focus, special.rerender); else show(); } return; }
    let value: unknown;
    if (kind === 'int') {
@@ -123,7 +127,7 @@ declare namespace LWProcessTuning {
     const current = getPath(def, path);
     value = typeof current === 'boolean' ? el.value === 'true' : typeof current === 'number' ? (el.value.trim() !== '' && Number.isInteger(Number(el.value)) ? Number(el.value) : current) : el.value;
     if (typeof current === 'number' && !(el.value.trim() !== '' && Number.isInteger(Number(el.value)))) { local.set(path, 'Enter a whole number.'); show(); return; }
-   } else value = el.value === '' && path === 'description' ? undefined : el.value;
+   } else value = el.value === '' && (path === 'description' || /^track\.\d+\.label$/.test(path) || P.isDetail(path)) ? undefined : el.value;
    local.delete(path); setPath(def, path, value); commit(def);
   }
   function click(e: MouseEvent): void {
@@ -135,7 +139,7 @@ declare namespace LWProcessTuning {
     def.resources.push({id: 'resource-' + n, name: 'New resource', capacity: 1, costPerMinute: 0}); commit(def, `#tune-res-${def.resources.length - 1}-name`, true); return;
    }
    if (what === 'res-remove') { def.resources.splice(Number(b.dataset.i), 1); commit(def, '#tune-res-add', true); return; }
-   const result = A.act(def, b); if (result) commit(def, result.focus, result.rerender);
+   const result = T.act(def, b) ?? P.act(def, b) ?? A.act(def, b); if (result) commit(def, result.focus, result.rerender);
   }
   host.addEventListener('input', edit); host.addEventListener('change', edit); host.addEventListener('click', click);
   return {

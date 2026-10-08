@@ -8,10 +8,11 @@ import {writeForgeProject} from './process-forge.cjs';
 const commands: Record<string, readonly string[]> = {
  discover: [], schema: ['--kind'], create: ['--id', '--name', '--output'], validate: ['--input', '--draft'], inspect: ['--input'],
  edit: ['--input', '--recipe', '--output', '--dry-run', '--draft'], run: ['--input', '--minutes', '--output', '--seed'],
- build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output'], 'import-bpmn': ['--input', '--output', '--draft', '--default-duration'],
+ build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output', '--bpsim'],
+ 'import-bpmn': ['--input', '--output', '--draft', '--default-duration', '--process', '--lanes', '--default-capacity', '--no-auto-system-pool', '--system-capacity', '--minutes-per-day', '--minutes-per-hour', '--unsupported', '--no-bpsim', '--scenario', '--report'],
  attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint', '--output', '--dry-run']
 };
-const flags = new Set(['--draft', '--dry-run']);
+const flags = new Set(['--draft', '--dry-run', '--bpsim', '--no-auto-system-pool', '--no-bpsim']);
 /** Options every invocation of a command must carry; checked before any file is read or work is done. */
 const requiredOptions: Record<string, readonly string[]> = {create: ['--id', '--output'], validate: ['--input'], inspect: ['--input'], edit: ['--input', '--recipe'],
  run: ['--input', '--minutes', '--output'], build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output'], 'import-bpmn': ['--input', '--output'],
@@ -19,8 +20,8 @@ const requiredOptions: Record<string, readonly string[]> = {create: ['--id', '--
 const descriptions: Record<string, string> = {discover: 'Discover commands, limits and guarded edit operations.', schema: 'Get the authoritative process JSON Schema.',
  create: 'Create a runnable starter definition.', validate: 'Validate shape, references and graph semantics; --draft permits graph diagnostics.', inspect: 'Read identity, scene graph and starting snapshot without advancing time.',
  edit: 'Apply a revision/fingerprint guarded transaction; --draft allows intermediate graph diagnostics.', run: 'Run a fresh deterministic session for a bounded number of business minutes; --seed N replaces the definition seed.',
- build: 'Build one self-contained offline HTML file.', 'export-bpmn': 'Export a BPMN 2.0 XML file (with Wildlands extension values and diagram layout).',
- 'import-bpmn': 'Import a BPMN 2.0 XML file into a definition; unsupported elements are rejected, defaults are reported as warnings.', forge: 'Create an editable Scene Forge project with one scene per step.', attach: 'Attach a Scene Forge Wildlands asset to a step using edit guards.'};
+ build: 'Build one self-contained offline HTML file.', 'export-bpmn': 'Export a BPMN 2.0 XML file (with Wildlands extension values and diagram layout); --bpsim adds a BPSim scenario (processing times, probabilities, arrivals, pool quantities and costs).',
+ 'import-bpmn': 'Import a BPMN 2.0 XML file into a simulatable definition (lanes, sub-processes, call activities, gateways, loops, boundary timers, expressions and BPSim parameters are mapped); prints the structured report (warnings, mapping counts, rejections); unsupported elements are rejected (exit 2) or, with --unsupported drop, dropped with warnings.', forge: 'Create an editable Scene Forge project with one scene per step.', attach: 'Attach a Scene Forge Wildlands asset to a step using edit guards.'};
 function recipeSchema(): Record<string, unknown> {
  const properties = catalog.schema.properties as Record<string, Record<string, unknown>>;
  const operation = (op: string, key: string, value: unknown) => ({type: 'object', additionalProperties: false, required: ['op', key], properties: {op: {const: op}, [key]: value}});
@@ -62,7 +63,7 @@ export function run(args: readonly string[]): void {
    if (values.has('--dry-run') && values.has('--output')) throw Error('Dry run does not accept --output.');
    if (!values.has('--dry-run') && !values.has('--output')) throw Error('Missing --output (or use --dry-run).');
   }
-  for (const key of ['--minutes', '--expected-revision', '--default-duration', '--seed']) if (values.has(key) && !/^\d+$/.test(values.get(key)!)) throw Error(key + ' must be a whole number.');
+  for (const key of ['--minutes', '--expected-revision', '--default-duration', '--seed', '--default-capacity', '--system-capacity', '--minutes-per-day', '--minutes-per-hour']) if (values.has(key) && !/^\d+$/.test(values.get(key)!)) throw Error(key + ' must be a whole number.');
   if (values.has('--seed') && Number(values.get('--seed')) > 2147483647) throw Error('--seed must be from 0 to 2147483647.');
   if (values.has('--kind') && !['definition', 'recipe'].includes(values.get('--kind')!)) throw Error('--kind must be definition or recipe.');
   const required = (key: string) => {const value = values.get(key); if (!value) throw Error('Missing ' + key); return value;};
@@ -87,15 +88,28 @@ export function run(args: readonly string[]): void {
    success({output: output(definition, []), revision: definition.revision, fingerprint: catalog.fingerprint(definition)}); return;
   }
   if (command === 'import-bpmn') {
-   const source = readJsonFile(required('--input'), 8 * 1024 * 1024), duration = values.has('--default-duration') ? Number(values.get('--default-duration')) : undefined;
-   const imported = bpmn.import(source, duration === undefined ? {} : {defaultDuration: duration}), draft = values.has('--draft');
-   if (!(draft ? imported.acceptable : imported.ok)) {emit({ok: false, protocolVersion: 1, diagnostics: imported.diagnostics, warnings: imported.warnings}); process.exitCode = 1; return;}
-   success({output: output(imported.definition, [required('--input')]), runnable: imported.ok, diagnostics: imported.diagnostics, warnings: imported.warnings}); return;
+   const number = (key: string) => values.has(key) ? Number(values.get(key)) : undefined, text = (key: string) => values.get(key);
+   // Every option is validated (names, enums, ranges) before the input file is read.
+   const options: LWProcessBpmn.Options = {...number('--default-duration') !== undefined ? {defaultDuration: number('--default-duration')!} : {}, ...text('--process') ? {process: text('--process')!} : {},
+    ...text('--lanes') ? {lanes: text('--lanes') as 'pools' | 'ignore'} : {}, ...number('--default-capacity') !== undefined ? {defaultCapacity: number('--default-capacity')!} : {}, ...values.has('--no-auto-system-pool') ? {autoSystemPool: false} : {},
+    ...number('--system-capacity') !== undefined ? {systemCapacity: number('--system-capacity')!} : {}, ...number('--minutes-per-day') !== undefined ? {minutesPerDay: number('--minutes-per-day')!} : {}, ...number('--minutes-per-hour') !== undefined ? {minutesPerHour: number('--minutes-per-hour')!} : {},
+    ...text('--unsupported') ? {unsupported: text('--unsupported') as 'reject' | 'drop'} : {}, ...values.has('--no-bpsim') ? {bpsim: false} : {}, ...text('--scenario') ? {scenario: text('--scenario')!} : {}};
+   bpmn.options(options);
+   if (values.has('--scenario') && values.has('--no-bpsim')) throw Error('--scenario cannot be combined with --no-bpsim.');
+   const source = readJsonFile(required('--input'), 8 * 1024 * 1024), imported = bpmn.analyze(source, options), draft = values.has('--draft');
+   const counts = (keys: string[]) => keys.reduce<Record<string, number>>((acc, k) => { acc[k] = (acc[k] ?? 0) + 1; return acc; }, {});
+   const summary = {total: imported.mapping.length, byType: counts(imported.mapping.map(m => m.type)), byTarget: counts(imported.mapping.map(m => m.target.split(':')[0]!))};
+   const report = {process: imported.info.process, scenario: imported.info.scenario, horizon: imported.info.horizon, options: imported.info.options, warnings: imported.warnings, mapping: summary, rejections: imported.rejections};
+   if (imported.rejections.length) {emit({ok: false, protocolVersion: 1, code: 'process-import-rejected', ...report, errors: imported.rejections.map(r => r.message)}); process.exitCode = 2; return;}
+   if (!(draft ? imported.acceptable : imported.ok)) {emit({ok: false, protocolVersion: 1, diagnostics: imported.diagnostics, ...report}); process.exitCode = 1; return;}
+   const inputs = [required('--input')], target = output(imported.definition, inputs);
+   const full = values.has('--report') ? writeJsonFile(required('--report'), {format: 'wildlands-bpmn-import-report', schemaVersion: 1, ...report, mapping: imported.mapping, diagnostics: imported.diagnostics}, inputs) : undefined;
+   success({output: target, ...full ? {report: full} : {}, runnable: imported.ok, diagnostics: imported.diagnostics, ...report}); return;
   }
   const file = required('--input'), input = read(file);
   if (command === 'export-bpmn') {
    const target = required('--output'); if (!/\.(bpmn|xml)$/.test(target)) throw Error('BPMN output must end in .bpmn or .xml.');
-   success({output: writeTextFile(target, bpmn.export(input), [file])}); return;
+   success({output: writeTextFile(target, bpmn.export(input, values.has('--bpsim') ? {bpsim: true} : {}), [file]), bpsim: values.has('--bpsim')}); return;
   }
   if (command === 'validate') {
    const checked = catalog.validate(input, values.has('--draft')), accepted = values.has('--draft') ? checked.acceptable : checked.ok;

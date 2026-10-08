@@ -6,6 +6,32 @@
   "name": "Agency delivery lab",
   "description": "Follow a project from discovery to handover. Product design (business analysts and requirements engineers) and technical design run in parallel into a Ready to build backlog that developers pull from; shared developers and QA create visible queues. Each step declares what earlier steps must deliver. Two project groups exercise both acceptance and rework. All values are synthetic.",
   "start": "intake",
+  "sipoc": {
+    "suppliers": [
+      {
+        "name": "Client",
+        "supplies": "Project brief, access to stakeholders and feedback on each review"
+      },
+      {
+        "name": "Client product organisation",
+        "supplies": "Business goals, priorities and sign-off authority"
+      },
+      {
+        "name": "Design and brand agency",
+        "supplies": "Brand guidelines, style assets and visual direction"
+      }
+    ],
+    "customers": [
+      {
+        "name": "Client stakeholders",
+        "receives": "Accepted deliverables, documentation and handover pack"
+      },
+      {
+        "name": "End users",
+        "receives": "The launched digital product"
+      }
+    ]
+  },
   "resources": [
     {
       "id": "product-owner",
@@ -43,6 +69,7 @@
       "id": "intake",
       "name": "Project intake",
       "kind": "start",
+      "phase": "Discover",
       "scene": {
         "id": "scene-intake",
         "position": [
@@ -115,6 +142,7 @@
       "id": "discovery",
       "name": "Discovery",
       "kind": "task",
+      "phase": "Discover",
       "scene": {
         "id": "scene-discovery",
         "position": [
@@ -327,6 +355,7 @@
       "id": "design-split",
       "name": "Plan together",
       "kind": "fork",
+      "phase": "Design",
       "scene": {
         "id": "scene-design-split",
         "position": [
@@ -400,6 +429,7 @@
       "id": "product-design",
       "name": "Product design",
       "kind": "task",
+      "phase": "Design",
       "scene": {
         "id": "scene-product-design",
         "position": [
@@ -620,6 +650,7 @@
       "id": "architecture",
       "name": "Technical design",
       "kind": "task",
+      "phase": "Design",
       "scene": {
         "id": "scene-architecture",
         "position": [
@@ -839,6 +870,7 @@
       "id": "design-ready",
       "name": "Ready to build",
       "kind": "join",
+      "phase": "Design",
       "scene": {
         "id": "scene-design-ready",
         "position": [
@@ -931,6 +963,7 @@
       "id": "implementation",
       "name": "Implementation",
       "kind": "task",
+      "phase": "Build",
       "scene": {
         "id": "scene-implementation",
         "position": [
@@ -1155,6 +1188,7 @@
       "id": "qa",
       "name": "Quality review",
       "kind": "task",
+      "phase": "Build",
       "scene": {
         "id": "scene-qa",
         "position": [
@@ -1374,6 +1408,7 @@
       "id": "review-gate",
       "name": "Accepted?",
       "kind": "decision",
+      "phase": "Review",
       "scene": {
         "id": "scene-review-gate",
         "position": [
@@ -1446,6 +1481,7 @@
       "id": "rework",
       "name": "Resolve findings",
       "kind": "task",
+      "phase": "Review",
       "scene": {
         "id": "scene-rework",
         "position": [
@@ -1657,6 +1693,7 @@
       "id": "handover",
       "name": "Client handover",
       "kind": "task",
+      "phase": "Handover",
       "scene": {
         "id": "scene-handover",
         "position": [
@@ -1879,6 +1916,7 @@
       "id": "delivered",
       "name": "Delivered",
       "kind": "end",
+      "phase": "Handover",
       "scene": {
         "id": "scene-delivered",
         "position": [

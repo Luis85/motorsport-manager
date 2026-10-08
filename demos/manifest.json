@@ -1,7 +1,7 @@
 {
   "format": "wildlands-demos",
   "schemaVersion": 1,
-  "engine": "6eacd898ec1a7cc860322a203c6a5668c0fc1d56b12af6c665efff291828d343",
+  "engine": "d051bec1e3c96a464afb74dcad58a59ddcd09ee0d7b101a5babe36cecdc6fb22",
   "demos": [
     {
       "id": "agency-delivery",
@@ -9,13 +9,13 @@
       "version": "1.0.0",
       "template": "process",
       "title": "Agency delivery lab",
-      "description": "Explore three synthetic processes in 2D and 3D and switch between them: the in-house agency pipeline with shared resources, parallel design and rework, an agile vendor pipeline with CI/CD automation, and an order fulfilment line with robots, software systems and a human spot-check.",
+      "description": "Explore five synthetic processes in 2D and 3D and switch between them: the in-house agency pipeline with shared resources, parallel design and rework, an agile vendor pipeline with CI/CD automation, an order fulfilment line with robots, software systems and a human spot-check, a customer journey through an online shop with phases, emotions and conversion, and a user journey through app onboarding with system steps, timers and counters.",
       "output": "demos/agency-delivery.html",
-      "bytes": 1392793,
-      "sha256": "f08172d0bcb5a2f13285e41f7a42270f1db91fc73bcf144dd4c58dadb5b60beb",
+      "bytes": 1642711,
+      "sha256": "d9b91fde74e8cbb2c8fa14ad6e050d219d608bf1c097869b9917db5d94f12996",
       "budgetBytes": 4194304,
-      "gameDigest": "3fba23ec3b60170e007f529b2ddc28d28742d9dd94f10f28130538263e499b74",
-      "engine": "6eacd898ec1a7cc860322a203c6a5668c0fc1d56b12af6c665efff291828d343"
+      "gameDigest": "506dd2a50fe07f240b38f291c6f19735aa53e02b7682816443fcf77404a9ff47",
+      "engine": "d051bec1e3c96a464afb74dcad58a59ddcd09ee0d7b101a5babe36cecdc6fb22"
     },
     {
       "id": "emberworks",
@@ -26,10 +26,10 @@
       "description": "A warm clay-and-copper workshop settlement. Same engine; a separately authored setting and starting scene.",
       "output": "demos/emberworks.html",
       "bytes": 3203407,
-      "sha256": "2a505bb5521ecebef38a49c32b4d74f7a6e122ba29f23c507fa8679c618b296f",
+      "sha256": "7dc875b72e14c75ae7ab8dbbf8ed6b7f396461802c39c828316004de9838a6fd",
       "budgetBytes": 4194304,
       "gameDigest": "fb4c21acc3c0c5ca430909d778e816ae944a2a4957c04fe6356d0df602ddc6be",
-      "engine": "6eacd898ec1a7cc860322a203c6a5668c0fc1d56b12af6c665efff291828d343"
+      "engine": "d051bec1e3c96a464afb74dcad58a59ddcd09ee0d7b101a5babe36cecdc6fb22"
     },
     {
       "id": "littlewild",
@@ -40,10 +40,10 @@
       "description": "A little life. A shared adventure. Littlewild is an offline, autonomous-buddy RPG prototype.",
       "output": "demos/littlewild.html",
       "bytes": 3213724,
-      "sha256": "37cecb4de687d44915e40ed9cd85380222377f162c9c52c9ce6bedcd3f3ea828",
+      "sha256": "ec1ca044c5135f1c0df4f227dba85c10e2b847cf942f68aba7fcfdaea013c7e1",
       "budgetBytes": 4194304,
       "gameDigest": "927a583f16e3088e0a58fe7377973fea02105fe9b6218fbb0600950ee8fc6882",
-      "engine": "6eacd898ec1a7cc860322a203c6a5668c0fc1d56b12af6c665efff291828d343"
+      "engine": "d051bec1e3c96a464afb74dcad58a59ddcd09ee0d7b101a5babe36cecdc6fb22"
     },
     {
       "id": "office",
@@ -54,10 +54,10 @@
       "description": "An indoor sales, warehouse and fulfillment team. Phil wins customer deals, Angela packs and dispatches orders, and Marty keeps inbound materials moving.",
       "output": "demos/office.html",
       "bytes": 3461956,
-      "sha256": "02cbb12a782a9584aed8ed579ec8d3930777d908c39ee7b9a1ac3b793a134097",
+      "sha256": "d03d5c31bf3eb585f1ae6788d2a1085322c595d646ae6b0c5e0b3a19047f59c8",
       "budgetBytes": 4194304,
       "gameDigest": "640b7f7804e4d2ed68dabec62032d888a9520114ca07cdb9ee525142286332b8",
-      "engine": "6eacd898ec1a7cc860322a203c6a5668c0fc1d56b12af6c665efff291828d343"
+      "engine": "d051bec1e3c96a464afb74dcad58a59ddcd09ee0d7b101a5babe36cecdc6fb22"
     },
     {
       "id": "pocket-pet",
@@ -68,10 +68,10 @@
       "description": "An offline virtual pet built with Wildlands.",
       "output": "demos/pocket-pet.html",
       "bytes": 2330828,
-      "sha256": "8828f665970aa402926db6a6202f4e0ec608ad360656314ffbdd84945327f839",
+      "sha256": "dd403ad7abe9e781f572c3cc3468625750d31d10902417f7ae7ef5571a072b8e",
       "budgetBytes": 3145728,
       "gameDigest": "0e6c25f3df4ee1a5b64f0eabafb39e3e42c350e305ae846acc9fe548bc647aaa",
-      "engine": "6eacd898ec1a7cc860322a203c6a5668c0fc1d56b12af6c665efff291828d343"
+      "engine": "d051bec1e3c96a464afb74dcad58a59ddcd09ee0d7b101a5babe36cecdc6fb22"
     },
     {
       "id": "rts-frontier",
@@ -82,10 +82,10 @@
       "description": "An offline isometric real-time strategy match built with Wildlands.",
       "output": "demos/rts-frontier.html",
       "bytes": 165695,
-      "sha256": "db90e579e8831aad0861f08e46e552666eeba7c293f808c6c729bfffc3c31200",
+      "sha256": "1c03ef69a0cac5189e46649ceebefbd31bb4392add9cd05bafe875e85ec38b94",
       "budgetBytes": 524288,
       "gameDigest": "63b0bfff27fcfad220b44f341f0752427dd2f0ef0be0cc72c268a613e113a67e",
-      "engine": "6eacd898ec1a7cc860322a203c6a5668c0fc1d56b12af6c665efff291828d343"
+      "engine": "d051bec1e3c96a464afb74dcad58a59ddcd09ee0d7b101a5babe36cecdc6fb22"
     }
   ]
 }

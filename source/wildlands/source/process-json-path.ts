@@ -108,12 +108,20 @@ declare namespace LWProcessJsonPath {
   }
   return null;
  }
+ /** Plain names for the journey fields, used in diagnostic labels such as "Checkout › feeling" or "Process › process type". */
+ const NAMES: Record<string, string> = {genre: 'process type', track: 'tracked measures', phase: 'phase', emotion: 'feeling', pain: 'pain point', opportunity: 'opportunity', channel: 'channel', outcome: 'outcome'};
  function label(definition: unknown, path: string): string {
   const parts = path.split('/').filter(Boolean), d = (definition && typeof definition === 'object' ? definition : {}) as Record<string, unknown>;
   const list = (key: string) => (Array.isArray(d[key]) ? d[key] : []) as Record<string, unknown>[];
-  const rest = (from: number) => parts.slice(from).join(' › '), join = (head: string, tail: string) => tail ? head + ' › ' + tail : head;
+  const rest = (from: number) => parts.slice(from).map((p, at) => at === 0 ? NAMES[p] ?? p : p).join(' › '), join = (head: string, tail: string) => tail ? head + ' › ' + tail : head;
   const [section, raw] = parts, index = Number(raw);
   if (!section) return 'Process';
+  if (section === 'sipoc') {
+   const noun = raw === 'suppliers' ? 'Supplier' : raw === 'customers' ? 'Customer' : '', at = Number(parts[2]);
+   if (!noun) return 'Suppliers and customers';
+   return parts[2] === undefined ? noun + 's' : join(`${noun} ${Number.isInteger(at) ? at + 1 : parts[2]}`, parts.slice(3).join(' › '));
+  }
+  if (section === 'track' && raw !== undefined && Number.isInteger(index)) return join(`Tracked measure ${index + 1}`, rest(2));
   if (!['steps', 'flows', 'resources', 'arrivals'].includes(section) || raw === undefined || !Number.isInteger(index)) return join('Process', rest(0));
   const item = list(section)[index], name = (id: unknown) => String(list('steps').find(s => s.id === id)?.name ?? id);
   if (section === 'steps') return join(typeof item?.name === 'string' ? item.name : `Step ${index + 1}`, rest(2));

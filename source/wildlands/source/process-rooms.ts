@@ -2,12 +2,26 @@
 /** Presentation-only room themes: fixed furniture, animated task visuals while working, and a quiet idle variant. No simulation state. */
 declare namespace LWProcessRooms {
  interface Theme {id: string; label: string; floor: string; wall: string; accent: string; task: string}
+ /** One mood level of the authored `emotion` (-3..3): face colour (cool to warm), eye/brow/mouth strokes in a 100-unit box. */
+ interface Mood {level: number; label: string; color: string; mouth: string; brow?: string; open?: boolean}
+ /** Display data of a touchpoint channel: names, a stroke glyph in a -0.5..0.5 box and its room theme. */
+ interface Channel {label: string; glyph: string; theme: Theme}
  /** Subset of the 3D renderer's piece kit that room builders need. */
  interface Kit {T: any; mat(color: string, extra?: Record<string, unknown>): any; group(parent: any): any; piece(parent: any, kind: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, rotation?: number, extra?: Record<string, unknown>): any;
   /** Lit text plate facing the front; `userData.signText` carries the displayed text. */
-  sign(parent: any, text: string, x: number, y: number, z: number, width: number, height: number, accent: string): any;}
+  sign(parent: any, text: string, x: number, y: number, z: number, width: number, height: number, accent: string): any;
+  /** Floating mood face sprite for an `emotion` level; the renderer places it above the room caption. */
+  mood(parent: any, level: number): any;}
  interface Room {setActive(active: boolean): void; setQueued(items: number): void; setBacklog(items: number): void; animate(t: number, progress: number): void;}
- interface Api {theme(step: LWProcess.Step): Theme; build(kit: Kit, parent: any, step: LWProcess.Step, furnished: boolean): Room;}
+ /** Builder context: furniture goes in `live.parent` (always visible), `live` (working only) and `idle` (standby only). */
+ interface Ctx {G(parent: any): any; P(parent: any, kind: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, extra?: Record<string, unknown>): any;
+  live: any; idle: any; step: LWProcess.Step; readonly on: boolean; mat: Kit['mat']; sign(parent: any, text: string, x: number, y: number, z: number, width: number, height: number): any;
+  glow(mesh: any, color: string, emissive: string, strength?: number, off?: string): any; lamp(mesh: any, color: string, emissive: string, when: (on: boolean, queued: number) => boolean, strength?: number): any;
+  swing(fn: (t: number, progress: number) => void): void; state(fn: (on: boolean, queued: number) => void): void;}
+ type Builder = (c: Ctx) => void;
+ /** `builders` and `channels` are registries filled by the touchpoint module (loaded after this one); `moods` are the seven levels from -3 to +3. */
+ interface Api {theme(step: LWProcess.Step): Theme; build(kit: Kit, parent: any, step: LWProcess.Step, furnished: boolean): Room;
+  builders: Record<string, Builder>; channels: Record<string, Channel>; moods: Mood[]; fallbackTheme: Theme;}
 }
 (function(inputRoot: unknown) {
  'use strict';
@@ -28,17 +42,15 @@ declare namespace LWProcessRooms {
  };
  const BACKLOG_THEME = T('backlog', 'Backlog room', '#33405a', '#46527a', '#9db4ff', 'Holding ready work');
  function theme(step: LWProcess.Step): LWProcessRooms.Theme {
+  if (step.kind === 'touchpoint') return (step.channel && api.channels[step.channel]?.theme) || api.fallbackTheme;
   if (step.kind === 'join' && step.backlog) return BACKLOG_THEME;
   if (step.kind !== 'task') return KIND_THEMES[step.kind]!;
   let h = 0; for (const c of step.id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
   return TASK_THEMES[h % TASK_THEMES.length]!;
  }
- interface Ctx {G(parent: any): any; P(parent: any, kind: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, extra?: Record<string, unknown>): any;
-  live: any; idle: any; step: LWProcess.Step; readonly on: boolean; mat: Kit['mat']; sign(parent: any, text: string, x: number, y: number, z: number, width: number, height: number): any;
-  glow(mesh: any, color: string, emissive: string, strength?: number, off?: string): any; lamp(mesh: any, color: string, emissive: string, when: (on: boolean, queued: number) => boolean, strength?: number): any;
-  swing(fn: (t: number, progress: number) => void): void; state(fn: (on: boolean, queued: number) => void): void;}
  type Kit = LWProcessRooms.Kit;
- type Builder = (c: Ctx) => void;
+ type Builder = LWProcessRooms.Builder;
+ type Ctx = LWProcessRooms.Ctx;
  const wave = (t: number, speed: number, shift = 0) => Math.sin(t * speed + shift);
  const BUILDERS: Record<string, Builder> = {
   office(c) {
@@ -228,7 +240,8 @@ declare namespace LWProcessRooms {
     const dark = off ? kit.mat(off) : mesh.material, lit = kit.mat(color, {emissive, emissiveIntensity: strength});
     states.push(active => {mesh.material = active ? lit : dark;}); return mesh;
    }};
-  if (furnished) BUILDERS[th.id]!(ctx);
+  if (furnished) api.builders[th.id]?.(ctx);
+  if (step.emotion !== undefined) kit.mood(parent, step.emotion);
   const cards: any[] = [], capacity = step.backlog?.capacity ?? 1;
   if (step.backlog) {
    const big = th.id === 'backlog', cols = big ? 6 : 4, rows = 3, w = big ? 6.4 : 2.6, h = big ? 2.6 : 1.7, x = big ? 0 : -3.3, z = big ? -3.6 : -3.7, cell = w / cols;
@@ -249,5 +262,6 @@ declare namespace LWProcessRooms {
    animate(t, progress) {for (const s of swings) s(t, progress);},
   };
  }
- root.LWProcessRooms = {theme, build};
+ const api: LWProcessRooms.Api = {theme, build, builders: BUILDERS, channels: {}, moods: [], fallbackTheme: T('journey', 'Touchpoint', '#2f4a47', '#3b5f5a', '#7fd0c4', 'Serving customers')};
+ root.LWProcessRooms = api;
 })(globalThis);

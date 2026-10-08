@@ -41,8 +41,31 @@
   for (const v of values) { upto += v.weight; if (r < upto) return v.value; }
   return values[values.length - 1]!.value;
  }
+ /**
+  * Normal deviate by the Marsaglia polar method. Each rejection-sampling attempt draws its own keyed pair (`key|n<attempt>|a` and `|b`), so the
+  * result depends only on (seed, key); only + - * / and the correctly rounded square root are used. After 64 rejected attempts the mean is returned.
+  */
+ function normal(seed: number, key: string, mean: number, sd: number): number {
+  for (let attempt = 0; attempt < 64; attempt++) {
+   const v1 = 2 * unit(seed, key + '|n' + attempt + '|a') - 1, v2 = 2 * unit(seed, key + '|n' + attempt + '|b') - 1, q = v1 * v1 + v2 * v2;
+   if (q >= 1 || q === 0) continue;
+   return mean + sd * v1 * Math.sqrt(-2 * ln(q) / q);
+  }
+  return mean;
+ }
+ /** Erlang(k, mean): the sum of k independent keyed exponentials with mean `mean / k` each, rounded once. */
+ function erlang(seed: number, key: string, k: number, mean: number): number {
+  let sum = 0;
+  for (let i = 0; i < k; i++) sum += -(mean / k) * ln(1 - unit(seed, key + '|e' + i));
+  return sum;
+ }
  /** An integer of at least 1 minute (at most the run limit) drawn from a validated distribution. */
  function sample(seed: number, key: string, dist: LWProcess.Dist): number {
+  if (dist.dist === 'normal') {
+   const low = dist.min ?? 1, high = Math.min(limits.minutes, dist.max ?? dist.mean! + 6 * dist.sd!);
+   return clamp(Math.round(normal(seed, key, dist.mean!, dist.sd!)), low, high);
+  }
+  if (dist.dist === 'erlang') return clamp(Math.round(erlang(seed, key, dist.k!, dist.mean!)), 1, limits.minutes);
   const u = unit(seed, key), min = dist.min ?? 1, max = dist.max ?? limits.minutes;
   let value: number;
   if (dist.dist === 'uniform') value = min + Math.floor(u * (max - min + 1));

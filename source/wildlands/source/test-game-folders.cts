@@ -311,7 +311,7 @@ test('Process manifests declare exactly one of definition or definitions (1-8 un
 
 test('Multi-process game folders inventory and digest every definition, emit LWProcessDefinitions and admit each entry by index', () => {
  const source = gameDirectory('agency-delivery'), game = compileGame(source), manifest = read(path.join(source, 'game.json')) as Plain & {content: {definitions: string[]}};
- assert.equal(manifest.content.definitions.length, 3); assert.equal(Object.hasOwn(manifest.content, 'definition'), false);
+ const count = manifest.content.definitions.length; assert(count >= 2, 'a multi-process game lists at least two definitions'); assert.equal(new Set(manifest.content.definitions).size, count); assert.equal(Object.hasOwn(manifest.content, 'definition'), false);
  const documents = manifest.content.definitions.map(file => read(path.join(source, file)));
  assert.deepEqual([...game.data.keys()], ['LWGameProfile', 'LWProcessDefinition', 'LWProcessDefinitions']);
  assert.deepEqual(game.data.get('LWProcessDefinitions'), documents); assert.deepEqual(game.data.get('LWProcessDefinition'), documents[0]);
@@ -325,7 +325,7 @@ test('Multi-process game folders inventory and digest every definition, emit LWP
   fs.writeFileSync(second, JSON.stringify(value)); assert.notEqual(loadGame(directory).digest, game.digest);
  }, source, 'agency-delivery');
  copy(directory => { fs.writeFileSync(path.join(directory, 'content/third.process.json'), '{}'); assert.throws(() => loadGame(directory), /not referenced by game\.json: content\/third\.process\.json/); }, source, 'agency-delivery');
- copy(directory => { fs.rmSync(path.join(directory, manifest.content.definitions[1]!)); assert.throws(() => loadGame(directory), /names a missing file: content\/agile-vendor\.process\.json/); }, source, 'agency-delivery');
+ copy(directory => { fs.rmSync(path.join(directory, manifest.content.definitions[1]!)); assert.throws(() => loadGame(directory), new RegExp('names a missing file: ' + manifest.content.definitions[1]!.replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&'))); }, source, 'agency-delivery');
  // A game with a single `definition` keeps the original projection and declares no list global.
  copy(directory => {
   const file = path.join(directory, 'game.json'), value = clone(manifest) as Plain; value.content = {definition: manifest.content.definitions[0]};
@@ -335,7 +335,7 @@ test('Multi-process game folders inventory and digest every definition, emit LWP
  // Full admission validates every entry and names the failing index.
  copy(directory => {
   const second = path.join(directory, manifest.content.definitions[1]!), value = read(second) as Plain; value.start = 'no-such-step'; fs.writeFileSync(second, JSON.stringify(value));
-  const result = validateGame(directory); assert.equal(result.ok, false); assert.match(result.errors.join('\n'), /Process definition 1 of 3/);
+  const result = validateGame(directory); assert.equal(result.ok, false); assert.match(result.errors.join('\n'), new RegExp(`Process definition 1 of ${count}`));
  }, source, 'agency-delivery');
 });
 

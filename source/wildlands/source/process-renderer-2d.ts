@@ -11,7 +11,26 @@ declare namespace LWProcess2D {
  function el<K extends keyof SVGElementTagNameMap>(name: K, attrs: Record<string, string | number> = {}, text?: string): SVGElementTagNameMap[K] {
   const n = document.createElementNS(NS, name); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, String(v)); if (text !== undefined) n.textContent = text; return n;
  }
- const MIN_TITLE_PX = 11, MIN_TEXT_PX = 9, MAX_TITLE_CHARS = 20, AUTOMATED = new Set(['machine', 'system']);
+ const MIN_TITLE_PX = 11, MIN_TEXT_PX = 9, MAX_TITLE_CHARS = 20, AUTOMATED = new Set(['machine', 'system']), WORK = new Set(['task', 'touchpoint', 'machine', 'system']);
+ /** Deadline paths: red when the work is interrupted, amber when it escalates beside the work. Escalated tokens use their own marker colour. */
+ const TONE = {interrupt: '#e07a7a', escalate: '#e6b04a'}, ESCALATED = '#ff8a5c', CONDITIONAL = '#c79871';
+ const inclusive = (s: LWProcess.Step | undefined) => s?.kind === 'fork' && s.mode === 'inclusive';
+ /** Pills stacked above a card (instances, deadline); a selected card that shows a phase tag starts one row higher. */
+ const pillRows = (s: LWProcess.Step, selected: boolean) => (s.instances ? 1 : 0) + (s.deadline ? 1 : 0) + (selected && s.phase ? 1 : 0);
+/** Spoken summary of the instances and deadline of a step; '' for other steps. */
+ function extras(step: LWProcess.Step, metric: LWProcess.StepMetric, sep: string): string {
+  const out: string[] = [];
+  if (step.instances) out.push(`${step.instances.count ?? 'case-driven number of'} instances ${step.instances.mode}` + (metric.items ? `, ${metric.items.started} items started, ${metric.items.finished} finished` : ''));
+  if (step.deadline) out.push(`${step.deadline.mode} deadline` + (metric.deadlines ? `, ${metric.deadlines.escalated} escalated, ${metric.deadlines.interrupted} interrupted` : ''));
+  return out.length ? sep + out.join(sep) : '';
+ }
+ /** Right-aligned pill above a card: shape, optional clock glyph and text. */
+ function pill(parent: SVGElement, cls: string, right: number, top: number, text: string, tone: string, full: boolean, clock: boolean): void {
+  const w = (full ? text.length * .3 : Math.min(text.length, 4) * .3) + (clock ? 1.7 : 1.1), g = el('g', {class: cls});
+  g.append(el('rect', {x: right - w, y: top, width: w, height: .9, rx: .45, fill: '#222c37', stroke: tone, 'stroke-width': .08}));
+  if (clock) g.append(glyph('clock', right - w + .6, top + .45, .6, tone, 0));
+  g.append(el('text', {x: right - w + (clock ? 1.1 : .5), y: top + .64, fill: '#edf2f7', 'font-size': .5}, text)); parent.append(g);
+ }
  const trunc = (s: string, max: number) => s.length > max ? s.slice(0, Math.max(1, max - 1)).trimEnd() + '…' : s;
  /** Break at spaces into at most `lines` lines of about `per` characters; overflow ends in an ellipsis (the full name stays in the element's title). */
  function wrap(text: string, per: number, lines: number): string[] {
@@ -44,6 +63,8 @@ declare namespace LWProcess2D {
   else if (id === 'machine') g.append(el('path', {d: 'M-.45 .5 H-.05 M-.25 .5 V.25 M-.25 .25 L-.05 -.2 L.28 -.1'}), el('path', {d: `M.28 -.1 V${.05 + .25 * progress} M.18 ${.05 + .25 * progress} H.38`}), el('circle', {cx: -.25, cy: .25, r: .08}), el('circle', {cx: -.05, cy: -.2, r: .08}));
   else if (id === 'system') g.append(el('rect', {x: -.42, y: -.5, width: .84, height: .4, rx: .05}), el('rect', {x: -.42, y: .02, width: .84, height: .4, rx: .05}), el('circle', {cx: -.26, cy: -.3, r: .035}), el('circle', {cx: -.26, cy: .22, r: .035}), el('path', {d: `M-.42 .62 H${-.42 + .84 * progress}`}));
   else if (id === 'council') g.append(el('circle', {cx: 0, cy: 0, r: .3}), el('path', {d: 'M0 -.5 V-.38 M0 .38 V.5 M-.5 0 H-.38 M.38 0 H.5'}));
+  else if (root.LWProcessRooms.channels[id]) g.append(el('path', {d: root.LWProcessRooms.channels[id]!.glyph}));
+  else if (id === 'journey') g.append(el('circle', {cx: 0, cy: -.22, r: .2}), el('path', {d: 'M-.42 .5 Q-.42 .08 0 .08 Q.42 .08 .42 .5 Z'}));
   else g.append(el('circle', {cx: 0, cy: 0, r: .12}), el('path', {d: 'M-.5 0 H-.12 M.12 0 H.5 M0 -.5 V-.12 M0 .12 V.5'}));
   return g;
  }
@@ -113,29 +134,41 @@ declare namespace LWProcess2D {
    const selected = d.steps.find(s => s.id === view.selected), steps = selected ? [selected] : d.steps;
    const locations = new Map(steps.map(s => [s.id, selected ? [0, 0] : s.scene.position]));
    const xs = [...locations.values()].map(p => p[0]!), ys = [...locations.values()].map(p => p[1]!);
-   const minX = Math.min(...xs) - 6.5, minY = Math.min(...ys) - 4.5, width = Math.max(...xs) - minX + 6.5, height = Math.max(...ys) - minY + 4.5;
+   const rows = Math.max(0, ...steps.map(s => pillRows(s, !!selected))), padTop = Math.max(4.5, rows ? (selected ? 3.5 : 3) + 1.5 + (rows - 1) * 1.05 : 0), minX = Math.min(...xs) - 6.5, minY = Math.min(...ys) - padTop, width = Math.max(...xs) - minX + 6.5, height = Math.max(...ys) - minY + 4.5;
    fit = {x: minX, y: minY, w: width, h: height};
    if (framed !== view.selected) {framed = view.selected; zoom = 1; cx = minX + width / 2; cy = minY + height / 2;}
    setViewBox(); const L = layout(view); drawnKey = L.key; syncHint();
    // Card size per step: fixed in world units, except that a zoomed-out map wraps the screen-sized title over two lines and widens the card to hold it.
    const dims = new Map(steps.map(step => {
     const lines = selected ? wrap(step.name, 26, 2) : L.compact ? wrap(trunc(step.name, MAX_TITLE_CHARS), Math.max(4, Math.floor(11 / (L.font * .54))), 2) : [trunc(step.name, Math.min(MAX_TITLE_CHARS, Math.floor(7.2 / (L.font * .56))))];
-    const w = selected ? 10 : L.compact ? Math.min(12, Math.max(8, Math.max(...lines.map(l => l.length)) * L.font * .54 + 1.2)) : 8, h = selected ? 7 : Math.max(4.8, lines.length * L.font * 1.2 + 1.5);
+    const w = selected ? 10 : step.kind === 'touchpoint' && !L.compact ? 9.4 : L.compact ? Math.min(12, Math.max(8, Math.max(...lines.map(l => l.length)) * L.font * .54 + 1.2)) : 8, h = selected ? 7 : Math.max(4.8, lines.length * L.font * 1.2 + 1.5);
     return [step.id, {lines, w, h}] as const;
    }));
    const defs = el('defs'), marker = el('marker', {id: 'process-arrow', markerWidth: 5, markerHeight: 5, refX: 4, refY: 2.5, orient: 'auto', markerUnits: 'strokeWidth'});
-   marker.append(el('path', {d: 'M0 0 L5 2.5 L0 5 Z', fill: '#7b8b9f'})); defs.append(marker); svg.append(defs);
+   marker.append(el('path', {d: 'M0 0 L5 2.5 L0 5 Z', fill: '#7b8b9f'})); defs.append(marker);
+   for (const [mode, color] of Object.entries(TONE)) { const m = el('marker', {id: 'process-arrow-' + mode, markerWidth: 5, markerHeight: 5, refX: 4, refY: 2.5, orient: 'auto', markerUnits: 'strokeWidth'}); m.append(el('path', {d: 'M0 0 L5 2.5 L0 5 Z', fill: color})); defs.append(m); }
+   svg.append(defs);
    const edge = (id: string, ux: number, uy: number) => { const m = dims.get(id)!; return Math.min(m.w / 2 / Math.max(1e-6, Math.abs(ux)), m.h / 2 / Math.max(1e-6, Math.abs(uy))); };
+   const byId = new Map(d.steps.map(s => [s.id, s]));
    if (!selected) for (const f of d.flows) {
-    const a = locations.get(f.from)!, b = locations.get(f.to)!;
+    const a = locations.get(f.from)!, b = locations.get(f.to)!, source = byId.get(f.from), late = f.on === 'deadline', mode = source?.deadline?.mode === 'escalate' ? 'escalate' : 'interrupt';
     const dx = b[0]! - a[0]!, dy = b[1]! - a[1]!, length = Math.hypot(dx, dy) || 1, ux = dx / length, uy = dy / length, s0 = edge(f.from, ux, uy) + .15, s1 = edge(f.to, ux, uy) + .3;
-    svg.append(el('path', {d: `M${a[0]! + ux * s0},${a[1]! + uy * s0} L${b[0]! - ux * s1},${b[1]! - uy * s1}`, fill: 'none', stroke: f.when ? '#c79871' : '#65778b', 'stroke-width': .12, 'marker-end': 'url(#process-arrow)'}));
-    if (f.label) svg.append(small(el('text', {x: (a[0]! + b[0]!) / 2, y: (a[1]! + b[1]!) / 2 - .4, fill: '#b1bdcd', 'font-size': .55, 'text-anchor': 'middle'}, f.label), scale() * .55 >= MIN_TEXT_PX));
+    const kind = late ? 'pm-edge pm-edge-deadline pm-edge-' + mode : f.when ? 'pm-edge pm-edge-conditional' + (inclusive(source) ? ' pm-edge-inclusive' : '') : 'pm-edge';
+    svg.append(el('path', {class: kind, 'data-flow': f.id, d: `M${a[0]! + ux * s0},${a[1]! + uy * s0} L${b[0]! - ux * s1},${b[1]! - uy * s1}`, fill: 'none', stroke: late ? TONE[mode] : f.when ? CONDITIONAL : '#65778b', 'stroke-width': late ? .17 : .12, ...late ? {'stroke-dasharray': mode === 'escalate' ? '.6 .3' : '.28 .24'} : {}, 'marker-end': late ? `url(#process-arrow-${mode})` : 'url(#process-arrow)'}));
+    const mx = (a[0]! + b[0]!) / 2, my = (a[1]! + b[1]!) / 2;
+    if (f.label) svg.append(small(el('text', {x: mx, y: my - .4, fill: '#b1bdcd', 'font-size': .55, 'text-anchor': 'middle'}, f.label), scale() * .55 >= MIN_TEXT_PX));
+    if (late) {
+     const text = 'deadline · ' + mode, w = text.length * .29 + .9, tag = el('g', {class: 'pm-deadline-tag', 'data-flow': f.id});
+     tag.append(el('rect', {x: mx - w / 2, y: my + (f.label ? .15 : -.45), width: w, height: .9, rx: .45, fill: '#241d1d', stroke: TONE[mode], 'stroke-width': .07}), el('text', {x: mx, y: my + (f.label ? .79 : .19), fill: '#edf2f7', 'font-size': .5, 'text-anchor': 'middle'}, text), el('title', {}, `Deadline path (${mode === 'escalate' ? 'escalates: the work keeps going' : 'interrupts: the work is cancelled'})`));
+     svg.append(tag);
+    }
    }
    for (const step of steps) {
     const [x, y] = locations.get(step.id)! as [number, number], metric = q.steps.find(s => s.id === step.id)!, automated = AUTOMATED.has(step.kind);
-    const {lines, w, h} = dims.get(step.id)!, th = root.LWProcessRooms.theme(step), timing = metric.timers.waiting > 0, working = metric.active > 0, waiting = !working && (metric.queued > 0 || timing);
-    const group = el('g', {id: 'process-map-' + step.id, role: 'button', tabindex: 0, 'aria-label': step.name + (automated ? ` (${step.kind}${step.technology ? ', ' + step.technology : ''})` : '') + ', ' + metric.active + ' active, ' + metric.queued + ' waiting' + (metric.timers.waiting ? ', ' + metric.timers.waiting + ' on timer, next due minute ' + metric.timers.nextDue : '') + (automated ? ', ' + metric.completed + ' completed' : '')});
+    const {lines, w, h} = dims.get(step.id)!, th = root.LWProcessRooms.theme(step), tp = step.kind === 'touchpoint', channel = step.channel ? root.LWProcessRooms.channels[step.channel]?.label : undefined, timing = metric.timers.waiting > 0, working = metric.active > 0, waiting = !working && (metric.queued > 0 || timing);
+    const tag = automated ? ` (${step.kind}${step.technology ? ', ' + step.technology : ''})` : tp ? ` (touchpoint${channel ? ', ' + channel : ''})` : step.kind === 'end' && step.outcome ? ` (end, ${step.outcome})` : '';
+    const counts = tp ? metric.active + ' in this touchpoint, ' + metric.queued + ' waiting for a team' : metric.active + ' active, ' + metric.queued + ' waiting';
+    const group = el('g', {id: 'process-map-' + step.id, role: 'button', tabindex: 0, 'aria-label': step.name + tag + (step.phase ? ', phase ' + step.phase : '') + ', ' + counts + (metric.timers.waiting ? ', ' + metric.timers.waiting + ' on timer, next due minute ' + metric.timers.nextDue : '') + (automated || tp ? ', ' + metric.completed + ' completed' : '') + (step.kind === 'end' && step.outcome ? ', ' + metric.reached + ' reached' : '') + (inclusive(step) ? ', inclusive fork' : '') + extras(step, metric, ', ')});
     const outline = `M${x - w / 2} ${y - h / 2} h${w} v${h} h${-w} Z`;
     group.append(el('path', {class: 'pm-focus-ring', d: outline, 'aria-hidden': 'true'}));
     // Idle cards use the neutral line colour (CSS class); amber stays for the selected card, the theme accent marks work and light blue marks waiting.
@@ -147,14 +180,43 @@ declare namespace LWProcess2D {
     group.append(el('rect', {x: x - w / 2 + .3, y: y + h / 2 - .35, width: w - .6, height: .08, fill: '#364150'}), el('rect', {x: x - w / 2 + .3, y: y + h / 2 - .35, width: (w - .6) * progress, height: .08, fill: th.accent}));
     group.append(glyph(th.id, x - w / 2 + .9, y + h / 2 - 1, selected ? 1.3 : .85, working ? th.accent : '#6a7684', progress));
     const extra = selected ? .75 * (lines.length - 1) : 0;
-    const status = working ? th.task : timing ? 'Waiting on timer' : waiting ? (automated ? 'Waiting for capacity' : 'Waiting to start') : 'Idle · standby';
+    const status = tp ? (working ? 'In this touchpoint' : timing ? 'Waiting on timer' : waiting ? 'Waiting for a team' : 'Idle') : working ? th.task : timing ? 'Waiting on timer' : waiting ? (automated ? 'Waiting for capacity' : 'Waiting to start') : 'Idle · standby';
     group.append(small(el('text', {x: x - w / 2 + (selected ? 1.8 : 1.5), y: y + h / 2 - .85, fill: working ? '#edf2f7' : '#8a97a8', 'font-size': .46}, status), L.secondary), el('title', {}, th.label));
     const span = step.kind === 'timer' ? (step.until !== undefined ? 'until minute ' + step.until : (step.duration ?? 0) + ' min') : (step.duration ?? 0) + ' min';
     group.append(small(el('text', {x, y: y - h / 2 + 1.55 + extra, fill: '#b1bdcd', 'font-size': .46, 'text-anchor': 'middle'}, `${step.kind} · ${span} · ${metric.completed} completed`), L.secondary));
-    if (automated && step.technology) group.append(small(el('text', {x, y: y - h / 2 + (selected ? 2.25 : 2.35) + extra, fill: th.accent, 'font-size': .44, 'text-anchor': 'middle'}, trunc(step.technology, 28)), L.secondary));
-    const work = q.tokens.filter(t => t.stepId === step.id);
+    const subtitle = automated ? step.technology : tp ? channel : undefined;
+    if (subtitle) group.append(small(el('text', {x, y: y - h / 2 + (selected ? 2.25 : 2.35) + extra, fill: th.accent, 'font-size': .44, 'text-anchor': 'middle'}, trunc(subtitle, 28)), L.secondary));
+    if (selected && step.phase) {
+     const text = 'Phase · ' + trunc(step.phase, 26), tw = Math.min(w, text.length * .3 + 1);
+     group.append(el('rect', {class: 'pm-phase-tag', x: x - w / 2, y: y - h / 2 - 1.15, width: tw, height: .9, rx: .45, fill: '#222c37', stroke: th.accent, 'stroke-width': .06}), el('text', {class: 'pm-phase-text', x: x - w / 2 + .45, y: y - h / 2 - .52, fill: '#edf2f7', 'font-size': .5}, text));
+    }
+    if (step.kind === 'end' && step.outcome) {
+     const goal = step.outcome === 'goal', col = goal ? '#8fd68a' : '#e07a7a', text = (goal ? 'Goal' : 'Lost') + ' · ' + metric.reached, bw = L.secondary ? text.length * .3 + 1.5 : 1.3, bx = x + w / 2 - bw;
+     group.append(el('rect', {class: 'pm-outcome pm-outcome-' + step.outcome, x: bx, y: y - h / 2 - 1.15, width: bw, height: .9, rx: .45, fill: goal ? '#1f3d2a' : '#40222a', stroke: col, 'stroke-width': .08}),
+      el('path', {d: goal ? 'M-.22 0 L-.05 .17 L.25 -.2' : 'M-.2 -.2 L.2 .2 M.2 -.2 L-.2 .2', transform: `translate(${bx + .65} ${y - h / 2 - .7})`, fill: 'none', stroke: col, 'stroke-width': .1, 'stroke-linecap': 'round', 'aria-hidden': 'true'}));
+     group.append(small(el('text', {x: bx + 1.2, y: y - h / 2 - .52, fill: '#edf2f7', 'font-size': .5}, text), L.secondary));
+    }
+    const work = q.tokens.filter(t => t.stepId === step.id).sort((a, b) => Number(!!b.escalated) - Number(!!a.escalated));
+    if (inclusive(step)) {
+     const gate = el('g', {class: 'pm-gateway pm-gateway-inclusive', transform: `translate(${x - w / 2} ${y - h / 2})`, 'aria-hidden': 'true'});
+     gate.append(el('path', {d: 'M0 -.75 L.75 0 L0 .75 L-.75 0 Z', fill: '#181e26', stroke: CONDITIONAL, 'stroke-width': .1}), el('circle', {cx: 0, cy: 0, r: .3, fill: 'none', stroke: CONDITIONAL, 'stroke-width': .1}), el('title', {}, 'Inclusive fork: every branch whose condition is true starts'));
+     group.append(gate);
+    }
+    // Pills above the card: multiple instances (x N and item progress) and the deadline clock with its firing counters.
+    let row = selected && step.phase ? 1 : 0;
+    const top = () => y - h / 2 - 1.15 - row++ * 1.05, right = x + w / 2, full = L.secondary || !!selected;
+    if (step.instances) {
+     const n = step.instances.count ?? work[0]?.items ?? step.instances.field;
+     pill(group, 'pm-instances', right, top(), `x ${n}` + (metric.items && full ? ` · ${metric.items.started} started · ${metric.items.finished} done` : ''), th.accent, full, false);
+    }
+    if (step.deadline) {
+     const dl = metric.deadlines ?? {interrupted: 0, escalated: 0};
+     pill(group, 'pm-deadline-badge pm-deadline-' + step.deadline.mode, right, top(), full ? `${dl.escalated} escalated · ${dl.interrupted} interrupted` : String(dl.escalated + dl.interrupted), TONE[step.deadline.mode], full, true);
+    }
     if (selected) {
-     group.append(el('text', {x, y: y - .65, fill: '#ffbb73', 'font-size': .48, 'text-anchor': 'middle'}, `${metric.active} working · ${metric.queued} waiting` + (metric.timers.waiting ? ` · ${metric.timers.waiting} on timer, next due ${metric.timers.nextDue}` : '')));
+     const pending = work.filter(t => t.deadlineAt !== undefined).map(t => t.deadlineAt!), due = pending.length ? ` · deadline at minute ${Math.min(...pending)}` : '';
+     group.append(el('text', {x, y: y - .65, fill: '#ffbb73', 'font-size': .48, 'text-anchor': 'middle'}, (tp ? `${metric.active} here · ${metric.queued} waiting` : `${metric.active} working · ${metric.queued} waiting`) + (metric.timers.waiting ? ` · ${metric.timers.waiting} on timer, next due ${metric.timers.nextDue}` : '')));
+     if (due) group.append(el('text', {class: 'pm-deadline-due', x, y: y + 1.6, fill: TONE[step.deadline?.mode ?? 'interrupt'], 'font-size': .44, 'text-anchor': 'middle'}, due.replace(' · ', '')));
      const active = work.filter(t => t.status === 'active');
      if (active.length) {
       const duration = step.duration, progress = duration ? Math.max(0, Math.min(1, active.reduce((n, t) => n + 1 - t.remaining / duration, 0) / active.length)) : 0;
@@ -162,10 +224,10 @@ declare namespace LWProcess2D {
       group.append(el('rect', {x: x - 4, y: y - .35, width: 8 * progress, height: .07, fill: '#ffbb73'}));
      }
     }
-    for (const [i, t] of work.slice(0, selected ? 40 : 8).entries()) group.append(el('circle', {cx: x - (selected ? 4 : 3) + (i % (selected ? 10 : 8)) * .8, cy: y + .65 + Math.floor(i / 10) * .6, r: .2, fill: t.status === 'active' ? '#ffbb73' : t.status === 'held' ? '#e07a7a' : t.status === 'backlog' ? '#b79ad6' : t.status === 'timer' ? '#d9c58a' : '#91b9d5'}));
+    for (const [i, t] of work.slice(0, selected ? 40 : 8).entries()) group.append(el('circle', {class: 'pm-token' + (t.escalated ? ' pm-token-escalated' : ''), 'data-token': t.id, ...t.item !== undefined ? {'data-item': t.item} : {}, ...t.escalated ? {'data-escalated': 'true', stroke: '#ffffff', 'stroke-width': .07} : {}, cx: x - (selected ? 4 : 3) + (i % (selected ? 10 : 8)) * .8, cy: y + .65 + Math.floor(i / 10) * .6, r: t.escalated ? .26 : .2, fill: t.escalated ? ESCALATED : t.status === 'active' ? '#ffbb73' : t.status === 'held' ? '#e07a7a' : t.status === 'backlog' ? '#b79ad6' : t.status === 'timer' ? '#d9c58a' : '#91b9d5'}));
     if (work.length > (selected ? 40 : 8)) group.append(el('text', {x: x + 3.1, y: y + 1.4, fill: '#edf2f7', 'font-size': .5}, '+' + (work.length - (selected ? 40 : 8))));
     if (step.backlog) {
-     const stored = work.filter(t => t.status === 'backlog' || (step.kind === 'task' || automated) && t.status === 'queued').length, slots = Math.min(step.backlog.capacity, 8), filled = stored ? Math.max(1, Math.round(stored / step.backlog.capacity * slots)) : 0;
+     const stored = work.filter(t => t.status === 'backlog' || WORK.has(step.kind) && t.status === 'queued').length, slots = Math.min(step.backlog.capacity, 8), filled = stored ? Math.max(1, Math.round(stored / step.backlog.capacity * slots)) : 0;
      for (let i = 0; i < slots; i++) group.append(el('rect', {x: x + w / 2 - .5 - (slots - i) * .38, y: y + h / 2 - 1.15, width: .3, height: .3, fill: i < filled ? '#b79ad6' : 'none', stroke: '#6a7684', 'stroke-width': .05}));
      group.append(small(el('text', {x: x + w / 2 - .5, y: y + h / 2 - 1.3, fill: '#b79ad6', 'font-size': .4, 'text-anchor': 'end'}, `Backlog ${stored}/${step.backlog.capacity}`), L.secondary));
     }

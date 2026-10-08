@@ -7,6 +7,7 @@
  // Captured once so later mutation of the global cannot alter admission rules.
  const schema = root.LWProcessSchema, graph = root.LWProcessGraph;
  type Schema = Record<string, unknown>;
+ const definitions = schema.definitions as Record<string, Schema>;
  const copy = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
  function safe(input: unknown): void {
   const ancestors = new Set<object>(); let count = 0, strings = 0;
@@ -28,7 +29,9 @@
   };
   visit(input, 0);
  }
- function shape(value: unknown, schema: Schema, path: string, errors: LWProcess.Diagnostic[]): void {
+ function shape(value: unknown, node: Schema, path: string, errors: LWProcess.Diagnostic[]): void {
+  // Only the local `#/definitions/<name>` reference form exists; it makes recursive condition combinators expressible.
+  const schema = typeof node.$ref === 'string' ? definitions[node.$ref.slice('#/definitions/'.length)]! : node;
   const fail = (message: string) => { if (errors.length < 100) errors.push({path, code: 'shape', message}); };
   if ('const' in schema && value !== schema.const) fail('Expected ' + String(schema.const) + '.');
   if (Array.isArray(schema.enum) && !schema.enum.includes(value)) fail('Expected one of ' + schema.enum.join(', ') + '.');

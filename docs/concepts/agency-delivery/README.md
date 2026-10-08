@@ -1,6 +1,6 @@
 # Agency delivery lab
 
-This game holds three synthetic processes (`content.definitions`), switchable in
+This game holds five synthetic processes (`content.definitions`), switchable in
 the studio with the **Process** selector: the agency pipeline below, first and
 initially active; `content/agile-vendor.process.json`, a vendor running an agile
 project (an absolute contractual kickoff-date timer, then a release loop built from
@@ -15,10 +15,25 @@ notifications), `machine` steps (picking robots, packing line, label applicator)
 a human spot-check and a bounded repack loop. Orders arrive as a steady open stream with random gaps (seed 20260607), a drawn
 priority and a 12% chance of a defect; picking, packing and the spot-check take random
 minutes, and a further 6% chance route sends a parcel to repack. It is meant to run
-unlimited; three packing lanes run at roughly three quarters of capacity. None of them models a real company, warehouse or
+unlimited; three packing lanes run at roughly three quarters of capacity. `content/customer-journey-webshop.process.json` is a customer journey through an online
+shop (seed 20261001): shoppers arrive as a steady open stream (exponential gap, mean 3 minutes),
+draw an intent (60% browser, 40% buyer) and pass around twenty steps grouped
+in five phases (Awareness, Consideration, Purchase, Delivery, After-sales and loyalty)
+with channel, emotion, pain and opportunity notes. Chance routes model leaving
+without buying, cart abandonment, a failed payment that goes to support chat, a
+return call and repeat buying; sentiment is a counter that the tracked curve
+reports. `content/user-journey-app-onboarding.process.json` is a user journey
+through app onboarding (seed 20261002): new users arrive with a uniform gap,
+draw a source and a device, and meet a verification system step, timers (the email
+link, day 1 and weekly waits; one day is compressed to about 20 minutes), a
+sessions counter that bounds the weekly loop, and chance routes for form
+abandonment, permission denial, the tour, churn after day 1 and an upgrade. Both
+end in goal and lost outcomes, so the snapshot reports conversion. Both journeys
+are scenario models with invented numbers, not research data, measured conversion
+or a forecast, and neither has scene assets. None of them models a real company, warehouse or
 vendor; all values are authored, illustrative and synthetic, and the automated steps
 are simulated assumptions, not integrations. Switching restarts the chosen process
-paused at minute 0; Download HTML keeps all three with your edits.
+paused at minute 0; Download HTML keeps all five with your edits.
 
 The agency process is a synthetic agency process demonstrating step scenes, parallel product/technical design
 (business analysts and requirements engineers), a prioritised Ready to build backlog
@@ -33,6 +48,9 @@ Build from the repository root:
 bin/wildlands validate-game --game docs/concepts/agency-delivery
 bin/wildlands build-game --game docs/concepts/agency-delivery --output demos/agency-delivery.html
 ```
+
+The business processes and journeys also carry a descriptive `sipoc` (suppliers and customers) and, for the
+business processes, step `phase` labels that group the SIPOC view; neither affects a run.
 
 Open `demos/agency-delivery.html` in a browser; use Run simulation, 2D/3D,
 and Step scenes. Every file is embedded and the demo runs offline.

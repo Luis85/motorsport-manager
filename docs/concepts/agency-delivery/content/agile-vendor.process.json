@@ -6,6 +6,36 @@
   "name": "Agile vendor project",
   "description": "We are the vendor running an agile software project for a customer whose project manager, product owner and subject-matter experts join in milestones, releases and iterations. After a contractual kickoff date and a roadmap, each project loops through releases; every release repeats iterations that each deliver a product increment, then acceptance testing with a bounded fix loop, then go-live. UX designers work in product design and in every iteration. Counters (iteration, increments, release) drive the loops; timers model the kickoff date, the customer review window and hypercare. CI/CD runs as automated system steps after every iteration and on release deployment, and a regression suite runs before acceptance testing. All values are synthetic: one simulated minute stands in for a fraction of a working day, an iteration is 10 simulated minutes, and this is an illustrative model, not a forecast.",
   "start": "intake",
+  "sipoc": {
+    "suppliers": [
+      {
+        "name": "Customer product owner",
+        "supplies": "Prioritised backlog and day-to-day decisions"
+      },
+      {
+        "name": "Customer subject-matter experts",
+        "supplies": "Domain knowledge and answers to open questions"
+      },
+      {
+        "name": "Customer project manager",
+        "supplies": "Milestone approvals and release sign-off"
+      },
+      {
+        "name": "Platform vendors",
+        "supplies": "CI/CD tooling, environments and hosting"
+      }
+    ],
+    "customers": [
+      {
+        "name": "Customer business",
+        "receives": "Working software increments and release notes"
+      },
+      {
+        "name": "End users",
+        "receives": "New features in production"
+      }
+    ]
+  },
   "resources": [
     {
       "id": "customer-pm",
@@ -75,6 +105,7 @@
       "id": "intake",
       "name": "Engagement won",
       "kind": "start",
+      "phase": "Initiate",
       "scene": {
         "id": "scene-intake",
         "position": [
@@ -89,6 +120,7 @@
       "id": "kickoff-date",
       "name": "Contractual kickoff date (not before)",
       "kind": "timer",
+      "phase": "Initiate",
       "scene": {
         "id": "scene-kickoff-date",
         "position": [
@@ -104,6 +136,7 @@
       "id": "kickoff",
       "name": "Milestone 1 \u00b7 Kickoff",
       "kind": "task",
+      "phase": "Initiate",
       "scene": {
         "id": "scene-kickoff",
         "position": [
@@ -126,6 +159,7 @@
       "id": "discovery",
       "name": "Discovery with the customer",
       "kind": "task",
+      "phase": "Initiate",
       "scene": {
         "id": "scene-discovery",
         "position": [
@@ -157,6 +191,7 @@
       "id": "plan-split",
       "name": "Plan together",
       "kind": "fork",
+      "phase": "Plan",
       "scene": {
         "id": "scene-plan-split",
         "position": [
@@ -172,6 +207,7 @@
       "id": "product-design",
       "name": "Product design",
       "kind": "task",
+      "phase": "Plan",
       "scene": {
         "id": "scene-product-design",
         "position": [
@@ -203,6 +239,7 @@
       "id": "architecture",
       "name": "Architecture runway",
       "kind": "task",
+      "phase": "Plan",
       "scene": {
         "id": "scene-architecture",
         "position": [
@@ -233,6 +270,7 @@
       "id": "backlog-ready",
       "name": "Product backlog ready",
       "kind": "join",
+      "phase": "Plan",
       "scene": {
         "id": "scene-backlog-ready",
         "position": [
@@ -265,6 +303,7 @@
       "id": "roadmap",
       "name": "Milestone 2 \u00b7 Roadmap agreed",
       "kind": "task",
+      "phase": "Plan",
       "scene": {
         "id": "scene-roadmap",
         "position": [
@@ -291,6 +330,7 @@
       "id": "sprint-planning",
       "name": "Iteration planning",
       "kind": "task",
+      "phase": "Iterate",
       "scene": {
         "id": "scene-sprint-planning",
         "position": [
@@ -316,6 +356,7 @@
       "id": "sprint",
       "name": "Iteration",
       "kind": "task",
+      "phase": "Iterate",
       "scene": {
         "id": "scene-sprint",
         "position": [
@@ -345,6 +386,7 @@
       "id": "ci-build",
       "name": "CI build and tests",
       "kind": "system",
+      "phase": "Iterate",
       "scene": {
         "id": "scene-ci-build",
         "position": [
@@ -373,6 +415,7 @@
       "id": "sprint-review",
       "name": "Customer review window",
       "kind": "timer",
+      "phase": "Iterate",
       "scene": {
         "id": "scene-sprint-review",
         "position": [
@@ -388,6 +431,7 @@
       "id": "retrospective",
       "name": "Iteration retrospective",
       "kind": "task",
+      "phase": "Iterate",
       "scene": {
         "id": "scene-retrospective",
         "position": [
@@ -407,6 +451,7 @@
       "id": "more-iterations",
       "name": "More iterations in this release?",
       "kind": "decision",
+      "phase": "Iterate",
       "scene": {
         "id": "scene-more-iterations",
         "position": [
@@ -421,6 +466,7 @@
       "id": "regression-suite",
       "name": "Automated regression suite",
       "kind": "system",
+      "phase": "Accept",
       "scene": {
         "id": "scene-regression-suite",
         "position": [
@@ -449,6 +495,7 @@
       "id": "release-uat",
       "name": "Release acceptance testing (UAT)",
       "kind": "task",
+      "phase": "Accept",
       "scene": {
         "id": "scene-release-uat",
         "position": [
@@ -474,6 +521,7 @@
       "id": "uat-result",
       "name": "UAT result",
       "kind": "decision",
+      "phase": "Accept",
       "scene": {
         "id": "scene-uat-result",
         "position": [
@@ -488,6 +536,7 @@
       "id": "fix",
       "name": "Fix acceptance findings",
       "kind": "task",
+      "phase": "Accept",
       "scene": {
         "id": "scene-fix",
         "position": [
@@ -510,6 +559,7 @@
       "id": "release-go-live",
       "name": "Milestone \u00b7 Release go-live",
       "kind": "task",
+      "phase": "Release",
       "scene": {
         "id": "scene-release-go-live",
         "position": [
@@ -543,6 +593,7 @@
       "id": "auto-deploy",
       "name": "Automated deployment",
       "kind": "system",
+      "phase": "Release",
       "scene": {
         "id": "scene-auto-deploy",
         "position": [
@@ -571,6 +622,7 @@
       "id": "hypercare",
       "name": "Hypercare window",
       "kind": "timer",
+      "phase": "Release",
       "scene": {
         "id": "scene-hypercare",
         "position": [
@@ -586,6 +638,7 @@
       "id": "more-releases",
       "name": "More releases?",
       "kind": "decision",
+      "phase": "Release",
       "scene": {
         "id": "scene-more-releases",
         "position": [
@@ -600,6 +653,7 @@
       "id": "handover",
       "name": "Final acceptance and handover",
       "kind": "task",
+      "phase": "Close",
       "scene": {
         "id": "scene-handover",
         "position": [
@@ -626,6 +680,7 @@
       "id": "closed",
       "name": "Project closed",
       "kind": "end",
+      "phase": "Close",
       "scene": {
         "id": "scene-closed",
         "position": [

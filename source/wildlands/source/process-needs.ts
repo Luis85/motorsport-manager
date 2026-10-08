@@ -39,6 +39,8 @@ declare namespace LWProcessNeeds {
    for (const k of Object.keys(s.add ?? {})) next.set(k, new Set([NUMBER])); return next; };
   const edge = (flow: LWProcess.Flow): State | null => {
    const from = steps.get(flow.from)!, state = entry.get(flow.from); if (!state) return null;
+   // A deadline flow leaves while the work is still unfinished: none of the step's own effects have been applied.
+   if (flow.on === 'deadline') return clone(state);
    const next = out(from, state);
    if (from.kind === 'decision') {
     // Chance routes are random, so they never narrow a field; only field comparisons do.
@@ -56,14 +58,16 @@ declare namespace LWProcessNeeds {
   const merge = (join: LWProcess.Step): State | null => {
    const fork = d.steps.find(f => f.join === join.id), incoming = d.flows.filter(f => f.to === join.id), states = incoming.map(edge);
    if (!fork || states.some(s => !s)) return null;
-   const result = clone(states[0]!);
+   const result = clone(states[0]!), before = fork.mode === 'inclusive' ? entry.get(fork.id) : undefined;
+   // An inclusive fork may skip any conditional branch, so a field a branch writes is only guaranteed if it also held before the fork.
+   if (fork.mode === 'inclusive' && !before) return null;
    incoming.forEach((flow, i) => {
     let current = flow.from; const written = new Set<string>();
     for (let guard = 0; current !== fork.id && guard <= d.steps.length; guard++) {
      const step = steps.get(current); if (!step) break; Object.keys(step.set ?? {}).concat(Object.keys(step.add ?? {}), (step.draws ?? []).map(x => x.field)).forEach(k => written.add(k));
      current = d.flows.find(f => f.to === current)?.from ?? fork.id;
     }
-    for (const k of written) result.set(k, new Set(states[i]!.get(k)));
+    for (const k of written) result.set(k, new Set([...states[i]!.get(k) ?? [], ...before?.get(k) ?? []]));
    });
    return result;
   };
