@@ -23,6 +23,12 @@ async function main(): Promise<void> {
  page.setDefaultTimeout(15000);
  try {
   await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
+  // The Definition editor is a modal (dialog id "de"): these helpers open it from the header, leave it, restore the draft and apply through it.
+  const defOpen = page.locator('dialog.de-dialog[open]');
+  const openDef = async () => { await page.locator('#open-definition').click(); await defOpen.waitFor(); if (await page.locator('.de-tabs').isVisible()) await page.locator('#de-tab-json').click(); };
+  const closeDef = async () => { if (await defOpen.count()) { await page.locator('#de-cancel').click(); await defOpen.waitFor({state: 'hidden'}); } };
+  const restoreDef = async () => { await page.locator('#de-restore').click(); await page.locator('#de-restore-confirm').click(); };
+  const applyDef = async () => { await page.locator('#de-apply').click(); const reset = page.locator('#de-apply-reset'); if (await reset.isVisible()) await reset.click(); await defOpen.waitFor({state: 'hidden'}); };
   await check('Process artifact starts paused with one selectable scene per step and real WebGL', async () => {
    const q = await query(page); assert.equal(q.snapshot.minute, 0); assert.equal(q.playing, false); assert.equal(q.mode, '3d');
    assert.equal(await page.locator('[data-step]').count(), q.definition.steps.length);
@@ -97,8 +103,8 @@ async function main(): Promise<void> {
    await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click();
    await page.locator('#se-duration').fill('77'); await page.locator('#se-save').click();
    assert.deepEqual((await query(page)).definition, before.definition); assert.match(await page.evaluate(() => (document.getElementById('draft') as HTMLTextAreaElement).value), /"duration": 77/);
-   await page.locator('#show-definition').click(); await page.locator('#apply').click(); const applied = await query(page); assert.equal(applied.definition.steps.find(s => s.kind === 'task')!.duration, 77); assert.equal(applied.horizon, 1440); assert.equal(applied.snapshot.minute, 0);
-   await page.locator('#horizon').selectOption('100000'); await page.locator('#show-events').click();
+   await openDef(); await applyDef(); const applied = await query(page); assert.equal(applied.definition.steps.find(s => s.kind === 'task')!.duration, 77); assert.equal(applied.horizon, 1440); assert.equal(applied.snapshot.minute, 0);
+   await page.locator('#horizon').selectOption('100000');
   });
   await check('Backlogs and step needs are visible in the inspector and editable in the tuning form', async () => {
    await page.locator('#reset').click(); const before = await query(page);
@@ -112,7 +118,7 @@ async function main(): Promise<void> {
    await page.locator('#se-add-need').click(); await page.locator('[data-bind="needs.2.field"]').fill('qaSignoff'); await page.locator('#se-save').click(); assert.equal((await draftOf()).steps[10]!.needs!.length, 3);
    await page.locator('#edit-step').click(); await page.locator('[data-act="remove-need"]').last().click(); await page.locator('#se-save').click(); assert.equal((await draftOf()).steps[10]!.needs!.length, 2);
    await page.locator('[data-step="design-ready"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-backlog-on').uncheck(); await page.locator('#se-save').click(); assert.equal((await draftOf()).steps[5]!.backlog, undefined);
-   assert.deepEqual((await query(page)).definition, before.definition); await page.locator('#show-definition').click(); await page.locator('#restore-draft').click(); await page.locator('#show-events').click();
+   assert.deepEqual((await query(page)).definition, before.definition); await openDef(); await restoreDef(); await closeDef();
   });
   await check('BPMN 2.0 export imports losslessly in the browser and foreign or unsupported BPMN reports explicit notes or rejects', async () => {
    await page.locator('#reset').click(); const before = await query(page);
@@ -150,28 +156,29 @@ async function main(): Promise<void> {
    assert.deepEqual(await query(page), before);
   });
   await check('Definition editor validates before applying and resets a valid edit explicitly', async () => {
-   await page.locator('#show-definition').click(); const before = await query(page);
-   await page.locator('#draft').fill('{bad'); await page.locator('#apply').click(); assert.deepEqual((await query(page)).snapshot, before.snapshot);
+   await openDef(); const before = await query(page);
+   await page.locator('#draft').fill('{bad'); await page.locator('#de-apply').click(); assert.deepEqual((await query(page)).snapshot, before.snapshot);
+   assert.equal(await defOpen.count(), 1, 'an invalid draft is refused and the editor stays open'); assert.equal(await page.locator('#de-status').getAttribute('role'), 'alert'); assert.match(await page.locator('#de-status').innerText(), /cannot be applied yet.*line 1, column 2/s);
    const d = before.definition; d.name = 'Reviewed agency process';
-   await page.locator('#draft').fill(JSON.stringify(d)); await page.locator('#validate').click(); assert.match(await page.locator('#diagnostics').innerText(), /Valid definition/);
-   await page.locator('#apply').click(); const next = await query(page); assert.equal(next.snapshot.minute, 0); assert.equal(next.definition.revision, before.definition.revision + 1); assert.equal(next.playing, false);
-   await page.locator('#show-events').click();
+   await page.locator('#draft').fill(JSON.stringify(d)); await page.locator('#de-validate').click(); assert.match(await page.locator('#de-message').innerText(), /^Valid definition\. Applying starts a fresh paused run\.$/);
+   await applyDef(); const next = await query(page); assert.equal(next.snapshot.minute, 0); assert.equal(next.definition.revision, before.definition.revision + 1); assert.equal(next.playing, false);
   });
   await check('Unapplied drafts export losslessly without changing the active process or retaining stale validation', async () => {
-   await page.locator('#show-definition').click(); const before = await query(page);
-   await page.locator('#validate').click(); assert.match(await page.locator('#diagnostics').innerText(), /Valid definition/);
+   await openDef(); const before = await query(page);
+   await page.locator('#de-validate').click(); assert.match(await page.locator('#de-message').innerText(), /Valid definition/);
    const raw = '{\n  "unfinished":'; await page.locator('#draft').fill(raw);
-   assert.equal(await page.locator('#diagnostics').innerText(), '');
-   assert.match(await page.locator('#draft-state').innerText(), /Unapplied draft/);
-   await page.locator('#validate').click(); assert.equal(await page.locator('#draft').getAttribute('aria-invalid'), 'true');
-   let pending = page.waitForEvent('download'); await page.locator('#export-draft').click(); let saved = await pending;
+   assert.equal(await page.locator('#de-message').innerText(), '', 'a stale validation result is cleared by the next edit'); assert.equal(await page.locator('#de-chip').innerText(), 'Unapplied draft');
+   assert.match(await page.locator('#draft-state').innerText(), /Invalid JSON: line 2, column \d+/);
+   await page.locator('#de-validate').click(); assert.equal(await page.locator('#draft').getAttribute('aria-invalid'), 'true');
+   let pending = page.waitForEvent('download'); await page.locator('#de-export').click(); let saved = await pending;
    const draftFile = path.join(dir, 'unfinished.json'); await saved.saveAs(draftFile); assert.equal(fs.readFileSync(draftFile, 'utf8'), raw);
+   await closeDef(); assert.match(await page.locator('#draft-chip').innerText(), /^Unapplied draft/);
    pending = page.waitForEvent('download'); await page.locator('#json').click(); saved = await pending;
    const activeFile = path.join(dir, 'active.json'); await saved.saveAs(activeFile); assert.deepEqual(JSON.parse(fs.readFileSync(activeFile, 'utf8')), before.definition);
    assert.deepEqual(await query(page), before);
-   await page.locator('#show-events').click(); await page.locator('#show-definition').click(); assert.equal(await page.locator('#draft').inputValue(), raw);
-   await page.locator('#restore-draft').click(); assert.equal(await page.locator('#draft').getAttribute('aria-invalid'), null);
-   assert.match(await page.locator('#draft-state').innerText(), /matches the active definition/); await page.locator('#show-events').click();
+   await openDef(); assert.equal(await page.locator('#draft').inputValue(), raw);
+   await restoreDef(); assert.equal(await page.locator('#draft').getAttribute('aria-invalid'), null);
+   assert.match(await page.locator('#draft-state').innerText(), /matches the running definition/); await closeDef(); assert.equal(await page.locator('#draft-chip').isHidden(), true);
   });
   await check('Browser exported JSON imports losslessly and report binds definition to observed metrics', async () => {
    let pending = page.waitForEvent('download'); await page.locator('#json').click(); let download = await pending; const jsonFile = path.join(dir, 'export.json'); await download.saveAs(jsonFile);
@@ -216,8 +223,8 @@ async function main(): Promise<void> {
   };
   const nameOf = (i: number) => page.evaluate(n => (globalThis as unknown as {LWProcessStudio: {definitions(): {name: string}[]}}).LWProcessStudio.definitions()[n]!.name, i);
   const applyDraft = async (change: (d: LWProcess.Definition) => void) => {
-   await page.locator('#show-definition').click(); const d = JSON.parse(await page.locator('#draft').inputValue()) as LWProcess.Definition; change(d);
-   await page.locator('#draft').fill(JSON.stringify(d)); await page.locator('#apply').click(); await page.locator('#show-events').click();
+   await openDef(); const d = JSON.parse(await page.locator('#draft').inputValue()) as LWProcess.Definition; change(d);
+   await page.locator('#draft').fill(JSON.stringify(d)); await applyDef();
   };
   await check('Process switch lists each process of a multi-process game, switches without ticking and stays hidden for one process', async () => {
    await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
@@ -257,8 +264,8 @@ async function main(): Promise<void> {
    await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
    const original = [await nameOf(0), await nameOf(1), await nameOf(2)], before = await query(page);
    await applyDraft(d => {d.name = 'Edited agency';}); assert.equal((await query(page)).definition.revision, before.definition.revision + 1);
-   await page.locator('#show-definition').click(); const raw = '{\n  "unfinished":'; await page.locator('#draft').fill(raw);
-   await switchTo(1); assert.equal(await page.locator('#process-title').innerText(), original[1]); assert.match(await page.locator('#draft-state').innerText(), /matches the active definition/);
+   await openDef(); const raw = '{\n  "unfinished":'; await page.locator('#draft').fill(raw); await closeDef();
+   await switchTo(1); assert.equal(await page.locator('#process-title').innerText(), original[1]); assert.equal(await page.locator('#draft-chip').isHidden(), true);
    assert.equal(await page.locator('#process-switch option').first().innerText(), 'Edited agency'); assert.equal(await nameOf(0), 'Edited agency'); assert.equal((await query(page)).snapshot.minute, 0);
    // Import replaces only the active process, in place.
    const vendor = (await query(page)).definition; vendor.name = 'Imported vendor';
@@ -266,9 +273,8 @@ async function main(): Promise<void> {
    await page.waitForFunction(() => document.getElementById('message')!.textContent!.includes('Imported vendor.json'));
    assert.deepEqual(await page.locator('#process-switch option').allInnerTexts(), ['Edited agency', 'Imported vendor', original[2]!]); assert.equal((await query(page)).active, 1);
    await switchTo(0); assert.equal(await page.locator('#process-title').innerText(), 'Edited agency'); assert.equal((await query(page)).definition.revision, before.definition.revision + 1);
-   assert.equal(await page.locator('#draft').inputValue(), raw); assert.match(await page.locator('#draft-state').innerText(), /Unapplied draft/);
+   assert.equal(await page.locator('#draft').inputValue(), raw); assert.match(await page.locator('#draft-chip').innerText(), /^Unapplied draft/);
    assert.equal((await query(page)).snapshot.minute, 0); assert.equal((await query(page)).playing, false);
-   await page.locator('#show-events').click();
   });
   await check('Downloaded HTML of a multi-process game reopens with every process in order and the applied edits', async () => {
    await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
@@ -359,7 +365,7 @@ async function main(): Promise<void> {
    await freshStudio(); await page.locator('[data-step="discovery"]').click();
    await page.locator('#edit-step').focus(); await page.keyboard.press('Enter');
    const dialog = page.getByRole('dialog', {name: 'Discovery'}); await dialog.waitFor(); assert.equal(await dialogOpen(), 1);
-   assert.equal(await page.evaluate(() => document.querySelector('dialog.pd-dialog')!.matches(':modal')), true);
+   assert.equal(await page.evaluate(() => document.querySelector('dialog.pd-dialog[open]')!.matches(':modal')), true);
    assert.equal(await page.locator('#se-title').innerText(), 'Discovery'); assert.equal(await page.locator('#se-chip').innerText(), 'task'); assert.equal(await page.locator('#se-meta').innerText(), 'discovery');
    assert.equal(await activeId(), 'se-name'); assert.equal((await query(page)).selected, 'discovery');
    await assert.rejects(page.locator('#play').click({timeout: 700}), 'the page behind the modal is inert');
@@ -382,7 +388,7 @@ async function main(): Promise<void> {
    await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click();
    await page.locator('#se-name').fill('Discovery workshop'); await page.locator('#se-duration').fill('20'); await page.locator('#se-cost').fill('12');
    assert.match(await page.locator('#se-needs-summary').innerText(), /^Needs: 1 Product owner$/);
-   await page.locator('dialog.pd-dialog').getByLabel('Business analysts').fill('2'); assert.match(await page.locator('#se-needs-summary').innerText(), /^Needs: 1 Product owner, 2 Business analysts$/);
+   await page.locator('dialog.pd-dialog[open]').getByLabel('Business analysts').fill('2'); assert.match(await page.locator('#se-needs-summary').innerText(), /^Needs: 1 Product owner, 2 Business analysts$/);
    await page.locator('#se-add-set').click(); await page.locator('[data-bind="set.1.key"]').fill('budgetApproved');
    await page.locator('#se-add-set').click(); await page.locator('[data-bind="set.2.key"]').fill('clientTone'); await page.locator('[data-bind="set.2.value.type"]').selectOption('text'); await page.locator('[data-bind="set.2.value.text"]').fill('calm');
    await page.locator('#se-add-add').click(); await page.locator('[data-bind="add.0.key"]').fill('attempts'); await page.locator('[data-bind="add.0.delta"]').fill('-2');
@@ -394,7 +400,7 @@ async function main(): Promise<void> {
    // A decision's conditions: compare with another field and save, then reopen, switch back to a value, reorder and apply. The draft also carries the discovery edits, which the modal announces.
    await page.locator('[data-step="review-gate"]').click(); await page.locator('#edit-step').click();
    assert.match(await page.locator('#se-flows-0-label').inputValue(), /Findings/); assert.equal(await page.locator('#se-flows-1-cond-on').isChecked(), false); assert.equal(await page.locator('[data-act="up"][data-i="0"]').isDisabled(), true);
-   assert.match(await page.locator('.pd-dialog').innerText(), /Cannot move up/); assert.match(await page.locator('.pd-dialog').innerText(), /edit the raw JSON draft/);
+   assert.match(await page.locator('dialog.pd-dialog[open]').innerText(), /Cannot move up/); assert.match(await page.locator('dialog.pd-dialog[open]').innerText(), /edit the raw JSON draft/);
    await page.locator('#se-flows-0-cond-mode-field').check(); await page.locator('#se-flows-0-cond-valueField').fill('reworkLimit'); await page.locator('#se-flows-0-cond-op').selectOption('lt'); await page.locator('#se-flows-0-cond-field').fill('reworks'); await page.locator('#se-save').click();
    const gate = (JSON.parse(await draftText()) as LWProcess.Definition).flows.find(f => f.id === 'review-gate-rework')!; assert.deepEqual(gate.when, {field: 'reworks', op: 'lt', valueField: 'reworkLimit'});
    await page.locator('#edit-step').click(); assert.equal(await page.locator('#se-banner').isVisible(), true); assert.equal(await page.locator('#se-flows-0-cond-mode-field').isChecked(), true);
@@ -430,13 +436,13 @@ async function main(): Promise<void> {
    await page.locator('#edit-step').click(); await page.locator('#se-name').fill('Renamed only in the modal'); await page.locator('#se-close').click();
    assert.equal(await page.locator('#se-confirm').isVisible(), true); await page.locator('#se-discard').click(); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step');
    assert.doesNotMatch(await draftText(), /Renamed only/); assert.match(await draftText(), /ghostField/);
-   await page.locator('#show-definition').click(); await page.locator('#restore-draft').click(); assert.equal(await draftText(), original); await page.locator('#show-events').click(); assert.deepEqual((await query(page)).definition, before.definition);
+   await openDef(); await restoreDef(); assert.equal(await draftText(), original); await closeDef(); assert.deepEqual((await query(page)).definition, before.definition);
   });
   await check('Step editor reflows to a full-screen sheet at phone width without horizontal overflow', async () => {
    await freshStudio(); await page.locator('#mode-2d').click(); await page.setViewportSize({width: 390, height: 844}); await nextFrames(page);
    await page.locator('[data-step="review-gate"]').click(); await page.locator('#edit-step').click(); await page.locator('dialog.pd-dialog[open]').waitFor();
    const geometry = await page.evaluate(() => {
-    const d = document.querySelector('dialog.pd-dialog') as HTMLElement, r = d.getBoundingClientRect(), body = d.querySelector('.pd-body') as HTMLElement, foot = d.querySelector('.pd-foot')!.getBoundingClientRect(), head = d.querySelector('.pd-head')!.getBoundingClientRect();
+    const d = document.querySelector('dialog.pd-dialog[open]') as HTMLElement, r = d.getBoundingClientRect(), body = d.querySelector('.pd-body') as HTMLElement, foot = d.querySelector('.pd-foot')!.getBoundingClientRect(), head = d.querySelector('.pd-head')!.getBoundingClientRect();
     const wide = [...d.querySelectorAll<HTMLElement>('input, select, textarea, button')].filter(n => n.getBoundingClientRect().right > r.right + 0.5 || n.getBoundingClientRect().left < r.left - 0.5).map(n => n.id || n.dataset.bind || n.textContent);
     return {x: r.x, y: r.y, w: r.width, h: r.height, vw: innerWidth, vh: innerHeight, page: document.documentElement.scrollWidth > innerWidth, own: d.scrollWidth > d.clientWidth, scrolls: body.scrollHeight > body.clientHeight, footBottom: foot.bottom, headTop: head.top, wide,
      label: parseFloat(getComputedStyle(d.querySelector('label')!).fontSize), help: parseFloat(getComputedStyle(d.querySelector('.se-help')!).fontSize), input: (d.querySelector('input[type=text]') as HTMLElement).getBoundingClientRect().height};
@@ -446,7 +452,7 @@ async function main(): Promise<void> {
    await page.screenshot({path: path.join(OUT, 'process-step-editor-mobile.png')});
    await page.locator('#se-flows-0-label').scrollIntoViewIfNeeded(); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
    await page.keyboard.press('Escape'); await page.setViewportSize({width: 1440, height: 1060}); await nextFrames(page);
-   await page.locator('#edit-step').click(); const wide = (await page.locator('dialog.pd-dialog').boundingBox())!; assert(wide.width <= 760 && wide.width > 600, 'desktop dialog is a centred sheet, not full screen'); assert(wide.x > 100);
+   await page.locator('#edit-step').click(); const wide = (await page.locator('dialog.pd-dialog[open]').boundingBox())!; assert(wide.width <= 760 && wide.width > 600, 'desktop dialog is a centred sheet, not full screen'); assert(wide.x > 100);
    await page.screenshot({path: path.join(OUT, 'process-step-editor-desktop.png')}); await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0);
   });
   await check('Selecting a step on the zoomed 2D map leaves no scaled focus ring around the card', async () => {
@@ -504,21 +510,21 @@ async function main(): Promise<void> {
    });
    assert.deepEqual(pure.events, ['definition']); assert.equal(pure.summary, 'Unapplied draft: 3 steps, 1 resource changed'); assert.equal(pure.ignoring, 2); assert.equal(pure.names, 3);
    assert.equal(pure.otherClean, true); assert.equal(pure.restored, true); assert.equal(pure.invalid, true); assert.equal(pure.invalidText, 'Unapplied draft: not valid process JSON yet'); assert.equal(pure.parsed, true); assert.equal(pure.reset, true); assert.equal(pure.applied, true);
-   const unapplied = (n: string) => `Unapplied draft: ${n}. Export JSON and Download HTML use the active definition. Export draft saves these edits.`;
+   const unapplied = (n: string) => `Unapplied draft \u00b7 ${n}`, chip = () => page.locator('#draft-chip').innerText(), clean = () => page.locator('#draft-chip').isHidden();
    await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-name').fill('Discovery workshop'); await page.locator('#se-save').click();
-   assert.equal(await page.locator('#draft-state').innerText(), unapplied('1 step changed')); assert.match(await draftText(), /Discovery workshop/);
+   assert.equal(await chip(), unapplied('1 step changed')); assert.match(await draftText(), /Discovery workshop/);
    await page.locator('#process-switch').selectOption('1'); await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === 1);
-   assert.match(await page.locator('#draft-state').innerText(), /matches the active definition/); assert.doesNotMatch(await draftText(), /Discovery workshop/);
+   assert.equal(await clean(), true); assert.doesNotMatch(await draftText(), /Discovery workshop/);
    const work = (await query(page)).definition.steps.find(s => s.kind === 'task')!;
    await page.locator(`[data-step="${work.id}"]`).click(); await page.locator('#edit-step').click(); await page.locator('#se-name').fill('Vendor edit'); await page.locator('#se-save').click();
-   assert.equal(await page.locator('#draft-state').innerText(), unapplied('1 step changed')); assert.match(await draftText(), /Vendor edit/);
+   assert.equal(await chip(), unapplied('1 step changed')); assert.match(await draftText(), /Vendor edit/);
    await page.locator('#process-switch').selectOption('0'); await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === 0);
-   assert.equal(await page.locator('#draft-state').innerText(), unapplied('1 step changed')); assert.match(await draftText(), /Discovery workshop/); assert.doesNotMatch(await draftText(), /Vendor edit/);
+   assert.equal(await chip(), unapplied('1 step changed')); assert.match(await draftText(), /Discovery workshop/); assert.doesNotMatch(await draftText(), /Vendor edit/);
    await page.locator('#process-switch').selectOption('1'); await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === 1);
-   assert.match(await draftText(), /Vendor edit/); await page.locator('#show-definition').click(); await page.locator('#apply').click();
-   assert.match(await page.locator('#draft-state').innerText(), /matches the active definition/); assert.equal((await query(page)).definition.steps.find(s => s.id === work.id)!.name, 'Vendor edit'); await page.locator('#show-events').click();
+   assert.match(await draftText(), /Vendor edit/); await openDef(); await applyDef();
+   assert.equal(await clean(), true); assert.equal((await query(page)).definition.steps.find(s => s.id === work.id)!.name, 'Vendor edit');
    await page.locator('#process-switch').selectOption('0'); await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === 0);
-   assert.equal(await page.locator('#draft-state').innerText(), unapplied('1 step changed'));
+   assert.equal(await chip(), unapplied('1 step changed'));
   });
   const scene = (id: string, x: number) => ({id: 'scene-' + id, position: [x, 0] as [number, number], color: '#ffbb73'});
   const autoLine = () => ({format: 'wildlands-process', schemaVersion: 1, revision: 1, id: 'auto-line', name: 'Automated line', start: 'start',
@@ -531,7 +537,7 @@ async function main(): Promise<void> {
    await freshStudio(); const name = 'auto-line.json';
    await page.locator('#file').setInputFiles({name, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(autoLine()))});
    await page.waitForFunction(n => document.getElementById('message')!.textContent!.includes('Imported ' + n), name);
-   const dlg = page.locator('dialog.pd-dialog'), openStep = async (id: string) => { await page.locator(`[data-step="${id}"]`).click(); await page.locator('#edit-step').click(); await dlg.waitFor(); };
+   const dlg = page.locator('dialog.pd-dialog[open]'), openStep = async (id: string) => { await page.locator(`[data-step="${id}"]`).click(); await page.locator('#edit-step').click(); await dlg.waitFor(); };
    await openStep('weld'); assert.equal(await page.locator('#se-chip').innerText(), 'machine'); assert.equal(await page.locator('#se-h-automation').count(), 1);
    assert.equal(await page.locator('#se-technology').inputValue(), 'Robot arm'); assert.equal(await page.locator('#se-technology-count').innerText(), '9 / 80 characters');
    assert.equal(await dlg.getByLabel('Welding cell').count(), 1); assert.equal(await dlg.getByLabel('Operators').count(), 0); assert.equal(await dlg.getByLabel('CI runners').count(), 0);
@@ -550,7 +556,7 @@ async function main(): Promise<void> {
    await openStep('verify'); assert.equal(await page.locator('#se-chip').innerText(), 'system'); assert.equal(await page.locator('#se-technology').inputValue(), 'CI pipeline');
    assert.equal(await dlg.getByLabel('CI runners').count(), 1); assert.equal(await dlg.getByLabel('Operators').count(), 0); assert.equal(await dlg.getByLabel('Welding cell').count(), 0); await page.locator('#se-close').click();
    // A pool of the wrong kind is shown with its problem, and a missing kind is explained.
-   const broken = autoLine(); broken.resources[1]!.kind = 'people'; await page.locator('#show-definition').click(); await page.locator('#draft').fill(JSON.stringify(broken)); await page.locator('#show-events').click();
+   const broken = autoLine(); broken.resources[1]!.kind = 'people'; await openDef(); await page.locator('#draft').fill(JSON.stringify(broken)); await closeDef();
    await openStep('weld'); assert.match(await page.locator('#se-no-pools').innerText(), /Add a machine pool in the Definition editor/);
    assert.equal(await page.locator('#se-pools-1-count').getAttribute('aria-invalid'), 'true'); assert.match(await page.locator('#se-err-pools-1').innerText(), /Welding cell is a people pool, but machine steps may use only machine pools/);
    await page.locator('#se-close').click(); assert.equal(await dialogOpen(), 0);
@@ -564,7 +570,7 @@ async function main(): Promise<void> {
    await page.locator('#se-apply').click(); await page.locator('#se-apply-reset').click(); assert.equal(await dialogOpen(), 0);
    const applied = await query(page); assert.equal(applied.snapshot.minute, 0); assert.equal(applied.definition.steps[1]!.duration, 20); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.step), 'discovery');
    // Errors link to fields, each field shows one problem, and problems elsewhere in the draft are listed with names.
-   await page.locator('#show-definition').click(); const raw = JSON.parse(await draftText()) as LWProcess.Definition; delete raw.steps[1]!.duration; await page.locator('#draft').fill(JSON.stringify(raw)); await page.locator('#show-events').click();
+   await openDef(); const raw = JSON.parse(await draftText()) as LWProcess.Definition; delete raw.steps[1]!.duration; await page.locator('#draft').fill(JSON.stringify(raw)); await closeDef();
    await page.locator('[data-step="implementation"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-duration').fill('');
    assert.equal(await page.locator('#se-err-duration .se-err').count(), 1); assert.equal(await page.locator('#se-duration').getAttribute('aria-invalid'), 'true');
    await page.locator('#se-status a[data-goto="se-duration"]').click(); assert.equal(await activeId(), 'se-duration');
@@ -573,10 +579,10 @@ async function main(): Promise<void> {
    await page.locator('[data-bind="set.1.key"]').fill('extra'); await page.locator('#se-duration').fill('25'); assert.doesNotMatch(await page.locator('#se-status').innerText(), /in this step/);
    await page.locator('#se-apply').click(); assert.equal(await page.locator('#se-apply-errors').isVisible(), true); assert.match(await page.locator('#se-apply-errors').innerText(), /Discovery › duration/); assert.equal(await dialogOpen(), 1);
    await page.locator('#se-cancel').click(); await page.locator('#se-discard').click(); assert.equal(await dialogOpen(), 0);
-   // An unparseable draft cannot be edited: the page status line points to the Definition editor.
-   await page.locator('#show-definition').click(); await page.locator('#draft').fill('{bad'); await page.locator('#show-events').click(); await page.locator('#edit-step').click();
-   assert.equal(await dialogOpen(), 0); assert.match(await page.locator('#message').innerText(), /not valid process JSON.*Definition editor/); assert.equal(await page.locator('#message').getAttribute('aria-live'), 'assertive');
-   await page.locator('#show-definition').click(); await page.locator('#restore-draft').click(); await page.locator('#show-events').click();
+   // An unparseable draft cannot be edited as a step: Edit step opens the Definition editor on the JSON syntax error instead.
+   await openDef(); await page.locator('#draft').fill('{bad'); await closeDef(); await page.locator('#edit-step').click();
+   assert.equal(await dialogOpen(), 1); assert.equal(await page.locator('#de-title').isVisible(), true); assert.equal(await page.locator('#se-title').isVisible(), false); assert.match(await page.locator('#draft-state').innerText(), /Invalid JSON: line 1, column 2/);
+   await restoreDef(); await closeDef();
   });
   const automationFixture = (d: LWProcess.Definition) => {
    const scene = (id: string, x: number) => ({id: 'scene-' + id, position: [x, 0] as [number, number], color: '#91b9d5'});
@@ -659,6 +665,274 @@ async function main(): Promise<void> {
    });
    assert.equal(sprites.found.length, sprites.steps * 2, 'one name pill and one front caption per room; the floating sub-label is folded into the caption');
    for (const s of sprites.found) assert.deepEqual([s.depthTest, s.depthWrite, s.transparent, s.order >= 20, s.alpha > 150], [false, false, true, true, true], 'captions ignore depth, draw last and sit on a dark pill');
+  });
+  const dlgText = () => page.locator('dialog.pd-dialog[open]').innerText();
+  const randomLine = () => ({format: 'wildlands-process', schemaVersion: 1, revision: 1, id: 'random-line', name: 'Random line', start: 'start',
+   resources: [{id: 'crew', name: 'Operators', capacity: 2, costPerMinute: 1}],
+   steps: [{id: 'start', name: 'Start', kind: 'start', scene: scene('start', 0)}, {id: 'pack', name: 'Pack order', kind: 'task', duration: 12, cost: 1, resources: {crew: 1}, set: {packed: true}, scene: scene('pack', 14)},
+    {id: 'cool', name: 'Cool down', kind: 'timer', duration: 30, scene: scene('cool', 28)}, {id: 'dock', name: 'Dock hold', kind: 'timer', until: 400, scene: scene('dock', 42)},
+    {id: 'gate', name: 'Quality gate', kind: 'decision', scene: scene('gate', 56)}, {id: 'repack', name: 'Repack', kind: 'task', duration: 6, resources: {crew: 1}, add: {reworks: 1}, scene: scene('repack', 70)}, {id: 'end', name: 'Done', kind: 'end', scene: scene('end', 84)}],
+   flows: [{id: 'f1', from: 'start', to: 'pack'}, {id: 'f2', from: 'pack', to: 'cool'}, {id: 'f3', from: 'cool', to: 'dock'}, {id: 'f4', from: 'dock', to: 'gate'}, {id: 'f5', from: 'gate', to: 'repack', when: {chance: 20}}, {id: 'f6', from: 'gate', to: 'end'}, {id: 'f7', from: 'repack', to: 'end'}],
+   arrivals: [{at: 0, count: 6, interval: 0, data: {}}]});
+  const importRandom = async () => {
+   await freshStudio(); const name = 'random-line.json';
+   await page.locator('#file').setInputFiles({name, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(randomLine()))});
+   await page.waitForFunction(n => document.getElementById('message')!.textContent!.includes('Imported ' + n), name);
+  };
+  const openRandom = async (id: string) => { await page.locator(`[data-step="${id}"]`).click(); await page.locator('#edit-step').click(); await page.locator('dialog.pd-dialog[open]').waitFor(); };
+  const savedStep = async (id: string) => (JSON.parse(await draftText()) as LWProcess.Definition).steps.find(s => s.id === id)!;
+  await check('Step editor edits random timing, draws and chance routes and keeps them valid', async () => {
+   await importRandom(); await openRandom('pack');
+   assert.equal(await page.locator('#se-h-random-timing').count(), 1); assert.equal(await page.locator('#se-timing-dist').inputValue(), ''); assert.equal(await page.locator('#se-timing-min').count(), 0);
+   await page.locator('#se-timing-dist').selectOption('uniform'); assert.equal(await page.locator('#se-timing-min').inputValue(), '6'); assert.equal(await page.locator('#se-timing-max').inputValue(), '18');
+   await page.locator('#se-timing-min').fill('8'); await page.locator('#se-timing-max').fill('14'); assert.equal(await page.locator('#se-err-timing .se-err').count(), 0);
+   // Random outcomes: chance, weighted choice and whole number rows.
+   assert.equal(await page.locator('#se-h-random-outcomes').count(), 1); assert.match(await dlgText(), /applied when the step completes, after Set values and before counters/);
+   await page.locator('#se-add-draw').click(); assert.equal(await activeId(), 'se-draws-0-field'); await page.locator('#se-draws-0-field').fill('defect'); await page.locator('#se-draws-0-percent').fill('12');
+   await page.locator('#se-add-draw').click(); await page.locator('#se-draws-1-field').fill('defect'); assert.match(await page.locator('#se-err-draws-1').innerText(), /drawn twice/); assert.equal(await page.locator('#se-draws-1-field').getAttribute('aria-invalid'), 'true');
+   await page.locator('#se-draws-1-field').fill('packed'); assert.match(await page.locator('#se-err-draws-1').innerText(), /also in Set a value/);
+   await page.locator('#se-draws-1-field').fill('priority'); await page.locator('#se-draws-1-kind').selectOption('choice'); assert.equal(await page.locator('#se-draws-1-values-1-weight').count(), 1);
+   await page.locator('#se-draws-1-values-0-value-text').fill('standard'); await page.locator('#se-draws-1-values-0-weight').fill('80'); await page.locator('#se-draws-1-values-1-value-text').fill('express'); await page.locator('#se-draws-1-values-1-weight').fill('20');
+   assert.equal(await page.locator('[data-act="remove-choice"][data-i="1"][data-j="0"]').isDisabled(), true, 'a weighted choice keeps two values');
+   await page.locator('#se-add-choice-1').click(); assert.equal(await page.locator('[data-act="remove-choice"][data-i="1"][data-j="2"]').isEnabled(), true); await page.locator('[data-act="remove-choice"][data-i="1"][data-j="2"]').click(); assert.equal(await page.locator('#se-draws-1-values-2-weight').count(), 0);
+   await page.locator('#se-add-draw').click(); await page.locator('#se-draws-2-field').fill('size'); await page.locator('#se-draws-2-kind').selectOption('int'); await page.locator('#se-draws-2-min').fill('1'); await page.locator('#se-draws-2-max').fill('6');
+   for (let i = 3; i < 8; i++) await page.locator('#se-add-draw').click(); assert.equal(await page.locator('#se-add-draw').isDisabled(), true); assert.match(await page.locator('#se-max-draws').innerText(), /At most 8/);
+   for (let i = 7; i >= 3; i--) await page.locator(`[data-act="remove-draw"][data-i="${i}"]`).click(); assert.equal(await page.locator('#se-add-draw').isEnabled(), true); assert.equal(await activeId(), 'se-add-draw');
+   assert.equal(await page.locator('#se-save').isEnabled(), true); await page.locator('#se-save').click(); assert.equal(await dialogOpen(), 0);
+   const pack = await savedStep('pack'); assert.deepEqual(pack.timing, {dist: 'uniform', min: 8, max: 14}); assert.equal(pack.duration, 12);
+   assert.deepEqual(pack.draws, [{field: 'defect', kind: 'chance', percent: 12}, {field: 'priority', kind: 'choice', values: [{value: 'standard', weight: 80}, {value: 'express', weight: 20}]}, {field: 'size', kind: 'int', min: 1, max: 6}]);
+   // Chance routes are editable on a decision and show their share in the path summary.
+   await openRandom('gate'); assert.equal(await page.locator('#se-h-random-timing').count(), 0); assert.equal(await page.locator('#se-h-random-outcomes').count(), 0);
+   assert.deepEqual(await page.locator('#se-path-summary li').allInnerTexts(), ['20% of cases → Repack', 'Otherwise → Done']);
+   assert.equal(await page.locator('#se-flows-0-cond-mode-chance').isChecked(), true); assert.equal(await page.locator('#se-flows-0-cond-chance').inputValue(), '20');
+   await page.locator('#se-flows-0-cond-chance').fill('8'); assert.equal((await page.locator('#se-path-summary li').allInnerTexts())[0], '8% of cases → Repack');
+   await page.locator('#se-flows-0-cond-chance').fill('0'); assert.match(await page.locator('#se-err-flows-0').innerText(), /whole percent from 1 to 99/); assert.equal(await page.locator('#se-save').isDisabled(), true);
+   await page.locator('#se-flows-0-cond-mode-value').check(); assert.equal(await page.locator('#se-flows-0-cond-chance').count(), 0); assert.equal(await page.locator('#se-flows-0-cond-field').count(), 1);
+   await page.locator('#se-flows-0-cond-mode-chance').check(); assert.equal(await page.locator('#se-flows-0-cond-chance').inputValue(), '0'); await page.locator('#se-flows-0-cond-chance').fill('8');
+   await page.locator('#se-flows-1-cond-on').check(); await page.locator('#se-flows-1-cond-mode-chance').check(); await page.locator('#se-flows-1-cond-chance').fill('30');
+   assert.match(await page.locator('#se-status').innerText(), /exactly one unconditional fallback/); await page.locator('#se-flows-1-cond-on').uncheck();
+   await page.locator('#se-save').click(); const gate = (JSON.parse(await draftText()) as LWProcess.Definition).flows.filter(f => f.from === 'gate'); assert.deepEqual(gate.map(f => f.when), [{chance: 8}, undefined]);
+   // The edited draft is accepted by the engine and a seeded run records realized durations and drawn values.
+   const verdict = await page.evaluate(text => (globalThis as unknown as {LWProcessCatalog: LWProcess.Catalog}).LWProcessCatalog.validate(JSON.parse(text)).ok, await draftText()); assert.equal(verdict, true);
+   await openRandom('pack'); await page.locator('#se-apply').click(); await page.waitForFunction(() => document.querySelectorAll('dialog.pd-dialog[open]').length === 0);
+   for (let i = 0; i < 14; i++) if (!(await page.locator('#advance').isDisabled())) await page.locator('#advance').click();
+   const run = (await query(page)).snapshot, packs = run.receipts.filter(r => r.stepId === 'pack');
+   assert.ok(packs.length >= 4, 'several pack visits finished'); assert.ok(packs.every(r => r.duration !== undefined && r.duration === r.finished - r.started && r.duration >= 8 && r.duration <= 14));
+   assert.ok(packs.every(r => typeof r.changes.defect === 'boolean' && ['standard', 'express'].includes(String(r.changes.priority)) && Number(r.changes.size) >= 1 && Number(r.changes.size) <= 6));
+   assert.equal(run.receipts.filter(r => r.stepId === 'repack').every(r => r.duration === undefined), true, 'deterministic steps record no realized duration');
+   await page.locator('[data-step="pack"]').click(); assert.match(await page.locator('#process-data').innerText(), /Took \d+ min \(planned 12\)/); assert.ok(await page.locator('#process-data .se-drawn').count() >= 3);
+   await page.locator('[data-step="repack"]').click(); assert.doesNotMatch(await page.locator('#process-data').innerText(), /Took \d+ min/); assert.equal(await page.locator('#process-data .se-drawn').count(), 0);
+  });
+  await check('Step editor explains the planning duration next to random timing and rejects inconsistent distributions inline', async () => {
+   await importRandom(); await openRandom('pack'); await page.locator('#se-timing-dist').selectOption('triangular');
+   assert.equal(await page.locator('#se-timing-note').innerText(), 'Planning duration (12 min) stays the average shown in estimates; each visit draws its own time.');
+   await page.locator('#se-duration').fill('20'); assert.match(await page.locator('#se-timing-note').innerText(), /Planning duration \(20 min\) stays the average/); await page.locator('#se-duration').fill('12');
+   await page.locator('#se-timing-min').fill('20'); await page.locator('#se-timing-mode').fill('10'); await page.locator('#se-timing-max').fill('5');
+   assert.match(await page.locator('#se-err-timing').innerText(), /minimum ≤ most likely ≤ maximum/); assert.equal(await page.locator('#se-timing-mode').getAttribute('aria-invalid'), 'true');
+   assert.equal(await page.locator('#se-save').isDisabled(), true); assert.equal(await page.locator('#se-apply').isDisabled(), true);
+   await page.locator('#se-timing-min').fill('4'); await page.locator('#se-timing-mode').fill('6'); await page.locator('#se-timing-max').fill('10'); assert.equal(await page.locator('#se-err-timing .se-err').count(), 0); assert.equal(await page.locator('#se-save').isEnabled(), true);
+   await page.locator('#se-timing-dist').selectOption('uniform'); await page.locator('#se-timing-min').fill('9'); await page.locator('#se-timing-max').fill('4');
+   assert.match(await page.locator('#se-err-timing').innerText(), /minimum \(9\) must not be above the maximum \(4\)/); assert.equal(await page.locator('#se-timing-min').getAttribute('aria-invalid'), 'true');
+   await page.locator('#se-timing-dist').selectOption('exponential'); assert.equal(await page.locator('#se-timing-mean').inputValue(), '12'); await page.locator('#se-timing-max').fill('3');
+   assert.match(await page.locator('#se-err-timing').innerText(), /cap \(3\) must not be below the mean \(12\)/); await page.locator('#se-timing-mean').fill('4'); await page.locator('#se-timing-max').fill('');
+   assert.equal(await page.locator('#se-err-timing .se-err').count(), 0); await page.locator('#se-timing-max').fill('12'); await page.locator('#se-save').click();
+   assert.deepEqual((await savedStep('pack')).timing, {dist: 'exponential', mean: 4, max: 12});
+   // None removes the distribution again; the planning duration stays.
+   await openRandom('pack'); await page.locator('#se-timing-dist').selectOption(''); assert.equal(await page.locator('#se-timing-note').count(), 0); await page.locator('#se-save').click(); assert.equal((await savedStep('pack')).timing, undefined); assert.equal((await savedStep('pack')).duration, 12);
+   // Duration timers may be random; until timers and other kinds are not offered the section.
+   await openRandom('cool'); assert.equal(await page.locator('#se-h-random-timing').count(), 1); await page.locator('#se-timing-dist').selectOption('exponential'); assert.equal(await page.locator('#se-timing-mean').inputValue(), '30'); await page.locator('#se-save').click();
+   assert.deepEqual((await savedStep('cool')).timing, {dist: 'exponential', mean: 30});
+   await openRandom('dock'); assert.equal(await page.locator('#se-h-random-timing').count(), 0); assert.equal(await page.locator('#se-h-random-outcomes').count(), 1); await page.locator('#se-close').click();
+   await openRandom('start'); assert.equal(await page.locator('#se-h-random-timing').count(), 0); assert.equal(await page.locator('#se-h-random-outcomes').count(), 0); await page.locator('#se-close').click();
+   // Engine diagnostics for timing and draws map to the editor fields as well.
+   const mapped = await page.evaluate(() => {
+    const g = globalThis as unknown as {LWProcessCatalog: LWProcess.Catalog; LWProcessStepModel: LWProcessStepModel.Api};
+    const def = {...JSON.parse(JSON.stringify((globalThis as unknown as {LWProcessStudio: {query(): {definition: LWProcess.Definition}}}).LWProcessStudio.query().definition))} as LWProcess.Definition;
+    const pack = def.steps.find(s => s.id === 'pack')!; pack.timing = {dist: 'uniform', min: 9, max: 4}; pack.draws = [{field: 'packed', kind: 'chance', percent: 12}, {field: 'x', kind: 'int', min: 5, max: 1}];
+    return g.LWProcessStepModel.scope(def, 'pack', g.LWProcessCatalog.validate(def, true).diagnostics).map(i => i.key + '|' + i.message);
+   });
+   assert.ok(mapped.some(m => m.startsWith('timing|') && /min at most max/.test(m)), mapped.join('\n')); assert.ok(mapped.some(m => m.startsWith('draws.0.field|') && /one writer/.test(m))); assert.ok(mapped.some(m => m.startsWith('draws.1|') && /min at most max/.test(m)));
+  });
+  await check('Random view helpers describe distributions, draws, chance routes and arrival streams in plain language', async () => {
+   await freshStudio();
+   const out = await page.evaluate(() => {
+    const v = (globalThis as unknown as {LWProcessRandomView: LWProcessRandomView.Api}).LWProcessRandomView;
+    return [v.describeDist({dist: 'triangular', min: 4, mode: 6, max: 10}), v.describeDist({dist: 'uniform', min: 7, max: 11}), v.describeDist({dist: 'exponential', mean: 4, max: 12}), v.describeDist({dist: 'exponential', mean: 4}),
+     v.describeTiming({duration: 12}), v.describeTiming({duration: 12, timing: {dist: 'uniform', min: 7, max: 11}}), v.describeTiming({until: 5}),
+     v.describeDraw({field: 'defect', kind: 'chance', percent: 12}), v.describeDraw({field: 'priority', kind: 'choice', values: [{value: 'express', weight: 20}, {value: 'standard', weight: 80}]}),
+     v.describeDraw({field: 'x', kind: 'int', min: 1, max: 6}), v.describeDraw({field: 'ok', kind: 'chance', percent: 30, whenTrue: 'pass', whenFalse: 'fail'}),
+     v.describeWhen({chance: 8}), v.describeWhen({field: 'iteration', op: 'lt', valueField: 'iterations'} as unknown as LWProcess.Condition), v.describeWhen({field: 'priority', op: 'eq', value: 'express'}), v.describeWhen(undefined),
+     v.describeArrival({at: 0, open: true, interval: 4, gap: {dist: 'exponential', mean: 4}, data: {}}), v.describeArrival({at: 10, until: 600, interval: 5, data: {}}), v.describeArrival({at: 0, count: 8, interval: 3, data: {}})];
+   });
+   assert.deepEqual(out, ['Random between 4 and 10 min, most often 6', 'Uniform 7–11 min', 'Exponential, mean 4 min (max 12)', 'Exponential, mean 4 min', 'Takes 12 min',
+    'Planned 12 min (the average shown in estimates); each visit draws its own time: Uniform 7–11 min', '', 'Sets defect to true in 12% of cases, otherwise false', 'Sets priority to express (20%) or standard (80%)',
+    'Sets x to a whole number from 1 to 6', 'Sets ok to pass in 30% of cases, otherwise fail', '8% of cases take this path', 'If iteration < iterations', 'If priority = "express"', 'Otherwise (no condition)',
+    'Keeps arriving: every ~4 min, random gap (exponential, mean 4), first at minute 0', 'Until minute 600: every 5 min, first at minute 10', '8 cases: every 3 min, first at minute 0']);
+  });
+  const defOf = async () => JSON.parse(await draftText()) as LWProcess.Definition;
+  const inSync = () => page.waitForFunction(() => document.getElementById('de-sync')!.textContent === 'Form in sync');
+  await check('Definition editor opens as a modal from the header, pauses the run and applies a fresh paused run', async () => {
+   await page.setViewportSize({width: 1440, height: 1060});
+   await freshStudio();
+   const opener = page.locator('#open-definition');
+   assert.equal(await opener.innerText(), 'Edit process…'); assert.equal(await opener.getAttribute('aria-haspopup'), 'dialog');
+   assert.equal(await page.evaluate(() => { const a = document.querySelector('.process-file-actions')!, kids = [...a.children].map(c => c.id); return kids.indexOf('open-definition') >= 0 && kids.indexOf('open-definition') < kids.indexOf('import'); }), true, 'the opener sits in the header actions before Import');
+   assert.equal(await page.locator('#show-definition').count() + await page.locator('#editor').count(), 0, 'the bottom Definition tab and panel are gone'); assert.equal(await page.locator('#draft-chip').isHidden(), true);
+   const before = await query(page); await page.locator('#horizon').selectOption('1440'); await page.locator('#play').click();
+   await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {snapshot: {minute: number}}}}).LWProcessStudio.query().snapshot.minute > 0);
+   await opener.focus(); await page.keyboard.press('Enter'); await defOpen.waitFor();
+   assert.equal(await page.evaluate(() => document.querySelector('dialog.de-dialog')!.matches(':modal')), true); assert.equal(await page.getByRole('dialog', {name: 'Definition editor'}).count(), 1);
+   assert.equal(await page.locator('#de-title').innerText(), 'Definition editor'); assert.equal(await page.locator('#de-subtitle').innerText(), `${before.definition.name} · revision ${before.definition.revision} · The run is paused while this window is open`);
+   assert.equal(await page.locator('#de-chip').isHidden(), true); assert.equal(await activeId(), 'tune-name'); assert.equal(await page.locator('#de-sync').innerText(), 'Form in sync');
+   const frozen = await query(page); assert.equal(frozen.playing, false); await nextFrames(page, 45); assert.equal((await query(page)).snapshot.minute, frozen.snapshot.minute, 'nothing ticks while the editor is open');
+   await assert.rejects(page.locator('#play').click({timeout: 700}), 'the page behind the modal is inert');
+   assert.equal(await page.evaluate(() => ['de-form-h', 'de-json-h'].every(id => document.getElementById(id)!.tagName === 'H3') && document.querySelectorAll('dialog.de-dialog section[aria-labelledby]').length >= 2 && document.getElementById('draft-state')!.getAttribute('role') === 'status'), true);
+   await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'open-definition');
+   await opener.click(); await page.locator('#tune-name').fill('Renamed by the form'); assert.equal(await page.locator('#de-chip').innerText(), 'Unapplied draft');
+   await page.locator('#de-close').click(); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'open-definition');
+   assert.equal(await page.locator('#draft-chip').innerText(), 'Unapplied draft · 1 process setting changed'); assert.equal((await query(page)).definition.name, before.definition.name, 'the running definition is untouched until Apply');
+   await page.locator('#draft-chip').click(); await defOpen.waitFor(); await page.locator('#de-validate').click(); assert.equal(await page.locator('#de-message').innerText(), 'Valid definition. Applying starts a fresh paused run.');
+   await page.locator('#de-apply').click(); assert.equal(await page.locator('#de-confirm').isVisible(), true, 'a run past minute 0 asks first'); await page.locator('#de-back').click(); await page.locator('#de-close').click();
+   await page.locator('#reset').click(); await page.locator('#open-definition').click(); await defOpen.waitFor(); await page.locator('#de-apply').click(); await defOpen.waitFor({state: 'hidden'});
+   const applied = await query(page); assert.equal(applied.definition.name, 'Renamed by the form'); assert.equal(applied.definition.revision, before.definition.revision + 1); assert.equal(applied.snapshot.minute, 0); assert.equal(applied.playing, false);
+   assert.equal(await page.locator('#draft-chip').isHidden(), true); assert.equal(await activeId(), 'open-definition'); assert.match(await page.locator('#message').innerText(), /Definition applied\. New run is paused\./);
+  });
+  await check('Definition editor edits seed, resource kinds and arrival end rules, gaps and draws with inline problems', async () => {
+   await page.setViewportSize({width: 1440, height: 1060});
+   await freshStudio(); await openDef(); const seed = page.locator('#tune-seed'), arr = (id: string) => page.locator('#tune-arr-0-' + id), pool = page.locator('#tune-res-0-kind');
+   assert.match(await page.locator('#tune-seed-help').innerText(), /Same seed, same run\. Change it to see another scenario/); assert.equal(await page.locator('label[for="tune-seed"]').innerText(), 'Seed');
+   await seed.fill('42'); assert.equal((await defOf()).seed, 42); await seed.fill('1.5'); assert.equal((await defOf()).seed, 42, 'a fraction is not written');
+   assert.match(await page.locator('#tune-seed-err').innerText(), /whole number/); assert.equal(await seed.getAttribute('aria-invalid'), 'true');
+   await seed.fill('2147483648'); assert.match(await page.locator('#tune-seed-err').innerText(), /from 0 to 2,147,483,647/); assert.equal(await seed.getAttribute('aria-invalid'), 'true'); await inSync();
+   await seed.fill('7'); assert.equal(await page.locator('#tune-seed-err').innerText(), ''); assert.equal(await seed.getAttribute('aria-invalid'), null); await seed.fill(''); assert.equal(Object.hasOwn(await defOf(), 'seed'), false);
+   // Resource kind: written only when it is not people; the engine's own diagnostics speak.
+   assert.equal(Object.hasOwn((await defOf()).resources[0]!, 'kind'), false); assert.deepEqual(await page.locator('#tune-res-0-kind option').allInnerTexts(), ['People', 'Machine', 'System']);
+   await pool.selectOption('machine'); assert.equal((await defOf()).resources[0]!.kind, 'machine'); assert.match(await page.locator('#tune-res-0-kind-err').innerText(), /may demand only people pools/); assert.equal(await pool.getAttribute('aria-invalid'), 'true');
+   assert.match(await page.locator('#diagnostics').innerText(), /may demand only people pools/); await pool.selectOption('system'); assert.equal((await defOf()).resources[0]!.kind, 'system');
+   await pool.selectOption('people'); assert.equal(Object.hasOwn((await defOf()).resources[0]!, 'kind'), false); assert.equal(await page.locator('#diagnostics li').count(), 0);
+   await page.locator('#tune-res-0-cap').fill('0'); assert.equal(await page.locator('#tune-res-0-cap').getAttribute('aria-invalid'), 'true'); assert.match(await page.locator('#tune-res-0-cap-err').innerText(), /from 1 to 1,000/); await page.locator('#tune-res-0-cap').fill('2'); assert.equal((await defOf()).resources[0]!.capacity, 2);
+   // Arrival end rules.
+   const first = (await defOf()).arrivals[0]!; assert.equal(await page.locator('#tune-arr-0-end-count').isChecked(), true);
+   await arr('end-until').check(); let a = (await defOf()).arrivals[0]!; assert.equal(a.count, undefined); assert.equal(typeof a.until, 'number'); assert(a.until! > a.at); assert.equal(await arr('until').count(), 1);
+   await arr('end-open').check(); a = (await defOf()).arrivals[0]!; assert.deepEqual([a.open, a.until, a.count], [true, undefined, undefined]); assert.equal(await arr('count').count(), 0);
+   await arr('interval').fill('0'); assert.match(await page.locator('#tune-arr-0-interval-err').innerText(), /interval of at least 1 minute/); assert.equal(await arr('interval').getAttribute('aria-invalid'), 'true');
+   await arr('interval').fill('10'); assert.equal(await page.locator('#tune-arr-0-interval-err').innerText(), ''); await arr('end-count').check(); a = (await defOf()).arrivals[0]!; assert.equal(a.open, undefined); assert.equal(typeof a.count, 'number');
+   await arr('count').fill('201'); assert.match(await page.locator('#tune-arr-0-count-err').innerText(), /from 1 to 200/); await arr('count').fill(String(first.count ?? 3));
+   // Random gap.
+   assert.deepEqual(await arr('gap-dist').locator('option').allInnerTexts(), ['None (exact spacing)', 'Uniform (min to max)', 'Triangular (min, most likely, max)', 'Exponential (average, optional cap)']);
+   await arr('gap-dist').selectOption('uniform'); assert.equal((await defOf()).arrivals[0]!.gap!.dist, 'uniform'); await arr('gap-min').fill('9'); await arr('gap-max').fill('3');
+   assert.match(await page.locator('#tune-arr-0-gap-group-err').innerText(), /min at most max/); assert.equal(await arr('gap-min').getAttribute('aria-invalid'), 'true'); await arr('gap-max').fill('12'); assert.equal(await page.locator('#tune-arr-0-gap-group-err').innerText(), '');
+   await arr('gap-dist').selectOption('triangular'); assert.deepEqual(Object.keys((await defOf()).arrivals[0]!.gap!).sort(), ['dist', 'max', 'min', 'mode']); await arr('gap-dist').selectOption('exponential'); assert.deepEqual(Object.keys((await defOf()).arrivals[0]!.gap!).sort(), ['dist', 'mean']);
+   assert.equal(await arr('gap-max').count(), 1); await arr('gap-dist').selectOption('none'); assert.equal((await defOf()).arrivals[0]!.gap, undefined);
+   // Arrival data fields.
+   await page.locator('[data-act="data-add"]').first().click(); let data = (await defOf()).arrivals[0]!.data; const added = Object.keys(data).at(-1)!; assert.equal(data[added], '');
+   const idx = Object.keys(data).length - 1, rename = page.locator(`#tune-arr-0-data-${idx}-name`); await rename.fill('Bad name'); await rename.press('Tab'); assert.match(await page.locator(`#tune-arr-0-data-${idx}-name-err`).innerText(), /lowercase letter/); assert.equal(Object.hasOwn((await defOf()).arrivals[0]!.data, added), true);
+   await rename.fill('urgency'); await rename.press('Tab'); data = (await defOf()).arrivals[0]!.data; assert.deepEqual(Object.keys(data).at(-1), 'urgency');
+   await page.locator(`#tune-arr-0-data-${idx}-value-type`).selectOption('number'); await page.locator(`#tune-arr-0-data-${idx}-value`).fill('3'); assert.equal((await defOf()).arrivals[0]!.data.urgency, 3);
+   await page.locator(`#tune-arr-0-data-${idx}-value-type`).selectOption('boolean'); assert.equal((await defOf()).arrivals[0]!.data.urgency, true); await page.locator('[data-act="data-remove"][data-name="urgency"]').click(); assert.equal(Object.hasOwn((await defOf()).arrivals[0]!.data, 'urgency'), false);
+   // Arrival draws.
+   await page.locator('[data-act="draw-add"]').first().click(); let draw = (await defOf()).arrivals[0]!.draws![0]!; assert.deepEqual([draw.kind, draw.percent], ['chance', 50]);
+   await page.locator('#tune-arr-0-draw-0-percent').fill('100'); assert.match(await page.locator('#tune-arr-0-draw-0-percent-err').innerText(), /whole percent from 1 to 99/); await page.locator('#tune-arr-0-draw-0-percent').fill('30');
+   await page.locator('#tune-arr-0-draw-0-true-type').selectOption('string'); await page.locator('#tune-arr-0-draw-0-true').fill('urgent'); await page.locator('#tune-arr-0-draw-0-false-type').selectOption('string'); await page.locator('#tune-arr-0-draw-0-false').fill('routine');
+   draw = (await defOf()).arrivals[0]!.draws![0]!; assert.deepEqual([draw.percent, draw.whenTrue, draw.whenFalse], [30, 'urgent', 'routine']);
+   await page.locator('#tune-arr-0-draw-0-kind').selectOption('choice'); draw = (await defOf()).arrivals[0]!.draws![0]!; assert.equal(draw.values!.length, 2); assert.equal(draw.percent, undefined);
+   await page.locator('[data-act="value-add"]').first().click(); assert.equal((await defOf()).arrivals[0]!.draws![0]!.values!.length, 3); await page.locator('#tune-arr-0-draw-0-w0').fill('0'); assert.match(await page.locator('#tune-arr-0-draw-0-w0-err').innerText(), /from 1 to 1000/);
+   await page.locator('#tune-arr-0-draw-0-w0').fill('5'); await page.locator('#tune-arr-0-draw-0-kind').selectOption('int'); draw = (await defOf()).arrivals[0]!.draws![0]!; assert.deepEqual([draw.min, draw.max, draw.values], [1, 10, undefined]);
+   await page.locator('#tune-arr-0-draw-0-min').fill('20'); assert.match(await page.locator('#tune-arr-0-draw-0-err2').innerText(), /min at most max/); await page.locator('[data-act="draw-remove"]').first().click(); assert.equal((await defOf()).arrivals[0]!.draws, undefined);
+   // Add and remove arrivals.
+   await page.locator('#tune-arr-add').click(); const total = (await defOf()).arrivals.length; assert.equal(total, 3); await page.locator('[data-act="arr-remove"]').last().click(); await page.locator('[data-act="arr-remove"]').last().click(); assert.equal((await defOf()).arrivals.length, 1); assert.equal(await page.locator('[data-act="arr-remove"]').isDisabled(), true);
+   await restoreDef(); await closeDef(); assert.equal(await page.locator('#draft-chip').isHidden(), true);
+  });
+  await check('Definition editor raw JSON reports line and column, lists every diagnostic and jumps to the offending text', async () => {
+   await page.setViewportSize({width: 1440, height: 1060});
+   await freshStudio(); await openDef(); const area = page.locator('#draft'), selection = () => page.evaluate(() => { const a = document.getElementById('draft') as HTMLTextAreaElement; return {text: a.value.slice(a.selectionStart, a.selectionEnd), start: a.selectionStart, active: document.activeElement?.id}; });
+   await area.fill('{\n  "a": 1,\n  "b": [1 2]\n}'); assert.equal(await page.locator('#draft-state').innerText(), `Invalid JSON: line 3, column 11 · Expected ',' or ']' after the value`);
+   assert.equal(await page.locator('#de-gutter .bad').innerText(), '3'); assert.equal(await page.locator('#de-format').isDisabled(), true); assert.equal(await area.getAttribute('aria-invalid'), 'true');
+   await page.waitForFunction(() => document.getElementById('de-sync')!.textContent === 'Fix the JSON to use the form'); assert.equal(await page.locator('#tune-name').isDisabled(), true, 'the form is disabled while the JSON is invalid');
+   await page.locator('#diagnostics button').click(); const syntax = await selection(); assert.equal(syntax.active, 'draft'); assert.equal(syntax.start, '{\n  "a": 1,\n  "b": [1 '.length); assert.equal(syntax.text, '2');
+   // Every diagnostic the catalog returns is listed, labelled with the step name, and selects its text.
+   const base = JSON.parse(JSON.stringify((await query(page)).definition)) as LWProcess.Definition; base.steps[1]!.duration = 0; base.resources[0]!.capacity = 0; delete (base.steps[2] as Partial<LWProcess.Step>).scene;
+   await area.fill(JSON.stringify(base, null, 2)); await inSync();
+   const expected = await page.evaluate(text => (globalThis as unknown as {LWProcessCatalog: LWProcess.Catalog}).LWProcessCatalog.validate(JSON.parse(text), true).diagnostics.map(d => d.path), await draftText());
+   assert(expected.length >= 3, JSON.stringify(expected)); assert.equal(await page.locator('#diagnostics button').count(), expected.length); assert.equal(await page.locator('#de-diag-h').innerText(), `Problems (${expected.length})`);
+   assert.deepEqual(await page.locator('#diagnostics button').evaluateAll(b => b.map(x => (x as HTMLElement).dataset.path)), expected); assert.match(await page.locator('#de-diag-note').innerText(), /Structure problems come first/);
+   const entry = (path: string) => page.locator(`#diagnostics button[data-path="${path}"]`);
+   assert.match(await entry('/steps/1/duration').innerText(), /^Discovery › duration\n/); await entry('/steps/1/duration').click(); const dur = await selection(); assert.match(dur.text, /^"duration": 0$/); assert.equal(dur.active, 'draft');
+   await entry('/resources/0/capacity').click(); assert.match((await selection()).text, /^"capacity": 0$/); assert.match(await entry('/resources/0/capacity').innerText(), /^Resource .* › capacity/);
+   await entry('/steps/2').click(); const block = await selection(); assert.equal(block.text, '{', 'a missing field selects the start of its block'); assert.match(await entry('/steps/2').innerText(), /Missing field: scene/);
+   // With the structure repaired the relationship checks run and are listed too.
+   const graph = JSON.parse(JSON.stringify((await query(page)).definition)) as LWProcess.Definition; graph.flows[0]!.to = 'nowhere'; graph.steps[1]!.resources = {ghost: 1};
+   await area.fill(JSON.stringify(graph)); await inSync(); const expectedGraph = await page.evaluate(text => (globalThis as unknown as {LWProcessCatalog: LWProcess.Catalog}).LWProcessCatalog.validate(JSON.parse(text), true).diagnostics.length, await draftText());
+   assert(expectedGraph >= 2); assert.equal(await page.locator('#diagnostics button').count(), expectedGraph); assert.doesNotMatch(await page.locator('#de-diag-note').innerText(), /Structure problems come first/);
+   // Format, the diff summary and the gutter.
+   await page.locator('#de-format').click(); assert.equal(await draftText(), JSON.stringify(JSON.parse(await draftText()), null, 2)); assert.equal(await page.locator('#de-diff').isVisible(), true);
+   assert.match(await page.locator('#draft-state').innerText(), /^Unapplied draft: .*changed/); await page.locator('#de-diff summary').click(); assert.match(await page.locator('#de-diff-list').innerText(), /changed/);
+   const gutter = await page.evaluate(() => new Promise<{lines: number; numbers: number; top: number; areaTop: number}>(resolve => { const a = document.getElementById('draft') as HTMLTextAreaElement, g = document.getElementById('de-gutter')!; a.scrollTop = 600; requestAnimationFrame(() => requestAnimationFrame(() => resolve({lines: a.value.split('\n').length, numbers: g.textContent!.split('\n').length, top: g.scrollTop, areaTop: a.scrollTop}))); }));
+   assert.equal(gutter.lines, gutter.numbers); assert.equal(gutter.top, gutter.areaTop); assert(gutter.areaTop > 0);
+   // Copy uses the clipboard and falls back to selecting everything.
+   await page.evaluate(() => { (globalThis as any).copied = null; Object.defineProperty(navigator, 'clipboard', {configurable: true, value: {writeText: (t: string) => { (globalThis as any).copied = t; return Promise.resolve(); }}}); });
+   await page.locator('#de-copy').click(); assert.match(await page.locator('#de-copy-note').innerText(), /Copied/); assert.equal(await page.evaluate(() => (globalThis as any).copied === (document.getElementById('draft') as HTMLTextAreaElement).value), true);
+   await page.evaluate(() => Object.defineProperty(navigator, 'clipboard', {configurable: true, value: {writeText: () => Promise.reject(new Error('blocked'))}}));
+   await page.locator('#de-copy').click(); assert.match(await page.locator('#de-copy-note').innerText(), /selected.*Ctrl\+C/); const all = await selection(); assert.equal(all.text, await draftText());
+   const box = (await area.boundingBox())!, wide = await page.evaluate(() => getComputedStyle(document.getElementById('draft')!)); assert(box.height >= 320); assert.match(wide.fontFamily, /mono/i); assert.equal(await area.getAttribute('wrap'), 'off');
+   await restoreDef(); await closeDef();
+  });
+  await check('Definition editor asks before restoring or applying over a run in progress', async () => {
+   await page.setViewportSize({width: 1440, height: 1060});
+   await freshStudio(); await page.locator('#advance').click(); const before = await query(page); assert.equal(before.snapshot.minute, 30);
+   await openDef(); assert.equal(await page.locator('#de-restore').isDisabled(), true); assert.match(await page.locator('#de-reason').innerText(), /Restore is unavailable while the draft matches/);
+   await page.locator('#tune-name').fill('Edited while running'); assert.equal(await page.locator('#de-restore').isDisabled(), false); const edited = await draftText();
+   await page.locator('#de-restore').click(); assert.equal(await page.locator('#de-confirm').isVisible(), true); assert.equal(await page.locator('#de-confirm-title').innerText(), 'Replace the draft with the running definition?');
+   assert.deepEqual(await page.locator('#de-choices button').allInnerTexts(), ['Download draft first', 'Restore', 'Keep draft']); assert.equal(await activeId(), 'de-keep');
+   await page.keyboard.press('Escape'); assert.equal(await page.locator('#de-confirm').isHidden(), true); assert.equal(await dialogOpen(), 1); assert.equal(await draftText(), edited); assert.equal(await activeId(), 'de-restore');
+   await page.locator('#de-restore').click(); const pending = page.waitForEvent('download'); await page.locator('#de-download-first').click(); const saved = await pending; const file2 = path.join(dir, 'before-restore.json'); await saved.saveAs(file2); assert.equal(fs.readFileSync(file2, 'utf8'), edited);
+   assert.equal(await draftText(), edited, 'downloading does not restore'); await page.locator('#de-restore').click(); await page.locator('#de-keep').click(); assert.equal(await draftText(), edited);
+   await restoreDef(); assert.equal(await draftText(), JSON.stringify(before.definition, null, 2)); assert.equal(await page.locator('#de-message').innerText(), 'Draft restored from the running definition.'); assert.equal(await page.locator('#de-restore').isDisabled(), true);
+   // Applying past minute 0 names the minute that is discarded.
+   await page.locator('#draft').fill('{bad'); await page.locator('#de-apply').click(); assert.equal(await page.locator('#de-status').getAttribute('role'), 'alert'); assert.equal(await page.locator('#de-confirm').isHidden(), true, 'an invalid draft is refused before asking'); assert.equal((await query(page)).snapshot.minute, 30);
+   await page.locator('#tune-name').count(); await restoreDef(); await page.locator('#tune-name').fill('Applied over a run'); await page.locator('#de-apply').click();
+   assert.equal(await page.locator('#de-confirm-title').innerText(), 'Applying starts a fresh paused run and discards minute 30. Export the run report first if you need it.'); assert.equal(await activeId(), 'de-back'); assert.equal(await page.locator('#de-apply-reset').innerText(), 'Apply and reset');
+   assert.deepEqual((await query(page)).definition, before.definition); await page.keyboard.press('Escape'); assert.equal(await page.locator('#de-confirm').isHidden(), true); assert.equal(await dialogOpen(), 1); assert.equal((await query(page)).snapshot.minute, 30);
+   await page.locator('#de-apply').click(); await page.locator('#de-back').click(); assert.equal((await query(page)).snapshot.minute, 30);
+   await page.locator('#de-apply').click(); await page.locator('#de-apply-reset').click(); await defOpen.waitFor({state: 'hidden'});
+   const after = await query(page); assert.equal(after.snapshot.minute, 0); assert.equal(after.definition.name, 'Applied over a run'); assert.equal(after.definition.revision, before.definition.revision + 1); assert.equal(await activeId(), 'open-definition');
+  });
+  await check('Definition editor reflows to a full sheet at phone width without horizontal overflow', async () => {
+   await page.setViewportSize({width: 1440, height: 1060});
+   await freshStudio(); await page.setViewportSize({width: 390, height: 844}); await nextFrames(page); await page.locator('#open-definition').click(); await defOpen.waitFor();
+   const geometry = await page.evaluate(() => {
+    const d = document.querySelector('dialog.de-dialog') as HTMLElement, r = d.getBoundingClientRect(), foot = d.querySelector('.pd-foot')!.getBoundingClientRect(), head = d.querySelector('.pd-head')!.getBoundingClientRect(), visible = (n: Element) => n.getClientRects().length > 0;
+    const wide = [...d.querySelectorAll<HTMLElement>('input, select, textarea, button')].filter(n => visible(n) && (n.getBoundingClientRect().right > r.right + 0.5 || n.getBoundingClientRect().left < r.left - 0.5)).map(n => n.id || n.textContent);
+    const small = [...d.querySelectorAll<HTMLElement>('input[type=text], input[type=number], select, textarea, button')].filter(n => visible(n) && n.getBoundingClientRect().height < 43.5).map(n => n.id || n.textContent);
+    return {x: r.x, y: r.y, w: r.width, h: r.height, vw: innerWidth, vh: innerHeight, page: document.documentElement.scrollWidth > innerWidth, own: d.scrollWidth > d.clientWidth, footBottom: foot.bottom, headTop: head.top, wide, small,
+     tabs: visible(d.querySelector('.de-tabs')!), form: visible(d.querySelector('#de-pane-form')!), json: visible(d.querySelector('#de-pane-json')!)};
+   });
+   assert.deepEqual([geometry.x, geometry.y, geometry.w, geometry.h], [0, 0, geometry.vw, geometry.vh]); assert.equal(geometry.page, false); assert.equal(geometry.own, false); assert.deepEqual(geometry.wide, []); assert.deepEqual(geometry.small, [], 'touch targets are 44px');
+   assert.equal(geometry.headTop, 0); assert.equal(Math.round(geometry.footBottom), geometry.vh); assert.deepEqual([geometry.tabs, geometry.form, geometry.json], [true, true, false]);
+   await page.locator('#tune-arr-0').scrollIntoViewIfNeeded(); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false); await page.screenshot({path: path.join(OUT, 'process-definition-mobile-form.png')});
+   await page.locator('#de-tab-json').click(); assert.equal(await page.locator('#de-pane-json').isVisible(), true); assert.equal(await page.locator('#de-pane-form').isVisible(), false); assert.equal(await page.locator('#de-tab-json').getAttribute('aria-pressed'), 'true');
+   assert((await page.locator('#draft').boundingBox())!.height >= 320); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false); await page.screenshot({path: path.join(OUT, 'process-definition-mobile-json.png')});
+   await page.setViewportSize({width: 800, height: 900}); await nextFrames(page); assert.equal(await page.locator('.de-tabs').isVisible(), true, 'tabs below 1000px'); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+   await page.setViewportSize({width: 1440, height: 1060}); await nextFrames(page);
+   const columns = await page.evaluate(() => { const f = document.getElementById('de-pane-form')!.getBoundingClientRect(), j = document.getElementById('de-pane-json')!.getBoundingClientRect(), d = document.querySelector('dialog.de-dialog')!.getBoundingClientRect(); return {tabs: document.querySelector('.de-tabs')!.getClientRects().length, fx: f.x, jx: j.x, fw: f.width, jw: j.width, dw: d.width}; });
+   assert.equal(columns.tabs, 0); assert(columns.fx < columns.jx && columns.fw > 300 && columns.jw > 300); assert(columns.dw <= 1000 && columns.dw > 900); await page.screenshot({path: path.join(OUT, 'process-definition-desktop.png')}); await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0);
+  });
+  await check('Step editor routes to the Definition editor for an invalid draft', async () => {
+   await page.setViewportSize({width: 1440, height: 1060});
+   await freshStudio(); await openDef(); await page.locator('#draft').fill('{bad'); await closeDef(); await page.locator('[data-step="discovery"]').click();
+   await page.locator('#edit-step').click(); await defOpen.waitFor(); assert.equal(await dialogOpen(), 1); assert.equal(await page.locator('#se-title').isVisible(), false); assert.equal(await activeId(), 'draft');
+   assert.match(await page.locator('#draft-state').innerText(), /^Invalid JSON: line 1, column 2/); assert.equal(await page.evaluate(() => (document.getElementById('draft') as HTMLTextAreaElement).selectionStart), 1);
+   await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step', 'focus returns to the button that was used'); await openDef(); await restoreDef(); await closeDef();
+   // A valid draft with problems elsewhere: the step editor's link closes it and opens the Definition editor on the problem.
+   await openDef(); const raw = await defOf(); delete raw.steps[1]!.duration; await page.locator('#draft').fill(JSON.stringify(raw)); await closeDef();
+   await page.locator('[data-step="implementation"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-name').waitFor(); await page.locator('#se-status [data-act="open-definition"]').click(); await defOpen.waitFor();
+   assert.equal(await dialogOpen(), 1, 'one modal at a time'); assert.equal(await page.locator('#se-title').isVisible(), false); assert.equal(await activeId(), 'draft'); assert.match(await page.locator('#diagnostics').innerText(), /Discovery › duration/);
+   await page.keyboard.press('Escape'); assert.equal(await activeId(), 'open-definition'); assert.equal(await dialogOpen(), 0);
+   // A step editor with unsaved edits asks first; keeping them keeps the step editor, discarding opens the Definition editor.
+   await page.locator('#edit-step').click(); await page.locator('#se-name').fill('Unsaved rename'); await page.locator('#se-status [data-act="open-definition"]').click();
+   assert.equal(await page.locator('#se-confirm').isVisible(), true); await page.locator('#se-keep').click(); assert.equal(await dialogOpen(), 1); assert.equal(await page.locator('#se-title').isVisible(), true); assert.equal(await page.locator('#se-name').inputValue(), 'Unsaved rename');
+   await page.locator('#se-status [data-act="open-definition"]').click(); await page.locator('#se-discard').click(); await defOpen.waitFor(); assert.equal(await dialogOpen(), 1); assert.doesNotMatch(await draftText(), /Unsaved rename/);
+   await restoreDef(); await closeDef();
   });
   await check('Process browser lifecycle emits no runtime errors or network requests', async () => {
    assert.deepEqual(diagnostics.errors, []); assert.deepEqual(diagnostics.requests, []);

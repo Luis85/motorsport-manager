@@ -3,7 +3,7 @@
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWContentProvider: LWContentProvider.Api; LWProcessApplication: LWProcessApp.Api; LWProcessCatalog: LWProcess.Catalog;
-  LWProcessData: LWProcessData.Api; LWProcess2D: LWProcess2D.Api; LWProcess3D: LWProcess3D.Api; LWProcessTuning: LWProcessTuning.Api; LWProcessStepEditor: LWProcessStepEditor.Api; LWProcessDraft: LWProcessDraft.Api; LWProcessNeeds: LWProcessNeeds.Api; LWProcessBpmn: LWProcessBpmn.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
+  LWProcessData: LWProcessData.Api; LWProcess2D: LWProcess2D.Api; LWProcess3D: LWProcess3D.Api; LWProcessStepEditor: LWProcessStepEditor.Api; LWProcessDefinitionEditor: LWProcessDefinitionEditor.Api; LWProcessDialog: LWProcessDialog.Api; LWProcessDraft: LWProcessDraft.Api; LWProcessNeeds: LWProcessNeeds.Api; LWProcessBpmn: LWProcessBpmn.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
  const host = document.getElementById('process-shell'); if (!host) return;
  const pristine = '<!doctype html>\n' + document.documentElement.outerHTML;
  const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
@@ -13,7 +13,7 @@
  host.innerHTML = `
  <header class="process-header"><div><h1 id="process-title"></h1><p id="process-subtitle">Wildlands · Process Studio</p></div>
  <label id="process-switch-label" class="process-switch" hidden>Process <select id="process-switch" aria-describedby="process-subtitle"></select></label><div class="process-file-actions">
- <button id="import">Import JSON or BPMN</button><button id="json">Export JSON</button><button id="bpmn">Export BPMN</button><button id="html">Download HTML</button><input type="file" id="file" accept=".json,.bpmn,.xml,application/json,application/xml,text/xml" hidden></div></header>
+ <button id="open-definition" aria-haspopup="dialog">Edit process…</button><button id="draft-chip" class="process-draft-chip" aria-haspopup="dialog" hidden></button><button id="import">Import JSON or BPMN</button><button id="json">Export JSON</button><button id="bpmn">Export BPMN</button><button id="html">Download HTML</button><input type="file" id="file" accept=".json,.bpmn,.xml,application/json,application/xml,text/xml" hidden></div></header>
  <div class="process-toolbar" aria-label="Simulation controls"><button id="play" class="primary">Run simulation</button><button id="step">Step 1 min</button><button id="advance">Advance 30 min</button><button id="reset">Reset run</button>
  <label>Speed <select id="speed"><option value="1">1 min per tick</option><option value="5" selected>5 min per tick</option><option value="30">30 min per tick</option></select></label>
  <label>Run until <select id="horizon"><option value="1440">1 day (1,440 min)</option><option value="10080">1 week (10,080 min)</option><option value="43200">30 days (43,200 min)</option><option value="100000">Engine default (100,000 min)</option><option value="unlimited">Unlimited</option><option value="custom">Custom…</option></select></label>
@@ -28,9 +28,8 @@
  <nav class="process-nav" aria-label="Process steps"><div class="process-panel-heading"><h2>Step scenes</h2><span id="step-count"></span></div>
  <button id="overview">Whole process</button><ol id="steps" class="process-steps"></ol><p class="process-note">Choose a step to enter its scene. Navigation keeps the run at the same minute.</p></nav>
  <aside class="process-inspector" aria-label="Scene inspector"><h2 id="inspector-title">Process overview</h2><div id="inspector"></div><h3>Shared resources</h3><div id="pools"></div><button id="report">Export run report</button></aside></div>
- <section class="process-bottom"><div class="process-bottom-nav"><button id="show-events" aria-pressed="true">Activity</button><button id="show-definition" aria-pressed="false">Definition editor</button><span>Simulation results depend on authored durations and capacities</span></div>
- <div id="events" class="process-events"></div><div id="editor" hidden><div id="tuning"></div><h3>Raw JSON draft</h3><p>Edit the JSON draft, validate, then apply to start a fresh paused run. Export your run report first if you need it.</p><label for="draft">Process definition</label><p id="draft-state" role="status"></p><textarea id="draft" spellcheck="false" aria-describedby="draft-state diagnostics"></textarea>
- <div class="process-editor-actions"><button id="validate">Validate draft</button><button id="apply">Apply draft & reset run</button><button id="export-draft">Export draft</button><button id="restore-draft">Restore active definition</button></div><pre id="diagnostics" role="status"></pre></div></section>`;
+ <section class="process-bottom"><div class="process-bottom-nav"><button id="show-events" aria-pressed="true">Activity</button><span>Simulation results depend on authored durations and capacities</span></div>
+ <div id="events" class="process-events"></div></section>`;
  const get = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
  const setHtml = (id: string, html: string): boolean => {const node = get(id); if (node.dataset.html === html) return false; node.dataset.html = html; node.innerHTML = html; return true;};
  let view = app.query(), three: LWProcess3D.Surface | null = null;
@@ -40,8 +39,8 @@
  const draft = root.LWProcessDraft.create();
  const dataView = root.LWProcessData.create(get('process-data'));
  let stepEditor: LWProcessStepEditor.Surface;
- const tuning = root.LWProcessTuning.create(get('tuning'), () => draft.read(), text => draft.write(text, 'tuning'));
- let tuneTimer = 0, last = 0, elapsed = 0, frameId = 0, disposed = false, unavailable = '', previousStatus = '';
+ let definitionEditor: LWProcessDefinitionEditor.Surface;
+ let last = 0, elapsed = 0, frameId = 0, disposed = false, unavailable = '', previousStatus = '';
  let guidance = false;
  const status = (message: string, error = false) => {
   guidance = /^(Ready\.|Switched to|Run reset)/.test(message);
@@ -51,17 +50,13 @@
  const download = (name: string, data: string, type: string) => {
   const url = URL.createObjectURL(new Blob([data], {type})), a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
  };
- function draftState(): void {
-  const changed = draft.changed(), summary = changed ? draft.describeDiff() : '';
-  const message = changed ? `${summary || 'Unapplied draft'}. Export JSON and Download HTML use the active definition. Export draft saves these edits.` : 'Draft matches the active definition.';
-  if (get('draft-state').textContent !== message) get('draft-state').textContent = message;
-  get('draft-state').classList.toggle('unapplied', changed);
+ /** The toolbar chip names the unapplied draft ("Unapplied draft · 3 steps, 1 resource changed") and opens the Definition editor; it is hidden when the draft matches the running definition. */
+ function draftChip(): void {
+  const chip = get('draft-chip'), text = draft.changed() ? draft.describeDiff().replace(': ', ' \u00b7 ') : '';
+  chip.hidden = !text; if (chip.textContent !== text) chip.textContent = text;
+  chip.title = text ? 'Open the Definition editor to review, apply or restore this draft. Export JSON and Download HTML use the running definition.' : '';
  }
- draft.subscribe(e => {
-  const area = get<HTMLTextAreaElement>('draft'); if (area.value !== e.text) area.value = e.text;
-  area.removeAttribute('aria-invalid'); get('diagnostics').textContent = ''; draftState();
-  if (e.source === 'raw') {clearTimeout(tuneTimer); tuneTimer = window.setTimeout(() => tuning.refresh(), 600);} else if (e.source !== 'tuning') tuning.refresh();
- });
+ draft.subscribe(draftChip);
  function rebuild(): void {
   three?.dispose(); three = null; unavailable = ''; dataView.reset();
   // A disposed renderer force-loses its context for good, so every rebuild draws on a fresh canvas element.
@@ -201,36 +196,39 @@
   catch (e) {status('Import rejected; active process retained. ' + String(e), true);}
   get<HTMLInputElement>('file').value = '';
  };
- const showEditor = (yes: boolean) => {get('editor').hidden = !yes; get('events').hidden = yes; get('show-events').setAttribute('aria-pressed', String(!yes)); get('show-definition').setAttribute('aria-pressed', String(yes));};
- on('show-events', () => showEditor(false)); on('show-definition', () => {app.play(false); showEditor(true); tuning.refresh();});
+ /** The catalog's strict verdict for the draft text; the Definition editor lists every diagnostic itself. */
  function checkDraft(): LWProcess.Definition | undefined {
-  try {const result = root.LWProcessCatalog.validate(JSON.parse(draft.read()));
-   get('diagnostics').textContent = result.ok ? 'Valid definition. Applying starts a fresh paused run.' : result.diagnostics.map(e => e.path + ': ' + e.message).join('\n');
-   get('draft').setAttribute('aria-invalid', String(!result.ok));
-   return result.ok ? result.definition : undefined;
-  } catch (e) {get('draft').setAttribute('aria-invalid', 'true'); get('diagnostics').textContent = 'Invalid JSON: ' + String(e); return undefined;}
+  try {const result = root.LWProcessCatalog.validate(JSON.parse(draft.read())); return result.ok ? result.definition : undefined;} catch {return undefined;}
  }
- get<HTMLTextAreaElement>('draft').oninput = () => {get('diagnostics').textContent = ''; get('draft').removeAttribute('aria-invalid'); draft.write(get<HTMLTextAreaElement>('draft').value, 'raw'); draftState();};
-
  function applyDraft(): boolean {
-  const d = checkDraft(); if (!d) return false;
+  const d = checkDraft(); if (!d) {status('The draft is not a valid definition, so nothing was applied. Open the Definition editor to see why.', true); return false;}
   d.revision = Math.max(view.definition.revision + 1, d.revision); app.replace(d); rebuild(); status('Definition applied. New run is paused.'); return true;
  }
- on('validate', () => {checkDraft();}); on('apply', () => {applyDraft();});
  /** The step editor is modal: it pauses the run (a command, never a tick), edits only the draft, and the inert page cannot change selection or time while it is open. */
  function openStepEditor(): void {
   const id = view.selected; if (!id) return;
-  if (draft.parse() && view.playing) command(() => app.play(false));
+  // An unparseable draft cannot be edited as a step: the Definition editor opens on the JSON syntax error instead.
+  if (!draft.parse()) {definitionEditor.open({invoker: get('edit-step'), focus: 'json'}); return;}
+  if (view.playing) command(() => app.play(false));
   if (stepEditor.open(id, get('edit-step'))) status('Editing a step. The run is paused while the editor is open.');
  }
  stepEditor = root.LWProcessStepEditor.create(host, {
   draft, notify: status, run: () => ({minute: app.query().snapshot.minute, cases: app.query().snapshot.cases.length}),
   apply: text => {draft.write(text, 'step-editor'); let ok = false; command(() => {ok = applyDraft();}); return ok;},
   focusFor: id => {const direct = get('edit-step'); return !direct.hidden && direct.getClientRects().length ? direct : get('steps').querySelector<HTMLElement>(`[data-step="${id}"]`);},
+  openDefinition: () => root.LWProcessDefinitionEditor.handoff(root.LWProcessDialog.active(), () => {definitionEditor.open({invoker: get('open-definition'), focus: 'problems'});}),
  });
  on('edit-step', () => openStepEditor());
- on('export-draft', () => {download(view.definition.id + '.draft.json', draft.read(), 'application/json'); status('Draft downloaded as written. Apply a valid draft to update the simulation.');});
- on('restore-draft', () => {draft.restore(); get('draft').removeAttribute('aria-invalid'); draftState(); get('diagnostics').textContent = 'Draft restored from the active definition.';});
+/** The Definition editor is modal: it pauses the run (a command, never a tick) and edits only the draft; Apply goes through the same path as the step editor. */
+ definitionEditor = root.LWProcessDefinitionEditor.create(host, {
+  draft, active: () => ({name: view.definition.name, revision: view.definition.revision}), run: () => ({minute: app.query().snapshot.minute, cases: app.query().snapshot.cases.length}),
+  pause: () => {if (view.playing) command(() => app.play(false));},
+  apply: text => {draft.write(text, 'definition'); let ok = false; command(() => {ok = applyDraft();}); return ok;},
+  download: text => {download(view.definition.id + '.draft.json', text, 'application/json'); status('Draft downloaded as written. Apply a valid draft to update the simulation.');},
+  focusFor: () => get('open-definition'),
+ });
+ const openDefinition = (button: HTMLElement) => {if (definitionEditor.open({invoker: button, focus: 'auto'})) status('Editing the definition. The run is paused while the editor is open.');};
+ get('open-definition').onclick = () => openDefinition(get('open-definition')); get('draft-chip').onclick = () => openDefinition(get('draft-chip'));
  function animate(time: number): void {
   if (disposed) return; const delta = Math.min(.1, (time - last) / 1000 || 0); last = time;
   if (view.playing) {elapsed += delta; if (elapsed >= .35) {elapsed = 0; command(() => app.pulse(Number(get<HTMLSelectElement>('speed').value)));}} else elapsed = 0;
@@ -242,5 +240,5 @@
  root.__wildlandsReady = true;
  document.documentElement.dataset.wildlandsReady = 'process'; dispatchEvent(new CustomEvent('wildlands:ready', {detail: {host: 'process'}}));
  frameId = requestAnimationFrame(animate);
- window.addEventListener('pagehide', () => {disposed = true; cancelAnimationFrame(frameId); three?.dispose(); svg.dispose(); tuning.dispose(); stepEditor.dispose(); app.dispose();}, {once: true});
+ window.addEventListener('pagehide', () => {disposed = true; cancelAnimationFrame(frameId); three?.dispose(); svg.dispose(); definitionEditor.dispose(); stepEditor.dispose(); app.dispose();}, {once: true});
 })(globalThis);

@@ -111,7 +111,7 @@ system step only system pools, and each must demand at least one.
   `{"capacity": 3, "order": "priority", "priority": "priority", "pull": 1}`.
   `pull` (joins only) caps work in the next task so downstream steps draw from the
   backlog instead of the whole queue piling up in front of them.
-- The webview's **Tune values** form edits backlog capacity, order, priority field and
+- In the webview, **Edit step…** edits backlog capacity, order, priority field and
   pull limit, and adds, edits or removes needs. Apply to start a fresh run.
 
 ## Count iterations and wait with timers
@@ -240,7 +240,7 @@ bin/wildlands process import-bpmn --input /tmp/process-work/review.bpmn --output
 Export carries durations, needs, backlogs and layout in a `wl:` extension, so a
 round trip is lossless. Importing BPMN from another tool lists every default or
 folded element in `warnings`; add durations, resources and arrivals afterwards in
-the **Tune values** form or with guarded edits. Unsupported constructs (sub-processes,
+**Edit process…** (Tune values) and **Edit step…**, or with guarded edits. Unsupported constructs (sub-processes,
 boundary events, inclusive gateways) are rejected rather than approximated. The studio
 offers the same through **Export BPMN** and **Import JSON or BPMN**.
 
@@ -263,10 +263,20 @@ real services or update external systems.
 Open the HTML directly. Use **Run simulation**, **Pause**, **Step 1 min**,
 **Advance 30 min**, and **Reset run**. **2D** and **3D** show one simulation;
 **Step scenes** and **Whole process** change the view without advancing time.
-**Definition editor** offers validation before **Apply draft & reset run**.
-To change one step, select it and choose **Edit step…** beside **Frame view**. The step editor opens as a dialog whose sections follow the kind of step: basics, timing and cost, people and capacity (tasks), equipment (machine steps) or systems (system steps), completion values and counters, declared outputs, needs from earlier steps, backlog and outgoing flows (conditions on decisions, with a short summary of the order the paths are checked). Machine and system steps add an **Automation** section for the optional technology label and list only pools of their own kind; if the process has no machine or system pool yet, the dialog says so and points to the Definition editor. Problems the engine finds for the step appear beside the fields as you type, and the problem list at the top links to each field. **Save to draft** keeps your edits in the draft without starting anything and the draft summary reads, for example, "Unapplied draft: 1 step changed". **Apply and reset run** applies the whole draft (including other unapplied edits, which a banner announces); when a run is already in progress it first asks you to confirm that the run will be discarded, so export the run report beforehand if you need it. **Cancel**, Escape, **Close** and a click outside the dialog all ask before throwing edits away. The run pauses while the dialog is open. Adding or removing flows and steps is still done in the raw JSON draft.
-Unapplied edits stay in the draft when you switch to Activity. **Export draft**
-saves that text exactly, including unfinished JSON. **Export JSON** and
+**Edit process…** in the header opens the **Definition editor** (validation before **Apply draft and reset run**, see below); a chip beside it names an unapplied draft.
+To change one step, select it and choose **Edit step…** beside **Frame view**. The step editor opens as a dialog whose sections follow the kind of step: basics, timing and cost, people and capacity (tasks), equipment (machine steps) or systems (system steps), completion values and counters, declared outputs, needs from earlier steps, backlog and outgoing flows (conditions on decisions, with a short summary of the order the paths are checked). Work steps and duration timers also offer **Random timing** (the planning duration stays the average shown in estimates while each visit draws its own time) and **Random outcomes (draws)** for chance, weighted-choice and whole-number fields; a decision path can take a random share of cases instead of testing a field. Inconsistent numbers are reported next to the field. Machine and system steps add an **Automation** section for the optional technology label and list only pools of their own kind; if the process has no machine or system pool yet, the dialog says so and points to the Definition editor. Problems the engine finds for the step appear beside the fields as you type, and the problem list at the top links to each field. **Save to draft** keeps your edits in the draft without starting anything and the draft summary reads, for example, "Unapplied draft: 1 step changed". **Apply and reset run** applies the whole draft (including other unapplied edits, which a banner announces); when a run is already in progress it first asks you to confirm that the run will be discarded, so export the run report beforehand if you need it. **Cancel**, Escape, **Close** and a click outside the dialog all ask before throwing edits away. The run pauses while the dialog is open. Adding or removing flows and steps is still done in the raw JSON draft.
+The Definition editor is a dialog with two panes: **Tune values** (process name,
+description and **Seed**, shared resources with their kind People, Machine or System,
+and each arrival's end rule, first arrival, planning interval, optional random gap,
+case data and random case fields) and **Raw JSON** (the draft with line numbers, the
+exact line and column of a syntax error, every problem the catalog reports as a button
+that selects the offending text, **Format JSON** and **Copy**). Below 1000 px the panes
+are tabs; on a phone the dialog is a full sheet. The run pauses while it is open. Edits
+go to the draft as you type, so closing never loses text, and the chip in the header
+("Unapplied draft · 3 steps, 1 resource changed") reopens it. **Restore active
+definition** and **Apply draft and reset run** (when a run is past minute 0) ask first;
+export the run report beforehand if you need it. **Export draft**
+saves the draft text exactly, including unfinished JSON. **Export JSON** and
 **Download HTML** continue to use the active definition until you apply a valid
 draft. Editing clears the previous validation result; validate again before applying.
 A rejected import retains the previous definition and run.
@@ -284,7 +294,7 @@ retain the latest 128 task completions, with an explicit omitted-record count.
 In 3D, active work appears as desk actors typing and reviewing screens while
 playback runs. Pause freezes their motion; reduced-motion preferences disable
 it. Additional work uses bounded markers, with counts preserving total activity.
-Focus the canvas to orbit with arrow keys, pan with Shift+arrows or WASD (or right-drag), zoom with +/−, or frame with F. In 2D, drag to pan, scroll or pinch to zoom, and press 0 to reset. Use **Run until** in the toolbar to choose a run length or Unlimited, and the **Tune values** form in the Definition editor (process, resources, arrivals) or **Edit step…** (one step) to fine-tune an agent-built process before applying it.
+Focus the canvas to orbit with arrow keys, pan with Shift+arrows or WASD (or right-drag), zoom with +/−, or frame with F. In 2D, drag to pan, scroll or pinch to zoom, and press 0 to reset. Use **Run until** in the toolbar to choose a run length or Unlimited, and the **Tune values** pane of the Definition editor (**Edit process…**: name, seed, resources, arrivals) or **Edit step…** (one step) to fine-tune an agent-built process before applying it.
 
 **Export run report** downloads observed results, including retained task I/O. **Download HTML** embeds the
 active definition (for a multi-process game, every applied process in list order)

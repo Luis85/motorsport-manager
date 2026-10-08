@@ -7,7 +7,8 @@
  * Modal editor for one process step, built on the shared LWProcessDialog (id 'se', size 'form') and the shared draft store.
  * It edits a detached form model of the draft text, validates it live through the catalog and writes finished text back to
  * the draft; it never ticks or retains a session. Task, machine and system steps share the work sections; machine and system
- * steps add Automation (technology) and demand only pools of their own kind.
+ * steps add Automation (technology) and demand only pools of their own kind. Random timing (work steps and duration timers), random
+ * outcomes (draws) and chance routes are ordinary model fields validated live by the same catalog.
  */
 declare namespace LWProcessStepEditor {
  interface Env {
@@ -32,7 +33,7 @@ declare namespace LWProcessStepEditor {
  type M = LWProcessStepModel.Model;
  const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
  const setPath = (target: unknown, path: string, value: unknown) => { const keys = path.split('.'); let at = target as Record<string, unknown>; for (const key of keys.slice(0, -1)) at = at[key] as Record<string, unknown>; at[keys.at(-1)!] = value; };
- const LABELS: [RegExp, (n: number) => string][] = [[/^set\.(\d+)/, n => `Value ${n}`], [/^add\.(\d+)/, n => `Counter ${n}`], [/^outputs\.(\d+)/, n => `Output ${n}`], [/^needs\.(\d+)/, n => `Need ${n}`], [/^flows\.(\d+)/, n => `Path ${n}`], [/^pools\.(\d+)/, () => '']];
+ const LABELS: [RegExp, (n: number) => string][] = [[/^set\.(\d+)/, n => `Value ${n}`], [/^add\.(\d+)/, n => `Counter ${n}`], [/^outputs\.(\d+)/, n => `Output ${n}`], [/^needs\.(\d+)/, n => `Need ${n}`], [/^flows\.(\d+)/, n => `Path ${n}`], [/^draws\.(\d+)/, n => `Random field ${n}`], [/^pools\.(\d+)/, () => '']];
  const overlap = (a: string, b: string) => a === b || a.startsWith(b + '.') || b.startsWith(a + '.');
  interface Item extends LWProcessStepModel.Scoped {local: boolean}
  function create(host: HTMLElement, env: LWProcessStepEditor.Env): LWProcessStepEditor.Surface {
@@ -47,7 +48,7 @@ declare namespace LWProcessStepEditor {
   const q = <T extends HTMLElement = HTMLElement>(id: string) => dialog.el.querySelector<T>('#' + id)!;
   const candidate = () => api.write(base, stepId, model);
   const control = (key: string) => key ? dialog.body.querySelector<HTMLElement>(`[data-bind="${key}"]`) ?? dialog.body.querySelector<HTMLElement>(`[data-bind^="${key}."]`) : null;
-  const label = (key: string) => { for (const [re, name] of LABELS) { const m = re.exec(key); if (m) return name(Number(m[1]) + 1); } return key === 'technology' ? 'Technology' : ''; };
+  const label = (key: string) => { for (const [re, name] of LABELS) { const m = re.exec(key); if (m) return name(Number(m[1]) + 1); } return key === 'technology' ? 'Technology' : key.startsWith('timing') ? 'Random timing' : ''; };
   function check(): {items: Item[]; elsewhere: {where: string; message: string}[]} {
    let diagnostics: LWProcess.Diagnostic[] = []; const next = candidate();
    try { diagnostics = root.LWProcessCatalog.validate(next, true).diagnostics; } catch (e) { diagnostics = [{path: '/', code: 'data', message: String(e)}]; }
@@ -70,8 +71,8 @@ declare namespace LWProcessStepEditor {
    dialog.setStatus(html);
    const local = api.problems(model).length > 0, changed = JSON.stringify(model) !== initial, why = 'Fix the highlighted fields before saving or applying.';
    dialog.setActionState('save', {disabled: local || !changed, reason: local ? why : !changed ? 'Save to draft is unavailable until you change something.' : ''}); dialog.setActionState('apply', {disabled: local, reason: local ? why : ''});
-   const sum = q('se-needs-summary'), count = dialog.el.querySelector('#se-technology-count'), paths = dialog.el.querySelector<HTMLElement>('#se-path-summary');
-   if (sum) sum.textContent = api.needsSummary(model); if (count) count.textContent = `${model.technology.length} / 80 characters`;
+   const sum = q('se-needs-summary'), count = dialog.el.querySelector('#se-technology-count'), note = dialog.el.querySelector('#se-timing-note'), paths = dialog.el.querySelector<HTMLElement>('#se-path-summary');
+   if (sum) sum.textContent = api.needsSummary(model); if (note) note.textContent = api.timingNote(model); if (count) count.textContent = `${model.technology.length} / 80 characters`;
    if (paths) { const next = sections.pathSummary(model); if (paths.dataset.html !== next) { paths.dataset.html = next; paths.innerHTML = next; } }
   }
   function render(focus?: string): void {
@@ -104,6 +105,10 @@ declare namespace LWProcessStepEditor {
    else if (what === 'add-add') { model.add.push({key: '', delta: '1'}); render(`[data-bind="add.${model.add.length - 1}.key"]`); }
    else if (what === 'add-output') { model.outputs.push({field: '', label: ''}); render(`[data-bind="outputs.${model.outputs.length - 1}.field"]`); }
    else if (what === 'add-need') { model.needs.push({field: '', op: '', value: api.newValue(), label: ''}); render(`[data-bind="needs.${model.needs.length - 1}.field"]`); }
+   else if (what === 'add-draw') { model.draws.push(api.newDraw()); render(`[data-bind="draws.${model.draws.length - 1}.field"]`); }
+   else if (what === 'remove-draw') { model.draws.splice(i, 1); render('#se-add-draw'); }
+   else if (what === 'add-choice') { const row = model.draws[i]!; row.values.push({value: {type: 'text', text: ''}, weight: '1'}); render(`[data-bind="draws.${i}.values.${row.values.length - 1}.value.text"]`); }
+   else if (what === 'remove-choice') { model.draws[i]!.values.splice(Number(button.dataset.j), 1); render(`#se-add-choice-${i}`); }
    else if (what === 'open-definition') env.openDefinition?.();
    else if (what.startsWith('remove-')) { rows(what === 'remove-set' ? 'set' : what === 'remove-add' ? 'add' : what === 'remove-output' ? 'outputs' : 'needs').splice(i, 1); render('#se-' + what.replace('remove', 'add')); }
    else if (what === 'up' || what === 'down') {
@@ -120,6 +125,8 @@ declare namespace LWProcessStepEditor {
    const t = e.target as HTMLInputElement; if (!t.dataset?.bind) return; const structural = t.dataset.rerender !== undefined;
    if (structural && e.type === 'input') return;
    setPath(model, t.dataset.bind, t.type === 'checkbox' ? t.checked : t.value);
+   const kind = /^draws\.(\d+)\.kind$/.exec(t.dataset.bind);
+   if (t.dataset.bind === 'timing.dist') api.chooseTiming(model, t.value as LWProcessStepModel.DistKind); else if (kind) api.chooseDraw(model.draws[Number(kind[1])]!, t.value as LWProcess.Draw['kind']);
    if (structural) render(); else update();
    q('se-apply-errors').hidden = true;
   };

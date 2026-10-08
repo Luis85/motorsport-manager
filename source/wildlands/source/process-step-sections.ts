@@ -40,8 +40,8 @@ declare namespace LWProcessStepSections {
  const check = (bind: string, label: string, on: boolean) => `<label class="se-check"><input type="checkbox" id="${idOf(bind)}" data-bind="${bind}" data-rerender${on ? ' checked' : ''}> ${esc(label)}</label>`;
  const radios = (bind: string, legend: string, options: [string, string][], value: string) =>
   `<fieldset class="se-radios"><legend>${esc(legend)}</legend>${options.map(([v, t]) => `<label class="se-check"><input type="radio" name="${idOf(bind)}" id="${idOf(bind)}-${v}" data-bind="${bind}" data-rerender value="${v}"${v === value ? ' checked' : ''}> ${esc(t)}</label>`).join('')}</fieldset>`;
- const valueEditor = (bind: string, v: LWProcessStepModel.Value, desc: string) =>
-  select(bind + '.type', 'Type of value', TYPES, v.type, true) + (v.type === 'text' || v.type === 'number' ? field(bind + '.text', 'Value', v.text, {type: v.type === 'number' ? 'number' : undefined, step: 'any', desc, placeholder: v.type === 'number' ? '0' : ''}) : '');
+ const valueEditor = (bind: string, v: LWProcessStepModel.Value, desc: string, about = '') =>
+  select(bind + '.type', 'Type of value' + about, TYPES, v.type, true) + (v.type === 'text' || v.type === 'number' ? field(bind + '.text', 'Value' + about, v.text, {type: v.type === 'number' ? 'number' : undefined, step: 'any', desc, placeholder: v.type === 'number' ? '0' : ''}) : '');
  const section = (id: string, title: string, intro: string, body: string) =>
   `<section class="se-section" aria-labelledby="se-h-${id}"><h3 id="se-h-${id}">${esc(title)}</h3>${intro ? `<p class="se-help">${esc(intro)}</p>` : ''}${body}</section>`;
  const button = (act: string, label: string, i?: number, extra = '', aria = '') => `<button type="button" data-act="${act}"${i === undefined ? '' : ` data-i="${i}"`}${aria ? ` aria-label="${esc(aria)}"` : ''}${extra}>${esc(label)}</button>`;
@@ -58,6 +58,16 @@ declare namespace LWProcessStepSections {
   }
   const value = m.mode === 'until' ? field('until', 'Absolute minute to wait until (at least 1)', m.until, {type: 'number', min: 1, desc: 'se-err-until', placeholder: '1'}) : field('duration', 'Wait duration (minutes, at least 1)', m.duration, {type: 'number', min: 1, desc: 'se-err-duration', placeholder: '1'});
   return section('timing', 'Timing', 'A timer holds work without using people, equipment or cost.', `${radios('mode', 'What does this timer wait for?', [['duration', 'Wait a duration'], ['until', 'Wait until a minute']], m.mode)}<div class="se-grid">${value}</div>${err(m.mode === 'until' ? 'until' : 'duration')}`);
+ }
+ const DISTS: [string, string][] = [['', 'None: always the planning duration'], ['uniform', 'Uniform: any time between a minimum and a maximum'], ['triangular', 'Triangular: between a minimum and maximum, most often a likely time'], ['exponential', 'Exponential: many short times and a few long ones']];
+ function randomTiming(m: M): string {
+  if (!root.LWProcessStepModel.timingAllowed(m)) return '';
+  const t = m.timing, num = (k: 'min' | 'mode' | 'max' | 'mean', label: string, extra: Opt = {}) => field(`timing.${k}`, label, t[k], {type: 'number', min: 1, desc: 'se-err-timing', placeholder: '1', ...extra});
+  const params = t.dist === 'uniform' ? num('min', 'Minimum (minutes)') + num('max', 'Maximum (minutes)')
+   : t.dist === 'triangular' ? num('min', 'Minimum (minutes)') + num('mode', 'Most likely (minutes)') + num('max', 'Maximum (minutes)')
+   : t.dist === 'exponential' ? num('mean', 'Mean (minutes)') + num('max', 'Cap (optional, minutes)', {placeholder: 'No cap'}) : '';
+  return section('random-timing', 'Random timing', 'Optional. Without it every visit takes exactly the planning duration. Times are whole minutes, repeatable for the same seed.',
+   `${select('timing.dist', 'Distribution', DISTS, t.dist, true)}${params ? `<div class="se-grid">${params}</div>` : ''}${t.dist ? `<p class="se-help" id="se-timing-note">${esc(root.LWProcessStepModel.timingNote(m))}</p>` : ''}${err('timing')}`);
  }
  function automation(m: M): string {
   if (m.kind !== 'machine' && m.kind !== 'system') return '';
@@ -82,6 +92,23 @@ declare namespace LWProcessStepSections {
   return section('effects', 'When this step completes', 'Each case keeps these values for later steps, conditions and the run report.',
    `<h4>Set a value</h4>${sets || '<p class="se-help">No values are set.</p>'}${err('set')}${button('add-set', 'Add value', undefined, ' id="se-add-set"')}<h4>Change a counter</h4>${adds || '<p class="se-help">No counters change.</p>'}${err('add')}${button('add-add', 'Add counter', undefined, ' id="se-add-add"')}`);
  }
+ const DRAW_KINDS: [string, string][] = [['chance', 'Chance (yes or no)'], ['choice', 'Weighted choice'], ['int', 'Whole number']];
+ function drawBody(r: LWProcessStepModel.DrawRow, i: number): string {
+  const b = `draws.${i}`, desc = `se-err-draws-${i}`, L = root.LWProcessStepModel.LIMITS;
+  if (r.kind === 'chance') return `<div class="se-grid">${field(b + '.percent', 'Chance of yes (percent, 1 to 99)', r.percent, {type: 'number', min: 1, max: 99, desc, placeholder: '10'})}${valueEditor(b + '.whenTrue', r.whenTrue, desc, ' for yes')}${valueEditor(b + '.whenFalse', r.whenFalse, desc, ' for no')}</div>`;
+  if (r.kind === 'int') return `<div class="se-grid">${field(b + '.min', 'Lowest (whole number)', r.min, {type: 'number', desc})}${field(b + '.max', 'Highest (whole number)', r.max, {type: 'number', desc})}</div>`;
+  const rows = r.values.map((v, j) => `<fieldset class="se-card"><legend>Value ${j + 1}</legend><div class="se-grid">${valueEditor(`${b}.values.${j}.value`, v.value, desc, ` ${j + 1}`)}${field(`${b}.values.${j}.weight`, `Weight ${j + 1} (whole number, 1 to 1,000)`, v.weight, {type: 'number', min: 1, max: 1000, desc, placeholder: '1'})}</div>`
+   + (r.values.length <= L.minChoices ? `${button('remove-choice', 'Remove', i, ` data-j="${j}" disabled aria-describedby="se-min-choices-${i}"`, `Remove value ${j + 1}`)}<span class="se-help" id="se-min-choices-${i}">A weighted choice needs at least ${L.minChoices} values.</span>` : button('remove-choice', 'Remove', i, ` data-j="${j}"`, `Remove value ${j + 1} of random field ${i + 1}`)) + '</fieldset>').join('');
+  const full = r.values.length >= L.choices;
+  return `${rows}${button('add-choice', 'Add value', i, ` id="se-add-choice-${i}"${full ? ` disabled aria-describedby="se-max-choices-${i}"` : ''}`, `Add value to random field ${i + 1}`)}${full ? `<span class="se-help" id="se-max-choices-${i}">At most ${L.choices} values.</span>` : ''}`;
+ }
+ function draws(m: M): string {
+  if (m.kind !== 'timer' && !work(m)) return '';
+  const L = root.LWProcessStepModel.LIMITS, full = m.draws.length >= L.draws;
+  const rows = m.draws.map((r, i) => `<fieldset class="se-card"><legend>Random field ${i + 1}${r.field ? ' · ' + esc(r.field) : ''}</legend><div class="se-grid">${field(`draws.${i}.field`, 'Field name', r.field, {desc: `se-err-draws-${i}`})}${select(`draws.${i}.kind`, 'Kind of draw', DRAW_KINDS, r.kind, true)}</div>${drawBody(r, i)}${err(`draws.${i}`)}${button('remove-draw', 'Remove random field', i, '', `Remove random field ${i + 1}${r.field ? ' ' + r.field : ''}`)}</fieldset>`).join('');
+  return section('random-outcomes', 'Random outcomes (draws)', 'Drawn values are applied when the step completes, after Set values and before counters. Each case draws its own value, repeatable for the same seed.',
+   (rows || '<p class="se-help">No random fields.</p>') + button('add-draw', 'Add random field', undefined, ` id="se-add-draw"${full ? ' disabled aria-describedby="se-max-draws"' : ''}`) + (full ? `<span class="se-help" id="se-max-draws">At most ${L.draws} random fields per step.</span>` : ''));
+ }
  function outputs(m: M): string {
   if (!work(m)) return '';
   const rows = m.outputs.map((o, i) => `<fieldset class="se-card"><legend>Output ${i + 1}</legend><div class="se-grid">${field(`outputs.${i}.field`, 'Output field', o.field, {desc: `se-err-outputs-${i}`})}${field(`outputs.${i}.label`, 'Label (optional)', o.label)}</div>${err(`outputs.${i}`)}${button('remove-output', 'Remove', i, '', `Remove output ${i + 1}${o.field ? ' ' + o.field : ''}`)}</fieldset>`).join('');
@@ -105,16 +132,16 @@ declare namespace LWProcessStepSections {
  function pathSummary(m: M): string {
   if (m.kind !== 'decision') return '';
   return m.flows.map(f => {
-   const c = f.cond, rule = c.chance !== undefined ? `With a chance of ${Math.round(c.chance * 1000) / 10}%` : !c.on ? 'Otherwise' : `If ${c.field || '(field)'} ${SYMBOL[c.op] ?? c.op} ${c.mode === 'field' ? c.valueField || '(field)' : show(c.value)}`;
+   const c = f.cond, rule = !c.on ? 'Otherwise' : c.mode === 'chance' ? `${c.chance.trim() || '(percent)'}% of cases` : `If ${c.field || '(field)'} ${SYMBOL[c.op] ?? c.op} ${c.mode === 'field' ? c.valueField || '(field)' : show(c.value)}`;
    return `<li>${esc(rule)} → ${esc(f.toName)}</li>`;
   }).join('');
  }
  function condition(f: LWProcessStepModel.FlowRow, k: number): string {
   const c = f.cond, b = `flows.${k}.cond`;
-  if (c.chance !== undefined) return `<p class="se-help">This path is taken with a chance of ${Math.round(c.chance * 1000) / 10}%. Chance paths are edited in the Definition editor.</p>`;
   if (!c.on) return check(b + '.on', 'Take this path only when a condition is met', false) + '<p class="se-help">No condition: this is the fallback path, used when no other path matches.</p>';
-  return check(b + '.on', 'Take this path only when a condition is met', true) + `<div class="se-grid">${field(b + '.field', 'Case field to test', c.field)}${select(b + '.op', 'Condition', root.LWProcessStepModel.OPS, c.op)}</div>`
-   + radios(b + '.mode', 'Compare with', [['value', 'A value'], ['field', 'Another field']], c.mode)
+  const modes = radios(b + '.mode', 'Decided by', [['value', 'A value'], ['field', 'Another field'], ['chance', 'A share of cases (random)']], c.mode);
+  if (c.mode === 'chance') return check(b + '.on', 'Take this path only when a condition is met', true) + modes + `<div class="se-grid">${field(b + '.chance', 'Share of cases that take this path (percent, 1 to 99)', c.chance, {type: 'number', min: 1, max: 99, placeholder: '10', desc: `se-err-flows-${k}`, help: 'Each case draws its own random number, repeatable for the same seed. Paths are still checked in order and the first match wins.'})}</div>`;
+  return check(b + '.on', 'Take this path only when a condition is met', true) + modes + `<div class="se-grid">${field(b + '.field', 'Case field to test', c.field)}${select(b + '.op', 'Condition', root.LWProcessStepModel.OPS, c.op)}</div>`
    + (c.mode === 'field' ? `<div class="se-grid">${field(b + '.valueField', 'Other case field to compare with', c.valueField)}</div>` : `<div class="se-grid">${valueEditor(b + '.value', c.value, `se-err-flows-${k}`)}</div>`);
  }
  function flows(m: M): string {
@@ -127,6 +154,6 @@ declare namespace LWProcessStepSections {
   const summary = decision ? `<ol class="se-paths" id="se-path-summary" aria-label="Order in which the paths are checked">${pathSummary(m)}</ol>` : '';
   return section('flows', 'Where work goes next', (decision ? 'The first path whose condition matches wins, so order matters; the path without a condition is the fallback. ' : '') + note, summary + rows);
  }
- const render = (m: M) => [basics, timing, automation, people, effects, outputs, needs, backlog, flows].map(f => f(m)).join('');
+ const render = (m: M) => [basics, timing, randomTiming, automation, people, effects, draws, outputs, needs, backlog, flows].map(f => f(m)).join('');
  root.LWProcessStepSections = {render, pathSummary, idOf};
 })(globalThis);

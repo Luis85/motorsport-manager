@@ -412,7 +412,13 @@
         "process-step-model.ts",
         "process-step-sections.ts",
         "process-step-editor.ts",
+        "process-json-path.ts",
+        "process-tuning-fields.ts",
+        "process-tuning-arrivals.ts",
+        "process-definition-json.ts",
+        "process-definition-editor.ts",
         "process-ui.ts",
+        "process-random-view.ts",
         "process-data-view.ts",
         "process-sdk.cts"
       ]

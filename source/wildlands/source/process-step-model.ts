@@ -12,15 +12,21 @@ declare namespace LWProcessStepModel {
  interface AddRow {key: string; delta: string}
  interface NeedRow {field: string; op: string; value: Value; label: string}
  interface Backlog {on: boolean; capacity: string; order: 'fifo' | 'lifo' | 'priority'; priority: string; pull: string}
- /** `chance` (0..1) marks a probabilistic path: it is shown read-only and written back untouched. */
- interface Cond {on: boolean; field: string; op: string; mode: 'value' | 'field'; value: Value; valueField: string; chance?: number}
+ /** `mode` 'chance' is a random share of cases: `chance` is the whole percent (1..99) as text. */
+ interface Cond {on: boolean; field: string; op: string; mode: 'value' | 'field' | 'chance'; value: Value; valueField: string; chance: string}
  interface FlowRow {id: string; to: string; toName: string; label: string; cond: Cond}
  /** `eligible` is true when this step's kind may demand the pool (people for tasks, machine for machine steps, system for system steps). */
  interface Pool {id: string; name: string; capacity: number; count: string; kind: LWProcess.ResourceKind; eligible: boolean}
  interface OutputRow {field: string; label: string}
+ type DistKind = '' | LWProcess.Dist['dist'];
+ /** Random timing kept as text; `dist` '' means none. `max` is the largest value (uniform, triangular) or the optional cap (exponential). */
+ interface Timing {dist: DistKind; min: string; mode: string; max: string; mean: string}
+ interface ChoiceRow {value: Value; weight: string}
+ /** One random case field; only the fields of its `kind` are written. */
+ interface DrawRow {field: string; kind: LWProcess.Draw['kind']; percent: string; whenTrue: Value; whenFalse: Value; values: ChoiceRow[]; min: string; max: string}
  interface Model {
   id: string; kind: LWProcess.Kind; name: string; description: string; mode: 'duration' | 'until'; duration: string; until: string; cost: string; technology: string;
-  pools: Pool[]; set: SetRow[]; add: AddRow[]; outputs: OutputRow[]; needs: NeedRow[]; backlog: Backlog | null; flows: FlowRow[];
+  pools: Pool[]; set: SetRow[]; add: AddRow[]; draws: DrawRow[]; timing: Timing; outputs: OutputRow[]; needs: NeedRow[]; backlog: Backlog | null; flows: FlowRow[];
  }
  /** A message for a field in the model (`key` is the model path, e.g. `set.1.value`) that cannot be written faithfully. */
  interface Problem {key: string; message: string}
@@ -43,6 +49,17 @@ declare namespace LWProcessStepModel {
   otherChanges(active: LWProcess.Definition, draft: LWProcess.Definition, stepId: string): boolean;
   needsSummary(model: Model): string;
   newValue(): Value;
+  /** True when this model may carry random timing (work steps and duration timers). */
+  timingAllowed(model: Model): boolean;
+  /** Switches the distribution, filling empty parameters from the planning duration so the result is valid. */
+  chooseTiming(model: Model, dist: DistKind): void;
+  /** Switches a draw's kind and resets its parameters to a valid default. */
+  chooseDraw(row: DrawRow, kind: LWProcess.Draw['kind']): void;
+  newDraw(): DrawRow;
+  /** 'Planning duration (12 min) stays the average shown in estimates; each visit draws its own time.' */
+  timingNote(model: Model): string;
+  /** Row limits shared by the model checks and the editor buttons. */
+  LIMITS: {draws: number; choices: number; minChoices: number};
  }
 }
 (function(inputRoot: unknown) {
@@ -59,16 +76,55 @@ declare namespace LWProcessStepModel {
  const whole = (text: string): number | undefined => { const n = numeric(text); return n === undefined ? undefined : Math.round(n); };
  const writeValue = (v: LWProcessStepModel.Value): LWProcess.Scalar => v.type === 'true' ? true : v.type === 'false' ? false : v.type === 'null' ? null : v.type === 'number' ? numeric(v.text) ?? 0 : v.text;
  const assign = (target: Record<string, unknown>, key: string, value: unknown) => { if (value === undefined) delete target[key]; else target[key] = value; };
+ const text = (n: number | undefined) => n === undefined ? '' : String(n);
+ const readTiming = (t: LWProcess.Dist | undefined): LWProcessStepModel.Timing => ({dist: t?.dist ?? '', min: text(t?.min), mode: text(t?.mode), max: text(t?.max), mean: text(t?.mean)});
+ const readDraw = (d: LWProcess.Draw): LWProcessStepModel.DrawRow => ({field: d.field, kind: d.kind, percent: text(d.percent), whenTrue: readValue(Object.hasOwn(d, 'whenTrue') ? d.whenTrue : true), whenFalse: readValue(Object.hasOwn(d, 'whenFalse') ? d.whenFalse : false),
+  values: (d.values ?? []).map(v => ({value: readValue(v.value), weight: String(v.weight)})), min: text(d.min), max: text(d.max)});
+ const LIMITS = {draws: 8, choices: 12, minChoices: 2};
+ const timingAllowed = (m: LWProcessStepModel.Model) => isWork(m.kind) || m.kind === 'timer' && m.mode === 'duration';
+ function chooseTiming(m: LWProcessStepModel.Model, dist: LWProcessStepModel.DistKind): void {
+  const t = m.timing, d = Math.max(1, whole(m.duration) ?? 1); t.dist = dist;
+  const fill = (key: 'min' | 'mode' | 'max' | 'mean', value: number) => { if (!/^\d+$/.test(t[key].trim())) t[key] = String(Math.max(1, value)); };
+  if (dist === 'uniform') { fill('min', Math.round(d * 0.5)); fill('max', Math.round(d * 1.5)); }
+  else if (dist === 'triangular') { fill('min', Math.round(d * 0.5)); fill('mode', d); fill('max', Math.round(d * 1.5)); }
+  else if (dist === 'exponential') fill('mean', d);
+ }
+ function chooseDraw(r: LWProcessStepModel.DrawRow, kind: LWProcess.Draw['kind']): void {
+  r.kind = kind;
+  if (kind === 'chance') { r.percent = /^\d+$/.test(r.percent) ? r.percent : '10'; }
+  else if (kind === 'choice' && r.values.length < 2) r.values = [{value: {type: 'text', text: 'A'}, weight: '1'}, {value: {type: 'text', text: 'B'}, weight: '1'}];
+  else if (kind === 'int') { if (!/^-?\d+$/.test(r.min)) r.min = '1'; if (!/^-?\d+$/.test(r.max)) r.max = '6'; }
+ }
+ const newDraw = (): LWProcessStepModel.DrawRow => ({field: '', kind: 'chance', percent: '10', whenTrue: {type: 'true', text: ''}, whenFalse: {type: 'false', text: ''}, values: [], min: '1', max: '6'});
+ const timingNote = (m: LWProcessStepModel.Model): string => `Planning duration (${m.duration.trim() === '' ? '?' : m.duration.trim()} min) stays the average shown in estimates; each visit draws its own time.`;
+ function writeTiming(t: LWProcessStepModel.Timing): Record<string, unknown> | undefined {
+  const n = (s: string) => whole(s) ?? 0;
+  if (t.dist === 'uniform') return {dist: 'uniform', min: n(t.min), max: n(t.max)};
+  if (t.dist === 'triangular') return {dist: 'triangular', min: n(t.min), mode: n(t.mode), max: n(t.max)};
+  if (t.dist === 'exponential') return t.max.trim() === '' ? {dist: 'exponential', mean: n(t.mean)} : {dist: 'exponential', mean: n(t.mean), max: n(t.max)};
+  return undefined;
+ }
+ function writeDraw(r: LWProcessStepModel.DrawRow): Record<string, unknown> {
+  const out: Record<string, unknown> = {field: r.field, kind: r.kind};
+  if (r.kind === 'chance') {
+   out.percent = whole(r.percent) ?? 0;
+   const yes = writeValue(r.whenTrue), no = writeValue(r.whenFalse);
+   if (yes !== true) out.whenTrue = yes; if (no !== false) out.whenFalse = no;
+  } else if (r.kind === 'choice') out.values = r.values.map(v => ({value: writeValue(v.value), weight: whole(v.weight) ?? 0}));
+  else { out.min = whole(r.min) ?? 0; out.max = whole(r.max) ?? 0; }
+  return out;
+ }
  function read(def: LWProcess.Definition, stepId: string): LWProcessStepModel.Model | undefined {
   const step = def.steps.find(s => s.id === stepId); if (!step) return undefined;
   const names = new Map(def.steps.map(s => [s.id, s.name])), wanted = poolKind(step.kind);
   const flows = def.flows.filter(f => f.from === stepId).map(f => ({id: f.id, to: f.to, toName: names.get(f.to) ?? f.to, label: f.label ?? '', cond: {
-   on: !!f.when, field: f.when?.field ?? '', op: f.when?.op ?? 'eq', mode: f.when?.valueField !== undefined ? 'field' as const : 'value' as const,
-   value: f.when?.valueField === undefined ? readValue(f.when?.value) : newValue(), valueField: f.when?.valueField ?? '', ...(f.when && 'chance' in f.when && typeof f.when.chance === 'number' ? {chance: f.when.chance} : {})}}));
+   on: !!f.when, field: f.when?.field ?? '', op: f.when?.op ?? 'eq', mode: typeof f.when?.chance === 'number' ? 'chance' as const : f.when?.valueField !== undefined ? 'field' as const : 'value' as const,
+   value: f.when?.valueField === undefined ? readValue(f.when?.value) : newValue(), valueField: f.when?.valueField ?? '', chance: typeof f.when?.chance === 'number' ? String(f.when.chance) : '10'}}));
   const b = step.backlog;
   return {id: step.id, kind: step.kind, name: step.name, description: step.description ?? '', mode: step.until !== undefined ? 'until' : 'duration',
    duration: step.duration === undefined ? '' : String(step.duration), until: step.until === undefined ? '' : String(step.until), cost: step.cost === undefined ? '' : String(step.cost), technology: step.technology ?? '',
    pools: def.resources.map(r => ({id: r.id, name: r.name, capacity: r.capacity, count: String(step.resources?.[r.id] ?? 0), kind: r.kind ?? 'people', eligible: (r.kind ?? 'people') === wanted})),
+   draws: (step.draws ?? []).map(readDraw), timing: readTiming(step.timing),
    set: Object.entries(step.set ?? {}).map(([key, v]) => ({key, value: readValue(v)})), add: Object.entries(step.add ?? {}).map(([key, n]) => ({key, delta: String(n)})),
    outputs: (step.outputs ?? []).map(o => ({field: o.field, label: o.label ?? ''})),
    needs: (step.needs ?? []).map(n => ({field: n.field, op: n.op ?? '', value: readValue(n.value), label: n.label ?? ''})),
@@ -78,6 +134,7 @@ declare namespace LWProcessStepModel {
   const s = step as unknown as Record<string, unknown>, work = isWork(step.kind), effects = work || step.kind === 'timer';
   s.name = m.name; assign(s, 'description', m.description.trim() === '' ? undefined : m.description);
   if (work) assign(s, 'duration', whole(m.duration));
+  if (timingAllowed(m)) assign(s, 'timing', writeTiming(m.timing)); else if (step.kind === 'timer') delete s.timing;
   if (step.kind === 'timer') { assign(s, 'duration', m.mode === 'duration' ? whole(m.duration) : undefined); assign(s, 'until', m.mode === 'until' ? whole(m.until) : undefined); }
   if (work) {
    assign(s, 'cost', whole(m.cost)); const used = m.pools.filter(p => (whole(p.count) ?? 0) > 0);
@@ -88,6 +145,7 @@ declare namespace LWProcessStepModel {
   if (effects) {
    assign(s, 'set', m.set.length ? Object.fromEntries(m.set.map(r => [r.key, writeValue(r.value)])) : undefined);
    assign(s, 'add', m.add.length ? Object.fromEntries(m.add.map(r => [r.key, whole(r.delta) ?? 0])) : undefined);
+   assign(s, 'draws', m.draws.length ? m.draws.map(writeDraw) : undefined);
   }
   if (step.kind !== 'start') assign(s, 'needs', m.needs.length ? m.needs.map(n => {
    const need: Record<string, unknown> = {field: n.field}; if (n.op) { need.op = n.op; need.value = writeValue(n.value); } if (n.label.trim() !== '') need.label = n.label; return need;
@@ -104,9 +162,9 @@ declare namespace LWProcessStepModel {
   m.flows.forEach((row, k) => {
    const flow = byId.get(row.id); if (!flow || slots[k] === undefined) return; const f = flow as unknown as Record<string, unknown>;
    assign(f, 'label', row.label.trim() === '' ? undefined : row.label);
-   if ((step.kind === 'decision' || row.cond.on) && row.cond.chance === undefined) {
+   if (step.kind === 'decision' || row.cond.on) {
     const c = row.cond;
-    assign(f, 'when', !c.on ? undefined : c.mode === 'field' ? {field: c.field, op: c.op, valueField: c.valueField} : {field: c.field, op: c.op, value: writeValue(c.value)});
+    assign(f, 'when', !c.on ? undefined : c.mode === 'chance' ? {chance: whole(c.chance) ?? 0} : c.mode === 'field' ? {field: c.field, op: c.op, valueField: c.valueField} : {field: c.field, op: c.op, value: writeValue(c.value)});
    }
    next.flows[slots[k]!] = flow;
   });
@@ -126,10 +184,54 @@ declare namespace LWProcessStepModel {
   if (m.technology.trim().length > 80) out.push({key: 'technology', message: 'Technology must be 80 characters or fewer.'});
   m.add.forEach((r, i) => { if (whole(r.delta) === undefined) out.push({key: `add.${i}.delta`, message: 'Enter a whole number.'}); });
   m.needs.forEach((n, i) => { if (n.op) value(`needs.${i}.value`, n.value); });
-  m.flows.forEach((f, i) => { if (f.cond.on && f.cond.chance === undefined && f.cond.mode === 'value') value(`flows.${i}.cond.value`, f.cond.value); });
+  m.flows.forEach((f, i) => {
+   if (!f.cond.on) return;
+   if (f.cond.mode === 'value') value(`flows.${i}.cond.value`, f.cond.value);
+   if (f.cond.mode === 'chance') { const n = numeric(f.cond.chance); if (n === undefined || !Number.isInteger(n) || n < 1 || n > 99) out.push({key: `flows.${i}.cond.chance`, message: 'Enter a whole percent from 1 to 99.'}); }
+  });
+  if (timingAllowed(m)) timingProblems(m, out);
+  m.draws.forEach((r, i) => drawProblems(m, r, i, out));
   return out;
  }
- const SEGMENTS: Record<string, string> = {name: 'name', description: 'description', duration: 'duration', until: 'until', cost: 'cost', resources: 'pools', set: 'set', add: 'add', needs: 'needs', backlog: 'backlog', technology: 'technology', outputs: 'outputs'};
+ const MAXM = () => root.LWProcessLimits?.minutes ?? 100000;
+ const isInt = (t: string, lo: number, hi: number) => { const n = numeric(t); return n !== undefined && Number.isInteger(n) && n >= lo && n <= hi; };
+ function timingProblems(m: LWProcessStepModel.Model, out: LWProcessStepModel.Problem[]): void {
+  const t = m.timing; if (!t.dist) return;
+  const keys = t.dist === 'uniform' ? ['min', 'max'] as const : t.dist === 'triangular' ? ['min', 'mode', 'max'] as const : ['mean'] as const, bad = new Set<string>();
+  const range = `Enter a whole number of minutes from 1 to ${group(MAXM())}.`;
+  for (const k of keys) if (!isInt(t[k], 1, MAXM())) { bad.add(k); out.push({key: `timing.${k}`, message: range}); }
+  if (t.dist === 'exponential' && t.max.trim() !== '' && !isInt(t.max, 1, MAXM())) { bad.add('max'); out.push({key: 'timing.max', message: range}); }
+  if (bad.size) return;
+  const n = (k: 'min' | 'mode' | 'max' | 'mean') => Number(t[k]);
+  if (t.dist === 'uniform' && n('min') > n('max')) out.push({key: 'timing.min', message: `The minimum (${n('min')}) must not be above the maximum (${n('max')}).`});
+  if (t.dist === 'triangular' && !(n('min') <= n('mode') && n('mode') <= n('max'))) out.push({key: 'timing.mode', message: `A triangular time needs minimum ≤ most likely ≤ maximum (now ${n('min')}, ${n('mode')}, ${n('max')}).`});
+  if (t.dist === 'exponential' && t.max.trim() !== '' && n('mean') > n('max')) out.push({key: 'timing.max', message: `The cap (${n('max')}) must not be below the mean (${n('mean')}).`});
+ }
+ function drawProblems(m: LWProcessStepModel.Model, r: LWProcessStepModel.DrawRow, i: number, out: LWProcessStepModel.Problem[]): void {
+  const at = (k: string, message: string) => out.push({key: `draws.${i}.${k}`, message}), name = r.field;
+  if (name.trim() === '') at('field', 'Name the field or remove this row.');
+  else if (!/^[a-z][a-zA-Z0-9_]{0,63}$/.test(name)) at('field', 'Start with a lowercase letter, then use letters, digits or underscores (up to 64 characters).');
+  else if (m.draws.findIndex(o => o.field === name) !== i) at('field', `The field ${name} is drawn twice.`);
+  else if (m.set.some(x => x.key === name)) at('field', `The field ${name} is also in Set a value; a field has one writer. Remove one of them.`);
+  else if (r.kind !== 'int' && m.add.some(x => x.key === name)) at('field', `The field ${name} is also a counter; only a whole-number draw may feed a counter.`);
+  if (r.kind === 'chance') {
+   if (!isInt(r.percent, 1, 99)) at('percent', 'Enter a whole percent from 1 to 99.');
+   [['whenTrue', r.whenTrue], ['whenFalse', r.whenFalse]].forEach(([k, v]) => { if ((v as LWProcessStepModel.Value).type === 'number' && numeric((v as LWProcessStepModel.Value).text) === undefined) at(`${k}.text`, 'Enter a number.'); });
+   if (JSON.stringify(writeValue(r.whenTrue)) === JSON.stringify(writeValue(r.whenFalse))) at('whenFalse.type', 'The value for "yes" and the value for "no" must differ.');
+  } else if (r.kind === 'choice') {
+   r.values.forEach((v, j) => {
+    if (!isInt(v.weight, 1, 1000)) at(`values.${j}.weight`, 'Enter a whole weight from 1 to 1,000.');
+    if (v.value.type === 'number' && numeric(v.value.text) === undefined) at(`values.${j}.value.text`, 'Enter a number.');
+    else if (r.values.findIndex(o => JSON.stringify(writeValue(o.value)) === JSON.stringify(writeValue(v.value))) !== j) at(`values.${j}.value.type`, 'Each value may appear once.');
+   });
+   if (r.values.length < LIMITS.minChoices || r.values.length > LIMITS.choices) at('values', `A weighted choice needs ${LIMITS.minChoices} to ${LIMITS.choices} values.`);
+  } else {
+   const lo = isInt(r.min, -1e9, 1e9), hi = isInt(r.max, -1e9, 1e9);
+   if (!lo) at('min', 'Enter a whole number.'); if (!hi) at('max', 'Enter a whole number.');
+   if (lo && hi && Number(r.min) > Number(r.max)) at('min', `The lowest (${r.min}) must not be above the highest (${r.max}).`);
+  }
+ }
+ const SEGMENTS: Record<string, string> = {name: 'name', description: 'description', duration: 'duration', until: 'until', cost: 'cost', resources: 'pools', set: 'set', add: 'add', needs: 'needs', backlog: 'backlog', technology: 'technology', outputs: 'outputs', timing: 'timing', draws: 'draws'};
  const KIND_NAME: Partial<Record<LWProcess.Kind, [string, string]>> = {task: ['Task', 'Tasks'], machine: ['Machine step', 'Machine steps'], system: ['System step', 'System steps'], timer: ['Timer', 'Timers']};
  const group = (n: number) => n.toLocaleString('en-US');
  /** Rewrites an engine diagnostic for this step into plain language that names the field and its allowed range. */
@@ -159,14 +261,14 @@ declare namespace LWProcessStepModel {
    const parts = d.path.split('/').filter(Boolean);
    if (step && parts[0] === 'steps' && Number(parts[1]) === index) {
     const seg = parts[2];
-    let key = seg === undefined ? '' : seg === 'needs' && parts[3] !== undefined ? `needs.${parts[3]}` : seg === 'outputs' && parts[3] !== undefined ? `outputs.${parts[3]}` : SEGMENTS[seg] ?? '';
+    let key = seg === undefined ? '' : seg === 'needs' && parts[3] !== undefined ? `needs.${parts[3]}` : seg === 'outputs' && parts[3] !== undefined ? `outputs.${parts[3]}` : seg === 'timing' || seg === 'draws' ? parts.slice(2).join('.') : SEGMENTS[seg] ?? '';
     if (seg === 'resources' && parts[3] !== undefined) { const at = def.resources.findIndex(r => r.id === parts[3]); if (at >= 0) key = `pools.${at}`; }
     out.push({key, message: plain(def, step, key, d, parts), path: d.path});
    } else if (parts[0] === 'flows' && own.includes(Number(parts[1]))) out.push({key: `flows.${own.indexOf(Number(parts[1]))}`, message: d.message, path: d.path});
   }
   return out;
  }
- const FIELD: Record<string, string> = {name: 'name', description: 'description', duration: 'duration', until: 'wait-until minute', cost: 'fixed cost', resources: 'pools', set: 'values', add: 'counters', needs: 'needs', backlog: 'backlog', technology: 'technology', outputs: 'declared outputs', scene: 'scene', kind: 'kind', capacity: 'capacity', costPerMinute: 'cost per minute', count: 'cases', interval: 'interval', at: 'first arrival', when: 'condition', label: 'label', from: 'source', to: 'target'};
+ const FIELD: Record<string, string> = {name: 'name', description: 'description', duration: 'duration', until: 'wait-until minute', cost: 'fixed cost', resources: 'pools', set: 'values', add: 'counters', needs: 'needs', backlog: 'backlog', technology: 'technology', outputs: 'declared outputs', timing: 'random timing', draws: 'random outcomes', percent: 'percent', weight: 'weight', scene: 'scene', kind: 'kind', capacity: 'capacity', costPerMinute: 'cost per minute', count: 'cases', interval: 'interval', at: 'first arrival', when: 'condition', label: 'label', from: 'source', to: 'target'};
  function describePath(def: LWProcess.Definition, path: string): string {
   const parts = path.split('/').filter(Boolean), tail = (rest: string[]) => rest.map((p, i) => i === 0 ? FIELD[p] ?? p : /^\d+$/.test(p) ? String(Number(p) + 1) : FIELD[p] ?? p).join(' ');
   const join = (head: string, rest: string[]) => rest.length ? `${head} › ${tail(rest)}` : head, i = Number(parts[1]);
@@ -195,6 +297,6 @@ declare namespace LWProcessStepModel {
   const used = m.pools.filter(p => (whole(p.count) ?? 0) > 0).map(p => `${whole(p.count)} ${p.name}`), none = m.kind === 'task' ? 'no shared people' : m.kind === 'machine' ? 'no equipment' : 'no systems';
   return used.length ? 'Needs: ' + used.join(', ') : 'Needs: ' + none;
  }
- root.LWProcessStepModel = {OPS, read, write, problems, scope, elsewhere, describePath, isWork, poolKind, otherChanges, needsSummary, newValue};
+ root.LWProcessStepModel = {OPS, read, write, problems, scope, elsewhere, describePath, isWork, poolKind, otherChanges, needsSummary, newValue, timingAllowed, chooseTiming, chooseDraw, newDraw, timingNote, LIMITS};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessStepModel;
 })(globalThis);
