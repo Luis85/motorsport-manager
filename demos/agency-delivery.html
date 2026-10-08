@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#f6f5ee"><meta name="description" content="Explore two synthetic delivery processes in 2D and 3D and switch between them: the in-house agency pipeline with shared resources, parallel design and rework, and an agile vendor pipeline.">
-<meta name="wildlands-engine" content="313f4967a76ec5ca58871b52ba4e5079adb3e18162cfbda1f960cef4d91c7ce8"><meta name="wildlands-game-digest" content="95e79d31b879ce231422e797b00881c975cf80fd2e14c6e08f8d740640fbda4b">
+<meta name="wildlands-engine" content="b916adf2178046320eb9821b71174ff914985b59e2afa1c8a94051fb9b656556"><meta name="wildlands-game-digest" content="95e79d31b879ce231422e797b00881c975cf80fd2e14c6e08f8d740640fbda4b">
 <title>Agency delivery lab</title>
 <style>
 /* Process Studio extends Scene Forge's neutral stage, amber intent, and 5px control language. */
@@ -68,8 +68,8 @@
 .process-metrics span { display:block; font-size:11px; color:var(--muted); }
 .process-metrics strong { display:block; font-size:17px; font-weight:550; margin-top:3px; }
 #inspector { margin-top:12px; font-size:12px; }
-.process-inspector dl { display:grid; grid-template-columns:1fr auto; gap:7px; margin:16px 0; }
-.process-inspector dt { color:var(--muted); }.process-inspector dd { margin:0; font-variant-numeric:tabular-nums; }
+.process-inspector dl { display:grid; grid-template-columns:minmax(7rem,1fr) minmax(0,auto); gap:7px; margin:16px 0; }
+.process-inspector dt { color:var(--muted); }.process-inspector dd { margin:0; font-variant-numeric:tabular-nums; text-align:right; overflow-wrap:anywhere; }
 .next-step { display:block; width:100%; text-align:left; margin-top:6px; font-size:12px!important; }
 .process-pool { margin-bottom:13px; font-size:12px; }
 .process-pool strong { display:block; font-weight:550; }.process-pool span { color:var(--muted); }
@@ -127,7 +127,7 @@
 .process-switch { display:flex; align-items:center; gap:8px; color:var(--muted); min-width:0; max-width:100%; }
 .process-switch select { min-width:0; max-width:min(100%,320px); min-height:36px; }
 .process-header p#process-subtitle { overflow-wrap:anywhere; }
-@media(max-width:650px) { .process-switch { width:100%; }.process-switch select { flex:1 1 auto; max-width:100%; } }
+@media(max-width:650px) { .process-header>div:first-child { flex:0 0 auto; } .process-switch { width:100%; }.process-switch select { flex:1 1 auto; max-width:100%; } }
 
 </style>
 </head>
