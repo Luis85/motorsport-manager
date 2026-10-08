@@ -6,7 +6,7 @@ import path from 'node:path';
 import {nextFrames} from './browser-harness';
 import {query, OUT, runSuite} from './process-browser-fixture';
 runSuite('process definition editor browser harness', 'process-definition-browser-results.json', async studio => {
- const {page, diagnostics, dir, check, checkLifecycle, freshStudio, defOpen, openDef, closeDef, restoreDef, applyDef, draftText, defOf, inSync, dialogOpen, activeId, importFeed, importRandom, openRandom, savedStep, importJourney} = studio;
+ const {page, diagnostics, dir, check, checkLifecycle, freshStudio, defOpen, openDef, closeDef, restoreDef, applyDef, draftText, defOf, inSync, dialogOpen, activeId, importFeed, importRandom, openRandom, savedStep, importJourney, pasteDraft} = studio;
  await check('Definition editor opens as a modal from the header, pauses the run and applies a fresh paused run', async () => {
   await page.setViewportSize({width: 1440, height: 1060});
   await freshStudio();
@@ -88,7 +88,7 @@ runSuite('process definition editor browser harness', 'process-definition-browse
   await page.locator('#diagnostics button').click(); const syntax = await selection(); assert.equal(syntax.active, 'draft'); assert.equal(syntax.start, '{\n  "a": 1,\n  "b": [1 '.length); assert.equal(syntax.text, '2');
   // Every diagnostic the catalog returns is listed, labelled with the step name, and selects its text.
   const base = JSON.parse(JSON.stringify((await query(page)).definition)) as LWProcess.Definition; base.steps[1]!.duration = 0; base.resources[0]!.capacity = 0; delete (base.steps[2] as Partial<LWProcess.Step>).scene;
-  await area.fill(JSON.stringify(base, null, 2)); await inSync();
+  await pasteDraft(JSON.stringify(base, null, 2)); await inSync();
   const expected = await page.evaluate(text => (globalThis as unknown as {LWProcessCatalog: LWProcess.Catalog}).LWProcessCatalog.validate(JSON.parse(text), true).diagnostics.map(d => d.path), await draftText());
   assert(expected.length >= 3, JSON.stringify(expected)); assert.equal(await page.locator('#diagnostics button').count(), expected.length); assert.equal(await page.locator('#de-diag-h').innerText(), `Problems (${expected.length})`);
   assert.deepEqual(await page.locator('#diagnostics button').evaluateAll(b => b.map(x => (x as HTMLElement).dataset.path)), expected); assert.match(await page.locator('#de-diag-note').innerText(), /Structure problems come first/);
@@ -256,7 +256,7 @@ runSuite('process definition editor browser harness', 'process-definition-browse
   for (let i = 4; i >= 2; i--) await page.locator(`[data-act="track-remove"][data-i="${i}"]`).click();
   assert.deepEqual(await tracks(), [{field: 'mood', label: 'Mood'}, {field: 'score'}]); await page.locator('[data-act="track-remove"][data-i="1"]').click(); assert.equal(await page.evaluate(() => document.activeElement?.id), 'tune-track-add');
   // The Raw JSON pane names the new paths in plain words.
-  const raw = JSON.parse(await draftText()) as Record<string, unknown>; raw.genre = 'funnel'; raw.track = [{field: 'Bad field'}]; await page.locator('#draft').fill(JSON.stringify(raw, null, 2));
+  const raw = JSON.parse(await draftText()) as Record<string, unknown>; raw.genre = 'funnel'; raw.track = [{field: 'Bad field'}]; await pasteDraft(JSON.stringify(raw, null, 2));
   await page.waitForFunction(() => document.querySelectorAll('#diagnostics li').length > 0);
   const listed = await page.locator('#diagnostics').innerText(); assert.match(listed, /Process › process type/); assert.match(listed, /Tracked measure 1 › field/); assert.match(listed, /Expected one of process, customer-journey, user-journey/);
   await restoreDef(); await inSync();
@@ -297,9 +297,9 @@ runSuite('process definition editor browser harness', 'process-definition-browse
   for (let i = 7; i >= 2; i--) await page.locator(`[data-act="sipoc-remove"][data-list="suppliers"][data-i="${i}"]`).click();
   assert.equal(await page.locator('#tune-sipoc-suppliers-add').isEnabled(), true); assert.deepEqual((await sipoc())!.suppliers!.map(p => p.name), ['Payment provider', 'Courier']);
   // Raw JSON names the new paths in plain words.
-  const raw = JSON.parse(await draftText()) as Record<string, any>; raw.sipoc = {suppliers: [{name: 'A'}, {name: 'A'}]}; await page.locator('#draft').fill(JSON.stringify(raw, null, 2));
+  const raw = JSON.parse(await draftText()) as Record<string, any>; raw.sipoc = {suppliers: [{name: 'A'}, {name: 'A'}]}; await pasteDraft(JSON.stringify(raw, null, 2));
   await page.waitForFunction(() => document.querySelectorAll('#diagnostics li').length > 0); assert.match(await page.locator('#diagnostics').innerText(), /Supplier 2 › name/);
-  raw.sipoc = {customers: [{name: 'B', receives: ''}]}; await page.locator('#draft').fill(JSON.stringify(raw, null, 2));
+  raw.sipoc = {customers: [{name: 'B', receives: ''}]}; await pasteDraft(JSON.stringify(raw, null, 2));
   await page.waitForFunction(() => /Customer 1 › receives/.test(document.getElementById('diagnostics')!.textContent!));
   await restoreDef(); await page.waitForFunction(() => !('sipoc' in JSON.parse((document.getElementById('draft') as HTMLTextAreaElement).value))); await inSync();
   // Removing every party removes the key; the focus returns to the Add button.

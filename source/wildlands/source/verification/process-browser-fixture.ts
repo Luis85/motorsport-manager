@@ -39,7 +39,7 @@ export function buildGame(game: string, output: string): void {
 }
 
 /** Page-bound helpers shared by the suites; each one acts only through the studio's own controls and public query. */
-function studioHelpers(page: Page, file: string, count: number) {
+function studioHelpers(page: Page, context: BrowserContext, file: string, count: number) {
  const freshStudio = async () => { await openArtifact(page, file, {url: FIXTURE_URLS[0]}); await waitForReady(page, {host: 'process'}); };
  // The Definition editor is a modal (dialog id "de"): these helpers open it from the header, leave it, restore the draft and apply through it.
  const defOpen = page.locator('dialog.de-dialog[open]');
@@ -83,8 +83,20 @@ function studioHelpers(page: Page, file: string, count: number) {
   await page.waitForFunction(n => document.getElementById('message')!.textContent!.includes('Imported ' + n), name);
  };
  const importClaims = async (rich: boolean, lateFirst = false) => { await freshStudio(); await importJson('claims-desk.json', claimsDesk(rich, lateFirst)); };
+ /**
+  * Replaces the raw JSON draft the way a person does: select all, then one trusted Ctrl/Cmd+V, which is a single
+  * `insertFromPaste` input event. `fill()` types multi-line text as one input event per line (thousands for a formatted
+  * definition) and takes seconds per draft, enough to exceed action timeouts on a loaded runner. The real clipboard is
+  * used even where a check has stubbed `navigator.clipboard`.
+  */
+ const pasteDraft = async (text: string) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.evaluate(t => (Object.getOwnPropertyDescriptor(Navigator.prototype, 'clipboard')!.get!.call(navigator) as Clipboard).writeText(t), text);
+  const area = page.locator('#draft'); await area.focus(); await area.press('ControlOrMeta+A'); await area.press('ControlOrMeta+V');
+  await page.waitForFunction(t => (document.getElementById('draft') as HTMLTextAreaElement).value === t, text);
+ };
  return {freshStudio, defOpen, openDef, closeDef, restoreDef, applyDef, exportVia, showIo, draftText, defOf, inSync, dialogOpen, activeId, switchTo, nameOf, allNames, applyDraft,
-  importJson, importFeed, importRandom, openRandom, savedStep, importJourney, importClaims};
+  importJson, importFeed, importRandom, openRandom, savedStep, importJourney, importClaims, pasteDraft};
 }
 
 export type Studio = ReturnType<typeof studioHelpers> & {
@@ -129,7 +141,7 @@ export function runSuite(harness: string, resultFile: string, suite: (studio: St
      assert.deepEqual(diagnostics.consoleProblems.filter(x => x.startsWith('error:')), []);
     });
     await openArtifact(page, file, {url: FIXTURE_URLS[0]}); await waitForReady(page, {host: 'process'});
-    await suite({...studioHelpers(page, file, COUNT), page, context, diagnostics, dir, file, cli: CLI, gameDir: GAME_DIR, gameDefinitions, COUNT, fixtureUrls: FIXTURE_URLS, check, checkLifecycle});
+    await suite({...studioHelpers(page, context, file, COUNT), page, context, diagnostics, dir, file, cli: CLI, gameDir: GAME_DIR, gameDefinitions, COUNT, fixtureUrls: FIXTURE_URLS, check, checkLifecycle});
    } finally {await browser.close();}
   } finally {fs.rmSync(dir, {recursive: true, force: true});}
  };
