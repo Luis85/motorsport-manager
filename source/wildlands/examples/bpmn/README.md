@@ -5,8 +5,9 @@ another modeler would save it: standard elements, a diagram, a BPSim scenario an
 extension, so every simulation setting below comes from BPMN or BPSim and the importer's mapping.
 All durations, probabilities, quantities and costs are synthetic demonstration assumptions: they
 do not describe a real bank, help desk or any measured behaviour, and the mapping was not
-verified against a BPMN conformance suite, the OMG BPMN 2.0 / BPSim 1.0 XML Schemas or a
-specific modeler. The BPSim dialect is the subset
+verified against a BPMN conformance suite or a specific modeler. Both files validate against
+the OMG BPMN 2.0 and BPSim 1.0 XML Schemas (see the
+[schema record](../../../../docs/_archive/verification/bpmn-schema-conformance-2026-10-08.md)). The BPSim dialect is the subset
 the importer reads (see [BPMN 2.0 interchange](../../../../docs/reference/business-process-engine.md#bpmn-20-interchange)).
 
 | File | Shows |

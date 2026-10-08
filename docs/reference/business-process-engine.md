@@ -840,9 +840,12 @@ extension, not as a BPSim parameter. The extension stays authoritative: a defini
 with and without `--bpsim` imports back to the same fingerprint with no warning, and other
 BPSim-aware tools see the same numbers.
 
-Exports are checked for well-formedness with the in-repository XML reader only; conformance to
-the OMG BPMN 2.0 and BPSim 1.0 XML Schemas (XSD) was not verified, because the schemas were not
-available to the verification environment.
+Exports are checked for well-formedness with the in-repository XML reader. On 2026-10-08 the
+exports of every agency process and both examples, with and without BPSim, and edge-case
+variants validated against the OMG BPMN 2.0 XML Schemas and the BPSim 1.0 XML Schema
+([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)). That was a one-off
+run at the recorded source: no registered check repeats it, and schema validation does not
+cover the semantic rules the BPMN specification states in prose.
 
 ## Explicit v1 boundaries
 
@@ -856,8 +859,9 @@ distributions, correlated or stateful random streams, failure injection on
 resources, nested parallel regions (nested gateways inside a region), event-driven
 gateway semantics, recurring or calendar-aware timers (timers count plain business
 minutes), counters other than integer addition, persona libraries, attribution models,
-text sentiment, compensation, live process migration, saved-run restoration, OMG XSD
-schema conformance of exported XML, or native Godot process export is claimed.
+text sentiment, compensation, live process migration, saved-run restoration, continuous
+OMG XSD conformance checking of exported XML (one recorded validation run only), or native
+Godot process export is claimed.
 Graph layout and scene presentation do not influence scheduling. Simulation
 results describe authored assumptions and are not measured project forecasts.
 

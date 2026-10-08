@@ -110,96 +110,6 @@
     <bpmn:sequenceFlow id="G2" sourceRef="Task_Rules" targetRef="Task_Lists"/>
     <bpmn:sequenceFlow id="G3" sourceRef="Task_Lists" targetRef="End_F"/>
   </bpmn:process>
-  <bpmn:relationship type="BPSimData">
-    <bpmn:extensionElements>
-      <bpsim:BPSimData>
-      <bpsim:Scenario id="Scenario_Base" name="Base case (illustrative)">
-        <bpsim:ScenarioParameters baseTimeUnit="min" replication="3">
-          <bpsim:Duration><bpsim:DurationParameter value="PT16H"/></bpsim:Duration>
-        </bpsim:ScenarioParameters>
-        <bpsim:ElementParameters elementRef="Start_Received">
-          <bpsim:ControlParameters>
-            <bpsim:InterTriggerTimer><bpsim:NegativeExponentialDistribution mean="30"/></bpsim:InterTriggerTimer>
-          </bpsim:ControlParameters>
-          <bpsim:PropertyParameters>
-            <bpsim:Property name="amount"><bpsim:UniformDistribution min="1000" max="50000"/></bpsim:Property>
-            <bpsim:Property name="years"><bpsim:UniformDistribution min="0" max="10"/></bpsim:Property>
-          </bpsim:PropertyParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_Submit">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:TriangularDistribution min="5" mode="8" max="15"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_Verify">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NormalDistribution mean="6" standardDeviation="1"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_Archive">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:FloatingParameter value="2"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_Rules">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NumericParameter value="30" timeUnit="s"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_Lists">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:UniformDistribution min="1" max="3"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_Score">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:ErlangDistribution k="2" mean="3"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-          <bpsim:CostParameters><bpsim:FixedCost><bpsim:FloatingParameter value="3"/></bpsim:FixedCost></bpsim:CostParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_Employer">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NegativeExponentialDistribution mean="4"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_Income">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:UniformDistribution min="10" max="20"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_Review">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NormalDistribution mean="1.5" standardDeviation="0.3" timeUnit="hrs"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_Notify">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:LogNormalDistribution scale="1" shape="0.5"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_RejectNotice">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:FloatingParameter value="4"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_Sign">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:TriangularDistribution min="5" mode="10" max="20"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Task_Disburse">
-          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:FloatingParameter value="2"/></bpsim:ProcessingTime></bpsim:TimeParameters>
-          <bpsim:CostParameters><bpsim:FixedCost><bpsim:FloatingParameter value="5"/></bpsim:FixedCost></bpsim:CostParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="F_low">
-          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.45"/></bpsim:Probability></bpsim:ControlParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="F_med">
-          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.30"/></bpsim:Probability></bpsim:ControlParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="F_high">
-          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.25"/></bpsim:Probability></bpsim:ControlParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="F_approved">
-          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.7"/></bpsim:Probability></bpsim:ControlParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="F_rejected">
-          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.3"/></bpsim:Probability></bpsim:ControlParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Lane_Customer">
-          <bpsim:ResourceParameters><bpsim:Quantity><bpsim:NumericParameter value="50"/></bpsim:Quantity></bpsim:ResourceParameters>
-          <bpsim:CostParameters><bpsim:UnitCost><bpsim:FloatingParameter value="0"/></bpsim:UnitCost></bpsim:CostParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Lane_Clerk">
-          <bpsim:ResourceParameters><bpsim:Quantity><bpsim:NumericParameter value="3"/></bpsim:Quantity></bpsim:ResourceParameters>
-          <bpsim:CostParameters><bpsim:UnitCost><bpsim:FloatingParameter value="2"/></bpsim:UnitCost></bpsim:CostParameters>
-        </bpsim:ElementParameters>
-        <bpsim:ElementParameters elementRef="Lane_Engine">
-          <bpsim:ResourceParameters><bpsim:Quantity><bpsim:NumericParameter value="4"/></bpsim:Quantity></bpsim:ResourceParameters>
-          <bpsim:CostParameters><bpsim:UnitCost><bpsim:FloatingParameter value="1"/></bpsim:UnitCost></bpsim:CostParameters>
-        </bpsim:ElementParameters>
-      </bpsim:Scenario>
-      </bpsim:BPSimData>
-    </bpmn:extensionElements>
-    <bpmn:source>Process_Loan</bpmn:source>
-    <bpmn:target>Process_Loan</bpmn:target>
-  </bpmn:relationship>
   <bpmndi:BPMNDiagram id="Diagram_1">
     <bpmndi:BPMNPlane id="Plane_1" bpmnElement="Collab_Loan">
       <bpmndi:BPMNShape id="Part_Bank_di" bpmnElement="Part_Bank" isHorizontal="true"><dc:Bounds x="60" y="20" width="2700" height="830"/></bpmndi:BPMNShape>
@@ -266,4 +176,94 @@
       <bpmndi:BPMNEdge id="G3_di" bpmnElement="G3"><di:waypoint x="650.0" y="1000.0"/><di:waypoint x="732.0" y="1000.0"/></bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
+  <bpmn:relationship type="BPSimData">
+    <bpmn:extensionElements>
+      <bpsim:BPSimData>
+      <bpsim:Scenario id="Scenario_Base" name="Base case (illustrative)">
+        <bpsim:ScenarioParameters baseTimeUnit="min" replication="3">
+          <bpsim:Duration><bpsim:DurationParameter value="PT16H"/></bpsim:Duration>
+        </bpsim:ScenarioParameters>
+        <bpsim:ElementParameters elementRef="Start_Received">
+          <bpsim:ControlParameters>
+            <bpsim:InterTriggerTimer><bpsim:NegativeExponentialDistribution mean="30"/></bpsim:InterTriggerTimer>
+          </bpsim:ControlParameters>
+          <bpsim:PropertyParameters>
+            <bpsim:Property name="amount"><bpsim:UniformDistribution min="1000" max="50000"/></bpsim:Property>
+            <bpsim:Property name="years"><bpsim:UniformDistribution min="0" max="10"/></bpsim:Property>
+          </bpsim:PropertyParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Submit">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:TriangularDistribution min="5" mode="8" max="15"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Verify">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NormalDistribution mean="6" standardDeviation="1"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Archive">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:FloatingParameter value="2"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Rules">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NumericParameter value="30" timeUnit="s"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Lists">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:UniformDistribution min="1" max="3"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Score">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:ErlangDistribution k="2" mean="3"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+          <bpsim:CostParameters><bpsim:FixedCost><bpsim:FloatingParameter value="3"/></bpsim:FixedCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Employer">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NegativeExponentialDistribution mean="4"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Income">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:UniformDistribution min="10" max="20"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Review">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NormalDistribution mean="1.5" standardDeviation="0.3" timeUnit="hour"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Notify">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:LogNormalDistribution mean="8" standardDeviation="3"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_RejectNotice">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:FloatingParameter value="4"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Sign">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:TriangularDistribution min="5" mode="10" max="20"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Disburse">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:FloatingParameter value="2"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+          <bpsim:CostParameters><bpsim:FixedCost><bpsim:FloatingParameter value="5"/></bpsim:FixedCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="F_low">
+          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.45"/></bpsim:Probability></bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="F_med">
+          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.30"/></bpsim:Probability></bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="F_high">
+          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.25"/></bpsim:Probability></bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="F_approved">
+          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.7"/></bpsim:Probability></bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="F_rejected">
+          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.3"/></bpsim:Probability></bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Lane_Customer">
+          <bpsim:ResourceParameters><bpsim:Quantity><bpsim:NumericParameter value="50"/></bpsim:Quantity></bpsim:ResourceParameters>
+          <bpsim:CostParameters><bpsim:UnitCost><bpsim:FloatingParameter value="0"/></bpsim:UnitCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Lane_Clerk">
+          <bpsim:ResourceParameters><bpsim:Quantity><bpsim:NumericParameter value="3"/></bpsim:Quantity></bpsim:ResourceParameters>
+          <bpsim:CostParameters><bpsim:UnitCost><bpsim:FloatingParameter value="2"/></bpsim:UnitCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Lane_Engine">
+          <bpsim:ResourceParameters><bpsim:Quantity><bpsim:NumericParameter value="4"/></bpsim:Quantity></bpsim:ResourceParameters>
+          <bpsim:CostParameters><bpsim:UnitCost><bpsim:FloatingParameter value="1"/></bpsim:UnitCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+      </bpsim:Scenario>
+      </bpsim:BPSimData>
+    </bpmn:extensionElements>
+    <bpmn:source>Process_Loan</bpmn:source>
+    <bpmn:target>Process_Loan</bpmn:target>
+  </bpmn:relationship>
 </bpmn:definitions>

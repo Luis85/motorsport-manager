@@ -61,6 +61,40 @@
     <bpmn:sequenceFlow id="S12" sourceRef="Task_Wait" targetRef="Task_Notice"/>
     <bpmn:sequenceFlow id="S13" sourceRef="Task_Notice" targetRef="End_Resolved"/>
   </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_1">
+    <bpmndi:BPMNPlane id="Plane_1" bpmnElement="Process_Ticket">
+      <bpmndi:BPMNShape id="Lane_Agent_di" bpmnElement="Lane_Agent" isHorizontal="true"><dc:Bounds x="70" y="20" width="1570" height="220"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Specialist_di" bpmnElement="Lane_Specialist" isHorizontal="true"><dc:Bounds x="70" y="240" width="1570" height="150"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Auto_di" bpmnElement="Lane_Auto" isHorizontal="true"><dc:Bounds x="70" y="390" width="1570" height="170"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_Opened_di" bpmnElement="Start_Opened"><dc:Bounds x="132" y="92" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Triage_di" bpmnElement="Task_Triage"><dc:Bounds x="250" y="70" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Ask_di" bpmnElement="Task_Ask"><dc:Bounds x="400" y="430" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_Await_di" bpmnElement="Gw_Await"><dc:Bounds x="575" y="85" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Catch_Reply_di" bpmnElement="Catch_Reply"><dc:Bounds x="742" y="42" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Catch_Timeout_di" bpmnElement="Catch_Timeout"><dc:Bounds x="742" y="142" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Closed_di" bpmnElement="End_Closed"><dc:Bounds x="902" y="142" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Investigate_di" bpmnElement="Task_Investigate"><dc:Bounds x="870" y="20" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Timer_Stuck_di" bpmnElement="Timer_Stuck"><dc:Bounds x="902" y="82" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Handover_di" bpmnElement="Task_Handover"><dc:Bounds x="870" y="280" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Fix_di" bpmnElement="Task_Fix"><dc:Bounds x="1050" y="430" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Wait_di" bpmnElement="Task_Wait"><dc:Bounds x="1210" y="430" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Notice_di" bpmnElement="Task_Notice"><dc:Bounds x="1360" y="430" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Resolved_di" bpmnElement="End_Resolved"><dc:Bounds x="1542" y="452" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="S1_di" bpmnElement="S1"><di:waypoint x="168.0" y="110.0"/><di:waypoint x="250.0" y="110.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S2_di" bpmnElement="S2"><di:waypoint x="316.7" y="150.0"/><di:waypoint x="433.3" y="430.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S3_di" bpmnElement="S3"><di:waypoint x="466.7" y="430.0"/><di:waypoint x="589.6" y="135.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S4_di" bpmnElement="S4"><di:waypoint x="625.0" y="102.2"/><di:waypoint x="742.0" y="65.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S5_di" bpmnElement="S5"><di:waypoint x="625.0" y="117.8"/><di:waypoint x="742.0" y="154.4"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S6_di" bpmnElement="S6"><di:waypoint x="778.0" y="60.0"/><di:waypoint x="870.0" y="60.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S7_di" bpmnElement="S7"><di:waypoint x="778.0" y="160.0"/><di:waypoint x="902.0" y="160.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S8_di" bpmnElement="S8"><di:waypoint x="937.6" y="100.0"/><di:waypoint x="1082.4" y="430.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S9_di" bpmnElement="S9"><di:waypoint x="920.0" y="118.0"/><di:waypoint x="920.0" y="280.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S10_di" bpmnElement="S10"><di:waypoint x="968.0" y="360.0"/><di:waypoint x="1052.0" y="430.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S11_di" bpmnElement="S11"><di:waypoint x="1150.0" y="470.0"/><di:waypoint x="1210.0" y="470.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S12_di" bpmnElement="S12"><di:waypoint x="1310.0" y="470.0"/><di:waypoint x="1360.0" y="470.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S13_di" bpmnElement="S13"><di:waypoint x="1460.0" y="470.0"/><di:waypoint x="1542.0" y="470.0"/></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
   <bpmn:relationship type="BPSimData">
     <bpmn:extensionElements>
       <bpsim:BPSimData>
@@ -121,38 +155,4 @@
     <bpmn:source>Process_Ticket</bpmn:source>
     <bpmn:target>Process_Ticket</bpmn:target>
   </bpmn:relationship>
-  <bpmndi:BPMNDiagram id="Diagram_1">
-    <bpmndi:BPMNPlane id="Plane_1" bpmnElement="Process_Ticket">
-      <bpmndi:BPMNShape id="Lane_Agent_di" bpmnElement="Lane_Agent" isHorizontal="true"><dc:Bounds x="70" y="20" width="1570" height="220"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_Specialist_di" bpmnElement="Lane_Specialist" isHorizontal="true"><dc:Bounds x="70" y="240" width="1570" height="150"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_Auto_di" bpmnElement="Lane_Auto" isHorizontal="true"><dc:Bounds x="70" y="390" width="1570" height="170"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Start_Opened_di" bpmnElement="Start_Opened"><dc:Bounds x="132" y="92" width="36" height="36"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Triage_di" bpmnElement="Task_Triage"><dc:Bounds x="250" y="70" width="100" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Ask_di" bpmnElement="Task_Ask"><dc:Bounds x="400" y="430" width="100" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gw_Await_di" bpmnElement="Gw_Await"><dc:Bounds x="575" y="85" width="50" height="50"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Catch_Reply_di" bpmnElement="Catch_Reply"><dc:Bounds x="742" y="42" width="36" height="36"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Catch_Timeout_di" bpmnElement="Catch_Timeout"><dc:Bounds x="742" y="142" width="36" height="36"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="End_Closed_di" bpmnElement="End_Closed"><dc:Bounds x="902" y="142" width="36" height="36"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Investigate_di" bpmnElement="Task_Investigate"><dc:Bounds x="870" y="20" width="100" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Timer_Stuck_di" bpmnElement="Timer_Stuck"><dc:Bounds x="902" y="82" width="36" height="36"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Handover_di" bpmnElement="Task_Handover"><dc:Bounds x="870" y="280" width="100" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Fix_di" bpmnElement="Task_Fix"><dc:Bounds x="1050" y="430" width="100" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Wait_di" bpmnElement="Task_Wait"><dc:Bounds x="1210" y="430" width="100" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_Notice_di" bpmnElement="Task_Notice"><dc:Bounds x="1360" y="430" width="100" height="80"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="End_Resolved_di" bpmnElement="End_Resolved"><dc:Bounds x="1542" y="452" width="36" height="36"/></bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="S1_di" bpmnElement="S1"><di:waypoint x="168.0" y="110.0"/><di:waypoint x="250.0" y="110.0"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="S2_di" bpmnElement="S2"><di:waypoint x="316.7" y="150.0"/><di:waypoint x="433.3" y="430.0"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="S3_di" bpmnElement="S3"><di:waypoint x="466.7" y="430.0"/><di:waypoint x="589.6" y="135.0"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="S4_di" bpmnElement="S4"><di:waypoint x="625.0" y="102.2"/><di:waypoint x="742.0" y="65.6"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="S5_di" bpmnElement="S5"><di:waypoint x="625.0" y="117.8"/><di:waypoint x="742.0" y="154.4"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="S6_di" bpmnElement="S6"><di:waypoint x="778.0" y="60.0"/><di:waypoint x="870.0" y="60.0"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="S7_di" bpmnElement="S7"><di:waypoint x="778.0" y="160.0"/><di:waypoint x="902.0" y="160.0"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="S8_di" bpmnElement="S8"><di:waypoint x="937.6" y="100.0"/><di:waypoint x="1082.4" y="430.0"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="S9_di" bpmnElement="S9"><di:waypoint x="920.0" y="118.0"/><di:waypoint x="920.0" y="280.0"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="S10_di" bpmnElement="S10"><di:waypoint x="968.0" y="360.0"/><di:waypoint x="1052.0" y="430.0"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="S11_di" bpmnElement="S11"><di:waypoint x="1150.0" y="470.0"/><di:waypoint x="1210.0" y="470.0"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="S12_di" bpmnElement="S12"><di:waypoint x="1310.0" y="470.0"/><di:waypoint x="1360.0" y="470.0"/></bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="S13_di" bpmnElement="S13"><di:waypoint x="1460.0" y="470.0"/><di:waypoint x="1542.0" y="470.0"/></bpmndi:BPMNEdge>
-    </bpmndi:BPMNPlane>
-  </bpmndi:BPMNDiagram>
 </bpmn:definitions>

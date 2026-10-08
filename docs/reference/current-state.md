@@ -135,8 +135,9 @@ reports every mapping and warning, and rejects unsupported constructs with their
 element ids or, in drop mode, removes or approximates them with a warning each. The
 CLI and the studio's **Import BPMN** dialog (options, live preview, Cancel-first
 replacement confirmation) share this importer. Exports are checked for
-well-formedness only; conformance to the OMG BPMN 2.0 and BPSim 1.0 XML Schemas
-is not verified.
+well-formedness; one recorded run on 2026-10-08 validated the demo and example
+exports against the OMG BPMN 2.0 and BPSim 1.0 XML Schemas, which no registered
+check repeats ([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)).
 
 Not implemented: BPMN execution, external service execution, calendars or working
 hours for timers, event-driven gateway semantics, complex gateways beyond the drop

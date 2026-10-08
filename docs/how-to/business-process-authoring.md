@@ -349,7 +349,9 @@ with `--unsupported drop` they are removed or approximated instead (a complex ga
 exclusive decision), each with a warning. The studio offers the same through **Export BPMN**,
 **Export BPMN with BPSim** and **Import…** (the **Import BPMN** dialog below). Add `--bpsim` to
 `export-bpmn` to write a BPSim scenario beside the extension values. Exported XML is checked for
-well-formedness only; conformance to the OMG BPMN 2.0 and BPSim 1.0 XML Schemas was not verified.
+well-formedness; one recorded run validated the demo and example exports against the OMG BPMN 2.0
+and BPSim 1.0 XML Schemas ([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)),
+but no registered check repeats that.
 
 ## Import BPMN and its simulation parameters
 
