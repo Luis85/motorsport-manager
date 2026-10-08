@@ -3,7 +3,7 @@
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWContentProvider: LWContentProvider.Api; LWProcessApplication: LWProcessApp.Api; LWProcessCatalog: LWProcess.Catalog;
-  LWProcessData: LWProcessData.Api; LWProcess2D: LWProcess2D.Api; LWProcess3D: LWProcess3D.Api; LWProcessTuning: LWProcessTuning.Api; LWProcessNeeds: LWProcessNeeds.Api; LWProcessBpmn: LWProcessBpmn.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
+  LWProcessData: LWProcessData.Api; LWProcess2D: LWProcess2D.Api; LWProcess3D: LWProcess3D.Api; LWProcessTuning: LWProcessTuning.Api; LWProcessStepEditor: LWProcessStepEditor.Api; LWProcessNeeds: LWProcessNeeds.Api; LWProcessBpmn: LWProcessBpmn.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
  const host = document.getElementById('process-shell'); if (!host) return;
  const pristine = '<!doctype html>\n' + document.documentElement.outerHTML;
  const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
@@ -21,7 +21,7 @@
  <div id="message" class="process-message" role="status" aria-live="polite"></div>
  <div class="process-workspace">
  <section class="process-stage" aria-label="Simulation viewport"><div class="process-stagebar"><div><h2 id="scene-title">Process overview</h2><p id="scene-subtitle"></p></div>
- <div class="process-view-controls"><button id="mode-2d" aria-pressed="false">2D</button><button id="mode-3d" aria-pressed="true">3D</button><button id="frame">Frame view</button></div></div>
+ <div class="process-view-controls"><button id="mode-2d" aria-pressed="false">2D</button><button id="mode-3d" aria-pressed="true">3D</button><button id="frame">Frame view</button><button id="edit-step" hidden>Edit step…</button></div></div>
  <div id="viewport"><canvas id="canvas" aria-label="3D process scenes. Use the scene list for keyboard selection." tabindex="0"></canvas><div id="map" hidden></div></div>
  <div class="process-legend"><span><i class="active-dot"></i>Working</span><span><i class="queue-dot"></i>Waiting</span><span><i class="timer-dot"></i>Timer</span><span><i class="backlog-dot"></i>Backlog</span><span><i class="held-dot"></i>Blocked</span><span id="marker-count"></span><span id="camera-hint">Drag to orbit · Scroll to zoom</span></div>
  <div id="metrics" class="process-metrics" aria-label="Run metrics"></div><section id="process-data" aria-label="Process inputs and outputs"></section></section>
@@ -39,6 +39,7 @@
  /** Unapplied draft text kept per process while another process is active (switching never discards it). */
  const drafts = new Map<number, string>();
  const dataView = root.LWProcessData.create(get('process-data'));
+ let stepEditor: LWProcessStepEditor.Surface;
  const tuning = root.LWProcessTuning.create(get('tuning'), () => get<HTMLTextAreaElement>('draft').value, text => {get<HTMLTextAreaElement>('draft').value = text; get('draft').removeAttribute('aria-invalid'); get('diagnostics').textContent = ''; draftState();});
  let tuneTimer = 0, last = 0, elapsed = 0, frameId = 0, disposed = false, unavailable = '', activeDraft = '', previousStatus = '';
  let guidance = false;
@@ -118,9 +119,13 @@
   get('scene-subtitle').textContent = step ? step.scene.id + ' · ' + step.kind : `${d.steps.length} connected scenes · ${num(q.metrics.arrived)} ${q.metrics.arrived === 1 ? "case" : "cases"} admitted`;
   get('inspector-title').textContent = step ? 'Scene details' : 'Process overview';
   const m = q.steps.find(m => m.id === selected);
-  const inspectorHtml = step ? `<p>${esc(step.description ?? step.name)}</p><dl>${timingHtml(step, m!)}<dt>Working / waiting</dt><dd>${m!.active} / ${m!.queued}</dd><dt>Completed visits</dt><dd>${num(m!.completed)}</dd><dt>Total queue time</dt><dd>${num(m!.waitMinutes)} min</dd><dt>Fixed cost per visit</dt><dd>${num(step.cost ?? 0)}</dd></dl>${needsHtml(step)}${backlogHtml(step, q)}<h3>Next steps</h3>${d.flows.filter(f => f.from === step.id).map(f => `<button class="next-step" data-next="${esc(f.to)}">${esc(d.steps.find(s => s.id === f.to)!.name)}${f.label ? ' · ' + esc(f.label) : ''}</button>`).join('') || '<p>Process ends here.</p>'}`
+  const inspectorHtml = step ? `<p>${esc(step.description ?? step.name)}</p><button id="edit-step-inspector" class="edit-step-button" data-edit-step="inspector">Edit step…</button><dl>${timingHtml(step, m!)}<dt>Working / waiting</dt><dd>${m!.active} / ${m!.queued}</dd><dt>Completed visits</dt><dd>${num(m!.completed)}</dd><dt>Total queue time</dt><dd>${num(m!.waitMinutes)} min</dd><dt>Fixed cost per visit</dt><dd>${num(step.cost ?? 0)}</dd></dl>${needsHtml(step)}${backlogHtml(step, q)}<h3>Next steps</h3>${d.flows.filter(f => f.from === step.id).map(f => `<button class="next-step" data-next="${esc(f.to)}">${esc(d.steps.find(s => s.id === f.to)!.name)}${f.label ? ' · ' + esc(f.label) : ''}</button>`).join('') || '<p>Process ends here.</p>'}`
    : `<p>${esc(d.description ?? 'Cases move through the process. Run the simulation to see work, queues and resource contention.')}</p><p>${d.flows.length} connections · revision ${d.revision}</p>`;
-  if (setHtml('inspector', inspectorHtml)) get('inspector').querySelectorAll<HTMLButtonElement>('[data-next]').forEach(b => b.onclick = () => command(() => app.select(b.dataset.next!)));
+  if (setHtml('inspector', inspectorHtml)) {
+   get('inspector').querySelectorAll<HTMLButtonElement>('[data-next]').forEach(b => b.onclick = () => command(() => app.select(b.dataset.next!)));
+   get('inspector').querySelectorAll<HTMLButtonElement>('[data-edit-step]').forEach(b => b.onclick = () => openStepEditor('inspector'));
+  }
+  get('edit-step').hidden = !step;
   setHtml('pools', q.resources.map(p => `<div class="process-pool"><strong>${esc(d.resources.find(r => r.id === p.id)!.name)}</strong><span>${p.busy}/${p.capacity} busy · ${num(p.utilization * 100)}%</span><progress value="${p.busy}" max="${p.capacity}" aria-label="${esc(p.id)} busy capacity"></progress></div>`).join('') || '<p>No shared resources defined.</p>');
   setHtml('metrics', [['Completed', num(q.metrics.completed)], ['In progress', num(q.metrics.active)], ['Mean cycle', num(q.metrics.meanCycleMinutes) + ' min'], ['Simulated cost', num(q.metrics.cost)], ['Failed', num(q.metrics.failed)]].map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`).join(''));
   setHtml('events', q.events.slice(-25).reverse().map(e => `<div><time>${num(e.minute)} min</time><span>${esc(e.caseId)}</span><strong>${esc(e.kind.replaceAll('-', ' '))}</strong><span>${esc(d.steps.find(s => s.id === e.stepId)?.name ?? e.detail)}${e.kind.startsWith('timer-') && e.detail ? ' · ' + esc(e.detail) : ''}</span></div>`).join('') || '<p>No work has arrived yet.</p>');
@@ -198,7 +203,27 @@
  }
  get<HTMLTextAreaElement>('draft').oninput = () => {get('diagnostics').textContent = ''; get('draft').removeAttribute('aria-invalid'); draftState(); clearTimeout(tuneTimer); tuneTimer = window.setTimeout(() => tuning.refresh(), 600);};
  
- on('validate', () => {checkDraft();}); on('apply', () => {const d = checkDraft(); if (!d) return; d.revision = Math.max(view.definition.revision + 1, d.revision); app.replace(d); rebuild(); status('Definition applied. New run is paused.');});
+ function applyDraft(): boolean {
+  const d = checkDraft(); if (!d) return false;
+  d.revision = Math.max(view.definition.revision + 1, d.revision); app.replace(d); rebuild(); status('Definition applied. New run is paused.'); return true;
+ }
+ on('validate', () => {checkDraft();}); on('apply', () => {applyDraft();});
+ /** The step editor is modal: it pauses the run (a command, never a tick), edits only the draft text, and the inert page cannot change selection or time while it is open. */
+ function openStepEditor(invoker: 'inspector' | 'stage'): void {
+  const id = view.selected; if (!id) return;
+  if (view.playing) command(() => app.play(false));
+  if (stepEditor.open(id, invoker)) status('Editing a step. The run is paused while the editor is open.');
+ }
+ stepEditor = root.LWProcessStepEditor.create(host, {
+  read: () => get<HTMLTextAreaElement>('draft').value, active: () => app.query().definition, notify: status,
+  save: text => {get<HTMLTextAreaElement>('draft').value = text; get('draft').removeAttribute('aria-invalid'); get('diagnostics').textContent = ''; draftState(); tuning.refresh();},
+  apply: text => {get<HTMLTextAreaElement>('draft').value = text; let ok = false; command(() => {ok = applyDraft();}); return ok;},
+  focusFor: (invoker, id) => {
+   const direct = invoker === 'inspector' ? document.getElementById('edit-step-inspector') : get('edit-step');
+   return direct && !direct.hidden && direct.getClientRects().length ? direct : get('steps').querySelector<HTMLElement>(`[data-step="${id}"]`);
+  },
+ });
+ on('edit-step', () => openStepEditor('stage'));
  on('export-draft', () => {download(view.definition.id + '.draft.json', get<HTMLTextAreaElement>('draft').value, 'application/json'); status('Draft downloaded as written. Apply a valid draft to update the simulation.');});
  on('restore-draft', () => {get<HTMLTextAreaElement>('draft').value = activeDraft; get('draft').removeAttribute('aria-invalid'); draftState(); tuning.refresh(); get('diagnostics').textContent = 'Draft restored from the active definition.';});
  function animate(time: number): void {
@@ -212,5 +237,5 @@
  root.__wildlandsReady = true;
  document.documentElement.dataset.wildlandsReady = 'process'; dispatchEvent(new CustomEvent('wildlands:ready', {detail: {host: 'process'}}));
  frameId = requestAnimationFrame(animate);
- window.addEventListener('pagehide', () => {disposed = true; cancelAnimationFrame(frameId); three?.dispose(); svg.dispose(); tuning.dispose(); app.dispose();}, {once: true});
+ window.addEventListener('pagehide', () => {disposed = true; cancelAnimationFrame(frameId); three?.dispose(); svg.dispose(); tuning.dispose(); stepEditor.dispose(); app.dispose();}, {once: true});
 })(globalThis);

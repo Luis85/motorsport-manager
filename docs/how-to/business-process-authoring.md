@@ -186,6 +186,7 @@ Open the HTML directly. Use **Run simulation**, **Pause**, **Step 1 min**,
 **Advance 30 min**, and **Reset run**. **2D** and **3D** show one simulation;
 **Step scenes** and **Whole process** change the view without advancing time.
 **Definition editor** offers validation before **Apply draft & reset run**.
+To change one step, select it and choose **Edit step…** (in the inspector or beside **Frame view**). The step editor opens as a dialog with sections for basics, timing, people and capacity, completion values and counters, needs from earlier steps, backlog and outgoing flows (conditions on decisions). Problems the engine finds for that step appear beside the fields as you type. **Save to draft** keeps your edits in the draft without starting anything; **Apply and reset run** applies the whole draft (including other unapplied edits, which the dialog announces) and starts a fresh paused run. **Cancel**, Escape and **Close** ask before throwing edits away. The run pauses while the dialog is open. Adding or removing flows and steps is still done in the raw JSON draft.
 Unapplied edits stay in the draft when you switch to Activity. **Export draft**
 saves that text exactly, including unfinished JSON. **Export JSON** and
 **Download HTML** continue to use the active definition until you apply a valid
@@ -205,7 +206,7 @@ retain the latest 128 task completions, with an explicit omitted-record count.
 In 3D, active work appears as desk actors typing and reviewing screens while
 playback runs. Pause freezes their motion; reduced-motion preferences disable
 it. Additional work uses bounded markers, with counts preserving total activity.
-Focus the canvas to orbit with arrow keys, pan with Shift+arrows or WASD (or right-drag), zoom with +/−, or frame with F. In 2D, drag to pan, scroll or pinch to zoom, and press 0 to reset. Use **Run until** in the toolbar to choose a run length or Unlimited, and the **Tune values** form in the Definition editor to fine-tune an agent-built process before applying it.
+Focus the canvas to orbit with arrow keys, pan with Shift+arrows or WASD (or right-drag), zoom with +/−, or frame with F. In 2D, drag to pan, scroll or pinch to zoom, and press 0 to reset. Use **Run until** in the toolbar to choose a run length or Unlimited, and the **Tune values** form in the Definition editor (process, resources, arrivals) or **Edit step…** (one step) to fine-tune an agent-built process before applying it.
 
 **Export run report** downloads observed results, including retained task I/O. **Download HTML** embeds the
 active definition (for a multi-process game, every applied process in list order)

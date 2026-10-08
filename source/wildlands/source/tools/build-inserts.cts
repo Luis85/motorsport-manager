@@ -300,6 +300,8 @@ export const INSERTS: readonly Insert[] = [
   ["PROCESS_RENDERER_3D", "process-renderer-3d.js", "script", "template-process"],
   ["PROCESS_DATA_VIEW", "process-data-view.js", "script", "template-process"],
   ["PROCESS_TUNING", "process-tuning.js", "script", "template-process"],
+  ["PROCESS_STEP_MODEL", "process-step-model.js", "script", "template-process"],
+  ["PROCESS_STEP_EDITOR", "process-step-editor.js", "script", "template-process"],
   ["PROCESS_UI", "process-ui.js", "script", "template-process"],
   ["PROCESS_CSS", "process.css", "style", "template-process"]
 ];

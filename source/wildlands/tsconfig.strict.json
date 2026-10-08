@@ -392,6 +392,8 @@
     "source/process-renderer-2d.ts",
     "source/process-renderer-3d.ts",
     "source/process-tuning.ts",
+    "source/process-step-model.ts",
+    "source/process-step-editor.ts",
     "source/process-ui.ts",
     "source/process-data-view.ts",
     "source/tools/process-cli.cts",

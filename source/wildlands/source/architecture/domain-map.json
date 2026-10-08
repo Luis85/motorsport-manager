@@ -406,6 +406,8 @@
         "process-renderer-2d.ts",
         "process-renderer-3d.ts",
         "process-tuning.ts",
+        "process-step-model.ts",
+        "process-step-editor.ts",
         "process-ui.ts",
         "process-data-view.ts",
         "process-sdk.cts"

@@ -107,6 +107,9 @@
 .process-map-controls { position:absolute; right:10px; bottom:10px; display:flex; gap:6px; z-index:1; }
 .process-map-controls button { min-width:36px; min-height:36px; }
 #map svg { cursor:grab; touch-action:none; } #map svg.panning { cursor:grabbing; }
+/* The browser focus ring on an SVG group is scaled by the camera and read as a huge dark circle; use a screen-sized ring on the card instead. */
+#map svg g[role=button] { outline:none; }
+#map svg g[role=button]:focus-visible > rect:first-of-type { stroke:#ffe2bd; stroke-width:3px; stroke-dasharray:none; vector-effect:non-scaling-stroke; }
 #tuning fieldset, #tuning details { margin:0 0 10px; border:1px solid var(--line, #364150); border-radius:6px; padding:8px 10px; }
 #tuning label { display:grid; gap:4px; margin:6px 0; max-width:420px; } #tuning input, #tuning textarea { font:inherit; }
 .timer-dot { background:#d9c58a; } .process-adds, .process-counters { margin:6px 0; overflow-wrap:anywhere; } .process-adds { padding-left:18px; }
@@ -119,3 +122,53 @@
 .process-switch select { min-width:0; max-width:min(100%,320px); min-height:36px; }
 .process-header p#process-subtitle { overflow-wrap:anywhere; }
 @media(max-width:650px) { .process-header>div:first-child { flex:0 0 auto; } .process-switch { width:100%; }.process-switch select { flex:1 1 auto; max-width:100%; } }
+/* Step editor: a modal dialog over the page. Colours reuse the Process Studio tokens; the sheet scrolls inside, with a fixed header and footer. */
+.se-dialog { padding:0; border:1px solid var(--line); border-radius:10px; background:var(--bg); color:var(--text); width:min(760px,calc(100vw - 32px)); max-width:none; max-height:min(90vh,920px); overflow:hidden; box-shadow:0 22px 64px rgba(0,0,0,.6); font:14px/1.5 system-ui,sans-serif; }
+.se-dialog[open] { display:flex; flex-direction:column; }
+.se-dialog::backdrop { background:rgba(6,9,13,.8); }
+.se-dialog .se-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex:none; padding:16px 20px; border-bottom:1px solid var(--line); background:var(--panel); }
+.se-dialog .se-heading { min-width:0; overflow-wrap:anywhere; }
+.se-dialog h2 { font-size:18px; }
+.se-dialog .se-meta { margin-top:4px; font-size:12px; overflow-wrap:anywhere; }
+.se-dialog .se-chip { display:inline-block; padding:1px 9px; border:1px solid #ad8059; border-radius:999px; background:#3e3329; color:var(--text); font-size:12px; }
+.se-dialog code { font:12px/1.5 ui-monospace,monospace; color:var(--muted); }
+.se-dialog .se-body { flex:1 1 auto; min-height:0; overflow:auto; padding:16px 20px 8px; overscroll-behavior:contain; }
+.se-dialog .se-foot { flex:none; display:flex; flex-direction:column; gap:8px; padding:12px 20px 16px; border-top:1px solid var(--line); background:var(--panel); }
+.se-dialog .se-section { margin:0 0 20px; min-width:0; }
+.se-dialog .se-section+.se-section { border-top:1px solid var(--line); padding-top:18px; }
+.se-dialog h3 { margin:0 0 6px; font-size:15px; }
+.se-dialog h4 { margin:14px 0 6px; font-size:13px; }
+.se-dialog .se-help { margin:0; font-size:12px; color:var(--muted); overflow-wrap:anywhere; }
+.se-dialog .se-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr)); gap:12px 16px; margin:10px 0; }
+.se-dialog .se-field { display:grid; gap:4px; min-width:0; align-content:start; }
+.se-dialog label { overflow-wrap:anywhere; }
+.se-dialog input[type=text],.se-dialog input[type=number],.se-dialog textarea,.se-dialog select { width:100%; min-width:0; min-height:36px; padding:7px 8px; border:1px solid var(--line); border-radius:5px; background:var(--panel); color:var(--text); font:inherit; }
+.se-dialog textarea { resize:vertical; }
+.se-dialog input:focus-visible,.se-dialog select:focus-visible,.se-dialog textarea:focus-visible,.se-dialog [tabindex]:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.se-dialog input[type=checkbox],.se-dialog input[type=radio] { width:18px; height:18px; margin:2px 0 0; flex:none; accent-color:var(--accent); }
+.se-dialog .se-check { display:flex; align-items:flex-start; gap:8px; margin:8px 0; }
+.se-dialog fieldset { min-width:0; margin:0; }
+.se-dialog .se-radios { border:0; padding:0; margin:10px 0 0; }
+.se-dialog .se-radios legend { padding:0; margin-bottom:2px; }
+.se-dialog .se-card { margin:0 0 10px; border:1px solid var(--line); border-radius:6px; padding:6px 12px 12px; }
+.se-dialog .se-card legend { padding:0 6px; font-size:13px; }
+.se-dialog .se-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.se-dialog #se-buttons { justify-content:flex-end; }
+.se-dialog .se-err { margin:4px 0 0; font-size:13px; color:#ffc3bc; overflow-wrap:anywhere; }
+.se-dialog .se-err::before { content:"Problem: "; font-weight:650; }
+.se-dialog .se-status p { margin:0 0 4px; font-size:12px; }
+.se-dialog .se-summary { margin:6px 0 0; color:var(--text); font-weight:600; }
+.se-dialog .se-notice,.se-dialog .se-confirm { margin:0 0 10px; padding:9px 12px; border:1px solid #ad8059; border-radius:6px; background:#3e3329; color:var(--text); }
+.se-dialog .se-notice { margin-top:10px; }
+.se-dialog .se-confirm p { color:var(--text); margin:0 0 8px; font-weight:600; }
+.se-dialog .se-apply-errors { margin:8px 0; padding:9px 12px; border:1px solid #e07a7a; border-radius:6px; color:#ffc3bc; overflow-wrap:anywhere; }
+.se-dialog .se-apply-errors p { color:inherit; margin:0 0 4px; }.se-dialog .se-apply-errors ul { margin:4px 0 0; padding-left:20px; }
+.process-inspector .edit-step-button { display:block; width:100%; margin-top:12px; text-align:left; }
+@media(max-width:650px) {
+ .se-dialog { width:100vw; max-width:100vw; height:100dvh; max-height:100dvh; margin:0; border:0; border-radius:0; }
+ .se-dialog .se-head,.se-dialog .se-body,.se-dialog .se-foot { padding-inline:16px; }
+ .se-dialog input[type=text],.se-dialog input[type=number],.se-dialog textarea,.se-dialog select { min-height:44px; }
+ .se-dialog #se-buttons button { flex:1 1 auto; }
+}
+.se-dialog .se-status { margin:8px 0 16px; }
+.se-dialog .se-section>.se-help { margin-bottom:10px; }

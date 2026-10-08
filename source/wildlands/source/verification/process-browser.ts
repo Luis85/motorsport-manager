@@ -94,28 +94,25 @@ async function main(): Promise<void> {
    await page.mouse.down(); await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2 + 40, {steps: 4}); await page.mouse.up(); assert.notEqual(await viewBox(), zoomed);
    await page.locator('#frame').click(); assert.equal(await viewBox(), fitted); assert.deepEqual((await query(page)).snapshot, before.snapshot);
    await page.locator('#horizon').selectOption('unlimited'); assert.equal((await query(page)).horizon, null); await page.locator('#horizon').selectOption('1440'); assert.equal((await query(page)).horizon, 1440);
-   await page.locator('#show-definition').click(); await page.locator('#tuning details:has(input[id^="tune-step-dur"])').first().locator('summary').click();
-   const duration = page.locator('#tuning input[id^="tune-step-dur"]').first(); await duration.fill('77'); await duration.dispatchEvent('change');
-   assert.deepEqual((await query(page)).definition, before.definition); assert.match(await page.locator('#draft').inputValue(), /"duration": 77/);
-   await page.locator('#apply').click(); const applied = await query(page); assert.equal(applied.definition.steps.find(s => s.kind === 'task')!.duration, 77); assert.equal(applied.horizon, 1440); assert.equal(applied.snapshot.minute, 0);
+   await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step-inspector').click();
+   await page.locator('#se-duration').fill('77'); await page.locator('#se-save').click();
+   assert.deepEqual((await query(page)).definition, before.definition); assert.match(await page.evaluate(() => (document.getElementById('draft') as HTMLTextAreaElement).value), /"duration": 77/);
+   await page.locator('#show-definition').click(); await page.locator('#apply').click(); const applied = await query(page); assert.equal(applied.definition.steps.find(s => s.kind === 'task')!.duration, 77); assert.equal(applied.horizon, 1440); assert.equal(applied.snapshot.minute, 0);
    await page.locator('#horizon').selectOption('100000'); await page.locator('#show-events').click();
   });
   await check('Backlogs and step needs are visible in the inspector and editable in the tuning form', async () => {
    await page.locator('#reset').click(); const before = await query(page);
    await page.locator('[data-step="design-ready"]').click(); const backlog = await page.locator('#inspector').innerText(); assert.match(backlog, /Items \/ capacity/); assert.match(backlog, /Highest priority first/); assert.match(backlog, /Pull limit/);
    await page.locator('[data-step="implementation"]').click(); const needs = await page.locator('#inspector').innerText(); assert.match(needs, /Needs from earlier steps/); assert.match(needs, /requirementsReady = true/); assert.match(needs, /Delivered by Product design/);
-   await page.locator('#overview').click(); await page.locator('#show-definition').click();
-   const ready = page.locator('#tuning details', {hasText: 'Ready to build'}); await ready.locator('summary').click();
-   const capacity = ready.locator('input[id^="tune-backlog-cap"]'); await capacity.fill('2'); await capacity.dispatchEvent('change');
-   assert.equal(JSON.parse(await page.locator('#draft').inputValue()).steps.find((s: LWProcess.Step) => s.id === 'design-ready').backlog.capacity, 2);
-   const order = page.locator('#tuning select[id^="tune-backlog-order"]'); await order.selectOption('lifo');
-   const lifo = JSON.parse(await page.locator('#draft').inputValue()).steps.find((s: LWProcess.Step) => s.id === 'design-ready').backlog; assert.equal(lifo.order, 'lifo'); assert.equal(lifo.priority, undefined);
-   await page.locator('#tuning details', {hasText: 'Ready to build'}).locator('input[id^="tune-backlog-field"]').count().then(n => assert.equal(n, 0));
-   await page.locator('#tuning details', {hasText: 'Client handover'}).locator('summary').click();
-   await page.locator('#tune-add-need-10').click(); assert.equal(JSON.parse(await page.locator('#draft').inputValue()).steps[10].needs.length, 3);
-   await page.locator('#tuning details', {hasText: 'Client handover'}).locator('button', {hasText: 'Remove need'}).last().click(); assert.equal(JSON.parse(await page.locator('#draft').inputValue()).steps[10].needs.length, 2);
-   await page.locator('#tune-backlog-5').uncheck(); assert.equal(JSON.parse(await page.locator('#draft').inputValue()).steps[5].backlog, undefined);
-   assert.deepEqual((await query(page)).definition, before.definition); await page.locator('#restore-draft').click(); await page.locator('#show-events').click();
+   const draftOf = async () => JSON.parse(await page.evaluate(() => (document.getElementById('draft') as HTMLTextAreaElement).value)) as LWProcess.Definition;
+   await page.locator('[data-step="design-ready"]').click(); await page.locator('#edit-step').click();
+   await page.locator('#se-backlog-capacity').fill('2'); await page.locator('#se-backlog-order').selectOption('lifo'); assert.equal(await page.locator('#se-backlog-priority').count(), 0); await page.locator('#se-save').click();
+   const lifo = (await draftOf()).steps.find(s => s.id === 'design-ready')!.backlog!; assert.equal(lifo.capacity, 2); assert.equal(lifo.order, 'lifo'); assert.equal(lifo.priority, undefined);
+   await page.locator('[data-step="handover"]').click(); await page.locator('#edit-step-inspector').click();
+   await page.locator('#se-add-need').click(); await page.locator('[data-bind="needs.2.field"]').fill('qaSignoff'); await page.locator('#se-save').click(); assert.equal((await draftOf()).steps[10]!.needs!.length, 3);
+   await page.locator('#edit-step-inspector').click(); await page.locator('[data-act="remove-need"]').last().click(); await page.locator('#se-save').click(); assert.equal((await draftOf()).steps[10]!.needs!.length, 2);
+   await page.locator('[data-step="design-ready"]').click(); await page.locator('#edit-step-inspector').click(); await page.locator('#se-backlog-on').uncheck(); await page.locator('#se-save').click(); assert.equal((await draftOf()).steps[5]!.backlog, undefined);
+   assert.deepEqual((await query(page)).definition, before.definition); await page.locator('#show-definition').click(); await page.locator('#restore-draft').click(); await page.locator('#show-events').click();
   });
   await check('BPMN 2.0 export imports losslessly in the browser and foreign or unsupported BPMN reports explicit notes or rejects', async () => {
    await page.locator('#reset').click(); const before = await query(page);
@@ -350,10 +347,117 @@ async function main(): Promise<void> {
    assert.match(text, /Completed · \d+–\d+ min/); assert.match(text, /Step inputs/); assert.match(text, /waits/); assert.equal(await page.locator('#process-visit option').count(), 2);
    await page.locator('#process-written-toggle').click(); assert.match(await page.locator('.process-written').innerText(), /waits/);
    await page.locator('[data-step="until"]').click(); assert.match(await page.locator('#process-data').innerText(), /Completed · \d+–\d+ min/);
-   await page.locator('#show-definition').click(); await page.locator('[data-step="wait"]').click();
-   await page.locator('#tuning summary', {hasText: 'Wait for review window'}).click(); assert.equal(await page.locator('#tune-step-dur-2').inputValue(), '30');
-   assert.equal(await page.locator('#tune-step-add-2-0').inputValue(), '1'); assert.equal(await page.locator('#tune-step-cost-2').count(), 0);
-   await page.locator('#show-events').click();
+   await page.locator('[data-step="wait"]').click(); await page.locator('#edit-step-inspector').click(); assert.equal(await page.locator('#se-duration').inputValue(), '30');
+   assert.equal(await page.locator('[data-bind="add.0.delta"]').inputValue(), '1'); assert.equal(await page.locator('#se-cost').count(), 0);
+   await page.locator('#se-close').click(); assert.equal(await page.locator('dialog.se-dialog[open]').count(), 0);
+  });
+  const draftText = () => page.evaluate(() => (document.getElementById('draft') as HTMLTextAreaElement).value);
+  const freshStudio = async () => { await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'}); };
+  const dialogOpen = () => page.locator('dialog.se-dialog[open]').count();
+  const activeId = () => page.evaluate(() => document.activeElement?.id ?? '');
+  await check('Step editor opens as a modal from the inspector, traps focus, closes with Escape and restores the invoker focus', async () => {
+   await freshStudio(); await page.locator('[data-step="discovery"]').click();
+   await page.locator('#edit-step-inspector').focus(); await page.keyboard.press('Enter');
+   const dialog = page.getByRole('dialog', {name: 'Discovery'}); await dialog.waitFor(); assert.equal(await dialogOpen(), 1);
+   assert.equal(await page.evaluate(() => document.querySelector('dialog.se-dialog')!.matches(':modal')), true);
+   assert.equal(await page.locator('#se-title').innerText(), 'Discovery'); assert.equal(await page.locator('#se-kind').innerText(), 'task'); assert.equal(await page.locator('#se-id').innerText(), 'discovery');
+   assert.equal(await activeId(), 'se-name'); assert.equal((await query(page)).selected, 'discovery');
+   await assert.rejects(page.locator('#play').click({timeout: 700}), 'the page behind the modal is inert');
+   for (let i = 0; i < 70; i++) { await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => !!document.activeElement?.closest('dialog.se-dialog')), true, 'forward Tab stays inside at ' + i); }
+   for (let i = 0; i < 6; i++) { await page.keyboard.press('Shift+Tab'); assert.equal(await page.evaluate(() => !!document.activeElement?.closest('dialog.se-dialog')), true, 'Shift+Tab stays inside'); }
+   assert.equal(await page.getByRole('button', {name: 'Close'}).count(), 1);
+   await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step-inspector');
+   await page.locator('#edit-step').focus(); await page.keyboard.press('Enter'); await dialog.waitFor(); await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step');
+   await page.locator('#edit-step').click(); await page.locator('#se-close').click(); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step');
+   await page.locator('#overview').click(); assert.equal(await page.locator('#edit-step').isHidden(), true);
+   // Opening from a running simulation pauses it and the clock stays put while the editor is open.
+   await page.locator('[data-step="discovery"]').click(); await page.locator('#horizon').selectOption('1440'); await page.locator('#play').click();
+   await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {snapshot: {minute: number}}}}).LWProcessStudio.query().snapshot.minute > 0);
+   await page.locator('#edit-step').click(); await dialog.waitFor(); const frozen = await query(page); assert.equal(frozen.playing, false); await nextFrames(page, 45);
+   assert.equal((await query(page)).snapshot.minute, frozen.snapshot.minute); assert.match(await page.locator('#se-note').innerText(), /paused/);
+   await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0);
+  });
+  await check('Step editor edits timing, resources, completion effects and flow conditions and applies a fresh paused run', async () => {
+   await freshStudio(); await page.locator('#advance').click(); assert.equal((await query(page)).snapshot.minute, 30); const before = await query(page);
+   await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step-inspector').click();
+   await page.locator('#se-name').fill('Discovery workshop'); await page.locator('#se-duration').fill('20'); await page.locator('#se-cost').fill('12');
+   assert.match(await page.locator('#se-needs-summary').innerText(), /^Needs: 1 Product owner$/);
+   await page.locator('dialog.se-dialog').getByLabel('Business analysts').fill('2'); assert.match(await page.locator('#se-needs-summary').innerText(), /^Needs: 1 Product owner, 2 Business analysts$/);
+   await page.locator('#se-add-set').click(); await page.locator('[data-bind="set.1.key"]').fill('budgetApproved');
+   await page.locator('#se-add-set').click(); await page.locator('[data-bind="set.2.key"]').fill('clientTone'); await page.locator('[data-bind="set.2.value.type"]').selectOption('text'); await page.locator('[data-bind="set.2.value.text"]').fill('calm');
+   await page.locator('#se-add-add').click(); await page.locator('[data-bind="add.0.key"]').fill('attempts'); await page.locator('[data-bind="add.0.delta"]').fill('-2');
+   await page.locator('#se-save').click(); assert.equal(await dialogOpen(), 0); assert.equal(await page.locator('#message').innerText(), 'Saved to the draft. Apply the draft to start a fresh run.');
+   assert.deepEqual((await query(page)).definition, before.definition); assert.equal((await query(page)).snapshot.minute, 30);
+   const saved = JSON.parse(await draftText()) as LWProcess.Definition, discovery = saved.steps[1]!;
+   assert.equal(discovery.name, 'Discovery workshop'); assert.equal(discovery.duration, 20); assert.equal(discovery.cost, 12); assert.deepEqual(discovery.resources, {'product-owner': 1, 'business-analyst': 2});
+   assert.deepEqual(discovery.set, {problemFramed: true, budgetApproved: true, clientTone: 'calm'}); assert.deepEqual(discovery.add, {attempts: -2});
+   // A decision's conditions: compare with another field and save, then reopen, switch back to a value, reorder and apply. The draft also carries the discovery edits, which the modal announces.
+   await page.locator('[data-step="review-gate"]').click(); await page.locator('#edit-step-inspector').click();
+   assert.match(await page.locator('#se-flows-0-label').inputValue(), /Findings/); assert.equal(await page.locator('#se-flows-1-cond-on').isChecked(), false); assert.equal(await page.locator('[data-act="up"][data-i="0"]').isDisabled(), true);
+   assert.match(await page.locator('.se-dialog').innerText(), /Cannot move up/); assert.match(await page.locator('.se-dialog').innerText(), /edit the raw JSON draft/);
+   await page.locator('#se-flows-0-cond-mode-field').check(); await page.locator('#se-flows-0-cond-valueField').fill('reworkLimit'); await page.locator('#se-flows-0-cond-op').selectOption('lt'); await page.locator('#se-flows-0-cond-field').fill('reworks'); await page.locator('#se-save').click();
+   const gate = (JSON.parse(await draftText()) as LWProcess.Definition).flows.find(f => f.id === 'review-gate-rework')!; assert.deepEqual(gate.when, {field: 'reworks', op: 'lt', valueField: 'reworkLimit'});
+   await page.locator('#edit-step-inspector').click(); assert.equal(await page.locator('#se-other').isVisible(), true); assert.equal(await page.locator('#se-flows-0-cond-mode-field').isChecked(), true);
+   await page.locator('#se-flows-0-cond-mode-value').check(); await page.locator('#se-flows-0-cond-field').fill('needsRework'); await page.locator('#se-flows-0-cond-op').selectOption('eq'); assert.equal(await page.locator('#se-flows-0-cond-value-type').inputValue(), 'true');
+   await page.locator('#se-flows-0-label').fill('Findings to fix'); await page.locator('[data-act="down"][data-i="0"]').click();
+   assert.equal(await page.locator('#se-flows-1-label').inputValue(), 'Findings to fix'); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.act), 'up');
+   await page.locator('#se-apply').click(); assert.equal(await dialogOpen(), 0);
+   const applied = await query(page); assert.equal(applied.snapshot.minute, 0); assert.equal(applied.playing, false); assert.equal(applied.definition.revision, before.definition.revision + 1);
+   assert.equal(applied.definition.steps[1]!.name, 'Discovery workshop'); assert.equal(applied.definition.steps[1]!.duration, 20);
+   const out = applied.definition.flows.filter(f => f.from === 'review-gate'); assert.deepEqual(out.map(f => f.to), ['handover', 'rework']);
+   assert.deepEqual(out[1]!.when, {field: 'needsRework', op: 'eq', value: true}); assert.equal(out[1]!.label, 'Findings to fix'); assert.equal(await page.locator('#message').innerText(), 'Definition applied. New run is paused.');
+   assert.equal(await activeId(), ''); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.step), 'review-gate');
+  });
+  await check('Step editor shows engine diagnostics inline, keeps the draft on Cancel and asks before discarding changes', async () => {
+   await freshStudio(); const before = await query(page), original = await draftText();
+   await page.locator('[data-step="implementation"]').click(); await page.locator('#edit-step-inspector').click();
+   assert.match(await page.locator('#se-summary').innerText(), /No problems/);
+   await page.locator('#se-duration').fill(''); assert.match(await page.locator('#se-err-duration').innerText(), /positive whole-minute duration/); assert.match(await page.locator('#se-summary').innerText(), /1 problem/);
+   await page.locator('#se-save').waitFor(); await page.locator('#se-apply').click(); assert.equal(await page.locator('#se-apply-errors').isVisible(), true); assert.match(await page.locator('#se-apply-errors').innerText(), /duration/);
+   assert.equal(await dialogOpen(), 1); assert.equal(await draftText(), original, 'a failed apply never writes the draft'); assert.deepEqual((await query(page)).snapshot, before.snapshot);
+   await page.locator('#se-duration').fill('25'); assert.equal(await page.locator('#se-err-duration').innerText(), '');
+   await page.locator('[data-bind="set.0.key"]').fill('built'); await page.locator('[data-bind="set.0.key"]').fill('');
+   assert.match(await page.locator('#se-err-set').innerText(), /Name the field or remove this row/); assert.equal(await page.locator('#se-save').isDisabled(), true); assert.match(await page.locator('#se-reason').innerText(), /Fix the highlighted fields/);
+   await page.locator('[data-bind="set.0.key"]').fill('built');
+   await page.locator('[data-bind="needs.0.field"]').fill('ghostField'); assert.match(await page.locator('#se-err-needs-0').innerText(), /ghostField/);
+   await page.locator('[data-bind="needs.0.field"]').press('Escape'); assert.equal(await dialogOpen(), 1);
+   assert.equal(await page.locator('#se-confirm').isVisible(), true); assert.equal(await page.locator('#se-confirm-title').innerText(), 'Discard your changes to Implementation?'); assert.equal(await activeId(), 'se-keep');
+   await page.keyboard.press('Escape'); assert.equal(await page.locator('#se-confirm').isHidden(), true); assert.equal(await dialogOpen(), 1); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.bind), 'needs.0.field');
+   await page.locator('#se-cancel').click(); assert.equal(await activeId(), 'se-keep'); await page.locator('#se-keep').click(); assert.equal(await activeId(), 'se-cancel'); assert.equal(await page.locator('[data-bind="needs.0.field"]').inputValue(), 'ghostField');
+   await page.locator('#se-save').click(); assert.equal(await dialogOpen(), 0); assert.match(await draftText(), /ghostField/);
+   await page.locator('#edit-step-inspector').click(); assert.match(await page.locator('#se-err-needs-0').innerText(), /ghostField/);
+   await page.locator('#se-cancel').click(); assert.equal(await dialogOpen(), 0, 'Cancel with no new edits closes at once'); assert.match(await draftText(), /ghostField/);
+   await page.locator('#edit-step-inspector').click(); await page.locator('#se-name').fill('Renamed only in the modal'); await page.locator('#se-close').click();
+   assert.equal(await page.locator('#se-confirm').isVisible(), true); await page.locator('#se-discard').click(); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step-inspector');
+   assert.doesNotMatch(await draftText(), /Renamed only/); assert.match(await draftText(), /ghostField/);
+   await page.locator('#show-definition').click(); await page.locator('#restore-draft').click(); assert.equal(await draftText(), original); await page.locator('#show-events').click(); assert.deepEqual((await query(page)).definition, before.definition);
+  });
+  await check('Step editor reflows to a full-screen sheet at phone width without horizontal overflow', async () => {
+   await freshStudio(); await page.locator('#mode-2d').click(); await page.setViewportSize({width: 390, height: 844}); await nextFrames(page);
+   await page.locator('[data-step="review-gate"]').click(); await page.locator('#edit-step-inspector').click(); await page.locator('dialog.se-dialog[open]').waitFor();
+   const geometry = await page.evaluate(() => {
+    const d = document.querySelector('dialog.se-dialog') as HTMLElement, r = d.getBoundingClientRect(), body = d.querySelector('.se-body') as HTMLElement, foot = d.querySelector('.se-foot')!.getBoundingClientRect(), head = d.querySelector('.se-head')!.getBoundingClientRect();
+    const wide = [...d.querySelectorAll<HTMLElement>('input, select, textarea, button')].filter(n => n.getBoundingClientRect().right > r.right + 0.5 || n.getBoundingClientRect().left < r.left - 0.5).map(n => n.id || n.dataset.bind || n.textContent);
+    return {x: r.x, y: r.y, w: r.width, h: r.height, vw: innerWidth, vh: innerHeight, page: document.documentElement.scrollWidth > innerWidth, own: d.scrollWidth > d.clientWidth, scrolls: body.scrollHeight > body.clientHeight, footBottom: foot.bottom, headTop: head.top, wide,
+     label: parseFloat(getComputedStyle(d.querySelector('label')!).fontSize), help: parseFloat(getComputedStyle(d.querySelector('.se-help')!).fontSize), input: (d.querySelector('input[type=text]') as HTMLElement).getBoundingClientRect().height};
+   });
+   assert.deepEqual([geometry.x, geometry.y, geometry.w, geometry.h], [0, 0, geometry.vw, geometry.vh]); assert.equal(geometry.page, false); assert.equal(geometry.own, false); assert.deepEqual(geometry.wide, []);
+   assert.equal(geometry.scrolls, true); assert.equal(geometry.headTop, 0); assert.equal(Math.round(geometry.footBottom), geometry.vh); assert(geometry.label >= 13 && geometry.help >= 12 && geometry.input >= 44, JSON.stringify(geometry));
+   await page.screenshot({path: path.join(OUT, 'process-step-editor-mobile.png')});
+   await page.locator('#se-flows-0-label').scrollIntoViewIfNeeded(); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+   await page.keyboard.press('Escape'); await page.setViewportSize({width: 1440, height: 1060}); await nextFrames(page);
+   await page.locator('#edit-step-inspector').click(); const wide = (await page.locator('dialog.se-dialog').boundingBox())!; assert(wide.width <= 760 && wide.width > 600, 'desktop dialog is a centred sheet, not full screen'); assert(wide.x > 100);
+   await page.screenshot({path: path.join(OUT, 'process-step-editor-desktop.png')}); await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0);
+  });
+  await check('Selecting a step on the zoomed 2D map leaves no scaled focus ring around the card', async () => {
+   await freshStudio(); await page.locator('#mode-2d').click(); const box = (await page.locator('#map').boundingBox())!;
+   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2); await page.mouse.wheel(0, -600);
+   await page.locator('[id^="process-map-"]').nth(4).click({force: true}); await page.waitForFunction(() => document.querySelectorAll('#map svg g[role=button]').length === 1);
+   const ring = await page.evaluate(() => { const g = document.querySelector('#map svg g[role=button]') as SVGGElement, c = getComputedStyle(g), card = getComputedStyle(g.querySelector('rect')!); return {outline: c.outlineStyle, effect: card.vectorEffect}; });
+   assert.equal(ring.outline, 'none', 'the browser focus outline on the step group must be off because the camera scales it into a huge circle');
+   await page.locator('[id^="process-map-"]').first().focus(); await page.keyboard.press('Shift+Tab'); await page.keyboard.press('Tab');
+   const stroke = await page.evaluate(() => { const g = document.activeElement as SVGGElement, rect = g.querySelector('rect')!; return {vector: getComputedStyle(rect).vectorEffect, width: getComputedStyle(rect).strokeWidth}; });
+   assert.equal(stroke.vector, 'non-scaling-stroke', 'the keyboard focus ring must keep a screen-sized stroke'); assert.equal(stroke.width, '3px');
   });
   await check('Process browser lifecycle emits no runtime errors or network requests', async () => {
    assert.deepEqual(diagnostics.errors, []); assert.deepEqual(diagnostics.requests, []);
