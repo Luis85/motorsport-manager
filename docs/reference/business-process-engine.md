@@ -536,7 +536,7 @@ the rest automatically: inputs from arrival data and undelivered needs, process 
 from the step phases or the main route, outputs from declared step outputs and final
 deliveries, and measures from the snapshot. Do not repeat derived content in `sipoc`.
 
-How the SIPOC view derives its columns (`process-renderer-sipoc.ts`, pure `model()`):
+How the SIPOC view derives its columns (pure `model()` in `process-sipoc-model.ts`, drawn by `process-renderer-sipoc.ts`; the main-route walk and phase grouping are the shared `process-route.ts`, also used by the slide deck):
 suppliers and customers come only from `sipoc`, otherwise one muted "Add suppliers/customers
 in Edit process" card; inputs are the fields in arrival `data` and `draws` plus `needs` that
 no step delivers through `set`, `add` or `draws` (label from the need, else the declared
@@ -1057,7 +1057,8 @@ The process checks are registered Wildlands suites (see
 [`source/wildlands/VERIFICATION.md`](../../source/wildlands/VERIFICATION.md) for the gate):
 
 - `business-process` (Node): entry `source/test-process.cts`, which runs the check modules
-  `test-process-engine`, `-authoring`, `-steps`, `-random`, `-journeys` and `-semantics` (`.cts`)
+  `test-process-engine`, `-authoring`, `-steps`, `-random`, `-journeys`, `-semantics`, `-slides`
+  (the slide model) and `-slides-cli` (`process slides`, process-setting edits, `process diff`) (`.cts`)
   with shared helpers in `test-process-helpers.cts`.
 - `business-process-bpmn` (Node): entry `source/test-process-bpmn.cts` (foreign BPMN mapping,
   BPSim, standard export and the pinned numbers of the example files), after the extension round

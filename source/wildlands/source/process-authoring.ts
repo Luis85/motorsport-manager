@@ -10,6 +10,19 @@
     {id: 'end', name: 'Handover', kind: 'end', scene: {id: 'scene-end', position: [24, 0], color: '#77b5a0'}}],
    flows: [{id: 'start-work', from: 'start', to: 'work'}, {id: 'work-end', from: 'work', to: 'end'}], arrivals: [{at: 0, count: 1, interval: 0, data: {}}]});
  }
+ /** Process-setting operations: they write one optional top-level field, and null (or `process` for the genre) removes it. */
+ const SETTINGS = {setDescription: 'description', setSeed: 'seed', setGenre: 'genre', setSipoc: 'sipoc', setTrack: 'track'} as const;
+ /** Writes or removes a top-level field; a new field is placed in schema order among the existing keys, which keep their order. */
+ function setting(d: LWProcess.Definition, key: string, value: unknown, remove: boolean): void {
+  const record = d as unknown as Record<string, unknown>;
+  if (remove) { delete record[key]; return; }
+  if (Object.hasOwn(record, key)) { record[key] = value; return; }
+  const order = Object.keys(root.LWProcessCatalog.schema.properties as Record<string, unknown>), rank = (k: string) => { const i = order.indexOf(k); return i < 0 ? order.length : i; };
+  const entries = Object.entries(record), at = entries.findIndex(([k]) => rank(k) > rank(key));
+  entries.splice(at < 0 ? entries.length : at, 0, [key, value]);
+  for (const k of Object.keys(record)) delete record[k];
+  Object.assign(record, Object.fromEntries(entries));
+ }
  function edit(input: unknown, raw: unknown, draft = false): ReturnType<LWProcess.Authoring['edit']> {
   const base = root.LWProcessCatalog.validate(input, true);
   if (!base.acceptable) throw Error(base.diagnostics.map(e => e.path + ': ' + e.message).join('\n'));
@@ -34,6 +47,11 @@
    } else if (operation.op === 'setArrivals') definition.arrivals = operation.value;
    else if (operation.op === 'setStart') definition.start = operation.value;
    else if (operation.op === 'rename') definition.name = operation.value;
+   else if (Object.hasOwn(SETTINGS, operation.op)) {
+    if (!('value' in operation)) throw Error('Operation needs a value at ' + index);
+    const value: unknown = operation.value;
+    setting(definition, SETTINGS[operation.op as keyof typeof SETTINGS], value, operation.op === 'setGenre' ? value === 'process' : value === null);
+   }
    else throw Error('Unknown operation at ' + index);
   }
   definition.revision++;

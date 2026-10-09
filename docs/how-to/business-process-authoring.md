@@ -63,7 +63,28 @@ and `snapshot: null`. Resolve every diagnostic before `run` or `build`; `forge` 
 Use `--dry-run --draft` to preview an intermediate edit without writing.
 On a stale guard, inspect again and reconcile the intended change; do not retry
 with a guessed revision. `removeStep`, `removeFlow`, `removeResource`, `setStart`
-and `rename` complete the supported edit vocabulary.
+and `rename` complete the entity edit vocabulary. Process settings have their own
+operations, so nothing needs to be hand-edited into the JSON: `setDescription`
+(`value` text or `null`), `setSeed` (a whole number or `null`), `setGenre`
+(`process`, `customer-journey` or `user-journey`; `process` removes the field),
+`setSipoc` (`{suppliers, customers}` or `null`) and `setTrack` (a tracked-field list
+or `null`). `null` removes the field; a new field is written in schema order. They
+are recipe operations only: the definition schema is unchanged and admission still
+validates every value.
+
+To review a change, compare two definitions and explain the result:
+
+```sh
+bin/wildlands process diff --input /tmp/process-work/review.json --against /tmp/process-work/process.json
+bin/wildlands process slides --input /tmp/process-work/review.json --format md
+```
+
+`diff` reports changed steps (with names), flows, resources, arrival rules and
+process settings plus both revisions and fingerprints. `slides` explains the
+process as a slide deck: an overview (SIPOC for business processes, phases and
+touchpoints for journeys), the resource pools, every main-route step phase by
+phase, every other path and a summary. Add `--minutes N [--seed S]` for read-only
+facts from one fresh bounded run.
 
 ## Add branching and parallel work
 

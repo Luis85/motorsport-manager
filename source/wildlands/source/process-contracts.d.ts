@@ -150,7 +150,10 @@ declare namespace LWProcess {
   expectedRevision: number; expectedFingerprint: string;
   operations: ({op: 'putStep'; value: Step} | {op: 'putFlow'; value: Flow} | {op: 'putResource'; value: Resource} |
    {op: 'removeStep' | 'removeFlow' | 'removeResource'; id: string} |
-   {op: 'setArrivals'; value: Arrival[]} | {op: 'setStart'; value: string} | {op: 'rename'; value: string})[];
+   {op: 'setArrivals'; value: Arrival[]} | {op: 'setStart'; value: string} | {op: 'rename'; value: string} |
+   /** Process settings: null removes the field; `setGenre` with `process` removes `genre`. All validation stays with the catalog. */
+   {op: 'setDescription'; value: string | null} | {op: 'setSeed'; value: number | null} | {op: 'setGenre'; value: Genre} |
+   {op: 'setSipoc'; value: Sipoc | null} | {op: 'setTrack'; value: Track[] | null})[];
  }
  interface Authoring {
   create(id: string, name: string): Definition;

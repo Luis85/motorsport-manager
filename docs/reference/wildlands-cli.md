@@ -705,7 +705,7 @@ payloads.
 
 ## Business processes
 
-`bin/wildlands process` (also `process --help`, `-h`) describes the definition-first process tool family. It is a separate protocol from the game commands above: `process` failures use `code: "process-operation-failed"` with exit 2, and `process validate` exits 1 with no code when the definition is rejected. Options take one value (`--flag value`); `--draft`, `--dry-run`, `--bpsim`, `--no-auto-system-pool` and `--no-bpsim` take none. Unknown, duplicate and missing options, non-whole `--minutes` or `--expected-revision`, an unknown `--kind`, `--dry-run` together with `--output`, and a missing `--output` on `edit`/`attach` without `--dry-run` all fail with exit 2 before any file is read or written. Outputs never overwrite an input (including hard-link and symlink aliases). Required options are marked **yes**.
+`bin/wildlands process` (also `process --help`, `-h`) describes the definition-first process tool family. It is a separate protocol from the game commands above: `process` failures use `code: "process-operation-failed"` with exit 2, and `process validate` exits 1 with no code when the definition is rejected. Options take one value (`--flag value`); `--draft`, `--dry-run`, `--bpsim`, `--no-auto-system-pool` and `--no-bpsim` take none. Unknown, duplicate and missing options, non-whole `--minutes` or `--expected-revision`, an unknown `--kind` or `--format`, `--seed` on `slides` without `--minutes`, `--dry-run` together with `--output`, and a missing `--output` on `edit`/`attach` without `--dry-run` all fail with exit 2 before any file is read or written. Outputs never overwrite an input (including hard-link and symlink aliases). Required options are marked **yes**.
 
 | Command | Option | Required | Meaning |
 |---|---|---|---|
@@ -717,7 +717,7 @@ payloads.
 | `validate` | `--input` | yes | Definition JSON. |
 | | `--draft` | no | Accept graph diagnostics (reported, `runnable: false`). |
 | `inspect` | `--input` | yes | Definition JSON; never advances time. |
-| `edit` | `--input`, `--recipe` | yes | Definition and guarded recipe. |
+| `edit` | `--input`, `--recipe` | yes | Definition and guarded recipe. Operations: `putStep`, `putFlow`, `putResource`, `removeStep`, `removeFlow`, `removeResource`, `setArrivals`, `setStart`, `rename`, and the process settings `setDescription`, `setSeed`, `setSipoc`, `setTrack` (`null` removes the field) and `setGenre` (`process` removes it). |
 | | `--output` | yes unless `--dry-run` | Edited definition. |
 | | `--dry-run` | no | Write nothing; conflicts with `--output`. |
 | | `--draft` | no | Allow intermediate graph diagnostics. |
@@ -739,6 +739,12 @@ payloads.
 | | `--no-bpsim` | no | Ignore BPSim scenarios. |
 | | `--scenario ID` | no | BPSim scenario id or name (default: the first); an unknown one fails. Conflicts with `--no-bpsim`. |
 | | `--report FILE` | no | Also write the complete report (every `mapping` entry) as JSON; it must differ from the input. |
+| `slides` | `--input` | yes | Admitted definition JSON to a slide deck that explains the process (`format: wildlands-process-slides`): an intro (title, overview, resources), one section per main-route phase (or one main-route section), a variants section for every step off the main route, and a summary. Every step appears on exactly one step slide; all text is plain text derived from the definition. |
+| | `--format json\|md` | no | `json` (default) prints the envelope with `deck`; `md` prints the Markdown text itself (not JSON) to stdout. |
+| | `--minutes N` | no | Adds read-only live facts from one fresh bounded run (the same run as `process run`), named by minute and seed. |
+| | `--seed S` | no | Seed for that run (requires `--minutes`); default the definition's seed, else 1. |
+| | `--output` | no | Writes the deck JSON or the Markdown file instead and prints `output`, `format`, `slides`, `sections` and `live`. |
+| `diff` | `--input`, `--against` | yes | Compares two definitions (drafts allowed): what changed from `--against` (the reference) to `--input`. Prints `input` and `against` (`file`, `id`, `revision`, `fingerprint`), `identical`, `summary`, `changes` (`steps`, `flows`, `resources`, `arrivals`, `settings` counts), `changedSteps` (`id`, `name`, `change`: added, removed or changed) and `changedSettings` (top-level setting names). Writes nothing. |
 | `forge` | `--input`, `--output` | yes | New directory; its parent must exist and the directory must not. |
 | `attach` | `--input`, `--asset`, `--step`, `--expected-revision`, `--expected-fingerprint` | yes | Scene Forge asset for a step, with edit guards. |
 | | `--output` | yes unless `--dry-run` | Edited definition. |

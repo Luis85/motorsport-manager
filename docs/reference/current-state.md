@@ -141,6 +141,11 @@ structural, type and reference rules only) backs `process validate-bpmn` and the
 dialog's informational Standards check, and the registered gate checks every demo and
 example export with it; an earlier one-off run used the OMG schema files
 ([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)).
+`process slides` explains an admitted definition as a deterministic plain-text slide
+deck (JSON or Markdown; optional read-only facts from one bounded seeded run) built by
+the pure `LWProcessSlides` model, `process diff` compares two definitions, and guarded
+recipe operations set or remove the description, seed, genre, SIPOC parties and tracked
+fields without changing the definition schema.
 
 Not implemented: BPMN execution, external service execution, calendars or working
 hours for timers, event-driven gateway semantics, complex gateways beyond the drop
