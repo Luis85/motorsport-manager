@@ -1,0 +1,969 @@
+{
+  "format": "wildlands-process",
+  "schemaVersion": 1,
+  "revision": 2,
+  "id": "delivery-release",
+  "name": "Weekly delivery and release train",
+  "description": "A product team's delivery process: a weekly cadence of backlog refinement, iteration planning, daily stand-ups, review and retrospective feeds a release train that ships a small increment every week. One case is one product, followed from the approved idea through an inception and a Hello World walking skeleton released as 0.1.0, then weekly iterations, each released as the next minor version 0.x.0 (the increments counter is the minor version), until the MVP scope is released and launched as 1.0.0. The MVP scope (6 to 8 increments) is drawn when the product arrives, and in 30% of reviews stakeholder feedback adds one increment to it. Planning commits 3 to 5 items; developers build them in parallel (multi-instance: a fourth or fifth item queues for one of three developers) while four iteration days, each opening with a daily stand-up, run one after another (sequential multi-instance). An item still in progress after three days escalates to the daily stand-up (a non-interrupting deadline) while the work continues. Before each release an inclusive gateway adds a UX acceptance when the user interface changed (60%), a data-migration rehearsal when stored data changed (25%), both, or neither. CI and the release pipeline are automated system steps that execute nothing. Time is in business minutes, 480 per working day, so an iteration takes about one working week. Every random value derives from the definition seed 7 and the case and step, so the same seed always gives the same run. All durations, costs, capacities and probabilities are synthetic illustrative assumptions, not measured team performance or a forecast.",
+  "seed": 7,
+  "start": "idea",
+  "sipoc": {
+    "suppliers": [
+      {
+        "name": "Stakeholders",
+        "supplies": "Product goals, priorities and feedback at every weekly review"
+      },
+      {
+        "name": "Product owner",
+        "supplies": "Product vision, MVP scope and the ordered backlog"
+      },
+      {
+        "name": "Users and customer support",
+        "supplies": "Usage feedback and requests that enter refinement"
+      },
+      {
+        "name": "Platform team",
+        "supplies": "CI/CD pipeline, environments and hosting"
+      }
+    ],
+    "customers": [
+      {
+        "name": "Stakeholders",
+        "receives": "A demonstrated increment every week"
+      },
+      {
+        "name": "End users",
+        "receives": "Released versions 0.1.0 to 0.x.0, then the 1.0.0 MVP"
+      },
+      {
+        "name": "Operations and support",
+        "receives": "A tagged, deployed release every week"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "id": "product-owner",
+      "name": "Product owner",
+      "capacity": 1,
+      "costPerMinute": 3
+    },
+    {
+      "id": "delivery-lead",
+      "name": "Delivery lead (Scrum Master)",
+      "capacity": 1,
+      "costPerMinute": 3
+    },
+    {
+      "id": "developers",
+      "name": "Developers",
+      "capacity": 3,
+      "costPerMinute": 3
+    },
+    {
+      "id": "ux-designer",
+      "name": "UX designer",
+      "capacity": 1,
+      "costPerMinute": 2
+    },
+    {
+      "id": "stakeholders",
+      "name": "Stakeholders",
+      "capacity": 2,
+      "costPerMinute": 0
+    },
+    {
+      "id": "ci-pipeline",
+      "name": "CI/CD pipeline runners",
+      "kind": "system",
+      "capacity": 2,
+      "costPerMinute": 1
+    }
+  ],
+  "steps": [
+    {
+      "id": "idea",
+      "name": "Product idea approved",
+      "kind": "start",
+      "phase": "Inception (0.1.0)",
+      "scene": {
+        "id": "scene-idea",
+        "position": [
+          0,
+          0
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "A product idea is approved and the team starts the delivery process. One case is one product, followed from the idea to its 1.0.0 MVP."
+    },
+    {
+      "id": "inception",
+      "name": "Inception: vision, MVP scope and first backlog",
+      "kind": "task",
+      "phase": "Inception (0.1.0)",
+      "scene": {
+        "id": "scene-inception",
+        "position": [
+          14,
+          0
+        ],
+        "color": "#e8c547"
+      },
+      "description": "Half a day with the product owner, two stakeholders, the delivery lead and the UX designer: product vision, the MVP scope (the number of increments planned to 1.0.0, drawn per product) and a first ordered backlog.",
+      "duration": 240,
+      "resources": {
+        "product-owner": 1,
+        "stakeholders": 2,
+        "delivery-lead": 1,
+        "ux-designer": 1
+      },
+      "set": {
+        "visionReady": true
+      },
+      "outputs": [
+        {
+          "field": "visionReady",
+          "label": "Product vision and first backlog"
+        }
+      ]
+    },
+    {
+      "id": "skeleton",
+      "name": "Build the Hello World skeleton",
+      "kind": "task",
+      "phase": "Inception (0.1.0)",
+      "scene": {
+        "id": "scene-skeleton",
+        "position": [
+          28,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "Two developers build the walking skeleton: an end-to-end Hello World through every layer, the repository and the pipeline. One to three days (triangular, mode two days).",
+      "duration": 960,
+      "timing": {
+        "dist": "triangular",
+        "min": 480,
+        "mode": 960,
+        "max": 1440
+      },
+      "resources": {
+        "developers": 2
+      },
+      "needs": [
+        {
+          "field": "visionReady",
+          "label": "Product vision and first backlog"
+        }
+      ],
+      "set": {
+        "skeletonBuilt": true
+      },
+      "outputs": [
+        {
+          "field": "skeletonBuilt",
+          "label": "Hello World skeleton"
+        }
+      ]
+    },
+    {
+      "id": "skeleton-release",
+      "name": "Release 0.1.0: Hello World skeleton",
+      "kind": "system",
+      "phase": "Inception (0.1.0)",
+      "scene": {
+        "id": "scene-skeleton-release",
+        "position": [
+          42,
+          0
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The CI/CD pipeline tags and deploys the first increment, version 0.1.0. The increments counter is the minor version: 0.<increments>.0. Automated; no people are occupied.",
+      "duration": 20,
+      "technology": "CI/CD release pipeline",
+      "resources": {
+        "ci-pipeline": 1
+      },
+      "needs": [
+        {
+          "field": "skeletonBuilt",
+          "label": "Hello World skeleton"
+        }
+      ],
+      "set": {
+        "released": true
+      },
+      "add": {
+        "increments": 1
+      },
+      "outputs": [
+        {
+          "field": "released",
+          "label": "Released increment"
+        },
+        {
+          "field": "increments",
+          "label": "Increments released (minor version)"
+        }
+      ]
+    },
+    {
+      "id": "refinement",
+      "name": "Weekly backlog refinement",
+      "kind": "task",
+      "phase": "Refine and plan",
+      "scene": {
+        "id": "scene-refinement",
+        "position": [
+          56,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "Every week starts here: the product owner, two developers and the UX designer refine and order the next backlog items, including the stakeholder feedback from the last review (90 minutes).",
+      "duration": 90,
+      "resources": {
+        "product-owner": 1,
+        "developers": 2,
+        "ux-designer": 1
+      },
+      "needs": [
+        {
+          "field": "released",
+          "label": "Released increment"
+        }
+      ],
+      "set": {
+        "refined": true
+      }
+    },
+    {
+      "id": "planning",
+      "name": "Iteration planning",
+      "kind": "task",
+      "phase": "Refine and plan",
+      "scene": {
+        "id": "scene-planning",
+        "position": [
+          70,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "The product owner, the delivery lead and all developers agree the iteration goal and commit to 3 to 5 refined items. Planning also notes whether the increment changes the user interface (60%) or stored data (25%). The iteration counter goes up by one.",
+      "duration": 120,
+      "resources": {
+        "product-owner": 1,
+        "delivery-lead": 1,
+        "developers": 3
+      },
+      "needs": [
+        {
+          "field": "refined",
+          "label": "Refined backlog items"
+        }
+      ],
+      "add": {
+        "iteration": 1
+      },
+      "draws": [
+        {
+          "field": "plannedItems",
+          "kind": "int",
+          "min": 3,
+          "max": 5
+        },
+        {
+          "field": "uiChanged",
+          "kind": "chance",
+          "percent": 60
+        },
+        {
+          "field": "dataChanged",
+          "kind": "chance",
+          "percent": 25
+        }
+      ],
+      "outputs": [
+        {
+          "field": "plannedItems",
+          "label": "Committed backlog items"
+        },
+        {
+          "field": "iteration",
+          "label": "Iteration number"
+        }
+      ]
+    },
+    {
+      "id": "iteration",
+      "name": "Iteration runs",
+      "kind": "fork",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-iteration",
+        "position": [
+          84,
+          0
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "The build work and the iteration days with their daily stand-ups run in parallel; the iteration closes when both are done.",
+      "join": "iteration-done"
+    },
+    {
+      "id": "build",
+      "name": "Implement the committed items",
+      "kind": "task",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-build",
+        "position": [
+          98,
+          -10
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "One developer per committed item, all items in parallel (multi-instance from plannedItems), so a fourth or fifth item queues for a free developer. Each item takes half a day to almost four days (triangular, mode 1.5 days). An item still in progress after three days escalates to the daily stand-up as an impediment while the work continues.",
+      "duration": 720,
+      "timing": {
+        "dist": "triangular",
+        "min": 240,
+        "mode": 720,
+        "max": 1800
+      },
+      "resources": {
+        "developers": 1
+      },
+      "instances": {
+        "field": "plannedItems",
+        "mode": "parallel"
+      },
+      "deadline": {
+        "after": 1440,
+        "mode": "escalate",
+        "flow": "build-impediment"
+      },
+      "set": {
+        "itemsBuilt": true
+      },
+      "outputs": [
+        {
+          "field": "itemsBuilt",
+          "label": "Implemented backlog items"
+        }
+      ]
+    },
+    {
+      "id": "ci-checks",
+      "name": "CI: build, test and merge",
+      "kind": "system",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-ci-checks",
+        "position": [
+          112,
+          -10
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The CI pipeline builds the iteration branch, runs the automated tests and merges to main. Automated; 10 to 30 minutes.",
+      "duration": 20,
+      "timing": {
+        "dist": "uniform",
+        "min": 10,
+        "max": 30
+      },
+      "technology": "CI pipeline",
+      "resources": {
+        "ci-pipeline": 1
+      },
+      "set": {
+        "ciGreen": true
+      },
+      "outputs": [
+        {
+          "field": "ciGreen",
+          "label": "Green build on main"
+        }
+      ]
+    },
+    {
+      "id": "dailies",
+      "name": "Daily stand-up and iteration day",
+      "kind": "task",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-dailies",
+        "position": [
+          105,
+          10
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "Four iteration days one after another (sequential multi-instance), each opening with the 15-minute daily stand-up. A day occupies no pool, so developers stay free for the build; the fixed cost of 45 per day stands for the stand-up time.",
+      "duration": 450,
+      "cost": 45,
+      "instances": {
+        "count": 4,
+        "mode": "sequential"
+      },
+      "set": {
+        "timeboxDone": true
+      },
+      "outputs": [
+        {
+          "field": "timeboxDone",
+          "label": "Iteration timebox used"
+        }
+      ]
+    },
+    {
+      "id": "iteration-done",
+      "name": "Iteration closed",
+      "kind": "join",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-iteration-done",
+        "position": [
+          126,
+          0
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "The iteration closes when the iteration days are over and the committed items are merged with a green build.",
+      "needs": [
+        {
+          "field": "ciGreen",
+          "label": "Green build on main"
+        },
+        {
+          "field": "timeboxDone",
+          "label": "Iteration timebox used"
+        }
+      ]
+    },
+    {
+      "id": "impediment",
+      "name": "Raise the impediment and swarm",
+      "kind": "task",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-impediment",
+        "position": [
+          98,
+          -26
+        ],
+        "color": "#d98aa6"
+      },
+      "description": "Escalation path: the delivery lead takes the overdue item from the daily stand-up and clears the blocker (one hour). The item keeps being built meanwhile.",
+      "duration": 60,
+      "resources": {
+        "delivery-lead": 1
+      },
+      "add": {
+        "impediments": 1
+      }
+    },
+    {
+      "id": "impediment-handled",
+      "name": "Impediment handled",
+      "kind": "end",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-impediment-handled",
+        "position": [
+          112,
+          -26
+        ],
+        "color": "#d98aa6"
+      },
+      "description": "The escalation ends here; the iteration itself continues on its normal route."
+    },
+    {
+      "id": "review",
+      "name": "Weekly review with stakeholders",
+      "kind": "task",
+      "phase": "Review and retro",
+      "scene": {
+        "id": "scene-review",
+        "position": [
+          126,
+          34
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "The product owner and a developer demonstrate the increment to two stakeholders and collect feedback (one hour).",
+      "duration": 60,
+      "resources": {
+        "product-owner": 1,
+        "stakeholders": 2,
+        "developers": 1
+      },
+      "needs": [
+        {
+          "field": "ciGreen",
+          "label": "Green build on main"
+        }
+      ],
+      "set": {
+        "reviewed": true
+      }
+    },
+    {
+      "id": "feedback",
+      "name": "Stakeholder feedback",
+      "kind": "decision",
+      "phase": "Review and retro",
+      "scene": {
+        "id": "scene-feedback",
+        "position": [
+          112,
+          34
+        ],
+        "color": "#d6a2ce"
+      },
+      "description": "In 30% of reviews the stakeholders ask for something new that the MVP needs; otherwise the feedback fits the plan."
+    },
+    {
+      "id": "reprioritise",
+      "name": "Add the feedback to the MVP backlog",
+      "kind": "task",
+      "phase": "Review and retro",
+      "scene": {
+        "id": "scene-reprioritise",
+        "position": [
+          105,
+          48
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "The product owner and a stakeholder turn the request into backlog items. The MVP grows by one increment (mvpIncrements + 1).",
+      "duration": 45,
+      "resources": {
+        "product-owner": 1,
+        "stakeholders": 1
+      },
+      "add": {
+        "mvpIncrements": 1
+      }
+    },
+    {
+      "id": "retro",
+      "name": "Weekly retrospective",
+      "kind": "task",
+      "phase": "Review and retro",
+      "scene": {
+        "id": "scene-retro",
+        "position": [
+          98,
+          34
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "The delivery lead, all developers and the product owner inspect the week and agree one improvement for the next iteration (one hour).",
+      "duration": 60,
+      "resources": {
+        "delivery-lead": 1,
+        "developers": 3,
+        "product-owner": 1
+      },
+      "needs": [
+        {
+          "field": "reviewed",
+          "label": "Reviewed increment"
+        }
+      ],
+      "set": {
+        "improvementAgreed": true
+      }
+    },
+    {
+      "id": "release-prep",
+      "name": "Release checks needed?",
+      "kind": "fork",
+      "phase": "Release 0.x.0",
+      "scene": {
+        "id": "scene-release-prep",
+        "position": [
+          84,
+          34
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "Inclusive gateway: a UX acceptance when the increment changes the user interface, a migration rehearsal when it changes stored data, both, or neither (the default path goes straight to the release candidate).",
+      "join": "release-ready",
+      "mode": "inclusive"
+    },
+    {
+      "id": "ux-acceptance",
+      "name": "UX acceptance on staging",
+      "kind": "task",
+      "phase": "Release 0.x.0",
+      "scene": {
+        "id": "scene-ux-acceptance",
+        "position": [
+          70,
+          24
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "The UX designer and the product owner accept the changed screens on staging (45 minutes).",
+      "duration": 45,
+      "resources": {
+        "ux-designer": 1,
+        "product-owner": 1
+      },
+      "set": {
+        "uxAccepted": true
+      }
+    },
+    {
+      "id": "migration-rehearsal",
+      "name": "Rehearse the data migration",
+      "kind": "task",
+      "phase": "Release 0.x.0",
+      "scene": {
+        "id": "scene-migration-rehearsal",
+        "position": [
+          70,
+          44
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "A developer rehearses the data migration against a copy of production (one and a half hours).",
+      "duration": 90,
+      "resources": {
+        "developers": 1
+      },
+      "set": {
+        "migrationRehearsed": true
+      }
+    },
+    {
+      "id": "release-ready",
+      "name": "Release candidate ready",
+      "kind": "join",
+      "phase": "Release 0.x.0",
+      "scene": {
+        "id": "scene-release-ready",
+        "position": [
+          56,
+          34
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "Waits for exactly the release checks this increment needed."
+    },
+    {
+      "id": "release-pipeline",
+      "name": "Release pipeline: tag 0.x.0 and deploy",
+      "kind": "system",
+      "phase": "Release 0.x.0",
+      "scene": {
+        "id": "scene-release-pipeline",
+        "position": [
+          42,
+          34
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The CI/CD pipeline tags the next minor version and deploys it to production. The increments counter goes up by one. Automated; no people are occupied.",
+      "duration": 25,
+      "technology": "CI/CD release pipeline",
+      "resources": {
+        "ci-pipeline": 1
+      },
+      "needs": [
+        {
+          "field": "improvementAgreed",
+          "label": "Retrospective improvement"
+        }
+      ],
+      "set": {
+        "released": true
+      },
+      "add": {
+        "increments": 1
+      },
+      "outputs": [
+        {
+          "field": "released",
+          "label": "Released increment"
+        },
+        {
+          "field": "increments",
+          "label": "Increments released (minor version)"
+        }
+      ]
+    },
+    {
+      "id": "mvp-check",
+      "name": "MVP scope released?",
+      "kind": "decision",
+      "phase": "Release 0.x.0",
+      "scene": {
+        "id": "scene-mvp-check",
+        "position": [
+          28,
+          34
+        ],
+        "color": "#d6a2ce"
+      },
+      "description": "Starts the next weekly iteration while fewer increments are released than the MVP needs; otherwise the product is ready for 1.0.0.",
+      "needs": [
+        {
+          "field": "increments",
+          "label": "Increments released (minor version)"
+        },
+        {
+          "field": "mvpIncrements",
+          "label": "MVP scope in increments"
+        }
+      ]
+    },
+    {
+      "id": "mvp-launch",
+      "name": "Launch 1.0.0 (MVP)",
+      "kind": "task",
+      "phase": "MVP 1.0.0",
+      "scene": {
+        "id": "scene-mvp-launch",
+        "position": [
+          14,
+          34
+        ],
+        "color": "#e8c547"
+      },
+      "description": "Go/no-go with the product owner, the delivery lead and two stakeholders, then the 1.0.0 launch of the MVP (two hours).",
+      "duration": 120,
+      "resources": {
+        "product-owner": 1,
+        "delivery-lead": 1,
+        "stakeholders": 2
+      },
+      "needs": [
+        {
+          "field": "increments",
+          "label": "Increments released (minor version)"
+        }
+      ],
+      "set": {
+        "mvpLaunched": true
+      },
+      "outputs": [
+        {
+          "field": "mvpLaunched",
+          "label": "MVP 1.0.0 in production"
+        }
+      ]
+    },
+    {
+      "id": "mvp-live",
+      "name": "1.0.0 MVP live",
+      "kind": "end",
+      "phase": "MVP 1.0.0",
+      "scene": {
+        "id": "scene-mvp-live",
+        "position": [
+          0,
+          34
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The MVP is live as 1.0.0. Delivery continues after this, but the model ends here."
+    }
+  ],
+  "flows": [
+    {
+      "id": "idea-inception",
+      "from": "idea",
+      "to": "inception"
+    },
+    {
+      "id": "inception-skeleton",
+      "from": "inception",
+      "to": "skeleton"
+    },
+    {
+      "id": "skeleton-skeleton-release",
+      "from": "skeleton",
+      "to": "skeleton-release"
+    },
+    {
+      "id": "skeleton-release-refinement",
+      "from": "skeleton-release",
+      "to": "refinement"
+    },
+    {
+      "id": "refinement-planning",
+      "from": "refinement",
+      "to": "planning"
+    },
+    {
+      "id": "planning-iteration",
+      "from": "planning",
+      "to": "iteration"
+    },
+    {
+      "id": "iteration-build",
+      "from": "iteration",
+      "to": "build"
+    },
+    {
+      "id": "iteration-dailies",
+      "from": "iteration",
+      "to": "dailies"
+    },
+    {
+      "id": "build-ci-checks",
+      "from": "build",
+      "to": "ci-checks"
+    },
+    {
+      "id": "ci-checks-iteration-done",
+      "from": "ci-checks",
+      "to": "iteration-done"
+    },
+    {
+      "id": "dailies-iteration-done",
+      "from": "dailies",
+      "to": "iteration-done"
+    },
+    {
+      "id": "build-impediment",
+      "from": "build",
+      "to": "impediment",
+      "label": "Overdue after 3 days",
+      "on": "deadline"
+    },
+    {
+      "id": "impediment-impediment-handled",
+      "from": "impediment",
+      "to": "impediment-handled"
+    },
+    {
+      "id": "iteration-done-review",
+      "from": "iteration-done",
+      "to": "review"
+    },
+    {
+      "id": "review-feedback",
+      "from": "review",
+      "to": "feedback"
+    },
+    {
+      "id": "feedback-reprioritise",
+      "from": "feedback",
+      "to": "reprioritise",
+      "label": "Change requested",
+      "when": {
+        "chance": 30
+      }
+    },
+    {
+      "id": "feedback-retro",
+      "from": "feedback",
+      "to": "retro",
+      "label": "Fits the plan"
+    },
+    {
+      "id": "reprioritise-retro",
+      "from": "reprioritise",
+      "to": "retro"
+    },
+    {
+      "id": "retro-release-prep",
+      "from": "retro",
+      "to": "release-prep"
+    },
+    {
+      "id": "release-prep-ux-acceptance",
+      "from": "release-prep",
+      "to": "ux-acceptance",
+      "label": "UI changed",
+      "when": {
+        "field": "uiChanged",
+        "op": "eq",
+        "value": true
+      }
+    },
+    {
+      "id": "release-prep-migration-rehearsal",
+      "from": "release-prep",
+      "to": "migration-rehearsal",
+      "label": "Data changed",
+      "when": {
+        "field": "dataChanged",
+        "op": "eq",
+        "value": true
+      }
+    },
+    {
+      "id": "release-prep-release-ready",
+      "from": "release-prep",
+      "to": "release-ready",
+      "label": "No extra check"
+    },
+    {
+      "id": "ux-acceptance-release-ready",
+      "from": "ux-acceptance",
+      "to": "release-ready"
+    },
+    {
+      "id": "migration-rehearsal-release-ready",
+      "from": "migration-rehearsal",
+      "to": "release-ready"
+    },
+    {
+      "id": "release-ready-release-pipeline",
+      "from": "release-ready",
+      "to": "release-pipeline"
+    },
+    {
+      "id": "release-pipeline-mvp-check",
+      "from": "release-pipeline",
+      "to": "mvp-check"
+    },
+    {
+      "id": "mvp-check-refinement",
+      "from": "mvp-check",
+      "to": "refinement",
+      "label": "Next weekly iteration",
+      "when": {
+        "field": "increments",
+        "op": "lt",
+        "valueField": "mvpIncrements"
+      }
+    },
+    {
+      "id": "mvp-check-mvp-launch",
+      "from": "mvp-check",
+      "to": "mvp-launch",
+      "label": "MVP scope released"
+    },
+    {
+      "id": "mvp-launch-mvp-live",
+      "from": "mvp-launch",
+      "to": "mvp-live"
+    }
+  ],
+  "arrivals": [
+    {
+      "at": 0,
+      "count": 1,
+      "interval": 0,
+      "data": {},
+      "draws": [
+        {
+          "field": "mvpIncrements",
+          "kind": "int",
+          "min": 6,
+          "max": 8
+        }
+      ]
+    }
+  ]
+}
