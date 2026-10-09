@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene",
+  "id": "scene-design-ready",
+  "name": "Ready to build",
+  "revision": 0,
+  "units": "meters",
+  "parameters": {},
+  "geometries": {},
+  "materials": {},
+  "nodes": [
+    {
+      "id": "workstation",
+      "type": "model",
+      "model": "scene-design-ready"
+    }
+  ]
+}

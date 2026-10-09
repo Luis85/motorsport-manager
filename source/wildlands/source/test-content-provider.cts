@@ -112,7 +112,7 @@ test('The injected scenario catalog orders built-ins and selects its declared de
 
 test('Built artifacts run the content provider after their data globals and before every engine module',()=>{
  const directory=path.join(__dirname,'artifacts'),manifests=fs.readdirSync(directory).filter(file=>file.endsWith('.manifest.json')).sort();
- assert.deepEqual(manifests.map(file=>file.replace('.manifest.json','')),['colony-play','pet-play','rts-play','showcase','studio']);
+ assert.deepEqual(manifests.map(file=>file.replace('.manifest.json','')),['colony-play','pet-play','process-play','rts-play','showcase','studio']);
  for(const file of manifests){
   const manifest=json(path.join('artifacts',file)) as {profile:string;segments:{kind:string;name:string}[]};
   const scripts=manifest.segments.filter(segment=>segment.kind!=='style');
@@ -120,6 +120,15 @@ test('Built artifacts run the content provider after their data globals and befo
   assert(scripts.slice(0,firstScript).every(segment=>segment.kind==='data'),manifest.profile+': data globals must precede every module');
   assert.equal(scripts[firstScript]?.name,'CONTENT_PROVIDER',manifest.profile+': the content provider must be the first module');
  }
+});
+
+test('Browser artifacts adopt an ordered process list beside the first process, and a single process declares no list',()=>{
+ const first={id:'one'},second={id:'two'};
+ const many=adopted({LWProcessDefinition:first,LWProcessDefinitions:[first,second]})!;
+ assert.deepEqual(many.process,first);assert.deepEqual(many.processes,[first,second]);
+ const single=adopted({LWProcessDefinition:first})!;
+ assert.deepEqual(single.process,first);assert.equal(Object.hasOwn(single,'processes'),false);
+ assert.equal((adopted({LWProcessDefinitions:[first]})!.processes as unknown[]).length,1);
 });
 
 const report={suite:'content-provider',passed:results.filter(result=>result.passed).length,total:results.length,results};

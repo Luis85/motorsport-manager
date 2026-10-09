@@ -1,0 +1,625 @@
+{
+  "format": "wildlands-process",
+  "schemaVersion": 1,
+  "revision": 0,
+  "id": "order-fulfilment-line",
+  "name": "Order fulfilment line",
+  "description": "Synthetic steady random demand on an order fulfilment line. Orders arrive as an open stream with a random gap (exponential, mean 4 minutes, at most 12) and keep arriving for as long as the run lasts, so the line is meant to run unlimited. Each order draws a priority (20% express, 80% standard) and a 12% chance of a known defect. Orders pass software checks, parallel picking robots and shipping documents, three parallel packing lanes, a human spot-check by three inspectors with a bounded repack loop, a label machine and a customer notification. Picking (triangular 4/6/10), packing (uniform 7 to 11) and the spot-check (uniform 4 to 8) take random whole minutes around their mean duration. The Passed? decision sends a known defect to repack, and a further 6% chance route sends a parcel to repack as damaged in transit; both use the same repack step. Every random value derives from the definition seed 20260607 and the case, step and visit, so the same seed always gives the same run and another seed (process run --seed N) gives another one. Capacities are tuned so the packing lanes run at roughly three quarters of capacity; a brief system-full refusal is possible but not expected. All values are synthetic illustrative assumptions, not a measured warehouse or a forecast.",
+  "start": "order-received",
+  "sipoc": {
+    "suppliers": [
+      {
+        "name": "Web shop",
+        "supplies": "Customer orders with items and delivery address"
+      },
+      {
+        "name": "Payment provider",
+        "supplies": "Payment status and fraud signals"
+      },
+      {
+        "name": "Carriers",
+        "supplies": "Scheduled parcel pickups"
+      }
+    ],
+    "customers": [
+      {
+        "name": "Shoppers",
+        "receives": "Packed and delivered parcels"
+      },
+      {
+        "name": "Carrier",
+        "receives": "Labelled parcels ready for pickup"
+      },
+      {
+        "name": "Finance",
+        "receives": "Shipment confirmation for invoicing"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "id": "inspector",
+      "name": "Quality inspectors",
+      "capacity": 3,
+      "costPerMinute": 2,
+      "kind": "people"
+    },
+    {
+      "id": "packer",
+      "name": "Packer",
+      "capacity": 1,
+      "costPerMinute": 2,
+      "kind": "people"
+    },
+    {
+      "id": "robots",
+      "name": "Picking robots",
+      "capacity": 3,
+      "costPerMinute": 3,
+      "kind": "machine"
+    },
+    {
+      "id": "packing-line",
+      "name": "Packing lanes",
+      "capacity": 3,
+      "costPerMinute": 4,
+      "kind": "machine"
+    },
+    {
+      "id": "labeller",
+      "name": "Label printer and applicator",
+      "capacity": 1,
+      "costPerMinute": 2,
+      "kind": "machine"
+    },
+    {
+      "id": "oms",
+      "name": "Order management system",
+      "capacity": 3,
+      "costPerMinute": 1,
+      "kind": "system"
+    },
+    {
+      "id": "risk",
+      "name": "Risk scoring service",
+      "capacity": 2,
+      "costPerMinute": 1,
+      "kind": "system"
+    },
+    {
+      "id": "docs",
+      "name": "Document service",
+      "capacity": 2,
+      "costPerMinute": 1,
+      "kind": "system"
+    },
+    {
+      "id": "notify",
+      "name": "Notification service",
+      "capacity": 3,
+      "costPerMinute": 1,
+      "kind": "system"
+    }
+  ],
+  "steps": [
+    {
+      "id": "order-received",
+      "name": "Order received",
+      "kind": "start",
+      "phase": "Order",
+      "scene": {
+        "id": "scene-order-received",
+        "position": [
+          0,
+          0
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "A customer order enters the fulfilment line."
+    },
+    {
+      "id": "validate-order",
+      "name": "Validate order",
+      "kind": "system",
+      "phase": "Order",
+      "scene": {
+        "id": "scene-validate-order",
+        "position": [
+          14,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "The order management system checks items, address and stock.",
+      "duration": 1,
+      "cost": 0,
+      "resources": {
+        "oms": 1
+      },
+      "technology": "Order management system",
+      "set": {
+        "orderValid": true
+      },
+      "outputs": [
+        {
+          "field": "orderValid",
+          "label": "Order valid"
+        }
+      ]
+    },
+    {
+      "id": "fraud-check",
+      "name": "Fraud check",
+      "kind": "system",
+      "phase": "Order",
+      "scene": {
+        "id": "scene-fraud-check",
+        "position": [
+          28,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "A risk scoring service scores the order. The score is a fixed synthetic value.",
+      "duration": 2,
+      "resources": {
+        "risk": 1
+      },
+      "technology": "Risk scoring service",
+      "needs": [
+        {
+          "field": "orderValid",
+          "label": "Validated order"
+        }
+      ],
+      "set": {
+        "riskScore": 12
+      },
+      "outputs": [
+        {
+          "field": "riskScore",
+          "label": "Risk score"
+        }
+      ]
+    },
+    {
+      "id": "prepare",
+      "name": "Prepare in parallel",
+      "kind": "fork",
+      "phase": "Prepare",
+      "scene": {
+        "id": "scene-prepare",
+        "position": [
+          42,
+          0
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "Picking and shipping documents run side by side.",
+      "join": "ready-to-pack"
+    },
+    {
+      "id": "pick-items",
+      "name": "Pick items",
+      "kind": "machine",
+      "phase": "Prepare",
+      "scene": {
+        "id": "scene-pick-items",
+        "position": [
+          56,
+          -8
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "Picking robots collect the ordered items from the shelves. Three robots work at once; the time is random around 6 minutes.",
+      "duration": 6,
+      "cost": 1,
+      "resources": {
+        "robots": 1
+      },
+      "technology": "Picking robots",
+      "needs": [
+        {
+          "field": "riskScore",
+          "label": "Risk score"
+        }
+      ],
+      "set": {
+        "picked": true
+      },
+      "outputs": [
+        {
+          "field": "picked",
+          "label": "Items picked"
+        }
+      ],
+      "timing": {
+        "dist": "triangular",
+        "min": 4,
+        "mode": 6,
+        "max": 10
+      }
+    },
+    {
+      "id": "shipping-documents",
+      "name": "Shipping documents",
+      "kind": "system",
+      "phase": "Prepare",
+      "scene": {
+        "id": "scene-shipping-documents",
+        "position": [
+          56,
+          8
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "The document service prepares the invoice and the shipping paperwork.",
+      "duration": 2,
+      "resources": {
+        "docs": 1
+      },
+      "technology": "Document service",
+      "set": {
+        "documentsReady": true
+      },
+      "outputs": [
+        {
+          "field": "documentsReady",
+          "label": "Shipping documents ready"
+        }
+      ]
+    },
+    {
+      "id": "ready-to-pack",
+      "name": "Ready to pack",
+      "kind": "join",
+      "phase": "Prepare",
+      "scene": {
+        "id": "scene-ready-to-pack",
+        "position": [
+          70,
+          0
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "Picked items and documents merge. A small backlog holds orders for the packing line.",
+      "needs": [
+        {
+          "field": "picked",
+          "label": "Items picked"
+        },
+        {
+          "field": "documentsReady",
+          "label": "Shipping documents ready"
+        }
+      ],
+      "backlog": {
+        "capacity": 4,
+        "order": "fifo"
+      }
+    },
+    {
+      "id": "pack",
+      "name": "Pack",
+      "kind": "machine",
+      "phase": "Pack",
+      "scene": {
+        "id": "scene-pack",
+        "position": [
+          84,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "Three parallel packing lanes pack each order into a parcel. The time is random between 7 and 11 minutes.",
+      "duration": 9,
+      "resources": {
+        "packing-line": 1
+      },
+      "technology": "Packing line",
+      "set": {
+        "packed": true
+      },
+      "outputs": [
+        {
+          "field": "packed",
+          "label": "Packed"
+        }
+      ],
+      "timing": {
+        "dist": "uniform",
+        "min": 7,
+        "max": 11
+      }
+    },
+    {
+      "id": "spot-check",
+      "name": "Spot-check",
+      "kind": "task",
+      "phase": "Pack",
+      "scene": {
+        "id": "scene-spot-check",
+        "position": [
+          98,
+          0
+        ],
+        "color": "#e8c547"
+      },
+      "description": "A quality inspector opens the parcel and compares it with the order. Orders flagged defect fail the check; the time is random between 4 and 8 minutes.",
+      "duration": 6,
+      "resources": {
+        "inspector": 1
+      },
+      "needs": [
+        {
+          "field": "packed",
+          "label": "Packed parcel"
+        }
+      ],
+      "timing": {
+        "dist": "uniform",
+        "min": 4,
+        "max": 8
+      }
+    },
+    {
+      "id": "passed",
+      "name": "Passed?",
+      "kind": "decision",
+      "phase": "Pack",
+      "scene": {
+        "id": "scene-passed",
+        "position": [
+          112,
+          0
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "A known defect, or a further 6% chance of damage found at the check, sends the parcel to repacking; otherwise it is labelled."
+    },
+    {
+      "id": "repack",
+      "name": "Repack",
+      "kind": "task",
+      "phase": "Pack",
+      "scene": {
+        "id": "scene-repack",
+        "position": [
+          105,
+          16
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "A packer corrects the parcel, clears the defect and counts the attempt. The parcel then returns to the spot-check.",
+      "duration": 5,
+      "resources": {
+        "packer": 1
+      },
+      "set": {
+        "defect": false
+      },
+      "add": {
+        "attempts": 1
+      },
+      "outputs": [
+        {
+          "field": "attempts",
+          "label": "Repack attempts"
+        }
+      ]
+    },
+    {
+      "id": "label-parcel",
+      "name": "Label parcel",
+      "kind": "machine",
+      "phase": "Ship",
+      "scene": {
+        "id": "scene-label-parcel",
+        "position": [
+          126,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "The label printer and applicator prints and sticks the shipping label.",
+      "duration": 2,
+      "resources": {
+        "labeller": 1
+      },
+      "technology": "Label printer and applicator",
+      "needs": [
+        {
+          "field": "packed",
+          "label": "Packed parcel"
+        }
+      ],
+      "add": {
+        "parcels": 1
+      },
+      "outputs": [
+        {
+          "field": "parcels",
+          "label": "Parcels labelled"
+        }
+      ]
+    },
+    {
+      "id": "notify-customer",
+      "name": "Notify customer",
+      "kind": "system",
+      "phase": "Ship",
+      "scene": {
+        "id": "scene-notify-customer",
+        "position": [
+          140,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "The notification service sends the dispatch message.",
+      "duration": 1,
+      "resources": {
+        "notify": 1
+      },
+      "technology": "Notification service",
+      "set": {
+        "notified": true
+      },
+      "outputs": [
+        {
+          "field": "notified",
+          "label": "Customer notified"
+        }
+      ]
+    },
+    {
+      "id": "delivered",
+      "name": "Delivered",
+      "kind": "end",
+      "phase": "Ship",
+      "scene": {
+        "id": "scene-delivered",
+        "position": [
+          154,
+          0
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The order has left the building."
+    }
+  ],
+  "flows": [
+    {
+      "id": "order-received-validate-order",
+      "from": "order-received",
+      "to": "validate-order"
+    },
+    {
+      "id": "validate-order-fraud-check",
+      "from": "validate-order",
+      "to": "fraud-check"
+    },
+    {
+      "id": "fraud-check-prepare",
+      "from": "fraud-check",
+      "to": "prepare"
+    },
+    {
+      "id": "prepare-pick-items",
+      "from": "prepare",
+      "to": "pick-items"
+    },
+    {
+      "id": "prepare-shipping-documents",
+      "from": "prepare",
+      "to": "shipping-documents"
+    },
+    {
+      "id": "pick-items-ready-to-pack",
+      "from": "pick-items",
+      "to": "ready-to-pack"
+    },
+    {
+      "id": "shipping-documents-ready-to-pack",
+      "from": "shipping-documents",
+      "to": "ready-to-pack"
+    },
+    {
+      "id": "ready-to-pack-pack",
+      "from": "ready-to-pack",
+      "to": "pack"
+    },
+    {
+      "id": "pack-spot-check",
+      "from": "pack",
+      "to": "spot-check"
+    },
+    {
+      "id": "spot-check-passed",
+      "from": "spot-check",
+      "to": "passed"
+    },
+    {
+      "id": "passed-repack",
+      "from": "passed",
+      "to": "repack",
+      "label": "Defect",
+      "when": {
+        "field": "defect",
+        "op": "eq",
+        "value": true
+      }
+    },
+    {
+      "id": "passed-repack-damaged",
+      "from": "passed",
+      "to": "repack",
+      "label": "Damaged",
+      "when": {
+        "chance": 6
+      }
+    },
+    {
+      "id": "passed-label-parcel",
+      "from": "passed",
+      "to": "label-parcel",
+      "label": "Passed"
+    },
+    {
+      "id": "repack-spot-check",
+      "from": "repack",
+      "to": "spot-check",
+      "label": "Check again"
+    },
+    {
+      "id": "label-parcel-notify-customer",
+      "from": "label-parcel",
+      "to": "notify-customer"
+    },
+    {
+      "id": "notify-customer-delivered",
+      "from": "notify-customer",
+      "to": "delivered"
+    }
+  ],
+  "arrivals": [
+    {
+      "at": 0,
+      "open": true,
+      "interval": 4,
+      "gap": {
+        "dist": "exponential",
+        "mean": 4,
+        "max": 12
+      },
+      "data": {
+        "attempts": 0,
+        "parcels": 0
+      },
+      "draws": [
+        {
+          "field": "priority",
+          "kind": "choice",
+          "values": [
+            {
+              "value": "express",
+              "weight": 20
+            },
+            {
+              "value": "standard",
+              "weight": 80
+            }
+          ]
+        },
+        {
+          "field": "defect",
+          "kind": "chance",
+          "percent": 12,
+          "whenTrue": true,
+          "whenFalse": false
+        }
+      ]
+    }
+  ],
+  "seed": 20260607
+}

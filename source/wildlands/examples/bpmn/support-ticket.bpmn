@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" id="Definitions_Ticket" name="Support ticket (illustrative)" targetNamespace="urn:example:wildlands:bpmn">
+  <bpmn:process id="Process_Ticket" name="Support ticket" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_Process_Ticket">
+      <bpmn:lane id="Lane_Agent" name="Support agent">
+        <bpmn:flowNodeRef>Start_Opened</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Triage</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gw_Await</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Catch_Reply</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Catch_Timeout</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Closed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Investigate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Timer_Stuck</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Specialist" name="Specialist">
+        <bpmn:flowNodeRef>Task_Handover</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Auto" name="Automation">
+        <bpmn:flowNodeRef>Task_Ask</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Fix</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Wait</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Notice</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Resolved</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_Opened" name="Ticket opened">
+      <bpmn:messageEventDefinition/>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_Triage" name="Triage ticket"/>
+    <bpmn:sendTask id="Task_Ask" name="Request details"/>
+    <bpmn:eventBasedGateway id="Gw_Await" name="Await customer"/>
+    <bpmn:intermediateCatchEvent id="Catch_Reply" name="Customer reply">
+      <bpmn:messageEventDefinition/>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Catch_Timeout" name="No reply for 4 hours">
+      <bpmn:timerEventDefinition><bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT4H</bpmn:timeDuration></bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:endEvent id="End_Closed" name="Closed without reply"/>
+    <bpmn:userTask id="Task_Investigate" name="Investigate"/>
+    <bpmn:boundaryEvent id="Timer_Stuck" name="Stuck for 75 minutes" attachedToRef="Task_Investigate" cancelActivity="true">
+      <bpmn:timerEventDefinition><bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT75M</bpmn:timeDuration></bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:userTask id="Task_Handover" name="Hand over to specialist"/>
+    <bpmn:scriptTask id="Task_Fix" name="Apply fix">
+      <bpmn:standardLoopCharacteristics testBefore="false" loopMaximum="3"><bpmn:loopCondition xsi:type="bpmn:tFormalExpression">fix failed</bpmn:loopCondition></bpmn:standardLoopCharacteristics>
+    </bpmn:scriptTask>
+    <bpmn:receiveTask id="Task_Wait" name="Wait for confirmation"/>
+    <bpmn:sendTask id="Task_Notice" name="Send resolution notice"/>
+    <bpmn:endEvent id="End_Resolved" name="Ticket resolved"/>
+    <bpmn:sequenceFlow id="S1" sourceRef="Start_Opened" targetRef="Task_Triage"/>
+    <bpmn:sequenceFlow id="S2" sourceRef="Task_Triage" targetRef="Task_Ask"/>
+    <bpmn:sequenceFlow id="S3" sourceRef="Task_Ask" targetRef="Gw_Await"/>
+    <bpmn:sequenceFlow id="S4" sourceRef="Gw_Await" targetRef="Catch_Reply" name="reply"/>
+    <bpmn:sequenceFlow id="S5" sourceRef="Gw_Await" targetRef="Catch_Timeout" name="timeout"/>
+    <bpmn:sequenceFlow id="S6" sourceRef="Catch_Reply" targetRef="Task_Investigate"/>
+    <bpmn:sequenceFlow id="S7" sourceRef="Catch_Timeout" targetRef="End_Closed"/>
+    <bpmn:sequenceFlow id="S8" sourceRef="Task_Investigate" targetRef="Task_Fix"/>
+    <bpmn:sequenceFlow id="S9" sourceRef="Timer_Stuck" targetRef="Task_Handover"/>
+    <bpmn:sequenceFlow id="S10" sourceRef="Task_Handover" targetRef="Task_Fix"/>
+    <bpmn:sequenceFlow id="S11" sourceRef="Task_Fix" targetRef="Task_Wait"/>
+    <bpmn:sequenceFlow id="S12" sourceRef="Task_Wait" targetRef="Task_Notice"/>
+    <bpmn:sequenceFlow id="S13" sourceRef="Task_Notice" targetRef="End_Resolved"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_1">
+    <bpmndi:BPMNPlane id="Plane_1" bpmnElement="Process_Ticket">
+      <bpmndi:BPMNShape id="Lane_Agent_di" bpmnElement="Lane_Agent" isHorizontal="true"><dc:Bounds x="70" y="20" width="1570" height="220"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Specialist_di" bpmnElement="Lane_Specialist" isHorizontal="true"><dc:Bounds x="70" y="240" width="1570" height="150"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Auto_di" bpmnElement="Lane_Auto" isHorizontal="true"><dc:Bounds x="70" y="390" width="1570" height="170"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_Opened_di" bpmnElement="Start_Opened"><dc:Bounds x="132" y="92" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Triage_di" bpmnElement="Task_Triage"><dc:Bounds x="250" y="70" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Ask_di" bpmnElement="Task_Ask"><dc:Bounds x="400" y="430" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_Await_di" bpmnElement="Gw_Await"><dc:Bounds x="575" y="85" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Catch_Reply_di" bpmnElement="Catch_Reply"><dc:Bounds x="742" y="42" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Catch_Timeout_di" bpmnElement="Catch_Timeout"><dc:Bounds x="742" y="142" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Closed_di" bpmnElement="End_Closed"><dc:Bounds x="902" y="142" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Investigate_di" bpmnElement="Task_Investigate"><dc:Bounds x="870" y="20" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Timer_Stuck_di" bpmnElement="Timer_Stuck"><dc:Bounds x="902" y="82" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Handover_di" bpmnElement="Task_Handover"><dc:Bounds x="870" y="280" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Fix_di" bpmnElement="Task_Fix"><dc:Bounds x="1050" y="430" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Wait_di" bpmnElement="Task_Wait"><dc:Bounds x="1210" y="430" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Notice_di" bpmnElement="Task_Notice"><dc:Bounds x="1360" y="430" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Resolved_di" bpmnElement="End_Resolved"><dc:Bounds x="1542" y="452" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="S1_di" bpmnElement="S1"><di:waypoint x="168.0" y="110.0"/><di:waypoint x="250.0" y="110.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S2_di" bpmnElement="S2"><di:waypoint x="316.7" y="150.0"/><di:waypoint x="433.3" y="430.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S3_di" bpmnElement="S3"><di:waypoint x="466.7" y="430.0"/><di:waypoint x="589.6" y="135.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S4_di" bpmnElement="S4"><di:waypoint x="625.0" y="102.2"/><di:waypoint x="742.0" y="65.6"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S5_di" bpmnElement="S5"><di:waypoint x="625.0" y="117.8"/><di:waypoint x="742.0" y="154.4"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S6_di" bpmnElement="S6"><di:waypoint x="778.0" y="60.0"/><di:waypoint x="870.0" y="60.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S7_di" bpmnElement="S7"><di:waypoint x="778.0" y="160.0"/><di:waypoint x="902.0" y="160.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S8_di" bpmnElement="S8"><di:waypoint x="937.6" y="100.0"/><di:waypoint x="1082.4" y="430.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S9_di" bpmnElement="S9"><di:waypoint x="920.0" y="118.0"/><di:waypoint x="920.0" y="280.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S10_di" bpmnElement="S10"><di:waypoint x="968.0" y="360.0"/><di:waypoint x="1052.0" y="430.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S11_di" bpmnElement="S11"><di:waypoint x="1150.0" y="470.0"/><di:waypoint x="1210.0" y="470.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S12_di" bpmnElement="S12"><di:waypoint x="1310.0" y="470.0"/><di:waypoint x="1360.0" y="470.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S13_di" bpmnElement="S13"><di:waypoint x="1460.0" y="470.0"/><di:waypoint x="1542.0" y="470.0"/></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmn:relationship type="BPSimData">
+    <bpmn:extensionElements>
+      <bpsim:BPSimData>
+      <bpsim:Scenario id="Scenario_Base" name="Base case (illustrative)">
+        <bpsim:ScenarioParameters baseTimeUnit="min"/>
+        <bpsim:ElementParameters elementRef="Start_Opened">
+          <bpsim:ControlParameters>
+            <bpsim:InterTriggerTimer><bpsim:NegativeExponentialDistribution mean="45"/></bpsim:InterTriggerTimer>
+            <bpsim:TriggerCount><bpsim:NumericParameter value="20"/></bpsim:TriggerCount>
+          </bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Triage">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:TriangularDistribution min="5" mode="10" max="20"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Ask">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:FloatingParameter value="1"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Catch_Reply">
+          <bpsim:TimeParameters><bpsim:WaitTime><bpsim:TriangularDistribution min="30" mode="60" max="180"/></bpsim:WaitTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Investigate">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NormalDistribution mean="60" standardDeviation="25"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Handover">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:UniformDistribution min="15" max="30"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Fix">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:ErlangDistribution k="2" mean="10"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+          <bpsim:CostParameters><bpsim:FixedCost><bpsim:FloatingParameter value="4"/></bpsim:FixedCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Wait">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NegativeExponentialDistribution mean="20"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Notice">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:FloatingParameter value="1"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="S4">
+          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.7"/></bpsim:Probability></bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="S5">
+          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.3"/></bpsim:Probability></bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Lane_Agent">
+          <bpsim:ResourceParameters><bpsim:Quantity><bpsim:NumericParameter value="2"/></bpsim:Quantity></bpsim:ResourceParameters>
+          <bpsim:CostParameters><bpsim:UnitCost><bpsim:FloatingParameter value="2"/></bpsim:UnitCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Lane_Specialist">
+          <bpsim:ResourceParameters><bpsim:Quantity><bpsim:NumericParameter value="1"/></bpsim:Quantity></bpsim:ResourceParameters>
+          <bpsim:CostParameters><bpsim:UnitCost><bpsim:FloatingParameter value="3"/></bpsim:UnitCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Lane_Auto">
+          <bpsim:ResourceParameters><bpsim:Quantity><bpsim:NumericParameter value="3"/></bpsim:Quantity></bpsim:ResourceParameters>
+          <bpsim:CostParameters><bpsim:UnitCost><bpsim:FloatingParameter value="1"/></bpsim:UnitCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+      </bpsim:Scenario>
+      </bpsim:BPSimData>
+    </bpmn:extensionElements>
+    <bpmn:source>Process_Ticket</bpmn:source>
+    <bpmn:target>Process_Ticket</bpmn:target>
+  </bpmn:relationship>
+</bpmn:definitions>

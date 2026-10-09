@@ -13,12 +13,14 @@ import path from 'node:path';
 import {BUNDLES, INSERTS, type BundleTag} from './build-inserts.cjs';
 import {TEMPLATE_FEATURES, type Template} from './game-manifest.cjs';
 
-export type DataGroup = 'game-profile' | 'export-payloads' | 'colony-content' | 'asset-catalog' | 'rts-content' | 'pet-content';
+export type DataGroup = 'game-profile' | 'export-payloads' | 'colony-content' | 'asset-catalog' | 'rts-content' | 'pet-content' | 'process-content' | 'process-list';
 export type ProfileKind = 'fixture' | 'studio' | 'play';
 
 /** Canonical declaration order of every injectable data global (the showcase order). */
 export const DATA_GLOBALS: readonly (readonly [name: string, group: DataGroup])[] = [
   ['LWGameProfile', 'game-profile'],
+  ['LWProcessDefinition', 'process-content'],
+  ['LWProcessDefinitions', 'process-list'],
   ['WildlandsGodotRuntimeLoader', 'export-payloads'],
   ['WildlandsGodotTemplates', 'export-payloads'],
   ['LWEngineSourceLoader', 'export-payloads'],
@@ -92,6 +94,9 @@ export const PROFILES: readonly ArtifactProfile[] = [
   {id: 'rts-play', kind: 'play', template: 'templates/standalone.html', minify: true,
     variables: {APP: 'rts', TITLE: 'Wildlands RTS', DESCRIPTION: 'An offline isometric real-time strategy match built with Wildlands.'},
     bundles: ['engine-kernel', 'template-rts', 'play-boot'], data: groups('rts-content')},
+  {id: 'process-play', kind: 'play', template: 'templates/process.html', minify: true,
+    variables: {TITLE: 'Process Studio', DESCRIPTION: 'Offline process simulation with Wildlands and Scene Forge.'},
+    bundles: ['engine-kernel', 'asset-catalog', 'renderer-3d', 'template-process'], data: groups('process-content')},
   {id: 'pet-play', kind: 'play', template: 'templates/standalone.html', minify: true,
     variables: {APP: 'pet', TITLE: 'Pocket Pet', DESCRIPTION: 'An offline virtual pet built with Wildlands.'},
     bundles: ['engine-kernel', 'asset-catalog', 'renderer-3d', 'template-pet', 'play-boot'], data: groups('pet-content')}
@@ -190,11 +195,13 @@ export interface GameDescription {
   readonly presentation: {readonly title: string; readonly description?: string};
   readonly storage: {readonly namespace: string};
 }
+/** Names in the canonical data-global declaration order. */
+const canonicalOrder = (names: readonly string[]): string[] => DATA_GLOBALS.map(([name]) => name).filter(name => names.includes(name));
 export type GameBuildKind = 'play' | 'studio';
 /** Optional data globals a game may omit (a pet game without presentation assets). */
 const OPTIONAL_GAME_DATA = new Set(['LWPetAssetDefinitions']);
 /** Build kinds each template offers; Pocket Pet has no editor bundle, so it has no studio. */
-export const GAME_BUILD_KINDS: Readonly<Record<Template, readonly GameBuildKind[]>> = Object.freeze({colony: ['play', 'studio'], rts: ['play', 'studio'], pet: ['play']});
+export const GAME_BUILD_KINDS: Readonly<Record<Template, readonly GameBuildKind[]>> = Object.freeze({colony: ['play', 'studio'], rts: ['play', 'studio'], pet: ['play'], process: ['play', 'studio']});
 
 /**
  * The artifact profile of one game build (`wildlands build-game`). It derives from the engine's
@@ -215,7 +222,7 @@ export function gameProfile(game: GameDescription, kind: GameBuildKind, availabl
   const wanted = new Set<BundleTag>([...base.bundles,
     ...(kind === 'play' ? features as BundleTag[] : []), ...(kind === 'studio' && game.template === 'rts' ? ['rts-editor' as const] : [])]);
   const names = game.template === 'colony' ? groups('game-profile', ...(kind === 'studio' ? ['export-payloads' as const] : []), 'colony-content', 'asset-catalog')
-    : ['LWGameProfile', ...base.data];
+    : canonicalOrder(['LWGameProfile', ...base.data, ...game.template === 'process' && available?.has('LWProcessDefinitions') ? ['LWProcessDefinitions'] : []]);
   const description = game.presentation.description ?? game.presentation.title;
   return {id: `${game.template}-${kind}`, kind, template: base.template, minify: kind === 'play',
     variables: base.template === 'templates/standalone.html' ? {APP: base.variables.APP!, TITLE: game.presentation.title, DESCRIPTION: description} : {TITLE: game.presentation.title, DESCRIPTION: description},
@@ -235,7 +242,7 @@ export function featureSets(template: Template): string[][] {
  */
 export function gameProfileErrors(source: string): string[] {
   const errors: string[] = [], dataNames = DATA_GLOBALS.map(([name]) => name);
-  for (const template of ['colony', 'rts', 'pet'] as const) for (const kind of GAME_BUILD_KINDS[template]) for (const features of featureSets(template)) {
+  for (const template of ['colony', 'rts', 'pet', 'process'] as const) for (const kind of GAME_BUILD_KINDS[template]) for (const features of featureSets(template)) {
     const candidate = gameProfile({id: 'probe', template, features, presentation: {title: 'Probe'}, storage: {namespace: 'wildlands.probe'}}, kind);
     const where = `Game profile ${candidate.id} [${features.join(', ') || 'no features'}]`;
     if (!subsequence(candidate.data, dataNames)) errors.push(`${where} data globals are unknown or not in canonical order.`);

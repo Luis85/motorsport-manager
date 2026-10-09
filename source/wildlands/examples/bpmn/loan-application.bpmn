@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpsim="http://www.bpsim.org/schemas/1.0" id="Definitions_Loan" name="Loan application (illustrative)" targetNamespace="urn:example:wildlands:bpmn">
+  <bpmn:collaboration id="Collab_Loan">
+    <bpmn:participant id="Part_Bank" name="Bank" processRef="Process_Loan"/>
+    <bpmn:participant id="Part_Bureau" name="Credit bureau"/>
+    <bpmn:messageFlow id="MF_request" name="Credit report request" sourceRef="Task_Score" targetRef="Part_Bureau"/>
+    <bpmn:messageFlow id="MF_report" name="Credit report" sourceRef="Part_Bureau" targetRef="Task_Score"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Process_Loan" name="Loan application" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_Process_Loan">
+      <bpmn:lane id="Lane_Customer" name="Customer">
+        <bpmn:flowNodeRef>Start_Received</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Submit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Sign</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Paid</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Clerk" name="Bank clerk">
+        <bpmn:flowNodeRef>Sub_Docs</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Income</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Review</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Timer_SLA</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gw_Review</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RejectNotice</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Rejected</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Notify</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Breach</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Engine" name="Credit engine">
+        <bpmn:flowNodeRef>Call_Fraud</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Score</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gw_Risk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gw_Extra</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Employer</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gw_ExtraJoin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gw_Merge</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Disburse</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_Received" name="Application received"/>
+    <bpmn:userTask id="Task_Submit" name="Submit application">
+      <bpmn:documentation>The customer fills in the loan form online and uploads the supporting documents.</bpmn:documentation>
+    </bpmn:userTask>
+    <bpmn:subProcess id="Sub_Docs" name="Document check">
+      <bpmn:startEvent id="Start_Doc" name="Documents received"/>
+      <bpmn:userTask id="Task_Verify" name="Verify document">
+        <bpmn:multiInstanceLoopCharacteristics isSequential="false"><bpmn:loopCardinality xsi:type="bpmn:tFormalExpression">3</bpmn:loopCardinality></bpmn:multiInstanceLoopCharacteristics>
+      </bpmn:userTask>
+      <bpmn:serviceTask id="Task_Archive" name="Archive documents"/>
+      <bpmn:endEvent id="End_Doc" name="Documents checked"/>
+      <bpmn:sequenceFlow id="D1" sourceRef="Start_Doc" targetRef="Task_Verify"/>
+      <bpmn:sequenceFlow id="D2" sourceRef="Task_Verify" targetRef="Task_Archive"/>
+      <bpmn:sequenceFlow id="D3" sourceRef="Task_Archive" targetRef="End_Doc"/>
+    </bpmn:subProcess>
+    <bpmn:callActivity id="Call_Fraud" name="Fraud screening" calledElement="Process_Fraud"/>
+    <bpmn:serviceTask id="Task_Score" name="Score credit"/>
+    <bpmn:exclusiveGateway id="Gw_Risk" name="Risk level?"/>
+    <bpmn:inclusiveGateway id="Gw_Extra" name="Additional checks" default="F_extra_none"/>
+    <bpmn:userTask id="Task_Income" name="Verify income"/>
+    <bpmn:serviceTask id="Task_Employer" name="Check employer"/>
+    <bpmn:inclusiveGateway id="Gw_ExtraJoin" name="Checks done"/>
+    <bpmn:userTask id="Task_Review" name="Manual review">
+      <bpmn:documentation>A senior clerk reviews high-risk applications. The service level is 90 minutes.</bpmn:documentation>
+    </bpmn:userTask>
+    <bpmn:boundaryEvent id="Timer_SLA" name="SLA of 90 minutes" attachedToRef="Task_Review" cancelActivity="false">
+      <bpmn:timerEventDefinition><bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT90M</bpmn:timeDuration></bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:exclusiveGateway id="Gw_Review" name="Review outcome?"/>
+    <bpmn:userTask id="Task_RejectNotice" name="Send rejection letter"/>
+    <bpmn:endEvent id="End_Rejected" name="Application rejected"/>
+    <bpmn:userTask id="Task_Notify" name="Notify supervisor"/>
+    <bpmn:endEvent id="End_Breach" name="SLA breach logged"/>
+    <bpmn:exclusiveGateway id="Gw_Merge" name="Approved"/>
+    <bpmn:userTask id="Task_Sign" name="Sign contract"/>
+    <bpmn:serviceTask id="Task_Disburse" name="Disburse funds"/>
+    <bpmn:endEvent id="End_Paid" name="Loan paid out"/>
+    <bpmn:sequenceFlow id="F1" sourceRef="Start_Received" targetRef="Task_Submit"/>
+    <bpmn:sequenceFlow id="F2" sourceRef="Task_Submit" targetRef="Sub_Docs"/>
+    <bpmn:sequenceFlow id="F3" sourceRef="Sub_Docs" targetRef="Call_Fraud"/>
+    <bpmn:sequenceFlow id="F4" sourceRef="Call_Fraud" targetRef="Task_Score"/>
+    <bpmn:sequenceFlow id="F5" sourceRef="Task_Score" targetRef="Gw_Risk"/>
+    <bpmn:sequenceFlow id="F_low" sourceRef="Gw_Risk" targetRef="Gw_Merge" name="low"/>
+    <bpmn:sequenceFlow id="F_med" sourceRef="Gw_Risk" targetRef="Gw_Extra" name="medium"/>
+    <bpmn:sequenceFlow id="F_high" sourceRef="Gw_Risk" targetRef="Task_Review" name="high"/>
+    <bpmn:sequenceFlow id="F_income" sourceRef="Gw_Extra" targetRef="Task_Income" name="large loan">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${amount &gt; 20000}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_employer" sourceRef="Gw_Extra" targetRef="Task_Employer" name="new customer or very large">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${years &lt; 2 || amount &gt; 40000}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="F_extra_none" sourceRef="Gw_Extra" targetRef="Gw_ExtraJoin" name="no extra check"/>
+    <bpmn:sequenceFlow id="F_income_done" sourceRef="Task_Income" targetRef="Gw_ExtraJoin"/>
+    <bpmn:sequenceFlow id="F_employer_done" sourceRef="Task_Employer" targetRef="Gw_ExtraJoin"/>
+    <bpmn:sequenceFlow id="F_extra_end" sourceRef="Gw_ExtraJoin" targetRef="Gw_Merge"/>
+    <bpmn:sequenceFlow id="F_review" sourceRef="Task_Review" targetRef="Gw_Review"/>
+    <bpmn:sequenceFlow id="F_sla" sourceRef="Timer_SLA" targetRef="Task_Notify"/>
+    <bpmn:sequenceFlow id="F_sla_end" sourceRef="Task_Notify" targetRef="End_Breach"/>
+    <bpmn:sequenceFlow id="F_approved" sourceRef="Gw_Review" targetRef="Gw_Merge" name="approved"/>
+    <bpmn:sequenceFlow id="F_rejected" sourceRef="Gw_Review" targetRef="Task_RejectNotice" name="rejected"/>
+    <bpmn:sequenceFlow id="F_reject_end" sourceRef="Task_RejectNotice" targetRef="End_Rejected"/>
+    <bpmn:sequenceFlow id="F_sign" sourceRef="Gw_Merge" targetRef="Task_Sign"/>
+    <bpmn:sequenceFlow id="F_pay" sourceRef="Task_Sign" targetRef="Task_Disburse"/>
+    <bpmn:sequenceFlow id="F_paid" sourceRef="Task_Disburse" targetRef="End_Paid"/>
+  </bpmn:process>
+  <bpmn:process id="Process_Fraud" name="Fraud screening" isExecutable="false">
+    <bpmn:startEvent id="Start_F" name="Screening requested"/>
+    <bpmn:serviceTask id="Task_Rules" name="Run fraud rules"/>
+    <bpmn:businessRuleTask id="Task_Lists" name="Match watch lists"/>
+    <bpmn:endEvent id="End_F" name="Screening done"/>
+    <bpmn:sequenceFlow id="G1" sourceRef="Start_F" targetRef="Task_Rules"/>
+    <bpmn:sequenceFlow id="G2" sourceRef="Task_Rules" targetRef="Task_Lists"/>
+    <bpmn:sequenceFlow id="G3" sourceRef="Task_Lists" targetRef="End_F"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_1">
+    <bpmndi:BPMNPlane id="Plane_1" bpmnElement="Collab_Loan">
+      <bpmndi:BPMNShape id="Part_Bank_di" bpmnElement="Part_Bank" isHorizontal="true"><dc:Bounds x="60" y="20" width="2700" height="830"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Customer_di" bpmnElement="Lane_Customer" isHorizontal="true"><dc:Bounds x="90" y="20" width="2670" height="180"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Clerk_di" bpmnElement="Lane_Clerk" isHorizontal="true"><dc:Bounds x="90" y="200" width="2670" height="460"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Engine_di" bpmnElement="Lane_Engine" isHorizontal="true"><dc:Bounds x="90" y="660" width="2670" height="190"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_Received_di" bpmnElement="Start_Received"><dc:Bounds x="132" y="92" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Submit_di" bpmnElement="Task_Submit"><dc:Bounds x="250" y="70" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_Docs_di" bpmnElement="Sub_Docs" isExpanded="true"><dc:Bounds x="470" y="235" width="620" height="170"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_Doc_di" bpmnElement="Start_Doc"><dc:Bounds x="542" y="302" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Verify_di" bpmnElement="Task_Verify"><dc:Bounds x="650" y="280" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Archive_di" bpmnElement="Task_Archive"><dc:Bounds x="810" y="280" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Doc_di" bpmnElement="End_Doc"><dc:Bounds x="982" y="302" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Call_Fraud_di" bpmnElement="Call_Fraud"><dc:Bounds x="1140" y="700" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Score_di" bpmnElement="Task_Score"><dc:Bounds x="1290" y="700" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_Risk_di" bpmnElement="Gw_Risk" isMarkerVisible="true"><dc:Bounds x="1465" y="715" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_Extra_di" bpmnElement="Gw_Extra"><dc:Bounds x="1615" y="825" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Income_di" bpmnElement="Task_Income"><dc:Bounds x="1740" y="460" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Employer_di" bpmnElement="Task_Employer"><dc:Bounds x="1740" y="810" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_ExtraJoin_di" bpmnElement="Gw_ExtraJoin"><dc:Bounds x="1915" y="825" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Review_di" bpmnElement="Task_Review"><dc:Bounds x="1590" y="410" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Timer_SLA_di" bpmnElement="Timer_SLA"><dc:Bounds x="1622" y="472" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_Review_di" bpmnElement="Gw_Review" isMarkerVisible="true"><dc:Bounds x="1775" y="425" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RejectNotice_di" bpmnElement="Task_RejectNotice"><dc:Bounds x="1910" y="500" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Rejected_di" bpmnElement="End_Rejected"><dc:Bounds x="2092" y="522" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Notify_di" bpmnElement="Task_Notify"><dc:Bounds x="1590" y="550" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Breach_di" bpmnElement="End_Breach"><dc:Bounds x="1772" y="572" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gw_Merge_di" bpmnElement="Gw_Merge" isMarkerVisible="true"><dc:Bounds x="2065" y="715" width="50" height="50"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Sign_di" bpmnElement="Task_Sign"><dc:Bounds x="2190" y="70" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Disburse_di" bpmnElement="Task_Disburse"><dc:Bounds x="2340" y="700" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Paid_di" bpmnElement="End_Paid"><dc:Bounds x="2522" y="92" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_F_di" bpmnElement="Start_F"><dc:Bounds x="282" y="982" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Rules_di" bpmnElement="Task_Rules"><dc:Bounds x="400" y="960" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Lists_di" bpmnElement="Task_Lists"><dc:Bounds x="550" y="960" width="100" height="80"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_F_di" bpmnElement="End_F"><dc:Bounds x="732" y="982" width="36" height="36"/></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F1_di" bpmnElement="F1"><di:waypoint x="168.0" y="110.0"/><di:waypoint x="250.0" y="110.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F2_di" bpmnElement="F2"><di:waypoint x="350.0" y="131.9"/><di:waypoint x="585.7" y="235.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F3_di" bpmnElement="F3"><di:waypoint x="863.0" y="405.0"/><di:waypoint x="1151.0" y="700.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F4_di" bpmnElement="F4"><di:waypoint x="1240.0" y="740.0"/><di:waypoint x="1290.0" y="740.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F5_di" bpmnElement="F5"><di:waypoint x="1390.0" y="740.0"/><di:waypoint x="1465.0" y="740.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_low_di" bpmnElement="F_low"><di:waypoint x="1515.0" y="740.0"/><di:waypoint x="2065.0" y="740.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_med_di" bpmnElement="F_med"><di:waypoint x="1515.0" y="758.3"/><di:waypoint x="1615.0" y="831.7"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_high_di" bpmnElement="F_high"><di:waypoint x="1502.9" y="715.0"/><di:waypoint x="1619.3" y="490.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_income_di" bpmnElement="F_income"><di:waypoint x="1650.7" y="825.0"/><di:waypoint x="1772.9" y="540.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_employer_di" bpmnElement="F_employer"><di:waypoint x="1665.0" y="850.0"/><di:waypoint x="1740.0" y="850.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_extra_none_di" bpmnElement="F_extra_none"><di:waypoint x="1665.0" y="850.0"/><di:waypoint x="1915.0" y="850.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_income_done_di" bpmnElement="F_income_done"><di:waypoint x="1807.1" y="540.0"/><di:waypoint x="1929.3" y="825.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_employer_done_di" bpmnElement="F_employer_done"><di:waypoint x="1840.0" y="850.0"/><di:waypoint x="1915.0" y="850.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_extra_end_di" bpmnElement="F_extra_end"><di:waypoint x="1965.0" y="831.7"/><di:waypoint x="2065.0" y="758.3"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_review_di" bpmnElement="F_review"><di:waypoint x="1690.0" y="450.0"/><di:waypoint x="1775.0" y="450.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_sla_di" bpmnElement="F_sla"><di:waypoint x="1640.0" y="508.0"/><di:waypoint x="1640.0" y="550.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_sla_end_di" bpmnElement="F_sla_end"><di:waypoint x="1690.0" y="590.0"/><di:waypoint x="1772.0" y="590.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_approved_di" bpmnElement="F_approved"><di:waypoint x="1825.0" y="475.0"/><di:waypoint x="2065.0" y="715.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_rejected_di" bpmnElement="F_rejected"><di:waypoint x="1825.0" y="464.1"/><di:waypoint x="1910.0" y="511.9"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_reject_end_di" bpmnElement="F_reject_end"><di:waypoint x="2010.0" y="540.0"/><di:waypoint x="2092.0" y="540.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_sign_di" bpmnElement="F_sign"><di:waypoint x="2096.0" y="715.0"/><di:waypoint x="2230.5" y="150.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_pay_di" bpmnElement="F_pay"><di:waypoint x="2249.5" y="150.0"/><di:waypoint x="2380.5" y="700.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_paid_di" bpmnElement="F_paid"><di:waypoint x="2399.5" y="700.0"/><di:waypoint x="2535.7" y="128.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="D1_di" bpmnElement="D1"><di:waypoint x="578.0" y="320.0"/><di:waypoint x="650.0" y="320.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="D2_di" bpmnElement="D2"><di:waypoint x="750.0" y="320.0"/><di:waypoint x="810.0" y="320.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="D3_di" bpmnElement="D3"><di:waypoint x="910.0" y="320.0"/><di:waypoint x="982.0" y="320.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="G1_di" bpmnElement="G1"><di:waypoint x="318.0" y="1000.0"/><di:waypoint x="400.0" y="1000.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="G2_di" bpmnElement="G2"><di:waypoint x="500.0" y="1000.0"/><di:waypoint x="550.0" y="1000.0"/></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="G3_di" bpmnElement="G3"><di:waypoint x="650.0" y="1000.0"/><di:waypoint x="732.0" y="1000.0"/></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmn:relationship type="BPSimData">
+    <bpmn:extensionElements>
+      <bpsim:BPSimData>
+      <bpsim:Scenario id="Scenario_Base" name="Base case (illustrative)">
+        <bpsim:ScenarioParameters baseTimeUnit="min" replication="3">
+          <bpsim:Duration><bpsim:DurationParameter value="PT16H"/></bpsim:Duration>
+        </bpsim:ScenarioParameters>
+        <bpsim:ElementParameters elementRef="Start_Received">
+          <bpsim:ControlParameters>
+            <bpsim:InterTriggerTimer><bpsim:NegativeExponentialDistribution mean="30"/></bpsim:InterTriggerTimer>
+          </bpsim:ControlParameters>
+          <bpsim:PropertyParameters>
+            <bpsim:Property name="amount"><bpsim:UniformDistribution min="1000" max="50000"/></bpsim:Property>
+            <bpsim:Property name="years"><bpsim:UniformDistribution min="0" max="10"/></bpsim:Property>
+          </bpsim:PropertyParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Submit">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:TriangularDistribution min="5" mode="8" max="15"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Verify">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NormalDistribution mean="6" standardDeviation="1"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Archive">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:FloatingParameter value="2"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Rules">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NumericParameter value="30" timeUnit="s"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Lists">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:UniformDistribution min="1" max="3"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Score">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:ErlangDistribution k="2" mean="3"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+          <bpsim:CostParameters><bpsim:FixedCost><bpsim:FloatingParameter value="3"/></bpsim:FixedCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Employer">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NegativeExponentialDistribution mean="4"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Income">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:UniformDistribution min="10" max="20"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Review">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:NormalDistribution mean="1.5" standardDeviation="0.3" timeUnit="hour"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Notify">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:LogNormalDistribution mean="8" standardDeviation="3"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_RejectNotice">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:FloatingParameter value="4"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Sign">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:TriangularDistribution min="5" mode="10" max="20"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Task_Disburse">
+          <bpsim:TimeParameters><bpsim:ProcessingTime><bpsim:FloatingParameter value="2"/></bpsim:ProcessingTime></bpsim:TimeParameters>
+          <bpsim:CostParameters><bpsim:FixedCost><bpsim:FloatingParameter value="5"/></bpsim:FixedCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="F_low">
+          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.45"/></bpsim:Probability></bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="F_med">
+          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.30"/></bpsim:Probability></bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="F_high">
+          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.25"/></bpsim:Probability></bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="F_approved">
+          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.7"/></bpsim:Probability></bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="F_rejected">
+          <bpsim:ControlParameters><bpsim:Probability><bpsim:FloatingParameter value="0.3"/></bpsim:Probability></bpsim:ControlParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Lane_Customer">
+          <bpsim:ResourceParameters><bpsim:Quantity><bpsim:NumericParameter value="50"/></bpsim:Quantity></bpsim:ResourceParameters>
+          <bpsim:CostParameters><bpsim:UnitCost><bpsim:FloatingParameter value="0"/></bpsim:UnitCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Lane_Clerk">
+          <bpsim:ResourceParameters><bpsim:Quantity><bpsim:NumericParameter value="3"/></bpsim:Quantity></bpsim:ResourceParameters>
+          <bpsim:CostParameters><bpsim:UnitCost><bpsim:FloatingParameter value="2"/></bpsim:UnitCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+        <bpsim:ElementParameters elementRef="Lane_Engine">
+          <bpsim:ResourceParameters><bpsim:Quantity><bpsim:NumericParameter value="4"/></bpsim:Quantity></bpsim:ResourceParameters>
+          <bpsim:CostParameters><bpsim:UnitCost><bpsim:FloatingParameter value="1"/></bpsim:UnitCost></bpsim:CostParameters>
+        </bpsim:ElementParameters>
+      </bpsim:Scenario>
+      </bpsim:BPSimData>
+    </bpmn:extensionElements>
+    <bpmn:source>Process_Loan</bpmn:source>
+    <bpmn:target>Process_Loan</bpmn:target>
+  </bpmn:relationship>
+</bpmn:definitions>

@@ -1,0 +1,988 @@
+{
+  "format": "wildlands-process",
+  "schemaVersion": 1,
+  "revision": 0,
+  "id": "user-journey-app-onboarding",
+  "name": "User journey · App onboarding",
+  "description": "Synthetic user journey of a mobile app, from the first install to a subscription or a free active user. New users arrive as a steady open stream with a random gap (uniform 2 to 8 minutes) for as long as the run lasts, so the example is meant to run unlimited. Each user draws a source (50% store, 30% ad, 20% friend) and a device, and starts with sentiment 0 and no sessions. The journey combines touchpoints, a system step (the verification service) and timers: a wait for the email link, a day-1 wait and weekly waits. One day is compressed to about 20 minutes. Sessions are a counter that bounds the weekly loop at four. Chance routes model 15% giving up the email form, 10% expired links that go to support chat, 22% denying permissions (a reduced experience), 40% skipping the tour, 55% not returning after day 1 and 12% subscribing. Support chat agents, a notification service and a verification service work backstage. Every random value derives from the definition seed 20261002 and the case and step, so the same seed always gives the same run and another seed (process run --seed N) gives another one. All numbers are synthetic illustrative assumptions, not research data, a measured app or a forecast.",
+  "genre": "user-journey",
+  "seed": 20261002,
+  "track": [
+    {
+      "field": "sentiment",
+      "label": "Sentiment"
+    },
+    {
+      "field": "sessions",
+      "label": "Sessions"
+    }
+  ],
+  "start": "new-user",
+  "sipoc": {
+    "suppliers": [
+      {
+        "name": "Marketing channels",
+        "supplies": "Ads and referrals that lead to the install"
+      },
+      {
+        "name": "App store provider",
+        "supplies": "Install, notifications and subscription billing"
+      }
+    ],
+    "customers": [
+      {
+        "name": "The user",
+        "receives": "A set-up account and a useful first experience"
+      },
+      {
+        "name": "The business",
+        "receives": "Activated users and subscriptions"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "id": "support",
+      "name": "Support chat agents",
+      "capacity": 2,
+      "costPerMinute": 2,
+      "kind": "people"
+    },
+    {
+      "id": "notifications",
+      "name": "Notification service",
+      "capacity": 4,
+      "costPerMinute": 1,
+      "kind": "system"
+    },
+    {
+      "id": "verification",
+      "name": "Verification service",
+      "capacity": 3,
+      "costPerMinute": 1,
+      "kind": "system"
+    }
+  ],
+  "steps": [
+    {
+      "id": "new-user",
+      "name": "New user finds the app",
+      "kind": "start",
+      "scene": {
+        "id": "scene-new-user",
+        "position": [
+          0,
+          0
+        ],
+        "color": "#77b5a0"
+      },
+      "phase": "Discover",
+      "description": "A new user meets the app in a store, an ad or through a friend."
+    },
+    {
+      "id": "install",
+      "name": "Installs the app",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-install",
+        "position": [
+          14,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Discover",
+      "emotion": 1,
+      "channel": "mobile",
+      "duration": 2,
+      "timing": {
+        "dist": "uniform",
+        "min": 1,
+        "max": 4
+      },
+      "add": {
+        "sentiment": 1
+      },
+      "pain": "The download is large on a slow connection."
+    },
+    {
+      "id": "first-open",
+      "name": "Opens the app for the first time",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-first-open",
+        "position": [
+          28,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Discover",
+      "emotion": 1,
+      "channel": "mobile",
+      "duration": 1,
+      "timing": {
+        "dist": "uniform",
+        "min": 1,
+        "max": 3
+      },
+      "add": {
+        "sentiment": 1
+      }
+    },
+    {
+      "id": "method",
+      "name": "Sign-up method",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-method",
+        "position": [
+          42,
+          0
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Sign up"
+    },
+    {
+      "id": "social-signup",
+      "name": "Signs up with a social account",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-social-signup",
+        "position": [
+          56,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Sign up",
+      "emotion": 2,
+      "channel": "mobile",
+      "duration": 1,
+      "add": {
+        "sentiment": 1
+      },
+      "opportunity": "Offer the social button first."
+    },
+    {
+      "id": "email-form",
+      "name": "Fills in the email form",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-email-form",
+        "position": [
+          56,
+          12
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Sign up",
+      "emotion": -1,
+      "channel": "mobile",
+      "duration": 3,
+      "timing": {
+        "dist": "uniform",
+        "min": 2,
+        "max": 5
+      },
+      "add": {
+        "sentiment": -1
+      },
+      "pain": "A long form with password rules.",
+      "opportunity": "Offer a passwordless magic link."
+    },
+    {
+      "id": "form-gives-up",
+      "name": "Gives up the form?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-form-gives-up",
+        "position": [
+          70,
+          12
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Sign up"
+    },
+    {
+      "id": "verify-email",
+      "name": "Verify email",
+      "kind": "system",
+      "scene": {
+        "id": "scene-verify-email",
+        "position": [
+          84,
+          12
+        ],
+        "color": "#91b9d5"
+      },
+      "phase": "Sign up",
+      "duration": 1,
+      "resources": {
+        "verification": 1
+      },
+      "technology": "Verification service",
+      "set": {
+        "emailVerified": true
+      },
+      "outputs": [
+        {
+          "field": "emailVerified",
+          "label": "Email verified"
+        }
+      ],
+      "description": "The verification service sends a link to the user."
+    },
+    {
+      "id": "click-link",
+      "name": "User clicks the link",
+      "kind": "timer",
+      "scene": {
+        "id": "scene-click-link",
+        "position": [
+          98,
+          12
+        ],
+        "color": "#91b9d5"
+      },
+      "phase": "Sign up",
+      "duration": 8,
+      "timing": {
+        "dist": "exponential",
+        "mean": 8,
+        "max": 60
+      },
+      "pain": "The user has to leave the app to open the mail."
+    },
+    {
+      "id": "link-works",
+      "name": "Link works?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-link-works",
+        "position": [
+          112,
+          12
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Sign up"
+    },
+    {
+      "id": "support-chat",
+      "name": "Asks support chat for a new link",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-support-chat",
+        "position": [
+          112,
+          24
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Sign up",
+      "emotion": -1,
+      "channel": "chat",
+      "duration": 6,
+      "timing": {
+        "dist": "triangular",
+        "min": 3,
+        "mode": 6,
+        "max": 15
+      },
+      "resources": {
+        "support": 1
+      },
+      "add": {
+        "sentiment": -1
+      },
+      "pain": "Support is reached only after the link failed."
+    },
+    {
+      "id": "permissions",
+      "name": "Sees the permissions prompt",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-permissions",
+        "position": [
+          126,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Onboard",
+      "emotion": -2,
+      "channel": "mobile",
+      "duration": 1,
+      "draws": [
+        {
+          "field": "reducedExperience",
+          "kind": "chance",
+          "percent": 22,
+          "whenTrue": true,
+          "whenFalse": false
+        }
+      ],
+      "add": {
+        "sentiment": -1
+      },
+      "pain": "Permission wall.",
+      "opportunity": "Ask for each permission when it is first needed."
+    },
+    {
+      "id": "limited",
+      "name": "Reduced experience?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-limited",
+        "position": [
+          140,
+          0
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Onboard"
+    },
+    {
+      "id": "limited-notice",
+      "name": "Sees the limited-mode notice",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-limited-notice",
+        "position": [
+          140,
+          12
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Onboard",
+      "emotion": -1,
+      "channel": "mobile",
+      "duration": 1,
+      "add": {
+        "sentiment": -1
+      },
+      "pain": "Features are visibly greyed out."
+    },
+    {
+      "id": "profile",
+      "name": "Sets up a profile",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-profile",
+        "position": [
+          154,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Onboard",
+      "emotion": 0,
+      "channel": "mobile",
+      "duration": 3,
+      "timing": {
+        "dist": "triangular",
+        "min": 2,
+        "mode": 3,
+        "max": 8
+      },
+      "add": {
+        "sentiment": 1
+      }
+    },
+    {
+      "id": "tour-skip",
+      "name": "Takes the product tour?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-tour-skip",
+        "position": [
+          168,
+          0
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Onboard"
+    },
+    {
+      "id": "tour",
+      "name": "Follows the product tour",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-tour",
+        "position": [
+          168,
+          12
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Onboard",
+      "emotion": 1,
+      "channel": "mobile",
+      "duration": 2,
+      "add": {
+        "sentiment": 1
+      },
+      "opportunity": "Shorten the tour to three screens."
+    },
+    {
+      "id": "first-task",
+      "name": "Completes the first task",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-first-task",
+        "position": [
+          182,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Activate",
+      "emotion": 3,
+      "channel": "mobile",
+      "duration": 3,
+      "timing": {
+        "dist": "uniform",
+        "min": 2,
+        "max": 6
+      },
+      "add": {
+        "sentiment": 3,
+        "sessions": 1
+      },
+      "opportunity": "Make the first task reachable in one tap."
+    },
+    {
+      "id": "day-one-wait",
+      "name": "Waits until day 1",
+      "kind": "timer",
+      "scene": {
+        "id": "scene-day-one-wait",
+        "position": [
+          196,
+          0
+        ],
+        "color": "#91b9d5"
+      },
+      "phase": "Retain",
+      "duration": 20,
+      "timing": {
+        "dist": "uniform",
+        "min": 15,
+        "max": 25
+      },
+      "description": "One day is compressed to about 20 minutes in this example."
+    },
+    {
+      "id": "day-one-push",
+      "name": "Receives the day-1 push reminder",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-day-one-push",
+        "position": [
+          210,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Retain",
+      "emotion": 1,
+      "channel": "mobile",
+      "duration": 1,
+      "resources": {
+        "notifications": 1
+      },
+      "add": {
+        "sentiment": 1
+      },
+      "opportunity": "Personalise the reminder with the first task result."
+    },
+    {
+      "id": "returns",
+      "name": "Returns on day 2?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-returns",
+        "position": [
+          224,
+          0
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Retain"
+    },
+    {
+      "id": "weekly",
+      "name": "Uses the app in a weekly session",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-weekly",
+        "position": [
+          238,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Retain",
+      "emotion": 2,
+      "channel": "mobile",
+      "duration": 3,
+      "timing": {
+        "dist": "uniform",
+        "min": 2,
+        "max": 6
+      },
+      "add": {
+        "sessions": 1,
+        "sentiment": 1
+      }
+    },
+    {
+      "id": "more-weeks",
+      "name": "Used four times?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-more-weeks",
+        "position": [
+          252,
+          0
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Retain"
+    },
+    {
+      "id": "week-wait",
+      "name": "Waits until the next week",
+      "kind": "timer",
+      "scene": {
+        "id": "scene-week-wait",
+        "position": [
+          252,
+          12
+        ],
+        "color": "#91b9d5"
+      },
+      "phase": "Retain",
+      "duration": 140
+    },
+    {
+      "id": "digest",
+      "name": "Receives the weekly digest",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-digest",
+        "position": [
+          238,
+          12
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Retain",
+      "emotion": 0,
+      "channel": "email",
+      "duration": 1,
+      "resources": {
+        "notifications": 1
+      },
+      "opportunity": "Send the digest only when there is news."
+    },
+    {
+      "id": "offer",
+      "name": "Sees the upgrade offer",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-offer",
+        "position": [
+          266,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Monetise",
+      "emotion": -1,
+      "channel": "mobile",
+      "duration": 2,
+      "add": {
+        "sentiment": -1
+      },
+      "pain": "The paywall interrupts the flow.",
+      "opportunity": "Show the offer after a success moment."
+    },
+    {
+      "id": "subscribe",
+      "name": "Subscribe?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-subscribe",
+        "position": [
+          280,
+          0
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Monetise"
+    },
+    {
+      "id": "pays",
+      "name": "Subscribes on the web checkout",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-pays",
+        "position": [
+          294,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Monetise",
+      "emotion": 2,
+      "channel": "web",
+      "duration": 3,
+      "timing": {
+        "dist": "uniform",
+        "min": 2,
+        "max": 5
+      },
+      "add": {
+        "sentiment": 2
+      }
+    },
+    {
+      "id": "subscriber",
+      "name": "Subscriber",
+      "kind": "end",
+      "scene": {
+        "id": "scene-subscriber",
+        "position": [
+          308,
+          0
+        ],
+        "color": "#77b5a0"
+      },
+      "phase": "Monetise",
+      "outcome": "goal"
+    },
+    {
+      "id": "free-user",
+      "name": "Free active user",
+      "kind": "end",
+      "scene": {
+        "id": "scene-free-user",
+        "position": [
+          294,
+          12
+        ],
+        "color": "#77b5a0"
+      },
+      "phase": "Monetise",
+      "outcome": "goal"
+    },
+    {
+      "id": "gave-up",
+      "name": "Abandoned sign-up",
+      "kind": "end",
+      "scene": {
+        "id": "scene-gave-up",
+        "position": [
+          70,
+          24
+        ],
+        "color": "#d9777f"
+      },
+      "phase": "Sign up",
+      "outcome": "lost"
+    },
+    {
+      "id": "churned",
+      "name": "Churned after day 1",
+      "kind": "end",
+      "scene": {
+        "id": "scene-churned",
+        "position": [
+          224,
+          12
+        ],
+        "color": "#d9777f"
+      },
+      "phase": "Retain",
+      "outcome": "lost"
+    }
+  ],
+  "flows": [
+    {
+      "id": "new-user-install",
+      "from": "new-user",
+      "to": "install"
+    },
+    {
+      "id": "install-first-open",
+      "from": "install",
+      "to": "first-open"
+    },
+    {
+      "id": "first-open-method",
+      "from": "first-open",
+      "to": "method"
+    },
+    {
+      "id": "method-social-signup",
+      "from": "method",
+      "to": "social-signup",
+      "label": "Social account",
+      "when": {
+        "chance": 40
+      }
+    },
+    {
+      "id": "method-email-form",
+      "from": "method",
+      "to": "email-form",
+      "label": "Email"
+    },
+    {
+      "id": "social-signup-permissions",
+      "from": "social-signup",
+      "to": "permissions"
+    },
+    {
+      "id": "email-form-form-gives-up",
+      "from": "email-form",
+      "to": "form-gives-up"
+    },
+    {
+      "id": "form-gives-up-gave-up",
+      "from": "form-gives-up",
+      "to": "gave-up",
+      "label": "Gives up",
+      "when": {
+        "chance": 15
+      }
+    },
+    {
+      "id": "form-gives-up-verify-email",
+      "from": "form-gives-up",
+      "to": "verify-email"
+    },
+    {
+      "id": "verify-email-click-link",
+      "from": "verify-email",
+      "to": "click-link"
+    },
+    {
+      "id": "click-link-link-works",
+      "from": "click-link",
+      "to": "link-works"
+    },
+    {
+      "id": "link-works-support-chat",
+      "from": "link-works",
+      "to": "support-chat",
+      "label": "Link expired",
+      "when": {
+        "chance": 10
+      }
+    },
+    {
+      "id": "link-works-permissions",
+      "from": "link-works",
+      "to": "permissions",
+      "label": "Verified"
+    },
+    {
+      "id": "support-chat-verify-email",
+      "from": "support-chat",
+      "to": "verify-email"
+    },
+    {
+      "id": "permissions-limited",
+      "from": "permissions",
+      "to": "limited"
+    },
+    {
+      "id": "limited-limited-notice",
+      "from": "limited",
+      "to": "limited-notice",
+      "label": "Permissions denied",
+      "when": {
+        "field": "reducedExperience",
+        "op": "eq",
+        "value": true
+      }
+    },
+    {
+      "id": "limited-profile",
+      "from": "limited",
+      "to": "profile"
+    },
+    {
+      "id": "limited-notice-profile",
+      "from": "limited-notice",
+      "to": "profile"
+    },
+    {
+      "id": "profile-tour-skip",
+      "from": "profile",
+      "to": "tour-skip"
+    },
+    {
+      "id": "tour-skip-first-task",
+      "from": "tour-skip",
+      "to": "first-task",
+      "label": "Skips",
+      "when": {
+        "chance": 40
+      }
+    },
+    {
+      "id": "tour-skip-tour",
+      "from": "tour-skip",
+      "to": "tour",
+      "label": "Takes the tour"
+    },
+    {
+      "id": "tour-first-task",
+      "from": "tour",
+      "to": "first-task"
+    },
+    {
+      "id": "first-task-day-one-wait",
+      "from": "first-task",
+      "to": "day-one-wait"
+    },
+    {
+      "id": "day-one-wait-day-one-push",
+      "from": "day-one-wait",
+      "to": "day-one-push"
+    },
+    {
+      "id": "day-one-push-returns",
+      "from": "day-one-push",
+      "to": "returns"
+    },
+    {
+      "id": "returns-churned",
+      "from": "returns",
+      "to": "churned",
+      "label": "Does not return",
+      "when": {
+        "chance": 55
+      }
+    },
+    {
+      "id": "returns-weekly",
+      "from": "returns",
+      "to": "weekly",
+      "label": "Returns"
+    },
+    {
+      "id": "weekly-more-weeks",
+      "from": "weekly",
+      "to": "more-weeks"
+    },
+    {
+      "id": "more-weeks-week-wait",
+      "from": "more-weeks",
+      "to": "week-wait",
+      "label": "Fewer than four sessions",
+      "when": {
+        "field": "sessions",
+        "op": "lt",
+        "value": 4
+      }
+    },
+    {
+      "id": "more-weeks-offer",
+      "from": "more-weeks",
+      "to": "offer",
+      "label": "Active user"
+    },
+    {
+      "id": "week-wait-digest",
+      "from": "week-wait",
+      "to": "digest"
+    },
+    {
+      "id": "digest-weekly",
+      "from": "digest",
+      "to": "weekly"
+    },
+    {
+      "id": "offer-subscribe",
+      "from": "offer",
+      "to": "subscribe"
+    },
+    {
+      "id": "subscribe-pays",
+      "from": "subscribe",
+      "to": "pays",
+      "label": "Subscribes",
+      "when": {
+        "chance": 12
+      }
+    },
+    {
+      "id": "subscribe-free-user",
+      "from": "subscribe",
+      "to": "free-user",
+      "label": "Stays free"
+    },
+    {
+      "id": "pays-subscriber",
+      "from": "pays",
+      "to": "subscriber"
+    }
+  ],
+  "arrivals": [
+    {
+      "at": 0,
+      "open": true,
+      "interval": 5,
+      "gap": {
+        "dist": "uniform",
+        "min": 2,
+        "max": 8
+      },
+      "data": {
+        "sentiment": 0,
+        "sessions": 0
+      },
+      "draws": [
+        {
+          "field": "source",
+          "kind": "choice",
+          "values": [
+            {
+              "value": "store",
+              "weight": 50
+            },
+            {
+              "value": "ad",
+              "weight": 30
+            },
+            {
+              "value": "friend",
+              "weight": 20
+            }
+          ]
+        },
+        {
+          "field": "device",
+          "kind": "choice",
+          "values": [
+            {
+              "value": "ios",
+              "weight": 55
+            },
+            {
+              "value": "android",
+              "weight": 45
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

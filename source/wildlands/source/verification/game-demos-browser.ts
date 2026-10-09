@@ -103,6 +103,14 @@ async function colonyDemo(page: Page, game: GameJson, folder: string): Promise<v
 
 /** A published RTS or Pocket Pet demo: only its own host runs, under its own namespace. */
 async function templateDemo(page: Page, game: GameJson): Promise<void> {
+  if (game.template === 'process') {
+    await waitForReady(page, {host: 'process', timeout: READY_TIMEOUT_MS});
+    assert.equal(await page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {query(): {snapshot: {minute: number}}}}).LWProcessStudio.query().snapshot.minute), 0);
+    await page.locator('#advance').click();
+    assert.equal(await page.locator('#clock').textContent(), '30 min of 100,000');
+    assert.equal(await page.locator('[data-step]').count(), 12);
+    return;
+  }
   const app = game.template, other = app === 'rts' ? 'LWPetHost' : 'LWRTSHost';
   await waitForReady(page, {host: app, timeout: READY_TIMEOUT_MS});
   assert.equal(await page.evaluate(`WildlandsPlay.ready===true&&WildlandsPlay.app===${JSON.stringify(app)}`), true);
@@ -134,6 +142,7 @@ async function publishedChecks(browser: Browser): Promise<void> {
     }
   });
   const names: Record<string, string> = {
+   'agency-delivery': 'Published agency process demo boots offline with all step scenes and explicit clock control',
    'littlewild': 'Published Littlewild demo boots only Littlewild from file:// and keeps the legacy littlewild save keys',
    'emberworks': 'Published Emberworks demo boots only Emberworks from file:// under the wildlands.emberworks storage namespace',
    'office': 'Published Office demo boots only Office from file:// under the wildlands.office storage namespace',

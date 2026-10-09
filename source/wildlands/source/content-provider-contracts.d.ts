@@ -47,6 +47,10 @@ declare namespace LWContentProvider {
   /** RTS catalog (`wildlands-rts` document). */
   readonly rts?:unknown;
   readonly pet?:PetContent;
+  /** Business-process definition; owned by LWProcessCatalog. */
+  readonly process?:unknown;
+  /** Ordered business-process definitions of a multi-process game; `process` is the first entry. */
+  readonly processes?:readonly unknown[];
  }
  type Section=Exclude<keyof Profile,'format'|'version'|'id'>;
  interface Api {

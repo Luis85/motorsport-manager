@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "scene-design-ready",
+  "name": "Ready to build",
+  "category": "Business process scenes",
+  "parameters": {},
+  "geometries": {
+    "box": {
+      "type": "box",
+      "size": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "materials": {
+    "wood": {
+      "color": "#8c725d",
+      "roughness": 0.8
+    },
+    "frame": {
+      "color": "#536379"
+    },
+    "screen": {
+      "color": "#91b9d5"
+    },
+    "accent": {
+      "color": "#91b9d5"
+    }
+  },
+  "nodes": [
+    {
+      "id": "podium",
+      "name": "podium",
+      "type": "mesh",
+      "geometry": "box",
+      "material": "frame",
+      "transform": {
+        "position": [
+          0,
+          0.4,
+          0
+        ],
+        "scale": [
+          1.8,
+          0.8,
+          1.8
+        ]
+      }
+    },
+    {
+      "id": "marker",
+      "name": "marker",
+      "type": "mesh",
+      "geometry": "box",
+      "material": "accent",
+      "transform": {
+        "position": [
+          0,
+          1.05,
+          0
+        ],
+        "scale": [
+          0.7,
+          0.6,
+          0.7
+        ]
+      }
+    }
+  ]
+}

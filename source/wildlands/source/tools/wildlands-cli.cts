@@ -13,7 +13,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {readBytesFile,readJsonFile,writeJsonFile,writeTextFile,emit} from './cli-io.cjs';
-const usage='wildlands --help | --version | discover [--game DIR] | scenarios --game DIR | create --game DIR --output project.json [--scenario ID] [--scene ID] [--pack pack.json] [--id ID] [--name NAME] | validate|inspect --project project.json [--game DIR] | scenario --project project.json --scenario ID [--scene ID] --output project.json [--game DIR] | run|edit --project project.json --recipe recipe.json --output project.json [--game DIR] | upgrade --project legacy.json --game DIR --output project.json | compile|export --project project.json --output godot-directory [--with-engine-sources] [--game DIR] | validate-game|inspect-game --game DIR | build-game --game DIR (--output FILE.html | --check FILE.html) [--profile play|studio]';
+const usage='wildlands process [discover|--help] | process schema [--kind definition|recipe] | process create --id ID --output FILE [--name NAME] | process validate|inspect --input FILE [--draft] | process edit --input FILE --recipe FILE (--output FILE | --dry-run) [--draft] | process attach --input FILE --asset FILE --step ID --expected-revision N --expected-fingerprint HEX (--output FILE | --dry-run) | process run --input FILE --minutes N --output FILE | process build --input FILE --output FILE.html | process forge --input FILE --output NEWDIR | wildlands --help | --version | discover [--game DIR] | scenarios --game DIR | create --game DIR --output project.json [--scenario ID] [--scene ID] [--pack pack.json] [--id ID] [--name NAME] | validate|inspect --project project.json [--game DIR] | scenario --project project.json --scenario ID [--scene ID] --output project.json [--game DIR] | run|edit --project project.json --recipe recipe.json --output project.json [--game DIR] | upgrade --project legacy.json --game DIR --output project.json | compile|export --project project.json --output godot-directory [--with-engine-sources] [--game DIR] | validate-game|inspect-game --game DIR | build-game --game DIR (--output FILE.html | --check FILE.html) [--profile play|studio]';
 /** Repository handbook for humans and agents; reported by --help and every game-required diagnostic. */
 const handbook='docs/reference/wildlands-cli.md';
 const project=['--project','--game'];
@@ -115,6 +115,7 @@ function gameCommand(command:string,values:Map<string,string>):void{
  process.exitCode=1;
 }
 export async function run(args:readonly string[]):Promise<void>{
+ if(args[0]==='process'){(require('./process-cli.cjs') as typeof import('./process-cli.cjs')).run(args.slice(1));return;}
  const command=args[0];
  try{
   if(args.length===0||(args.length===1&&['--help','-h'].includes(command!))){emit({ok:true,protocolVersion:1,usage,handbook});return;}

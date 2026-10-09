@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "scene-discovery",
+  "name": "Discovery",
+  "category": "Business process scenes",
+  "parameters": {},
+  "geometries": {
+    "box": {
+      "type": "box",
+      "size": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "materials": {
+    "wood": {
+      "color": "#8c725d",
+      "roughness": 0.8
+    },
+    "frame": {
+      "color": "#536379"
+    },
+    "screen": {
+      "color": "#91b9d5"
+    },
+    "accent": {
+      "color": "#ffbb73"
+    }
+  },
+  "nodes": [
+    {
+      "id": "desk",
+      "name": "desk",
+      "type": "mesh",
+      "geometry": "box",
+      "material": "wood",
+      "transform": {
+        "position": [
+          0,
+          1.05,
+          -0.6
+        ],
+        "scale": [
+          3.4,
+          0.18,
+          1.4
+        ]
+      }
+    },
+    {
+      "id": "left-leg",
+      "name": "left-leg",
+      "type": "mesh",
+      "geometry": "box",
+      "material": "frame",
+      "transform": {
+        "position": [
+          -1.4,
+          0.5,
+          -0.6
+        ],
+        "scale": [
+          0.15,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "right-leg",
+      "name": "right-leg",
+      "type": "mesh",
+      "geometry": "box",
+      "material": "frame",
+      "transform": {
+        "position": [
+          1.4,
+          0.5,
+          -0.6
+        ],
+        "scale": [
+          0.15,
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "id": "monitor",
+      "name": "monitor",
+      "type": "mesh",
+      "geometry": "box",
+      "material": "screen",
+      "transform": {
+        "position": [
+          0,
+          1.62,
+          -0.8
+        ],
+        "scale": [
+          1,
+          0.7,
+          0.12
+        ]
+      }
+    },
+    {
+      "id": "monitor-stand",
+      "name": "monitor-stand",
+      "type": "mesh",
+      "geometry": "box",
+      "material": "frame",
+      "transform": {
+        "position": [
+          0,
+          1.23,
+          -0.8
+        ],
+        "scale": [
+          0.15,
+          0.25,
+          0.15
+        ]
+      }
+    },
+    {
+      "id": "keyboard",
+      "name": "keyboard",
+      "type": "mesh",
+      "geometry": "box",
+      "material": "frame",
+      "transform": {
+        "position": [
+          0,
+          1.17,
+          -0.1
+        ],
+        "scale": [
+          0.8,
+          0.05,
+          0.25
+        ]
+      }
+    },
+    {
+      "id": "chair",
+      "name": "chair",
+      "type": "mesh",
+      "geometry": "box",
+      "material": "accent",
+      "transform": {
+        "position": [
+          0,
+          0.65,
+          1
+        ],
+        "scale": [
+          0.8,
+          0.15,
+          0.8
+        ]
+      }
+    },
+    {
+      "id": "chair-back",
+      "name": "chair-back",
+      "type": "mesh",
+      "geometry": "box",
+      "material": "accent",
+      "transform": {
+        "position": [
+          0,
+          1.1,
+          1.35
+        ],
+        "scale": [
+          0.8,
+          0.9,
+          0.12
+        ]
+      }
+    },
+    {
+      "id": "chair-leg",
+      "name": "chair-leg",
+      "type": "mesh",
+      "geometry": "box",
+      "material": "frame",
+      "transform": {
+        "position": [
+          0,
+          0.3,
+          1
+        ],
+        "scale": [
+          0.16,
+          0.6,
+          0.16
+        ]
+      }
+    },
+    {
+      "id": "board",
+      "name": "board",
+      "type": "mesh",
+      "geometry": "box",
+      "material": "screen",
+      "transform": {
+        "position": [
+          -2.8,
+          1.1,
+          -1.7
+        ],
+        "scale": [
+          1.2,
+          1.7,
+          0.1
+        ]
+      }
+    }
+  ]
+}

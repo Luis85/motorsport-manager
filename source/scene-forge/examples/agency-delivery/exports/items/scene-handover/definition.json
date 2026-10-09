@@ -1,0 +1,116 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "items",
+  "id": "scene-handover",
+  "visual": {
+    "format": "littlewild-3d-asset",
+    "schemaVersion": 1,
+    "category": "item",
+    "id": "scene-handover",
+    "name": "Client handover",
+    "materials": {
+      "wood": {
+        "color": "#8c725d",
+        "roughness": 0.8,
+        "metalness": 0,
+        "flatShading": false
+      },
+      "frame": {
+        "color": "#536379",
+        "roughness": 0.65,
+        "metalness": 0,
+        "flatShading": false
+      },
+      "screen": {
+        "color": "#91b9d5",
+        "roughness": 0.65,
+        "metalness": 0,
+        "flatShading": false
+      },
+      "accent": {
+        "color": "#ffbb73",
+        "roughness": 0.65,
+        "metalness": 0,
+        "flatShading": false
+      }
+    },
+    "models": {
+      "world": {
+        "nodes": [
+          {
+            "primitive": "box",
+            "id": "desk",
+            "position": [0, 1.05, -0.6],
+            "scale": [3.4, 0.18, 1.4],
+            "material": "wood"
+          },
+          {
+            "primitive": "box",
+            "id": "left-leg",
+            "position": [-1.4, 0.5, -0.6],
+            "scale": [0.15, 1, 1],
+            "material": "frame"
+          },
+          {
+            "primitive": "box",
+            "id": "right-leg",
+            "position": [1.4, 0.5, -0.6],
+            "scale": [0.15, 1, 1],
+            "material": "frame"
+          },
+          {
+            "primitive": "box",
+            "id": "monitor",
+            "position": [0, 1.62, -0.8],
+            "scale": [1, 0.7, 0.12],
+            "material": "screen"
+          },
+          {
+            "primitive": "box",
+            "id": "monitor-stand",
+            "position": [0, 1.23, -0.8],
+            "scale": [0.15, 0.25, 0.15],
+            "material": "frame"
+          },
+          {
+            "primitive": "box",
+            "id": "keyboard",
+            "position": [0, 1.17, -0.1],
+            "scale": [0.8, 0.05, 0.25],
+            "material": "frame"
+          },
+          {
+            "primitive": "box",
+            "id": "chair",
+            "position": [0, 0.65, 1],
+            "scale": [0.8, 0.15, 0.8],
+            "material": "accent"
+          },
+          {
+            "primitive": "box",
+            "id": "chair-back",
+            "position": [0, 1.1, 1.35],
+            "scale": [0.8, 0.9, 0.12],
+            "material": "accent"
+          },
+          {
+            "primitive": "box",
+            "id": "chair-leg",
+            "position": [0, 0.3, 1],
+            "scale": [0.16, 0.6, 0.16],
+            "material": "frame"
+          },
+          {
+            "primitive": "box",
+            "id": "board",
+            "position": [-2.8, 1.1, -1.7],
+            "scale": [1.2, 1.7, 0.1],
+            "material": "screen"
+          }
+        ]
+      }
+    },
+    "metadata": {}
+  }
+}

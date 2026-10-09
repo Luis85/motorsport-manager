@@ -25,7 +25,7 @@ const CACHE = 'engine-kit.json';
 
 /** Every game profile the kit must serve: each template, build kind and feature set. */
 export function kitProfiles(): ArtifactProfile[] {
- return (['colony', 'rts', 'pet'] as const).flatMap(template => GAME_BUILD_KINDS[template].flatMap(kind => featureSets(template).map(features =>
+ return (['colony', 'rts', 'pet', 'process'] as const).flatMap(template => GAME_BUILD_KINDS[template].flatMap(kind => featureSets(template).map(features =>
   gameProfile({id: 'kit', template, features, presentation: {title: 'Kit'}, storage: {namespace: 'wildlands.kit'}}, kind))));
 }
 

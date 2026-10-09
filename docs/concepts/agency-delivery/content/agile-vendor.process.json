@@ -1,0 +1,897 @@
+{
+  "format": "wildlands-process",
+  "schemaVersion": 1,
+  "revision": 0,
+  "id": "agile-vendor-project",
+  "name": "Agile vendor project",
+  "description": "We are the vendor running an agile software project for a customer whose project manager, product owner and subject-matter experts join in milestones, releases and iterations. After a contractual kickoff date and a roadmap, each project loops through releases; every release repeats iterations that each deliver a product increment, then acceptance testing with a bounded fix loop, then go-live. UX designers work in product design and in every iteration. Counters (iteration, increments, release) drive the loops; timers model the kickoff date, the customer review window and hypercare. CI/CD runs as automated system steps after every iteration and on release deployment, and a regression suite runs before acceptance testing. All values are synthetic: one simulated minute stands in for a fraction of a working day, an iteration is 10 simulated minutes, and this is an illustrative model, not a forecast.",
+  "start": "intake",
+  "sipoc": {
+    "suppliers": [
+      {
+        "name": "Customer product owner",
+        "supplies": "Prioritised backlog and day-to-day decisions"
+      },
+      {
+        "name": "Customer subject-matter experts",
+        "supplies": "Domain knowledge and answers to open questions"
+      },
+      {
+        "name": "Customer project manager",
+        "supplies": "Milestone approvals and release sign-off"
+      },
+      {
+        "name": "Platform vendors",
+        "supplies": "CI/CD tooling, environments and hosting"
+      }
+    ],
+    "customers": [
+      {
+        "name": "Customer business",
+        "receives": "Working software increments and release notes"
+      },
+      {
+        "name": "End users",
+        "receives": "New features in production"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "id": "customer-pm",
+      "name": "Customer project manager",
+      "capacity": 1,
+      "costPerMinute": 0
+    },
+    {
+      "id": "customer-po",
+      "name": "Customer product owner",
+      "capacity": 1,
+      "costPerMinute": 0
+    },
+    {
+      "id": "customer-sme",
+      "name": "Customer subject-matter experts",
+      "capacity": 2,
+      "costPerMinute": 0
+    },
+    {
+      "id": "delivery-manager",
+      "name": "Delivery manager (Scrum Master)",
+      "capacity": 1,
+      "costPerMinute": 3
+    },
+    {
+      "id": "ux",
+      "name": "UX designers",
+      "capacity": 1,
+      "costPerMinute": 2
+    },
+    {
+      "id": "architect",
+      "name": "Tech lead / architect",
+      "capacity": 1,
+      "costPerMinute": 3
+    },
+    {
+      "id": "developer",
+      "name": "Developers",
+      "capacity": 3,
+      "costPerMinute": 3
+    },
+    {
+      "id": "qa",
+      "name": "QA engineers",
+      "capacity": 1,
+      "costPerMinute": 2
+    },
+    {
+      "id": "ci-pipeline",
+      "name": "CI/CD pipeline runners",
+      "kind": "system",
+      "capacity": 2,
+      "costPerMinute": 1
+    },
+    {
+      "id": "test-automation",
+      "name": "Automated test grid",
+      "kind": "system",
+      "capacity": 2,
+      "costPerMinute": 1
+    }
+  ],
+  "steps": [
+    {
+      "id": "intake",
+      "name": "Engagement won",
+      "kind": "start",
+      "phase": "Initiate",
+      "scene": {
+        "id": "scene-intake",
+        "position": [
+          0,
+          0
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The customer signs and a new agile software project enters the vendor delivery process."
+    },
+    {
+      "id": "kickoff-date",
+      "name": "Contractual kickoff date (not before)",
+      "kind": "timer",
+      "phase": "Initiate",
+      "scene": {
+        "id": "scene-kickoff-date",
+        "position": [
+          14,
+          0
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "The contract fixes the earliest kickoff at business minute 12. A case that arrives earlier waits here without using any team; a later case passes at once.",
+      "until": 12
+    },
+    {
+      "id": "kickoff",
+      "name": "Milestone 1 \u00b7 Kickoff",
+      "kind": "task",
+      "phase": "Initiate",
+      "scene": {
+        "id": "scene-kickoff",
+        "position": [
+          28,
+          0
+        ],
+        "color": "#e8c547"
+      },
+      "description": "Customer project manager and our delivery manager agree governance, cadence and working agreements.",
+      "duration": 3,
+      "resources": {
+        "customer-pm": 1,
+        "delivery-manager": 1
+      },
+      "set": {
+        "kickoffDone": true
+      }
+    },
+    {
+      "id": "discovery",
+      "name": "Discovery with the customer",
+      "kind": "task",
+      "phase": "Initiate",
+      "scene": {
+        "id": "scene-discovery",
+        "position": [
+          42,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "The customer product owner and two subject-matter experts explain the domain, users and goals.",
+      "duration": 8,
+      "resources": {
+        "customer-po": 1,
+        "customer-sme": 2,
+        "delivery-manager": 1
+      },
+      "set": {
+        "discoveryDone": true
+      },
+      "needs": [
+        {
+          "field": "kickoffDone",
+          "op": "eq",
+          "value": true,
+          "label": "Kickoff milestone"
+        }
+      ]
+    },
+    {
+      "id": "plan-split",
+      "name": "Plan together",
+      "kind": "fork",
+      "phase": "Plan",
+      "scene": {
+        "id": "scene-plan-split",
+        "position": [
+          56,
+          0
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "Product design and the architecture runway run in parallel. Both feed the product backlog.",
+      "join": "backlog-ready"
+    },
+    {
+      "id": "product-design",
+      "name": "Product design",
+      "kind": "task",
+      "phase": "Plan",
+      "scene": {
+        "id": "scene-product-design",
+        "position": [
+          70,
+          -8
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "UX designers work with the customer product owner and an expert on journeys, prototypes and acceptance ideas.",
+      "duration": 12,
+      "resources": {
+        "ux": 1,
+        "customer-po": 1,
+        "customer-sme": 1
+      },
+      "set": {
+        "designReady": true
+      },
+      "needs": [
+        {
+          "field": "discoveryDone",
+          "op": "eq",
+          "value": true,
+          "label": "Discovery outcome"
+        }
+      ]
+    },
+    {
+      "id": "architecture",
+      "name": "Architecture runway",
+      "kind": "task",
+      "phase": "Plan",
+      "scene": {
+        "id": "scene-architecture",
+        "position": [
+          70,
+          8
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The tech lead and a developer prepare the architecture and the delivery pipeline.",
+      "duration": 10,
+      "resources": {
+        "architect": 1,
+        "developer": 1
+      },
+      "set": {
+        "runwayReady": true
+      },
+      "needs": [
+        {
+          "field": "discoveryDone",
+          "op": "eq",
+          "value": true,
+          "label": "Discovery outcome"
+        }
+      ]
+    },
+    {
+      "id": "backlog-ready",
+      "name": "Product backlog ready",
+      "kind": "join",
+      "phase": "Plan",
+      "scene": {
+        "id": "scene-backlog-ready",
+        "position": [
+          84,
+          0
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "Design and runway merge into a ready product backlog.",
+      "needs": [
+        {
+          "field": "designReady",
+          "op": "eq",
+          "value": true,
+          "label": "Product design deliverable"
+        },
+        {
+          "field": "runwayReady",
+          "op": "eq",
+          "value": true,
+          "label": "Architecture runway"
+        }
+      ],
+      "backlog": {
+        "capacity": 3,
+        "order": "fifo"
+      }
+    },
+    {
+      "id": "roadmap",
+      "name": "Milestone 2 \u00b7 Roadmap agreed",
+      "kind": "task",
+      "phase": "Plan",
+      "scene": {
+        "id": "scene-roadmap",
+        "position": [
+          98,
+          0
+        ],
+        "color": "#e8c547"
+      },
+      "description": "Customer project manager, product owner and delivery manager agree the release roadmap. This also resets the release, iteration and increment counters.",
+      "duration": 4,
+      "resources": {
+        "customer-pm": 1,
+        "customer-po": 1,
+        "delivery-manager": 1
+      },
+      "set": {
+        "roadmapAgreed": true,
+        "release": 0,
+        "iteration": 0,
+        "increments": 0
+      }
+    },
+    {
+      "id": "sprint-planning",
+      "name": "Iteration planning",
+      "kind": "task",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-sprint-planning",
+        "position": [
+          112,
+          28
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "The delivery manager and the customer product owner choose the iteration goal from the backlog.",
+      "duration": 2,
+      "resources": {
+        "delivery-manager": 1,
+        "customer-po": 1
+      },
+      "needs": [
+        {
+          "field": "roadmapAgreed",
+          "label": "Agreed roadmap"
+        }
+      ]
+    },
+    {
+      "id": "sprint",
+      "name": "Iteration",
+      "kind": "task",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-sprint",
+        "position": [
+          98,
+          28
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "One iteration (10 simulated minutes). Counters: iteration (within the current release) and increments (accumulated across the whole project) each go up by one.",
+      "duration": 10,
+      "resources": {
+        "delivery-manager": 1,
+        "customer-po": 1,
+        "ux": 1,
+        "developer": 2,
+        "qa": 1
+      },
+      "set": {
+        "increment": "delivered"
+      },
+      "add": {
+        "iteration": 1,
+        "increments": 1
+      }
+    },
+    {
+      "id": "ci-build",
+      "name": "CI build and tests",
+      "kind": "system",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-ci-build",
+        "position": [
+          84,
+          28
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The CI pipeline builds the increment and runs unit tests. Automated; no people are occupied.",
+      "duration": 2,
+      "technology": "CI pipeline",
+      "resources": {
+        "ci-pipeline": 1
+      },
+      "set": {
+        "buildGreen": true
+      },
+      "outputs": [
+        {
+          "field": "buildGreen",
+          "label": "Green build"
+        }
+      ]
+    },
+    {
+      "id": "sprint-review",
+      "name": "Customer review window",
+      "kind": "timer",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-sprint-review",
+        "position": [
+          70,
+          28
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "Waiting two minutes for customer feedback on the increment. Nobody on our team is occupied.",
+      "duration": 2
+    },
+    {
+      "id": "retrospective",
+      "name": "Iteration retrospective",
+      "kind": "task",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-retrospective",
+        "position": [
+          56,
+          28
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The delivery manager and a developer agree improvements before the next iteration decision.",
+      "duration": 2,
+      "resources": {
+        "delivery-manager": 1,
+        "developer": 1
+      }
+    },
+    {
+      "id": "more-iterations",
+      "name": "More iterations in this release?",
+      "kind": "decision",
+      "phase": "Iterate",
+      "scene": {
+        "id": "scene-more-iterations",
+        "position": [
+          56,
+          44
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "Loops back while the iteration counter is below this project's iterations per release."
+    },
+    {
+      "id": "regression-suite",
+      "name": "Automated regression suite",
+      "kind": "system",
+      "phase": "Accept",
+      "scene": {
+        "id": "scene-regression-suite",
+        "position": [
+          56,
+          60
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The automated test grid runs the regression suite on the release candidate before acceptance testing.",
+      "duration": 3,
+      "technology": "Automated test grid",
+      "resources": {
+        "test-automation": 1
+      },
+      "set": {
+        "regressionGreen": true
+      },
+      "outputs": [
+        {
+          "field": "regressionGreen",
+          "label": "Regression result"
+        }
+      ]
+    },
+    {
+      "id": "release-uat",
+      "name": "Release acceptance testing (UAT)",
+      "kind": "task",
+      "phase": "Accept",
+      "scene": {
+        "id": "scene-release-uat",
+        "position": [
+          42,
+          60
+        ],
+        "color": "#ffbb73"
+      },
+      "description": "Customer experts and QA test the release scope.",
+      "duration": 6,
+      "resources": {
+        "customer-sme": 1,
+        "qa": 1
+      },
+      "needs": [
+        {
+          "field": "increment",
+          "label": "Delivered increment"
+        }
+      ]
+    },
+    {
+      "id": "uat-result",
+      "name": "UAT result",
+      "kind": "decision",
+      "phase": "Accept",
+      "scene": {
+        "id": "scene-uat-result",
+        "position": [
+          28,
+          60
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "Findings send the release to one fix and retest; otherwise it can go live."
+    },
+    {
+      "id": "fix",
+      "name": "Fix acceptance findings",
+      "kind": "task",
+      "phase": "Accept",
+      "scene": {
+        "id": "scene-fix",
+        "position": [
+          35,
+          74
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "Developers and QA correct the findings, then clear the findings flag before retest.",
+      "duration": 4,
+      "resources": {
+        "developer": 2,
+        "qa": 1
+      },
+      "set": {
+        "findings": false
+      }
+    },
+    {
+      "id": "release-go-live",
+      "name": "Milestone \u00b7 Release go-live",
+      "kind": "task",
+      "phase": "Release",
+      "scene": {
+        "id": "scene-release-go-live",
+        "position": [
+          14,
+          60
+        ],
+        "color": "#d98aa6"
+      },
+      "description": "Go-live for the current release. The release counter goes up by one and the iteration counter restarts (set applies before add).",
+      "duration": 3,
+      "resources": {
+        "delivery-manager": 1,
+        "developer": 1,
+        "customer-pm": 1
+      },
+      "set": {
+        "iteration": 0,
+        "releaseLive": true
+      },
+      "add": {
+        "release": 1
+      },
+      "needs": [
+        {
+          "field": "increment",
+          "label": "Delivered increment"
+        }
+      ]
+    },
+    {
+      "id": "auto-deploy",
+      "name": "Automated deployment",
+      "kind": "system",
+      "phase": "Release",
+      "scene": {
+        "id": "scene-auto-deploy",
+        "position": [
+          0,
+          60
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "Deployment automation rolls the release out to production. Automated; no people are occupied.",
+      "duration": 2,
+      "technology": "Deployment automation",
+      "resources": {
+        "ci-pipeline": 1
+      },
+      "set": {
+        "releaseDeployed": true
+      },
+      "outputs": [
+        {
+          "field": "releaseDeployed",
+          "label": "Release deployed"
+        }
+      ]
+    },
+    {
+      "id": "hypercare",
+      "name": "Hypercare window",
+      "kind": "timer",
+      "phase": "Release",
+      "scene": {
+        "id": "scene-hypercare",
+        "position": [
+          -14,
+          60
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "Three minutes of observation after go-live; no team is occupied.",
+      "duration": 3
+    },
+    {
+      "id": "more-releases",
+      "name": "More releases?",
+      "kind": "decision",
+      "phase": "Release",
+      "scene": {
+        "id": "scene-more-releases",
+        "position": [
+          14,
+          44
+        ],
+        "color": "#91b9d5"
+      },
+      "description": "Starts the next release while the release counter is below this project's releases."
+    },
+    {
+      "id": "handover",
+      "name": "Final acceptance and handover",
+      "kind": "task",
+      "phase": "Close",
+      "scene": {
+        "id": "scene-handover",
+        "position": [
+          0,
+          44
+        ],
+        "color": "#e8c547"
+      },
+      "description": "Customer project manager, product owner and delivery manager sign the final acceptance.",
+      "duration": 3,
+      "resources": {
+        "customer-pm": 1,
+        "customer-po": 1,
+        "delivery-manager": 1
+      },
+      "needs": [
+        {
+          "field": "release",
+          "label": "Releases live"
+        }
+      ]
+    },
+    {
+      "id": "closed",
+      "name": "Project closed",
+      "kind": "end",
+      "phase": "Close",
+      "scene": {
+        "id": "scene-closed",
+        "position": [
+          -14,
+          44
+        ],
+        "color": "#77b5a0"
+      },
+      "description": "The project is accepted and closed."
+    }
+  ],
+  "flows": [
+    {
+      "id": "intake-kickoff-date",
+      "from": "intake",
+      "to": "kickoff-date"
+    },
+    {
+      "id": "kickoff-date-kickoff",
+      "from": "kickoff-date",
+      "to": "kickoff"
+    },
+    {
+      "id": "kickoff-discovery",
+      "from": "kickoff",
+      "to": "discovery"
+    },
+    {
+      "id": "discovery-plan-split",
+      "from": "discovery",
+      "to": "plan-split"
+    },
+    {
+      "id": "plan-split-product-design",
+      "from": "plan-split",
+      "to": "product-design"
+    },
+    {
+      "id": "plan-split-architecture",
+      "from": "plan-split",
+      "to": "architecture"
+    },
+    {
+      "id": "product-design-backlog-ready",
+      "from": "product-design",
+      "to": "backlog-ready"
+    },
+    {
+      "id": "architecture-backlog-ready",
+      "from": "architecture",
+      "to": "backlog-ready"
+    },
+    {
+      "id": "backlog-ready-roadmap",
+      "from": "backlog-ready",
+      "to": "roadmap"
+    },
+    {
+      "id": "roadmap-sprint-planning",
+      "from": "roadmap",
+      "to": "sprint-planning"
+    },
+    {
+      "id": "sprint-planning-sprint",
+      "from": "sprint-planning",
+      "to": "sprint"
+    },
+    {
+      "id": "sprint-ci-build",
+      "from": "sprint",
+      "to": "ci-build"
+    },
+    {
+      "id": "ci-build-sprint-review",
+      "from": "ci-build",
+      "to": "sprint-review"
+    },
+    {
+      "id": "sprint-review-retrospective",
+      "from": "sprint-review",
+      "to": "retrospective"
+    },
+    {
+      "id": "retrospective-more-iterations",
+      "from": "retrospective",
+      "to": "more-iterations"
+    },
+    {
+      "id": "more-iterations-sprint-planning",
+      "from": "more-iterations",
+      "to": "sprint-planning",
+      "label": "Next iteration",
+      "when": {
+        "field": "iteration",
+        "op": "lt",
+        "valueField": "iterations"
+      }
+    },
+    {
+      "id": "more-iterations-regression-suite",
+      "from": "more-iterations",
+      "to": "regression-suite",
+      "label": "Release scope done"
+    },
+    {
+      "id": "regression-suite-release-uat",
+      "from": "regression-suite",
+      "to": "release-uat"
+    },
+    {
+      "id": "release-uat-uat-result",
+      "from": "release-uat",
+      "to": "uat-result"
+    },
+    {
+      "id": "uat-result-fix",
+      "from": "uat-result",
+      "to": "fix",
+      "label": "Findings",
+      "when": {
+        "field": "findings",
+        "op": "eq",
+        "value": true
+      }
+    },
+    {
+      "id": "uat-result-release-go-live",
+      "from": "uat-result",
+      "to": "release-go-live",
+      "label": "Accepted"
+    },
+    {
+      "id": "fix-release-uat",
+      "from": "fix",
+      "to": "release-uat",
+      "label": "Retest"
+    },
+    {
+      "id": "release-go-live-auto-deploy",
+      "from": "release-go-live",
+      "to": "auto-deploy"
+    },
+    {
+      "id": "auto-deploy-hypercare",
+      "from": "auto-deploy",
+      "to": "hypercare"
+    },
+    {
+      "id": "hypercare-more-releases",
+      "from": "hypercare",
+      "to": "more-releases"
+    },
+    {
+      "id": "more-releases-sprint-planning",
+      "from": "more-releases",
+      "to": "sprint-planning",
+      "label": "Next release",
+      "when": {
+        "field": "release",
+        "op": "lt",
+        "valueField": "releases"
+      }
+    },
+    {
+      "id": "more-releases-handover",
+      "from": "more-releases",
+      "to": "handover",
+      "label": "All releases live"
+    },
+    {
+      "id": "handover-closed",
+      "from": "handover",
+      "to": "closed"
+    }
+  ],
+  "arrivals": [
+    {
+      "at": 0,
+      "count": 1,
+      "interval": 0,
+      "data": {
+        "iterations": 3,
+        "releases": 2,
+        "findings": true,
+        "iteration": 0,
+        "release": 0
+      }
+    },
+    {
+      "at": 15,
+      "count": 1,
+      "interval": 0,
+      "data": {
+        "iterations": 2,
+        "releases": 1,
+        "findings": false,
+        "iteration": 0,
+        "release": 0
+      }
+    },
+    {
+      "at": 30,
+      "count": 1,
+      "interval": 0,
+      "data": {
+        "iterations": 1,
+        "releases": 3,
+        "findings": true,
+        "iteration": 0,
+        "release": 0
+      }
+    }
+  ]
+}

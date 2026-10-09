@@ -1,0 +1,48 @@
+{
+  "format": "littlewild-definition",
+  "schemaVersion": 1,
+  "family": "items",
+  "id": "scene-design-split",
+  "visual": {
+    "format": "littlewild-3d-asset",
+    "schemaVersion": 1,
+    "category": "item",
+    "id": "scene-design-split",
+    "name": "Plan together",
+    "materials": {
+      "frame": {
+        "color": "#536379",
+        "roughness": 0.65,
+        "metalness": 0,
+        "flatShading": false
+      },
+      "accent": {
+        "color": "#91b9d5",
+        "roughness": 0.65,
+        "metalness": 0,
+        "flatShading": false
+      }
+    },
+    "models": {
+      "world": {
+        "nodes": [
+          {
+            "primitive": "box",
+            "id": "podium",
+            "position": [0, 0.4, 0],
+            "scale": [1.8, 0.8, 1.8],
+            "material": "frame"
+          },
+          {
+            "primitive": "box",
+            "id": "marker",
+            "position": [0, 1.05, 0],
+            "scale": [0.7, 0.6, 0.7],
+            "material": "accent"
+          }
+        ]
+      }
+    },
+    "metadata": {}
+  }
+}

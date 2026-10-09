@@ -1,0 +1,253 @@
+/* Process Studio extends Scene Forge's neutral stage, amber intent, and 5px control language. Tokens first: every colour, space, radius and
+   type size in process.css (studio shell), process-dialogs.css (dialogs and editors) and process-lenses.css (SIPOC and journey lenses) comes
+   from this set. Type sizes are rem, so the browser's default font size is honoured. The lens roots carry the same tokens so a lens drawn
+   outside the studio looks the same. */
+.process-studio,.lw-journey,.sipoc { --bg:#13181f; --panel:#1d242e; --line:#364150; --text:#edf2f7; --muted:#b1bdcd; --accent:#ffbb73;
+ --accent-bg:#3e3329; --accent-line:#ad8059; --danger:#e07a7a; --danger-text:#ffc3bc; --surface-2:#2c3744; --control-border:#7d8da3;
+ --state-queue:#91b9d5; --state-timer:#d9c58a; --state-backlog:#b79ad6;
+ /* Shades for hover, cards, rules, outcomes, load and overlays. */
+ --accent-hover:#f5c99c; --accent-bg-hover:#4a3c2e; --surface-hover:#29333f; --surface-card:#222c37; --surface-sunk:#171d25; --card-line:#4a596b; --rule:#26313e; --grid:#2a3441;
+ --order:#9baabd; --axis:#6a7684; --scrollbar:#536379; --invalid:#ff9d92; --focus-halo:#fff; --goal:#8fd68a; --goal-bg:#1f3d2a; --goal-text:#b9f0bf; --lost-bg:#40222a; --heat-warm:#f59e5b; --heat-hot:#ff7a59;
+ --shadow:rgba(0,0,0,.55); --shadow-lg:rgba(0,0,0,.6); --backdrop:rgba(6,9,13,.8); --tint:rgba(255,255,255,.02); --tint-faint:rgba(255,255,255,.015);
+ /* Data-visualisation tokens, used by the journey map only: the measured line, the feeling band, the funnel track and its fill. */
+ --viz-measured:#7fd0c4; --viz-feel:#141a21; --viz-track:#10151b; --viz-fill:#ffcf9a;
+ --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --r-sm:5px; --r-md:6px; --r-lg:10px;
+ --t-xs:.75rem; --t-sm:.8125rem; --t-md:.875rem; --t-base:1rem; --t-lg:1.125rem; --t-xl:1.375rem; --control-h:2.25rem; }
+.process-studio { margin:0; background:var(--bg); color:var(--text); font:var(--t-md)/1.5 system-ui,sans-serif; color-scheme:dark; }
+.process-studio * { box-sizing:border-box; scrollbar-color:var(--scrollbar) var(--panel); scrollbar-width:thin; }
+.process-studio ::selection { background:var(--accent); color:var(--bg); }
+.process-studio button,.process-studio select,.process-studio textarea { font:inherit; color:var(--text); border:1px solid var(--line); border-radius:var(--r-sm); background:var(--panel); }
+.process-studio button { min-height:var(--control-h); padding:7px var(--s3); line-height:1.25rem; cursor:pointer; }
+.process-studio button:hover { background:var(--surface-2); }
+.process-studio button:disabled,.process-studio button:disabled:hover { cursor:not-allowed; opacity:.55; border-color:var(--control-border); background:var(--panel); }
+.process-studio button:focus-visible,.process-studio select:focus-visible,.process-studio textarea:focus-visible,.process-studio input:focus-visible,.process-studio canvas:focus-visible,.process-studio svg [tabindex]:focus-visible,.process-studio summary:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.process-studio button[aria-pressed=true],.process-studio button.selected { background:var(--accent-bg); border-color:var(--accent-line); }
+.process-studio button.primary { background:var(--accent); color:var(--bg); font-weight:650; border-color:var(--accent); }
+.process-studio button.primary:hover { background:var(--accent-hover); }
+.process-studio button.primary:disabled,.process-studio button.primary:disabled:hover { background:var(--accent); border-color:var(--accent); }
+.process-studio button.ghost { background:transparent; color:var(--muted); }
+.process-studio button.ghost:hover { background:var(--surface-2); color:var(--text); }
+.process-studio button.ghost:disabled,.process-studio button.ghost:disabled:hover { background:transparent; }
+.process-studio select { min-height:var(--control-h); padding:0 var(--s2); border-color:var(--control-border); }
+.process-studio textarea { border-color:var(--control-border); }
+.process-studio input[type=text],.process-studio input[type=number] { min-height:var(--control-h); border:1px solid var(--control-border); border-radius:var(--r-sm); background:var(--panel); color:var(--text); font:inherit; padding:0 var(--s2); }
+.process-studio h1,.process-studio h2,.process-studio h3,.process-studio p { margin:0; }
+.process-studio h1 { font-size:var(--t-xl); line-height:1.2; letter-spacing:-.025em; }
+.process-studio h2 { font-size:var(--t-md); font-weight:650; }
+.process-studio h3 { margin:var(--s5) 0 var(--s2); font-size:var(--t-sm); }
+.process-studio p { color:var(--muted); }
+.process-studio [hidden] { display:none!important; }
+.process-studio .sr-only { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+/* Header and run toolbar: one compact band of two rows. */
+.process-header { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:var(--s2) var(--s4); padding:var(--s2) var(--s5) 0; position:relative; z-index:9; }
+.process-titles { flex:1 1 240px; min-width:0; }
+.process-titles h1,.process-titles p { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.process-header p { font-size:var(--t-xs); line-height:1.3; }
+.process-file-actions,.process-view-controls { display:flex; align-items:center; gap:var(--s2); flex-wrap:wrap; }
+.process-file-actions { justify-content:flex-end; }
+.process-switch { display:flex; align-items:center; gap:var(--s2); color:var(--muted); min-width:0; max-width:100%; }
+.process-switch select { min-width:0; max-width:280px; }
+.process-studio button.process-draft-chip { max-width:min(100%,380px); border-color:var(--accent-line); border-radius:999px; background:var(--accent-bg); font-size:var(--t-xs); text-align:left; overflow-wrap:anywhere; }
+.process-studio button.process-draft-chip:hover { background:var(--accent-bg-hover); }
+.process-menu { position:relative; }
+.process-menu .menu-short,.menu-phone { display:none; }
+.process-menu-popup { position:absolute; right:0; top:calc(100% + var(--s1)); z-index:30; width:min(300px,calc(100vw - 32px)); padding:var(--s1); border:1px solid var(--control-border); border-radius:var(--r-md); background:var(--panel); box-shadow:0 12px 32px var(--shadow); }
+.process-header .menu-hint { padding:var(--s2) var(--s2) var(--s1); font-size:var(--t-xs); white-space:normal; overflow:visible; }
+#export-items { display:grid; gap:2px; }
+.process-studio #export-items button { width:100%; text-align:left; border-color:transparent; background:transparent; }
+.process-studio #export-items button:hover,.process-studio #export-items button:focus-visible { background:var(--surface-2); }
+.process-studio #export-items button:focus-visible { outline-offset:-2px; }
+.process-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); padding:var(--s2) var(--s4); border-bottom:1px solid var(--line); background:var(--bg); }
+.run-actions,.run-config,.run-status { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); }
+.run-config,.run-status { padding-left:var(--s2); border-left:1px solid var(--line); }
+.run-status { margin-left:auto; }
+.run-config label { display:flex; align-items:center; gap:6px; color:var(--muted); }
+/* Eight seed digits stay visible without spin buttons, so the toolbar keeps one row at 1366 px in wider fallback fonts; arrow keys still step. */
+.run-seed input { width:calc(8ch + 2 * var(--s2) + 2px); appearance:textfield; }
+.run-seed input::-webkit-inner-spin-button,.run-seed input::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+#horizon-custom { width:7em; }
+#play { min-width:132px; }
+.options-toggle,.panel-toggle { display:none; }
+.act-count { margin-left:var(--s1); font-weight:650; color:var(--accent); font-variant-numeric:tabular-nums; }
+.run-readout { display:flex; align-items:baseline; gap:var(--s2); }
+.process-clock { font-size:var(--t-base); font-variant-numeric:tabular-nums; font-weight:650; }
+#run-status { min-width:62px; color:var(--muted); font-size:var(--t-sm); }
+/* Workspace. Short or narrow windows scroll as a page; desktop windows fit one viewport and each column scrolls inside itself. */
+.process-workspace { display:grid; grid-template-columns:clamp(200px,24vw,260px) minmax(0,1fr); border-bottom:1px solid var(--line); }
+.process-nav { grid-column:1; grid-row:1; }.process-stage { grid-column:2; grid-row:1; }.process-inspector { grid-column:1/-1; grid-row:2; border-top:1px solid var(--line); }
+.process-nav,.process-inspector { background:var(--panel); padding:0 var(--s4) var(--s4); min-width:0; overflow-wrap:anywhere; }
+.process-nav { border-right:1px solid var(--line); }
+.process-sticky { position:sticky; top:0; z-index:2; padding:var(--s4) 0 var(--s2); background:var(--panel); }
+.process-panel-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--s3); color:var(--muted); }
+.process-panel-heading h2,.process-sticky>h2 { color:var(--text); }
+.process-panel-heading { gap:var(--s2); } .process-panel-heading h2 { min-width:0; overflow-wrap:anywhere; }
+#overview { width:100%; text-align:left; }
+.process-steps { list-style:none; margin:0; padding:0; }
+.process-steps li { scroll-margin-block:96px var(--s5); }
+.process-studio button.process-step { width:100%; display:flex; align-items:center; gap:9px; text-align:left; padding:var(--s2) var(--s1) var(--s2) var(--s2); border-color:transparent; background:transparent; }
+.process-studio button.process-step:hover { background:var(--surface-hover); }
+.process-studio button.process-step.selected { background:var(--accent-bg); border-color:transparent; box-shadow:inset 3px 0 0 var(--accent); }
+.process-step strong { display:block; font-size:var(--t-sm); font-weight:600; overflow-wrap:break-word; hyphens:auto; }
+.process-step small { display:block; font-size:var(--t-xs); color:var(--muted); }
+.process-step i { width:6px; height:6px; border-radius:50%; margin-left:auto; flex-shrink:0; }
+.process-order { color:var(--order); font-size:var(--t-xs); font-variant-numeric:tabular-nums; flex:none; min-width:2ch; white-space:nowrap; }
+.process-studio .process-note { margin-top:var(--s4); font-size:var(--t-xs); }
+.process-stage { min-width:0; display:flex; flex-direction:column; }
+.process-stagebar { display:flex; justify-content:space-between; align-items:flex-start; gap:var(--s3); padding:var(--s3) var(--s4) var(--s2); }
+.process-stagebar>div:first-child { min-width:0; overflow-wrap:anywhere; }
+.process-stagebar h2 { font-size:var(--t-lg); }
+.process-stagebar p { font-size:var(--t-xs); margin-top:2px; overflow-wrap:anywhere; }
+.process-message { max-height:4.5em; overflow:auto; }
+.process-message.error { color:var(--danger-text); }
+#viewport { position:relative; flex:none; height:clamp(320px,50vh,480px); }
+#canvas,#map { width:100%; height:100%; position:absolute; inset:0; display:block; touch-action:none; }
+#map svg { width:100%; height:100%; }
+#lens { width:100%; height:100%; position:absolute; inset:0; overflow:auto; overscroll-behavior:contain; background:var(--bg); }
+.process-outcome { display:inline-block; padding:1px 8px; border:1px solid var(--line); border-radius:999px; font-size:var(--t-xs); font-weight:650; }
+.process-outcome.goal { color:var(--goal-text); background:var(--goal-bg); border-color:var(--goal); } .process-outcome.lost { color:var(--danger-text); background:var(--lost-bg); border-color:var(--danger); }
+.pd-dialog .de-sipoc-list { margin:0 0 14px; min-width:0; }
+.process-legend { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s1) var(--s4); padding:6px var(--s4); font-size:var(--t-xs); color:var(--muted); }
+.process-legend span { display:inline-flex; align-items:center; gap:var(--s1); }
+.process-legend i { width:6px; height:6px; border-radius:50%; display:inline-block; }
+.active-dot { background:var(--accent); }.queue-dot { background:var(--state-queue); }.timer-dot { background:var(--state-timer); }.backlog-dot { background:var(--state-backlog); }.held-dot { background:var(--danger); }
+#camera-hint { margin-left:auto; }
+.process-metrics { display:flex; flex-wrap:wrap; align-items:flex-end; gap:var(--s1) var(--s5); padding:var(--s2) var(--s4); border-top:1px solid var(--line); font-variant-numeric:tabular-nums; }
+.process-metrics span { display:block; font-size:var(--t-xs); color:var(--muted); }
+.process-metrics strong { display:block; font-size:var(--t-lg); font-weight:550; line-height:1.3; }
+.process-metrics .metric-seed { margin-left:auto; font-size:var(--t-xs); color:var(--muted); }
+.process-latest { padding:0 var(--s4) var(--s2); font-size:var(--t-xs); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.process-latest:empty { display:none; }
+/* Inputs & outputs: a collapsible panel under the KPI strip with its own scroll. */
+.process-io { border-top:1px solid var(--line); min-width:0; }
+.process-io>summary { display:flex; align-items:center; gap:var(--s2); min-height:40px; padding:0 var(--s4); cursor:pointer; font-weight:650; list-style:none; }
+.process-io>summary::-webkit-details-marker { display:none; }
+.process-io>summary::before { content:"\25B8"; color:var(--muted); }
+.process-io[open]>summary::before { content:"\25BE"; }
+.process-io>summary:focus-visible { outline-offset:-2px; }
+#process-data { min-width:0; max-height:min(30vh,300px); overflow:auto; padding:var(--s2) var(--s4) var(--s4); }
+.process-data-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s3); }
+.process-data-heading>div,.process-visit { display:flex; align-items:center; gap:var(--s2); min-width:0; }
+.process-data-heading label,.process-visit label { color:var(--muted); font-size:var(--t-xs); }
+#process-case,#process-visit { max-width:100%; min-width:0; font-size:var(--t-xs); }
+.process-visit { margin-bottom:var(--s3); }
+.process-io-columns { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:var(--s5); }
+.process-io-columns h3 { margin:0 0 var(--s1); font-size:var(--t-sm); }
+.process-io-columns p,.process-io-state,.process-retention { font-size:var(--t-xs); overflow-wrap:anywhere; }
+.process-studio .process-io-state { margin-bottom:var(--s2); color:var(--accent); }
+#process-data>progress,.process-io-state+progress { width:100%; height:5px; accent-color:var(--accent); margin:0 0 var(--s4); }
+.process-fields { margin:var(--s3) 0 0; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); gap:6px var(--s3); font-size:var(--t-xs); }
+.process-fields dt { color:var(--muted); overflow-wrap:anywhere; }
+.process-fields dd { margin:0; overflow-wrap:anywhere; }
+.process-fields code { font:var(--t-xs)/1.5 ui-monospace,monospace; }
+.process-studio .process-empty { margin-top:var(--s3); }
+.process-written { margin-top:var(--s4); font-size:var(--t-xs); }.process-written summary { cursor:pointer; color:var(--muted); padding:var(--s1) 0; }
+.process-studio .process-retention { margin-top:var(--s4); }
+/* Inspector. */
+#inspector { margin-top:var(--s3); font-size:var(--t-sm); }
+#pools-title { margin-top:var(--s2); }
+.process-inspector dl { display:grid; grid-template-columns:minmax(7rem,1fr) minmax(0,auto); gap:7px; margin:var(--s4) 0; }
+.process-inspector dt { color:var(--muted); }.process-inspector dd { margin:0; font-variant-numeric:tabular-nums; text-align:right; overflow-wrap:anywhere; }
+.process-studio button.next-step { display:block; width:100%; text-align:left; margin-top:6px; font-size:var(--t-sm); }
+.next-step small { display:block; color:var(--muted); font-size:var(--t-xs); }
+.process-desc { color:var(--muted); }
+.process-desc:not(.open) { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.process-studio button.process-more { min-height:28px; padding:2px 0; border:0; background:none; color:var(--accent); text-decoration:underline; text-underline-offset:3px; }
+.process-random { overflow-wrap:anywhere; }
+.process-pool { margin-bottom:var(--s3); font-size:var(--t-sm); }
+.pool-head { display:flex; justify-content:space-between; align-items:baseline; gap:var(--s2); }
+.pool-head strong { font-weight:550; min-width:0; }
+.pool-pct { flex:none; white-space:nowrap; font-variant-numeric:tabular-nums; font-weight:650; }
+.pool-bar { height:8px; margin:6px 0 3px; border-radius:4px; background:var(--surface-2); overflow:hidden; }
+.pool-bar i { display:block; height:100%; border-radius:4px; background:var(--accent); }
+.pool-bar[data-level=warm] i { background:var(--heat-warm); }.pool-bar[data-level=hot] i { background:var(--heat-hot); }
+.process-pool small { color:var(--muted); font-size:var(--t-xs); }
+.process-auto { margin:var(--s2) 0 0; color:var(--accent); }
+.process-adds,.process-counters { margin:6px 0; overflow-wrap:anywhere; }.process-adds { padding-left:18px; }
+.process-inspector dl.process-tracked { grid-template-columns:minmax(0,1fr); gap:2px; } .process-inspector dl.process-tracked dd { text-align:left; margin-bottom:var(--s2); }
+.process-needs { margin:0 0 var(--s2); padding-left:18px; }.process-needs small { display:block; color:var(--muted); }
+/* Map. */
+.process-map-controls { position:absolute; right:10px; bottom:10px; display:flex; gap:6px; z-index:1; }
+.process-map-controls button { min-width:var(--control-h); min-height:var(--control-h); }
+#map svg { cursor:grab; touch-action:none; } #map svg.panning { cursor:grabbing; }
+/* The browser focus ring on an SVG group is scaled by the camera and read as a huge dark circle; use a screen-sized ring on the card instead. */
+#map svg g[role=button] { outline:none; }
+#map svg g[role=button]:focus-visible > rect:first-of-type { stroke:var(--accent); stroke-width:3px; stroke-dasharray:none; vector-effect:non-scaling-stroke; }
+/* Two-tone keyboard ring: a white outer band under the amber card border keeps at least 3:1 against the card border and the stage. */
+#map svg .pm-focus-ring { display:none; fill:none; stroke:var(--focus-halo); stroke-width:7px; vector-effect:non-scaling-stroke; stroke-linejoin:round; }
+#map svg g[role=button]:focus-visible > .pm-focus-ring { display:inline; }
+#map svg .pm-card { vector-effect:non-scaling-stroke; stroke-width:1.5px; }
+#map svg .pm-card.pm-idle { stroke:var(--line); stroke-dasharray:5 3; }
+#map svg .pm-card.pm-work { stroke-width:2.5px; }
+.map-zoom-hint { color:var(--accent); }
+#map svg .pm-edge-deadline { vector-effect:non-scaling-stroke; }
+#map svg .pm-gateway { pointer-events:none; }
+@media(pointer:coarse) { .process-map-controls button { min-width:44px; min-height:44px; } }
+/* Desktop: the studio fits one viewport. Header and toolbar take their height, the workspace takes the rest, and each column scrolls inside itself. */
+@media(min-width:1100px) and (min-height:600px) {
+ #process-shell { display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto minmax(0,1fr); height:100dvh; overflow:hidden; }
+ .process-workspace { grid-template-columns:clamp(216px,15vw,280px) minmax(0,1fr) clamp(265px,18vw,360px); min-height:0; border-bottom:0; }
+ .process-inspector { grid-column:3; grid-row:1; border-top:0; border-left:1px solid var(--line); }
+ .process-nav,.process-inspector,.process-stage { min-height:0; overflow:auto; overscroll-behavior:contain; }
+ .process-nav::after,.process-inspector::after { content:""; display:block; position:sticky; bottom:0; height:28px; margin-top:-28px; background:linear-gradient(to bottom,transparent,var(--panel)); pointer-events:none; }
+ .process-nav,.process-inspector { padding-bottom:var(--s5); }
+ #viewport { flex:1 1 0; height:auto; min-height:320px; }
+}
+/* Tablet and narrow windows: the page scrolls, the inspector sits under the stage. */
+@media(max-width:1099px) { .run-config,.run-status { padding-left:0; border-left:0; } .run-status { margin-left:0; } .process-metrics { flex-wrap:wrap; } .process-stagebar { flex-wrap:wrap; } .process-file-actions { justify-content:flex-start; } }
+/* Phone: compact header, sticky run bar with the secondary controls under Run options, steps as a scroller above a 45vh stage. */
+@media(max-width:650px) {
+ .process-studio button,.process-studio select,.process-studio input[type=text],.process-studio input[type=number] { min-height:44px; }
+ .process-header { align-items:flex-start; padding:var(--s3) var(--s4) var(--s2); gap:var(--s2); }
+ .process-file-actions { display:contents; }
+ .process-titles { order:0; flex:1 1 0; }
+ #open-definition { order:1; } .process-menu { order:2; }
+ .process-file-actions>.process-switch { order:3; flex:1 0 100%; } .process-file-actions>.process-draft-chip { order:4; flex:1 0 100%; }
+ .process-titles h1,.process-titles p { white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+ #open-definition .long,#import,.process-menu .menu-long { display:none; }
+ .process-menu .menu-short,.menu-phone { display:block; }
+ .process-menu .menu-short { min-width:44px; font-size:var(--t-lg); }
+ .process-switch select { flex:1 1 auto; max-width:100%; }
+ .process-toolbar { position:sticky; top:0; z-index:8; padding:var(--s2) var(--s4); gap:var(--s2); }
+ .process-toolbar.options-open { position:static; }
+ .run-actions,.run-config,.run-status { display:contents; }
+ .run-config,.run-status { padding-left:0; border-left:0; }
+ #play { order:1; flex:1 1 150px; } #step { order:2; } #open-activity { order:3; }
+ .run-readout { order:4; flex:1 1 90px; flex-direction:column; align-items:flex-start; gap:0; min-width:0; }
+ .process-clock { font-size:var(--t-md); } #run-status { min-width:0; }
+ .options-toggle { display:block; order:5; }
+ .process-toolbar:not(.options-open) :is(#advance,#reset,#speed,#horizon,#horizon-custom-label,.run-seed) { display:none; }
+ #advance { order:6; flex:1 1 40%; } #reset { order:7; flex:1 1 40%; } #speed { order:8; flex:1 1 40%; } #horizon { order:9; flex:1 1 40%; } #horizon-custom-label { order:10; flex:1 1 40%; } .run-seed { order:11; flex:1 1 40%; }
+ .run-seed input,#horizon-custom { flex:1 1 auto; width:100%; min-width:0; }
+ .process-workspace { display:flex; flex-direction:column; border-bottom:0; }
+ .process-nav { order:-1; display:flex; gap:var(--s2); align-items:stretch; overflow-x:auto; padding:var(--s2) var(--s4); border-right:0; border-bottom:1px solid var(--line); }
+ .process-nav .process-sticky { position:static; flex:none; padding:0; }
+ .process-nav .process-panel-heading,.process-note { display:none; }
+ .process-nav #overview { width:auto; height:100%; white-space:nowrap; }
+ .process-steps { display:flex; flex:none; gap:var(--s2); }
+ .process-steps li { flex:none; width:min(170px,44vw); scroll-margin-inline:var(--s4); }
+ .process-studio button.process-step { height:100%; border-color:var(--line); }
+ .process-stage { order:0; }
+ #viewport { height:45vh; min-height:300px; }
+ #viewport:has(> #lens:not([hidden])) { height:auto; min-height:0; }
+ #lens { position:static; height:auto; overflow:visible; }
+ .process-inspector { order:1; border-top:1px solid var(--line); padding-bottom:var(--s4); }
+ .process-inspector .process-sticky { position:static; display:flex; justify-content:space-between; align-items:center; padding-bottom:var(--s2); }
+ .panel-toggle { display:block; }
+ .process-inspector.collapsed #inspector-body { display:none; }
+ .process-io>summary { min-height:44px; }
+ #process-data { max-height:none; padding-inline:var(--s4); }
+ .process-io-columns { grid-template-columns:1fr; gap:var(--s5); }
+ .process-data-heading { align-items:flex-start; }
+ .process-metrics { padding-inline:var(--s4); gap:var(--s2) var(--s4); }
+ .process-metrics strong { font-size:var(--t-md); }
+ .process-map-controls button { min-width:44px; min-height:44px; }
+ .process-view-controls { width:100%; }
+ .process-studio button.process-more { min-height:44px; }
+}
+@media(max-height:500px) { #viewport { height:min(350px,60vh); } }
+/* Short tablet windows (and 200% zoom on laptops): the secondary run controls fold under Run options like on a phone. */
+@media(min-width:651px) and (max-width:1099px) and (max-height:600px) {
+ .options-toggle { display:block; }
+ .process-toolbar:not(.options-open) :is(#advance,#reset,#speed,#horizon,#horizon-custom-label,.run-seed) { display:none; }
+}
+@media(prefers-reduced-motion:reduce) { .process-studio * { scroll-behavior:auto!important; transition:none!important; } }

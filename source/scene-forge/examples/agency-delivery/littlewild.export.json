@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "kind": "littlewild-export",
+  "target": "./exports",
+  "assets": [
+    {
+      "id": "scene-intake",
+      "family": "items",
+      "name": "Project intake",
+      "models": {
+        "world": {
+          "model": "scene-intake"
+        }
+      }
+    },
+    {
+      "id": "scene-discovery",
+      "family": "items",
+      "name": "Discovery",
+      "models": {
+        "world": {
+          "model": "scene-discovery"
+        }
+      }
+    },
+    {
+      "id": "scene-design-split",
+      "family": "items",
+      "name": "Plan together",
+      "models": {
+        "world": {
+          "model": "scene-design-split"
+        }
+      }
+    },
+    {
+      "id": "scene-product-design",
+      "family": "items",
+      "name": "Product design",
+      "models": {
+        "world": {
+          "model": "scene-product-design"
+        }
+      }
+    },
+    {
+      "id": "scene-architecture",
+      "family": "items",
+      "name": "Technical design",
+      "models": {
+        "world": {
+          "model": "scene-architecture"
+        }
+      }
+    },
+    {
+      "id": "scene-design-ready",
+      "family": "items",
+      "name": "Ready to build",
+      "models": {
+        "world": {
+          "model": "scene-design-ready"
+        }
+      }
+    },
+    {
+      "id": "scene-implementation",
+      "family": "items",
+      "name": "Implementation",
+      "models": {
+        "world": {
+          "model": "scene-implementation"
+        }
+      }
+    },
+    {
+      "id": "scene-qa",
+      "family": "items",
+      "name": "Quality review",
+      "models": {
+        "world": {
+          "model": "scene-qa"
+        }
+      }
+    },
+    {
+      "id": "scene-review-gate",
+      "family": "items",
+      "name": "Accepted?",
+      "models": {
+        "world": {
+          "model": "scene-review-gate"
+        }
+      }
+    },
+    {
+      "id": "scene-rework",
+      "family": "items",
+      "name": "Resolve findings",
+      "models": {
+        "world": {
+          "model": "scene-rework"
+        }
+      }
+    },
+    {
+      "id": "scene-handover",
+      "family": "items",
+      "name": "Client handover",
+      "models": {
+        "world": {
+          "model": "scene-handover"
+        }
+      }
+    },
+    {
+      "id": "scene-delivered",
+      "family": "items",
+      "name": "Delivered",
+      "models": {
+        "world": {
+          "model": "scene-delivered"
+        }
+      }
+    }
+  ]
+}

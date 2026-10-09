@@ -1,0 +1,737 @@
+{
+  "format": "wildlands-process",
+  "schemaVersion": 1,
+  "revision": 0,
+  "id": "customer-journey-webshop",
+  "name": "Customer journey · Online shop",
+  "description": "Synthetic customer journey of an online shop, from the first ad to the review request. Shoppers arrive as a steady open stream with a random gap (exponential, mean 3 minutes, at most 12) for as long as the run lasts, so the example is meant to run unlimited. Each shopper draws an intent (60% browser, 40% buyer) and starts with sentiment 0; touchpoints add to sentiment to follow the emotions, and the tracked curve is the measured average. Browsers leave at Interested? with a 55% chance, 25% abandon the cart, 6% of payments fail and go to support chat, 12% of deliveries lead to a return call, and 30% of satisfied customers buy again. Phases, emotions, pains and opportunities are authored assumptions. Support agents, a payment gateway and warehouse robots serve the touchpoints backstage. Every random value derives from the definition seed 20261001 and the case and step, so the same seed always gives the same run and another seed (process run --seed N) gives another one. All numbers are synthetic illustrative assumptions, not research data, a measured shop or a forecast.",
+  "genre": "customer-journey",
+  "seed": 20261001,
+  "track": [
+    {
+      "field": "sentiment",
+      "label": "Customer sentiment"
+    }
+  ],
+  "start": "shopper-sees-ad",
+  "sipoc": {
+    "suppliers": [
+      {
+        "name": "Marketing channels",
+        "supplies": "Ads, search results and campaign traffic"
+      },
+      {
+        "name": "Payment provider",
+        "supplies": "Payment authorisation and confirmation"
+      }
+    ],
+    "customers": [
+      {
+        "name": "Shopper",
+        "receives": "Ordered goods and support when something goes wrong"
+      },
+      {
+        "name": "The business",
+        "receives": "Orders, reviews and repeat customers"
+      }
+    ]
+  },
+  "resources": [
+    {
+      "id": "agents",
+      "name": "Support agents",
+      "capacity": 3,
+      "costPerMinute": 2,
+      "kind": "people"
+    },
+    {
+      "id": "gateway",
+      "name": "Payment gateway",
+      "capacity": 4,
+      "costPerMinute": 1,
+      "kind": "system"
+    },
+    {
+      "id": "warehouse",
+      "name": "Warehouse robots",
+      "capacity": 3,
+      "costPerMinute": 2,
+      "kind": "machine"
+    }
+  ],
+  "steps": [
+    {
+      "id": "shopper-sees-ad",
+      "name": "Shopper sees an ad",
+      "kind": "start",
+      "scene": {
+        "id": "scene-shopper-sees-ad",
+        "position": [
+          0,
+          0
+        ],
+        "color": "#77b5a0"
+      },
+      "phase": "Awareness",
+      "description": "A shopper meets the shop for the first time."
+    },
+    {
+      "id": "ad",
+      "name": "Ad touchpoint",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-ad",
+        "position": [
+          14,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Awareness",
+      "emotion": 0,
+      "channel": "social",
+      "duration": 1,
+      "pain": "Most shoppers scroll past the ad without noticing it.",
+      "opportunity": "Test shorter creative aimed at the buyer segment."
+    },
+    {
+      "id": "landing",
+      "name": "Searches and lands on the shop",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-landing",
+        "position": [
+          28,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Awareness",
+      "emotion": 1,
+      "channel": "web",
+      "duration": 2,
+      "add": {
+        "sentiment": 1
+      },
+      "pain": "The landing page repeats the ad claim only loosely.",
+      "opportunity": "Land the shopper on the advertised product."
+    },
+    {
+      "id": "browse",
+      "name": "Browses products",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-browse",
+        "position": [
+          42,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Consideration",
+      "emotion": 1,
+      "channel": "web",
+      "duration": 5,
+      "timing": {
+        "dist": "uniform",
+        "min": 2,
+        "max": 8
+      },
+      "add": {
+        "sentiment": 1
+      },
+      "opportunity": "Show best sellers and size guides first."
+    },
+    {
+      "id": "reviews",
+      "name": "Reads product reviews",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-reviews",
+        "position": [
+          56,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Consideration",
+      "emotion": 1,
+      "channel": "web",
+      "duration": 3,
+      "add": {
+        "sentiment": 1
+      },
+      "pain": "Reviews are long and hard to filter."
+    },
+    {
+      "id": "interested",
+      "name": "Interested?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-interested",
+        "position": [
+          70,
+          0
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Consideration"
+    },
+    {
+      "id": "cart",
+      "name": "Reviews cart and shipping cost",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-cart",
+        "position": [
+          84,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Purchase",
+      "emotion": -1,
+      "channel": "web",
+      "duration": 2,
+      "add": {
+        "sentiment": -1
+      },
+      "pain": "Shipping cost only appears in the cart.",
+      "opportunity": "Show delivery cost on the product page."
+    },
+    {
+      "id": "cart-abandoned",
+      "name": "Cart abandoned?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-cart-abandoned",
+        "position": [
+          98,
+          0
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Purchase"
+    },
+    {
+      "id": "checkout",
+      "name": "Fills in the checkout form",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-checkout",
+        "position": [
+          112,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Purchase",
+      "emotion": -1,
+      "channel": "web",
+      "duration": 3,
+      "add": {
+        "sentiment": -1
+      },
+      "pain": "Account creation is required.",
+      "opportunity": "Offer guest checkout."
+    },
+    {
+      "id": "payment",
+      "name": "Pays online",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-payment",
+        "position": [
+          126,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Purchase",
+      "emotion": 1,
+      "channel": "web",
+      "duration": 1,
+      "timing": {
+        "dist": "uniform",
+        "min": 1,
+        "max": 3
+      },
+      "resources": {
+        "gateway": 1
+      },
+      "opportunity": "Offer wallet payment to shorten the step."
+    },
+    {
+      "id": "payment-failed",
+      "name": "Payment failed?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-payment-failed",
+        "position": [
+          140,
+          0
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Purchase"
+    },
+    {
+      "id": "support-chat",
+      "name": "Chats with support about the payment",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-support-chat",
+        "position": [
+          140,
+          12
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Purchase",
+      "emotion": -2,
+      "channel": "chat",
+      "duration": 6,
+      "timing": {
+        "dist": "triangular",
+        "min": 3,
+        "mode": 5,
+        "max": 12
+      },
+      "resources": {
+        "agents": 1
+      },
+      "add": {
+        "sentiment": -1
+      },
+      "pain": "The customer waits in a chat queue while the cart is open.",
+      "opportunity": "Offer a one-click payment retry."
+    },
+    {
+      "id": "payment-resolved",
+      "name": "Payment solved?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-payment-resolved",
+        "position": [
+          126,
+          12
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Purchase"
+    },
+    {
+      "id": "confirmation",
+      "name": "Receives the order confirmation email",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-confirmation",
+        "position": [
+          154,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Delivery",
+      "emotion": 2,
+      "channel": "email",
+      "duration": 1,
+      "add": {
+        "sentiment": 2
+      },
+      "opportunity": "Add a tracking link to the email."
+    },
+    {
+      "id": "delivery",
+      "name": "Waits for the parcel",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-delivery",
+        "position": [
+          168,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Delivery",
+      "emotion": 1,
+      "channel": "delivery",
+      "duration": 10,
+      "timing": {
+        "dist": "triangular",
+        "min": 5,
+        "mode": 10,
+        "max": 20
+      },
+      "resources": {
+        "warehouse": 1
+      },
+      "add": {
+        "sentiment": 1
+      },
+      "pain": "The delivery window is vague.",
+      "opportunity": "Offer a precise delivery slot."
+    },
+    {
+      "id": "unboxing",
+      "name": "Unboxes the order",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-unboxing",
+        "position": [
+          182,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "Delivery",
+      "emotion": 2,
+      "channel": "delivery",
+      "duration": 2,
+      "add": {
+        "sentiment": 2
+      },
+      "opportunity": "Include a personal note and easy return instructions."
+    },
+    {
+      "id": "problem",
+      "name": "Problem with the order?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-problem",
+        "position": [
+          196,
+          0
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "Delivery"
+    },
+    {
+      "id": "returns",
+      "name": "Calls support to return or exchange",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-returns",
+        "position": [
+          196,
+          12
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "After-sales and loyalty",
+      "emotion": -2,
+      "channel": "phone",
+      "duration": 8,
+      "timing": {
+        "dist": "uniform",
+        "min": 5,
+        "max": 14
+      },
+      "resources": {
+        "agents": 1
+      },
+      "add": {
+        "sentiment": -2
+      },
+      "pain": "Returns need a phone call.",
+      "opportunity": "Offer a self-service returns portal."
+    },
+    {
+      "id": "review-request",
+      "name": "Receives the review request email",
+      "kind": "touchpoint",
+      "scene": {
+        "id": "scene-review-request",
+        "position": [
+          210,
+          0
+        ],
+        "color": "#ffbb73"
+      },
+      "phase": "After-sales and loyalty",
+      "emotion": 1,
+      "channel": "email",
+      "duration": 1,
+      "add": {
+        "sentiment": 1
+      },
+      "opportunity": "Time the request after the product was used."
+    },
+    {
+      "id": "repeat",
+      "name": "Comes back to buy again?",
+      "kind": "decision",
+      "scene": {
+        "id": "scene-repeat",
+        "position": [
+          224,
+          0
+        ],
+        "color": "#ffffff"
+      },
+      "phase": "After-sales and loyalty"
+    },
+    {
+      "id": "happy",
+      "name": "Happy customer",
+      "kind": "end",
+      "scene": {
+        "id": "scene-happy",
+        "position": [
+          238,
+          0
+        ],
+        "color": "#77b5a0"
+      },
+      "phase": "After-sales and loyalty",
+      "outcome": "goal"
+    },
+    {
+      "id": "loyal",
+      "name": "Loyal repeat buyer",
+      "kind": "end",
+      "scene": {
+        "id": "scene-loyal",
+        "position": [
+          238,
+          12
+        ],
+        "color": "#77b5a0"
+      },
+      "phase": "After-sales and loyalty",
+      "outcome": "goal"
+    },
+    {
+      "id": "left",
+      "name": "Left without buying",
+      "kind": "end",
+      "scene": {
+        "id": "scene-left",
+        "position": [
+          84,
+          -12
+        ],
+        "color": "#d9777f"
+      },
+      "phase": "Consideration",
+      "outcome": "lost"
+    },
+    {
+      "id": "payment-lost",
+      "name": "Gave up on paying",
+      "kind": "end",
+      "scene": {
+        "id": "scene-payment-lost",
+        "position": [
+          140,
+          24
+        ],
+        "color": "#d9777f"
+      },
+      "phase": "Purchase",
+      "outcome": "lost"
+    }
+  ],
+  "flows": [
+    {
+      "id": "shopper-sees-ad-ad",
+      "from": "shopper-sees-ad",
+      "to": "ad"
+    },
+    {
+      "id": "ad-landing",
+      "from": "ad",
+      "to": "landing"
+    },
+    {
+      "id": "landing-browse",
+      "from": "landing",
+      "to": "browse"
+    },
+    {
+      "id": "browse-reviews",
+      "from": "browse",
+      "to": "reviews"
+    },
+    {
+      "id": "reviews-interested",
+      "from": "reviews",
+      "to": "interested"
+    },
+    {
+      "id": "interested-cart",
+      "from": "interested",
+      "to": "cart",
+      "label": "Buyer",
+      "when": {
+        "field": "intent",
+        "op": "eq",
+        "value": "buyer"
+      }
+    },
+    {
+      "id": "interested-left",
+      "from": "interested",
+      "to": "left",
+      "label": "Just browsing",
+      "when": {
+        "chance": 55
+      }
+    },
+    {
+      "id": "interested-cart-default",
+      "from": "interested",
+      "to": "cart"
+    },
+    {
+      "id": "cart-cart-abandoned",
+      "from": "cart",
+      "to": "cart-abandoned"
+    },
+    {
+      "id": "cart-abandoned-left",
+      "from": "cart-abandoned",
+      "to": "left",
+      "label": "Abandons the cart",
+      "when": {
+        "chance": 25
+      }
+    },
+    {
+      "id": "cart-abandoned-checkout",
+      "from": "cart-abandoned",
+      "to": "checkout"
+    },
+    {
+      "id": "checkout-payment",
+      "from": "checkout",
+      "to": "payment"
+    },
+    {
+      "id": "payment-payment-failed",
+      "from": "payment",
+      "to": "payment-failed"
+    },
+    {
+      "id": "payment-failed-support-chat",
+      "from": "payment-failed",
+      "to": "support-chat",
+      "label": "Payment fails",
+      "when": {
+        "chance": 6
+      }
+    },
+    {
+      "id": "payment-failed-confirmation",
+      "from": "payment-failed",
+      "to": "confirmation",
+      "label": "Paid"
+    },
+    {
+      "id": "support-chat-payment-resolved",
+      "from": "support-chat",
+      "to": "payment-resolved"
+    },
+    {
+      "id": "payment-resolved-payment-lost",
+      "from": "payment-resolved",
+      "to": "payment-lost",
+      "label": "Gives up",
+      "when": {
+        "chance": 40
+      }
+    },
+    {
+      "id": "payment-resolved-payment",
+      "from": "payment-resolved",
+      "to": "payment",
+      "label": "Tries again"
+    },
+    {
+      "id": "confirmation-delivery",
+      "from": "confirmation",
+      "to": "delivery"
+    },
+    {
+      "id": "delivery-unboxing",
+      "from": "delivery",
+      "to": "unboxing"
+    },
+    {
+      "id": "unboxing-problem",
+      "from": "unboxing",
+      "to": "problem"
+    },
+    {
+      "id": "problem-returns",
+      "from": "problem",
+      "to": "returns",
+      "label": "Problem",
+      "when": {
+        "chance": 12
+      }
+    },
+    {
+      "id": "problem-review-request",
+      "from": "problem",
+      "to": "review-request",
+      "label": "All fine"
+    },
+    {
+      "id": "returns-review-request",
+      "from": "returns",
+      "to": "review-request"
+    },
+    {
+      "id": "review-request-repeat",
+      "from": "review-request",
+      "to": "repeat"
+    },
+    {
+      "id": "repeat-loyal",
+      "from": "repeat",
+      "to": "loyal",
+      "label": "Buys again",
+      "when": {
+        "chance": 30
+      }
+    },
+    {
+      "id": "repeat-happy",
+      "from": "repeat",
+      "to": "happy"
+    }
+  ],
+  "arrivals": [
+    {
+      "at": 0,
+      "open": true,
+      "interval": 3,
+      "gap": {
+        "dist": "exponential",
+        "mean": 3,
+        "max": 12
+      },
+      "data": {
+        "sentiment": 0
+      },
+      "draws": [
+        {
+          "field": "intent",
+          "kind": "choice",
+          "values": [
+            {
+              "value": "browser",
+              "weight": 60
+            },
+            {
+              "value": "buyer",
+              "weight": 40
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -105,6 +105,16 @@
     {"name": "game-folders", "kind": "node", "tier": "fast", "entry": ".generated/test-game-folders.cjs", "result": ".generated/game-folders-results.json", "timeout": 240, "cost": 12.0},
     {"name": "runtime-optionality-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/runtime-optionality-browser.js", "result": "verification/v15/runtime-optionality-browser-results.json", "timeout": 450, "cost": 93.0},
     {"name": "artifact-play-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/artifact-play-browser.js", "result": "verification/v15/artifact-play-browser-results.json", "timeout": 180, "cost": 28.0},
-    {"name": "game-demos-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/game-demos-browser.js", "result": "verification/v15/game-demos-browser-results.json", "timeout": 330, "cost": 65.0}
+    {"name": "game-demos-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/game-demos-browser.js", "result": "verification/v15/game-demos-browser-results.json", "timeout": 330, "cost": 65.0},
+    {"name": "business-process", "kind": "node", "tier": "fast", "entry": ".generated/test-process.cjs", "result": ".generated/process-results.json", "timeout": 120, "cost": 6},
+    {"name": "business-process-bpmn", "kind": "node", "tier": "fast", "entry": ".generated/test-process-bpmn.cjs", "result": ".generated/process-bpmn-results.json", "timeout": 120, "cost": 3},
+    {"name": "business-process-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-browser.js", "result": "verification/v15/process-browser-results.json", "timeout": 360, "cost": 62},
+    {"name": "process-layout-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-layout-browser.js", "result": "verification/v15/process-layout-browser-results.json", "timeout": 330, "cost": 62},
+    {"name": "process-step-editor-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-step-editor-browser.js", "result": "verification/v15/process-step-editor-browser-results.json", "timeout": 420, "cost": 76},
+    {"name": "process-definition-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-definition-browser.js", "result": "verification/v15/process-definition-browser-results.json", "timeout": 450, "cost": 93},
+    {"name": "process-renderers-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-renderers-browser.js", "result": "verification/v15/process-renderers-browser-results.json", "timeout": 300, "cost": 80},
+    {"name": "process-lenses-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-lenses-browser.js", "result": "verification/v15/process-lenses-browser-results.json", "timeout": 240, "cost": 68},
+    {"name": "process-bpmn-import-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-bpmn-import-browser.js", "result": "verification/v15/process-bpmn-import-browser-results.json", "timeout": 300, "cost": 60},
+    {"name": "process-readability-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-readability-browser.js", "result": "verification/v15/process-readability-browser-results.json", "timeout": 300, "cost": 70}
   ]
 }

@@ -76,6 +76,8 @@ stdin.
 | `1` | `false` | `invalid-game` | `--game` names a folder that is not a valid game: inventory, manifest, projection or an engine validator rejected it. Nothing was written. |
 | `1` | `false` | `over-budget` | `build-game`: the play artifact exceeds `targets.html.budgetBytes` of its `game.json`. Nothing was written. |
 | `1` | `false` | `stale-artifact` | `build-game --check`: the file differs from a fresh build, or is missing. |
+| `1` | `false` | none | `process validate`: the definition was read but rejected; the result carries `diagnostics` and no `code`. |
+| `2` | `false` | `process-operation-failed` | Any `wildlands process` usage or operation failure (unknown command, bad option, bad number, refused output, I/O). Nothing was written. |
 | `2` | `false` | `game-required` | The command needs `--game DIR` (`create`, `scenarios`, the game commands, schemaVersion 1 projects). The engine has no built-in game. |
 | `2` | `false` | `game-embedded` | `--game` was given for a schemaVersion 2 project, which embeds its game. |
 | `2` | `false` | `operation-failed` | Usage error, unknown/duplicate/missing option, I/O failure, invalid recipe or pack, rejected gameplay command, refused output path or compiler failure. Nothing was written. |
@@ -699,3 +701,47 @@ payloads.
 - [Developer toolbox](../../source/wildlands/DEVELOPER-TOOLBOX.md): typed SDK sessions, commands and agent guidance for source builds.
 - [Wildlands documentation index](../../source/wildlands/DOCUMENTATION.md): every Wildlands guide and contract.
 - [Engine JSON export](../../source/wildlands/ENGINE-EXPORT.md): the separate inert source/data export format.
+
+
+## Business processes
+
+`bin/wildlands process` (also `process --help`, `-h`) describes the definition-first process tool family. It is a separate protocol from the game commands above: `process` failures use `code: "process-operation-failed"` with exit 2, and `process validate` exits 1 with no code when the definition is rejected. Options take one value (`--flag value`); `--draft`, `--dry-run`, `--bpsim`, `--no-auto-system-pool` and `--no-bpsim` take none. Unknown, duplicate and missing options, non-whole `--minutes` or `--expected-revision`, an unknown `--kind`, `--dry-run` together with `--output`, and a missing `--output` on `edit`/`attach` without `--dry-run` all fail with exit 2 before any file is read or written. Outputs never overwrite an input (including hard-link and symlink aliases). Required options are marked **yes**.
+
+| Command | Option | Required | Meaning |
+|---|---|---|---|
+| `discover` | none | | Commands, limits, edit operations, workflow. |
+| `schema` | `--kind` | no | `definition` (default) or `recipe`. |
+| `create` | `--id` | yes | Process ID. |
+| | `--name` | no | Display name (default: the ID). |
+| | `--output` | yes | New definition JSON. |
+| `validate` | `--input` | yes | Definition JSON. |
+| | `--draft` | no | Accept graph diagnostics (reported, `runnable: false`). |
+| `inspect` | `--input` | yes | Definition JSON; never advances time. |
+| `edit` | `--input`, `--recipe` | yes | Definition and guarded recipe. |
+| | `--output` | yes unless `--dry-run` | Edited definition. |
+| | `--dry-run` | no | Write nothing; conflicts with `--output`. |
+| | `--draft` | no | Allow intermediate graph diagnostics. |
+| `run` | `--input`, `--minutes`, `--output` | yes | Whole business minutes to advance; report JSON. |
+| | `--seed` | no | Non-negative whole number up to 2147483647 that replaces the definition's `seed` for this run (default: the definition's seed, else 1); validated before any work and reported as `seed`. Same definition, seed and minutes give the same report. |
+| `build` | `--input`, `--output` | yes | Output must end in `.html`. |
+| `export-bpmn` | `--input`, `--output` | yes | Definition JSON to BPMN 2.0 XML; output must end in `.bpmn` or `.xml`. Text XML 1.0 cannot carry is refused, naming the character. The output is well-formed, and the registered `business-process-bpmn` suite checks the demo and example exports (with and without `--bpsim`) with the built-in BPMN 2.0 / BPSim 1.0 conformance validator (`validate-bpmn`); one earlier recorded run also used the OMG schema files ([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)). |
+| | `--bpsim` | no | Also write a BPSim scenario (processing and wait times, probabilities, arrival timing, pool quantities and costs, in minutes). The Wildlands extension stays authoritative on re-import. |
+| `validate-bpmn` | `--input` | yes | BPMN 2.0 XML (up to 8 MiB) to check against the built-in BPMN 2.0 and BPSim 1.0 conformance rules; no schema file is used ([conformance validator](business-process-engine.md#conformance-validator)). Prints `ok`, `input` and the report: `conforms`, `errors` (`line`, `path`, `code`, `message`), `notCovered` (recognised elements the rules do not check), `unchecked` (extension content per namespace, such as the Wildlands extension, which is not schema-checked), `checked` and `rules` (`{bpmn: "2.0", bpsim: "1.0"}`). Exit 0 when the file conforms; exit 2 with `ok: false` and `code: "process-bpmn-nonconforming"` when it does not. Usage errors and unreadable files exit 2 with `code: "process-operation-failed"`. |
+| `import-bpmn` | `--input`, `--output` | yes | BPMN 2.0 XML to a definition JSON. Prints the structured report: `output`, `runnable`, `diagnostics`, `warnings`, `process`, `scenario`, `horizon`, `options`, `mapping` (`total`, `byType`, `byTarget`) and `rejections` (`[]`). Rejected constructs exit 2 with `ok: false`, `code: "process-import-rejected"`, `rejections` (`id`, `type`, `message`) and `errors`; nothing is written. |
+| | `--draft` | no | Keep a definition that has graph diagnostics (`runnable: false`); without it such a file exits 1 with `diagnostics`. |
+| | `--process ID` | no | Process, or participant, to import when the file has several (default: the first executable one, else the first). |
+| | `--lanes pools\|ignore` | no | `pools` (default): a pool per lane that holds tasks; `ignore`: tasks demand no pool. |
+| | `--default-capacity N`, `--system-capacity N` | no | Capacity of pools made from lanes (default 1, system pools and `Automation` 4); 1-1000. |
+| | `--no-auto-system-pool` | no | Keep service, script, rule, send and receive tasks as plain tasks instead of `system` steps on `Automation`. |
+| | `--default-duration N` | no | Minutes for work without a duration (default 5). |
+| | `--minutes-per-day N`, `--minutes-per-hour N` | no | Business minutes in a day (default 480, 1-1440) and an hour (default 60, 1-60) for ISO-8601 timer durations and BPSim units; a week is 5 days. |
+| | `--unsupported reject\|drop` | no | `reject` (default) fails with the offending element ids and writes nothing; `drop` removes or approximates unsupported constructs with a warning each, prunes what becomes unreachable and fails if no end remains reachable. |
+| | `--no-bpsim` | no | Ignore BPSim scenarios. |
+| | `--scenario ID` | no | BPSim scenario id or name (default: the first); an unknown one fails. Conflicts with `--no-bpsim`. |
+| | `--report FILE` | no | Also write the complete report (every `mapping` entry) as JSON; it must differ from the input. |
+| `forge` | `--input`, `--output` | yes | New directory; its parent must exist and the directory must not. |
+| `attach` | `--input`, `--asset`, `--step`, `--expected-revision`, `--expected-fingerprint` | yes | Scene Forge asset for a step, with edit guards. |
+| | `--output` | yes unless `--dry-run` | Edited definition. |
+| | `--dry-run` | no | Write nothing; conflicts with `--output`. |
+
+The `process` template builds data-only definitions into offline 2D/3D simulations; its manifest names either one `content.definition` or an ordered `content.definitions` list of 1-8 files (never both), and `validate-game` admits every entry and reports the failing index. See [Business process authoring](../how-to/business-process-authoring.md).

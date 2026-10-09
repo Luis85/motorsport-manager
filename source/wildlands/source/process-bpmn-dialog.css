@@ -1,0 +1,59 @@
+/* BPMN import dialog (LWProcessBpmnDialog, dialog id "bi") on the shared .pd-dialog shell. Only the studio tokens from process.css are used: no new palette, no smaller text than --t-xs. */
+.pd-dialog.bi-dialog { height:min(90vh,900px); }
+.bi-dialog .bi-file { margin:0 0 var(--s3); font-size:var(--t-sm); overflow-wrap:anywhere; }
+.bi-dialog .bi-file strong { color:var(--text); }
+/* Standards check: an informational note (it never gates Import), green-edged when the file conforms and amber-edged when it does not. */
+.bi-dialog .bi-standards { margin:0 0 var(--s3); padding:var(--s2) var(--s3); border:1px solid var(--line); border-left:4px solid var(--goal); border-radius:var(--r-md); font-size:var(--t-sm); overflow-wrap:anywhere; }
+.bi-dialog .bi-standards[data-conforms=false] { border-left-color:var(--heat-warm); }
+.bi-dialog .bi-standards p { margin:0; }
+.bi-dialog .bi-standards ul { margin:var(--s1) 0 0; padding-left:20px; }
+.bi-dialog .bi-pane { min-width:0; }
+.bi-dialog .bi-pane h3 { margin:0 0 var(--s2); font-size:var(--t-md); }
+.bi-dialog .bi-pane h3+.se-help { margin-bottom:var(--s1); }
+.pd-dialog.bi-dialog .se-grid { grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr)); }
+.bi-dialog .se-grid>.se-field:has(select) { grid-column:1/-1; }
+.bi-dialog #bi-options-h { margin-top:var(--s5); }
+.bi-dialog .se-check span { display:grid; gap:2px; min-width:0; overflow-wrap:anywhere; }
+.bi-dialog .se-help:empty,.bi-dialog .se-err[hidden] { display:none; }
+.bi-dialog .bi-pane-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s2); padding:2px 0 6px; background:var(--bg); }
+.bi-dialog .bi-pane-head h3 { margin:0; }
+.bi-dialog .de-sync:empty { display:none; }
+.bi-dialog .bi-verdict { margin:var(--s2) 0 var(--s3); padding:9px var(--s3); border:1px solid var(--accent-line); border-radius:var(--r-md); background:var(--accent-bg); color:var(--text); overflow-wrap:anywhere; }
+.bi-dialog .bi-verdict[data-tone=blocked] { border-color:var(--danger); background:var(--bg); color:var(--danger-text); }
+.bi-dialog .bi-verdict strong { color:inherit; }
+.bi-dialog .bi-facts { display:grid; grid-template-columns:minmax(0,10rem) minmax(0,1fr); gap:var(--s1) var(--s3); margin:var(--s2) 0 var(--s3); font-size:var(--t-sm); }
+.bi-dialog .bi-facts dt { color:var(--muted); overflow-wrap:anywhere; }
+.bi-dialog .bi-facts dd { margin:0; overflow-wrap:anywhere; }
+.bi-dialog .bi-inline { display:flex; flex-wrap:wrap; gap:2px var(--s3); margin:0; padding:0; list-style:none; }
+.bi-dialog h4 { margin:var(--s4) 0 var(--s1); }
+.bi-dialog .bi-list { margin:0 0 var(--s2); padding-left:20px; font-size:var(--t-sm); overflow-wrap:anywhere; }
+.bi-dialog .bi-list li { margin:2px 0; }
+.bi-dialog .bi-bad li { color:var(--danger-text); }
+.bi-dialog .bi-list small,.bi-dialog .bi-map small { color:var(--muted); font-size:var(--t-xs); }
+.bi-dialog .bi-group { margin:0 0 var(--s1); border:1px solid var(--line); border-radius:var(--r-md); }
+.bi-dialog .bi-group>summary { display:flex; align-items:center; min-height:var(--control-h); padding:0 var(--s3); cursor:pointer; font-weight:600; font-size:var(--t-sm); }
+.bi-dialog .bi-group>summary:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+.bi-dialog .bi-map { width:100%; table-layout:fixed; border-collapse:collapse; font-size:var(--t-sm); }
+.bi-dialog .bi-map th { padding:6px var(--s2); border-top:1px solid var(--line); background:var(--surface-2); text-align:left; font-weight:650; }
+.bi-dialog .bi-map th:first-child { width:34%; }.bi-dialog .bi-map th:nth-child(2) { width:24%; }
+.bi-dialog .bi-map td { padding:6px var(--s2); border-top:1px solid var(--line); vertical-align:top; overflow-wrap:anywhere; }
+.bi-dialog .bi-map td small { display:block; }
+@media(min-width:1000px) {
+ .bi-dialog .pd-body { display:flex; flex-direction:column; overflow:hidden; }
+ .bi-dialog .bi-split { flex:1 1 0; min-height:0; }
+ .bi-dialog .bi-pane { overflow:auto; padding-right:6px; }
+ .bi-dialog .bi-pane-head { position:sticky; top:0; z-index:1; margin-bottom:var(--s2); border-bottom:1px solid var(--line); }
+}
+@media(max-width:650px) {
+ .pd-dialog.bi-dialog { height:100dvh; }
+ .bi-dialog .bi-facts { grid-template-columns:1fr; gap:0; }
+ .bi-dialog .bi-facts dd { margin-bottom:var(--s2); }
+ .bi-dialog .se-check { min-height:44px; }
+ .bi-dialog .bi-group>summary { min-height:44px; }
+ .bi-dialog .bi-map thead { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+ .bi-dialog .bi-map,.bi-dialog .bi-map tbody,.bi-dialog .bi-map tr,.bi-dialog .bi-map td { display:block; }
+ .bi-dialog .bi-map tr { padding:var(--s2) var(--s3); border-top:1px solid var(--line); }
+ .bi-dialog .bi-map td { padding:1px 0; border:0; }
+ .bi-dialog .bi-map td[data-label]::before { content:attr(data-label) ": "; color:var(--muted); }
+ .bi-dialog .bi-map td small { display:inline; }
+}

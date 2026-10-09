@@ -52,6 +52,9 @@ export function createSourceBundle(project:string):LWEngineExport.SourceBundle{
   const relative=path.relative(project,file).replaceAll(path.sep,'/');
   // Match the gate's ignored suite outputs; their presence cannot change an artifact.
   if(/^source\/[^/]+-results\.json$/.test(relative))continue;
+  // SDK declarations emitted beside their .cts source are disposable compiler residue.
+  // Omit them entirely, including metadata, so a clean checkout produces identical bytes.
+  if(relative.endsWith('.d.cts')&&fs.existsSync(file.replace(/\.d\.cts$/,'.cts')))continue;
   if(/(^|\/)test[^/]*\.|\/verification\//.test(relative)){excluded.push(relative);continue;}
   candidates.push({file,relative});
  }

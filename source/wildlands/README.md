@@ -132,3 +132,8 @@ The compatibility-preserving M1–M6 plan is implemented and documented in `ECS-
 Architecture sources and the implemented plan: [research](ARCHITECTURE-RESEARCH.md), [systemic design](SYSTEMIC-DESIGN.md), [Excalibur adaptations](EXCALIBUR-TOOLBOX-REVIEW.md), [improvement plan](RESEARCH-IMPROVEMENT-PLAN.md).
 
 Central default tuning, the balancing workshop, CLI experiments and captured-value semantics are documented in [BALANCING.md](BALANCING.md).
+
+
+## Business process scenes
+
+`bin/wildlands process discover` exposes definition-first agent tools for business processes. [Agency delivery](../../docs/concepts/agency-delivery/README.md) holds six synthetic processes in one offline 2D/3D HTML with a process switch: the agency pipeline (step scenes, shared resources, parallel design and rework), an agile vendor project, an order fulfilment line, a customer journey, a user journey and a loan application converted from the BPMN 2.0/BPSim example in [`examples/bpmn/`](examples/bpmn/README.md). BPMN 2.0 import and export, including BPSim scenarios, work in the CLI and in the studio (import through its **Import BPMN** dialog). Read the [contract](../../docs/reference/business-process-engine.md) and [workflow](../../docs/how-to/business-process-authoring.md).

@@ -1,0 +1,35 @@
+{
+  "format": "wildlands-game",
+  "schemaVersion": 1,
+  "id": "agency-delivery",
+  "name": "Agency delivery lab",
+  "version": "1.0.0",
+  "template": "process",
+  "engine": {
+    "api": 1
+  },
+  "content": {
+    "definitions": [
+      "content/agency.process.json",
+      "content/agile-vendor.process.json",
+      "content/order-fulfilment.process.json",
+      "content/customer-journey-webshop.process.json",
+      "content/user-journey-app-onboarding.process.json",
+      "content/loan-application.process.json"
+    ]
+  },
+  "presentation": {
+    "title": "Agency delivery lab",
+    "description": "Explore six synthetic processes in 2D and 3D and switch between them: the in-house agency pipeline with shared resources, parallel design and rework, an agile vendor pipeline with CI/CD automation, an order fulfilment line with robots, software systems and a human spot-check, customer and user journeys through an online shop and an app onboarding, and a loan application converted from BPMN 2.0 and BPSim with an inclusive gateway, multi-instance work, a call activity and an SLA escalation.",
+    "accent": "#ffbb73"
+  },
+  "storage": {
+    "namespace": "wildlands.agency-delivery"
+  },
+  "targets": {
+    "html": {
+      "output": "demos/agency-delivery.html",
+      "budgetBytes": 4194304
+    }
+  }
+}
