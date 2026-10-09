@@ -431,6 +431,7 @@
     "source/process-tuning-sipoc.ts",
     "source/process-definition-json.ts",
     "source/process-definition-editor.ts",
+    "source/process-present.ts",
     "source/process-ui.ts",
     "source/process-random-view.ts",
     "source/process-terms.ts",

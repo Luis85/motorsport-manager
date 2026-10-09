@@ -27,7 +27,7 @@ export const DESKTOP = {width: 1440, height: 1060} as const;
 /** Routed document URLs: the studio itself, then the pages that reopen downloaded or rebuilt artifacts. */
 const FIXTURE_URLS = ['https://localhost/process', 'https://localhost/exported', 'https://localhost/escaped', 'https://localhost/multi-exported', 'https://localhost/single'] as const;
 
-export interface StudioQuery {snapshot: LWProcess.Snapshot; definition: LWProcess.Definition; mode: string; selected: string | null; playing: boolean; horizon: number | null; active: number; processes: {id: string; name: string}[]}
+export interface StudioQuery {snapshot: LWProcess.Snapshot; definition: LWProcess.Definition; mode: string; selected: string | null; playing: boolean; horizon: number | null; active: number; processes: {id: string; name: string}[]; presenting: {index: number; count: number; id: string} | null}
 export async function query(page: Page): Promise<StudioQuery> {
  return page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {query(): any}}).LWProcessStudio.query());
 }

@@ -343,9 +343,11 @@ export const INSERTS: readonly Insert[] = [
   ["PROCESS_DEFINITION_EDITOR", "process-definition-editor.js", "script", "template-process"],
   ["PROCESS_BPMN_PREVIEW", "process-bpmn-preview.js", "script", "template-process"],
   ["PROCESS_BPMN_DIALOG", "process-bpmn-dialog.js", "script", "template-process"],
+  ["PROCESS_PRESENT", "process-present.js", "script", "template-process"],
   ["PROCESS_UI", "process-ui.js", "script", "template-process"],
   ["PROCESS_CSS", "process.css", "style", "template-process"],
   ["PROCESS_DIALOGS_CSS", "process-dialogs.css", "style", "template-process"],
   ["PROCESS_LENSES_CSS", "process-lenses.css", "style", "template-process"],
-  ["PROCESS_BPMN_DIALOG_CSS", "process-bpmn-dialog.css", "style", "template-process"]
+  ["PROCESS_BPMN_DIALOG_CSS", "process-bpmn-dialog.css", "style", "template-process"],
+  ["PROCESS_PRESENT_CSS", "process-present.css", "style", "template-process"]
 ];

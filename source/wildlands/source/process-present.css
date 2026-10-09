@@ -1,0 +1,67 @@
+/* Present mode (process-present.css): the full-window slide dialog (LWProcessPresent). Every colour, space and type size is a Process
+   Studio token from process.css. Desktop: the slide column and the map side by side, each fitting the window. Narrow or short windows:
+   the dialog scrolls as one page (slide, then the map), and Previous / Next stay reachable in a footer stuck to the bottom. */
+.present { width:100%; height:100%; max-width:none; max-height:none; margin:0; padding:0; border:0; background:var(--bg); color:var(--text); font:var(--t-md)/1.5 system-ui,sans-serif; overflow:hidden; }
+.present[open] { display:grid; grid-template-rows:auto minmax(0,1fr) auto; }
+.present::backdrop { background:var(--bg); }
+.present :is(h2,h3)[tabindex="-1"]:focus-visible,.present .present-slide:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.present-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s2) var(--s4); padding:var(--s3) var(--s5); border-bottom:1px solid var(--line); background:var(--panel); }
+.present-heading { flex:1 1 12rem; min-width:0; overflow-wrap:anywhere; }
+.present .present-process { color:var(--text); font-size:var(--t-base); font-weight:650; line-height:1.3; }
+.present .present-meta { font-size:var(--t-sm); font-variant-numeric:tabular-nums; }
+.present .present-note,.present .present-run { font-size:var(--t-sm); }
+.present .present-note { color:var(--accent); }
+.present-actions { display:flex; flex-wrap:wrap; gap:var(--s2); }
+.present #present-toc[aria-expanded=true] { background:var(--accent-bg); border-color:var(--accent-line); }
+.present-main { display:grid; grid-template-columns:minmax(0,clamp(24rem,42%,46rem)) minmax(0,1fr); min-height:0; }
+.present-slide { min-width:0; min-height:0; overflow:auto; overscroll-behavior:contain; padding:var(--s5) clamp(var(--s4),3vw,40px) 40px; overflow-wrap:anywhere; }
+.present-body { max-width:42rem; }
+.present .present-kicker,.present .present-tag { font-size:var(--t-xs); font-weight:650; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); }
+.present .present-slide h2 { margin:var(--s1) 0 0; font-size:calc(var(--t-xl) * 1.25); line-height:1.2; letter-spacing:-.02em; }
+.present .present-subtitle { margin-top:var(--s1); font-size:var(--t-base); }
+.present .present-lead { margin-top:var(--s4); color:var(--text); font-size:var(--t-lg); line-height:1.5; }
+.present .present-slide h3 { margin:var(--s5) 0 var(--s2); font-size:var(--t-base); color:var(--text); }
+.present-slide ul { margin:0; padding-left:1.25rem; }
+.present-slide li { margin:var(--s1) 0; font-size:var(--t-base); line-height:1.5; }
+.present-slide li::marker { color:var(--muted); }
+.present-concept,.present-facts { margin-top:var(--s4); padding:var(--s3) var(--s4); border:1px solid var(--line); border-left:3px solid var(--accent-line); border-radius:var(--r-md); background:var(--surface-card); }
+.present-facts { border-left-color:var(--state-queue); background:var(--surface-sunk); }
+.present .present-concept h3,.present .present-facts h3 { margin:2px 0 var(--s1); }
+.present .present-concept p:last-child { color:var(--text); font-size:var(--t-base); }
+.present-map { display:flex; flex-direction:column; min-width:0; min-height:0; border-left:1px solid var(--line); }
+.present-stage { position:relative; flex:1 1 auto; min-height:0; }
+.present .present-map-hint { padding:6px var(--s4); border-top:1px solid var(--line); font-size:var(--t-xs); overflow-wrap:anywhere; }
+.present-contents { min-height:0; overflow:auto; overscroll-behavior:contain; padding:var(--s4) var(--s5) var(--s5); }
+.present .present-contents-title { font-size:var(--t-lg); }
+.present-groups { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,18rem),1fr)); gap:var(--s2) var(--s5); }
+.present .present-group h3 { margin:var(--s4) 0 var(--s2); color:var(--muted); font-size:var(--t-sm); }
+.present-group ol { list-style:none; margin:0; padding:0; display:grid; gap:2px; }
+.present .present-group button { display:flex; gap:var(--s2); width:100%; text-align:left; border-color:transparent; background:transparent; overflow-wrap:anywhere; }
+.present .present-group button:hover { background:var(--surface-2); }
+.present .present-group button[aria-current=true] { background:var(--accent-bg); border-color:var(--accent-line); }
+.present-num { flex:none; min-width:2.5ch; color:var(--order); font-variant-numeric:tabular-nums; }
+.present-foot { display:flex; justify-content:space-between; align-items:center; gap:var(--s3); padding:var(--s3) var(--s5); border-top:1px solid var(--line); background:var(--panel); }
+.present .present-foot button { min-width:8rem; }
+@media(prefers-reduced-motion:no-preference) { .present-body { animation:present-in .16s ease-out; } }
+@keyframes present-in { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+/* Narrow or short windows: one scrolling page; the map sits under the slide at about a third of the window. */
+@media(max-width:899px),(max-height:560px) {
+ .present { overflow:auto; overscroll-behavior:contain; }
+ .present[open] { display:block; }
+ .present-main { display:block; }
+ .present-slide { overflow:visible; }
+ .present-map { border-left:0; border-top:1px solid var(--line); }
+ .present-stage { flex:none; height:max(240px,35vh); }
+ .present-contents { overflow:visible; }
+ .present-foot { position:sticky; bottom:0; z-index:2; }
+}
+/* Phone: Present lives in the overflow menu; full-width footer buttons with 44px touch targets (the studio rule). */
+@media(max-width:650px) {
+ #mode-present { display:none; }
+ .present-head { padding:var(--s3) var(--s4); }
+ .present-slide { padding:var(--s4) var(--s4) var(--s5); }
+ .present .present-slide h2 { font-size:var(--t-xl); }
+ .present-contents { padding:var(--s3) var(--s4) var(--s5); }
+ .present-foot { padding:var(--s2) var(--s4); }
+ .present .present-foot button { flex:1 1 0; min-width:0; }
+}

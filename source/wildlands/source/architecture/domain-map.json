@@ -445,6 +445,7 @@
         "process-definition-editor.ts",
         "process-bpmn-preview.ts",
         "process-bpmn-dialog.ts",
+        "process-present.ts",
         "process-ui.ts",
         "process-random-view.ts",
         "process-terms.ts",
