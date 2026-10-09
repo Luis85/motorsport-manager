@@ -1,9 +1,11 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-bpmn.ts" />
+/// <reference path="./process-bpmn-conformance.ts" />
 /**
  * Read-only HTML for the BPMN import dialog (LWProcessBpmnDialog): what a file offers (`contents`, from `LWProcessBpmn.inspect`)
  * and what importing it with the chosen options would produce (`preview`, from `LWProcessBpmn.analyze`). Pure functions of
- * detached values: they never import, apply, tick or touch storage. Every string from the file is escaped.
+ * detached values: they never import, apply, tick or touch storage. Every string from the file is escaped. `standards` words the
+ * file's BPMN 2.0 / BPSim 1.0 conformance report (from `LWProcessBpmnConformance.validate`) as one note that never blocks import.
  */
 declare namespace LWProcessBpmnPreview {
  type Tone = 'ready' | 'blocked';
@@ -13,6 +15,8 @@ declare namespace LWProcessBpmnPreview {
   contents(process: LWProcessBpmn.Inspection['processes'][number] | undefined): string;
   /** Verdict, facts, rejections, problems, warnings and the mapping grouped by target. `open` names the mapping groups shown expanded. */
   preview(result: LWProcessBpmn.ImportResult, open: ReadonlySet<string>): Rendered;
+  /** The Standards check line: conformance and elements checked, or the problem count with the first three problems; elements not covered are counted. */
+  standards(report: LWProcessBpmnConformance.Report): string;
  }
 }
 (function(inputRoot: unknown) {
@@ -67,5 +71,11 @@ declare namespace LWProcessBpmnPreview {
    + list('Warnings: assumptions made', r.warnings.map(esc), 'bi-warn') + mapping(r.mapping, open);
   return {html, tone: v.tone, headline: v.headline};
  }
- root.LWProcessBpmnPreview = {contents, preview};
+ function standards(r: LWProcessBpmnConformance.Report): string {
+  const checked = `${plural(r.checked, 'element')} checked${r.notCovered.length ? ` · ${plural(r.notCovered.length, 'element')} not covered by the check` : ''}`;
+  const head = r.conforms ? `Conforms to BPMN 2.0 and BPSim 1.0 · ${checked}. It never blocks import.` : `${plural(r.errors.length, 'problem')} against BPMN 2.0 and BPSim 1.0 · ${checked}. This check never blocks import: the importer reads foreign BPMN leniently.`;
+  const first = r.errors.slice(0, 3).map(e => `<li>${e.line ? `Line ${e.line}: ` : ''}${esc(e.message)}</li>`).join('') + (r.errors.length > 3 ? `<li>and ${plural(r.errors.length - 3, 'more problem')}</li>` : '');
+  return `<p><strong>Standards check:</strong> ${head}</p>${first ? `<ul>${first}</ul>` : ''}`;
+ }
+ root.LWProcessBpmnPreview = {contents, preview, standards};
 })(globalThis);

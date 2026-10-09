@@ -134,10 +134,12 @@ reads BPSim times, distributions, probabilities, arrivals, capacities and costs.
 reports every mapping and warning, and rejects unsupported constructs with their
 element ids or, in drop mode, removes or approximates them with a warning each. The
 CLI and the studio's **Import BPMN** dialog (options, live preview, Cancel-first
-replacement confirmation) share this importer. Exports are checked for
-well-formedness; one recorded run on 2026-10-08 validated the demo and example
-exports against the OMG BPMN 2.0 and BPSim 1.0 XML Schemas, which no registered
-check repeats ([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)).
+replacement confirmation) share this importer. A built-in BPMN 2.0 / BPSim 1.0
+conformance validator (rule tables restated as Wildlands data, no schema files;
+structural, type and reference rules only) backs `process validate-bpmn` and the
+dialog's informational Standards check, and the registered gate checks every demo and
+example export with it; an earlier one-off run used the OMG schema files
+([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)).
 
 Not implemented: BPMN execution, external service execution, calendars or working
 hours for timers, event-driven gateway semantics, complex gateways beyond the drop

@@ -11,6 +11,7 @@ import {spawnSync} from 'node:child_process';
 import {catalog, bpmn, runtime} from './process-sdk.cjs';
 import {results, test, stepOf, flowOf, define, M, flow} from './test-process-bpmn-helpers.cjs';
 import './test-process-bpmn-extensions.cjs';
+import './test-process-bpmn-conformance.cjs';
 
 // ---------------------------------------------------------------- foreign BPMN with simulation semantics
 const BP = M + ' xmlns:bpsim="http://www.bpsim.org/schemas/1.0"', S = '<bpmn:startEvent id="S"/>', E = '<bpmn:endEvent id="E"/>';

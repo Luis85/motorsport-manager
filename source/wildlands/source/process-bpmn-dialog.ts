@@ -2,6 +2,7 @@
 /// <reference path="./process-dialog.ts" />
 /// <reference path="./process-bpmn.ts" />
 /// <reference path="./process-bpmn-preview.ts" />
+/// <reference path="./process-bpmn-conformance.ts" />
 /**
  * BPMN import dialog, built on the shared LWProcessDialog (id 'bi', size 'wide'). Picking a .bpmn/.xml file opens it instead of
  * importing at once: `LWProcessBpmn.inspect` fills the Process and BPSim scenario pickers and lists lanes and element counts;
@@ -10,7 +11,8 @@
  * verdict, warnings, rejections with element ids and the mapping grouped by target. Import re-runs `LWProcessBpmn.import` with the
  * same options and hands the definition to `env.apply`, the studio's existing replace path (a fresh paused run). When that discards
  * a run past minute 0 or an unapplied draft, the footer asks first, starting on Cancel. This module never ticks, holds no
- * session and never touches storage; Cancel, Close and Escape change nothing and return focus to the invoker.
+ * session and never touches storage; Cancel, Close and Escape change nothing and return focus to the invoker. On open, the file is
+ * also checked once with `LWProcessBpmnConformance.validate` and summarised in a Standards check note that never gates Import.
  */
 declare namespace LWProcessBpmnDialog {
  interface Env {
@@ -33,7 +35,7 @@ declare namespace LWProcessBpmnDialog {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessDialog: LWProcessDialog.Api; LWProcessBpmn: LWProcessBpmn.Api; LWProcessBpmnPreview: LWProcessBpmnPreview.Api; LWProcessBpmnDialog?: LWProcessBpmnDialog.Api};
+ const root = inputRoot as {LWProcessDialog: LWProcessDialog.Api; LWProcessBpmn: LWProcessBpmn.Api; LWProcessBpmnPreview: LWProcessBpmnPreview.Api; LWProcessBpmnConformance: LWProcessBpmnConformance.Api; LWProcessBpmnDialog?: LWProcessBpmnDialog.Api};
  const esc = (v: unknown) => root.LWProcessDialog.escape(v), DEBOUNCE = 150;
  type NumberKey = 'defaultCapacity' | 'systemCapacity' | 'minutesPerDay' | 'defaultDuration';
  /** Whole-number options: key, element id, full label and help. Ranges come from LWProcessBpmn.options, which stays the validator. */
@@ -44,7 +46,7 @@ declare namespace LWProcessBpmnDialog {
   ['defaultDuration', 'bi-duration', 'Default duration in minutes', 'For tasks and waits the file gives no time. 1 to 100,000.'],
  ];
  const field = (id: string, label: string, control: string, help: string) => `<div class="se-field"><label for="${id}">${label}</label>${control}<p class="se-help" id="${id}-help">${help}</p><p class="se-err" id="${id}-err" hidden></p></div>`;
- const FORM = `<p class="bi-file" id="bi-file"></p><div class="pd-split bi-split">
+ const FORM = `<p class="bi-file" id="bi-file"></p><div class="bi-standards" id="bi-standards" role="note"></div><div class="pd-split bi-split">
   <section class="bi-pane" aria-labelledby="bi-source-h"><h3 id="bi-source-h">What to import</h3><div class="se-grid">
    ${field('bi-process', 'Process', '<select id="bi-process" autofocus aria-describedby="bi-process-help"></select>', 'A call activity inlines the process it calls.')}
    ${field('bi-scenario', 'BPSim scenario', '<select id="bi-scenario" aria-describedby="bi-scenario-help"></select>', '')}</div>
@@ -152,6 +154,10 @@ declare namespace LWProcessBpmnDialog {
    for (const [key, id] of NUMBERS) box(id).value = String(d[key]);
    const count = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
    q('bi-file').innerHTML = `File <strong>${esc(f.name)}</strong> · ${count(processes.length, 'process', 'processes')} · ${count(inspected.scenarios.length, 'BPSim scenario', 'BPSim scenarios')}`;
+   // The Standards check informs and never gates the import, so even a failure of the check itself leaves the dialog usable.
+   const standards = q('bi-standards');
+   try { const report = root.LWProcessBpmnConformance.validate(f.text); standards.innerHTML = root.LWProcessBpmnPreview.standards(report); standards.dataset.conforms = String(report.conforms); }
+   catch (e) { standards.innerHTML = `<p><strong>Standards check:</strong> unavailable (${esc(e instanceof Error ? e.message : e)}). It never blocks import.</p>`; delete standards.dataset.conforms; }
    open.clear(); dialog.setStatus('');
   }
   return {

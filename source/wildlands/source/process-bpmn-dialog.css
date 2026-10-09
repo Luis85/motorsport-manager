@@ -2,6 +2,11 @@
 .pd-dialog.bi-dialog { height:min(90vh,900px); }
 .bi-dialog .bi-file { margin:0 0 var(--s3); font-size:var(--t-sm); overflow-wrap:anywhere; }
 .bi-dialog .bi-file strong { color:var(--text); }
+/* Standards check: an informational note (it never gates Import), green-edged when the file conforms and amber-edged when it does not. */
+.bi-dialog .bi-standards { margin:0 0 var(--s3); padding:var(--s2) var(--s3); border:1px solid var(--line); border-left:4px solid var(--goal); border-radius:var(--r-md); font-size:var(--t-sm); overflow-wrap:anywhere; }
+.bi-dialog .bi-standards[data-conforms=false] { border-left-color:var(--heat-warm); }
+.bi-dialog .bi-standards p { margin:0; }
+.bi-dialog .bi-standards ul { margin:var(--s1) 0 0; padding-left:20px; }
 .bi-dialog .bi-pane { min-width:0; }
 .bi-dialog .bi-pane h3 { margin:0 0 var(--s2); font-size:var(--t-md); }
 .bi-dialog .bi-pane h3+.se-help { margin-bottom:var(--s1); }

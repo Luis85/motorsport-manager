@@ -2,8 +2,12 @@
 /** Minimal namespace-aware XML reader and writer helpers for BPMN interchange. DOCTYPE/entities, characters XML 1.0 forbids, deep and oversized documents are rejected; reading is linear in the document size. */
 declare namespace LWProcessXml {
  interface Node {ns: string; local: string; attrs: Record<string, string>; children: Node[]; text: string;}
+ /** A node read with `{positions: true}`: also its 1-based start line, its qualified name as written and its in-scope namespace bindings (prefix to URI, '' for the default namespace; inherited bindings come through the prototype chain). */
+ interface Located extends Node {line: number; name: string; scope: Readonly<Record<string, string>>; children: Located[];}
  interface Api {
+  /** Without options the nodes carry exactly the five fields of `Node`; `{positions: true}` adds `line`, `name` and `scope` (still one linear pass). */
   parse(source: string): Node;
+  parse(source: string, options: {positions: true}): Located;
   /** Attribute value: markup characters, quotes, tabs and line breaks become references (so no reader normalizes them); throws on a character XML 1.0 cannot represent. */
   escape(value: unknown): string;
   /** Element text: markup characters (and quotes unless `quotes` is false) and carriage returns become references; newlines and tabs stay readable. Throws like `escape`. */
@@ -61,7 +65,7 @@ declare namespace LWProcessXml {
   return attrs;
  }
  type Scope = Record<string, string>;
- function parse(input: string): LWProcessXml.Node {
+ function parse(input: string, options?: {positions?: boolean}): LWProcessXml.Node {
   if (typeof input !== 'string' || input.length > MAX_CHARS) throw Error('The XML document is missing or larger than 8 MiB.');
   const source = input.replace(/^﻿/, '');
   if (/<!DOCTYPE|<!ENTITY/i.test(source)) throw Error('DOCTYPE and entity declarations are not allowed.');
@@ -69,6 +73,9 @@ declare namespace LWProcessXml {
   // A namespace scope inherits its parent's declarations through the prototype chain: an element copies nothing unless it declares a prefix.
   const stack: {node: LWProcessXml.Node; raw: string; scope: Scope}[] = [], empty = Object.create(null) as Scope;
   let root: LWProcessXml.Node | undefined, i = 0, count = 0;
+  // Positions are opt-in: lines are counted once, from the previous element start to this one, so the pass stays linear.
+  const positions = options?.positions === true; let line = 1, counted = 0;
+  const lineAt = (at: number) => { for (let k = counted; k < at; k++) if (source.charCodeAt(k) === 10) line++; counted = at; return line; };
   while (i < source.length) {
    if (source[i] !== '<') {
     const next = source.indexOf('<', i), chunk = source.slice(i, next < 0 ? source.length : next), parent = stack.at(-1);
@@ -81,7 +88,7 @@ declare namespace LWProcessXml {
     parent.node.text += source.slice(i + 9, j); i = j + 3; continue;
    }
    if (source.startsWith('<?', i)) { const j = source.indexOf('?>', i + 2); if (j < 0) throw Error('Unterminated processing instruction.'); i = j + 2; continue; }
-   const end = tagEnd(source, i + 1), body = source.slice(i + 1, end); i = end + 1;
+   const start = i, end = tagEnd(source, i + 1), body = source.slice(i + 1, end); i = end + 1;
    if (body.startsWith('/')) {
     const closed = stack.pop(); if (!closed || closed.raw !== body.slice(1).trim()) throw Error('Mismatched closing tag: ' + body);
     continue;
@@ -98,6 +105,7 @@ declare namespace LWProcessXml {
    const colon = name.indexOf(':'), prefix = colon < 0 ? '' : name.slice(0, colon), local = colon < 0 ? name : name.slice(colon + 1);
    if (prefix && !(prefix in scope)) throw Error('Undeclared namespace prefix: ' + prefix);
    const node: LWProcessXml.Node = {ns: scope[prefix] ?? '', local, attrs, children: [], text: ''};
+   if (positions) Object.assign(node, {line: lineAt(start), name, scope});
    if (++count > MAX_NODES || stack.length >= MAX_DEPTH) throw Error('The XML document is too large or deeply nested.');
    const parent = stack.at(-1);
    if (parent) parent.node.children.push(node); else if (root) throw Error('Multiple root elements.'); else root = node;
@@ -106,6 +114,6 @@ declare namespace LWProcessXml {
   if (stack.length || !root) throw Error('The XML document is incomplete.');
   return root;
  }
- root.LWProcessXml = {parse, escape, text};
+ root.LWProcessXml = {parse: parse as LWProcessXml.Api['parse'], escape, text};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessXml;
 })(globalThis);

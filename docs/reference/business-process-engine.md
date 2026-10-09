@@ -840,12 +840,105 @@ extension, not as a BPSim parameter. The extension stays authoritative: a defini
 with and without `--bpsim` imports back to the same fingerprint with no warning, and other
 BPSim-aware tools see the same numbers.
 
-Exports are checked for well-formedness with the in-repository XML reader. On 2026-10-08 the
-exports of every agency process and both examples, with and without BPSim, and edge-case
-variants validated against the OMG BPMN 2.0 XML Schemas and the BPSim 1.0 XML Schema
-([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)). That was a one-off
-run at the recorded source: no registered check repeats it, and schema validation does not
-cover the semantic rules the BPMN specification states in prose.
+Exports are checked for well-formedness with the in-repository XML reader and, in the registered
+`business-process-bpmn` suite, with the built-in conformance validator below: the exports of
+every agency process with and without BPSim, both examples and their import/export round trips
+must conform with no uncovered element. Separately, a one-off run on 2026-10-08 validated exports
+against the OMG BPMN 2.0 and BPSim 1.0 schema files themselves
+([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)); that record is
+historical and no check reads those files.
+
+### Conformance validator
+
+`process validate-bpmn --input FILE`, the API `LWProcessBpmnConformance.validate(xml)` (Node:
+`conformance.validate` from `process-sdk`) and the **Standards check** line of the **Import BPMN**
+dialog check a BPMN 2.0 file, including the BPSim 1.0 data inside it, against built-in rules. The
+report is a detached value:
+
+| Field | Meaning |
+|---|---|
+| `conforms` | `true` exactly when `errors` is empty. It says nothing about `notCovered` elements or `unchecked` content, which were not checked. |
+| `errors` | `{line, path, code, message}` per problem, in line order (at most 1,000). `path` is XPath-like with the names as written (`/bpmn:definitions/bpmn:process/bpmn:task[2]/@name`); a reference problem points at the referring attribute or value. |
+| `notCovered` | `{line, path, element, namespace, reason}` per element of a BPMN, BPMN DI, DD or BPSim namespace that the rules recognise but do not check; its content is skipped. |
+| `unchecked` | `{namespace, elements, note}` per foreign namespace found as extension content: the Wildlands extension (`urn:wildlands:process:1`, read and validated by the importer, not schema-checked) and any other namespace (not checked). |
+| `checked` | Number of elements checked against the rules. |
+| `rules` | `{bpmn: "2.0", bpsim: "1.0"}`. |
+
+**How it is built.** No schema file is shipped, vendored, downloaded or read at build, test or run
+time. The rules are Wildlands data in a compact notation of our own:
+`process-bpmn-conformance-model.ts` (the BPMN MODEL namespace and the diagram namespaces BPMN DI,
+DD DI and DC) and `process-bpmn-conformance-bpsim.ts` (BPSim 1.0) list the top-level elements with
+their substitution groups, and per type its base type, ordered content (occurrences, choices,
+wildcards), attributes (type, required, default) and flags (abstract, mixed text, attributes of other
+namespaces). `process-bpmn-conformance.ts` compiles them once and walks the file read by the
+in-repository XML reader (with its opt-in line positions); `process-bpmn-conformance-values.ts`
+holds the value rules.
+
+**What is checked.** Every element must be known in its namespace and allowed at its position:
+ordered content, minimum and maximum occurrences, choices and substitution groups (a `task` stands
+where a flow element may), matched left to right without backtracking as an XML Schema validator
+does; abstract elements and types need a concrete element or an `xsi:type` naming a derived type
+(for example `bpmn:tFormalExpression` on an expression). Attributes must be allowed, present when
+required and valid for their type (string, boolean, whole numbers with the `int` and `long` ranges,
+double, id, id reference, qualified name, URI, date-time, ISO 8601 duration and the enumerations
+such as `gatewayDirection`, `processType`, multi-instance `behavior` or BPSim `timeUnit`), with
+XML Schema whitespace handling (strings and string enumerations are compared as written; other
+values are collapsed first). Attributes without a namespace that a type does not declare are
+errors; attributes of other namespaces are allowed where BPMN allows them. Ids are unique across
+the whole file (BPMN, diagram and BPSim ids share one space) and every id reference
+(`sourceRef`/`targetRef` of a sequence flow, `default`, `flowNodeRef`, BPSim `inherits`, ...)
+names an id. Qualified-name references (`attachedToRef`, `processRef`, `incoming`/`outgoing`,
+`messageRef`, `bpmnElement`, BPSim `elementRef`, ...) must name an id of the file when they have
+no prefix or the prefix of the file's `targetNamespace`; a prefix of another namespace (an
+imported file) is not followed. Qualified names that name types or outside things
+(`structureRef`, `itemSubjectRef`, `calledElement`, `implementationRef`, ...) are only checked for
+form and a declared prefix. Text may appear only in mixed content (documentation, expressions,
+scripts, text annotations) or as a value; empty elements such as `dc:Bounds` must be empty.
+
+**Coverage.** Definitions, import and extension; process, lanes (`laneSet`, `lane`,
+`childLaneSet`, `flowNodeRef`); every event (start, end, intermediate catch and throw, boundary,
+implicit throw) and event definition (timer with `timeDate`/`timeDuration`/`timeCycle`,
+conditional, message, signal, error, escalation, link, terminate, cancel, compensate); task and
+every task type (user, manual, service, send, receive, script with `script`, business rule);
+sub-process, ad-hoc sub-process, transaction and call activity; exclusive, inclusive, parallel,
+event-based and complex gateways; sequence flows with condition expressions; standard and
+multi-instance loop characteristics; data objects, stores, properties, inputs, outputs,
+associations and assignments; resources, performers and assignment expressions; messages,
+signals, errors, escalations, item definitions, interfaces, operations, end points, categories,
+global tasks; collaboration, participant and message flow; text annotation, association and
+group; relationship; and the diagram: `BPMNDiagram`, `BPMNPlane`, `BPMNShape`, `BPMNEdge`,
+`BPMNLabel`, `BPMNLabelStyle`, `dc:Bounds`, `dc:Font`, `di:waypoint`. BPSim 1.0: `BPSimData`,
+`Scenario` and its attributes, `ScenarioParameters`, `ElementParameters`, every parameter group and
+parameter, the constant, enumeration, expression and distribution values with their exact
+attribute names, `ResultRequest`, calendars and vendor extensions. Choreography, conversation,
+correlation and partner elements are recognised in their places and reported in `notCovered`.
+
+**Extension content.** `extensionElements` accepts other namespaces laxly, as BPMN does: a
+top-level BPSim element (`BPSimData`, a parameter value) is checked with the BPSim rules, the
+Wildlands extension and other namespaces are counted in `unchecked`, and a BPMN MODEL or unqualified
+element there is an error. An element of a covered namespace that is not top-level there (for
+example a `bpsim:Scenario` outside `BPSimData`) is listed in `notCovered` instead of being skipped
+silently. Element wildcards that require declarations (DI `extension`, BPSim `VendorExtension`)
+reject undeclared content.
+
+**Error codes.** `xml-malformed`, `root-unknown`, `element-unknown` (no such element in a BPMN,
+diagram or BPSim namespace), `element-unexpected` (wrong position or order, or not allowed in that
+parent), `element-missing`, `element-abstract`, `element-undeclared` (strict wildcard),
+`text-not-allowed`, `attribute-unknown`, `attribute-missing`, `attribute-undeclared`,
+`value-invalid`, `value-enumeration`, `qname-prefix`, `xsi-type-invalid`, `id-duplicate`,
+`idref-unresolved` and `reference-unresolved`.
+
+**Limits.** These are structural, type and reference rules only. The semantic rules the BPMN
+specification states in prose (which events may carry which definitions, gateway and flow
+constraints, a flow staying inside one process, BPSim value meaning such as probabilities summing
+to 1) are not checked, nor are references into imported files. A file must also pass the XML
+reader's limits (8 MiB, 64 levels, no DOCTYPE). Compared with libxml2's `xmllint` on the same
+rules, known differences are where `xmllint` is more lenient than XML Schema: it does not report
+id references that name no id, it accepts an element of a repeated particle again after elements
+of an immediately following repeated substitution group (for example a `laneSet` after flow
+elements), and it accepts a number exponent without digits (`1e`); the validator reports all
+three, and it also resolves qualified-name references, which XML Schema does not. The
+**Standards check** in the import dialog informs only: the importer stays lenient with foreign files.
 
 ## Explicit v1 boundaries
 
@@ -859,9 +952,10 @@ distributions, correlated or stateful random streams, failure injection on
 resources, nested parallel regions (nested gateways inside a region), event-driven
 gateway semantics, recurring or calendar-aware timers (timers count plain business
 minutes), counters other than integer addition, persona libraries, attribution models,
-text sentiment, compensation, live process migration, saved-run restoration, continuous
-OMG XSD conformance checking of exported XML (one recorded validation run only), or native
-Godot process export is claimed.
+text sentiment, compensation, live process migration, saved-run restoration, validation against
+the OMG schema files themselves (the built-in conformance rules restate their structure; one
+recorded run used the files), BPMN prose-semantics conformance, or native Godot process export is
+claimed.
 Graph layout and scene presentation do not influence scheduling. Simulation
 results describe authored assumptions and are not measured project forecasts.
 
@@ -925,7 +1019,7 @@ Every edit is checked live with `LWProcessCatalog.validate(candidate, true)`. En
 
 The dialog shell is the reusable `LWProcessDialog` (`process-dialog.ts`; its header comment is the contract for the Definition and Activity editors). It owns the native `showModal` dialog, the Tab trap, `inert` on the studio root, body scroll lock, sticky header and footer, focus on open (first `[autofocus]` control, else Close; read-only dialogs focus the heading) and focus restore to the invoker or a fallback, and **one dirty guard**: Escape, **Close**, a cancel action and a backdrop click all call `requestClose`, which closes a clean dialog and otherwise shows the in-footer "Keep editing / Discard changes" confirm that starts on **Keep editing**. Only one dialog may be open at a time (no stacking). Sizes are `form` (760 px), `wide` (1000 px, with a `.pd-split` two-column grid) and `list` (640 px); at 650 px and below every dialog is a full-screen sheet with stacked full-width footer buttons, and motion is used only when reduced motion is not requested. In windows under 560 px tall (200% zoom on a laptop, a phone in landscape) every dialog except Activity becomes one full-screen sheet that scrolls as a single page: header, subtitle, footer reason and secondary actions scroll with the content and only the primary action stays in view at the bottom (the Activity list keeps its own scroller). Dialog openers carry `aria-haspopup="dialog"`. Dialog styles live in `process-dialogs.css` (the BPMN import dialog adds `process-bpmn-dialog.css`); the studio shell is `process.css` and the SIPOC and journey lenses `process-lenses.css`. All share the tokens at the top of `process.css`; type sizes are `rem`, so the browser's default font size is honoured. The studio has a single dark theme; there is no light theme.
 
-**BPMN import dialog.** In the studio, **Import…** (or **Import JSON or BPMN…** in the phone menu) still replaces the active process at once for a JSON file. A `.bpmn` or `.xml` file (or text starting with `<`) instead opens **Import BPMN** (`LWProcessBpmnDialog`, `process-bpmn-dialog.ts`, dialog id `bi`, size wide), with read-only markup from `LWProcessBpmnPreview` (`process-bpmn-preview.ts`). `LWProcessBpmn.inspect` fills the **Process** and **BPSim scenario** pickers (the scenario picker is disabled when the file has none or BPSim is off) and lists the chosen process's lanes and element counts. The options are **Lanes** (resource pools or ignore), **Unsupported constructs** (reject or drop), **People per lane pool**, **System pool capacity**, **Business minutes per day**, **Default duration in minutes**, **Use BPSim simulation parameters** and **Run service-type tasks on automated system pools**; each field is validated by `LWProcessBpmn.options` and shows its own problem (business minutes per hour is a CLI/API option only and keeps 60). Shortly after each change, a preview from `LWProcessBpmn.analyze` (a UI debounce, never a simulation clock) shows the verdict, whether the result is runnable (`ok`) and acceptable as a draft, the process, scenario, step, flow, pool and arrival counts, the suggested run length from the BPSim scenario `Duration` (shown, not applied: import keeps the current **Run until** setting), rejections with their element ids, definition problems, warnings and the mapping grouped by target (steps, flows, resource pools, case fields, arrivals, SIPOC, folded or ignored). **Import** is disabled with a visible reason while an option is invalid, the preview lists rejections or the definition cannot run. It re-runs `LWProcessBpmn.import` with the same options and applies the definition through the studio's replace path: a fresh paused run at minute 0 that never ticks. When that would discard a run past minute 0 or an unapplied draft, an in-footer confirm names what is lost and starts on **Cancel** (Escape also cancels), with **Import and replace**. Opening the dialog does not pause the run; Cancel, Close and Escape change nothing and return focus to the control that opened the file picker. The Export menu adds **Export BPMN with BPSim** (`<id>.bpsim.bpmn`, the same as `export-bpmn --bpsim`).
+**BPMN import dialog.** In the studio, **Import…** (or **Import JSON or BPMN…** in the phone menu) still replaces the active process at once for a JSON file. A `.bpmn` or `.xml` file (or text starting with `<`) instead opens **Import BPMN** (`LWProcessBpmnDialog`, `process-bpmn-dialog.ts`, dialog id `bi`, size wide), with read-only markup from `LWProcessBpmnPreview` (`process-bpmn-preview.ts`). `LWProcessBpmn.inspect` fills the **Process** and **BPSim scenario** pickers (the scenario picker is disabled when the file has none or BPSim is off) and lists the chosen process's lanes and element counts. The options are **Lanes** (resource pools or ignore), **Unsupported constructs** (reject or drop), **People per lane pool**, **System pool capacity**, **Business minutes per day**, **Default duration in minutes**, **Use BPSim simulation parameters** and **Run service-type tasks on automated system pools**; each field is validated by `LWProcessBpmn.options` and shows its own problem (business minutes per hour is a CLI/API option only and keeps 60). Shortly after each change, a preview from `LWProcessBpmn.analyze` (a UI debounce, never a simulation clock) shows the verdict, whether the result is runnable (`ok`) and acceptable as a draft, the process, scenario, step, flow, pool and arrival counts, the suggested run length from the BPSim scenario `Duration` (shown, not applied: import keeps the current **Run until** setting), rejections with their element ids, definition problems, warnings and the mapping grouped by target (steps, flows, resource pools, case fields, arrivals, SIPOC, folded or ignored). Above the panes, a **Standards check** note (`role="note"`, from `LWProcessBpmnConformance.validate`, computed once when the file opens) reads "Conforms to BPMN 2.0 and BPSim 1.0 · N elements checked", or the problem count with the first three problems and their lines, plus the number of elements not covered; it says that it never blocks import, and it does not gate **Import**. **Import** is disabled with a visible reason while an option is invalid, the preview lists rejections or the definition cannot run. It re-runs `LWProcessBpmn.import` with the same options and applies the definition through the studio's replace path: a fresh paused run at minute 0 that never ticks. When that would discard a run past minute 0 or an unapplied draft, an in-footer confirm names what is lost and starts on **Cancel** (Escape also cancels), with **Import and replace**. Opening the dialog does not pause the run; Cancel, Close and Escape change nothing and return focus to the control that opened the file picker. The Export menu adds **Export BPMN with BPSim** (`<id>.bpsim.bpmn`, the same as `export-bpmn --bpsim`).
 
 `LWProcessDraft` (`process-draft.ts`) is the single source of truth for the unapplied draft text, one per process: `read`, `write(text, source)`, `parse`, `activeText`, `changed`, `diff` (counts of changed steps, flows, resources, arrival rules and process settings plus the names of changed steps), `describeDiff` ("Unapplied draft: 3 steps, 1 resource changed"), `subscribe`, and `enter`/`leave`/`restore` for apply, process switching and reset. The raw JSON textarea is a mirror of the store.
 Static paused scenes render only when the view or camera changes.
@@ -967,7 +1061,10 @@ The process checks are registered Wildlands suites (see
   with shared helpers in `test-process-helpers.cts`.
 - `business-process-bpmn` (Node): entry `source/test-process-bpmn.cts` (foreign BPMN mapping,
   BPSim, standard export and the pinned numbers of the example files), after the extension round
-  trips in `test-process-bpmn-extensions.cts`, with helpers in `test-process-bpmn-helpers.cts`.
+  trips in `test-process-bpmn-extensions.cts` and the conformance checks in
+  `test-process-bpmn-conformance.cts` (every export and example conforms, violation fixtures,
+  uncovered elements, `validate-bpmn` exit codes, a bounded-time large file), with helpers in
+  `test-process-bpmn-helpers.cts`.
 - Browser suites, sources `source/verification/process-*-browser.ts` with the shared
   `process-browser-fixture.ts` and `process-browser-models.ts`: `business-process-browser` (studio
   shell, navigation, time controls, imports, exports, process switch),

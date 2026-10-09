@@ -146,6 +146,22 @@ async function main(): Promise<void> {
    const want = await expected(page, xml, options!); assert.equal(want.fingerprint, before.fingerprint, 'the BPSim export re-imports to the same fingerprint');
    await importAndWait('bpsim.bpmn'); const now = await active(page); assert.deepEqual([now.fingerprint, now.minute, now.playing], [before.fingerprint, 0, false]);
   });
+  await check('BPMN import dialog Standards check: the loan example conforms to BPMN 2.0 and BPSim 1.0, and a non-conforming file lists its first problems while Import stays available', async () => {
+   await fresh(); const xml = example('loan-application.bpmn'), note = page.locator('#bi-standards');
+   const report = (x: string) => page.evaluate(s => (globalThis as unknown as {LWProcessBpmnConformance: LWProcessBpmnConformance.Api}).LWProcessBpmnConformance.validate(s), x);
+   await pick('loan-application.bpmn'); const good = await report(xml); assert.equal(good.conforms, true);
+   assert.equal(await note.innerText(), `Standards check: Conforms to BPMN 2.0 and BPSim 1.0 · ${good.checked.toLocaleString()} elements checked. It never blocks import.`);
+   assert.equal(await note.getAttribute('data-conforms'), 'true'); assert.equal(await note.getAttribute('role'), 'note'); assert.equal(await note.locator('li').count(), 0);
+   await page.locator('#bi-cancel').click(); await dlg.waitFor({state: 'hidden'});
+   // The file as it stood before the archived correction: three problems, still importable because the importer is lenient.
+   const old = xml.replace('timeUnit="hour"', 'timeUnit="hrs"').replace('<bpsim:LogNormalDistribution mean="8" standardDeviation="3"/>', '<bpsim:LogNormalDistribution scale="8" shape="3"/>');
+   await pick('loan-old.bpmn', old); const bad = await report(old); assert.deepEqual(bad.errors.map(e => e.code), ['value-enumeration', 'attribute-unknown', 'attribute-unknown']);
+   assert.equal(await note.getAttribute('data-conforms'), 'false');
+   assert.match(await note.locator('p').innerText(), new RegExp(`^Standards check: 3 problems against BPMN 2\\.0 and BPSim 1\\.0 · ${bad.checked.toLocaleString()} elements checked\\. This check never blocks import: the importer reads foreign BPMN leniently\\.$`));
+   assert.deepEqual(await note.locator('li').allInnerTexts(), bad.errors.map(e => `Line ${e.line}: ${e.message}`));
+   assert.match(await page.locator('#bi-preview .bi-verdict').innerText(), /Ready to import\./); assert.equal(await page.locator('#bi-import').isEnabled(), true);
+   await importAndWait('loan-old.bpmn'); assert.equal((await active(page)).name, 'Loan application');
+  });
   await check('BPMN import dialog fits the 390x844 phone sheet without horizontal overflow and keeps every control reachable, also with DejaVu Sans injected', async () => {
    await page.setViewportSize({width: 390, height: 844}); await fresh();
    await viaButton('#more-menu', '#import-item', path.join(EXAMPLES, 'loan-application.bpmn'));

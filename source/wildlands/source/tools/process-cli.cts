@@ -1,26 +1,28 @@
 /// <reference path="../process-contracts.d.ts" />
 /** Noninteractive process agent tools. All outputs are guarded and atomic via shared CLI I/O. */
 import {createHash} from 'node:crypto';
-import {catalog, runtime, authoring, bpmn} from '../process-sdk.cjs';
+import {catalog, runtime, authoring, bpmn, conformance} from '../process-sdk.cjs';
 import {emit, readJsonFile, writeJsonFile, writeTextFile} from './cli-io.cjs';
 import {assembleGame} from './game-build.cjs';
 import {writeForgeProject} from './process-forge.cjs';
 const commands: Record<string, readonly string[]> = {
  discover: [], schema: ['--kind'], create: ['--id', '--name', '--output'], validate: ['--input', '--draft'], inspect: ['--input'],
  edit: ['--input', '--recipe', '--output', '--dry-run', '--draft'], run: ['--input', '--minutes', '--output', '--seed'],
- build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output', '--bpsim'],
+ build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output', '--bpsim'], 'validate-bpmn': ['--input'],
  'import-bpmn': ['--input', '--output', '--draft', '--default-duration', '--process', '--lanes', '--default-capacity', '--no-auto-system-pool', '--system-capacity', '--minutes-per-day', '--minutes-per-hour', '--unsupported', '--no-bpsim', '--scenario', '--report'],
  attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint', '--output', '--dry-run']
 };
 const flags = new Set(['--draft', '--dry-run', '--bpsim', '--no-auto-system-pool', '--no-bpsim']);
 /** Options every invocation of a command must carry; checked before any file is read or work is done. */
 const requiredOptions: Record<string, readonly string[]> = {create: ['--id', '--output'], validate: ['--input'], inspect: ['--input'], edit: ['--input', '--recipe'],
- run: ['--input', '--minutes', '--output'], build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output'], 'import-bpmn': ['--input', '--output'],
+ run: ['--input', '--minutes', '--output'], build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output'], 'import-bpmn': ['--input', '--output'], 'validate-bpmn': ['--input'],
  attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint']};
 const descriptions: Record<string, string> = {discover: 'Discover commands, limits and guarded edit operations.', schema: 'Get the authoritative process JSON Schema.',
  create: 'Create a runnable starter definition.', validate: 'Validate shape, references and graph semantics; --draft permits graph diagnostics.', inspect: 'Read identity, scene graph and starting snapshot without advancing time.',
  edit: 'Apply a revision/fingerprint guarded transaction; --draft allows intermediate graph diagnostics.', run: 'Run a fresh deterministic session for a bounded number of business minutes; --seed N replaces the definition seed.',
- build: 'Build one self-contained offline HTML file.', 'export-bpmn': 'Export a BPMN 2.0 XML file (with Wildlands extension values and diagram layout); --bpsim adds a BPSim scenario (processing times, probabilities, arrivals, pool quantities and costs).',
+ build: 'Build one self-contained offline HTML file.',
+ 'validate-bpmn': 'Check a BPMN 2.0 XML file (and its BPSim 1.0 data) against the built-in conformance rules (no schema files); prints the report (errors with line, path, code and message; elements not covered; unchecked extension content); exit 0 when it conforms, 2 when not.',
+ 'export-bpmn': 'Export a BPMN 2.0 XML file (with Wildlands extension values and diagram layout); --bpsim adds a BPSim scenario (processing times, probabilities, arrivals, pool quantities and costs).',
  'import-bpmn': 'Import a BPMN 2.0 XML file into a simulatable definition (lanes, sub-processes, call activities, gateways, loops, boundary timers, expressions and BPSim parameters are mapped); prints the structured report (warnings, mapping counts, rejections); unsupported elements are rejected (exit 2) or, with --unsupported drop, dropped with warnings.', forge: 'Create an editable Scene Forge project with one scene per step.', attach: 'Attach a Scene Forge Wildlands asset to a step using edit guards.'};
 function recipeSchema(): Record<string, unknown> {
  const properties = catalog.schema.properties as Record<string, Record<string, unknown>>;
@@ -74,7 +76,7 @@ export function run(args: readonly string[]): void {
    success({format: 'wildlands-process', schemaVersion: 1, handbook: 'docs/reference/business-process-engine.md', limits: runtime.limits,
     operations: Object.entries(commands).map(([id, options]) => ({id, options, description: descriptions[id]})),
     editOperations: editOperations(),
-    workflow: ['create', 'inspect', 'edit --dry-run', 'edit', 'validate', 'forge', 'attach', 'run', 'build'], interchange: {bpmn: 'BPMN 2.0 XML via export-bpmn and import-bpmn'},
+    workflow: ['create', 'inspect', 'edit --dry-run', 'edit', 'validate', 'forge', 'attach', 'run', 'build'], interchange: {bpmn: 'BPMN 2.0 XML via export-bpmn and import-bpmn; validate-bpmn checks a file against the BPMN 2.0 and BPSim 1.0 conformance rules'},
     recipe: {expectedRevision: 0, expectedFingerprint: '<inspect.fingerprint>', operations: [{op: 'rename', value: 'My process'}]},
     notes: ['put operations replace full definitions', 'dry runs write nothing', 'draft graph diagnostics must be resolved before run or build', 'fingerprint is a change guard, not a cryptographic signature']}); return;
   }
@@ -105,6 +107,11 @@ export function run(args: readonly string[]): void {
    const inputs = [required('--input')], target = output(imported.definition, inputs);
    const full = values.has('--report') ? writeJsonFile(required('--report'), {format: 'wildlands-bpmn-import-report', schemaVersion: 1, ...report, mapping: imported.mapping, diagnostics: imported.diagnostics}, inputs) : undefined;
    success({output: target, ...full ? {report: full} : {}, runnable: imported.ok, diagnostics: imported.diagnostics, ...report}); return;
+  }
+  if (command === 'validate-bpmn') {
+   const file = required('--input'), report = conformance.validate(readJsonFile(file, 8 * 1024 * 1024));
+   emit({ok: report.conforms, protocolVersion: 1, ...report.conforms ? {} : {code: 'process-bpmn-nonconforming'}, input: file, ...report});
+   if (!report.conforms) process.exitCode = 2; return;
   }
   const file = required('--input'), input = read(file);
   if (command === 'export-bpmn') {

@@ -349,9 +349,39 @@ with `--unsupported drop` they are removed or approximated instead (a complex ga
 exclusive decision), each with a warning. The studio offers the same through **Export BPMN**,
 **Export BPMN with BPSim** and **Import…** (the **Import BPMN** dialog below). Add `--bpsim` to
 `export-bpmn` to write a BPSim scenario beside the extension values. Exported XML is checked for
-well-formedness; one recorded run validated the demo and example exports against the OMG BPMN 2.0
-and BPSim 1.0 XML Schemas ([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)),
-but no registered check repeats that.
+well-formedness, and the registered `business-process-bpmn` suite checks the demo and example
+exports with the built-in BPMN 2.0 / BPSim 1.0 conformance validator (next section); an earlier
+one-off run also used the OMG schema files
+([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)).
+
+## Check a BPMN file against BPMN 2.0 and BPSim 1.0
+
+Before handing a file to another tool, or to see why a modeler's file looks odd, check it:
+
+```sh
+bin/wildlands process validate-bpmn --input /tmp/process-work/review.bpmn
+```
+
+1. **Read the verdict.** Exit 0 and `"conforms": true` mean every checked element follows the
+   BPMN 2.0 and BPSim 1.0 structure: known elements in the right order and number, allowed and
+   well-typed attributes, unique ids and references that resolve. `checked` counts the elements
+   checked.
+2. **Fix each error.** Exit 2 lists `errors` with the `line`, an XPath-like `path` and a plain
+   message naming the element, the attribute and the expected value, for example
+   `Attribute timeUnit of bpsim:NumericParameter must be one of ms, s, min, hour, day, year, not
+   "hrs".` or `bpmndi:BPMNDiagram is not allowed at this position inside bpmn:definitions` (a
+   `relationship` must follow the diagrams). The `code` groups them (`element-unexpected`,
+   `attribute-unknown`, `value-enumeration`, `idref-unresolved`, ...); see the
+   [conformance validator](../reference/business-process-engine.md#conformance-validator).
+3. **Mind what was not checked.** `notCovered` lists recognised elements the rules do not cover
+   (choreography, conversation, correlation and partner elements, or a BPSim element outside
+   `BPSimData`); `unchecked` counts extension content, such as the Wildlands `wl:` values, which
+   the importer validates itself. A conforming report says nothing about them, and nothing about
+   the BPMN specification's prose rules.
+
+The check never decides what can be imported: `import-bpmn` and the studio's **Import BPMN** dialog
+stay lenient with foreign files, and the dialog shows the same result as a **Standards check**
+line.
 
 ## Import BPMN and its simulation parameters
 
@@ -405,11 +435,14 @@ opens the **Import BPMN** dialog instead, and nothing changes until you choose *
    **System pool capacity**, **Business minutes per day**, **Default duration in minutes** and
    **Run service-type tasks on automated system pools**. A value out of range shows its problem
    under the field. Business minutes per hour stays 60 here; use the CLI to change it.
-3. Read the **Preview**, which updates shortly after each change: whether the result is ready to
+3. Read the **Standards check** line at the top: whether the file conforms to BPMN 2.0 and
+   BPSim 1.0 and how many elements were checked, or how many problems it has with the first
+   three. It is information only and never blocks **Import**.
+4. Read the **Preview**, which updates shortly after each change: whether the result is ready to
    import, rejections with their element ids, warnings (the assumptions made) and the mapping
    grouped into steps, flows, pools, case fields, arrivals and SIPOC. The suggested run length
    from the BPSim scenario is shown only; set **Run until** yourself if you want it.
-4. Choose **Import**. It is disabled, with the reason in the footer, while an option is invalid,
+5. Choose **Import**. It is disabled, with the reason in the footer, while an option is invalid,
    the preview lists rejections or the result cannot run. If the current run is past minute 0
    or you have an unapplied draft, the dialog first says what will be discarded and starts on
    **Cancel**; choose **Import and replace** to continue. Export the run report or draft first if
