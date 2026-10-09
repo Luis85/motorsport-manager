@@ -63,6 +63,14 @@ export function registerDiscoveryCommands(c: CommandContext) {
         littlewild: {
           commands: ['littlewild sync', 'littlewild export', 'littlewild import'],
           manifest: 'littlewild-export (schema --kind littlewild-export)',
+          importFormats: [
+            'littlewild-definition',
+            'littlewild-3d-asset',
+            'littlewild-creature-package',
+          ],
+          importScope:
+            'Visual models only; creature gameplay and companion state stay in the source package',
+          importGuards: ['--expected-revision', '--expected-state'],
           families: Object.keys(littlewildFamilies),
           output: '<target>/<family>/<id>/definition.json visual facet; other facets are preserved',
           geometry:

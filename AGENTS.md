@@ -131,12 +131,12 @@ command/query boundaries; tool-only clock capabilities must not reach widgets.
 
 ## Standalone CLI projects
 
-`source/wildlands/` and `source/scene-forge/` are independent Node/TypeScript
+`source/wildlands/`, `source/scene-forge/` and `source/character-studio/` are independent Node/TypeScript
 projects outside the Godot game; they do not read or write game saves,
-configuration or race/campaign state. Their CLIs, `bin/wildlands` and
-`bin/scene-forge`, are generated, checked-in bundles that need only Node.js 22+.
+configuration or race/campaign state. Their CLIs, `bin/wildlands`,
+`bin/scene-forge` and `bin/character-studio`, are generated, checked-in bundles that need only Node.js 22+.
 Read `bin/README.md` and the handbook (`docs/reference/wildlands-cli.md`,
-`docs/reference/scene-forge-cli.md`) before using one. Never hand-edit `bin/`:
+`docs/reference/scene-forge-cli.md`, `docs/reference/character-studio-cli.md`) before using one. Never hand-edit `bin/`:
 rebuild with `npm run build:cli` in the source project, verify with
 `npm run check:cli`, and commit the regenerated bundle with the source change.
 
@@ -173,7 +173,7 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 python3 scripts/check_architecture.py
 python3 scripts/check_docs.py
 python3 scripts/verify.py --godot /path/to/pinned/godot
-cd source/<wildlands|scene-forge> && npm ci && npm run check:cli  # after changing that project
+cd source/<wildlands|scene-forge|character-studio> && npm ci && npm run check:cli  # after changing that project
 ```
 
 `quality.py` runs pinned GDScript/Python lint, check-only formatting and complexity

@@ -1,10 +1,13 @@
+import type { EditOptions } from './project.js';
 /** Registers each Littlewild variant as a Scene Forge model through the guarded model import. */
-export declare function importLittlewildDefinition(project: string, file: string, options: {
+export declare function importLittlewildDefinition(project: string, file: string, options: EditOptions & {
     prefix?: string;
-    dryRun?: boolean;
     replace?: boolean;
 }): Promise<{
+    warnings?: string[] | undefined;
     source: string;
+    sourceFormat: unknown;
+    importedFacet: string;
     variants: string[];
     id: string;
     dryRun: boolean;
@@ -279,7 +282,10 @@ export declare function importLittlewildDefinition(project: string, file: string
     parameters?: undefined;
     stateHash?: undefined;
 } | {
+    warnings?: string[] | undefined;
     source: string;
+    sourceFormat: unknown;
+    importedFacet: string;
     variants: string[];
     id: string;
     path: string;

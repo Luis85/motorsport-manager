@@ -3803,6 +3803,13 @@ function registerDiscoveryCommands(c) {
       littlewild: {
         commands: ["littlewild sync", "littlewild export", "littlewild import"],
         manifest: "littlewild-export (schema --kind littlewild-export)",
+        importFormats: [
+          "littlewild-definition",
+          "littlewild-3d-asset",
+          "littlewild-creature-package"
+        ],
+        importScope: "Visual models only; creature gameplay and companion state stay in the source package",
+        importGuards: ["--expected-revision", "--expected-state"],
         families: Object.keys(littlewildFamilies),
         output: "<target>/<family>/<id>/definition.json visual facet; other facets are preserved",
         geometry: "boxes and unchanged lw-<primitive> geometries stay native; other meshes are baked",
@@ -4851,7 +4858,14 @@ function littlewildModels(asset, prefix) {
   for (const [variant, model] of Object.entries(asset.models)) {
     if (!plain2(model) || !Array.isArray(model.nodes))
       fail("LITTLEWILD_IMPORT", `Variant ${variant} has no nodes.`);
-    const id = `${base}${camel(`-${variant}`)}`.slice(0, 64), geometries = { box: { type: "box", size: [1, 1, 1] } }, usedMaterials = {}, nodes = [], ids = /* @__PURE__ */ new Set(), tags = /* @__PURE__ */ new Map();
+    const suffix = camel(`-${variant}`);
+    const id = `${base.slice(0, Math.max(1, 64 - suffix.length))}${suffix}`.slice(0, 64);
+    if (Object.hasOwn(models, id))
+      fail(
+        "LITTLEWILD_IMPORT",
+        `Variants collide at model ID ${id}. Choose distinct variant names or a shorter prefix.`
+      );
+    const geometries = { box: { type: "box", size: [1, 1, 1] } }, usedMaterials = {}, nodes = [], ids = /* @__PURE__ */ new Set(), tags = /* @__PURE__ */ new Map();
     for (const [role, refs] of Object.entries(plain2(rig[variant]) ? rig[variant] : {}))
       if (roles.has(role))
         for (const ref of Array.isArray(refs) ? refs : [refs])
@@ -4933,7 +4947,10 @@ function littlewildModels(asset, prefix) {
 async function importLittlewildDefinition(project, file, options) {
   const input = await readJson(file);
   const record = input && typeof input === "object" && !Array.isArray(input) ? input : {};
-  const visual = record.format === "littlewild-definition" ? record.visual : record;
+  const isPackage = record.format === "littlewild-creature-package";
+  if (isPackage && record.schemaVersion !== 1)
+    fail("LITTLEWILD_IMPORT", "Expected a version 1 littlewild-creature-package.");
+  const visual = isPackage ? record.appearanceManifest : record.format === "littlewild-definition" ? record.visual : record;
   if (!visual || typeof visual !== "object" || Array.isArray(visual))
     fail("LITTLEWILD_IMPORT", `${file} has no visual facet to import.`);
   const models = littlewildModels(visual, options.prefix);
@@ -4942,14 +4959,25 @@ async function importLittlewildDefinition(project, file, options) {
     project,
     { schemaVersion: 1, kind: "model-bundle", entry, models },
     options.replace,
-    { dryRun: options.dryRun }
+    options
   );
-  return { ...result, source: file, variants: Object.keys(models) };
+  return {
+    ...result,
+    source: file,
+    sourceFormat: record.format,
+    importedFacet: "visual",
+    variants: Object.keys(models),
+    ...isPackage ? {
+      warnings: [
+        "Only appearance models are imported. Gameplay, companion state, behavior mappings and rig bindings remain in the source creature package."
+      ]
+    } : {}
+  };
 }
 
 // src/commands/littlewild.ts
 function registerLittlewildCommands(c) {
-  const { program, snapshot, output, resolvePath, global } = c;
+  const { program, snapshot, output, resolvePath, global, editOptions: editOptions2 } = c;
   const group = program.command("littlewild").description("Exchange models with Littlewild engine definitions");
   group.command("sync").description("Export every asset in a littlewild-export manifest into Littlewild definitions").requiredOption("--file <path>", "littlewild.export.json manifest").option("--asset <id>", "Export only one asset from the manifest").option("--dry-run", "Compile and compare without writing").option("--check", "Fail when any definition is out of date; never writes").action(async (opts) => {
     const file = resolvePath(opts.file), manifest = parse(LittlewildExportSchema, await readJson(file)), target = path10.resolve(path10.dirname(file), manifest.target), s = await snapshot();
@@ -4993,12 +5021,17 @@ function registerLittlewildCommands(c) {
     });
     output(await writeLittlewildAsset(asset, s.models, out, { dryRun: opts.dryRun }));
   });
-  group.command("import").description("Import Littlewild definition variants as editable Scene Forge models").requiredOption("--definition <path>", "Littlewild definition.json or littlewild-3d-asset JSON").option("--prefix <id>", "Model ID prefix; defaults to the camel-cased asset ID").option("--dry-run", "Validate and report without writing").option("--replace", "Replace existing models with the same IDs").action(async (opts) => {
+  editOptions2(group.command("import")).description("Import Littlewild definition or creature package visuals as editable models").requiredOption(
+    "--definition <path>",
+    "Littlewild definition, creature package or 3D asset JSON"
+  ).option("--prefix <id>", "Model ID prefix; defaults to the camel-cased asset ID").option("--replace", "Replace existing models with the same IDs").action(async (opts) => {
     output(
       await importLittlewildDefinition(global().project, resolvePath(opts.definition), {
         prefix: opts.prefix,
         dryRun: opts.dryRun,
-        replace: opts.replace
+        replace: opts.replace,
+        expectedRevision: opts.expectedRevision,
+        expectedState: opts.expectedState
       })
     );
   });

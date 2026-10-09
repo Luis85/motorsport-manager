@@ -9,6 +9,10 @@ source-bound evidence. Littlewild is its default showcase; its
 uses a local Node subprocess for gameplay. Those capabilities and prerequisites
 are outside this native Motorsport Manager inventory.
 
+The standalone [Character Studio](character-studio-cli.md) adds a dedicated
+Littlewild companion editor and guarded agent CLI/API. It exports existing engine
+creature packages and Scene Forge visuals; it does not mutate live game saves.
+
 ## Shipping player experience
 
 - **Native Godot 4.7.2, local-first, standalone desktop application.** The player-facing race interface defaults to **Minimal**. Settings can instead select **Advanced**, starting either in Race Director or directly in Engineering.

@@ -65,8 +65,14 @@ export function littlewildModels(asset: Plain, prefix?: string) {
   for (const [variant, model] of Object.entries(asset.models)) {
     if (!plain(model) || !Array.isArray(model.nodes))
       fail('LITTLEWILD_IMPORT', `Variant ${variant} has no nodes.`);
-    const id = `${base}${camel(`-${variant}`)}`.slice(0, 64),
-      geometries: Plain = { box: { type: 'box', size: [1, 1, 1] } },
+    const suffix = camel(`-${variant}`);
+    const id = `${base.slice(0, Math.max(1, 64 - suffix.length))}${suffix}`.slice(0, 64);
+    if (Object.hasOwn(models, id))
+      fail(
+        'LITTLEWILD_IMPORT',
+        `Variants collide at model ID ${id}. Choose distinct variant names or a shorter prefix.`,
+      );
+    const geometries: Plain = { box: { type: 'box', size: [1, 1, 1] } },
       usedMaterials: Plain = {},
       nodes: Plain[] = [],
       ids = new Set<string>(),

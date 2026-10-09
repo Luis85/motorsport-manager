@@ -9,7 +9,7 @@ import type { CommandContext } from './context.js';
 
 /** Bridge to the Wildlands/Littlewild engine asset folders. */
 export function registerLittlewildCommands(c: CommandContext) {
-  const { program, snapshot, output, resolvePath, global } = c;
+  const { program, snapshot, output, resolvePath, global, editOptions } = c;
   const group = program
     .command('littlewild')
     .description('Exchange models with Littlewild engine definitions');
@@ -80,12 +80,13 @@ export function registerLittlewildCommands(c: CommandContext) {
       });
       output(await writeLittlewildAsset(asset, s.models, out, { dryRun: opts.dryRun }));
     });
-  group
-    .command('import')
-    .description('Import Littlewild definition variants as editable Scene Forge models')
-    .requiredOption('--definition <path>', 'Littlewild definition.json or littlewild-3d-asset JSON')
+  editOptions(group.command('import'))
+    .description('Import Littlewild definition or creature package visuals as editable models')
+    .requiredOption(
+      '--definition <path>',
+      'Littlewild definition, creature package or 3D asset JSON',
+    )
     .option('--prefix <id>', 'Model ID prefix; defaults to the camel-cased asset ID')
-    .option('--dry-run', 'Validate and report without writing')
     .option('--replace', 'Replace existing models with the same IDs')
     .action(async (opts) => {
       output(
@@ -93,6 +94,8 @@ export function registerLittlewildCommands(c: CommandContext) {
           prefix: opts.prefix,
           dryRun: opts.dryRun,
           replace: opts.replace,
+          expectedRevision: opts.expectedRevision,
+          expectedState: opts.expectedState,
         }),
       );
     });

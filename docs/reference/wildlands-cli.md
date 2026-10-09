@@ -62,6 +62,30 @@ The last command writes a complete Godot project: open it with
 `godot --path "$OUT/godot"`, or import `$OUT/godot/project.godot` in the Godot
 editor.
 
+## Character Studio interchange
+
+Character Studio exports version 1 `littlewild-creature-package` documents. They
+contain an archetype, its visual manifest and required asset references; they are
+not complete scenario packs or Wildlands projects. The Littlewild creature
+editor's **Import creature JSON** command validates a package through the engine,
+then **Review & apply** installs it in the captured scene. Export the full scenario
+to carry that edit into the standalone engine CLI:
+
+```sh
+bin/wildlands create --game docs/concepts/littlewild --pack edited.pack.json --output character-project.json
+bin/wildlands validate --project character-project.json
+```
+
+The engine's existing `LWCreatureEditor.validatePackage` and
+`LWCreatureEditor.create(...).importPackage(...)` APIs provide the same validated
+path for programmatic scenario preparation. Imports preserve detached draft
+history and run whole-scenario validation before accepting changes. A package
+with a selected companion also requires the matching scene and companion context;
+an archetype-only Character Studio export can be reused in other scenes. Discover
+[Character Studio](../../source/character-studio/README.md) for agent authoring
+commands, and [Scene Forge interchange](scene-forge-cli.md#littlewild--wildlands-exchange)
+for visual model import and export.
+
 ## Protocol
 
 Every invocation, including `--help`, prints exactly **one JSON object** to

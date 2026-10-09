@@ -543,7 +543,19 @@ covers rig roles, mesh budgets and manifests.
 |---|---|
 | `littlewild sync` | `--file <path>` (required `littlewild-export` manifest), `--asset <id>`, `--dry-run`, `--check` (fail with `LITTLEWILD_STALE`, never write) |
 | `littlewild export` | `--model <id>` and `--out <family>/<id>/definition.json` (required), `--family items\|buildings\|creatures\|pets`, `--variant <name>`, `--name <name>`, `--parameters <json>`, `--materials <json>`, `--dry-run` |
-| `littlewild import` | `--definition <path>` (required), `--prefix <id>`, `--dry-run`, `--replace` |
+| `littlewild import` | `--definition <path>` (required), `--prefix <id>`, `--dry-run`, `--replace`, `--expected-revision <n>`, `--expected-state <hash>` |
+
+`littlewild import` accepts a `littlewild-definition`, a raw `littlewild-3d-asset`,
+or a version 1 `littlewild-creature-package` exported by Character Studio. Package
+imports use `appearanceManifest` and report `importedFacet: "visual"`; gameplay,
+companion state, behavior mappings and actor rig bindings stay in the source
+package. Keep the source recipe for Character Studio; externally edited visuals
+continue in Scene Forge and are rejected by the Studio recipe importer to prevent
+loss of advanced edits. Export changed visuals into the existing Littlewild
+definition to retain its gameplay and actor rig. Read `inspect` for the revision
+and state hash, then pass both guards when
+replacing existing models to reject intervening edits. Dry runs validate the same
+model dependency closure without writing.
 
 A manifest's `target` is relative to the manifest file; `--file` and
 `--definition` are relative to the working directory. From the repository root,

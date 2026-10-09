@@ -11,6 +11,8 @@ a tool; each documents its JSON protocol, exit codes and limits.
 | `bin/wildlands` | The Wildlands engine without game content: validate, inspect and build game folders (`docs/concepts/<id>/`) into self-contained HTML; create, validate, inspect, play, edit and compile portable projects into Godot desktop projects | [Wildlands CLI](../docs/reference/wildlands-cli.md) | [`source/wildlands/`](../source/wildlands/README.md) | `cd source/wildlands && npm ci && npm run build:cli` | `cd source/wildlands && npm run check:cli` |
 | `bin/scene-forge` | Author, validate, export and review declarative 3D projects, models and scenes | [Scene Forge CLI](../docs/reference/scene-forge-cli.md) | [`source/scene-forge/`](../source/scene-forge/README.md) | `cd source/scene-forge && npm ci && npm run build:cli` | `cd source/scene-forge && npm run check:cli` |
 
+| `bin/character-studio` | Create and edit Littlewild companions through a local browser editor, JSON CLI and HTTP API | [Character Studio CLI](../docs/reference/character-studio-cli.md) | [`source/character-studio/`](../source/character-studio/README.md) | `cd source/character-studio && npm ci && npm run build:cli` | `cd source/character-studio && npm run check:cli` |
+
 ## Requirements
 
 - Node.js 22 or newer on `PATH`. Nothing else is needed for most commands: no
@@ -43,7 +45,7 @@ its commands; add `--compact` for smaller responses.
 
 ## Generated files: never edit by hand
 
-Both executables are generated bundles. Do not edit, format or patch them
+All executables are generated bundles. Do not edit, format or patch them
 directly. After any change under `source/wildlands/` or `source/scene-forge/`,
 rebuild the matching executable with its rebuild command and commit it together
 with the source change. Each project's `npm run check:cli` rebuilds the bundle
