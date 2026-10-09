@@ -465,6 +465,7 @@
     "source/verification/process-renderers-browser.ts",
     "source/verification/process-lenses-browser.ts",
     "source/verification/process-readability-browser.ts",
+    "source/verification/process-present-browser.ts",
     "source/verification/process-shots.ts",
     "source/test-support/scene-journeys.cts"
   ],
