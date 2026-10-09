@@ -126,9 +126,13 @@ export function run(args: readonly string[]): void {
    const reference = required('--against'), other = read(reference), admit = (value: unknown, name: string) => {
     const checked = catalog.validate(value, true); if (!checked.acceptable) throw Error(name + ': ' + checked.diagnostics.map(e => e.path + ': ' + e.message).join('\n')); return checked.definition!;
    };
-   const after = admit(input, file), before = admit(other, reference), changes = diff.compare(before, after), identity = (d: LWProcess.Definition, at: string) => ({file: at, id: d.id, revision: d.revision, fingerprint: catalog.fingerprint(d)});
-   success({input: identity(after, file), against: identity(before, reference), identical: catalog.fingerprint(after) === catalog.fingerprint(before), summary: diff.describe(changes, 'Changes'),
-    changes: {steps: changes.steps, flows: changes.flows, resources: changes.resources, arrivals: changes.arrivals, settings: changes.meta}, changedSteps: changes.changedSteps, changedSettings: diff.settings(before, after)}); return;
+   // Compare key-sorted copies, like the fingerprint, so key order is never reported as a change.
+   const canonical = (v: unknown): unknown => Array.isArray(v) ? v.map(canonical) : v !== null && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canonical((v as Record<string, unknown>)[k])])) : v;
+   const after = admit(input, file), before = admit(other, reference), a = canonical(before) as LWProcess.Definition, b = canonical(after) as LWProcess.Definition, changes = diff.compare(a, b), identity = (d: LWProcess.Definition, at: string) => ({file: at, id: d.id, revision: d.revision, fingerprint: catalog.fingerprint(d)});
+   const identical = catalog.fingerprint(after) === catalog.fingerprint(before), counted = changes.steps + changes.flows + changes.resources + changes.arrivals + changes.meta > 0, revisionChanged = after.revision !== before.revision;
+   const summary = counted ? diff.describe(changes, 'Changes') : revisionChanged ? `Changes: revision only (${before.revision} to ${after.revision})` : 'Changes: none';
+   success({input: identity(after, file), against: identity(before, reference), identical, revisionChanged, summary,
+    changes: {steps: changes.steps, flows: changes.flows, resources: changes.resources, arrivals: changes.arrivals, settings: changes.meta}, changedSteps: changes.changedSteps, changedSettings: diff.settings(a, b)}); return;
   }
   if (command === 'export-bpmn') {
    const target = required('--output'); if (!/\.(bpmn|xml)$/.test(target)) throw Error('BPMN output must end in .bpmn or .xml.');

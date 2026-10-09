@@ -43,7 +43,7 @@ declare namespace LWProcessPresent {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessPresent?: LWProcessPresent.Api; LWProcessSlides: LWProcessSlides.Api; LWProcessDialog: LWProcessDialog.Api};
+ const root = inputRoot as {LWProcessPresent?: LWProcessPresent.Api; LWProcessSlides: LWProcessSlides.Api; LWProcessSlidesText: LWProcessSlidesText.Api; LWProcessDialog: LWProcessDialog.Api};
  const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
  const FOCUSABLE = 'button:not([disabled]), [tabindex]:not([tabindex="-1"])';
  const shown = (n: HTMLElement | null): n is HTMLElement => !!n && n.isConnected && n.getClientRects().length > 0 && !(n as HTMLButtonElement).disabled;
@@ -134,17 +134,23 @@ declare namespace LWProcessPresent {
    opened = true; invoker = from; fallback = focusFallback; moving = true;
    let view: LWProcessApp.View;
    try { const entered = env.enter(); view = entered.view; paused = entered.paused; } catch (e) { opened = false; throw e; } finally { moving = false; }
-   const d = root.LWProcessSlides.build(view.definition, view.snapshot.minute > 0 ? view.snapshot : null); deck = d;
-   q('present-process').textContent = d.process.name; q('present-note').hidden = !paused;
-   q('present-run').hidden = !d.live; q('present-run').textContent = d.live ? `Live facts come from one simulated run at minute ${d.live.minute.toLocaleString()} (seed ${d.live.seed}).` : '';
-   q('present-map-hint').textContent = matchMedia('(pointer: coarse)').matches ? 'Drag to pan · Pinch or + − to zoom · Tap a step to show its slide' : 'Drag to pan · Scroll to zoom · Arrow keys pan while the map has focus · Select a step to show its slide';
-   renderContents(d); setContents(false, false);
-   home = {parent: env.map.parentNode!, next: env.map.nextSibling};
-   env.inertRoot.inert = true; document.documentElement.classList.add('pd-locked');
-   dlg.showModal(); dlg.scrollTop = 0; q('present-stage').append(env.map);
-   document.addEventListener('keydown', keydown);
-   const start = view.selected ? d.slides.findIndex(s => s.id === 'step-' + view.selected) : 0;
-   go(start < 0 ? 0 : start); (next.disabled ? prev : next).focus();
+   // Entering already paused the run and switched the view: any failure from here on is undone by close(), never left half open.
+   try {
+    const d = root.LWProcessSlides.build(view.definition, view.snapshot.minute > 0 ? view.snapshot : null); deck = d;
+    q('present-process').textContent = d.process.name; q('present-note').hidden = !paused;
+    q('present-run').hidden = !d.live; q('present-run').textContent = d.live ? `Live facts come from one simulated run at minute ${root.LWProcessSlidesText.number(d.live.minute)} (seed ${d.live.seed}).` : '';
+    // The studio's status region is inert behind the modal, so the dialog itself describes the pause and the live facts.
+    const described = [paused ? 'present-note' : '', d.live ? 'present-run' : ''].filter(Boolean).join(' ');
+    if (described) dlg.setAttribute('aria-describedby', described); else dlg.removeAttribute('aria-describedby');
+    q('present-map-hint').textContent = matchMedia('(pointer: coarse)').matches ? 'Drag to pan · Pinch or + − to zoom · Tap a step to show its slide' : 'Drag to pan · Scroll to zoom · Arrow keys pan while the map has focus · Select a step to show its slide';
+    renderContents(d); setContents(false, false);
+    home = {parent: env.map.parentNode!, next: env.map.nextSibling};
+    env.inertRoot.inert = true; document.documentElement.classList.add('pd-locked');
+    dlg.showModal(); dlg.scrollTop = 0; q('present-stage').append(env.map);
+    document.addEventListener('keydown', keydown);
+    const start = view.selected ? d.slides.findIndex(s => s.id === 'step-' + view.selected) : 0;
+    go(start < 0 ? 0 : start); (next.disabled ? prev : next).focus();
+   } catch (e) { close(); throw e; }
    return true;
   }
   /** Exits: the map returns to its exact place, the studio view is restored, focus returns to the invoker or the fallback. */

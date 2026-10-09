@@ -60,7 +60,6 @@
  #mode-present { display:none; }
  .present-head { padding:var(--s3) var(--s4); }
  .present-slide { padding:var(--s4) var(--s4) var(--s5); }
- .present .present-slide h2 { font-size:var(--t-xl); }
  .present-contents { padding:var(--s3) var(--s4) var(--s5); }
  .present-foot { padding:var(--s2) var(--s4); }
  .present .present-foot button { flex:1 1 0; min-width:0; }

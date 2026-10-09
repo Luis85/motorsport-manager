@@ -80,7 +80,7 @@ test('Slides explain a small fixture with a chance route, fork, deadline and tim
  const d = claims(); assert.equal(catalog.validate(d).ok, true, JSON.stringify(catalog.validate(d).diagnostics));
  const deck = slides.build(d), text = slides.markdown(deck), golden = fs.readFileSync(path.join(__dirname, 'fixtures/process-slides-small-claims.md'), 'utf8');
  assert.equal(text, golden); assert(text.endsWith('\n') && !text.endsWith('\n\n'));
- assert.equal(sha(JSON.stringify(deck)), '01c409f3702ec8c2c6cbc77e0ba26cd24cd35d8b0c544f10f0cf9801f3140e7b');
+ assert.equal(sha(JSON.stringify(deck)), '0942952b46f16aed254cb1b4ff5a9166df75e993f22722bf9ab5c6f7c06dd5aa');
  assert.deepEqual(deck.sections.map(s => [s.id, s.kind, s.title, s.first, s.count]), [['intro', 'intro', 'Introduction', 0, 3], ['phase-1', 'phase', 'Intake', 3, 3], ['phase-2', 'phase', 'Decide', 6, 2], ['phase-3', 'phase', 'Payout', 8, 6], ['variants', 'variants', 'Variants and other paths', 14, 3], ['summary', 'summary', 'Summary', 17, 1]]);
  assert.deepEqual(deck.slides.map(s => s.step), [null, null, null, 'start', 'start', 'check', 'decide', 'decide', 'split', 'split', 'pay', 'cooling', 'joined', 'end', null, 'supervisor', 'rejected', null]);
  assert.deepEqual(deck.slides.find(s => s.id === 'step-decide')!.blocks.at(-1), {heading: 'Where it goes next', items: ['20% of cases take this path → “Claim rejected” (“Not covered”)', 'Otherwise (no condition) → “Pay and wait”, main route']});

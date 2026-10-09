@@ -82,7 +82,7 @@
  function summary(d: LWProcess.Definition, terms: LWProcessTerms.Terms, path: Step[], phases: number, variants: number, snapshot: LWProcess.Snapshot | null): Slide {
   const text = root.LWProcessSlidesText, kinds = KINDS.map(k => [k, d.steps.filter(s => s.kind === k).length] as const).filter(([, n]) => n > 0);
   const random = d.arrivals.some(a => a.gap || a.draws?.length) || d.steps.some(s => s.timing || s.draws?.length || s.deadline?.timing) || d.flows.some(f => JSON.stringify(f.when ?? {}).includes('"chance"'));
-  const tries = [`Press Play and watch ${terms.many} move along the main route; pause and select a step to inspect it.`,
+  const tries = [`Choose Run simulation and watch ${terms.many} move along the main route; pause and select a step to inspect it.`,
    `Open the ${terms.lensLabel} view to see the same process as ${terms.lens === 'sipoc' ? 'suppliers, inputs, stages, outputs and customers' : 'phases, touchpoints, feelings and the funnel'}.`,
    ...d.resources.length ? ["Change a pool's capacity in Edit process and compare waiting time, cost and cycle time."] : [],
    ...d.steps.some(s => s.kind === 'decision') ? [`Change a decision's condition or chance and watch how many ${terms.many} take each route.`] : [],

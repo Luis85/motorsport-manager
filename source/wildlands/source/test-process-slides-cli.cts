@@ -96,10 +96,18 @@ test('CLI process diff reports changed steps, flows, resources, arrivals and set
  fs.writeFileSync(path.join(dir, 'b.json'), JSON.stringify(b));
  const report = call(['diff', '--input', 'b.json', '--against', 'a.json']);
  assert.deepEqual(report, {ok: true, protocolVersion: 1, input: {file: 'b.json', id: 'small-claims', revision: 7, fingerprint: catalog.fingerprint(b)}, against: {file: 'a.json', id: 'small-claims', revision: 1, fingerprint: catalog.fingerprint(a)},
-  identical: false, summary: 'Changes: 3 steps, 2 flows, 1 resource, 1 arrival rule, 3 process settings changed', changes: {steps: 3, flows: 2, resources: 1, arrivals: 1, settings: 3},
+  identical: false, revisionChanged: true, summary: 'Changes: 3 steps, 2 flows, 1 resource, 1 arrival rule, 3 process settings changed', changes: {steps: 3, flows: 2, resources: 1, arrivals: 1, settings: 3},
   changedSteps: [{id: 'check', name: 'Check the claim', change: 'changed'}, {id: 'pay', name: 'Pay the claim', change: 'changed'}, {id: 'supervisor', name: 'Supervisor review', change: 'removed'}], changedSettings: ['description', 'name', 'seed']});
  const same = call(['diff', '--input', 'a.json', '--against', 'a.json']);
- assert.deepEqual([same.identical, same.summary, same.changes, same.changedSteps, same.changedSettings], [true, 'Changes: formatting only', {steps: 0, flows: 0, resources: 0, arrivals: 0, settings: 0}, [], []]);
+ assert.deepEqual([same.identical, same.summary, same.changes, same.changedSteps, same.changedSettings], [true, 'Changes: none', {steps: 0, flows: 0, resources: 0, arrivals: 0, settings: 0}, [], []]);
+ // Key order is not a change (the fingerprint ignores it too); a revision-only bump is reported as such, never as "formatting only".
+ const reordered = copy(a), first = reordered.steps[1]!; reordered.steps[1] = Object.fromEntries(Object.entries(first).reverse()) as typeof first; reordered.revision = 2;
+ fs.writeFileSync(path.join(dir, 'c.json'), JSON.stringify(reordered));
+ const bumped = call(['diff', '--input', 'c.json', '--against', 'a.json']);
+ assert.deepEqual([bumped.identical, bumped.revisionChanged, bumped.summary, bumped.changes, bumped.changedSteps, bumped.changedSettings], [false, true, 'Changes: revision only (1 to 2)', {steps: 0, flows: 0, resources: 0, arrivals: 0, settings: 0}, [], []]);
+ reordered.revision = 1; fs.writeFileSync(path.join(dir, 'c.json'), JSON.stringify(reordered));
+ const sorted = call(['diff', '--input', 'c.json', '--against', 'a.json']);
+ assert.deepEqual([sorted.identical, sorted.revisionChanged, sorted.summary, sorted.changedSteps], [true, false, 'Changes: none', []]);
  const store = draftApi.create(); store.enter(0, a); store.write(JSON.stringify(b, null, 2), 'test');
  assert.deepEqual(store.diff(), diff.compare(a, b)); assert.equal(store.describeDiff(), 'Unapplied draft: 3 steps, 2 flows, 1 resource, 1 arrival rule, 3 process settings changed');
  assert.deepEqual(store.diff({ignoreStep: 'pay'}), {steps: 2, flows: 2, resources: 1, arrivals: 1, meta: 3, invalid: false, changedSteps: [{id: 'check', name: 'Check the claim', change: 'changed'}, {id: 'supervisor', name: 'Supervisor review', change: 'removed'}]});

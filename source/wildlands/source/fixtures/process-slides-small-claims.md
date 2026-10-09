@@ -336,7 +336,7 @@ _Small claims_
 
 **Try in the studio**
 
-- Press Play and watch cases move along the main route; pause and select a step to inspect it.
+- Choose Run simulation and watch cases move along the main route; pause and select a step to inspect it.
 - Open the SIPOC view to see the same process as suppliers, inputs, stages, outputs and customers.
 - Change a pool's capacity in Edit process and compare waiting time, cost and cycle time.
 - Change a decision's condition or chance and watch how many cases take each route.

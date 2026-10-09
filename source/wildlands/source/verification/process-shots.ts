@@ -66,6 +66,8 @@ function parseArgs(argv: string[]): Args {
  };
  if (!definitions.length) throw new UsageError(`--game ${game} lists no process definitions.`);
  const index = whole('--process', 1, definitions.length), minute = whole('--minute', 0, MAX_MINUTE);
+ // Game folders are data only: screenshots never land inside the game being captured.
+ if (out === game || out.startsWith(game + path.sep)) throw new UsageError(`--out ${out} is inside the game folder; choose a directory outside ${game}.`);
  if (fs.existsSync(out) && !fs.statSync(out).isDirectory()) throw new UsageError(`--out ${out} exists and is not a directory.`);
  if (!fs.existsSync(path.dirname(out))) throw new UsageError(`--out parent directory ${path.dirname(out)} does not exist.`);
  const cli = seen.has('--cli') ? path.resolve(base, seen.get('--cli')!) : fs.existsSync(BUILT_CLI) ? BUILT_CLI : BIN_CLI;
