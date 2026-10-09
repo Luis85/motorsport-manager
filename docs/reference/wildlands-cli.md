@@ -717,7 +717,7 @@ payloads.
 | `validate` | `--input` | yes | Definition JSON. |
 | | `--draft` | no | Accept graph diagnostics (reported, `runnable: false`). |
 | `inspect` | `--input` | yes | Definition JSON; never advances time. |
-| `edit` | `--input`, `--recipe` | yes | Definition and guarded recipe. Operations: `putStep`, `putFlow`, `putResource`, `removeStep`, `removeFlow`, `removeResource`, `setArrivals`, `setStart`, `rename`, and the process settings `setDescription`, `setSeed`, `setSipoc`, `setTrack` (`null` removes the field) and `setGenre` (`process` removes it). |
+| `edit` | `--input`, `--recipe` | yes | Definition and guarded recipe. Operations: `putStep`, `putFlow`, `putResource`, `removeStep`, `removeFlow`, `removeResource`, `setArrivals`, `setStart`, `rename`, and the process settings `setDescription`, `setSeed`, `setSipoc`, `setTrack` (`null` removes the field) and `setGenre` (`process`, `customer-journey` or `user-journey`; `process` removes it and `null` is rejected). |
 | | `--output` | yes unless `--dry-run` | Edited definition. |
 | | `--dry-run` | no | Write nothing; conflicts with `--output`. |
 | | `--draft` | no | Allow intermediate graph diagnostics. |

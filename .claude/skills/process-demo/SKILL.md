@@ -11,8 +11,10 @@ first: `AGENTS.md` ("Standalone CLI projects", "Documentation housekeeping"),
 `docs/how-to/business-process-authoring.md`, `docs/reference/wildlands-cli.md#business-processes`,
 `docs/reference/business-process-engine.md` ("Presentation limits", "Verification suites").
 
-Run everything from the repository root with the checked-in `bin/wildlands` (Node 22+). Work in a
-scratch directory (`W=/tmp/pd`), never write a draft into the game folder until it validates.
+Run everything from the repository root with the checked-in `bin/wildlands` (Node 22+). When the
+branch changes engine or CLI source and `bin/` is not rebuilt yet, run the same commands with
+`node source/wildlands/.generated/tools/wildlands-cli.cjs` after `npm run build` in `source/wildlands`.
+Work in a scratch directory (`W=/tmp/pd`); never write a draft into the game folder until it validates.
 
 ## 1. Author with guarded edits
 
@@ -22,23 +24,31 @@ bin/wildlands process discover                      # commands, limits, editOper
 bin/wildlands process schema --kind recipe          # exact recipe shape
 bin/wildlands process create --id my-demo --name "My demo" --output $W/p0.json
 bin/wildlands process inspect --input $W/p0.json    # -> revision, fingerprint (copy both)
-bin/wildlands process edit --input $W/p0.json --recipe $W/r1.json --dry-run --draft
-bin/wildlands process edit --input $W/p0.json --recipe $W/r1.json --output $W/p1.json --draft
-bin/wildlands process validate --input $W/p1.json   # strict; --draft only for intermediate states
+bin/wildlands process edit --input $W/p0.json --recipe $W/r1.json --dry-run
+bin/wildlands process edit --input $W/p0.json --recipe $W/r1.json --output $W/p1.json
+bin/wildlands process validate --input $W/p1.json   # strict
+bin/wildlands process diff --input $W/p1.json --against $W/p0.json
+# add --draft to edit (and validate) only for intermediate states with graph diagnostics
 ```
 
-Recipe skeleton (one transaction: all operations apply and admit, or nothing is written):
+Recipe skeleton for the `create` starter (`start` -> `work` -> `end`, flows `start-work` and
+`work-end`): one transaction, so every operation applies and the result is admitted, or nothing
+is written. This one validates strictly (no `--draft` needed).
 
 ```json
 {"expectedRevision": 0, "expectedFingerprint": "<16 hex from inspect>",
  "operations": [
+  {"op": "removeFlow", "id": "start-work"}, {"op": "removeFlow", "id": "work-end"}, {"op": "removeStep", "id": "work"},
   {"op": "putResource", "value": {"id": "developers", "name": "Developers", "capacity": 3, "costPerMinute": 2}},
   {"op": "putStep", "value": {"id": "build", "name": "Build", "kind": "task", "duration": 60,
     "resources": {"developers": 1}, "phase": "Build",
     "scene": {"id": "scene-build", "position": [14, 0], "color": "#ffbb73"}}},
+  {"op": "putStep", "value": {"id": "end", "name": "Released", "kind": "end", "phase": "Build",
+    "scene": {"id": "scene-end", "position": [28, 0], "color": "#77b5a0"}}},
   {"op": "putFlow", "value": {"id": "start-build", "from": "start", "to": "build"}},
+  {"op": "putFlow", "value": {"id": "build-end", "from": "build", "to": "end"}},
   {"op": "setArrivals", "value": [{"at": 0, "count": 1, "interval": 0, "data": {}}]},
-  {"op": "setDescription", "value": "What the process shows, in plain language."},
+  {"op": "setDescription", "value": "What the process shows, in plain language. All values are synthetic."},
   {"op": "setSeed", "value": 7},
   {"op": "setSipoc", "value": {"suppliers": [{"name": "Stakeholders", "supplies": "Goals"}],
                                "customers": [{"name": "End users", "receives": "Releases"}]}}
@@ -47,11 +57,11 @@ Recipe skeleton (one transaction: all operations apply and admit, or nothing is 
 
 - `putStep`/`putFlow`/`putResource` replace whole objects; also `removeStep`, `removeFlow`,
   `removeResource` (`{"op": ..., "id": ...}`), `setArrivals`, `setStart`, `rename`.
-- Fields PR #42 had to write into the JSON by hand now have guarded operations, added in this same
-  change: `setDescription {value: string|null}`, `setSeed {value: int|null}`, `setGenre {value}`
-  (omit/`null` for a business process; `customer-journey` or `user-journey`), `setSipoc {value|null}`,
-  `setTrack {value|null}` (`null` removes the field). Confirm with `process discover` (`editOperations`).
-  Do not hand-edit the definition JSON.
+- Process settings PR #42 had to write into the JSON by hand now have guarded operations:
+  `setDescription {value: string|null}`, `setSeed {value: int|null}`, `setSipoc {value|null}`,
+  `setTrack {value|null}` (`null` removes the field) and `setGenre {value}` with `process`,
+  `customer-journey` or `user-journey` (`process` removes the field; `null` is rejected).
+  `process discover` lists all 14 in `editOperations`. Do not hand-edit the definition JSON.
 - Every edit: `inspect` for fresh guards, `--dry-run` first, then `--output` to a new file. On a stale
   guard, re-inspect and reconcile; never guess a revision. Keep the final file's revision small and
   explain it in the README provenance (PR #42 ended at revision 2).
@@ -120,12 +130,19 @@ bin/wildlands process validate-bpmn --input $W/p.bpsim.bpmn    # exit 0
 bin/wildlands process import-bpmn --input $W/p.bpmn --output $W/re1.json
 bin/wildlands process import-bpmn --input $W/p.bpsim.bpmn --output $W/re2.json
 bin/wildlands process inspect --input $W/re1.json   # fingerprint == the definition's (repeat for re2)
-bin/wildlands process slides --input $F --format md --minutes 2400 --seed 7 --output $W/slides.md
-bin/wildlands process diff --input $W/before.json --against $F   # review every edit
+bin/wildlands process diff --input $W/p1.json --against $W/p0.json   # changes from p0 to p1, per edit
+bin/wildlands process slides --input $F --format md --output $W/slides.md
+bin/wildlands process slides --input $F --format md --minutes 2400 --seed 7 --output $W/slides-live.md
 ```
 
-Read `slides.md` as a learner: every step/phase slide explains its teaching point, numbers match the
-README. (`process slides` and `process diff` are added in this same change; check `process discover`.)
+- `diff --input NEW --against OLD` reports what changed from OLD to NEW (`summary`, `changes`,
+  `changedSteps` with names, `changedSettings`, both revisions and fingerprints). Run it after every
+  guarded edit and before replacing a file in the game folder; nothing unintended may appear.
+- Read `slides.md` as a learner: intro (title, overview/SIPOC, resources), one section per phase in
+  main-route order, variants, summary. Every step has exactly one `step-<id>` slide; no step may read
+  "No description authored."; phases appear in the intended order (an unphased step joins the phase
+  before it); concept explainers match what the step really does. The live version (`--minutes`) must
+  agree with the README numbers for that seed and minute.
 
 Screenshots (Playwright Chromium; never `waitForTimeout`):
 
@@ -136,13 +153,20 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/opt/pw-browsers/chromium \
 ```
 
 `--process` is the 1-based position in `content.definitions`. The tool builds the game with
-`bin/wildlands build-game`, runs to the minute through **Run until**/speed 30/**Run**, and writes
-desktop 2D/3D/lens, desktop Present (first and a step slide), phone 390x844 studio and Present, and
-DejaVu Sans Present variants plus `shots.json`. Check `minuteReached`, `overflowing: []` (each file's
-`overflow.offenders`, and `overflow.dialog` for Present), `consoleErrors: []`, and open the PNGs:
-truncated names, clipped controls, empty lenses. Present captures report "Present mode not available
-in this build" until that studio mode exists. Exit 0 all available captures written, 1 a failure,
-2 bad arguments.
+`--cli FILE`, else `source/wildlands/.generated/tools/wildlands-cli.cjs` when present (run
+`npm run build` first so it matches the source), else `bin/wildlands`; `shots.json` names the one used
+(`cli`). It runs to the minute through **Run until**/speed 30/**Run** and writes `desktop-2d`,
+`desktop-3d`, `desktop-lens`, `desktop-present-first`/`-step`, `phone-present-first`/`-step`,
+`phone-studio` and the `-dejavu` variants of the four Present captures (`.png`) plus `shots.json`.
+Check `minuteReached`, `overflowing: []` (each file's `overflow.offenders`, and `overflow.dialog`
+for Present), `consoleErrors: []`, then open the PNGs: truncated names, clipped controls, empty lenses.
+Exit 0 all available captures written, 1 a failure, 2 bad arguments.
+
+Present mode review (in the PNGs, or by hand in the built HTML): the header reads "Slide n of N" and,
+past minute 0, names the run's minute and seed; the step slide shows that step framed on the map;
+slide text is not cut off and Previous/Next stay visible (on a phone the map follows the slide, below
+it); the DejaVu variants do not overflow; Contents lists every section; Exit returns to the previous
+view with the run still paused.
 
 ## 5. Rebuild and gate
 
@@ -159,14 +183,17 @@ cd ../.. && python3 scripts/check_docs.py && python3 -m unittest discover -s tes
 ```
 
 Never hand-edit `bin/` or `demos/`; commit regenerated files with the source change. A README-only
-change in the game folder needs no demo rebuild.
+change in the game folder needs no demo rebuild. Build and check the bundle from a clean `npm ci` in
+`source/wildlands`: a `node_modules` borrowed from another checkout can differ from the lockfile and
+make `check:cli` report a stale `bin/wildlands` even on an unchanged tree.
 
 ## 6. Handoff
 
 - Source identity: branch, base and head SHAs, `bin/wildlands` and demo engine identity if rebuilt.
 - Gates with results: `check:cli`, `check:demos`, `validate-game`, strict `tsc`, `architecture`,
   full `npm run verify` (suites/checks passed, `totalChecks`), `check_docs.py`, Python unittest,
-  `validate-bpmn` x2 and the re-import fingerprints.
+  `validate-bpmn` x2 and the re-import fingerprints, `process diff` of each edit, `process slides`
+  reviewed (slide count, sections).
 - Pinned numbers: fingerprint, seed, minute, status, cost, key counts, second-seed numbers.
 - Skipped or unavailable checks and why (a `--only` or `--no-browser` run is partial evidence).
 - Screenshots/`shots.json` path. Screenshots of a synthetic run are review material, not human

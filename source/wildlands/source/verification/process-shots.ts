@@ -1,15 +1,16 @@
 /**
  * Developer tool (`npm run process:shots`): screenshot one process of a Wildlands process game at a chosen minute.
  *
- *   npm run process:shots -- --game DIR --process N --minute M --out DIR
+ *   npm run process:shots -- --game DIR --process N --minute M --out DIR [--cli FILE]
  *
- * N is the 1-based index in the game's `content.definitions`. The game is built with the checked-in
- * `bin/wildlands build-game` into a temporary directory and opened in Playwright Chromium
- * (`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` when set). The tool acts only through the studio's own controls:
+ * N is the 1-based index in the game's `content.definitions`. The game is built with `build-game` of a Wildlands CLI
+ * into a temporary directory: `--cli FILE` when given, else this checkout's compiled `.generated/tools/wildlands-cli.cjs`
+ * (current after `npm run build`) when present, else the checked-in `bin/wildlands`; the summary names the one used.
+ * The page is opened in Playwright Chromium (`PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` when set). The tool acts only through the studio's own controls:
  * it selects the process, sets **Run until** to M, speed 30 and **Run simulation**, and waits on the public
  * `LWProcessStudio.query()` until the run stops (never a fixed sleep). It then captures desktop 2D, 3D and
- * lens, desktop Present (first slide and a step slide), the phone (390x844) studio and Present, and DejaVu Sans
- * variants of both Present views. Each capture records horizontal overflow and the widest offending elements;
+ * lens, desktop Present (first slide and a step slide `step-<id>`), the phone (390x844) studio and Present (first and a
+ * step slide), and DejaVu Sans variants of the Present views. Each capture records horizontal overflow and the widest offending elements;
  * console and page errors are collected. The JSON summary goes to stdout and OUT/shots.json.
  *
  * Exit codes: 0 every available capture was written, 1 a capture or the build failed, 2 invalid arguments.
@@ -24,32 +25,33 @@ import {chromium, type Browser, type Page} from 'playwright';
 import {openArtifact, waitForReady} from './browser-harness';
 
 const REPO = path.resolve(__dirname, '../../../..');
-const CLI = path.join(REPO, 'bin/wildlands');
+const BIN_CLI = path.join(REPO, 'bin/wildlands'), BUILT_CLI = path.resolve(__dirname, '../../.generated/tools/wildlands-cli.cjs');
+const USAGE = 'Usage: --game DIR --process N --minute M --out DIR [--cli FILE]';
 const DESKTOP = {width: 1440, height: 1060} as const, PHONE = {width: 390, height: 844} as const;
 const DEJAVU = '*{font-family:"DejaVu Sans",sans-serif !important}';
 const PRESENT_UNAVAILABLE = 'Present mode not available in this build';
 const MAX_MINUTE = 100000;
 
-interface Args {game: string; process: number; minute: number; out: string; definitions: string[]}
+interface Args {game: string; process: number; minute: number; out: string; cli: string; definitions: string[]}
 interface Offender {element: string; left: number; right: number; width: number}
 interface Overflow {scrollWidth: number; clientWidth: number; overflowing: boolean; offenders: Offender[]; dialog?: {scrollWidth: number; clientWidth: number; overflowing: boolean}}
 interface Shot {name: string; path: string | null; viewport: string; font: 'default' | 'DejaVu Sans'; available: boolean; overflow: Overflow | null; detail?: Record<string, unknown>; error?: string}
 interface Presenting {index: number; count: number; id: string}
-interface StudioView {active: number; playing: boolean; horizon: number | null; mode: string; snapshot: {minute: number; status: string}; definition: {id: string; name: string; start: string; steps: {id: string}[]}; presenting?: Presenting | null}
+interface StudioView {active: number; playing: boolean; horizon: number | null; mode: string; snapshot: {minute: number; status: string}; definition: {id: string; name: string; start: string; steps: {id: string}[]}; selected: string | null; presenting?: Presenting | null}
 
 class UsageError extends Error {}
 
 /** Parse and validate every argument before any build or browser work; relative paths resolve against the caller's directory. */
 function parseArgs(argv: string[]): Args {
- const known = new Set(['--game', '--process', '--minute', '--out']), seen = new Map<string, string>();
+ const required = ['--game', '--process', '--minute', '--out'], known = new Set([...required, '--cli']), seen = new Map<string, string>();
  for (let i = 0; i < argv.length; i += 2) {
   const flag = argv[i]!, value = argv[i + 1];
-  if (!known.has(flag)) throw new UsageError(`Unknown option ${flag}. Usage: --game DIR --process N --minute M --out DIR`);
+  if (!known.has(flag)) throw new UsageError(`Unknown option ${flag}. ${USAGE}`);
   if (seen.has(flag)) throw new UsageError(`Duplicate option ${flag}.`);
   if (value === undefined || value.startsWith('--')) throw new UsageError(`Option ${flag} needs a value.`);
   seen.set(flag, value);
  }
- for (const flag of known) if (!seen.has(flag)) throw new UsageError(`Missing option ${flag}. Usage: --game DIR --process N --minute M --out DIR`);
+ for (const flag of required) if (!seen.has(flag)) throw new UsageError(`Missing option ${flag}. ${USAGE}`);
  const base = process.env.INIT_CWD ?? process.cwd(), game = path.resolve(base, seen.get('--game')!), out = path.resolve(base, seen.get('--out')!);
  const manifestPath = path.join(game, 'game.json');
  if (!fs.existsSync(manifestPath)) throw new UsageError(`--game ${game} has no game.json.`);
@@ -66,7 +68,9 @@ function parseArgs(argv: string[]): Args {
  const index = whole('--process', 1, definitions.length), minute = whole('--minute', 0, MAX_MINUTE);
  if (fs.existsSync(out) && !fs.statSync(out).isDirectory()) throw new UsageError(`--out ${out} exists and is not a directory.`);
  if (!fs.existsSync(path.dirname(out))) throw new UsageError(`--out parent directory ${path.dirname(out)} does not exist.`);
- return {game, process: index, minute, out, definitions};
+ const cli = seen.has('--cli') ? path.resolve(base, seen.get('--cli')!) : fs.existsSync(BUILT_CLI) ? BUILT_CLI : BIN_CLI;
+ if (!fs.existsSync(cli) || !fs.statSync(cli).isFile()) throw new UsageError(`--cli ${cli} is not a file.`);
+ return {game, process: index, minute, out, cli, definitions};
 }
 
 async function launch(): Promise<{browser: Browser; identity: Record<string, string>}> {
@@ -157,8 +161,10 @@ function runShots(out: string, page: Page, errors: {at: string; kind: string; te
  };
  const presentingOf = async () => (await query(page)).presenting ?? null;
  const slideDetail = async () => ({presenting: await presentingOf(), countText: (await page.locator('#present-count').innerText()).trim()});
+ /** Clears the selection first (Present opens on the selected step's slide), then enters through the desktop button or the phone menu. */
  const enterPresent = async (phone: boolean) => {
   if (!(await page.locator(phone ? '#present-item' : '#mode-present').count())) throw new Error(PRESENT_UNAVAILABLE);
+  await page.locator('#overview').click();
   if (phone) {await page.locator('#more-menu').click(); await page.locator('#export-popup').waitFor();}
   await page.locator(phone ? '#present-item' : '#mode-present').click();
   await page.locator('dialog#present[open]').waitFor();
@@ -169,35 +175,33 @@ function runShots(out: string, page: Page, errors: {at: string; kind: string; te
   if (!(await page.locator('dialog#present[open]').count())) return;
   await page.locator('#present-exit').click(); await page.locator('dialog#present[open]').waitFor({state: 'detached'});
  };
- /** Advance until the slide id names a step other than the start step (the slide model's id scheme is not assumed beyond ending in the step id). */
+ /** Advances with Next to the first step slide (`step-<id>`) of a step other than the start step. */
  const toStepSlide = async () => {
-  const d = (await query(page)).definition, steps = d.steps.map(s => s.id).filter(id => id !== d.start), isStep = (id: string) => steps.some(s => id === s || id.endsWith('-' + s) || id.endsWith(':' + s) || id.endsWith('/' + s));
-  for (let p = await presentingOf(); p && !isStep(p.id) && p.index < p.count - 1; p = await presentingOf()) {
+  const d = (await query(page)).definition, ids = new Set(d.steps.filter(s => s.id !== d.start).map(s => 'step-' + s.id));
+  for (let p = await presentingOf(); p && !ids.has(p.id) && p.index < p.count - 1; p = await presentingOf()) {
    const before = p.index; await page.locator('#present-next').click();
    await page.waitForFunction(i => ((globalThis as unknown as {LWProcessStudio: {query(): StudioView}}).LWProcessStudio.query().presenting?.index ?? i) !== i, before);
   }
-  const p = await presentingOf(); return {...await slideDetail(), stepSlide: !!p && isStep(p.id)};
+  const p = await presentingOf(); return {...await slideDetail(), stepSlide: !!p && ids.has(p.id), selected: (await query(page)).selected};
  };
- const presentPair = async (suffix: string, font: Shot['font']) => {
-  await page.setViewportSize(DESKTOP);
-  await capture('desktop-present-first' + suffix, font, () => enterPresent(false));
-  if (await page.locator('dialog#present[open]').count()) await capture('desktop-present-step' + suffix, font, toStepSlide);
-  else shots.push({name: 'desktop-present-step' + suffix, path: null, viewport: viewportName(), font, available: false, overflow: null, error: PRESENT_UNAVAILABLE});
-  await exitPresent();
-  await page.setViewportSize(PHONE);
-  await capture('phone-present' + suffix, font, () => enterPresent(true));
+ /** First slide and a step slide at one viewport; the step capture is recorded as unavailable when Present could not open. */
+ const presentPair = async (prefix: string, suffix: string, font: Shot['font'], phone: boolean) => {
+  await page.setViewportSize(phone ? PHONE : DESKTOP);
+  await capture(`${prefix}-present-first${suffix}`, font, () => enterPresent(phone));
+  if (await page.locator('dialog#present[open]').count()) await capture(`${prefix}-present-step${suffix}`, font, toStepSlide);
+  else shots.push({name: `${prefix}-present-step${suffix}`, path: null, viewport: viewportName(), font, available: false, overflow: null, error: PRESENT_UNAVAILABLE});
   await exitPresent(); await page.setViewportSize(DESKTOP);
  };
  return {shots, run: async () => {
   await capture('desktop-2d', 'default', () => mode('2d'));
   await capture('desktop-3d', 'default', () => mode('3d'));
   await capture('desktop-lens', 'default', () => mode('lens'));
-  await presentPair('', 'default');
+  await presentPair('desktop', '', 'default', false); await presentPair('phone', '', 'default', true);
   await page.setViewportSize(PHONE);
   await capture('phone-studio', 'default', async () => ({...await mode('2d'), note: 'viewport capture of the top of the phone page'}));
   await page.setViewportSize(DESKTOP); await mode('2d');
   at = 'dejavu'; await page.addStyleTag({content: DEJAVU});
-  await presentPair('-dejavu', 'DejaVu Sans');
+  await presentPair('desktop', '-dejavu', 'DejaVu Sans', false); await presentPair('phone', '-dejavu', 'DejaVu Sans', true);
  }};
 }
 
@@ -213,8 +217,9 @@ async function main(): Promise<number> {
  let browser: Browser | null = null;
  try {
   const html = path.join(temp, 'game.html');
-  const built = spawnSync(process.execPath, [CLI, 'build-game', '--game', args.game, '--output', html], {encoding: 'utf8', timeout: 300000});
-  if (built.status !== 0) throw new Error('bin/wildlands build-game failed: ' + (built.stderr || built.stdout).slice(0, 2000));
+  summary.cli = path.relative(REPO, args.cli) || args.cli;
+  const built = spawnSync(process.execPath, [args.cli, 'build-game', '--game', args.game, '--output', html], {encoding: 'utf8', timeout: 300000});
+  if (built.status !== 0) throw new Error(`${String(summary.cli)} build-game failed: ` + (built.stderr || built.stdout).slice(0, 2000));
   const launched = await launch(); browser = launched.browser; summary.execution = launched.identity;
   const context = await browser.newContext({viewport: {...DESKTOP}, reducedMotion: 'reduce'}), page = await context.newPage();
   page.setDefaultTimeout(15000);
