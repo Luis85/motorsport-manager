@@ -302,9 +302,10 @@
    const direct = get('edit-step');
    return !direct.hidden && direct.getClientRects().length ? direct : get('steps').querySelector<HTMLElement>(`[data-step="${id}"]`);
   },
-  openDefinition: () => root.LWProcessDefinitionEditor.handoff(root.LWProcessDialog.active(), () => {
-   definitionEditor.open({invoker: get('open-definition'), focus: 'problems'});
+  openDefinition: back => root.LWProcessDefinitionEditor.handoff(root.LWProcessDialog.active(), () => {
+   definitionEditor.open({invoker: get('open-definition'), focus: 'problems', back});
   }),
+  exportReport: () => get('report').click(),
  });
  on('edit-step', () => openStepEditor());
  /** The Definition editor is modal: it pauses the run (a command, never a tick) and edits only the draft; Apply goes through the step editor's path. */
@@ -316,6 +317,7 @@
    download(view.definition.id + '.draft.json', text, 'application/json'); status('Draft downloaded as written. Apply a valid draft to update the simulation.');
   },
   focusFor: () => get('open-definition'),
+  exportReport: () => get('report').click(),
  });
  const openDefinition = (button: HTMLElement) => {
   if (definitionEditor.open({invoker: button, focus: 'auto'})) bar.status('Editing the definition. The run is paused while the editor is open.', false, true);

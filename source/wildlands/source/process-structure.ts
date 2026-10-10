@@ -38,7 +38,7 @@ declare namespace LWProcessStructure {
   /** Display name; blank gives "New <kind>". */
   name: string;
   /** Place the step right of this step (and after it in draft order). Default: right of the rightmost step, at the end. */
-  after?: string;
+  after?: string | undefined;
   /** Insert into the single outgoing path of `after` (after → new → old target). Ignored when `insertable` says no. */
   insert?: boolean;
  }

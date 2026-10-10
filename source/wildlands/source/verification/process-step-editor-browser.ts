@@ -5,6 +5,7 @@ import path from 'node:path';
 import {nextFrames} from './browser-harness';
 import {query, OUT, runSuite} from './process-browser-fixture';
 import {autoLine} from './process-browser-models';
+import {structureChecks} from './process-step-editor-structure-checks';
 runSuite('process step editor browser harness', 'process-step-editor-browser-results.json', async studio => {
  const {page, diagnostics, check, checkLifecycle, freshStudio, openDef, closeDef, restoreDef, applyDef, showIo, draftText, defOf, dialogOpen, activeId, importRandom, openRandom, savedStep, importClaims} = studio;
  const dlgText = () => page.locator('dialog.pd-dialog[open]').innerText();
@@ -276,7 +277,10 @@ runSuite('process step editor browser harness', 'process-step-editor-browser-res
  await check('Step editor explains the planning duration next to random timing and rejects inconsistent distributions inline', async () => {
   await importRandom(); await openRandom('pack'); await page.locator('#se-timing-dist').selectOption('triangular');
   assert.equal(await page.locator('#se-timing-note').innerText(), 'Planning duration (12 min) stays the average shown in estimates; each visit draws its own time.');
-  await page.locator('#se-duration').fill('20'); assert.match(await page.locator('#se-timing-note').innerText(), /Planning duration \(20 min\) stays the average/); await page.locator('#se-duration').fill('12');
+  await page.locator('#se-duration').fill('20');
+  // Draws that average more than 5% away from the planning duration say so, as the inspector does (LWProcessRandomView.meanOf).
+  assert.equal(await page.locator('#se-timing-note').innerText(), 'Planning duration 20 min; draws average about 12 min.');
+  await page.locator('#se-duration').fill('12');
   await page.locator('#se-timing-min').fill('20'); await page.locator('#se-timing-mode').fill('10'); await page.locator('#se-timing-max').fill('5');
   assert.match(await page.locator('#se-err-timing').innerText(), /minimum ≤ most likely ≤ maximum/); assert.equal(await page.locator('#se-timing-mode').getAttribute('aria-invalid'), 'true');
   assert.equal(await page.locator('#se-save').isDisabled(), true); assert.equal(await page.locator('#se-apply').isDisabled(), true);
@@ -296,10 +300,10 @@ runSuite('process step editor browser harness', 'process-step-editor-browser-res
   await openRandom('start'); assert.equal(await page.locator('#se-h-random-timing').count(), 0); assert.equal(await page.locator('#se-h-random-outcomes').count(), 0); await page.locator('#se-close').click();
   // Engine diagnostics for timing and draws map to the editor fields as well.
   const mapped = await page.evaluate(() => {
-   const g = globalThis as unknown as {LWProcessCatalog: LWProcess.Catalog; LWProcessStepModel: LWProcessStepModel.Api};
+   const g = globalThis as unknown as {LWProcessCatalog: LWProcess.Catalog; LWProcessStepChecks: LWProcessStepChecks.Api};
    const def = {...JSON.parse(JSON.stringify((globalThis as unknown as {LWProcessStudio: {query(): {definition: LWProcess.Definition}}}).LWProcessStudio.query().definition))} as LWProcess.Definition;
    const pack = def.steps.find(s => s.id === 'pack')!; pack.timing = {dist: 'uniform', min: 9, max: 4}; pack.draws = [{field: 'packed', kind: 'chance', percent: 12}, {field: 'x', kind: 'int', min: 5, max: 1}];
-   return g.LWProcessStepModel.scope(def, 'pack', g.LWProcessCatalog.validate(def, true).diagnostics).map(i => i.key + '|' + i.message);
+   return g.LWProcessStepChecks.scope(def, 'pack', g.LWProcessCatalog.validate(def, true).diagnostics).map(i => i.key + '|' + i.message);
   });
   assert.ok(mapped.some(m => m.startsWith('timing|') && /min at most max/.test(m)), mapped.join('\n')); assert.ok(mapped.some(m => m.startsWith('draws.0.field|') && /one writer/.test(m))); assert.ok(mapped.some(m => m.startsWith('draws.1|') && /min at most max/.test(m)));
  });
@@ -417,5 +421,6 @@ runSuite('process step editor browser harness', 'process-step-editor-browser-res
   await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step');
   await openDef(); await restoreDef(); assert.equal(await draftText(), original); await closeDef();
  });
+ await structureChecks(studio);
  await checkLifecycle('Process step editor browser lifecycle emits no runtime errors or network requests');
 });
