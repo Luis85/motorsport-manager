@@ -8,8 +8,8 @@
  * numbered cards with their key and no horizontal overflow at 1366 x 768, and that Run to end over 10,000 minutes leaves the page
  * painting again promptly. Durations are measured in the page (`process-scale-probe.ts`); waits are explicit conditions.
  *
- * Bounds: each is about four times or more the largest duration measured on the shared 4-core review machine (load average 13
- * to 25 from other agents) in four runs, one of them beside three other browser suites, so a regression of the kind the review
+ * Bounds: each is about four times or more the largest duration measured on the shared 4-core review machine (load average 11
+ * to 25 from other agents) in six runs, two of them beside three other browser suites, so a regression of the kind the review
  * found (a synchronous rebuild per refresh, a leaked renderer, an unbounded deck, a frozen page) fails while load alone does not.
  * The measured range is in the comment beside each bound; every run prints its values in the console line
  * `process-scale-measurements`.
@@ -27,23 +27,23 @@ import {drawCalls, frameGaps, scaleInit, timeClick} from './process-scale-probe'
 const BOUND = {
  /** Navigation start to the ready signal of the 128-step game page: measured 1,089 to 2,448 ms. */
  load: 12000,
- /** The same with three more cores kept busy by workers in another tab: measured 7,953 to 11,780 ms. */
+ /** The same with three more cores kept busy by workers in another tab: measured 5,989 to 16,451 ms (the bound stays under the 60 s navigation budget). */
  loadBusy: 45000,
  /** Import of the 128-step JSON, file chosen to the Imported message: measured 117 to 4,934 ms. */
  import: 20000,
- /** Whole map drawn after choosing 2D: measured 92 to 1,043 ms. */
+ /** Whole map drawn after choosing 2D: measured 68 to 1,043 ms. */
  draw2d: 5000,
- /** Map refreshed after one Advance (30 minutes of work, keyed patch): measured 529 to 1,472 ms. */
+ /** Map refreshed after one Advance (30 minutes of work, keyed patch): measured 302 to 1,472 ms. */
  refresh2d: 6000,
- /** Every Dashboard section rendered after choosing Dashboard: measured 582 to 1,460 ms. */
+ /** Every Dashboard section rendered after choosing Dashboard: measured 67 to 1,460 ms. */
  dashboard: 8000,
  /** Present opened on its first slide: measured 256 to 1,230 ms. */
  present: 8000,
- /** Mean time to show the next slide while paging through the whole deck: measured 222 to 391 ms. */
+ /** Mean time to show the next slide while paging through the whole deck: measured 217 to 391 ms. */
  page: 2000,
- /** The longest gap between the five frames after Run to end: measured 333 to 600 ms (one long frame after the first). */
+ /** The longest gap between the five frames after Run to end: measured 333 to 600 ms (one long frame among them). */
  frame: 2500,
- /** Run to end over 10,000 minutes, the click to the first frame after it: measured 2,257 to 3,012 ms. */
+ /** Run to end over 10,000 minutes, the click to the first frame after it: measured 2,257 to 3,138 ms. */
  run: 20000,
 } as const;
 
