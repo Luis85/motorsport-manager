@@ -8,12 +8,14 @@ on:
       - '.github/workflows/model-forge.yml'
       # Inputs the Model Forge tests read outside their project: Scene Forge's executable,
       # examples and lock files (byte parity and lock parity), the Wildlands surface
-      # generator (kernel parity) and the Littlewild concept corpus (lossless round trips).
+      # generator and keyed random source (kernel parity) and the Littlewild concept corpus
+      # (lossless round trips).
       - 'bin/scene-forge'
       - 'source/scene-forge/package.json'
       - 'source/scene-forge/package-lock.json'
       - 'source/scene-forge/examples/**'
       - 'source/wildlands/source/asset-surface.ts'
+      - 'source/wildlands/source/process-random.ts'
       - 'docs/concepts/**'
   workflow_dispatch:
 permissions:
