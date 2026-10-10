@@ -1,6 +1,6 @@
 # Agency delivery lab
 
-This game holds six synthetic processes (`content.definitions`), switchable in
+This game holds seven synthetic processes (`content.definitions`), switchable in
 the studio with the **Process** selector: the agency pipeline below, first and
 initially active; `content/agile-vendor.process.json`, a vendor running an agile
 project (an absolute contractual kickoff-date timer, then a release loop built from
@@ -32,10 +32,11 @@ end in goal and lost outcomes, so the snapshot reports conversion. Both journeys
 are scenario models with invented numbers, not research data, measured conversion
 or a forecast, and neither has scene assets. The sixth,
 `content/loan-application.process.json`, is a loan application converted from BPMN 2.0
-(see below). None of them models a real company, warehouse, bank or
-vendor; all values are authored, illustrative and synthetic, and the automated steps
+(see below), and the seventh, `content/delivery-release.process.json`, is a product
+team's weekly delivery cadence and release train (see below). None of them models a
+real company, warehouse, bank, vendor or team; all values are authored, illustrative and synthetic, and the automated steps
 are simulated assumptions, not integrations. Switching restarts the chosen process
-paused at minute 0; Download HTML keeps all six with your edits.
+paused at minute 0; Download HTML keeps all seven with your edits.
 
 ## Loan application converted from BPMN
 
@@ -51,6 +52,22 @@ drawing a whole amount and customer years, so the run completes by itself shortl
 (at minute 984 with the definition seed 7: 32 applications, 31 paid out, 1 rejected,
 1 SLA escalation, simulated cost 2414). Step descriptions name the BPMN construct and
 BPSim value behind each step.
+
+The SIPOC **Process** column and the journey map follow the definition's main route: from
+the start, the first flow without a condition at each step (never a deadline flow). For
+this loan that route runs through high risk, **Manual review** and **Send rejection
+letter** to **Application rejected**, although 31 of the 32 seed-7 applications are paid
+out. This is deliberate. The BPMN gateways name no default flow, so the import makes the
+last flow of each gateway the unconditional fallback (high risk, rejected) and chains the
+others as chances; the main route is that chain of defaults, not the most frequent path.
+The defaults are kept as imported because a swap cannot keep the run: every chance route
+draws a random number keyed by its own flow id, so making approval the default (rejected
+as a 30% chance) gives the same shares but other cases (seed 7: 30 paid out and 2
+rejected), and making low risk the default as well needs other whole-percent chances
+(medium 30%, then 36% of the rest high) and changes the run (seed 7: 7 manual reviews, 3
+SLA escalations, simulated cost 3229). It would also stop the definition matching a
+default import of the example file. Read the paid-out path from the end steps and their
+counts in the **Outputs** column, and the branch shares from the step counts.
 
 Provenance: converted from
 [`source/wildlands/examples/bpmn/loan-application.bpmn`](../../../source/wildlands/examples/bpmn/README.md)
@@ -81,6 +98,70 @@ overlapped and placed the inlined fraud steps at the callee's separate diagram. 
 has a scene marker and, like every process here except the agency pipeline, no scene asset. All durations,
 probabilities, amounts, capacities and costs are the example file's synthetic assumptions,
 not a real bank, measured behaviour or a forecast.
+
+## Weekly delivery and release train
+
+`content/delivery-release.process.json` models how one product team delivers: a weekly
+cadence of backlog refinement, iteration planning, daily stand-ups, review and
+retrospective that feeds a release lifecycle shipping one small increment every week.
+One case is one product. It starts with an inception (vision, MVP scope, first backlog)
+and a Hello World walking skeleton released as **0.1.0**; then every weekly iteration is
+released as the next minor version **0.x.0** (the `increments` counter is the minor
+version) until the MVP scope is released, and the MVP launches as **1.0.0**. It shows:
+
+- **Shared staff and queues.** Six pools (product owner, delivery lead, three developers,
+  UX designer, two stakeholders, CI/CD runners) serve every ceremony and the build. Planning
+  commits 3 to 5 items and the build runs one developer per item, so a fourth or fifth item
+  waits in the queue.
+- **Multi-instance work, both modes.** **Implement the committed items** runs one item per
+  committed backlog item in parallel (`instances.field: plannedItems`); **Daily stand-up and
+  iteration day** runs four iteration days one after another, each opening with the
+  15-minute stand-up. A day occupies no pool, so the developers stay free for the build; its
+  fixed cost stands for the stand-up time. The iteration closes at a join when both are done.
+- **An escalating deadline.** An item still in progress after three working days (1,440
+  minutes) escalates to the daily stand-up: **Raise the impediment and swarm** runs on its
+  own route to **Impediment handled** while the item keeps being built.
+- **A decision with a random share.** After the weekly review, 30% of the feedback asks for
+  something new: **Add the feedback to the MVP backlog** adds one increment to the MVP scope
+  (`mvpIncrements`, drawn as 6 to 8 when the product arrives); the rest fits the plan.
+- **An inclusive gateway.** Before each weekly release, **Release checks needed?** adds a
+  UX acceptance when the increment changed the user interface (60%, drawn at planning), a
+  data-migration rehearsal when it changed stored data (25%), both, or neither (the default
+  path goes straight to the release candidate).
+- **Counters and a bounded loop.** Planning counts iterations; the release pipeline counts
+  increments; **MVP scope released?** starts the next week while `increments` is below
+  `mvpIncrements`.
+- **Software systems.** CI (build, test and merge) and both release pipelines are automated
+  `system` steps on the CI/CD pool; they execute nothing.
+- **BPSim arrivals and a SIPOC.** One product arrives at minute 0 (a BPSim `TriggerCount`
+  of 1 in the export) and draws its MVP scope; the SIPOC names stakeholders, the product
+  owner, users and support and the platform team as suppliers, and stakeholders, end users
+  and operations as customers. Steps carry six phases from **Inception (0.1.0)** to
+  **MVP 1.0.0**, which group the SIPOC view.
+
+Time is in business minutes with 480 per working day, so one iteration (refinement,
+planning, four iteration days, review, retrospective and release) takes about a working
+week. With the definition seed 7 the run completes at minute 19,007 (about eight working
+weeks): eight weekly iterations after 0.1.0, so 0.2.0 to 0.9.0 and then 1.0.0; feedback
+added one increment to the drawn scope of eight; 30 items built (one escalation), three UX
+acceptances and four migration rehearsals; simulated cost 119,928. Other seeds take from
+5 to 16 iterations.
+
+Provenance: written for this lab from a plain-language description of a team's delivery
+process (weekly refinement, planning, dailies, review and retro; continuous small releases
+from a 0.1.0 skeleton to a 1.0.0 MVP based on stakeholder feedback); it is not converted
+from BPMN and does not describe a specific company. It was authored with the guarded CLI:
+`process create`, then a revision- and fingerprint-guarded `process edit` (dry run first)
+with every pool, step, flow and the arrival, then `process validate` and `process run`. The
+description, `seed` 7 and the SIPOC were then added to the JSON directly, because the edit
+vocabulary has no operation for them (the studio's **Edit process…** writes the same
+fields). A second guarded edit (revision 1 to 2) dropped the counters' zero starting values
+from the arrival data, so the SIPOC lists only the drawn MVP scope as an input, and labelled
+that need on **MVP scope released?**; the run is unchanged. The result validates strictly. Each step has a scene marker and no scene asset. It
+exports to BPMN with and without BPSim; both exports pass `bin/wildlands process
+validate-bpmn` and re-import to the same fingerprint. All durations, costs, capacities and
+probabilities are synthetic illustrative assumptions, not measured team performance, a
+delivery plan or a forecast.
 
 The agency process is a synthetic agency process demonstrating step scenes, parallel product/technical design
 (business analysts and requirements engineers), a prioritised Ready to build backlog

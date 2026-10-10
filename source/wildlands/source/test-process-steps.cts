@@ -250,3 +250,32 @@ test('Loan application demo converted from BPMN completes with exact inclusive, 
  const other = (() => { const s = runtime.create(loan, {seed: 8}); try { return s.advance(1500); } finally { s.dispose(); } })();
  assert.deepEqual([other.seed, other.minute, other.metrics.arrived, other.metrics.completed, other.metrics.cost], [8, 1104, 34, 34, 3301]);
 });
+
+test('Weekly delivery and release train runs refinement, planning, dailies, review and retro from a 0.1.0 skeleton to the 1.0.0 MVP with exact evidence', () => {
+ const train = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../docs/concepts/agency-delivery/content/delivery-release.process.json'), 'utf8')) as LWProcess.Definition;
+ const admission = catalog.validate(train); assert.equal(admission.ok, true); assert.deepEqual(admission.diagnostics, []); assert.equal(catalog.fingerprint(train), 'bb5b3b08b28b3bb6');
+ assert.equal(train.id, 'delivery-release'); assert.equal(train.seed, 7); assert.equal(train.genre, undefined); assert(train.steps.every(s => s.scene && !s.scene.asset && typeof s.phase === 'string'), 'every step has a scene marker and a phase');
+ const at = (id: string) => train.steps.find(s => s.id === id)!;
+ assert.deepEqual(at('build').instances, {field: 'plannedItems', mode: 'parallel'}); assert.deepEqual(at('dailies').instances, {count: 4, mode: 'sequential'});
+ assert.deepEqual(at('build').deadline, {after: 1440, mode: 'escalate', flow: 'build-impediment'}); assert.equal(at('release-prep').mode, 'inclusive'); assert.equal(at('iteration').mode, undefined);
+ assert.deepEqual(train.flows.filter(f => f.from === 'feedback').map(f => [f.to, f.when ?? null]), [['reprioritise', {chance: 30}], ['retro', null]]);
+ assert.deepEqual(train.arrivals, [{at: 0, count: 1, interval: 0, data: {}, draws: [{field: 'mvpIncrements', kind: 'int', min: 6, max: 8}]}]);
+ const q = run(train, 20000), step = (id: string) => q.steps.find(s => s.id === id)!;
+ assert.deepEqual([q.seed, q.minute, q.status, q.metrics.arrived, q.metrics.completed, q.metrics.failed, q.metrics.cost, q.metrics.meanCycleMinutes], [7, 19007, 'completed', 1, 1, 0, 119928, 19007]);
+ assert.deepEqual(q.resources.map(r => [r.id, r.kind, r.busyMinutes]), [['product-owner', 'people', 3180], ['delivery-lead', 'people', 1860], ['developers', 'people', 33602], ['ux-designer', 'people', 1095], ['stakeholders', 'people', 1725], ['ci-pipeline', 'system', 372]]);
+ assert.equal(Math.round(q.resources.find(r => r.id === 'developers')!.utilization * 1000), 589);
+ // Eight weekly iterations after 0.1.0 release 0.2.0 to 0.9.0; one review asked for more, so the drawn MVP scope of 8 grew to 9 before 1.0.0.
+ assert.deepEqual(q.cases[0]!.input, {mvpIncrements: 8}); assert.deepEqual([q.cases[0]!.data.increments, q.cases[0]!.data.iteration, q.cases[0]!.data.mvpIncrements, q.cases[0]!.data.impediments], [9, 8, 9, 1]);
+ assert.deepEqual(['skeleton-release', 'refinement', 'planning', 'review', 'feedback', 'reprioritise', 'retro', 'release-pipeline', 'mvp-launch', 'mvp-live'].map(id => step(id).completed), [1, 8, 8, 8, 8, 1, 8, 8, 1, 1]);
+ // Parallel items queue for three developers; four sequential iteration days per week; one overdue item escalated to the impediment route.
+ assert.deepEqual([step('build').items, step('build').waitMinutes, step('dailies').items], [{started: 30, finished: 30}, 3986, {started: 32, finished: 32}]);
+ assert.deepEqual(step('build').deadlines, {interrupted: 0, escalated: 1}); assert.deepEqual(['impediment', 'impediment-handled'].map(id => step(id).completed), [1, 1]);
+ // Inclusive release gateway: 8 releases; 3 UX and 4 migration branches plus 3 default (empty) branches reach the join, which continues 8 times.
+ assert.deepEqual(['release-prep', 'ux-acceptance', 'migration-rehearsal', 'release-ready'].map(id => [step(id).visits, step(id).completed]), [[8, 8], [3, 3], [4, 4], [10, 8]]);
+ // Clock chunking: one advance equals 1, 7 and 60 minute chunks (and a mixed cycle); capacity is never exceeded.
+ const chunked = (chunks: number[]) => { const s = runtime.create(train); try { let r = s.query(); for (let done = 0, i = 0; done < 20000; i++) { const n = Math.min(chunks[i % chunks.length]!, 20000 - done); r = s.advance(n); done += n; for (const u of r.resources) assert(u.busy <= u.capacity, `${u.id} within capacity at ${r.minute}`); } return JSON.stringify(r); } finally { s.dispose(); } };
+ const reference = JSON.stringify(q); for (const chunks of [[20000], [1], [7], [60], [1, 7, 60]]) assert.equal(chunked(chunks), reference, `chunks ${chunks.join('/')}`);
+ assert.deepEqual(JSON.parse(JSON.stringify(run(copy(train), 20000))), q);
+ const other = (() => { const s = runtime.create(train, {seed: 8}); try { return s.advance(20000); } finally { s.dispose(); } })();
+ assert.deepEqual([other.seed, other.minute, other.status, other.metrics.completed, other.metrics.cost, other.cases[0]!.data.increments, other.cases[0]!.data.mvpIncrements], [8, 20000, 'running', 0, 136123, 8, 9]);
+});

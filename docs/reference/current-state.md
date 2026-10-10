@@ -117,11 +117,12 @@ conversion and tracked measures. The studio shows one detached run in 2D, Three.
 editor and offline HTML downloads; it has a dark theme only. Navigation, dialogs
 and lenses never tick the clock.
 
-The [agency delivery lab](../concepts/agency-delivery/README.md) holds six
+The [agency delivery lab](../concepts/agency-delivery/README.md) holds seven
 synthetic processes behind a **Process** switch (an agency pipeline, an agile
-vendor project, an order fulfilment line, a customer journey, a user journey and
-a loan application converted from BPMN 2.0/BPSim); all values are illustrative
-assumptions.
+vendor project, an order fulfilment line, a customer journey, a user journey,
+a loan application converted from BPMN 2.0/BPSim and a product team's weekly
+delivery cadence and release train from a 0.1.0 skeleton to a 1.0.0 MVP); all
+values are illustrative assumptions.
 
 BPMN 2.0 interchange covers a broad but explicit subset. Export writes BPMN with
 diagram layout and the exact Wildlands values in a namespaced extension, optionally

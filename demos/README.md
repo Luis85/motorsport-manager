@@ -5,14 +5,14 @@ engine CLI. Open a file in a current desktop browser; it runs offline from `file
 
 | Demo | Template | Version | Size | Budget | Game digest |
 |---|---|---|---|---|---|
-| [Agency delivery lab](agency-delivery.html) | process | 1.0.0 | 1.66 MiB | 4.00 MiB | `4dc0351c56ee` |
+| [Agency delivery lab](agency-delivery.html) | process | 1.0.0 | 1.67 MiB | 4.00 MiB | `922c610ab460` |
 | [Emberworks](emberworks.html) | colony | 1.0.0 | 3.06 MiB | 4.00 MiB | `fb4c21acc3c0` |
 | [Littlewild](littlewild.html) | colony | 1.0.0 | 3.06 MiB | 4.00 MiB | `927a583f16e3` |
 | [Office](office.html) | colony | 1.0.0 | 3.30 MiB | 4.00 MiB | `640b7f7804e4` |
 | [Pocket Pet](pocket-pet.html) | pet | 1.0.0 | 2.22 MiB | 3.00 MiB | `0e6c25f3df4e` |
 | [Wildlands RTS](rts-frontier.html) | rts | 1.0.0 | 0.16 MiB | 0.50 MiB | `63b0bfff27fc` |
 
-- **Agency delivery lab** (`agency-delivery`, [game folder](../docs/concepts/agency-delivery/README.md)): Explore six synthetic processes in 2D and 3D and switch between them: the in-house agency pipeline with shared resources, parallel design and rework, an agile vendor pipeline with CI/CD automation, an order fulfilment line with robots, software systems and a human spot-check, customer and user journeys through an online shop and an app onboarding, and a loan application converted from BPMN 2.0 and BPSim with an inclusive gateway, multi-instance work, a call activity and an SLA escalation.
+- **Agency delivery lab** (`agency-delivery`, [game folder](../docs/concepts/agency-delivery/README.md)): Explore seven synthetic processes in 2D and 3D and switch between them: an agency pipeline with shared resources and rework, an agile vendor pipeline with CI/CD, an order fulfilment line with robots and software systems, customer and user journeys through a web shop and an app onboarding, a loan application converted from BPMN 2.0 and BPSim, and a product team's weekly delivery cadence that releases an increment every week from a 0.1.0 skeleton to the 1.0.0 MVP.
 - **Emberworks** (`emberworks`, [game folder](../docs/concepts/emberworks/README.md)): A warm clay-and-copper workshop settlement. Same engine; a separately authored setting and starting scene.
 - **Littlewild** (`littlewild`, [game folder](../docs/concepts/littlewild/README.md)): A little life. A shared adventure. Littlewild is an offline, autonomous-buddy RPG prototype.
 - **Office** (`office`, [game folder](../docs/concepts/office/README.md)): An indoor sales, warehouse and fulfillment team. Phil wins customer deals, Angela packs and dispatches orders, and Marty keeps inbound materials moving.

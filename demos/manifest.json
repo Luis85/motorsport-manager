@@ -9,12 +9,12 @@
       "version": "1.0.0",
       "template": "process",
       "title": "Agency delivery lab",
-      "description": "Explore six synthetic processes in 2D and 3D and switch between them: the in-house agency pipeline with shared resources, parallel design and rework, an agile vendor pipeline with CI/CD automation, an order fulfilment line with robots, software systems and a human spot-check, customer and user journeys through an online shop and an app onboarding, and a loan application converted from BPMN 2.0 and BPSim with an inclusive gateway, multi-instance work, a call activity and an SLA escalation.",
+      "description": "Explore seven synthetic processes in 2D and 3D and switch between them: an agency pipeline with shared resources and rework, an agile vendor pipeline with CI/CD, an order fulfilment line with robots and software systems, customer and user journeys through a web shop and an app onboarding, a loan application converted from BPMN 2.0 and BPSim, and a product team's weekly delivery cadence that releases an increment every week from a 0.1.0 skeleton to the 1.0.0 MVP.",
       "output": "demos/agency-delivery.html",
-      "bytes": 1736099,
-      "sha256": "97aae5b4ea960aabc3b782026c255bbe7c091088e545a4efd5ea4360b501824a",
+      "bytes": 1753563,
+      "sha256": "c8042a7f9031183bcf476c05dc109ec7a2a3e59f9feab745da9152a072a6e549",
       "budgetBytes": 4194304,
-      "gameDigest": "4dc0351c56eea9783b6e7d7ac912df26d1f363cba130815752514f599357c361",
+      "gameDigest": "922c610ab46042a2576d5360002b67d516a413490189b8631e8ceb4b6419da80",
       "engine": "aac45930ea72dda2c8eb3ea20278c6d4704369f936c77480427dcbc4b608ce13"
     },
     {
