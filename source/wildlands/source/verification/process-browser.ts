@@ -1,5 +1,8 @@
 /// <reference path="../process-contracts.d.ts" />
-/** Process Studio shell: start, 2D/3D navigation, time controls, imports, exports, downloads and the process switch. */
+/**
+ * Process Studio shell: start, 2D/3D navigation, time controls, imports, exports, downloads and the process switch. Run to end, adding
+ * processes, export notes, the studio copy and draft recovery are checked by the process-shell-browser suite.
+ */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -216,7 +219,9 @@ runSuite('process browser harness', 'process-browser-results.json', async studio
   assert.equal(await page.locator('#ask-title').innerText(), `Replace ${definition.name}?`);
   assert.equal(await page.locator('#ask-confirm-title').innerText(), `Importing export.json replaces ${definition.name} and discards minute 30`
    + ' of the current run'
-   + ' and the unapplied draft (1 step changed). Export the run report or the draft first if you need them.');
+   + ' and the unapplied draft (1 step changed). Export the run report or the draft first if you need them.'
+   + ` Add as a new process keeps ${definition.name} and its run.`);
+  assert.deepEqual(await page.locator('dialog.ask-dialog [data-pd-choice]').allInnerTexts(), ['Cancel', 'Add as a new process', 'Import and replace']);
   await page.keyboard.press('Escape'); await ask.waitFor({state: 'hidden'}); assert.equal(await activeId(), 'import');
   assert.deepEqual(await query(page), running);
   assert.match(await page.locator('#draft-chip').innerText(), /^Unapplied draft/); assert.match(await message(), /^Import of export\.json cancelled/);
@@ -241,7 +246,8 @@ runSuite('process browser harness', 'process-browser-results.json', async studio
   assert.equal(await page.locator('img').count(), 0); const pending = page.waitForEvent('download'); await exportVia('#html'); const download = await pending, escaped = path.join(dir, 'escaped.html'); await download.saveAs(escaped);
   const other = await context.newPage(); await openArtifact(other, escaped, {url: fixtureUrls[2]!}); await waitForReady(other, {host: 'process'}); assert.equal((await query(other)).definition.name, d.name); await other.close();
  });
- await check('Process switch lists each process of a multi-process game, switches without ticking and stays hidden for one process', async () => {
+ await check('Process switch lists each process of a multi-process game, keeps each paused run without asking or ticking and stays hidden for one process',
+  async () => {
   await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
   const first = await query(page); assert.equal(first.active, 0); assert.equal(first.processes.length, COUNT);
   assert.equal(await page.locator('#process-switch-label').isVisible(), true); assert.match(await page.locator('#process-switch-label').innerText(), /^Process/);
@@ -252,18 +258,11 @@ runSuite('process browser harness', 'process-browser-results.json', async studio
   assert.equal(await page.locator('#process-title').innerText(), first.definition.name); assert.equal(await page.locator('[data-step]').count(), first.definition.steps.length);
   await page.locator('#mode-2d').click(); await page.locator('#horizon').selectOption('1440'); await page.locator('#advance').click(); await page.locator('[data-step="discovery"]').click();
   assert.equal((await query(page)).snapshot.minute, 30);
-  await page.locator('#play').click(); await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {snapshot: {minute: number}}}}).LWProcessStudio.query().snapshot.minute > 30);
-  // Past minute 0 the switch asks first, starting on Cancel; Cancel restores the list and focus and leaves the run playing.
-  await page.locator('#process-switch').focus(); await page.keyboard.press('ArrowDown'); await ask.waitFor(); assert.equal(await activeId(), 'ask-cancel');
-  const switching = `^Switching to ${literal(first.processes[1]!.name)} discards minute [\\d,]+ of the ${literal(first.definition.name)} run`;
-  const question = await page.locator('#ask-confirm-title').innerText();
-  assert.match(question, new RegExp(switching + ' \\(\\d+ cases?\\)\\. Export the run report first if you need it\\.$'));
-  await page.keyboard.press('Escape'); await ask.waitFor({state: 'hidden'});
-  const stayed = [(await query(page)).active, await page.locator('#process-switch').inputValue(), await activeId(), (await query(page)).playing];
-  assert.deepEqual(stayed, [0, '0', 'process-switch', true]);
-  assert.equal(await message(), `Stayed on ${first.definition.name}. The run is unchanged.`);
-  await page.keyboard.press('ArrowDown'); await ask.waitFor(); await page.locator('#ask-go').click();
+  await page.locator('#play').click(); await page.waitForFunction(() => (globalThis as any).LWProcessStudio.query().snapshot.minute > 30);
+  // Switching away from a playing run asks nothing: the run left behind pauses where it is, and the selector keeps focus.
+  await page.locator('#process-switch').focus(); await page.keyboard.press('ArrowDown');
   await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === 1);
+  assert.equal(await ask.count(), 0, 'nothing is discarded, so nothing is asked');
   const second = await query(page); await nextFrames(page);
   assert.equal(second.processes[1]!.name, second.definition.name); assert.notEqual(second.definition.id, first.definition.id);
   assert.equal(second.snapshot.minute, 0); assert.equal(second.playing, false); assert.equal(second.selected, null); assert.equal(second.mode, '2d'); assert.equal(second.horizon, 1440);
@@ -271,10 +270,23 @@ runSuite('process browser harness', 'process-browser-results.json', async studio
   assert.equal(await page.locator('#process-title').innerText(), second.definition.name); assert.equal(await page.locator('[data-step]').count(), second.definition.steps.length);
   assert.notEqual(second.definition.steps.length, first.definition.steps.length);
   assert.equal(await page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {definition(): {id: string}}}).LWProcessStudio.definition().id), second.definition.id);
-  assert.equal(await page.evaluate(() => document.activeElement?.id), 'process-switch');
-  assert.equal(await page.locator('#message').innerText(), `Switched to ${second.definition.name}. Paused at minute 0.`);
+  assert.deepEqual([await activeId(), await page.locator('#process-switch').inputValue()], ['process-switch', '1']);
+  assert.equal(await page.locator('#message').innerText(), `Switched to ${second.definition.name}. Its run is at minute 0.`);
   assert.equal(await page.locator('#map svg').count(), 1); assert.match(await page.locator('#process-subtitle').innerText(), new RegExp(`Process 2 of ${COUNT}$`));
   await showIo(); assert.match(await page.locator('#process-data').innerText(), /Process inputs/);
+  // Switching back restores the paused run exactly: the same snapshot, selection and run length; nothing moved while it was away.
+  await page.locator('#advance').click(); const away = (await query(page)).snapshot;
+  await page.locator('#process-switch').focus(); await page.keyboard.press('ArrowUp');
+  await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === 0);
+  const back = await query(page), left = back.snapshot.minute; await nextFrames(page, 10);
+  assert(left > 30, 'the first run kept the minutes it played'); assert.deepEqual([back.playing, back.selected, back.horizon], [false, 'discovery', 1440]);
+  assert.equal((await query(page)).snapshot.minute, left, 'a kept run never moves by itself');
+  assert.equal(await message(), `Switched to ${first.definition.name}. Its run is at minute ${left.toLocaleString()} (paused).`);
+  assert.deepEqual([await activeId(), await page.locator('#process-switch').inputValue()], ['process-switch', '0']);
+  await page.locator('#process-switch').selectOption('1'); await page.waitForFunction(() => (globalThis as any).LWProcessStudio.query().active === 1);
+  assert.deepEqual((await query(page)).snapshot, away, 'the second run is restored exactly too');
+  await page.locator('#process-switch').selectOption('0'); await page.waitForFunction(() => (globalThis as any).LWProcessStudio.query().active === 0);
+  assert.deepEqual((await query(page)).snapshot, back.snapshot);
   // A one-process game has no switch.
   const single = path.join(dir, 'single', 'agency-delivery'), singleHtml = path.join(dir, 'single.html'), source = gameDir;
   fs.cpSync(source, single, {recursive: true}); for (const extra of gameDefinitions.slice(1)) fs.rmSync(path.join(single, extra));
@@ -321,10 +333,12 @@ runSuite('process browser harness', 'process-browser-results.json', async studio
   assert.equal(await seedBox.inputValue(), String(await seedOf()));
   await page.locator('#advance').click(); assert.equal((await query(page)).snapshot.minute, 30);
   await seedBox.fill('7'); await seedBox.press('Enter'); await wait(7); const fresh = await query(page);
-  assert.deepEqual([fresh.snapshot.minute, fresh.playing, fresh.snapshot.seed], [0, false, 7]); assert.equal(await page.locator('#message').innerText(), 'Seed 7 · fresh paused run'); assert.equal(await page.locator('#metrics .metric-seed').innerText(), 'Seed 7');
+  assert.deepEqual([fresh.snapshot.minute, fresh.playing, fresh.snapshot.seed], [0, false, 7]);
+  assert.equal(await page.locator('#message').innerText(), 'Seed 7 · fresh paused run');
+  assert.equal(await page.locator('#metrics .metric-seed').count(), 0, 'the seed is shown in the Seed field, not again under the metrics');
   assert.equal(fresh.definition.seed === 7, false, 'the definition keeps its own seed'); assert.match(await page.locator('#inspector').innerText(), /Seed\s*7 · set for this run/);
   await page.locator('#advance').click(); await page.locator('#reset').click(); assert.equal(await seedOf(), 7, 'reset keeps the chosen seed'); assert.equal(await seedBox.inputValue(), '7');
-  // A new revision of the same process keeps the run seed and the selected step, and says so; switching away names the seed left behind.
+  // A new revision of the same process keeps the run seed and the selected step, and says so; a run seed stays with its process.
   await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-duration').fill('13');
   await page.locator('#se-apply').click();
   await page.waitForFunction(() => document.getElementById('message')!.textContent!.startsWith('Definition applied'));
@@ -332,9 +346,9 @@ runSuite('process browser harness', 'process-browser-results.json', async studio
   assert.deepEqual([kept.snapshot.seed, kept.selected, kept.definition.steps.find(s => s.id === 'discovery')!.duration], [7, 'discovery', 13]);
   assert.equal(await message(), 'Definition applied. New run is paused. Run seed 7 kept.');
   await switchTo(1);
-  const left = `Run seed 7 applied only to ${literal(kept.definition.name)}; this process uses its own seed \\d+\\.$`;
-  assert.match(await message(), new RegExp(`^Switched to .+\\. Paused at minute 0\\. ${left}`));
-  await switchTo(0); assert.equal(await seedOf(), kept.definition.seed ?? 1);
+  const left = `Run seed 7 stays with ${literal(kept.definition.name)}; this run uses seed \\d+\\.$`;
+  assert.match(await message(), new RegExp(`^Switched to .+\\. Its run is at minute 0\\. ${left}`));
+  await switchTo(0); assert.equal(await seedOf(), 7, 'switching back restores the run with its seed'); assert.equal(await seedBox.inputValue(), '7');
   // A running simulation stops; invalid seeds are refused and the field returns to the seed in use.
   await page.locator('#play').click(); await page.waitForFunction(() => (globalThis as any).LWProcessStudio.query().snapshot.minute > 0); await seedBox.fill('9'); await seedBox.press('Enter'); await wait(9); assert.deepEqual([(await query(page)).playing, (await query(page)).snapshot.minute], [false, 0]);
   for (const bad of ['-3', '1.5', '2147483648']) { await seedBox.fill(bad); await seedBox.press('Enter'); await page.waitForFunction(v => (document.getElementById('seed') as HTMLInputElement).value === v, '9'); assert.match(await page.locator('#message').innerText(), /Seed must be a whole number from 0 to 2,147,483,647/); assert.equal(await seedOf(), 9); }

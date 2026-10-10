@@ -8,6 +8,11 @@
  * studio state establishes it (fresh load, import, process switch, open dialog). After every check the page is
  * returned to the suite's desktop viewport with motion allowed, so a failed check cannot change the geometry
  * that later checks start from.
+ *
+ * Every page load starts with empty browser storage: the studio keeps a recovery copy of an unapplied draft in
+ * `localStorage` (LWProcessRecovery), and a copy left by an earlier check would otherwise be offered in a modal
+ * question on the next fresh load. A check that tests recovery across a reload opts in for its tab by setting
+ * `sessionStorage[KEEP_STORAGE] = '1'` (and removes it again when done).
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -24,6 +29,8 @@ export const GAME_DIR = path.resolve(PROJECT, '../../docs/concepts/agency-delive
 export const CLI = path.join(PROJECT, '.generated/tools/wildlands-cli.cjs');
 /** The viewport every suite starts at and every check returns to. */
 export const DESKTOP = {width: 1440, height: 1060} as const;
+/** The sessionStorage flag that keeps localStorage across the next page loads of this tab. */
+export const KEEP_STORAGE = 'wildlands-verification-keep-storage';
 /** Routed document URLs: the studio itself, then the pages that reopen downloaded or rebuilt artifacts. */
 const FIXTURE_URLS = ['https://localhost/process', 'https://localhost/exported', 'https://localhost/escaped', 'https://localhost/multi-exported', 'https://localhost/single'] as const;
 
@@ -59,7 +66,8 @@ function studioHelpers(page: Page, context: BrowserContext, file: string, count:
  const inSync = () => page.waitForFunction(() => document.getElementById('de-sync')!.textContent === 'Form in sync');
  const dialogOpen = () => page.locator('dialog.pd-dialog[open]').count();
  const activeId = () => page.evaluate(() => document.activeElement?.id ?? '');
- // Switching or importing over a run past minute 0 (or an unapplied draft) asks first; these helpers answer with the confirming choice.
+ // Importing over a run past minute 0 (or an unapplied draft) asks first; these helpers answer with the confirming choice. Switching never
+ // asks (each process keeps its own paused run); a recovery offer after a switch only appears in checks that keep storage on purpose.
  const asked = page.locator('dialog.ask-dialog[open]');
  const confirmIfAsked = async () => { if (await asked.count()) { await page.locator('#ask-go').click(); await asked.waitFor({state: 'hidden'}); } };
  const switchTo = async (index: number) => {
@@ -142,6 +150,9 @@ export function runSuite(harness: string, resultFile: string, suite: (studio: St
    const browser = await launchBrowser();
    try {
     const context = await browser.newContext({viewport: {...DESKTOP}}), diagnostics = monitorContext(context, {fixtureUrls: FIXTURE_URLS}), page = await context.newPage();
+    await context.addInitScript(flag => {
+     try { if (sessionStorage.getItem(flag) !== '1') localStorage.clear(); } catch { /* storage blocked */ }
+    }, KEEP_STORAGE);
     page.setDefaultTimeout(15000);
     const check = async (name: string, work: () => Promise<void>) => {
      let failed = false;

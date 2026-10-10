@@ -304,7 +304,7 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   const fresh = await kpis(), m0 = (await query(page)).snapshot.metrics;
   const age0 = m0.meanAgeMinutes === null ? '—' : `${m0.meanAgeMinutes} min`;
   assert.deepEqual([fresh['Mean cycle'], fresh['Mean age in progress'], m0.completed], ['—', age0, 0]);
-  assert.deepEqual(await labelsOf(), PROCESS_KPIS); assert.equal(await page.locator('#steps-heading').innerText(), 'Step scenes');
+  assert.deepEqual(await labelsOf(), PROCESS_KPIS); assert.equal(await page.locator('#steps-heading').innerText(), 'Steps');
   assert.equal(await page.locator('label[for="process-case"]').innerText(), 'Case'); assert.match(await page.locator('#scene-subtitle').innerText(), /\d cases? admitted$/);
   for (let i = 0; i < 6; i++) await page.locator('#advance').click();
   const ran = (await query(page)).snapshot, after = await kpis(); assert(ran.metrics.completed > 0);
@@ -337,7 +337,8 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
    await page.locator('#overview').click(); await page.locator('#open-activity').click(); await page.locator('dialog.act-dialog[open]').waitFor();
    assert.equal(await page.locator('#act-case-label').innerText(), one[0]!.toUpperCase() + one.slice(1)); assert.equal(await page.locator('#act-case option').first().innerText(), 'All ' + many); await page.keyboard.press('Escape'); await page.locator('dialog.act-dialog[open]').waitFor({state: 'hidden'});
   }
-  await switchTo(0); assert.deepEqual(await labelsOf(), PROCESS_KPIS); assert.equal(await page.locator('#steps-heading').innerText(), 'Step scenes'); assert.equal(await page.locator('label[for="process-case"]').innerText(), 'Case');
+  await switchTo(0); assert.deepEqual(await labelsOf(), PROCESS_KPIS); assert.equal(await page.locator('#steps-heading').innerText(), 'Steps');
+  assert.equal(await page.locator('label[for="process-case"]').innerText(), 'Case');
  });
  await checkLifecycle('Process lenses browser lifecycle emits no runtime errors or network requests');
 });

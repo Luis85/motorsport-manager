@@ -157,7 +157,9 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
    assert.equal(f.io, width >= 1600, 'Inputs & outputs opens by default only on wide screens (' + at + ')');
   }
   await page.setViewportSize({width: 1366, height: 768}); await nextFrames(page);
-  const heights = await page.evaluate(() => ['process-switch', 'open-definition', 'import', 'export-menu', 'play', 'step', 'advance', 'reset', 'speed', 'horizon', 'seed', 'open-activity'].map(id => Math.round(document.getElementById(id)!.getBoundingClientRect().height)));
+  const ids = ['process-switch', 'open-definition', 'import', 'export-menu', 'play', 'step', 'advance', 'run-end', 'reset', 'speed', 'horizon', 'seed',
+   'open-activity'];
+  const heights = await page.evaluate(list => list.map(id => Math.round(document.getElementById(id)!.getBoundingClientRect().height)), ids);
   assert.deepEqual([...new Set(heights)], [36], 'header and toolbar controls share one height');
   assert.equal(await page.locator('.process-toolbar button.primary').count(), 1); assert.equal(await page.locator('#play').getAttribute('class'), 'primary'); assert.match(await page.locator('#reset').getAttribute('class') ?? '', /ghost/);
   assert.equal(await page.locator('#message').evaluate(e => !!e.closest('.process-toolbar') || !e.closest('.process-stagebar')), false, 'the status line lives in the stage header'); assert.equal(await page.locator('#message').getAttribute('role'), 'status');
@@ -166,11 +168,14 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   for (const id of ['#json', '#bpmn', '#report', '#html']) assert.equal(await page.locator(id).isHidden(), true, id + ' hides inside the closed menu');
   const trigger = page.locator('#export-menu'); assert.deepEqual([await trigger.getAttribute('aria-haspopup'), await trigger.getAttribute('aria-expanded'), await page.locator('#import').innerText()], ['menu', 'false', 'Import…']);
   await trigger.click(); assert.equal(await trigger.getAttribute('aria-expanded'), 'true'); assert.equal(await activeId(), 'json'); assert.match(await page.locator('#export-hint').innerText(), /use this process\. Download HTML keeps all \d+ processes/);
-  assert.deepEqual(await page.locator('#export-items [role=menuitem]:visible').allInnerTexts(), ['Export JSON', 'Export BPMN', 'Export BPMN with BPSim', 'Export run report', 'Download HTML']);
+  assert.deepEqual(await page.locator('#export-items [role=menuitem]:visible').allInnerTexts(),
+   ['Export JSON', 'Export BPMN', 'Export BPMN with BPSim', 'Export run report', 'Download HTML', 'New process…', 'Import as a new process…']);
   const focusAfter = async (key: string) => { await page.keyboard.press(key); return activeId(); };
-  assert.deepEqual([await focusAfter('ArrowDown'), await focusAfter('End'), await focusAfter('ArrowDown'), await focusAfter('Home'), await focusAfter('ArrowUp')], ['bpmn', 'html', 'json', 'json', 'html']);
+  const keyed = [await focusAfter('ArrowDown'), await focusAfter('End'), await focusAfter('ArrowDown'), await focusAfter('Home'), await focusAfter('ArrowUp')];
+  assert.deepEqual(keyed, ['bpmn', 'import-new', 'json', 'json', 'import-new']);
   await page.keyboard.press('Escape'); assert.equal(await activeId(), 'export-menu'); assert.equal(await trigger.getAttribute('aria-expanded'), 'false'); assert.equal(await page.locator('#json').isHidden(), true);
-  await page.keyboard.press('ArrowDown'); assert.equal(await activeId(), 'json'); await page.keyboard.press('Escape'); await page.keyboard.press('ArrowUp'); assert.equal(await activeId(), 'html'); await page.keyboard.press('Escape');
+  await page.keyboard.press('ArrowDown'); assert.equal(await activeId(), 'json'); await page.keyboard.press('Escape');
+  await page.keyboard.press('ArrowUp'); assert.equal(await activeId(), 'import-new'); await page.keyboard.press('Escape');
   await trigger.click(); await page.locator('#scene-title').click(); assert.equal(await trigger.getAttribute('aria-expanded'), 'false', 'an outside click closes the menu');
   await trigger.focus(); await page.keyboard.press('Enter'); assert.equal(await activeId(), 'json'); let pending = page.waitForEvent('download'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); let saved = await pending;
   assert.match(saved.suggestedFilename(), /\.bpmn$/); assert.equal(await trigger.getAttribute('aria-expanded'), 'false', 'activating an item closes the menu'); assert.equal(await activeId(), 'export-menu');
@@ -210,9 +215,12 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   await page.setViewportSize({width: 390, height: 844}); await nextFrames(page);
   const bar = page.locator('.process-toolbar'); assert.equal(await bar.evaluate(e => getComputedStyle(e).position), 'sticky');
   await page.evaluate(() => window.scrollTo(0, 500)); assert(await page.evaluate(() => document.querySelector('.process-toolbar')!.getBoundingClientRect().top) <= 1, 'the run bar stays at the top while the page scrolls'); await page.evaluate(() => window.scrollTo(0, 0));
-  for (const id of ['#play', '#step', '#open-activity', '#clock']) assert.equal(await page.locator(id).isVisible(), true, id); for (const id of ['#advance', '#reset', '#speed', '#horizon', '#seed']) assert.equal(await page.locator(id).isHidden(), true, id + ' sits under Run options');
+  for (const id of ['#play', '#step', '#open-activity', '#clock']) assert.equal(await page.locator(id).isVisible(), true, id);
+  const folded = ['#advance', '#run-end', '#reset', '#speed', '#horizon', '#seed'];
+  for (const id of folded) assert.equal(await page.locator(id).isHidden(), true, id + ' sits under Run options');
   const toggle = page.locator('#run-options-toggle'); assert.deepEqual([await toggle.getAttribute('aria-expanded'), await toggle.innerText()], ['false', 'Run options ▾']); await toggle.click();
-  for (const id of ['#advance', '#reset', '#speed', '#horizon', '#seed']) assert.equal(await page.locator(id).isVisible(), true, id); assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+  for (const id of folded) assert.equal(await page.locator(id).isVisible(), true, id);
+  assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
   assert.deepEqual(await small('.process-toolbar button, .process-toolbar select, .process-toolbar input, .process-header button, .process-header select, .process-nav button'), [], 'touch targets are 44px'); await toggle.click(); assert.equal(await page.locator('#advance').isHidden(), true);
   await page.locator('#play').click(); assert.equal(await page.locator('#play').innerText(), 'Pause'); await page.locator('#play').click(); await page.locator('#step').click(); assert.equal((await query(page)).playing, false);
   // A stopped run keeps Reset outside Run options as the primary action and moves focus to it from the disabled Run; Reset hands focus back to Run.
@@ -230,7 +238,9 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   assert.equal(await page.locator('#open-definition').innerText(), 'Edit');
   assert.equal(await page.getByRole('button', {name: 'Edit process', exact: true}).count(), 1);
   assert.equal(await page.locator('#export-menu').isHidden(), true); assert.equal(await page.locator('#import').isHidden(), true);
-  await page.locator('#more-menu').click(); assert.deepEqual(await page.locator('#export-items [role=menuitem]:visible').allInnerTexts(), ['Import JSON or BPMN…', 'Present slides', 'Export JSON', 'Export BPMN', 'Export BPMN with BPSim', 'Export run report', 'Download HTML']);
+  await page.locator('#more-menu').click();
+  assert.deepEqual(await page.locator('#export-items [role=menuitem]:visible').allInnerTexts(), ['Import JSON or BPMN…', 'Present slides', 'Export JSON',
+   'Export BPMN', 'Export BPMN with BPSim', 'Export run report', 'Download HTML', 'New process…', 'Import as a new process…']);
   const menuBox = (await page.locator('#export-popup').boundingBox())!; assert(menuBox.x >= 0 && menuBox.x + menuBox.width <= 390, 'the menu stays on screen'); await page.keyboard.press('Escape'); assert.equal(await activeId(), 'more-menu');
   // Steps are a horizontal scroller above the stage; the stage is about 45vh; the inspector and Inputs & outputs collapse.
   const layout = await page.evaluate(() => { const nav = document.querySelector('.process-nav')!.getBoundingClientRect(), view = document.getElementById('viewport')!.getBoundingClientRect(), steps = document.getElementById('steps')!;
