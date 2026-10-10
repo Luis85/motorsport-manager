@@ -16,7 +16,7 @@ export const ENGINE_CLOSURE = [
  'process-xml.ts', 'process-bpmn-expr.ts', 'process-bpmn.ts', 'process-bpmn-bpsim-write.ts', 'process-bpmn-ext.ts', 'process-bpmn-bpsim.ts',
  'process-bpmn-nodes.ts', 'process-bpmn-graph.ts', 'process-bpmn-fold.ts', 'process-bpmn-flow.ts', 'process-bpmn-tail.ts',
  'process-bpmn-pools.ts', 'process-bpmn-layout.ts', 'process-bpmn-steps.ts', 'process-bpmn-assemble.ts', 'process-bpmn-import.ts',
- 'process-bpmn-conformance-values.ts', 'process-bpmn-conformance-model.ts', 'process-bpmn-conformance-bpsim.ts', 'process-bpmn-conformance.ts',
+ 'process-bpmn-conformance-values.ts', 'process-bpmn-conformance-model.ts', 'process-bpmn-conformance-bpsim.ts', 'process-bpmn-conformance-schema.ts', 'process-bpmn-conformance.ts',
  'process-ledger-cases.ts', 'process-ledger.ts', 'process-kernel.ts', 'process-routing.ts', 'process-systems.ts', 'process-series.ts',
  'process-session.ts', 'process-replicate.ts', 'process-authoring.ts', 'process-diff.ts', 'process-route.ts', 'process-work-state.ts',
  'process-sipoc-model.ts', 'process-time.ts', 'process-random-view.ts', 'process-advice.ts', 'process-terms.ts', 'process-slides-text.ts',
