@@ -161,6 +161,7 @@
 .pool-bar i { display:block; height:100%; border-radius:4px; background:var(--accent); }
 .pool-bar[data-level=warm] i { background:var(--heat-warm); }.pool-bar[data-level=hot] i { background:var(--heat-hot); }
 .process-pool small { color:var(--muted); font-size:var(--t-xs); }
+.process-cost-note { margin:0 0 var(--s3); color:var(--muted); font-size:var(--t-xs); line-height:1.45; }
 .process-auto { margin:var(--s2) 0 0; color:var(--accent); }
 .process-adds,.process-counters { margin:6px 0; overflow-wrap:anywhere; }.process-adds { padding-left:18px; }
 .process-inspector dl.process-tracked { grid-template-columns:minmax(0,1fr); gap:2px; } .process-inspector dl.process-tracked dd { text-align:left; margin-bottom:var(--s2); }
