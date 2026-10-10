@@ -27,6 +27,20 @@ const countOption = (value: string) => {
   return count;
 };
 
+/**
+ * `--preset` keeps its declared choices for `describe` and help, but an unknown name fails as
+ * a structured INVALID_OPTION that lists the presets instead of commander's CLI_USAGE text.
+ */
+const presetOption = (generator: string, presets: Record<string, unknown>, value: string) => {
+  const available = Object.keys(presets);
+  if (!Object.hasOwn(presets, value))
+    fail('INVALID_OPTION', `Generator ${generator} has no preset ${value}.`, {
+      available,
+      hint: `Use --preset ${available.join('|')}, or run generate show ${generator}.`,
+    });
+  return value;
+};
+
 /** `generate list | show <generator> | <generator> ...` and `-d <doc> variants`. */
 export function registerGenerateCommands(c: CommandContext) {
   const { program, output, input, resolvePath } = c;
@@ -64,10 +78,9 @@ export function registerGenerateCommands(c: CommandContext) {
         'New <id>.model.json; with --count, a new directory for <id>-<nn>.model.json documents',
       )
       .addOption(
-        new Option(
-          '--preset <name>',
-          `Starting point (default ${generator.defaultPreset})`,
-        ).choices(Object.keys(generator.presets)),
+        new Option('--preset <name>', `Starting point (default ${generator.defaultPreset})`)
+          .choices(Object.keys(generator.presets))
+          .argParser((value: string) => presetOption(generator.id, generator.presets, value)),
       )
       .option(
         '--seed <n>',

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import path from 'node:path';
-import { Id, NumberValue, parse, fail, readJson } from '../kernel/index.js';
+import { Id, NumberValue, parse, fail } from '../kernel/index.js';
+import { readInputJson } from '../infra/files.js';
 import type { CliRuntime } from './context.js';
 
 const limit = 16 * 1024 * 1024;
@@ -30,7 +31,7 @@ export async function readInput(runtime: CliRuntime, options: { data?: string; f
     }
     return parseJson(Buffer.concat(chunks).toString('utf8'));
   }
-  return readJson(path.resolve(runtime.cwd, options.file!));
+  return readInputJson(path.resolve(runtime.cwd, options.file!), '--file');
 }
 /** `--parameters '{"width":2}'`: numeric overrides keyed by parameter ID. */
 export const parseParameters = (value: string | undefined) =>

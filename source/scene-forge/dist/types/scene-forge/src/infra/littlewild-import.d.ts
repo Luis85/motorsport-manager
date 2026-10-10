@@ -1,6 +1,9 @@
 import type { EditOptions } from './project.js';
-/** Registers each Littlewild variant as a Scene Forge model through the guarded model import. */
-export declare function importLittlewildDefinition(project: string, file: string, options: EditOptions & {
+/**
+ * Registers each Littlewild variant as a Scene Forge model through the guarded model import.
+ * `input` is the parsed JSON of `file`, which names the source in messages.
+ */
+export declare function importLittlewildDefinition(project: string, file: string, input: unknown, options: EditOptions & {
     prefix?: string;
     replace?: boolean;
 }): Promise<{

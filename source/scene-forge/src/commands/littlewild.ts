@@ -8,9 +8,8 @@ import {
   writeLittlewildAsset,
 } from '../kernel.js';
 import { LittlewildExportSchema } from '../domain/schema.js';
-import { readJson } from '../infra/files.js';
 import { importLittlewildDefinition } from '../infra/littlewild-import.js';
-import { parseJson } from './input.js';
+import { parseJson, readInputFile } from './input.js';
 import type { CommandContext } from './context.js';
 
 /** Bridge to the Wildlands/Littlewild engine asset folders. */
@@ -28,7 +27,7 @@ export function registerLittlewildCommands(c: CommandContext) {
     .option('--check', 'Fail when any definition is out of date; never writes')
     .action(async (opts) => {
       const file = resolvePath(opts.file),
-        manifest = parse(LittlewildExportSchema, await readJson(file)),
+        manifest = parse(LittlewildExportSchema, await readInputFile(file, '--file')),
         target = path.resolve(path.dirname(file), manifest.target),
         s = await snapshot();
       const assets = manifest.assets.filter((a) => !opts.asset || a.id === opts.asset);
@@ -104,14 +103,20 @@ export function registerLittlewildCommands(c: CommandContext) {
     .option('--prefix <id>', 'Model ID prefix; defaults to the camel-cased asset ID')
     .option('--replace', 'Replace existing models with the same IDs')
     .action(async (opts) => {
+      const definition = resolvePath(opts.definition);
       output(
-        await importLittlewildDefinition(global().project, resolvePath(opts.definition), {
-          prefix: opts.prefix,
-          dryRun: opts.dryRun,
-          replace: opts.replace,
-          expectedRevision: opts.expectedRevision,
-          expectedState: opts.expectedState,
-        }),
+        await importLittlewildDefinition(
+          global().project,
+          definition,
+          await readInputFile(definition, '--definition'),
+          {
+            prefix: opts.prefix,
+            dryRun: opts.dryRun,
+            replace: opts.replace,
+            expectedRevision: opts.expectedRevision,
+            expectedState: opts.expectedState,
+          },
+        ),
       );
     });
 }

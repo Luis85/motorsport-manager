@@ -249,11 +249,12 @@ test('sidecar recipes replay byte-identically; presets, --set and the recipe lay
         'UNKNOWN_PARAMETER',
         'SCHEMA_INVALID',
         'INVALID_OPTION',
-        'CLI_USAGE',
+        'INVALID_OPTION',
         'INVALID_OPTION',
         'DOCUMENT_KIND',
       ],
     );
+    assert.deepEqual(errors[4].details.available, ['pebble', 'stone', 'boulder']);
     assert.match(errors[1].hint!, /size/);
     assert.match(errors[2].hint!, /generate show rock/);
   }));

@@ -2,8 +2,25 @@ import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { fail, errorCode } from '../kernel/index.js';
+import { fail, errorCode, ForgeError, readJson } from '../kernel/index.js';
 export { readJson, writeJson, atomicWrite } from '../kernel/index.js';
+
+/**
+ * Read a JSON input file named by a command-line flag. A missing file keeps the NOT_FOUND
+ * code and message, with a remedy about that flag's path instead of NOT_FOUND's general
+ * remedy for missing IDs.
+ */
+export async function readInputJson(file: string, flag: string): Promise<unknown> {
+  try {
+    return await readJson(file);
+  } catch (error) {
+    if (error instanceof ForgeError && error.code === 'NOT_FOUND')
+      fail('NOT_FOUND', error.message, { hint: missingInputHint(flag) });
+    throw error;
+  }
+}
+export const missingInputHint = (flag: string) =>
+  `No file exists at the ${flag} path; relative paths resolve against the current directory. Check the path${flag === '--file' ? ', or pass --file - for stdin or --data <json>' : ''}.`;
 
 export async function exists(file: string) {
   try {

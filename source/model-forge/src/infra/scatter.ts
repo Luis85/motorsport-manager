@@ -1,4 +1,4 @@
-import { readJson } from '../kernel/index.js';
+import { readInputJson } from './files.js';
 import { parseDocument, type EditorDocument } from '../application/document.js';
 import type { EditOptions } from '../application/edit.js';
 import { planDocumentScatter, recipeFromFlags, type ScatterFlags } from '../application/scatter.js';
@@ -23,7 +23,7 @@ export interface ScatterRun extends EditOptions {
 export async function scatterDocument(file: string, run: ScatterRun) {
   const dependencies: EditorDocument[] = [];
   for (const source of run.dependencies ?? [])
-    dependencies.push(parseDocument(await readJson(source)));
+    dependencies.push(parseDocument(await readInputJson(source, '--dependency')));
   let planned: ReturnType<typeof planDocumentScatter> | undefined;
   const result = await commitEdit(
     file,

@@ -10,7 +10,7 @@ import {
 import { validateEditorDocument } from '../application/document.js';
 import { documentHeader } from '../application/inspect.js';
 import { stemWarnings } from '../domain/document.js';
-import { exists, inside, readJson } from './files.js';
+import { exists, inside, readInputJson, readJson } from './files.js';
 import { checkNewDocument, createDocument, documentKindForPath } from './store.js';
 
 /** The read-only slice of a Scene Forge `forge.project.json` that names model files. */
@@ -72,7 +72,7 @@ export async function importDocument(request: ImportRequest) {
     plan = planProjectImport(library, request.id, kind);
   } else {
     if (request.id) fail('INVALID_OPTION', '--id applies to --project; use --entry for bundles.');
-    plan = planImport(await readJson(request.from!), kind, request);
+    plan = planImport(await readInputJson(request.from!, '--from'), kind, request);
   }
   const { document, ...planned } = plan;
   const warnings = [...(planned.warnings ?? []), ...stemWarnings(request.out, document.model.id)];

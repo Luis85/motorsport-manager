@@ -72,3 +72,43 @@ test('bundled examples compile and create portable projects without overwriting 
     await rm(root, { recursive: true, force: true });
   }
 });
+test('a missing input file fails with a remedy that names its flag', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'forge-missing-input-'));
+  const run = async (args: string[]) => {
+    let stdout = '',
+      stderr = '';
+    const cli = createCli({
+      cwd: root,
+      stdin: Readable.from([]),
+      writeOut: (s) => {
+        stdout += s;
+      },
+      writeErr: (s) => {
+        stderr += s;
+      },
+    });
+    const status = await cli.run(args);
+    return { status, stdout, stderr };
+  };
+  try {
+    assert.equal((await run(['init', 'yard', '--name', 'Yard'])).status, 0);
+    const cases: [string[], string][] = [
+      [['-p', 'yard', 'apply', '--file', 'missing.batch.json'], '--file'],
+      [['-p', 'yard', 'scatter', '--file', 'missing.scatter.json'], '--file'],
+      [['-p', 'yard', 'littlewild', 'sync', '--file', 'missing.export.json'], '--file'],
+      [['-p', 'yard', 'littlewild', 'import', '--definition', 'missing.json'], '--definition'],
+    ];
+    for (const [args, flag] of cases) {
+      const result = await run(args);
+      assert.equal(result.status, 1, args.join(' '));
+      const { error } = JSON.parse(result.stderr);
+      assert.equal(error.code, 'NOT_FOUND');
+      assert.match(error.message, /^File does not exist: .*missing/);
+      assert.ok(error.hint.includes(`${flag} path`), error.hint);
+      assert.equal(error.details, undefined);
+    }
+    assert.equal((await run(['-p', 'yard', 'inspect'])).status, 0, 'nothing was written');
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

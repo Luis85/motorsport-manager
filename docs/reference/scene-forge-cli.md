@@ -266,6 +266,10 @@ index, searched paths, quality findings). Codes are stable identifiers.
 | Littlewild exchange | `LITTLEWILD_EXPORT`, `LITTLEWILD_IMPORT`, `LITTLEWILD_BUDGET` (baked mesh over its vertex limit), `LITTLEWILD_STALE` (`sync --check` found an out-of-date definition) |
 | Runtime | `PLAYWRIGHT_UNAVAILABLE` (Playwright not resolvable), `BROWSER_UNAVAILABLE` (Chromium did not launch), `BUILD_REQUIRED` (packaged asset missing), `INTERNAL_ERROR` |
 
+A missing input file (`--file`, `littlewild sync --file`, `littlewild import
+--definition`) fails with `NOT_FOUND` and a hint that names the flag whose path to
+check.
+
 Never delete another process's `.forge.lock` to clear `PROJECT_LOCKED`; wait and retry.
 
 ## Command reference

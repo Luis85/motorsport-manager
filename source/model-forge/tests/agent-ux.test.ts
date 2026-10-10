@@ -132,3 +132,44 @@ test('new documents carry no revision field and warn when the file stem differs 
     const history = await ok(['-d', 'lamp.model.json', 'history'], { cwd });
     assert.equal(history.revisions[0].stateHash, created.stateHash);
   }));
+
+test('a missing input file and an unknown preset name the flag to fix', () =>
+  withTemp(async (cwd) => {
+    await fs.writeFile(path.join(cwd, 'crate.model.json'), JSON.stringify(boxModel()));
+    const missing = [
+      [['-d', 'crate.model.json', 'apply', '--file', 'missing.batch.json'], '--file'],
+      [['generate', 'tree', '--file', 'missing.generate.json', '--out', 't.model.json'], '--file'],
+      [['import', '--from', 'missing.model.json', '--out', 'copy.model.json'], '--from'],
+      [
+        ['-d', 'crate.model.json', 'scatter', '--count', '2', '--model', 'oak'],
+        '--dependency',
+        ['--dependency', 'missing-oak.model.json'],
+      ],
+    ] as const;
+    for (const [args, flag, extra = []] of missing) {
+      const error = await failure([...args, ...extra], { cwd });
+      assert.equal(error.code, 'NOT_FOUND', args.join(' '));
+      assert.match(error.message, /^File does not exist: .*missing/);
+      assert.ok(error.hint!.includes(`${flag} path`), error.hint);
+      assert.doesNotMatch(error.hint!, /node list/, 'not the remedy for a missing ID');
+      assert.equal(error.details, undefined);
+    }
+    const preset = await failure(['generate', 'tree', '--preset', 'oak', '--out', 'o.model.json'], {
+      cwd,
+    });
+    assert.equal(preset.code, 'INVALID_OPTION');
+    assert.match(preset.message, /tree has no preset oak/);
+    assert.deepEqual(preset.details.available, ['deciduous', 'conifer', 'palm', 'dead']);
+    assert.match(preset.hint!, /--preset deciduous\|conifer\|palm\|dead/);
+    const described = await ok(['describe', 'generate', 'tree']);
+    const option = described.options.find((o: { flags: string }) => o.flags.startsWith('--preset'));
+    assert.deepEqual(option.choices, ['deciduous', 'conifer', 'palm', 'dead'], 'choices stay');
+    assert.equal(
+      (
+        await ok(['generate', 'tree', '--preset', 'palm', '--out', 'p.model.json', '--dry-run'], {
+          cwd,
+        })
+      ).preset,
+      'palm',
+    );
+  }));

@@ -5882,6 +5882,14 @@ var editOptions = (cmd) => cmd.option("--expected-revision <n>", "Reject if curr
 // src/commands/input.ts
 import { z as z12 } from "zod";
 import path9 from "node:path";
+async function readInputFile(file, flag) {
+  try {
+    return await readJson(file);
+  } catch (error) {
+    throw withHint(error, { NOT_FOUND: missingInputHint(flag) });
+  }
+}
+var missingInputHint = (flag) => `No file exists at the ${flag} path; relative paths resolve against the current directory. Check the path${flag === "--file" ? ", or pass --file - for stdin or --data <json>" : ""}.`;
 var parseJson = (value) => {
   if (Buffer.byteLength(value) > 16 * 1024 * 1024)
     fail("INPUT_TOO_LARGE", "JSON input exceeds 16 MiB.");
@@ -5906,7 +5914,7 @@ async function readInput(runtime, options) {
     }
     return parseJson(Buffer.concat(chunks).toString("utf8"));
   }
-  return readJson(path9.resolve(runtime.cwd, options.file));
+  return readInputFile(path9.resolve(runtime.cwd, options.file), "--file");
 }
 var parseParameters = (value) => parse(z12.record(Id, NumberValue), parseJson(value));
 
@@ -7098,8 +7106,7 @@ import path11 from "node:path";
 import { Option as Option5 } from "commander";
 
 // src/infra/littlewild-import.ts
-async function importLittlewildDefinition(project, file, options) {
-  const input = await readJson(file);
+async function importLittlewildDefinition(project, file, input, options) {
   const record = input && typeof input === "object" && !Array.isArray(input) ? input : {};
   const isPackage = record.format === "littlewild-creature-package";
   if (isPackage && record.schemaVersion !== 1)
@@ -7138,7 +7145,7 @@ function registerLittlewildCommands(c) {
   const { program, snapshot, output, resolvePath, global, editOptions: editOptions2 } = c;
   const group = program.command("littlewild").description("Exchange models with Littlewild engine definitions");
   group.command("sync").description("Export every asset in a littlewild-export manifest into Littlewild definitions").requiredOption("--file <path>", "littlewild.export.json manifest").option("--asset <id>", "Export only one asset from the manifest").option("--dry-run", "Compile and compare without writing").option("--check", "Fail when any definition is out of date; never writes").action(async (opts) => {
-    const file = resolvePath(opts.file), manifest = parse(LittlewildExportSchema, await readJson(file)), target = path11.resolve(path11.dirname(file), manifest.target), s = await snapshot();
+    const file = resolvePath(opts.file), manifest = parse(LittlewildExportSchema, await readInputFile(file, "--file")), target = path11.resolve(path11.dirname(file), manifest.target), s = await snapshot();
     const assets = manifest.assets.filter((a) => !opts.asset || a.id === opts.asset);
     if (!assets.length) fail("NOT_FOUND", `Asset ${opts.asset} is not in the manifest.`);
     const results = [];
@@ -7194,14 +7201,20 @@ function registerLittlewildCommands(c) {
     "--definition <path>",
     "Littlewild definition, creature package or 3D asset JSON"
   ).option("--prefix <id>", "Model ID prefix; defaults to the camel-cased asset ID").option("--replace", "Replace existing models with the same IDs").action(async (opts) => {
+    const definition = resolvePath(opts.definition);
     output(
-      await importLittlewildDefinition(global().project, resolvePath(opts.definition), {
-        prefix: opts.prefix,
-        dryRun: opts.dryRun,
-        replace: opts.replace,
-        expectedRevision: opts.expectedRevision,
-        expectedState: opts.expectedState
-      })
+      await importLittlewildDefinition(
+        global().project,
+        definition,
+        await readInputFile(definition, "--definition"),
+        {
+          prefix: opts.prefix,
+          dryRun: opts.dryRun,
+          replace: opts.replace,
+          expectedRevision: opts.expectedRevision,
+          expectedState: opts.expectedState
+        }
+      )
     );
   });
 }
