@@ -23,6 +23,21 @@ def annotation(finding: dict) -> str:
     return f"::warning {props}::{escape(finding['message'])}"
 
 
+def language_table(files: list[dict]) -> list[str]:
+    rows: dict[tuple[str, str], list[int]] = {}
+    for item in files:
+        key = (item.get("language", "unknown"), item["category"])
+        row = rows.setdefault(key, [0, 0, 0])
+        row[0] += 1
+        row[1] += int(item["over_limit"])
+        row[2] += len(item.get("long_lines", []))
+    lines = ["", "## Languages", "", "| Language | Category | Files | Over budget | Long lines |"]
+    lines.append("|---|---|---:|---:|---:|")
+    for (language, category), (count, over, wide) in sorted(rows.items()):
+        lines.append(f"| {html.escape(language)} | {category} | {count} | {over} | {wide} |")
+    return lines
+
+
 def summary(report: dict) -> str:
     counts = Counter(item["rule"] for item in report["findings"])
     lines = [
@@ -34,12 +49,14 @@ def summary(report: dict) -> str:
         f"Measured files: **{len(report['files'])}**. Findings: **{len(report['findings'])}**.",
         "",
         "Source budget: **400** code lines; tests: **450**. Blank/comment lines and Python docstrings excluded.",
+        "TypeScript lines over the advisory width are reported as `long-line` warnings.",
         "",
         "| Check | Findings |",
         "|---|---:|",
     ]
     for rule, count in sorted(counts.items()):
         lines.append(f"| {html.escape(rule)} | {count} |")
+    lines += language_table(report["files"])
     lines += ["", "## Tools", "", "| Tool | Outcome |", "|---|---|"]
     for tool in report["tools"]:
         lines.append(f"| {html.escape(tool['name'])} | {tool['status']} |")
