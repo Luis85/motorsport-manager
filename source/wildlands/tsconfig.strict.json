@@ -474,6 +474,8 @@
     "source/verification/process-browser-fixture.ts",
     "source/verification/process-browser-models.ts",
     "source/verification/process-map-probe.ts",
+    "source/verification/process-map-update-checks.ts",
+    "source/verification/process-map-label-checks.ts",
     "source/verification/process-layout-browser.ts",
     "source/verification/process-step-editor-browser.ts",
     "source/verification/process-definition-browser.ts",
