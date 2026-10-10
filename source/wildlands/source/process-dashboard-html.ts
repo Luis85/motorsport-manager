@@ -3,7 +3,7 @@
 /// <reference path="./process-dashboard-model.ts" />
 /**
  * Markup of the Dashboard model (LWProcessDashboardHtml): the run strip, the KPI tiles, a section heading and one panel at a time,
- * plus the CSV text of every panel table. Pure strings from LWProcessDashboardModel values and LWProcessChart primitives: no DOM,
+ * plus the spreadsheet-safe CSV text of every panel table. Pure strings from LWProcessDashboardModel values and LWProcessChart primitives: no DOM,
  * session, clock or storage, so Node checks read the same markup the studio shows. Every free text is escaped.
  *
  * Structure (a contract with the surface and the browser checks):
@@ -144,7 +144,16 @@ declare namespace LWProcessDashboardHtml {
    + (t.spark && t.spark.length > 1 ? C().sparkline(t.spark, 96, 24, 'work') + `<span class="sr-only">${esc(t.trend)}</span>` : '') + '</li>';
   return `<ul class="db-tiles" aria-label="${esc(name)}">${list.map(item).join('')}</ul>`;
  }
- const quote = (s: string) => /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+ /**
+  * One spreadsheet-safe CSV cell (the rule of the Activity export): RFC 4180 quoting of quotes, commas and line breaks, and a
+  * leading apostrophe on text a spreadsheet would run as a formula (= + - @, tab or return first), such as a step or pool name.
+  * A number or number range the dashboard formatted itself ("-8.7", "-67% to 149.9%") is left as it is.
+  */
+ const NUMERIC = /^[-+]?[\d.,]+%?( to [-+]?[\d.,]+%?)?$/;
+ function quote(s: string): string {
+  const safe = /^[=+\-@\t\r]/.test(s) && !NUMERIC.test(s) ? "'" + s : s;
+  return /[",\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
+ }
  function csv(model: LWProcessDashboardModel.Model, extra: {section: string; panel: string; table: Table}[] = []): string {
   const panels = model.sections.flatMap(s => s.panels.filter(p => p.table).map(p => ({section: s.title, panel: p.title, table: p.table!})));
   const line = (cells: string[]) => cells.map(quote).join(',');
