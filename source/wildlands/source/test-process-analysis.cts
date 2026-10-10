@@ -29,6 +29,7 @@ import './test-process-bpmn-schema.cjs';
 import './test-process-palette.cjs';
 import './test-process-work-derivation.cjs';
 import './test-process-dashboard-wire.cjs';
+import './test-process-statistics.cjs';
 const report = {suite: 'business-process-analysis', passed: results.filter(r => r.passed).length, total: results.length, results};
 fs.writeFileSync(path.join(__dirname, 'process-analysis-results.json'), JSON.stringify(report, null, 2) + '\n');
 console.log(`${report.passed}/${report.total} process analysis checks passed`);

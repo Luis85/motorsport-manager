@@ -85,10 +85,10 @@
    return [U.panel('outcome-time', 'Time to outcome by outcome', 'How long until a goal, and how long until a loss?',
     {empty: 'Needs the time-to-outcome distribution by outcome from the run.'})];
   }
-  const max = Math.max(1, ...b.goal, ...b.lost, ...b.none), lead = root.LWProcessDashboardPanels.lead;
-  const panels = [lead(input, b.goal, edges, 'outcome-goal', 'Time to a goal', max),
-   lead(input, b.lost, edges, 'outcome-lost', `Time until a ${t.one} is lost`, max)];
-  if (b.none.some(c => c > 0)) panels.push(lead(input, b.none, edges, 'outcome-none', 'Time to an end without an outcome', max));
+  const max = Math.max(1, ...b.goal, ...b.lost, ...b.none), lead = root.LWProcessDashboardPanels.lead, exact = input.distributions?.percentiles?.byOutcome;
+  const panels = [lead(input, b.goal, edges, 'outcome-goal', 'Time to a goal', max, exact?.goal),
+   lead(input, b.lost, edges, 'outcome-lost', `Time until a ${t.one} is lost`, max, exact?.lost)];
+  if (b.none.some(c => c > 0)) panels.push(lead(input, b.none, edges, 'outcome-none', 'Time to an end without an outcome', max, exact?.none));
   return panels;
  }
  function feeling(input: Input): Panel {
