@@ -94,7 +94,10 @@ test('Replication statistics use the sample sd, Student t intervals and nearest-
  assert.deepEqual(replicate.summarize([null, 4]), {n: 1, mean: 4, sd: null, ci95: null, p10: 4, p50: 4, p90: 4});
  assert.deepEqual(replicate.summarize([null]), {n: 0, mean: null, sd: null, ci95: null, p10: null, p50: null, p90: null});
  assert.deepEqual(replicate.summarize([7, 7, 7]), {n: 3, mean: 7, sd: 0, ci95: [7, 7], p10: 7, p50: 7, p90: 7});
- assert.deepEqual([replicate.t95(1), replicate.t95(7), replicate.t95(30), replicate.t95(31), replicate.T95.length], [12.706, 2.365, 2.042, 1.96, 30]);
+ // Intervals keep the 3-decimal table to 30 degrees of freedom and use the exact quantile beyond (no longer the normal 1.96).
+ assert.deepEqual([replicate.interval95(1), replicate.interval95(7), replicate.interval95(30), replicate.T95.length], [12.706, 2.365, 2.042, 30]);
+ assert.equal(replicate.interval95(31), replicate.t95(31));
+ assert(Math.abs(replicate.t95(31) - 2.039513) < 1e-6);
  const tens = Array.from({length: 30}, (_, i) => i + 1), stats = replicate.summarize(tens);
  assert.deepEqual([stats.p10, stats.p50, stats.p90], [3, 15, 27], 'q × n / 100 is exact for whole ranks');
 });

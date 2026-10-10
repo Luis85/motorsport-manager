@@ -14,7 +14,8 @@
  * own limit. A comparison needs a draft that differs from the running definition and is valid. Utilisation reads as a percentage
  * and conversion (permille in the report) as a percentage; the difference is applied minus draft, worded from the draft's side, and
  * "no clear difference" when its 95% interval contains 0. Results always carry the honesty text: spread under the authored
- * assumptions, from runs that start empty, never a forecast.
+ * assumptions, from runs that start empty, never a forecast, and the interval's Student t quantile (LWProcessReplicate
+ * `interval95`: the 3-decimal table value up to 30 degrees of freedom, the exact quantile beyond).
  *
  * Warm-up: `warmup` is the dashboard's "Measure from minute W" (0 or absent: none). It must be less than the minutes per run; the
  * replications then report, besides the whole-run measures, the measures labelled "after minute W" (LWProcessReplicate `warmup`),
@@ -134,8 +135,8 @@ declare namespace LWProcessDashboardWhatIf {
   const start = r.warmup ? `; measures labelled "after minute ${U.count(r.warmup)}" leave out the first ${U.count(r.warmup)} minutes `
    + '(warm-up), the others include start-up' : ', so start-up is included';
   const honesty = `Spread under the authored assumptions across ${U.plural(done, 'seed')} (${seeds[0]} to ${seeds.at(-1)}), measured at minute `
-   + `${U.count(r.minutes)} of runs that start empty${start}. Intervals use Student t (normal 1.96 above 30 degrees of freedom, `
-   + 'slightly narrow between 31 and about 120). This is not a forecast.'
+   + `${U.count(r.minutes)} of runs that start empty${start}. Intervals use Student t quantiles for runs − 1 degrees of freedom `
+   + '(to 3 decimals up to 30, exact beyond). This is not a forecast.'
    + (compare ? ' Both designs run on the same seeds, so they share random numbers wherever they agree.' : '');
   const status = r.complete ? (compare ? 'Comparison complete.' : 'Replications complete.') : `Partial results (${done} of ${r.runs} runs).`;
   return {kind: compare ? 'compare' : 'spread', complete: r.complete, done, runs: r.runs, minutes: r.minutes, seeds: r.seeds, kpis, honesty, status, flat};
