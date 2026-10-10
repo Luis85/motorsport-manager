@@ -186,11 +186,30 @@ export async function importModel(
         })();
   if (!Object.hasOwn(data.models, data.entry))
     fail('REFERENCE_MISSING', 'Bundle entry model is missing.');
+  // `revision` is Model Forge's editor counter, not model content: a project stores portable
+  // recipes, so importing a raw document and its portable export yield the same project.
+  const warnings: string[] = [];
+  for (const [id, model] of Object.entries(data.models))
+    if (model.revision !== undefined) {
+      warnings.push(
+        `Dropped the editor-only revision ${model.revision} of model ${id}; projects store portable recipes.`,
+      );
+      const { revision: _revision, ...portable } = model;
+      data.models[id] = portable;
+    }
   const root = await findProject(start);
   return withLock(root, async () => {
     const snapshot = await loadUnlocked(root);
     checkGuards(snapshot, options);
-    return registerModels(root, data.models, data.entry, replace, snapshot, options.dryRun);
+    const result = await registerModels(
+      root,
+      data.models,
+      data.entry,
+      replace,
+      snapshot,
+      options.dryRun,
+    );
+    return warnings.length ? { ...result, warnings } : result;
   });
 }
 async function registerModels(

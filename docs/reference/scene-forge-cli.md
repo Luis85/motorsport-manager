@@ -424,8 +424,10 @@ These commands manage the project's model registry and place models in scenes.
 To author or refine one model on its own, use [Model Forge](model-forge-cli.md)
 and bring the result back with `model import --file <model-bundle> --dry-run`,
 then `model import` (`--replace` with `--expected-revision`/`--expected-state`
-to change an existing definition). `model import` accepts the optional model
-`revision` field that Model Forge maintains.
+to change an existing definition). `model import` accepts a raw Model Forge
+document too: it drops the editor-only `revision` field before registering the
+model and reports that in `warnings`, so importing a document and importing its
+portable `export --format model` produce the same project state.
 
 | Command | Options |
 |---|---|

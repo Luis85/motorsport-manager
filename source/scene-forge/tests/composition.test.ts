@@ -134,3 +134,42 @@ test('capture and composition persist, remain idempotent and clone scene identit
     await fs.rm(root, { recursive: true, force: true });
   }
 });
+test('model import drops the Model Forge editor revision so raw and portable imports agree', async () => {
+  const roots = await Promise.all(
+    [0, 1].map(() => fs.mkdtemp(path.join(os.tmpdir(), 'forge-revision-'))),
+  );
+  try {
+    const portable = captureModel(fixture(), ['assembly'], 'module');
+    const [raw, plain] = roots;
+    for (const root of roots) await initProject(root);
+    type Imported = { warnings?: string[]; model?: { revision?: number } };
+    const imported: Imported = await importModel(raw, { ...portable, revision: 4 });
+    assert.deepEqual(imported.warnings, [
+      'Dropped the editor-only revision 4 of model module; projects store portable recipes.',
+    ]);
+    const exported = await importModel(plain, portable);
+    assert.equal('warnings' in exported, false, 'portable imports report no warning');
+    const [a, b] = await Promise.all(roots.map((root) => loadProject(root)));
+    assert.equal(a.models.module.revision, undefined);
+    assert.equal(a.stateHash, b.stateHash);
+    assert.equal(
+      await fs.readFile(path.join(raw, 'models/module.model.json'), 'utf8'),
+      await fs.readFile(path.join(plain, 'models/module.model.json'), 'utf8'),
+    );
+    const bundle: Imported = await importModel(
+      plain,
+      {
+        schemaVersion: 1,
+        kind: 'model-bundle',
+        entry: 'module',
+        models: { module: { ...portable, revision: 2 } },
+      },
+      false,
+      { dryRun: true },
+    );
+    assert.equal(bundle.model?.revision, undefined);
+    assert.match(String(bundle.warnings), /revision 2 of model module/);
+  } finally {
+    await Promise.all(roots.map((root) => fs.rm(root, { recursive: true, force: true })));
+  }
+});
