@@ -67,7 +67,7 @@ test('Tune values and the inspector carry no local escaper; the remaining escape
  }
  // The modules a later wave still migrates; the list shrinks as they move, and a new local escaper fails here.
  const remaining = fs.readdirSync(dir).filter(f => /^process-.*\.ts$/.test(f) && f !== 'process-html.ts' && local.test(fs.readFileSync(path.join(dir, f), 'utf8'))).sort();
- assert.deepEqual(remaining, ['process-activity.ts', 'process-bpmn-dialog.ts', 'process-bpmn-preview.ts', 'process-definition-json.ts',
+ assert.deepEqual(remaining, ['process-activity.ts', 'process-bpmn-dialog.ts', 'process-bpmn-preview.ts',
   'process-io.ts', 'process-present.ts', 'process-slots.ts', 'process-step-list.ts']);
 });
 
