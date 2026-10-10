@@ -71,7 +71,8 @@ test('Chart axes label round minutes and whole counts, columns label their own i
  const xs = [...recent.matchAll(/translate\(([\d.]+) /g)].map(m => Number(m[1]));
  assert(xs[0]! < 60 && xs[2]! > 280, 'points spread over the plot: ' + xs.join(','));
  assert(recent.lastIndexOf('db-bracket-label') > recent.lastIndexOf('db-glyph'), 'the band label is drawn over the points');
- const shared = C.points(f, 16, pts, {columns: null, xMin: 990, xMax: 1000, yMax: 10, bands: [{from: 5, to: 8, label: 'median'}, {from: 5, to: 8, label: 'p85'}]});
+ const bands = [{from: 5, to: 8, label: 'median'}, {from: 5, to: 8, label: 'p85'}];
+ const shared = C.points(f, 16, pts, {columns: null, xMin: 990, xMax: 1000, yMax: 10, bands});
  assert.deepEqual([...shared.matchAll(/class="db-bracket-label"[^>]*>([^<]*)</g)].map(m => m[1]), ['median · p85'], 'bands on one edge share a label');
 });
 
