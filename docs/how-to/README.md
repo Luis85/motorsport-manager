@@ -23,5 +23,6 @@ the procedure to the relevant [contracts](../reference/README.md).
 [Content task guides](content/README.md) cover ordered packs, circuits/scenarios,
 editor presets and authored weekends.
 
-- [Business process authoring](business-process-authoring.md) — guarded agent edits, the studio's Definition and step editors, BPMN, Scene Forge assets and offline builds.
-- [Present a process to stakeholders](present-a-process.md) — Present mode in the studio and the `process slides` Markdown deck.
+- [Business process authoring](business-process-authoring.md) — guarded agent edits, the studio's structural editing, Definition and step editors, replications, event logs, BPMN, Scene Forge assets and offline builds.
+- [Present a process to stakeholders](present-a-process.md) — Present mode in the studio, the brief deck and the `process slides` Markdown deck.
+- [Read a process dashboard](read-a-process-dashboard.md) — the studio's Dashboard: flow, the bottleneck, predictability, and What-if replications and comparisons across seeds.
