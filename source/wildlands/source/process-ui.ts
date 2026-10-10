@@ -8,6 +8,7 @@
  *  - LWProcessRecovery: the automatic recovery copy of unapplied drafts in browser storage (the studio's only storage use);
  *  - LWProcessDraftActions: Add step…, Tidy layout and moving cards on the 2D map (the map's `move` option), each one draft step;
  *  - LWProcessActivity: the event feed, one tracker per process slot (a switch restores the slot's feed silently);
+ *  - LWProcessTheme: the page's Dark or Light colour theme (the menu's Light theme toggle, never stored);
  *  - the editors binding below (step editor and Definition editor over the shared LWProcessDraft), the Present binding and the
  *    Dashboard binding (LWProcessDashboard, the stage's 'dashboard' view mode).
  * UI code emits commands through `command()` and renders detached values; only the animation loop's pulse and explicit clock
@@ -22,7 +23,8 @@
   LWProcessLens: LWProcessLens.Api; LWProcessPresent: LWProcessPresent.Api; LWProcessRunBar: LWProcessRunBar.Api; LWProcessIO: LWProcessIO.Api;
   LWProcessGuard: LWProcessGuard.Api; LWProcessStepList: LWProcessStepList.Api; LWProcessDom: LWProcessDom.Api; LWProcessSlots: LWProcessSlots.Api;
   LWProcessRecovery: LWProcessRecovery.Api; LWProcessShellMarkup: LWProcessShellMarkup.Api; LWProcessSlidesText: LWProcessSlidesText.Api;
-  LWProcessDraftActions: LWProcessDraftActions.Api; LWProcessDashboard: LWProcessDashboard.Api; LWProcessStudio?: unknown;
+  LWProcessDraftActions: LWProcessDraftActions.Api; LWProcessDashboard: LWProcessDashboard.Api; LWProcessTheme: LWProcessTheme.Api;
+  LWProcessStudio?: unknown;
   __wildlandsReady?: boolean};
  const host = root.LWProcessDom.maybe('process-shell'); if (!host) return;
  const pristine = '<!doctype html>\n' + document.documentElement.outerHTML;
@@ -60,6 +62,9 @@
   select: id => {command(() => app.select(id));}, stepItem: id => get('steps').querySelector<HTMLElement>(`[data-step="${id}"]`),
  });
  const menu = root.LWProcessMenu.create({triggers: [get('export-menu'), get('more-menu')], popup: get('export-popup')});
+ // The page's Dark or Light theme (LWProcessTheme, the menu's last item): a change re-colours the 3D clear colour and re-patches a
+ // shown 2D map's room accents, once; styled views follow the CSS tokens. It never ticks and writes no storage.
+ const theme = root.LWProcessTheme.create({item: get('theme-item'), changed: () => {three?.restyle(); if (view.mode === '2d') svg.draw(view);}});
  // The Inputs & outputs panel opens by default on wide screens only; a choice made by the user is remembered for the session (in
  // memory, never storage). The panel is drawn only while open; opening it draws the current view at once.
  const io = get<HTMLDetailsElement>('io-panel'), wide = matchMedia('(min-width:1600px)');
@@ -350,7 +355,9 @@
  function dispose(): void {
   if (disposed) return; disposed = true; cancelAnimationFrame(frameId); fit.disconnect(); document.removeEventListener('close', dialogClosed, true);
   recovery.dispose();
-  for (const surface of [present, three, stage, svg, lens, dashboard, definitionEditor, stepEditor, actions, files, slots, activity, menu, app]) surface?.dispose();
+  for (const surface of [present, three, stage, svg, lens, dashboard, definitionEditor, stepEditor, actions, files, slots, activity, menu, theme, app]) {
+   surface?.dispose();
+  }
  }
  // Business processes open on the readable 2D map on a phone; 3D stays one press away. A journey keeps its Journey map.
  if (matchMedia('(max-width:650px)').matches && app.query().mode === '3d') app.mode('2d');

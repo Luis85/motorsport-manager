@@ -11,9 +11,9 @@
  *    per class inside that container, so the container's own visibility and transform still apply.
  *  - Shadows follow `LWProcess3DBake.caster`: large pieces above the floor cast, floors and small props only receive.
  *  - Checks read `userData.pieces` and `userData.shape` (piece count and fingerprint) from merged meshes and station groups.
- *  - `colours` are the studio palette's roles resolved once for this scene (LWProcessPalette.read of the canvas, or the
- *    palette's constants); the kit's own sign plates, mood faces and vertex-colour base, the rooms, stations and markers draw
- *    with them.
+ *  - `colours` are the studio palette's roles resolved once for this scene (LWProcess3D passes the dark constants in both studio
+ *    themes, since the rooms keep their own dark floors; by default the palette read from the studio root); the kit's own sign
+ *    plates, mood faces and vertex-colour base, the rooms, stations and markers draw with them.
  */
 declare namespace LWProcess3DKit {
  interface Kit extends LWProcessRooms.Kit {

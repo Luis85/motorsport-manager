@@ -1,12 +1,13 @@
 /* Process Dashboard (LWProcessDashboard, process-dashboard*.ts): the stage's 'dashboard' view. Chrome uses the Process Studio tokens of
-   process.css; the chart marks use the --viz-* role tokens below. Type sizes are rem; text never wears a data colour.
-   Data colours: the dark steps of the documented categorical palette, ordered by role and validated with the dataviz validator on
+   process.css; the chart marks use its --viz-* role tokens, which both themes declare there. Type sizes are rem; text never wears a
+   data colour.
+   Dark data colours: the dark steps of the documented categorical palette, ordered by role and validated with the dataviz validator on
    both studio surfaces (--bg #13181f and --panel #1d242e): the six work states in stack order (working, waiting, blocked, backlog,
    timer, joining) pass every check (worst adjacent CVD ΔE 8.4, normal-vision 19.8, all marks >= 3:1). Arrived, finished and dropped
    lines are a WARN pair (aqua and red, CVD ΔE 6.5), so those charts carry direct end labels, a legend and the table; goal and lost
-   pass. Every state also has its map glyph (legend and segments), so colour never carries meaning alone. */
-.process-studio { --viz-work:#d95926; --viz-wait:#3987e5; --viz-blocked:#e66767; --viz-backlog:#9085e9; --viz-timer:#c98500; --viz-join:#199e70;
- --viz-goal:#008300; }
+   pass. Light data colours: the same hues stepped so every mark keeps 3:1 on the light panel (#ffffff) and stage (#f3f5f8),
+   validated in light mode on the stack order and on each line chart's series. Every state also has its map glyph (legend and
+   segments), so colour never carries meaning alone. */
 #dashboard { width:100%; height:100%; position:absolute; inset:0; overflow:auto; overscroll-behavior:contain; background:var(--bg); }
 /* The dashboard's own tiles repeat the run metrics strip and the latest event, so the stage gives that room to the dashboard. */
 .process-stage:has(#dashboard:not([hidden])) > :is(#metrics,#latest) { display:none; }

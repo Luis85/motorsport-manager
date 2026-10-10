@@ -6,7 +6,8 @@
  * detached view values; selection sends intent only. The map shows no durations, so the display calendar does not change it. The
  * phase columns, cards and funnel facts come from the pure LWProcessJourneyModel (process-journey-model.ts), whose funnel words the
  * work still in progress between two route steps like the 2D cards and the step list (LWProcessWorkState). Phase colours and the
- * feeling faces are studio palette roles (LWProcessPalette.PHASES, LWProcessRooms.moods and the `face-ink` role).
+ * feeling faces are studio palette roles (the `--phase-n` tokens of LWProcessPalette.phase, which follow the theme, and
+ * LWProcessRooms.moods with the `face-ink` role, the same in both themes).
  */
 declare namespace LWProcessJourney {
  interface Surface {draw(view: LWProcessApp.View): void; frame(): void; dispose(): void;}
@@ -24,7 +25,6 @@ declare namespace LWProcessJourney {
   start: 'Start', task: 'Task', touchpoint: 'Touchpoint', machine: 'Machine', system: 'System', timer: 'Timer', decision: 'Decision',
   fork: 'Fork', join: 'Join', end: 'End',
  };
- const PHASE_COLORS = root.LWProcessPalette.PHASES;
  const KIND_GLYPHS: Record<string, string> = {
   start: 'M-.4 0 A.4 .4 0 1 0 .4 0 A.4 .4 0 1 0 -.4 0 M-.12 -.2 L.25 0 L-.12 .2 Z',
   end: 'M-.35 .5 V-.5 H.4 L.2 -.2 L.4 .1 H-.35',
@@ -184,7 +184,7 @@ declare namespace LWProcessJourney {
    m.groups.forEach((g, i) => {
     const c = cell(header, g.start, g.span, 'jm-phase'), count = g.main.length + g.branches.length;
     c.setAttribute('role', 'columnheader');
-    c.style.borderTopColor = PHASE_COLORS[i % PHASE_COLORS.length]!;
+    c.style.borderTopColor = root.LWProcessPalette.phase(i);
     c.append(div('jm-phase-name', g.phase, 'b'), div('jm-phase-count', `${count} ${count === 1 ? 'step' : 'steps'}`, 'span'));
    });
    grid.append(header);
