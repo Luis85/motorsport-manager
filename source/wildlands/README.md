@@ -128,6 +128,7 @@ Stable mechanic executors, handlers, island dimensions and animation algorithms 
 The compatibility-preserving M1–M6 plan is implemented and documented in `ECS-ARCHITECTURE.md`. The current polishing pass also makes TypeScript the authored source of truth and publishes `source/architecture/domain-map.json` as the machine-checked DDD/Clean Architecture ownership contract. The simulation section of `source/content/balancing.json` combines validated actor/economy/gameplay rule data with the exact compiled `living-world-v1` composition archetype; the earlier individual profile file is a reference mirror. Schema-2 packs may tune supported values but cannot insert or reorder systems. The normal verification gate includes isolated ECS/profile suites plus real-engine current-format rejection, deterministic resume, logistics, quest, market, progression, schema/CLI, release, and browser compatibility checks. Mature domain methods remain compatibility adapters on one stable facade, so this is not a claim that every mechanic is an isolated ECS system.
 
 - [`ECS-M6-REVIEW-AND-POLISH.md`](ECS-M6-REVIEW-AND-POLISH.md) — final architecture review and polishing evidence.
+- [`PROCESS-STUDIO-REVIEW.md`](PROCESS-STUDIO-REVIEW.md) — six-perspective Process Studio review, its findings and resolutions, and deferred follow-ups.
 
 Architecture sources and the implemented plan: [research](ARCHITECTURE-RESEARCH.md), [systemic design](SYSTEMIC-DESIGN.md), [Excalibur adaptations](EXCALIBUR-TOOLBOX-REVIEW.md), [improvement plan](RESEARCH-IMPROVEMENT-PLAN.md).
 
