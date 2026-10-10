@@ -22,7 +22,14 @@ declare namespace LWProcessTuning {
   focusField(path?: string): boolean;
   dispose(): void;
  }
- interface Api {create(host: HTMLElement, read: () => string, write: (text: string) => void): Surface;}
+ /** Asks a question in the hosting dialog (Cancel first) and resolves with the chosen id. */
+ /** Writes the draft text; `label` names a removal ('Removed Product owner') so the editor can offer Undo. */
+ type Write = (text: string, label?: string) => void;
+ type Confirm = (message: string, choices: {id: string; label: string; default?: boolean}[]) => Promise<string>;
+ interface Api {
+  /** Without `confirm`, removing a pool that steps still use removes it at once. */
+  create(host: HTMLElement, read: () => string, write: Write, confirm?: Confirm): Surface;
+ }
 }
 (function(inputRoot: unknown) {
  'use strict';
@@ -30,15 +37,22 @@ declare namespace LWProcessTuning {
  const F = root.LWProcessTuningFields, A = root.LWProcessTuningArrivals, T = root.LWProcessTuningTrack, P = root.LWProcessTuningSipoc, esc = F.esc;
  const KINDS: [string, string][] = [['people', 'People'], ['machine', 'Machine'], ['system', 'System']];
  const SEED = 2147483647;
- function resource(r: LWProcess.Resource, i: number, total: number): string {
-  const p = `resources.${i}`, id = `tune-res-${i}`;
+ /** Names of the steps that demand pool `id`, in draft order. */
+ const users = (d: LWProcess.Definition, id: string) =>
+  d.steps.filter(s => s.resources && typeof s.resources === 'object' && Object.hasOwn(s.resources, id)).map(s => String(s.name));
+ const list = (names: string[]) => names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
+ function resource(r: LWProcess.Resource, i: number, total: number, by: string[]): string {
+  const p = `resources.${i}`, id = `tune-res-${i}`, used = by.length ? `Used by ${list(by)}.` : 'Not used by any step yet.';
   return `<fieldset class="de-card" id="${id}"><legend>${esc(r.name)} <code>${esc(r.id)}</code></legend><div class="de-errs" id="${id}-err" data-errs="${p}"></div>
    <div class="de-grid">${F.text(id + '-name', 'Name', p + '.name', r.name)}${F.choice(id + '-kind', 'Kind', p + '.kind', r.kind ?? 'people', KINDS, 'People work on task steps; machine and system steps may only use machine and system pools.')}
    ${F.int(id + '-cap', 'Capacity', p + '.capacity', r.capacity, {min: 1, max: 1000, unit: 'parallel units'})}${F.int(id + '-cost', 'Cost per minute', p + '.costPerMinute', r.costPerMinute, {min: 0, max: 100000, unit: 'cost units'})}</div>
-   <button type="button" class="de-mini de-remove" data-act="res-remove" data-i="${i}"${total < 1 ? ' disabled' : ''}>Remove ${esc(r.name)}</button></fieldset>`;
+   <p class="de-help" id="${id}-used">${esc(used)}</p>
+   <button type="button" class="de-mini de-remove" data-act="res-remove" data-i="${i}" aria-describedby="${id}-used"${total < 1 ? ' disabled' : ''}>
+   Remove ${esc(r.name)}</button></fieldset>`;
  }
  function markup(d: LWProcess.Definition): string {
-  const res = d.resources.map((r, i) => resource(r, i, d.resources.length)).join('') || '<p class="de-help">No shared resources are defined.</p>';
+  const res = d.resources.map((r, i) => resource(r, i, d.resources.length, users(d, r.id))).join('')
+   || '<p class="de-help">No shared resources are defined.</p>';
   const arrivals = (d.arrivals ?? []).map((a, i, all) => A.markup(a, i, all.length)).join('');
   return `<div id="tune-summary" class="de-summary"></div>
    <section class="de-sec" aria-labelledby="tune-h-process"><h4 id="tune-h-process" tabindex="-1">Process</h4><div class="de-errs" id="tune-err" data-errs=""></div>
@@ -57,7 +71,7 @@ declare namespace LWProcessTuning {
  }
  const getPath = (target: unknown, path: string) => path.split('.').reduce<unknown>((at, key) => (at && typeof at === 'object' ? (at as Record<string, unknown>)[key] : undefined), target);
  const WAIT_FOR_CHANGE = new Set(['choice', 'end', 'scalar-type', 'data-name']);
- function create(host: HTMLElement, read: () => string, write: (text: string) => void): LWProcessTuning.Surface {
+ function create(host: HTMLElement, read: () => string, write: LWProcessTuning.Write, confirm?: LWProcessTuning.Confirm): LWProcessTuning.Surface {
   let shown = '', diagnostics: LWProcess.Diagnostic[] = [], other = 0; const local = new Map<string, string>();
   const form = () => host.querySelector<HTMLFieldSetElement>('fieldset.de-form');
   const parse = (): LWProcess.Definition | undefined => { try { const d = JSON.parse(read()) as LWProcess.Definition; return d && Array.isArray(d.resources) && Array.isArray(d.steps) && (d.arrivals === undefined || Array.isArray(d.arrivals)) ? d : undefined; } catch { return undefined; } };
@@ -104,8 +118,8 @@ declare namespace LWProcessTuning {
    }
    show(); return true;
   }
-  function commit(def: LWProcess.Definition, focus?: string, rerender = false): void {
-   write(JSON.stringify(def, null, 2));
+  function commit(def: LWProcess.Definition, focus?: string, rerender = false, label?: string): void {
+   write(JSON.stringify(def, null, 2), label);
    // Plain value edits leave the typed text in place, so the stored markup is stale; forget it so the next refresh rebuilds from the draft.
    if (rerender) render(focus); else { shown = ''; show(); }
   }
@@ -138,8 +152,25 @@ declare namespace LWProcessTuning {
     let n = def.resources.length + 1; const ids = new Set(def.resources.map(r => r.id)); while (ids.has('resource-' + n)) n++;
     def.resources.push({id: 'resource-' + n, name: 'New resource', capacity: 1, costPerMinute: 0}); commit(def, `#tune-res-${def.resources.length - 1}-name`, true); return;
    }
-   if (what === 'res-remove') { def.resources.splice(Number(b.dataset.i), 1); commit(def, '#tune-res-add', true); return; }
-   const result = T.act(def, b) ?? P.act(def, b) ?? A.act(def, b); if (result) commit(def, result.focus, result.rerender);
+   if (what === 'res-remove') { void removePool(def, Number(b.dataset.i)); return; }
+   // A removed row is named after its button ('Remove arrival 2' becomes 'Removed arrival 2') so it can be undone by name.
+   const result = T.act(def, b) ?? P.act(def, b) ?? A.act(def, b), named = (b.getAttribute('aria-label') ?? b.textContent ?? '').trim();
+   if (result) commit(def, result.focus, result.rerender, /-remove$/.test(what) && /^Remove\b/.test(named) ? named.replace(/^Remove\b/, 'Removed') : undefined);
+  }
+  /** Removes a pool. While steps still demand it, asks first (Cancel is the default) and then clears those demands with it. */
+  async function removePool(def: LWProcess.Definition, at: number): Promise<void> {
+   const pool = def.resources[at]; if (!pool) return;
+   const by = users(def, pool.id);
+   if (by.length && confirm) {
+    const one = by.length === 1, question = `${list(by)} still ${one ? 'uses' : 'use'} ${pool.name}. Removing the pool also clears ${one ? 'that demand' : 'those demands'}.`;
+    const choice = await confirm(question, [{id: 'keep-pool', label: 'Cancel', default: true}, {id: 'remove-pool', label: 'Remove and clear demands'}]);
+    if (choice !== 'remove-pool') return;
+    // The draft may have changed while the question was open: act on the current text.
+    def = parse() ?? def; at = def.resources.findIndex(r => r.id === pool.id); if (at < 0) return;
+   }
+   def.resources.splice(at, 1);
+   for (const s of def.steps) if (s.resources && Object.hasOwn(s.resources, pool.id)) { delete s.resources[pool.id]; if (!Object.keys(s.resources).length) delete s.resources; }
+   commit(def, '#tune-res-add', true, `Removed ${pool.name}`);
   }
   host.addEventListener('input', edit); host.addEventListener('change', edit); host.addEventListener('click', click);
   return {
