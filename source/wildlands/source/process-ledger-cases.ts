@@ -16,9 +16,10 @@
  * clamped to 9; a zero-length case falls in bin 9 by definition. Everything is integer arithmetic, never read by the engine, a
  * fingerprint, a random key or a decision, and independent of pruning and of how a run is chunked.
  *
- * Working hours: a store created with `closed` keeps a seventh lead bucket, `closed` (minutes outside working time, booked by
- * `closed` for every live case whatever its state), and `totals` reports it in `leadTime`; without it the six buckets are reported
- * exactly as before. Lead minutes then still sum to the cycle sum, and flow efficiency divides working by the whole lead time.
+ * Working hours: only a store created with `closed` keeps a seventh lead bucket, `closed` (minutes outside working time, booked by
+ * `closed` for every live case whatever its state; its books' and run lead lists then have 7 entries, else 6), and `totals` reports
+ * it in `leadTime`; without it the six buckets are reported exactly as before. Lead minutes then still sum to the cycle sum, and
+ * flow efficiency divides working by the whole lead time.
  */
 declare namespace LWProcessLedgerCases {
  interface Book { lead: number[]; cost: number; rate: number; repeats: number; }
@@ -55,12 +56,12 @@ declare namespace LWProcessLedgerCases {
  const root = inputRoot as {LWProcessLedgerCases?: LWProcessLedgerCases.Api};
  const WORKING = 0, CLOSED = 6, REPEAT_BINS = 6, FLOW_BINS = 10;
  const create = (retained: number, closed = false): Store => ({books: new Map(), running: new Set(), hours: closed,
-  leadTime: [0, 0, 0, 0, 0, 0, 0], flow: Array(FLOW_BINS).fill(0),
+  leadTime: Array(closed ? 7 : 6).fill(0), flow: Array(FLOW_BINS).fill(0),
   completedCost: 0, failedCost: 0, failedMinutes: 0, firstPass: 0, repeats: Array(REPEAT_BINS).fill(0), ring: [], head: 0, capacity: retained});
  function book(store: Store, caseId: string): Book {
   let entry = store.books.get(caseId);
   if (!entry) {
-   entry = {lead: [0, 0, 0, 0, 0, 0, 0], cost: 0, rate: 0, repeats: 0};
+   entry = {lead: Array(store.hours ? 7 : 6).fill(0), cost: 0, rate: 0, repeats: 0};
    store.books.set(caseId, entry);
   }
   return entry;

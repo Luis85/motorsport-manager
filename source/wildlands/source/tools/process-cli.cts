@@ -9,7 +9,8 @@ import {writeForgeProject} from './process-forge.cjs';
 import {checkBounds, runCommand, replicateCommand, compareCommand, definitionDiff} from './process-cli-analytics.cjs';
 const commands: Record<string, readonly string[]> = {
  discover: [], schema: ['--kind'], create: ['--id', '--name', '--output'], validate: ['--input', '--draft'], inspect: ['--input'],
- edit: ['--input', '--recipe', '--output', '--dry-run', '--draft'], run: ['--input', '--minutes', '--output', '--seed', '--event-log', '--format'],
+ edit: ['--input', '--recipe', '--output', '--dry-run', '--draft'], run: ['--input', '--minutes', '--output', '--seed', '--event-log', '--format',
+  '--checkpoint', '--checkpoint-out'],
  build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output', '--bpsim'], 'validate-bpmn': ['--input'],
  'import-bpmn': ['--input', '--output', '--draft', '--default-duration', '--process', '--lanes', '--default-capacity', '--no-auto-system-pool',
   '--system-capacity', '--minutes-per-day', '--minutes-per-hour', '--unsupported', '--no-bpsim', '--scenario', '--report'],
@@ -35,7 +36,9 @@ const descriptions: Record<string, string> = {
  inspect: 'Read identity, scene graph and starting snapshot without advancing time.',
  edit: 'Apply a revision/fingerprint guarded transaction; --draft allows intermediate graph diagnostics.',
  run: 'Run a fresh deterministic session for a bounded number of business minutes; --seed N replaces the definition seed; '
-  + '--event-log FILE streams every engine event to a CSV (default) or XES (--format xes) file while it runs.',
+  + '--event-log FILE streams every engine event to a CSV (default) or XES (--format xes) file while it runs; '
+  + '--checkpoint FILE continues a saved run checkpoint (its fingerprint must match --input; it keeps its seed and run length, '
+  + 'and --minutes more minutes run from its minute); --checkpoint-out FILE writes a run checkpoint where the run ended.',
  build: 'Build one self-contained offline HTML file.',
  'validate-bpmn': 'Check a BPMN 2.0 XML file (and its BPSim 1.0 data) against the built-in conformance rules (no schema files); '
   + 'prints the report (errors with line, path, code and message; elements not covered; unchecked extension content); '

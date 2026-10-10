@@ -8,8 +8,9 @@
  *
  * The Export/⋯ menu holds, in order: Import JSON or BPMN…, Present slides and Dashboard (phone only), Add step… and Tidy
  * layout (below 1,200 px wide, where the header has no room for them), Export JSON, Export draft JSON (while a draft exists),
- * Export BPMN, Export BPMN with BPSim, Show export notes… (after a BPMN export with notes), Export run report, Download HTML,
- * New process… and Import as a new process….
+ * Export BPMN, Export BPMN with BPSim, Show export notes… (after a BPMN export with notes), Export run report, Export run
+ * checkpoint…, Load checkpoint… (LWProcessIO; its own file chooser `#checkpoint-file`), Download HTML, New process… and Import as a
+ * new process….
  */
 declare namespace LWProcessShellMarkup {
  interface Parts {
@@ -34,7 +35,8 @@ declare namespace LWProcessShellMarkup {
    item('add-step-item', 'Add step…', ' class="menu-draft" aria-haspopup="dialog"'), item('tidy-item', 'Tidy layout', ' class="menu-draft"'),
    item('json', 'Export JSON'), item('draft-json', 'Export draft JSON', ' hidden'), item('bpmn', 'Export BPMN'),
    item('bpmn-bpsim', 'Export BPMN with BPSim'), item('export-notes', 'Show export notes…', ' aria-haspopup="dialog" hidden'),
-   item('report', 'Export run report'), item('html', 'Download HTML'),
+   item('report', 'Export run report'), item('checkpoint-export', 'Export run checkpoint…'),
+   item('checkpoint-load', 'Load checkpoint…', ' aria-haspopup="dialog"'), item('html', 'Download HTML'),
    item('new-process', 'New process…', ' aria-haspopup="dialog"'), item('import-new', 'Import as a new process…'),
   ].join('\n     ');
   return `
@@ -52,7 +54,8 @@ declare namespace LWProcessShellMarkup {
    <div id="export-popup" class="process-menu-popup" hidden><p id="export-hint" class="menu-hint"></p>
     <div id="export-items" role="menu" aria-label="Import, present, edit, export and add processes">
      ${items}</div></div></div>
-  <input type="file" id="file" accept=".json,.bpmn,.xml,application/json,application/xml,text/xml" hidden></div></header>`;
+  <input type="file" id="file" accept=".json,.bpmn,.xml,application/json,application/xml,text/xml" hidden>
+  <input type="file" id="checkpoint-file" accept=".json,application/json" hidden></div></header>`;
  }
  function workspace(legend: string): string {
   return `

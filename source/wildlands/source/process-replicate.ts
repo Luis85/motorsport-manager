@@ -17,10 +17,16 @@
  * so `n` says how many runs had a value.
  *
  * Statistics per KPI over the runs with a value: `n`; `mean`; `sd`, the sample standard deviation (n - 1; `null` below 2 values);
- * `ci95`, the two-sided 95% confidence interval of the mean, mean ± t × sd / √n with the Student t quantile for n - 1 degrees of
- * freedom from a table for 1 to 30 and the normal value 1.96 beyond (slightly narrow from 31 to about 120 degrees of freedom: at 40
- * the exact quantile is 2.021), `null` below 2 values; and `p10`, `p50`, `p90` by the nearest-rank rule (the smallest observed
- * value with at least q% of the values at or below it). Every statistic is rounded to 6 decimals.
+ * `ci95`, the two-sided 95% confidence interval of the mean, mean ± t × sd / √n with t the Student t quantile for n - 1 degrees of
+ * freedom (`t95`, exact for every df), `null` below 2 values; and `p10`, `p50`, `p90` by the nearest-rank rule (the smallest observed value with
+ * at least q% of the values at or below it). Every statistic is rounded to 6 decimals.
+ *
+ * Student t quantile (`t95`): the exact two-sided 95% (one-sided 97.5%) quantile for any whole df ≥ 1, pure and dependency-free.
+ * Up to 1,000 degrees of freedom it inverts the exact central probability P(|T| ≤ t) (Abramowitz and Stegun 26.7.3 and 26.7.4, a
+ * finite series in θ = atan(t / √df) for whole df) by 64 bisection steps between 1.959964 and 12.75; beyond, the four-term
+ * Cornish-Fisher expansion around the normal quantile 1.959964 (A&S 26.7.5), whose error there is below 1e-12. Both agree with
+ * independent references to better than 1e-9 (12.706205 at 1, 2.042272 at 30, 2.021075 at 40, 1.983972 at 100, 1.962339 at 1,000).
+ * It replaces a 3-decimal table for 1 to 30 degrees of freedom and the normal 1.96 beyond, which was slightly narrow up to about 120.
  *
  * A comparison runs both definitions with the same seeds. Draws are keyed by seed and stable identities (case, step, visit), so
  * the runs share common random numbers wherever the definitions agree. Per KPI it reports A's and B's statistics and the paired
@@ -80,8 +86,7 @@ declare namespace LWProcessReplicate {
  }
  interface Api {
   readonly LIMITS: {readonly runs: number; readonly work: number};
-  /** Two-sided 95% Student t quantiles for 1..30 degrees of freedom (index 0 is df 1). */
-  readonly T95: readonly number[];
+  /** The exact two-sided 95% Student t quantile for a whole df ≥ 1 (Infinity gives the normal 1.959964); throws otherwise. */
   t95(df: number): number;
   summarize(values: readonly (number | null)[]): Stats;
   /** Validates options and expands the seeds; `work` is the simulated minutes per replication factor (2 for a comparison). */
@@ -101,10 +106,44 @@ declare namespace LWProcessReplicate {
   LWProcessReplicate?: LWProcessReplicate.Api};
  type Stats = LWProcessReplicate.Stats; type Options = LWProcessReplicate.Options; type Kpi = LWProcessReplicate.Kpi;
  const LIMITS = Object.freeze({runs: 200, work: 1000000}), MAX_SEED = 2147483647;
- const T95: readonly number[] = Object.freeze([12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262, 2.228, 2.201, 2.179, 2.16, 2.145, 2.131,
-  2.12, 2.11, 2.101, 2.093, 2.086, 2.08, 2.074, 2.069, 2.064, 2.06, 2.056, 2.052, 2.048, 2.045, 2.042]);
- const NORMAL95 = 1.96;
- const t95 = (df: number) => df >= 1 && df <= T95.length ? T95[df - 1]! : NORMAL95;
+ /** The two-sided 95% normal quantile, the limit of the Student t quantile as df grows. */
+ const NORMAL95 = 1.959963984540054, SERIES_DF = 1000, BISECTIONS = 64, UPPER = 12.75;
+ /** P(|T| ≤ t) for Student t with a whole `df` ≥ 1 (A&S 26.7.3 for odd df, 26.7.4 for even df). */
+ function central(t: number, df: number): number {
+  const theta = Math.atan(t / Math.sqrt(df)), cos = Math.cos(theta), c2 = cos * cos, odd = df % 2 === 1;
+  if (df === 1) return 2 * theta / Math.PI;
+  let term = odd ? cos : 1, sum = term;
+  for (let k = odd ? 3 : 2; k <= df - 2; k += 2) {
+   term *= c2 * (k - 1) / k;
+   sum += term;
+  }
+  return odd ? 2 / Math.PI * (theta + Math.sin(theta) * sum) : Math.sin(theta) * sum;
+ }
+ /** The Cornish-Fisher expansion of the 97.5% t quantile in 1 / df, to the fourth power. */
+ function expansion(df: number): number {
+  const z = NORMAL95, z2 = z * z, z3 = z2 * z, z5 = z3 * z2, z7 = z5 * z2, z9 = z7 * z2;
+  const g1 = (z3 + z) / 4, g2 = (5 * z5 + 16 * z3 + 3 * z) / 96, g3 = (3 * z7 + 19 * z5 + 17 * z3 - 15 * z) / 384;
+  const g4 = (79 * z9 + 776 * z7 + 1482 * z5 - 1920 * z3 - 945 * z) / 92160;
+  return z + g1 / df + g2 / (df * df) + g3 / df ** 3 + g4 / df ** 4;
+ }
+ const solved = new Map<number, number>();
+ function t95(df: number): number {
+  if (df === Infinity) return NORMAL95;
+  if (!Number.isSafeInteger(df) || df < 1) throw Error('Degrees of freedom must be a whole number of at least 1.');
+  if (df > SERIES_DF) return expansion(df);
+  let t = solved.get(df);
+  if (t === undefined) {
+   let low = NORMAL95, high = UPPER;
+   for (let i = 0; i < BISECTIONS; i++) {
+    const middle = (low + high) / 2;
+    if (central(middle, df) < .95) low = middle;
+    else high = middle;
+   }
+   t = (low + high) / 2;
+   solved.set(df, t);
+  }
+  return t;
+ }
  /** Six decimals; `|| 0` turns a rounded -0 into 0. */
  const round = (value: number) => Math.round(value * 1e6) / 1e6 || 0;
  const whole = (value: unknown, min: number, max: number) => Number.isSafeInteger(value) && (value as number) >= min && (value as number) <= max;
@@ -297,7 +336,7 @@ declare namespace LWProcessReplicate {
   while (runner.step()) { /* one replication per step */ }
   return runner.report();
  }
- root.LWProcessReplicate = {LIMITS, T95, t95, summarize, plan, kpis, measure, replications, comparison,
+ root.LWProcessReplicate = {LIMITS, t95, summarize, plan, kpis, measure, replications, comparison,
   replicate: (input, options) => drain(replications(input, options)), compare: (a, b, options) => drain(comparison(a, b, options))};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessReplicate;
 })(globalThis);

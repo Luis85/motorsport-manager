@@ -98,7 +98,10 @@ runSuite('process present browser harness', 'process-present-browser-results.jso
   const before = await query(page); assert.equal(before.playing, false); const snapshot = JSON.stringify(before.snapshot);
   await page.locator('#steps [data-step="discovery"]').click(); await openPresent(); const deck = await expectedDeck();
   const run = `Live facts come from one simulated run at business minute 30 (seed ${before.snapshot.seed}, still running).`;
-  assert.deepEqual([await page.locator('#present-note').isHidden(), await page.locator('#present-run').innerText(), await page.locator('#message').innerText()], [true, run, 'Presenting slides.']);
+  // The studio behind Present is not rendered while presenting (content-visibility), so its status line is read as text content.
+  const message = () => page.locator('#message').textContent();
+  assert.deepEqual([await page.locator('#present-note').isHidden(), await page.locator('#present-run').innerText(), await message()],
+   [true, run, 'Presenting slides.']);
   await press('Home');
   for (let i = 0; i < deck.slides.length; i++) {
    if (i > 0) await press('ArrowRight');
@@ -120,7 +123,9 @@ runSuite('process present browser harness', 'process-present-browser-results.jso
   const running = await minuteOf(); await page.waitForFunction(m => (globalThis as unknown as PageGlobals).LWProcessStudio.query().snapshot.minute > m, running);
   await openPresent(); const entered = await query(page), minute = entered.snapshot.minute;
   assert.equal(entered.playing, false, 'entering paused the run'); assert.ok(minute > running);
-  assert.deepEqual([await page.locator('#present-note').isVisible(), await page.locator('#present-note').innerText(), await page.locator('#message').innerText()],
+  // The studio behind Present is not rendered while presenting (content-visibility), so its status line is read as text content.
+  const message = await page.locator('#message').textContent();
+  assert.deepEqual([await page.locator('#present-note').isVisible(), await page.locator('#present-note').innerText(), message],
    [true, 'The run is paused while you present.', 'Presenting slides. The run is paused while you present.']);
   const run = `Live facts come from one simulated run at business minute ${minute.toLocaleString('en-US')} (seed ${entered.snapshot.seed}, still running).`;
   assert.equal(await page.locator('#present-run').innerText(), run);

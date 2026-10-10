@@ -6,9 +6,12 @@
  * (LWProcessDashboardJourney) and step-focus (LWProcessDashboardFocus) distributions. Pure
  * view-models over the detached view and the optional read-model data (research 4.6 and 4.8); no DOM, session, clock or storage.
  *
- * Rules: percentiles are nearest-rank brackets of histogram bins (`[edges[i], edges[i + 1])`), hidden below 10 finished cases;
+ * Rules: percentiles are nearest-rank values, hidden below 10 finished cases: exact when the read model kept every value of the
+ * distribution (`exact`, LWProcessLedgerExact; whole-run and per-outcome lead time of at most 50,000 completed cases), else
+ * brackets of histogram bins (`[edges[i], edges[i + 1])`), and a note says which;
  * lead time is arrival to finish of completed cases (the studio's "cycle"); the scatter draws the retained (or `recent()`) finished
- * cases only and says so, with whole-run percentile bands; aging dots use the case age (minute minus arrival) per open token, at
+ * cases only and says so, with whole-run percentile bands, placed by finish minute on an axis that starts at the first drawn case
+ * (so the latest cases of a long run are not pressed into its last sliver); aging dots use the case age (minute minus arrival) per open token, at
  * most 500, and pace per step needs 10 exits of the age-at-exit distribution. Jitter is a hash of the identity, never random.
  *
  * Target share (the whole-run panel, with the fine distribution only): the viewer may choose a target from the upper edges of the
@@ -17,8 +20,12 @@
  */
 declare namespace LWProcessDashboardPanels {
  interface Api extends LWProcessDashboardSections.Builder {
-  /** A lead-time histogram panel over any bin counts (whole run or one outcome); `max` shares a count scale between panels. */
-  lead(input: LWProcessDashboardData.Input, counts: number[], edges: number[], id: string, title: string, max?: number): LWProcessDashboardModel.Panel;
+  /**
+   * A lead-time histogram panel over any bin counts (whole run or one outcome); `max` shares a count scale between panels; `exact`
+   * (the read model's percentiles of the same values) makes the percentiles exact when it holds every value.
+   */
+  lead(input: LWProcessDashboardData.Input, counts: number[], edges: number[], id: string, title: string, max?: number,
+   exact?: LWProcess.Percentiles): LWProcessDashboardModel.Panel;
  }
 }
 (function(inputRoot: unknown) {
@@ -41,32 +48,50 @@ declare namespace LWProcessDashboardPanels {
   const fine = input.distributions;
   return fine?.cycle.length ? {edges: fine.edges, counts: fine.cycle} : input.view.snapshot.metrics.cycleHistogram;
  }
+ /** The exact nearest-rank value of quantile q in `set` when it holds all `n` values exactly; null when only a bracket is known. */
+ function exactAt(set: LWProcess.Percentiles | undefined, n: number, q: number): number | null {
+  const point = set?.exact && set.n === n ? set.points.find(p => p.q === q) : undefined;
+  return point?.exact ? point.value : null;
+ }
+ /** The note that says whether the percentiles are exact or bin brackets, and why (`set` absent: no exact values are kept). */
+ function kind(input: Input, set: LWProcess.Percentiles | undefined, exactly: boolean, n: number, many: string): string {
+  const U = u(), limit = input.distributions?.percentiles?.limit;
+  if (exactly) return `Percentiles are exact: nearest rank over all ${U.number(n)} finished ${many}; the bars group them in bins.`;
+  return 'Percentiles are bin brackets (nearest rank over the bin counts): ' + (set && limit !== undefined
+   ? `exact values are kept for at most ${U.count(limit)} finished ${many}.` : 'exact values are not kept for this distribution.');
+ }
  /** The bracket [from, to) of quantile q, for horizontal bands; null below 10 values. */
  function band(input: Input, q: number, label: string): LWProcessChart.Band | null {
   const b = bins(input), n = b.counts.reduce((x, y) => x + y, 0), i = n >= 10 ? u().rank(b.counts, q) : null;
   return i === null ? null : {from: b.edges[i]!, to: b.edges[i + 1] ?? b.edges[i]! * 1.5, label};
  }
- function lead(input: Input, counts: number[], edges: number[], id: string, title: string, max?: number): Panel {
+ function lead(input: Input, counts: number[], edges: number[], id: string, title: string, max?: number, exact?: LWProcess.Percentiles): Panel {
   const {definition: d, snapshot: q} = input.view, t = root.LWProcessTerms.of(d), U = u(), n = counts.reduce((a, b) => a + b, 0);
   const base = U.panel(id, title, `What ${t.one} lead time is typical, what are the 85th and 95th percentiles, and how long is the tail?`, {});
   if (!n) return {...base, empty: `No ${t.one} has finished yet.`};
   const first = counts.findIndex(c => c > 0), last = counts.map(c => c > 0).lastIndexOf(true), brackets = new Map<number, string[]>();
-  const ranks = n >= 10 ? PERCENTILES.map(([p, label, words]) => ({label, words, i: U.rank(counts, p)!})) : [];
+  const ranks = n >= 10 ? PERCENTILES.map(([p, label, words]) => {
+   const value = exactAt(exact, n, p), i = value === null ? U.rank(counts, p)! : edges.reduce((at, e, k) => e <= value ? k : at, 0);
+   return {label, words, i, value, text: value === null ? U.bin(edges, i) : `${U.count(value)} min`};
+  }) : [];
+  const exactly = ranks.length > 0 && ranks.every(r => r.value !== null);
   for (const r of ranks) brackets.set(r.i - first, [...brackets.get(r.i - first) ?? [], r.label]);
   const shown = counts.slice(first, last + 1).map((count, k) => ({label: U.number(edges[first + k]!), count,
    tip: `${U.bin(edges, first + k)}: ${U.plural(count, t.one, t.many)}`}));
   const finished = U.plural(n, `finished ${t.one}`, `finished ${t.many}`), tail = `the longest bin is ${U.bin(edges, last)}`;
-  const caption = ranks.length ? `The median of ${finished} lies in ${U.bin(edges, ranks[0]!.i)}, the 85th percentile in ${U.bin(edges, ranks[1]!.i)} `
-   + `and the 95th in ${U.bin(edges, ranks[2]!.i)}; ${tail}.` : `n = ${U.number(n)}: percentiles are shown from 10 finished ${t.many}; ${tail}.`;
+  const [p50, p85, p95] = ranks.map(r => r.text), shown10 = `n = ${U.number(n)}: percentiles are shown from 10 finished ${t.many}; ${tail}.`;
+  const caption = !ranks.length ? shown10 : exactly ? `The median of ${finished} is ${p50}, the 85th percentile ${p85} and the 95th ${p95}; ${tail}.`
+   : `The median of ${finished} lies in ${p50}, the 85th percentile in ${p85} and the 95th in ${p95}; ${tail}.`;
   const notes: string[] = [];
   if (id === 'lead') notes.push(`Mean lead time ${U.minutes(q.metrics.meanCycleMinutes, d)} (arrival to finish). Bins widen with duration.`);
   if (q.metrics.active > 0) notes.push(`${U.plural(q.metrics.active, t.one, t.many)} still in progress ${q.metrics.active === 1 ? 'is' : 'are'} not included.`);
+  if (ranks.length) notes.push(kind(input, exact, exactly, n, t.many));
   let cum = 0;
   const rows: (string | number)[][] = counts.slice(first, last + 1).map((c, k) => {
    cum += c;
    return [U.bin(edges, first + k), c, U.percent(cum, n)];
   });
-  for (const r of ranks) rows.push([r.words, U.bin(edges, r.i), '']);
+  for (const r of ranks) rows.push([r.words, r.text, '']);
   const chart: LWProcessDashboardModel.Chart = {kind: 'histogram', title, axis: t.many, tone: 'join', bins: shown, brackets: [...brackets],
    ...max ? {max} : {}};
   const goal = id === 'lead' && input.distributions?.cycle.length ? target(input, counts, edges, first, last, n) : null;
@@ -101,14 +126,15 @@ declare namespace LWProcessDashboardPanels {
   const base = U.panel('recent', `Lead time of recent finished ${t.many}`, `Are recent ${t.many} slower than earlier ones? Which were outliers?`, {});
   const list = finishedCases(input).sort((a, b) => a.finished - b.finished);
   if (!list.length) return {...base, empty: `No ${t.one} has finished yet.`};
-  const T = Math.max(1, q.minute), ages = list.map(c => c.finished - c.entered);
+  // The finish-minute axis starts at the first drawn case: the latest cases of a long run spread over the plot instead of its last sliver.
+  const first = list[0]!.finished, T = Math.max(first + 1, q.minute), span = T - first, ages = list.map(c => c.finished - c.entered);
   const bands = [band(input, 50, 'median, whole run'), band(input, 85, '85th percentile, whole run')].filter((b): b is LWProcessChart.Band => !!b);
-  const points = list.map(c => ({x: Math.min(T, Math.max(0, c.finished + (hash(c.caseId) - .5) * T * .004)), y: c.finished - c.entered, ...look(c)}));
+  const points = list.map(c => ({x: Math.min(T, Math.max(first, c.finished + (hash(c.caseId) - .5) * span * .004)), y: c.finished - c.entered, ...look(c)}));
   const median = (xs: number[]) => [...xs].sort((x, y) => x - y)[Math.ceil(xs.length / 2) - 1] ?? 0, half = Math.floor(list.length / 2);
   const drawn = U.plural(list.length, `finished ${t.one}`, `finished ${t.many}`);
   const caption = list.length >= 4 ? `Median lead time of the earlier half ${U.minutes(median(ages.slice(0, half)), d)}, `
    + `of the later half ${U.minutes(median(ages.slice(half)), d)}.` : `${drawn} drawn.`;
-  const notes = [`Dots are the latest ${drawn}; the bands use the whole run.`];
+  const notes = [`Dots are the latest ${drawn}, placed by finish minute; the bands use the whole run.`];
   const pruned = q.retention.finishedDropped;
   if (pruned > 0) notes.push(`${U.number(pruned)} earlier finished ${t.many} are counted in the totals but not drawn.`);
   const legend: LWProcessDashboardModel.Legend[] = [{label: 'Completed', tone: 'join', glyph: 'active'}, {label: 'Failed', tone: 'blocked', glyph: 'failed'}];
@@ -116,7 +142,8 @@ declare namespace LWProcessDashboardPanels {
   const rows = [...list].sort((x, y) => (y.finished - y.entered) - (x.finished - x.entered))
    .map(c => [c.caseId, c.entered, c.finished, c.finished - c.entered, c.status, c.outcome ?? '—']);
   const title = `Lead time by finish minute of recent finished ${t.many}`;
-  return {...base, caption, notes, legend, chart: {kind: 'points', title, points, columns: null, xMax: T, yMax: Math.max(...ages), bands},
+  const chart: LWProcessDashboardModel.Chart = {kind: 'points', title, points, columns: null, xMin: first, xMax: T, yMax: Math.max(...ages), bands};
+  return {...base, caption, notes, legend, chart,
    table: U.table(`Recent finished ${t.many}, longest first`, [t.One, 'Arrived (minute)', 'Finished (minute)', 'Lead time (minutes)', 'Status', 'Outcome'],
     rows, [false, true, true, true, false, false])};
  }
@@ -162,7 +189,9 @@ declare namespace LWProcessDashboardPanels {
  }
  function sections(input: Input): LWProcessDashboardModel.Section[] {
   const b = bins(input), title = root.LWProcessTerms.of(input.view.definition).journey ? 'Time to outcome' : 'Lead-time distribution';
-  return [{id: 'lead', title: 'Lead time and predictability', panels: [lead(input, b.counts, b.edges, 'lead', title), recent(input), aging(input)]}];
+  const exact = input.distributions?.cycle.length ? input.distributions.percentiles?.cycle : undefined;
+  return [{id: 'lead', title: 'Lead time and predictability', panels: [lead(input, b.counts, b.edges, 'lead', title, undefined, exact), recent(input),
+   aging(input)]}];
  }
  root.LWProcessDashboardPanels = {sections, lead};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessDashboardPanels;

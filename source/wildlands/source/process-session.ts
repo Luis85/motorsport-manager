@@ -19,11 +19,16 @@
  * so lead time, cycle, mean age, throughput per hour and the series count every minute. Pools are available only in working time:
  * capacity cost charges capacity × cost per minute × working minutes so far, and utilisation is busy minutes over capacity ×
  * working minutes. Queued work while closed is progress (it starts at the next opening), so such a run is not reported blocked.
+ *
+ * Checkpoints (LWProcessEngineState, LWProcessCheckpoint): `state()` returns the complete detached run state between commands and
+ * never ticks; `create(definition, {restore})` continues such a state (checked first by LWProcessCheckpointCheck) instead of starting
+ * at minute 0, with its own seed, case caps and series options, and admits or settles nothing on creation.
  */
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWECS: LWProcess.Ecs; LWProcessCatalog: LWProcess.Catalog; LWProcessSystems: LWProcess.Systems; LWProcessLimits: LWProcess.Limits;
-  LWProcessLedger: LWProcessLedger.Api; LWProcessSeries: LWProcessSeries.Api; LWProcessHours: LWProcessHours.Api; LWProcessRuntime?: LWProcess.Runtime};
+  LWProcessLedger: LWProcessLedger.Api; LWProcessSeries: LWProcessSeries.Api; LWProcessHours: LWProcessHours.Api; LWProcessRuntime?: LWProcess.Runtime;
+  LWProcessEngineState: LWProcessEngineState.Api; LWProcessCheckpointCheck: LWProcessCheckpointCheck.Api};
  const limits = root.LWProcessLimits;
  const copy = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
  // Largest seed (a positive 31-bit integer) and the most finished cases a caller may ask a session to keep in detail.
@@ -38,8 +43,9 @@
  const mean = (a: LWProcess.Aggregate | undefined) => a ? round3(a.sum / a.n) : null;
  function create(input: unknown, options: LWProcess.RunOptions = {}): LWProcess.Session {
   let horizon = options.horizon === undefined ? limits.minutes : checkHorizon(options.horizon);
-  const definition = root.LWProcessCatalog.admit(input);
-  const seed = options.seed ?? definition.seed ?? 1, active = options.active ?? limits.active, retained = options.retained ?? limits.retained;
+  const definition = root.LWProcessCatalog.admit(input), saved = restored(definition, options);
+  const seed = saved ? saved.seed : options.seed ?? definition.seed ?? 1;
+  const active = saved ? saved.active : options.active ?? limits.active, retained = saved ? saved.retained : options.retained ?? limits.retained;
   if (!Number.isSafeInteger(seed) || seed < 0 || seed > MAX_SEED) throw Error('Seed must be a whole number from 0 to ' + MAX_SEED + '.');
   if (!Number.isSafeInteger(active) || active < 1 || active > limits.active) {
    throw Error('Active case cap must be a whole number from 1 to ' + limits.active + '.');
@@ -48,7 +54,8 @@
    throw Error('Retained finished cases must be a whole number from 1 to ' + MAX_RETAINED + '.');
   }
   if (options.onEvent !== undefined && typeof options.onEvent !== 'function') throw Error('The event sink must be a function.');
-  const series = options.series === false ? null : root.LWProcessSeries.create(definition, options.series);
+  const seriesOptions = !saved ? options.series : saved.series ? {every: saved.series.every, points: saved.series.points} : false;
+  const series = seriesOptions === false ? null : root.LWProcessSeries.create(definition, seriesOptions);
   let sinkFailed = false;
   const onEvent = options.onEvent, sink = onEvent ? (event: LWProcess.Event) => {
    try { onEvent(event); } catch (error) { sinkFailed = true; throw error; }
@@ -79,9 +86,12 @@
   // clock entity, so each minute's step names that entity instead of querying every case and token for it.
   scheduler.register({id: 'process-work', phase: 'simulate', order: 1, query: ['process-clock'], update: () => root.LWProcessSystems.work(state)});
   const tick = {entityId: 'process-clock'};
-  root.LWProcessSystems.admit(state);
-  root.LWProcessSystems.settle(state);
-  if (series) root.LWProcessSeries.observe(series, state);
+  if (saved) root.LWProcessEngineState.apply(state, series, saved);
+  else {
+   root.LWProcessSystems.admit(state);
+   root.LWProcessSystems.settle(state);
+   if (series) root.LWProcessSeries.observe(series, state);
+  }
   let disposed = false, running = false;
   const alive = () => {
    if (disposed) throw Error('Process session is disposed.');
@@ -181,6 +191,10 @@
    return query();
   }
   return {query, advance, horizon: () => horizon,
+   state() {
+    alive();
+    return root.LWProcessEngineState.capture(state, series);
+   },
    series(after) {
     alive();
     return series ? root.LWProcessSeries.read(series, after) : null;
@@ -202,6 +216,14 @@
     disposed = true;
     for (const id of world.query([])) world.destroy(id);
    }};
+ }
+ /** The checked saved state of `options.restore`, or null; a restored run takes its seed, case caps and series from it. */
+ function restored(definition: LWProcess.Definition, options: LWProcess.RunOptions): LWProcessEngineState.Saved | null {
+  if (options.restore === undefined) return null;
+  if ([options.seed, options.active, options.retained, options.series].some(value => value !== undefined)) {
+   throw Error('A restored run takes its seed, case caps and series from the saved state; leave those options out.');
+  }
+  return root.LWProcessCheckpointCheck.state(definition, options.restore);
  }
  root.LWProcessRuntime = {create, limits};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessRuntime;
