@@ -492,6 +492,7 @@
     "source/tools/process-event-log.cts",
     "source/tools/process-cli-analytics.cts",
     "source/test-process.cts",
+    "source/test-process-analysis.cts",
     "source/test-process-bpmn.cts",
     "source/test-process-helpers.cts",
     "source/test-process-analytics.cts",

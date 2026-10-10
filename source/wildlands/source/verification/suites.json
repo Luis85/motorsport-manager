@@ -108,6 +108,7 @@
     {"name": "game-demos-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/game-demos-browser.js", "result": "verification/v15/game-demos-browser-results.json", "timeout": 330, "cost": 65.0},
     {"name": "business-process", "kind": "node", "tier": "fast", "entry": ".generated/test-process.cjs", "result": ".generated/process-results.json", "timeout": 120, "cost": 6},
     {"name": "business-process-bpmn", "kind": "node", "tier": "fast", "entry": ".generated/test-process-bpmn.cjs", "result": ".generated/process-bpmn-results.json", "timeout": 120, "cost": 3},
+    {"name": "business-process-analysis", "kind": "node", "tier": "fast", "entry": ".generated/test-process-analysis.cjs", "result": ".generated/process-analysis-results.json", "timeout": 120, "cost": 40},
     {"name": "business-process-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-browser.js", "result": "verification/v15/process-browser-results.json", "timeout": 360, "cost": 62},
     {"name": "process-layout-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-layout-browser.js", "result": "verification/v15/process-layout-browser-results.json", "timeout": 330, "cost": 62},
     {"name": "process-step-editor-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-step-editor-browser.js", "result": "verification/v15/process-step-editor-browser-results.json", "timeout": 600, "cost": 100},
