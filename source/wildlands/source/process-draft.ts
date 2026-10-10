@@ -5,9 +5,11 @@
  *
  * The draft is plain JSON text (so half-typed, invalid JSON is representable). The active definition is the applied one the
  * simulation runs; the draft never changes it. The store keeps one draft per process index, so switching process never
- * discards edits. It also keeps a bounded undo/redo history of the active process's draft, in memory only (never storage):
- * typing from one source within a second is one step, and a labelled write (a removed row) is always its own step.
- * Nothing here touches the DOM, a session or storage.
+ * discards edits. It also keeps a bounded undo/redo history of the active process's draft, in memory only (the history is never
+ * stored): typing from one source within a second is one step, and a labelled write (a removed row) is always its own step.
+ * Nothing here touches the DOM, a session or storage. The opt-in recovery copy of the draft text in browser storage is
+ * LWProcessRecovery's policy (`process-recovery.ts`): it subscribes to this store and writes the copy itself; a recovered copy comes
+ * back through `write(text, 'recovery')`.
  *
  * Contract for every editor surface (step editor, Definition modal, Activity modal, raw JSON editor, tuning form, toolbar):
  *  - read the draft with `read()` or `parse()`; never keep a private copy of the draft text;
