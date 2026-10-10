@@ -117,6 +117,7 @@
     {"name": "process-bpmn-import-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-bpmn-import-browser.js", "result": "verification/v15/process-bpmn-import-browser-results.json", "timeout": 300, "cost": 60},
     {"name": "process-readability-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-readability-browser.js", "result": "verification/v15/process-readability-browser-results.json", "timeout": 300, "cost": 70},
     {"name": "process-present-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-present-browser.js", "result": "verification/v15/process-present-browser-results.json", "timeout": 240, "cost": 72},
-    {"name": "process-shell-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-shell-browser.js", "result": "verification/v15/process-shell-browser-results.json", "timeout": 300, "cost": 70}
+    {"name": "process-shell-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-shell-browser.js", "result": "verification/v15/process-shell-browser-results.json", "timeout": 300, "cost": 70},
+    {"name": "business-process-readmodel", "kind": "node", "tier": "full", "entry": ".generated/test-process-sweeps.cjs", "result": ".generated/process-readmodel-results.json", "timeout": 180, "cost": 12}
   ]
 }

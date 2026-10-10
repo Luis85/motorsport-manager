@@ -405,10 +405,12 @@
         "process-graph-routes.ts",
         "process-graph.ts",
         "process-catalog.ts",
+        "process-ledger-cases.ts",
         "process-ledger.ts",
         "process-kernel.ts",
         "process-routing.ts",
-        "process-systems.ts"
+        "process-systems.ts",
+        "process-series.ts"
       ]
     },
     {
@@ -602,6 +604,8 @@
     "LWProcessCatalog",
     "LWProcessSystems",
     "LWProcessLedger",
+    "LWProcessLedgerCases",
+    "LWProcessSeries",
     "LWProcessKernel",
     "LWProcessRouting",
     "LWProcessDefinition",

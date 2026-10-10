@@ -3,7 +3,8 @@
  * Process routing (LWProcessRouting), owned by the process-definition context: what a token does when it is routed at a step
  * (queue work, open multi-instance items, start or fire a timer, finish the case at an end, fork, decide), structured joins,
  * and the release of held work and join backlogs. Allocation of pool capacity and the clock live in LWProcessSystems; the
- * shared token, case and receipt primitives in LWProcessKernel.
+ * shared token, case and receipt primitives in LWProcessKernel. A completed case is handed to the read-model ledger
+ * (LWProcessLedger.finished) with its end step and outcome; failures name the step that caused them.
  */
 declare namespace LWProcessRouting {
  type State = LWProcess.State; type Token = LWProcess.Token; type Step = LWProcess.Step;
@@ -52,7 +53,8 @@ declare namespace LWProcessRouting {
   const spec = step.instances!, raw = spec.count ?? c.data[spec.field!];
   if (typeof raw !== 'number' || !Number.isInteger(raw) || raw < 1 || raw > 50) {
    const found = Object.hasOwn(c.data, spec.field!) ? 'holds ' + JSON.stringify(raw) : 'is not set';
-   k.fail(s, c, 'Step "' + step.name + '" needs case field ' + spec.field + ' as a whole number from 1 to 50 for its instances, but it ' + found + '.');
+   const message = 'Step "' + step.name + '" needs case field ' + spec.field + ' as a whole number from 1 to 50 for its instances, but it ' + found + '.';
+   k.fail(s, c, message, step.id);
    return false;
   }
   if (spec.mode === 'parallel') k.reserve(s, raw - 1);
@@ -78,7 +80,7 @@ declare namespace LWProcessRouting {
   const others = k.tokens(s).filter(other => other.caseId === c.id);
   // Escalated tokens run beside the main route: the case finishes with the last of them, and counts the outcome of the main token's end.
   if (others.length && !t.escalated && !others.every(other => other.escalated)) {
-   k.fail(s, c, 'End reached with outstanding work.');
+   k.fail(s, c, 'End reached with outstanding work.', step.id);
    return;
   }
   if (others.length) {
@@ -90,7 +92,7 @@ declare namespace LWProcessRouting {
   c.finished = s.clock.minute;
   s.clock.completed++;
   s.clock.cycle += c.finished - c.entered;
-  if (s.ledger) root.LWProcessLedger.finished(s.ledger, c.finished - c.entered);
+  if (s.ledger) root.LWProcessLedger.finished(s.ledger, c, step.id, outcome ?? null);
   if (outcome === 'goal') s.clock.goals++;
   else if (outcome === 'lost') s.clock.lost++;
   for (const track of s.definition.track ?? []) k.note(s.finishAgg, track.field, c.data[track.field]);
@@ -105,7 +107,7 @@ declare namespace LWProcessRouting {
    const matched = out.filter(f => f.when && graph.evaluate(c.data, f.when, chanceOf(s, f, c.id, visit)));
    flows = matched.length ? matched : out.filter(f => !f.when);
    if (!flows.length) {
-    k.fail(s, c, 'Inclusive fork "' + step.name + '" matched no outgoing flow.');
+    k.fail(s, c, 'Inclusive fork "' + step.name + '" matched no outgoing flow.', step.id);
     return;
    }
    k.reserve(s, flows.length);
@@ -123,7 +125,7 @@ declare namespace LWProcessRouting {
  function route(s: State, t: Token): void {
   const c = k.caseOf(s, t), step = s.steps.get(t.stepId)!, out = s.outgoing.get(step.id)!;
   if (++c.transitions > limits.transitions) {
-   k.fail(s, c, 'Case exceeded ' + limits.transitions + ' step transitions.');
+   k.fail(s, c, 'Case exceeded ' + limits.transitions + ' step transitions.', step.id);
    return;
   }
   // A join merges branch tokens, so its needs are checked once at the merge instead of at each arrival.

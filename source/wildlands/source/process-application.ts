@@ -58,6 +58,11 @@ declare namespace LWProcessApp {
   add(input: unknown): number;
   /** Detached copies of every process's applied definition, in list order. */
   definitions(): LWProcess.Definition[];
+  /**
+   * Detached read-model reads of the active run (dashboard data): the sampled series (incremental with a cursor; null when off),
+   * the fine distributions and the latest finished cases. Like `query()` they never tick and are allowed while playing.
+   */
+  series(after?: LWProcess.SeriesCursor): LWProcess.Series | null; distributions(): LWProcess.Distributions; recent(): LWProcess.FinishedCase[];
  }
  /** `input` is one definition, or an ordered array of 1-8 definitions. */
  interface Api {create(input: unknown): Controller; readonly MAX_PROCESSES: number;}
@@ -153,6 +158,9 @@ declare namespace LWProcessApp {
    },
    use, add,
    definitions: () => JSON.parse(JSON.stringify(slots)) as LWProcess.Definition[],
+   series: after => { alive(); return session.series(after); },
+   distributions: () => { alive(); return session.distributions(); },
+   recent: () => { alive(); return session.recent(); },
    dispose() {
     disposed = true; playing = false; session.dispose();
     for (const run of kept.values()) run.session.dispose();
