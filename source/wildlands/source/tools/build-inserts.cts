@@ -361,6 +361,8 @@ export const INSERTS: readonly Insert[] = [
   ["PROCESS_SLIDES", "process-slides.js", "script", "template-process"],
   ["PROCESS_CHART", "process-chart.js", "script", "template-process"],
   ["PROCESS_DASHBOARD_MODEL", "process-dashboard-model.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD_WINDOW", "process-dashboard-window.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD_TILES", "process-dashboard-tiles.js", "script", "template-process"],
   ["PROCESS_DASHBOARD_FLOW", "process-dashboard-flow.js", "script", "template-process"],
   ["PROCESS_DASHBOARD_TIME", "process-dashboard-time.js", "script", "template-process"],
   ["PROCESS_DASHBOARD_QUALITY", "process-dashboard-quality.js", "script", "template-process"],

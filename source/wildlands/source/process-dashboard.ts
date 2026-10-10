@@ -1,6 +1,7 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-dashboard-model.ts" />
 /// <reference path="./process-dashboard-html.ts" />
+/// <reference path="./process-dashboard-window.ts" />
 /// <reference path="./process-dashboard-whatif-view.ts" />
 /**
  * The per-process Dashboard view (LWProcessDashboard), the stage's `'dashboard'` view mode. It renders detached values only: the
@@ -13,10 +14,19 @@
  * Data and export. Each panel is drawn by LWProcessDashboardHtml at its measured width (1:1 SVG, text in rem).
  *
  * Update cost: `draw` returns at once when nothing it shows changed (minute, status, selection, definition, draft flag, width,
- * expanded lists); otherwise it rebuilds the pure model and replaces only the panels whose markup changed, keeping keyboard focus
- * on the same control or mark. The series is fetched incrementally (`series({level, count})`), distributions only when finished
- * counts or step starts change, recent cases only when finishes change. A shared tooltip shows a mark's value on hover and focus;
- * every value is also in the panel's data table. The CSV export names the process and minute and goes through `save`.
+ * expanded lists, window, target, phone layout); otherwise it rebuilds the pure model and replaces only the panels whose markup
+ * changed, keeping keyboard focus on the same control or mark. It reads every size first (the root font, the region, What-if and
+ * all panel slots) and only then writes markup, so a draw forces at most one layout. The series is fetched incrementally and
+ * belongs to one run (LWProcessDashboardWindow.follow: definition revision and seed; a restart reads it again); distributions are
+ * read only when finished counts, step starts, completions or entries change, recent cases only when finishes change. A shared
+ * tooltip shows a mark's value on hover and focus; every value is also in the panel's data table. The CSV export names the process
+ * and minute and goes through `save`.
+ *
+ * View values kept in memory only (never storage): "Measure from minute W" (`select[data-window]` in the strip; also What-if's
+ * warm-up), the lead-time target (`select[data-target]`), expanded lists and open data tables, and on phones (650 px and below)
+ * the collapsed sections. There every section (the model sections, What-if, Data and export) is a `details.db-fold` whose summary
+ * is the section heading, open by default; the closed ones are remembered for the page session (across process switches) and
+ * their panels are not redrawn until opened.
  */
 declare namespace LWProcessDashboard {
  interface Env {
@@ -51,7 +61,8 @@ declare namespace LWProcessDashboard {
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessDashboardModel: LWProcessDashboardModel.Api; LWProcessDashboardHtml: LWProcessDashboardHtml.Api;
-  LWProcessDashboardWhatIfView: LWProcessDashboardWhatIfView.Api; LWProcessTerms: LWProcessTerms.Api; LWProcessDashboard?: LWProcessDashboard.Api};
+  LWProcessDashboardWhatIfView: LWProcessDashboardWhatIfView.Api; LWProcessTerms: LWProcessTerms.Api; LWProcessDashboardWindow: LWProcessDashboardWindow.Api;
+  LWProcessDashboard?: LWProcessDashboard.Api};
  type View = LWProcessApp.View;
  type Data = LWProcessDashboardData.Input;
  type FocusKey = {selector: string; slot: string | null};
@@ -61,7 +72,34 @@ declare namespace LWProcessDashboard {
   + 'results as CSV.</p><button type="button" data-csv>Download dashboard data (CSV)</button></section>'
   + '<div class="db-tip" aria-hidden="true" hidden></div>';
  /** Attributes that identify a focusable control across a redraw of its panel. */
- const FOCUS_ATTRS = ['data-select', 'data-more', 'data-tip', 'data-window', 'data-back', 'data-lens'];
+ const FOCUS_ATTRS = ['data-select', 'data-more', 'data-tip', 'data-window', 'data-target', 'data-back', 'data-lens'];
+ /** The phone layout, where every section folds into a disclosure. */
+ const PHONE = '(max-width: 650px)';
+ /**
+  * Wraps a section's content in a `details.db-fold` whose summary holds the section heading (on), or puts it back (off). The
+  * heading returns to its place: the section head of a model section, else the start of the section.
+  */
+ function fold(section: HTMLElement, on: boolean, open: boolean): void {
+  const box = section.querySelector<HTMLDetailsElement>(':scope > details.db-fold'), id = section.getAttribute('aria-labelledby')!;
+  if (on === !!box) return;
+  const heading = section.querySelector<HTMLElement>(`#${CSS.escape(id)}`)!;
+  if (on) {
+   const details = document.createElement('details'), summary = document.createElement('summary');
+   details.className = 'db-fold';
+   details.dataset.fold = id;
+   details.open = open;
+   summary.append(heading);
+   details.append(summary, ...section.childNodes);
+   section.append(details);
+   return;
+  }
+  const head = box!.querySelector<HTMLElement>(':scope > .db-section-head');
+  box!.querySelector(':scope > summary')!.remove();
+  section.append(...box!.childNodes);
+  box!.remove();
+  if (head) head.prepend(heading);
+  else section.prepend(heading);
+ }
  function sectionMarkup(s: LWProcessDashboardModel.Section, lens: boolean): string {
   const back = s.id === 'focus' ? '<button type="button" data-back>Whole process</button>' : '';
   const map = s.id === 'journey' && lens ? '<button type="button" data-lens>Open the Journey map</button>' : '';
@@ -81,8 +119,11 @@ declare namespace LWProcessDashboard {
   const whatif = root.LWProcessDashboardWhatIfView.create({draft: () => env.draft(), validate: text => env.validate(text)});
   region.insertBefore(whatif.element, region.querySelector('.db-data'));
   let last: View | null = null, model: LWProcessDashboardModel.Model | null = null, signature = '', layout = '', windowAt = 0, width = 0, drawnRem = 0;
-  let expanded = new Set<string>(), distKey = '', recentKey = -1;
+  let expanded = new Set<string>(), distKey = '', recentKey = '', targetAt: number | null = null, phoneAt: boolean | null = null;
   let data: Pick<Data, 'series' | 'distributions' | 'recent'> = {series: null, distributions: null, recent: null};
+  let cache: LWProcessDashboardWindow.Cache = {run: '', series: null};
+  /** Ids (`aria-labelledby`) of the sections closed on a phone; kept for the page session. */
+  const folded = new Set<string>(), narrow = matchMedia(PHONE);
   /** Replaces a node's markup only when it changed (the studio's setHtml diff). */
   function setHtml(node: HTMLElement, html: string): void {
    if (node.dataset.html === html) return;
@@ -90,18 +131,22 @@ declare namespace LWProcessDashboard {
    node.innerHTML = html;
   }
   const remPx = () => parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-  /** Reads the optional session data: the series incrementally, distributions and recent cases only when their counts changed. */
-  function readData(q: LWProcess.Snapshot): void {
-   if (env.series) {
-    const s = data.series, next = env.series(s ? {level: s.level, count: s.minutes.length} : undefined);
-    data.series = next ? M.util.merge(s ?? null, next) : null;
+  /**
+   * Reads the optional session data of the view's run: the series incrementally, distributions and recent cases only when the counts
+   * they follow changed. Keys carry the run identity, so another seed or revision with equal counts still reads again.
+   */
+  function readData(view: View): void {
+   const q = view.snapshot, run = root.LWProcessDashboardWindow.run(view), series = env.series;
+   if (series) {
+    cache = root.LWProcessDashboardWindow.follow(cache, run, after => series(after));
+    data.series = cache.series;
    }
-   const key = [q.metrics.completed, q.metrics.failed, ...q.steps.map(s => s.starts + ':' + s.completed)].join(',');
+   const key = [run, q.metrics.completed, q.metrics.failed, ...q.steps.map(s => `${s.starts}:${s.completed}:${s.entered}`)].join(',');
    if (env.distributions && key !== distKey) {
     distKey = key;
     data.distributions = env.distributions();
    }
-   const finished = q.metrics.completed + q.metrics.failed;
+   const finished = `${run},${q.metrics.completed + q.metrics.failed}`;
    if (env.recent && finished !== recentKey) {
     recentKey = finished;
     data.recent = env.recent();
@@ -116,6 +161,8 @@ declare namespace LWProcessDashboard {
     const v = a.getAttribute(attr);
     if (v !== null) return {selector: `[${attr}="${CSS.escape(v)}"]`, slot};
    }
+   const box = a.matches('summary') ? a.parentElement as HTMLElement : null;
+   if (box?.dataset.fold) return {selector: `[data-fold="${CSS.escape(box.dataset.fold)}"] > summary`, slot: null};
    if (a.matches('summary')) return {selector: 'summary', slot};
    return a.classList.contains('db-scroll') ? {selector: '.db-scroll', slot} : null;
   }
@@ -125,34 +172,50 @@ declare namespace LWProcessDashboard {
    scope?.querySelector<HTMLElement>(key.selector)?.focus({preventScroll: true});
   }
   function render(view: View, force: boolean): void {
-   const rem = remPx(), w = region.clientWidth, d = view.definition, q = view.snapshot, draft = env.draft().changed;
-   // What-if follows the draft and the run seed even when nothing the panels show has changed.
-   whatif.sync(view, Math.max(160, whatif.element.clientWidth - 2 * rem), rem);
-   const parts = [q.minute, q.status, q.seed, view.selected, d.id, d.revision, d.name, draft, w, rem, windowAt, [...expanded].join(','), view.playing];
-   if (!force && parts.join('|') === signature) return;
-   signature = parts.join('|');
-   width = w;
-   drawnRem = rem;
-   readData(q);
-   const key = focusKey();
-   model = M.build({view, ...data, draft, window: windowAt});
-   region.setAttribute('aria-label', `${d.name} dashboard`);
-   setHtml(part('strip'), H.strip(model.strip));
-   setHtml(part('tiles'), H.tiles(model.tiles, root.LWProcessTerms.of(d).journey ? 'Journey key figures' : 'Key figures'));
-   const shape = model.sections.map(s => s.id + ':' + s.panels.map(p => p.id).join(',')).join(';'), holder = part('sections');
+   // Sizes are read before any markup is written: a read after a write would force a layout for every panel.
+   const rem = remPx(), w = region.clientWidth, side = whatif.element.clientWidth, phone = narrow.matches;
+   const d = view.definition, q = view.snapshot, draft = env.draft().changed;
+   const parts = [q.minute, q.status, q.seed, view.selected, d.id, d.revision, d.name, draft, w, rem, windowAt, targetAt, [...expanded].join(','),
+    view.playing, phone, [...folded].join(',')];
+   if (force || parts.join('|') !== signature) {
+    signature = parts.join('|');
+    width = w;
+    drawnRem = rem;
+    readData(view);
+    const key = focusKey();
+    model = M.build({view, ...data, draft, window: windowAt, target: targetAt});
+    paint(model, rem, phone, d);
+    restore(key);
+   }
+   // What-if follows the draft, the run seed and the measuring start even when nothing the panels show has changed.
+   whatif.sync(view, Math.max(160, side - 2 * rem), rem, model?.strip.window ?? 0);
+  }
+  /** Writes the model: the section layout when its shape changed (one layout read follows), then strip, tiles and changed panels. */
+  function paint(m: LWProcessDashboardModel.Model, rem: number, phone: boolean, d: LWProcess.Definition): void {
+   const shape = phone + ';' + m.sections.map(s => s.id + ':' + s.panels.map(p => p.id).join(',')).join(';'), holder = part('sections');
+   const open = (el: HTMLElement) => !folded.has(el.getAttribute('aria-labelledby')!);
    if (shape !== layout) {
     layout = shape;
-    holder.innerHTML = model.sections.map(s => sectionMarkup(s, !!env.showLens)).join('');
+    holder.innerHTML = m.sections.map(s => sectionMarkup(s, !!env.showLens)).join('');
+    for (const el of holder.querySelectorAll<HTMLElement>(':scope > .db-section')) fold(el, phone, open(el));
    }
-   for (const s of model.sections) {
-    holder.querySelector(`#db-s-${s.id}`)!.textContent = s.title;
+   if (phone !== phoneAt) {
+    phoneAt = phone;
+    for (const el of [whatif.element, region.querySelector<HTMLElement>('.db-data')!]) fold(el, phone, open(el));
+   }
+   // Panels of a closed section keep their markup and are drawn again when it opens.
+   const shown = m.sections.filter(s => !(phone && folded.has('db-s-' + s.id)));
+   const slots = shown.flatMap(s => s.panels.map(p => ({p, el: holder.querySelector<HTMLElement>(`[data-slot="${CSS.escape(p.id)}"]`)!})));
+   const widths = slots.map(x => x.el.clientWidth);
+   region.setAttribute('aria-label', `${d.name} dashboard`);
+   setHtml(part('strip'), H.strip(m.strip));
+   setHtml(part('tiles'), H.tiles(m.tiles, root.LWProcessTerms.of(d).journey ? 'Journey key figures' : 'Key figures'));
+   for (const s of m.sections) {
+    const title = holder.querySelector<HTMLElement>(`#db-s-${s.id}`)!;
+    if (title.textContent !== s.title) title.textContent = s.title;
     setHtml(holder.querySelector<HTMLElement>(`[data-part="tiles-${s.id}"]`)!, s.tiles?.length ? H.tiles(s.tiles, s.title) : '');
-    for (const p of s.panels) {
-     const slot = holder.querySelector<HTMLElement>(`[data-slot="${CSS.escape(p.id)}"]`)!;
-     setHtml(slot, H.panel(p, {width: Math.max(160, slot.clientWidth - 2 * rem), rem, expanded}));
-    }
    }
-   restore(key);
+   slots.forEach(({p, el}, i) => setHtml(el, H.panel(p, {width: Math.max(160, widths[i]! - 2 * rem), rem, expanded})));
   }
   function draw(view: View): void {
    last = view;
@@ -192,9 +255,17 @@ declare namespace LWProcessDashboard {
    else if (t.closest('[data-lens]')) env.showLens?.();
    else if (t.closest('[data-csv]')) download();
   });
-  // A data table's disclosure keeps its open state across redraws, as the `<panel id>-open` entry of the expanded set.
+  // A data table's disclosure keeps its open state across redraws, as the `<panel id>-open` entry of the expanded set; a phone
+  // section's disclosure keeps its state in `folded`, and opening one draws its panels at their width.
   region.addEventListener('toggle', e => {
-   const d = e.target as HTMLDetailsElement, slot = d.closest<HTMLElement>('[data-slot]');
+   const d = e.target as HTMLDetailsElement, slot = d.closest<HTMLElement>('[data-slot]'), section = d.dataset.fold;
+   if (section) {
+    if (d.open !== folded.has(section)) return;
+    if (d.open) folded.delete(section);
+    else folded.add(section);
+    redraw();
+    return;
+   }
    if (!slot || !d.matches('.db-table')) return;
    const id = slot.dataset.slot + '-open';
    if (d.open === expanded.has(id)) return;
@@ -205,8 +276,9 @@ declare namespace LWProcessDashboard {
   }, true);
   region.addEventListener('change', e => {
    const t = e.target as HTMLSelectElement;
-   if (!t.matches('[data-window]')) return;
-   windowAt = Number(t.value) || 0;
+   if (t.matches('[data-window]')) windowAt = Number(t.value) || 0;
+   else if (t.matches('[data-target]')) targetAt = t.value === '' ? null : Number(t.value);
+   else return;
    redraw();
   });
   // Escape in a form field keeps the selection; elsewhere it bubbles to the stage, which returns to the whole process.
@@ -228,8 +300,10 @@ declare namespace LWProcessDashboard {
    reset() {
     whatif.reset();
     data = {series: null, distributions: null, recent: null};
+    cache = {run: '', series: null};
     distKey = '';
-    recentKey = -1;
+    recentKey = '';
+    targetAt = null;
     signature = '';
     layout = '';
     windowAt = 0;

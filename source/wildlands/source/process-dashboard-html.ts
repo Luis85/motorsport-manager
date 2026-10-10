@@ -1,10 +1,12 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-html.ts" />
 /// <reference path="./process-chart.ts" />
 /// <reference path="./process-dashboard-model.ts" />
 /**
  * Markup of the Dashboard model (LWProcessDashboardHtml): the run strip, the KPI tiles, a section heading and one panel at a time,
  * plus the CSV text of every panel table. Pure strings from LWProcessDashboardModel values and LWProcessChart primitives: no DOM,
- * session, clock or storage, so Node checks read the same markup the studio shows. Every free text is escaped.
+ * session, clock or storage, so Node checks read the same markup the studio shows. Every free text is escaped with the studio's one
+ * escaping module (LWProcessHtml.esc); option values are finite numbers only (LWProcessHtml.num).
  *
  * Structure (a contract with the surface and the browser checks):
  *  - a panel is `section.db-panel[data-panel]` labelled by its `h3`; a chart sits in `figure.db-figure` named by its
@@ -12,7 +14,8 @@
  *    `th[scope]` headers inside a focusable, labelled scroll region; a table-only panel shows its table openly;
  *  - step rows are `button[data-select="<step id>"]`; "Show all" toggles are `button[data-more="<panel id>"]` with `aria-expanded`;
  *    rows past 10 (bar rows) or 24 (tables) are left out until expanded;
- *  - glyphs and decorative samples are `aria-hidden`; problem tiles carry the word "Problems" and a hidden glyph, never colour alone.
+ *  - glyphs and decorative samples are `aria-hidden`; problem tiles carry the word "Problems" and a hidden glyph, never colour alone;
+ *  - a panel control (the lead-time target) is a labelled `select[data-target]` whose first option, "No target", has the value "".
  */
 declare namespace LWProcessDashboardHtml {
  interface Context {
@@ -34,13 +37,13 @@ declare namespace LWProcessDashboardHtml {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessChart: LWProcessChart.Api; LWProcessDashboardHtml?: LWProcessDashboardHtml.Api};
+ const root = inputRoot as {LWProcessChart: LWProcessChart.Api; LWProcessHtml: LWProcessHtml.Api; LWProcessDashboardHtml?: LWProcessDashboardHtml.Api};
  type Ctx = LWProcessDashboardHtml.Context;
  type Panel = LWProcessDashboardModel.Panel;
  type Table = LWProcessDashboardModel.Table;
  type Chart = LWProcessDashboardModel.Chart;
  const ROWS = 10, TABLE_ROWS = 24, SPARKS = 12;
- const C = () => root.LWProcessChart, esc = (s: unknown) => C().esc(s);
+ const C = () => root.LWProcessChart, esc = (s: unknown) => root.LWProcessHtml.esc(s), num = (n: unknown) => root.LWProcessHtml.num(n);
  const slug = (id: string) => id.replace(/[^a-z0-9-]/gi, '-');
  /** The "Show all" toggle of a list longer than `limit`. */
  function more(id: string, total: number, ctx: Ctx, limit: number, what: string): string {
@@ -53,7 +56,31 @@ declare namespace LWProcessDashboardHtml {
   if (list.length <= limit || ctx.expanded.has(id)) return list;
   return tail ? list.slice(-limit) : list.slice(0, limit);
  }
+ /**
+  * Markup per chart or table object and drawing context. Panels drawn only from the run history are built once per series
+  * (LWProcessDashboardModel.util.memo) and hand back the same objects, so their markup is not built again on every draw. Only a pure
+  * function's result is kept, so the output never depends on it.
+  */
+ const drawn = new WeakMap<object, Map<string, string>>();
+ function once(object: object, key: string, make: () => string): string {
+  let held = drawn.get(object);
+  if (!held) {
+   held = new Map();
+   drawn.set(object, held);
+  }
+  let markup = held.get(key);
+  if (markup === undefined) {
+   if (held.size >= 8) held.clear();
+   markup = make();
+   held.set(key, markup);
+  }
+  return markup;
+ }
  function table(t: Table, id: string, ctx: Ctx, open = false): string {
+  const key = [id, open, ctx.expanded.has(id + '-table'), ctx.expanded.has(id + '-open')].join('|');
+  return once(t, key, () => drawTable(t, id, ctx, open));
+ }
+ function drawTable(t: Table, id: string, ctx: Ctx, open: boolean): string {
   const rows = shown(t.rows, id + '-table', ctx, TABLE_ROWS, t.tail), cut = rows.length < t.rows.length;
   const caption = t.caption + (cut ? ` (the ${t.tail ? 'latest' : 'first'} ${TABLE_ROWS} of ${t.rows.length} rows)` : '');
   const num = (i: number) => t.numeric[i] ? ' class="num"' : '';
@@ -81,6 +108,9 @@ declare namespace LWProcessDashboardHtml {
  }
  /** The chart of a panel as markup (SVG or bar rows), drawn at the context width. */
  function chart(p: Panel, ctx: Ctx): string {
+  return once(p.chart!, [p.id, ctx.width, ctx.rem, ctx.expanded.has(p.id)].join('|'), () => drawChart(p, ctx));
+ }
+ function drawChart(p: Panel, ctx: Ctx): string {
   const c = p.chart!, w = Math.max(160, Math.floor(ctx.width)), rem = ctx.rem, id = 'db-c-' + slug(p.id);
   const f = (h: number, title = c.title, suffix = '') => ({width: w, height: h, title, id: id + suffix});
   switch (c.kind) {
@@ -119,7 +149,8 @@ declare namespace LWProcessDashboardHtml {
  }
  function panel(p: Panel, ctx: Ctx): string {
   const h = 'db-h-' + slug(p.id), notes = p.notes.map(n => `<p class="db-note">${esc(n)}</p>`).join('');
-  const head = `<h3 id="${h}">${esc(p.title)}</h3><p class="db-question">${esc(p.question)}</p>`;
+  const head = `<h3 id="${h}">${esc(p.title)}</h3><p class="db-question">${esc(p.question)}</p>`
+   + (p.control && p.empty === null ? control(p.control) : '');
   let body: string;
   if (p.empty !== null) body = `<p class="db-empty">${esc(p.empty)}</p>` + notes;
   else if (p.chart) {
@@ -129,6 +160,12 @@ declare namespace LWProcessDashboardHtml {
    body = `<figure class="db-figure"><figcaption>${esc(p.caption || p.table.caption)}</figcaption>${table(p.table, p.id, ctx, true)}</figure>` + notes;
   } else body = `<p class="db-caption">${esc(p.caption)}</p>` + notes;
   return `<section class="db-panel" data-panel="${esc(p.id)}" aria-labelledby="${h}">${head}${body}</section>`;
+ }
+ /** The lead-time target select: "No target" (value "") and the bin edges offered by the model. */
+ function control(c: NonNullable<Panel['control']>): string {
+  const option = (o: {value: number; label: string}) => `<option value="${num(o.value)}"${o.value === c.value ? ' selected' : ''}>${esc(o.label)}</option>`;
+  const none = `<option value=""${c.value === null ? ' selected' : ''}>No target</option>`;
+  return `<label class="db-target">${esc(c.label)} <select data-target>${none}${c.options.map(option).join('')}</select></label>`;
  }
  function strip(s: LWProcessDashboardModel.Strip): string {
   const option = (m: number) => `<option value="${Number.isFinite(m) ? m : 0}"${m === s.window ? ' selected' : ''}>${esc(C().compact(m))}</option>`;

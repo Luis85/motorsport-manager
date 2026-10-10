@@ -81,7 +81,7 @@
   const panels = [distribution(input, 'focus-wait', dist?.wait, 'Wait before work starts', null, 'How long does work wait here before it starts?'),
    distribution(input, 'focus-service', dist?.service, 'Time from start to finish of a visit', planned, 'How long does a visit take compared with the plan?'),
    distribution(input, 'focus-pace', dist?.exitAge, `Age of ${t.many} when they leave this step`, null, `How old are ${t.many} when they leave this step?`),
-   queue(input, step), about(d, q, step)];
+   input.series && input.series.minutes.length > 1 ? u().memo(input, 'focus-queue', () => queue(input, step)) : queue(input, step), about(d, q, step)];
   return [{id: 'focus', title: `Step focus: ${step.name}`, panels, tiles: tiles(d, q, step)}];
  }
  root.LWProcessDashboardFocus = {sections};
