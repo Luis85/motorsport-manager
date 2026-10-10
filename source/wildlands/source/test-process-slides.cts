@@ -7,32 +7,17 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {catalog, runtime, slides} from './process-sdk.cjs';
 import {test, copy, stepOf, flowOf} from './test-process-helpers.cjs';
+import {claims, demos} from './test-process-slides-fixtures.cjs';
 require('./process-renderer-sipoc.js');
 const sipoc = (globalThis as unknown as {LWProcessSipoc: {model(d: LWProcess.Definition, q: LWProcess.Snapshot): unknown}}).LWProcessSipoc;
 const route = (globalThis as unknown as {LWProcessRoute: LWProcessRoute.Api}).LWProcessRoute;
 
-const CONTENT = path.resolve(__dirname, '../../../docs/concepts/agency-delivery/content');
-export const demos = fs.readdirSync(CONTENT).filter(f => f.endsWith('.process.json')).sort().map(f => [f, JSON.parse(fs.readFileSync(path.join(CONTENT, f), 'utf8')) as LWProcess.Definition] as const);
 const sha = (text: string) => createHash('sha256').update(text).digest('hex');
 /** Pinned LWProcessSipoc.model JSON of the seven demos (see the SIPOC check). */
 const SIPOC_LENGTH = 41578, SIPOC_SHA = '6c1f38b83644cf1107b871161050ab2d0d4479a2b744e7ecff72cfc8ba1c743e';
 const seeded = (d: LWProcess.Definition, minutes: number, seed: number) => { const s = runtime.create(d, {seed}); try { return s.advance(minutes); } finally { s.dispose(); } };
 const deepFreeze = <T,>(v: T): T => { if (v && typeof v === 'object') { for (const x of Object.values(v)) deepFreeze(x); Object.freeze(v); } return v; };
 /** A small claims desk: an interrupting deadline, a decision with a chance route, a parallel fork with a timer branch and three phases. */
-export function claims(): LWProcess.Definition {
- return {format: 'wildlands-process', schemaVersion: 1, revision: 1, seed: 3, id: 'small-claims', name: 'Small claims', description: 'A small claims desk used to check the slide model. All values are synthetic.', start: 'start',
-  resources: [{id: 'clerks', name: 'Claims clerks', capacity: 2, costPerMinute: 1}],
-  steps: [stepOf('start', 'start', {name: 'Claim received', phase: 'Intake'}, 0),
-   stepOf('check', 'task', {name: 'Check the claim', phase: 'Intake', description: 'A clerk checks the claim form.', duration: 10, cost: 5, resources: {clerks: 1}, set: {checked: true}, deadline: {after: 15, mode: 'interrupt', flow: 'check-late'}}, 12),
-   stepOf('supervisor', 'task', {name: 'Supervisor review', duration: 5, resources: {clerks: 1}, set: {checked: true}}, 24), stepOf('decide', 'decision', {name: 'Pay out?', phase: 'Decide'}, 36),
-   stepOf('rejected', 'end', {name: 'Claim rejected'}, 48), stepOf('split', 'fork', {name: 'Pay and wait', phase: 'Payout', join: 'joined'}, 60),
-   stepOf('pay', 'task', {name: 'Pay the claim', duration: 4, resources: {clerks: 1}, set: {paid: true}}, 72), stepOf('cooling', 'timer', {name: 'Cooling-off period', duration: 30}, 84),
-   stepOf('joined', 'join', {name: 'Paid and closed'}, 96), stepOf('end', 'end', {name: 'Claim settled'}, 108)],
-  flows: [flowOf('start', 'check'), flowOf('check', 'decide'), {id: 'check-late', from: 'check', to: 'supervisor', on: 'deadline'}, flowOf('supervisor', 'decide'),
-   {id: 'decide-reject', from: 'decide', to: 'rejected', when: {chance: 20}, label: 'Not covered'}, flowOf('decide', 'split'), flowOf('split', 'pay'), flowOf('split', 'cooling'),
-   flowOf('pay', 'joined'), flowOf('cooling', 'joined'), flowOf('joined', 'end')],
-  arrivals: [{at: 0, count: 3, interval: 5, data: {}}]};
-}
 
 test('Slides cover every demo step on exactly one step slide in contiguous, non-empty sections', () => {
  assert.equal(demos.length, 7);

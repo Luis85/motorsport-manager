@@ -111,8 +111,13 @@ test('Dashboard model before the first finish keeps lead time undefined and show
  assert.match(aging.caption, /^1 open case; the oldest is 600 min/);
  assert.equal(tile(m, 'oldest')!.value, '600 min (≈ 10 h)');
  assert.match(panel(m, 'breakdown').caption, /^Open now: 1 /);
- const early = panel(model(viewAt(demo('agency'), 5)), 'waiting');
+ // Without exact minutes by status the share comes from the waits of started work, so there is no share of zero waiting yet;
+ // with them (every session now reports minutesBy) work still waiting counts, and the share is exact.
+ const earlyView = viewAt(demo('agency'), 5), legacyEarly = copy(earlyView);
+ for (const s of legacyEarly.snapshot.steps) delete s.minutesBy;
+ const early = panel(model(legacyEarly), 'waiting');
  assert.equal(early.caption, 'Discovery has 1 waiting now; no started work has waited yet.', 'no share of zero waiting');
+ assert.equal(panel(model(earlyView), 'waiting').caption, 'Discovery holds 100% of the waiting.', 'exact minutes count work still waiting');
  assert.doesNotMatch(JSON.stringify(early.chart), /of waiting/);
 });
 
@@ -153,7 +158,12 @@ test('Dashboard model of a completed deterministic run drops the seed sentence a
  assert.match(panel(m, 'pool-cost').caption, /^Idle capacity is [\d.]+% of the capacity cost \([\d,]+ of [\d,]+ simulated cost units\)\.$/);
  const cost = panel(m, 'step-cost'), bars = (cost.chart as Extract<LWProcessDashboardModel.Chart, {kind: 'stack'}>).bars;
  assert.equal(bars.reduce((a, b) => a + b.segments.reduce((x, s) => x + s.value, 0), 0), view.snapshot.metrics.cost, 'step costs add up to the work cost');
- assert.match(cost.notes[0]!, /^Work cost so far ÷ finished cases: [\d,.]+ \(includes open and failed work\)\.$/);
+ // With the attributed costs (metrics.costOf) the cost per finished case is exact; without them it is labelled as an estimate.
+ assert.equal(cost.notes[0], `Work cost per finished case: ${M.util.number(view.snapshot.metrics.costOf!.completed / view.snapshot.metrics.completed)}.`);
+ const legacyCost = copy(view);
+ delete legacyCost.snapshot.metrics.costOf;
+ const estimate = panel(model(legacyCost), 'step-cost');
+ assert.match(estimate.notes[0]!, /^Work cost so far ÷ finished cases: [\d,.]+ \(includes open and failed work\)\.$/);
  assert.equal(tile(m, 'problems'), undefined);
 });
 

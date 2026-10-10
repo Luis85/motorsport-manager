@@ -60,12 +60,12 @@ declare namespace LWProcessChart {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessChart?: LWProcessChart.Api};
+ const root = inputRoot as {LWProcessChart?: LWProcessChart.Api; LWProcessHtml: LWProcessHtml.Api};
  type Tone = LWProcessChart.Tone;
  type Glyph = LWProcessChart.Glyph;
  type Frame = LWProcessChart.Frame;
- const ENTITY: Record<string, string> = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'};
- const esc = (text: unknown) => String(text ?? '').replace(/[&<>"']/g, c => ENTITY[c]!);
+ /** Free text through the studio's one escaping module (LWProcessHtml.esc); `null` and `undefined` are empty text. */
+ const esc = (text: unknown) => root.LWProcessHtml.esc(text ?? '');
  /** Half-pixel rounding keeps 1 px strokes crisp; non-finite values collapse to 0 so no NaN reaches an attribute. */
  const px = (n: number) => Number.isFinite(n) ? Math.round(n * 2) / 2 : 0;
  const BAR = 24, RADIUS = 4, GAP = 2, DOT = 4;

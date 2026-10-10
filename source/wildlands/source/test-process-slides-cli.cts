@@ -9,7 +9,7 @@ import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {catalog, runtime, authoring, slides, diff} from './process-sdk.cjs';
 import {test, base, copy, guard} from './test-process-helpers.cjs';
-import {claims} from './test-process-slides.cjs';
+import {claims} from './test-process-slides-fixtures.cjs';
 require('./process-draft.js');
 const draftApi = (globalThis as unknown as {LWProcessDraft: LWProcessDraft.Api}).LWProcessDraft;
 const CLI = path.join(__dirname, 'tools/wildlands-cli.cjs'), GOLDEN = path.join(__dirname, 'fixtures/process-slides-small-claims.md');

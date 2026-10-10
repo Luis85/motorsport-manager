@@ -12,7 +12,7 @@ import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {runtime, slides} from './process-sdk.cjs';
 import {test} from './test-process-helpers.cjs';
-import {claims, demos} from './test-process-slides.cjs';
+import {claims, demos} from './test-process-slides-fixtures.cjs';
 const CLI = path.join(__dirname, 'tools/wildlands-cli.cjs');
 const seeded = (d: LWProcess.Definition, minutes: number, seed: number) => {
  const s = runtime.create(d, {seed});

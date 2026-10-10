@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {slides} from './process-sdk.cjs';
 import {test} from './test-process-helpers.cjs';
-import {claims, demos} from './test-process-slides.cjs';
+import {claims, demos} from './test-process-slides-fixtures.cjs';
 const route = (globalThis as unknown as {LWProcessRoute: LWProcessRoute.Api}).LWProcessRoute;
 const sha = (text: string) => createHash('sha256').update(text).digest('hex');
 /** JSON of [file, deck, Markdown] for the seven demos without a snapshot, pinned before the journey map's walk moved here. */

@@ -11,7 +11,7 @@
 import assert from 'node:assert/strict';
 import {runtime, slides} from './process-sdk.cjs';
 import {test, copy} from './test-process-helpers.cjs';
-import {claims, demos} from './test-process-slides.cjs';
+import {claims, demos} from './test-process-slides-fixtures.cjs';
 require('./process-renderer-sipoc.js');
 const sipoc = (globalThis as unknown as {LWProcessSipoc: {model(d: LWProcess.Definition, q: LWProcess.Snapshot): LWProcessSipoc.Model}}).LWProcessSipoc;
 const work = (globalThis as unknown as {LWProcessWorkState: LWProcessWorkState.Api}).LWProcessWorkState;
