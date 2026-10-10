@@ -696,6 +696,30 @@
             "minimum": 0,
             "maximum": 1
           },
+          "sheen": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "sheenColor": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          "sheenRoughness": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "clearcoat": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "clearcoatRoughness": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
           "emissive": {
             "type": "string",
             "pattern": "^#[0-9a-fA-F]{6}$"
@@ -710,6 +734,9 @@
             "type": "number",
             "minimum": 0,
             "maximum": 1
+          },
+          "depthWrite": {
+            "type": "boolean"
           },
           "doubleSided": {
             "default": false,

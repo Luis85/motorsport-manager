@@ -33,21 +33,62 @@ test('real browser creates, edits, imports, guards conflicts and reflows the com
   const server = await start(project);
   const browser = await chromium.launch({executablePath:await browserPath(), headless:true, args:['--no-sandbox']});
   try {
-    const page = await browser.newPage({viewport:{width:1440,height:1000}});
+    const page = await browser.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'});
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
-    await page.goto(server.url);
+    await page.goto(server.url, {timeout:60000});
     await page.waitForFunction(() => !!window.characterStudio);
     await click(page, 'new:pip');
+    const beforeRename = await page.evaluate(() => (window.characterStudio as any).preview.inspect().modelRevision);
     await page.locator('#character-name').fill('Moss');
     await click(page, 'review');
     assert.match(await page.locator('#dialog-title').textContent() || '', /Moss/, 'first click commits a blurred text field and opens Review');
     await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(() => (window.characterStudio as any).preview.inspect().modelRevision), beforeRename,
+      'identity edits must not rebuild identical authored geometry');
     const initial = await character(page);
     await click(page, 'chapter:3');
     const skill = await page.evaluate(() => (window.characterStudio as any).catalog().skills[0].id);
     await click(page, `skill:${skill}:1`);
     await click(page, 'chapter:1');
+    assert.equal(await page.locator('[data-portrait-preset]').count(), 3);
+    assert.equal(await page.locator('[data-portrait-preset]').evaluateAll(images => images.every(image => (image as HTMLImageElement).naturalWidth > 0)), true, 'starting looks show rendered native model portraits');
+    const beforeEars = await page.evaluate(() => (window.characterStudio as any).preview.inspect().modelRevision);
+    await click(page, 'ears:long');
+    assert.equal(await page.evaluate(() => (window.characterStudio as any).preview.inspect().modelRevision), beforeEars + 1,
+      'appearance edits rebuild the actual authored geometry');
+    assert.equal((await character(page)).appearance.ears, 'long');
+    await click(page, 'undo');
+    assert.equal((await character(page)).appearance.ears, 'round');
+    const beforeCached = await page.evaluate(() => (window.characterStudio as any).preview.inspect().renderer.frame);
+    await click(page, 'chapter:1');
+    assert.equal(await page.evaluate(() => (window.characterStudio as any).preview.inspect().renderer.frame), beforeCached,
+      'reusing cached portraits must not trigger viewport renders');
+    const previewState = await page.evaluate(() => (window.characterStudio as any).preview.inspect());
+    assert.equal(previewState.renderer.state, 'three-engine');
+    assert.ok(previewState.renderer.calls > 0 && previewState.renderer.calls < 150, 'static garden batches remain within the presentation draw budget');
+    assert.ok(previewState.renderer.triangles > 0);
+    const configured = await page.evaluate(() => {
+      const api = (window.characterStudio as any).preview;
+      api.configure({paused:true,reset:true});
+      const before = api.inspect();
+      let rejected = false;
+      try { api.configure({mode:'world',light:'invalid'}); } catch { rejected = true; }
+      const afterInvalid = api.inspect();
+      const result = api.configure({mode:'world',light:'night',pose:'walk',camera:'side',paused:true,reset:true});
+      api.configure({mode:'studio',light:'studio',pose:'idle',camera:'front',paused:true,reset:true});
+      return {before,afterInvalid,result,rejected};
+    });
+    assert.equal(configured.rejected, true);
+    assert.deepEqual(configured.afterInvalid, configured.before, 'invalid config cannot partially change state or render');
+    assert.equal(configured.result.renderer.frame, configured.before.renderer.frame + 1, 'configuration draws exactly once');
+    assert.equal(configured.result.mode, 'world');
+    assert.equal(configured.result.light, 'night');
+    assert.equal(configured.result.pose, 'walk');
+    assert.equal(configured.result.yaw, Math.PI / 2);
+    assert.equal(configured.result.time, 0);
+    assert.equal(configured.result.zoom, 1);
+    assert.equal(configured.result.paused, true);
     const numeric = page.locator('[data-range="appearance.headSize"][type="number"]');
     await numeric.focus(); await numeric.press('ArrowUp'); await numeric.press('Tab');
     await click(page, 'mode:portrait');

@@ -101,9 +101,15 @@ export declare const MaterialSchema: z.ZodObject<{
     color: z.ZodString;
     metalness: z.ZodDefault<z.ZodNumber>;
     roughness: z.ZodDefault<z.ZodNumber>;
+    sheen: z.ZodOptional<z.ZodNumber>;
+    sheenColor: z.ZodOptional<z.ZodString>;
+    sheenRoughness: z.ZodOptional<z.ZodNumber>;
+    clearcoat: z.ZodOptional<z.ZodNumber>;
+    clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
     emissive: z.ZodOptional<z.ZodString>;
     emissiveIntensity: z.ZodOptional<z.ZodNumber>;
     opacity: z.ZodDefault<z.ZodNumber>;
+    depthWrite: z.ZodOptional<z.ZodBoolean>;
     doubleSided: z.ZodDefault<z.ZodBoolean>;
     flatShading: z.ZodDefault<z.ZodBoolean>;
     shading: z.ZodOptional<z.ZodEnum<{
@@ -360,6 +366,10 @@ export declare const EnvironmentSchema: z.ZodObject<{
         filmic: "filmic";
         neutral: "neutral";
     }>>;
+    presentation: z.ZodOptional<z.ZodEnum<{
+        inspection: "inspection";
+        portrait: "portrait";
+    }>>;
     ambient: z.ZodDefault<z.ZodNumber>;
     keyIntensity: z.ZodDefault<z.ZodNumber>;
     keyPosition: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber, z.ZodNumber], null>>;
@@ -377,6 +387,10 @@ export declare const SceneSchema: z.ZodObject<{
             linear: "linear";
             filmic: "filmic";
             neutral: "neutral";
+        }>>;
+        presentation: z.ZodOptional<z.ZodEnum<{
+            inspection: "inspection";
+            portrait: "portrait";
         }>>;
         ambient: z.ZodDefault<z.ZodNumber>;
         keyIntensity: z.ZodDefault<z.ZodNumber>;
@@ -463,9 +477,15 @@ export declare const SceneSchema: z.ZodObject<{
         color: z.ZodString;
         metalness: z.ZodDefault<z.ZodNumber>;
         roughness: z.ZodDefault<z.ZodNumber>;
+        sheen: z.ZodOptional<z.ZodNumber>;
+        sheenColor: z.ZodOptional<z.ZodString>;
+        sheenRoughness: z.ZodOptional<z.ZodNumber>;
+        clearcoat: z.ZodOptional<z.ZodNumber>;
+        clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
         emissive: z.ZodOptional<z.ZodString>;
         emissiveIntensity: z.ZodOptional<z.ZodNumber>;
         opacity: z.ZodDefault<z.ZodNumber>;
+        depthWrite: z.ZodOptional<z.ZodBoolean>;
         doubleSided: z.ZodDefault<z.ZodBoolean>;
         flatShading: z.ZodDefault<z.ZodBoolean>;
         shading: z.ZodOptional<z.ZodEnum<{
@@ -749,9 +769,15 @@ export declare const ModelSchema: z.ZodObject<{
         color: z.ZodString;
         metalness: z.ZodDefault<z.ZodNumber>;
         roughness: z.ZodDefault<z.ZodNumber>;
+        sheen: z.ZodOptional<z.ZodNumber>;
+        sheenColor: z.ZodOptional<z.ZodString>;
+        sheenRoughness: z.ZodOptional<z.ZodNumber>;
+        clearcoat: z.ZodOptional<z.ZodNumber>;
+        clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
         emissive: z.ZodOptional<z.ZodString>;
         emissiveIntensity: z.ZodOptional<z.ZodNumber>;
         opacity: z.ZodDefault<z.ZodNumber>;
+        depthWrite: z.ZodOptional<z.ZodBoolean>;
         doubleSided: z.ZodDefault<z.ZodBoolean>;
         flatShading: z.ZodDefault<z.ZodBoolean>;
         shading: z.ZodOptional<z.ZodEnum<{
@@ -1408,9 +1434,15 @@ export declare const OperationSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
         color: z.ZodString;
         metalness: z.ZodDefault<z.ZodNumber>;
         roughness: z.ZodDefault<z.ZodNumber>;
+        sheen: z.ZodOptional<z.ZodNumber>;
+        sheenColor: z.ZodOptional<z.ZodString>;
+        sheenRoughness: z.ZodOptional<z.ZodNumber>;
+        clearcoat: z.ZodOptional<z.ZodNumber>;
+        clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
         emissive: z.ZodOptional<z.ZodString>;
         emissiveIntensity: z.ZodOptional<z.ZodNumber>;
         opacity: z.ZodDefault<z.ZodNumber>;
+        depthWrite: z.ZodOptional<z.ZodBoolean>;
         doubleSided: z.ZodDefault<z.ZodBoolean>;
         flatShading: z.ZodDefault<z.ZodBoolean>;
         shading: z.ZodOptional<z.ZodEnum<{
@@ -1441,6 +1473,10 @@ export declare const OperationSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
             linear: "linear";
             filmic: "filmic";
             neutral: "neutral";
+        }>>;
+        presentation: z.ZodOptional<z.ZodEnum<{
+            inspection: "inspection";
+            portrait: "portrait";
         }>>;
         ambient: z.ZodDefault<z.ZodNumber>;
         keyIntensity: z.ZodDefault<z.ZodNumber>;
@@ -1914,9 +1950,15 @@ export declare const BatchSchema: z.ZodObject<{
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -1947,6 +1989,10 @@ export declare const BatchSchema: z.ZodObject<{
                 linear: "linear";
                 filmic: "filmic";
                 neutral: "neutral";
+            }>>;
+            presentation: z.ZodOptional<z.ZodEnum<{
+                inspection: "inspection";
+                portrait: "portrait";
             }>>;
             ambient: z.ZodDefault<z.ZodNumber>;
             keyIntensity: z.ZodDefault<z.ZodNumber>;
@@ -2230,9 +2276,15 @@ export declare const ModelBundleSchema: z.ZodObject<{
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -2458,6 +2510,10 @@ export declare const SceneBundleSchema: z.ZodObject<{
                 filmic: "filmic";
                 neutral: "neutral";
             }>>;
+            presentation: z.ZodOptional<z.ZodEnum<{
+                inspection: "inspection";
+                portrait: "portrait";
+            }>>;
             ambient: z.ZodDefault<z.ZodNumber>;
             keyIntensity: z.ZodDefault<z.ZodNumber>;
             keyPosition: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber, z.ZodNumber], null>>;
@@ -2543,9 +2599,15 @@ export declare const SceneBundleSchema: z.ZodObject<{
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -2829,9 +2891,15 @@ export declare const SceneBundleSchema: z.ZodObject<{
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -3064,9 +3132,15 @@ export declare const LittlewildAssetSchema: z.ZodObject<{
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -3097,9 +3171,15 @@ export declare const LittlewildExportSchema: z.ZodObject<{
                 color: z.ZodString;
                 metalness: z.ZodDefault<z.ZodNumber>;
                 roughness: z.ZodDefault<z.ZodNumber>;
+                sheen: z.ZodOptional<z.ZodNumber>;
+                sheenColor: z.ZodOptional<z.ZodString>;
+                sheenRoughness: z.ZodOptional<z.ZodNumber>;
+                clearcoat: z.ZodOptional<z.ZodNumber>;
+                clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
                 emissive: z.ZodOptional<z.ZodString>;
                 emissiveIntensity: z.ZodOptional<z.ZodNumber>;
                 opacity: z.ZodDefault<z.ZodNumber>;
+                depthWrite: z.ZodOptional<z.ZodBoolean>;
                 doubleSided: z.ZodDefault<z.ZodBoolean>;
                 flatShading: z.ZodDefault<z.ZodBoolean>;
                 shading: z.ZodOptional<z.ZodEnum<{
@@ -3268,6 +3348,10 @@ export declare const schemas: {
                 filmic: "filmic";
                 neutral: "neutral";
             }>>;
+            presentation: z.ZodOptional<z.ZodEnum<{
+                inspection: "inspection";
+                portrait: "portrait";
+            }>>;
             ambient: z.ZodDefault<z.ZodNumber>;
             keyIntensity: z.ZodDefault<z.ZodNumber>;
             keyPosition: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber, z.ZodNumber], null>>;
@@ -3353,9 +3437,15 @@ export declare const schemas: {
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -3639,9 +3729,15 @@ export declare const schemas: {
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -4220,9 +4316,15 @@ export declare const schemas: {
                 color: z.ZodString;
                 metalness: z.ZodDefault<z.ZodNumber>;
                 roughness: z.ZodDefault<z.ZodNumber>;
+                sheen: z.ZodOptional<z.ZodNumber>;
+                sheenColor: z.ZodOptional<z.ZodString>;
+                sheenRoughness: z.ZodOptional<z.ZodNumber>;
+                clearcoat: z.ZodOptional<z.ZodNumber>;
+                clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
                 emissive: z.ZodOptional<z.ZodString>;
                 emissiveIntensity: z.ZodOptional<z.ZodNumber>;
                 opacity: z.ZodDefault<z.ZodNumber>;
+                depthWrite: z.ZodOptional<z.ZodBoolean>;
                 doubleSided: z.ZodDefault<z.ZodBoolean>;
                 flatShading: z.ZodDefault<z.ZodBoolean>;
                 shading: z.ZodOptional<z.ZodEnum<{
@@ -4253,6 +4355,10 @@ export declare const schemas: {
                     linear: "linear";
                     filmic: "filmic";
                     neutral: "neutral";
+                }>>;
+                presentation: z.ZodOptional<z.ZodEnum<{
+                    inspection: "inspection";
+                    portrait: "portrait";
                 }>>;
                 ambient: z.ZodDefault<z.ZodNumber>;
                 keyIntensity: z.ZodDefault<z.ZodNumber>;
@@ -4633,9 +4739,15 @@ export declare const schemas: {
         color: z.ZodString;
         metalness: z.ZodDefault<z.ZodNumber>;
         roughness: z.ZodDefault<z.ZodNumber>;
+        sheen: z.ZodOptional<z.ZodNumber>;
+        sheenColor: z.ZodOptional<z.ZodString>;
+        sheenRoughness: z.ZodOptional<z.ZodNumber>;
+        clearcoat: z.ZodOptional<z.ZodNumber>;
+        clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
         emissive: z.ZodOptional<z.ZodString>;
         emissiveIntensity: z.ZodOptional<z.ZodNumber>;
         opacity: z.ZodDefault<z.ZodNumber>;
+        depthWrite: z.ZodOptional<z.ZodBoolean>;
         doubleSided: z.ZodDefault<z.ZodBoolean>;
         flatShading: z.ZodDefault<z.ZodBoolean>;
         shading: z.ZodOptional<z.ZodEnum<{
@@ -4813,9 +4925,15 @@ export declare const schemas: {
                 color: z.ZodString;
                 metalness: z.ZodDefault<z.ZodNumber>;
                 roughness: z.ZodDefault<z.ZodNumber>;
+                sheen: z.ZodOptional<z.ZodNumber>;
+                sheenColor: z.ZodOptional<z.ZodString>;
+                sheenRoughness: z.ZodOptional<z.ZodNumber>;
+                clearcoat: z.ZodOptional<z.ZodNumber>;
+                clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
                 emissive: z.ZodOptional<z.ZodString>;
                 emissiveIntensity: z.ZodOptional<z.ZodNumber>;
                 opacity: z.ZodDefault<z.ZodNumber>;
+                depthWrite: z.ZodOptional<z.ZodBoolean>;
                 doubleSided: z.ZodDefault<z.ZodBoolean>;
                 flatShading: z.ZodDefault<z.ZodBoolean>;
                 shading: z.ZodOptional<z.ZodEnum<{
@@ -5041,6 +5159,10 @@ export declare const schemas: {
                     filmic: "filmic";
                     neutral: "neutral";
                 }>>;
+                presentation: z.ZodOptional<z.ZodEnum<{
+                    inspection: "inspection";
+                    portrait: "portrait";
+                }>>;
                 ambient: z.ZodDefault<z.ZodNumber>;
                 keyIntensity: z.ZodDefault<z.ZodNumber>;
                 keyPosition: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber, z.ZodNumber], null>>;
@@ -5126,9 +5248,15 @@ export declare const schemas: {
                 color: z.ZodString;
                 metalness: z.ZodDefault<z.ZodNumber>;
                 roughness: z.ZodDefault<z.ZodNumber>;
+                sheen: z.ZodOptional<z.ZodNumber>;
+                sheenColor: z.ZodOptional<z.ZodString>;
+                sheenRoughness: z.ZodOptional<z.ZodNumber>;
+                clearcoat: z.ZodOptional<z.ZodNumber>;
+                clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
                 emissive: z.ZodOptional<z.ZodString>;
                 emissiveIntensity: z.ZodOptional<z.ZodNumber>;
                 opacity: z.ZodDefault<z.ZodNumber>;
+                depthWrite: z.ZodOptional<z.ZodBoolean>;
                 doubleSided: z.ZodDefault<z.ZodBoolean>;
                 flatShading: z.ZodDefault<z.ZodBoolean>;
                 shading: z.ZodOptional<z.ZodEnum<{
@@ -5412,9 +5540,15 @@ export declare const schemas: {
                 color: z.ZodString;
                 metalness: z.ZodDefault<z.ZodNumber>;
                 roughness: z.ZodDefault<z.ZodNumber>;
+                sheen: z.ZodOptional<z.ZodNumber>;
+                sheenColor: z.ZodOptional<z.ZodString>;
+                sheenRoughness: z.ZodOptional<z.ZodNumber>;
+                clearcoat: z.ZodOptional<z.ZodNumber>;
+                clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
                 emissive: z.ZodOptional<z.ZodString>;
                 emissiveIntensity: z.ZodOptional<z.ZodNumber>;
                 opacity: z.ZodDefault<z.ZodNumber>;
+                depthWrite: z.ZodOptional<z.ZodBoolean>;
                 doubleSided: z.ZodDefault<z.ZodBoolean>;
                 flatShading: z.ZodDefault<z.ZodBoolean>;
                 shading: z.ZodOptional<z.ZodEnum<{
@@ -5830,9 +5964,15 @@ export declare const schemas: {
                     color: z.ZodString;
                     metalness: z.ZodDefault<z.ZodNumber>;
                     roughness: z.ZodDefault<z.ZodNumber>;
+                    sheen: z.ZodOptional<z.ZodNumber>;
+                    sheenColor: z.ZodOptional<z.ZodString>;
+                    sheenRoughness: z.ZodOptional<z.ZodNumber>;
+                    clearcoat: z.ZodOptional<z.ZodNumber>;
+                    clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
                     emissive: z.ZodOptional<z.ZodString>;
                     emissiveIntensity: z.ZodOptional<z.ZodNumber>;
                     opacity: z.ZodDefault<z.ZodNumber>;
+                    depthWrite: z.ZodOptional<z.ZodBoolean>;
                     doubleSided: z.ZodDefault<z.ZodBoolean>;
                     flatShading: z.ZodDefault<z.ZodBoolean>;
                     shading: z.ZodOptional<z.ZodEnum<{
@@ -5926,9 +6066,15 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
     color: z.ZodString;
     metalness: z.ZodDefault<z.ZodNumber>;
     roughness: z.ZodDefault<z.ZodNumber>;
+    sheen: z.ZodOptional<z.ZodNumber>;
+    sheenColor: z.ZodOptional<z.ZodString>;
+    sheenRoughness: z.ZodOptional<z.ZodNumber>;
+    clearcoat: z.ZodOptional<z.ZodNumber>;
+    clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
     emissive: z.ZodOptional<z.ZodString>;
     emissiveIntensity: z.ZodOptional<z.ZodNumber>;
     opacity: z.ZodDefault<z.ZodNumber>;
+    depthWrite: z.ZodOptional<z.ZodBoolean>;
     doubleSided: z.ZodDefault<z.ZodBoolean>;
     flatShading: z.ZodDefault<z.ZodBoolean>;
     shading: z.ZodOptional<z.ZodEnum<{
@@ -6181,6 +6327,10 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             filmic: "filmic";
             neutral: "neutral";
         }>>;
+        presentation: z.ZodOptional<z.ZodEnum<{
+            inspection: "inspection";
+            portrait: "portrait";
+        }>>;
         ambient: z.ZodDefault<z.ZodNumber>;
         keyIntensity: z.ZodDefault<z.ZodNumber>;
         keyPosition: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber, z.ZodNumber], null>>;
@@ -6266,9 +6416,15 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
         color: z.ZodString;
         metalness: z.ZodDefault<z.ZodNumber>;
         roughness: z.ZodDefault<z.ZodNumber>;
+        sheen: z.ZodOptional<z.ZodNumber>;
+        sheenColor: z.ZodOptional<z.ZodString>;
+        sheenRoughness: z.ZodOptional<z.ZodNumber>;
+        clearcoat: z.ZodOptional<z.ZodNumber>;
+        clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
         emissive: z.ZodOptional<z.ZodString>;
         emissiveIntensity: z.ZodOptional<z.ZodNumber>;
         opacity: z.ZodDefault<z.ZodNumber>;
+        depthWrite: z.ZodOptional<z.ZodBoolean>;
         doubleSided: z.ZodDefault<z.ZodBoolean>;
         flatShading: z.ZodDefault<z.ZodBoolean>;
         shading: z.ZodOptional<z.ZodEnum<{
@@ -6551,9 +6707,15 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
         color: z.ZodString;
         metalness: z.ZodDefault<z.ZodNumber>;
         roughness: z.ZodDefault<z.ZodNumber>;
+        sheen: z.ZodOptional<z.ZodNumber>;
+        sheenColor: z.ZodOptional<z.ZodString>;
+        sheenRoughness: z.ZodOptional<z.ZodNumber>;
+        clearcoat: z.ZodOptional<z.ZodNumber>;
+        clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
         emissive: z.ZodOptional<z.ZodString>;
         emissiveIntensity: z.ZodOptional<z.ZodNumber>;
         opacity: z.ZodDefault<z.ZodNumber>;
+        depthWrite: z.ZodOptional<z.ZodBoolean>;
         doubleSided: z.ZodDefault<z.ZodBoolean>;
         flatShading: z.ZodDefault<z.ZodBoolean>;
         shading: z.ZodOptional<z.ZodEnum<{
@@ -7141,9 +7303,15 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -7174,6 +7342,10 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 linear: "linear";
                 filmic: "filmic";
                 neutral: "neutral";
+            }>>;
+            presentation: z.ZodOptional<z.ZodEnum<{
+                inspection: "inspection";
+                portrait: "portrait";
             }>>;
             ambient: z.ZodDefault<z.ZodNumber>;
             keyIntensity: z.ZodDefault<z.ZodNumber>;
@@ -7455,9 +7627,15 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -7682,6 +7860,10 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 filmic: "filmic";
                 neutral: "neutral";
             }>>;
+            presentation: z.ZodOptional<z.ZodEnum<{
+                inspection: "inspection";
+                portrait: "portrait";
+            }>>;
             ambient: z.ZodDefault<z.ZodNumber>;
             keyIntensity: z.ZodDefault<z.ZodNumber>;
             keyPosition: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber, z.ZodNumber], null>>;
@@ -7767,9 +7949,15 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -8053,9 +8241,15 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -8283,9 +8477,15 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 color: z.ZodString;
                 metalness: z.ZodDefault<z.ZodNumber>;
                 roughness: z.ZodDefault<z.ZodNumber>;
+                sheen: z.ZodOptional<z.ZodNumber>;
+                sheenColor: z.ZodOptional<z.ZodString>;
+                sheenRoughness: z.ZodOptional<z.ZodNumber>;
+                clearcoat: z.ZodOptional<z.ZodNumber>;
+                clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
                 emissive: z.ZodOptional<z.ZodString>;
                 emissiveIntensity: z.ZodOptional<z.ZodNumber>;
                 opacity: z.ZodDefault<z.ZodNumber>;
+                depthWrite: z.ZodOptional<z.ZodBoolean>;
                 doubleSided: z.ZodDefault<z.ZodBoolean>;
                 flatShading: z.ZodDefault<z.ZodBoolean>;
                 shading: z.ZodOptional<z.ZodEnum<{

@@ -18,6 +18,7 @@ export declare const newScene: (id: string, name?: string) => {
         keyPosition: [number, number, number];
         exposure?: number | undefined;
         toneMapping?: "linear" | "filmic" | "neutral" | undefined;
+        presentation?: "inspection" | "portrait" | undefined;
     };
     geometries: Record<string, {
         type: "box";
@@ -99,8 +100,14 @@ export declare const newScene: (id: string, name?: string) => {
         opacity: number;
         doubleSided: boolean;
         flatShading: boolean;
+        sheen?: number | undefined;
+        sheenColor?: string | undefined;
+        sheenRoughness?: number | undefined;
+        clearcoat?: number | undefined;
+        clearcoatRoughness?: number | undefined;
         emissive?: string | undefined;
         emissiveIntensity?: number | undefined;
+        depthWrite?: boolean | undefined;
         shading?: "standard" | "unlit" | undefined;
     }>;
     nodes: ({
@@ -303,6 +310,7 @@ export declare function loadProjectScenes(start: string): Promise<{
             keyPosition: [number, number, number];
             exposure?: number | undefined;
             toneMapping?: "linear" | "filmic" | "neutral" | undefined;
+            presentation?: "inspection" | "portrait" | undefined;
         };
         geometries: Record<string, {
             type: "box";
@@ -384,8 +392,14 @@ export declare function loadProjectScenes(start: string): Promise<{
             opacity: number;
             doubleSided: boolean;
             flatShading: boolean;
+            sheen?: number | undefined;
+            sheenColor?: string | undefined;
+            sheenRoughness?: number | undefined;
+            clearcoat?: number | undefined;
+            clearcoatRoughness?: number | undefined;
             emissive?: string | undefined;
             emissiveIntensity?: number | undefined;
+            depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
         }>;
         nodes: ({
@@ -705,8 +719,14 @@ export declare function importModel(start: string, input: unknown, replace?: boo
             opacity: number;
             doubleSided: boolean;
             flatShading: boolean;
+            sheen?: number | undefined;
+            sheenColor?: string | undefined;
+            sheenRoughness?: number | undefined;
+            clearcoat?: number | undefined;
+            clearcoatRoughness?: number | undefined;
             emissive?: string | undefined;
             emissiveIntensity?: number | undefined;
+            depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
         }>;
         nodes: ({
@@ -993,8 +1013,14 @@ export declare function captureProjectModel(start: string, sceneId: string | und
             opacity: number;
             doubleSided: boolean;
             flatShading: boolean;
+            sheen?: number | undefined;
+            sheenColor?: string | undefined;
+            sheenRoughness?: number | undefined;
+            clearcoat?: number | undefined;
+            clearcoatRoughness?: number | undefined;
             emissive?: string | undefined;
             emissiveIntensity?: number | undefined;
+            depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
         }>;
         nodes: ({

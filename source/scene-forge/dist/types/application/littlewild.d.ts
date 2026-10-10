@@ -9,10 +9,16 @@ export interface LittlewildMaterial {
     roughness: number;
     metalness: number;
     flatShading: boolean;
+    sheen?: number;
+    sheenColor?: string;
+    sheenRoughness?: number;
+    clearcoat?: number;
+    clearcoatRoughness?: number;
     emissive?: string;
     emissiveIntensity?: number;
     opacity?: number;
     transparent?: boolean;
+    depthWrite?: boolean;
     doubleSided?: boolean;
 }
 export interface LittlewildMesh {

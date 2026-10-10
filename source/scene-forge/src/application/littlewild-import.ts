@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { fail } from '../domain/errors.js';
 import { littlewildPetRoles, primitiveGeometry } from './littlewild.js';
+import { importedMaterials } from './littlewild-materials.js';
 
 /**
  * Converts a Littlewild `littlewild-3d-asset` into Scene Forge model documents, one per variant.
@@ -37,22 +38,6 @@ function forgeId(value: string, fallback: string) {
 }
 const camel = (value: string) =>
   value.replace(/[-_]+([a-z0-9])/g, (_, c: string) => c.toUpperCase()).replace(/[^A-Za-z0-9]/g, '');
-function material(value: unknown) {
-  const data =
-    typeof value === 'string' ? { color: value } : plain(value) ? value : { color: '#9bb98c' };
-  return {
-    color: String(data.color),
-    roughness: typeof data.roughness === 'number' ? data.roughness : 0.98,
-    metalness: typeof data.metalness === 'number' ? data.metalness : 0,
-    opacity: typeof data.opacity === 'number' ? data.opacity : 1,
-    // The Littlewild kit shades primitives with facets unless a material opts out.
-    flatShading: typeof data.flatShading === 'boolean' ? data.flatShading : true,
-    ...(typeof data.emissive === 'string' ? { emissive: data.emissive } : {}),
-    ...(typeof data.emissiveIntensity === 'number'
-      ? { emissiveIntensity: Math.min(20, data.emissiveIntensity) }
-      : {}),
-  };
-}
 export function littlewildModels(asset: Plain, prefix?: string) {
   if (asset.format !== 'littlewild-3d-asset' || asset.schemaVersion !== 1 || !plain(asset.models))
     fail('LITTLEWILD_IMPORT', 'Expected a littlewild-3d-asset visual definition.');
@@ -81,6 +66,7 @@ export function littlewildModels(asset: Plain, prefix?: string) {
       if (roles.has(role))
         for (const ref of Array.isArray(refs) ? refs : [refs])
           tags.set(String(ref), [...(tags.get(String(ref)) ?? []), `rig:${role}`]);
+    const resolveMaterial = importedMaterials(materials, usedMaterials);
     let counter = 0;
     const visit = (input: unknown, parent?: string) => {
       if (!plain(input)) return;
@@ -136,18 +122,7 @@ export function littlewildModels(asset: Plain, prefix?: string) {
           } else geometries[geometryId] = bake(primitiveGeometry(primitive));
         }
         const role = String(input.material);
-        const materialId = forgeId(
-          Object.hasOwn(materials, role) ? role : `c${role.replace('#', '')}`,
-          'material',
-        );
-        usedMaterials[materialId] ??= material(
-          Object.hasOwn(materials, role) ? materials[role] : role,
-        );
-        if (
-          primitive === 'mesh' &&
-          !(plain(materials[role]) && typeof materials[role].flatShading === 'boolean')
-        )
-          (usedMaterials[materialId] as Plain).flatShading = false;
+        const materialId = resolveMaterial(role, input.materialProps, nodeId, primitive === 'mesh');
         Object.assign(node, { geometry: geometryId, material: materialId });
       }
       nodes.push(node);

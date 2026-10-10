@@ -51,11 +51,11 @@ function body(c: Character, face: boolean): string {
     + slider(c, 'Eye size', 'appearance.eyeSize', ['Smaller', 'Larger'])
     + swatches(c, 'Eye color', 'appearance.eyeColor')
     + '<p class="hint">Face choices are saved with your companion. Camera and animation choices only change the preview.</p>';
-  return tabs + '<h3>Starting look</h3><div class="preset-row">' + catalog.presets.filter(p => p.id !== 'bramble').map(p => button(`<span class="preset-dot" style="background:${p.appearance.coat}"></span>${e(p.name)}`, `preset:${p.id}`, c.appearance.preset === p.id ? 'selected' : '', `aria-pressed="${c.appearance.preset === p.id}"`)).join('') + '</div>'
+  return tabs + '<h3>Starting look</h3><div class="preset-row">' + catalog.presets.filter(p => p.id !== 'bramble').map(p => button(`<img class="look-portrait" data-portrait-preset="${p.id}" alt="" width="96" height="84">${e(p.name)}`, `preset:${p.id}`, c.appearance.preset === p.id ? 'selected' : '', `aria-pressed="${c.appearance.preset === p.id}"`)).join('') + '</div>'
     + '<p class="hint">Starting looks replace appearance and keep locked traits.</p>'
     + select(c, 'Body shape', 'appearance.body', [['round', 'Round'], ['balanced', 'Balanced'], ['slender', 'Slender']], true)
     + slider(c, 'Head size', 'appearance.headSize', ['Smaller', 'Larger'])
-    + select(c, 'Ears', 'appearance.ears', [['round', 'Round'], ['long', 'Long'], ['pointed', 'Pointed']], true)
+    + `<fieldset class="ear-choices"><legend>Ears ${lock(c, 'appearance.ears')}</legend><div class="preset-row">${(['round', 'long', 'pointed'] as const).map(ears => button(`<img class="look-portrait" data-portrait-ears="${ears}" alt="" width="96" height="84">${ears[0].toUpperCase() + ears.slice(1)}`, `ears:${ears}`, c.appearance.ears === ears ? 'selected' : '', `aria-pressed="${c.appearance.ears === ears}"`)).join('')}</div></fieldset>`
     + slider(c, 'Ear size', 'appearance.earSize', ['Smaller', 'Larger'])
     + select(c, 'Tail', 'appearance.tail', [['short', 'Short & soft'], ['long', 'Long'], ['fluffy', 'Fluffy']], true);
 }

@@ -22,6 +22,28 @@ export const materialTool: EditorTool = {
       max: '1',
       step: '.05',
     });
+    const surface = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = 'Soft fabric & polished surfaces';
+    surface.append(legend);
+    form.append(surface);
+    note(surface, 'Sheen softens fur and fabric edges. Clearcoat adds a polished outer surface.');
+    const physical = Object.fromEntries(
+      [
+        ['sheen', 'Sheen amount'],
+        ['sheenRoughness', 'Sheen softness'],
+        ['clearcoat', 'Clearcoat amount'],
+        ['clearcoatRoughness', 'Clearcoat roughness'],
+      ].map(([key, label]) => [
+        key,
+        input(surface, label, 'number', '0', { min: '0', max: '1', step: '.05' }),
+      ]),
+    );
+    const sheenColor = input(surface, 'Sheen color', 'color', '#ffffff');
+    const updateShading = () => {
+      surface.disabled = shading.value === 'unlit';
+    };
+    shading.addEventListener('change', updateShading, { signal });
     const emissive = input(form, 'Emission color', 'color');
     let definitions: Record<string, MaterialSpec> = {};
     const read = () => {
@@ -32,6 +54,12 @@ export const materialTool: EditorTool = {
       metalness.value = String(material.metalness);
       roughness.value = String(material.roughness);
       emissive.value = material.emissive ?? '#000000';
+      for (const [key, control] of Object.entries(physical))
+        control.value = String(
+          material[key as keyof MaterialSpec] ?? (key === 'sheenRoughness' ? 1 : 0),
+        );
+      sheenColor.value = material.sheenColor ?? '#ffffff';
+      updateShading();
     };
     slot.addEventListener('change', read, { signal });
     const paint = action(
@@ -47,14 +75,20 @@ export const materialTool: EditorTool = {
           metalness: metalness.valueAsNumber,
           roughness: roughness.valueAsNumber,
           emissive: emissive.value,
-          emissiveIntensity: 1,
+          emissiveIntensity: definitions[slot.value].emissiveIntensity ?? 1,
+          ...Object.fromEntries(
+            Object.entries(physical).map(([key, control]) => [key, control.valueAsNumber]),
+          ),
+          sheenColor: sheenColor.value,
         };
         if (
-          ![material.metalness, material.roughness].every(
-            (n) => Number.isFinite(n) && n >= 0 && n <= 1,
-          )
+          ![
+            material.metalness,
+            material.roughness,
+            ...Object.values(physical).map((control) => control.valueAsNumber),
+          ].every((n) => Number.isFinite(n) && n >= 0 && n <= 1)
         ) {
-          context.notify('Metalness and roughness must be between 0 and 1.');
+          context.notify('Material amounts and roughness must be between 0 and 1.');
           return;
         }
         context.edit((draft) => {
@@ -112,6 +146,10 @@ export const environmentTool: EditorTool = {
       container,
       'Preview only: these studio lights and display filters stay in the recipe. Add an authored light to include it in GLB.',
     );
+    const presentation = select(container, 'Light rig', [
+      ['inspection', 'Neutral inspection'],
+      ['portrait', 'Warm portrait studio'],
+    ]);
     const background = input(container, 'Background', 'color');
     const ambient = input(container, 'Ambient intensity', 'number', '', {
       min: '0',
@@ -154,6 +192,7 @@ export const environmentTool: EditorTool = {
           draft.environment = {
             ...draft.environment,
             background: background.value,
+            presentation: presentation.value as 'inspection' | 'portrait',
             ambient: ambient.valueAsNumber,
             keyIntensity: key.valueAsNumber,
             exposure: exposure.valueAsNumber,
@@ -164,9 +203,25 @@ export const environmentTool: EditorTool = {
       signal,
     );
     apply.disabled = !context.editable;
+    const portrait = action(
+      container,
+      'Use portrait studio',
+      () => {
+        presentation.value = 'portrait';
+        background.value = '#eee7d8';
+        ambient.value = '1.1';
+        key.value = '3.2';
+        exposure.value = '1';
+        look.value = 'filmic';
+        apply.click();
+      },
+      signal,
+    );
+    portrait.disabled = !context.editable;
     return {
       refresh() {
         const env = context.document().environment;
+        presentation.value = env.presentation ?? 'inspection';
         background.value = env.background;
         ambient.value = String(env.ambient);
         key.value = String(env.keyIntensity);

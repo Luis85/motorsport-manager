@@ -320,7 +320,7 @@ scene-forge -p garage scene use main
 |---|---|
 | `model list` | none |
 | `model inspect <id>` | `--parameters <json>`. Parameters, dependencies, dimensions of a variant |
-| `model import` | `--file`, `--data`, `--replace`, `--dry-run`. Accepts a model or a `model-bundle` |
+| `model import` | `--file`, `--data`, `--replace`, `--dry-run`, `--expected-revision`, `--expected-state`. Accepts a model or a `model-bundle` |
 | `model instantiate <model> <id>` | `--at <x,y,z>` (default `0,0,0`), `--rotate <x,y,z>`, `--scale <x,y,z>` (default `1,1,1`), `--parameters <json>`, `--parent <id>`, `--name <name>`, guards, `--dry-run` |
 | `model capture <id>` | `--nodes <ids>` (required), `--name <name>`, `--replace`, guards, `--dry-run`. Turns scene nodes into a model |
 | `model export <id>` | `-o, --out <path>` (required). Model bundle with nested dependencies |
@@ -495,6 +495,60 @@ scene-forge -p garage export --node crateB --out garage/exports/crateB.glb
 scene-forge -p garage export --model crate --parameters '{"bands":4}' --out garage/exports/crate4.glb
 scene-forge -p garage preview --model crate --parameters '{"bands":4}' --out garage/exports/crate.html
 scene-forge -p garage preview --all-scenes --out garage/exports/workshop.html
+```
+
+Physical materials support `sheen`, `sheenColor`, `sheenRoughness`, `clearcoat`
+and `clearcoatRoughness`. Scalar values are 0–1; colors use `#RRGGBB`. Omitted
+fields keep legacy standard shading. Sheen is useful for soft cloth and fur
+surfaces; clearcoat adds a polished layer for eyes, glazed props and varnish.
+These controls require standard PBR shading; unlit materials do not light them.
+GLB/glTF preserve them through `KHR_materials_sheen` and
+`KHR_materials_clearcoat`; Littlewild import/export preserves the same values.
+Littlewild node `materialProps` are merged over their base material into isolated,
+deduplicated editable slots, preserving individual nose, cheek and ear finishes.
+Equal values on differently named base roles remain separate. Per-node overrides
+are baked into new slots: downstream appearance palettes must target those slots
+explicitly when recoloring an edited definition; source behavioral palette
+inheritance is not rewritten automatically.
+Littlewild mesh `castShadow` and `receiveShadow` flags currently use Scene Forge’s
+mesh defaults after import. A native shadow decal may therefore cast an additional
+contact shadow in lit previews; GLB does not carry engine-specific shadow flags.
+Material opacity and depth-write behavior are retained.
+Native shadow decals preserve `depthWrite: false` together with alpha blending
+and opacity below 1. GLB represents these with `alphaMode: BLEND`; Scene Forge
+recipes, previews and Littlewild output retain the explicit depth setting.
+Imports reject opaque `depthWrite: false`, transparency inconsistent with `opacity < 1`,
+and emission above 20 with `LITTLEWILD_MATERIAL_UNSUPPORTED`; change those source
+settings explicitly before importing. Scene Forge does not silently approximate
+them.
+The material inspector exposes these fields under **Soft fabric & polished
+surfaces**. Full `putMaterial` definitions replace the previous material.
+
+For a warm artboard-like review, set `environment.presentation` to `portrait`,
+with a pale background, or use **Use portrait studio** in the viewer. This adds
+a warm rim light and a soft shadow receiver in the preview only. Inspection
+remains available as `inspection`; existing recipes retain their previous look.
+The presentation setting is retained by scene bundles and guarded edits, and
+applies to screenshots and review captures. It never adds geometry or lights to
+the exported GLB. `setEnvironment` replaces the environment, so retain any
+custom intensity and key position values you want to keep.
+
+Example operations for a guarded `apply` batch (read revision/state first):
+
+```json
+{
+  "operations": [
+    { "op": "putMaterial", "id": "softCoat", "material": {
+      "color": "#bc8151", "roughness": 0.88,
+      "sheen": 0.75, "sheenColor": "#ffe3bc", "sheenRoughness": 0.8
+    } },
+    { "op": "setEnvironment", "environment": {
+      "presentation": "portrait", "background": "#eee7d8",
+      "ambient": 1.1, "keyIntensity": 3.2, "keyPosition": [5, 10, 7],
+      "exposure": 1, "toneMapping": "filmic"
+    } }
+  ]
+}
 ```
 
 GLB is the primary format (Blender: File → Import → glTF 2.0; Three.js:

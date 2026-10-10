@@ -82,6 +82,22 @@ export function registerDiscoveryCommands(c: CommandContext) {
         },
         lights: ['point', 'spot', 'directional'],
         materialShading: ['standard', 'unlit'],
+        materialDepthWrite:
+          'Optional boolean. Use false for alpha-blended shadow decals (opacity < 1); GLB uses alphaMode BLEND.',
+        physicalMaterials: {
+          fields: ['sheen', 'sheenColor', 'sheenRoughness', 'clearcoat', 'clearcoatRoughness'],
+          range: 'Scalar fields 0..1; sheenColor #RRGGBB. Standard PBR shading only.',
+          authoring: 'putMaterial in apply; schema --kind material --raw',
+          exports: [
+            'GLB/glTF KHR_materials_sheen and KHR_materials_clearcoat',
+            'Littlewild visual',
+          ],
+        },
+        previewPresentation: {
+          values: ['inspection', 'portrait'],
+          authoring: 'setEnvironment in apply; environment.presentation in scene schema',
+          scope: 'Preview-only light rig and portrait shadow floor; source geometry unchanged',
+        },
         previewLooks: ['filmic', 'neutral', 'linear'],
         patterns: ['linear', 'radial', 'grid', 'path'],
         expressions: {

@@ -40,6 +40,53 @@ const appearance = {
   },
 };
 
+test('model refinement exposes guards and rejects intervening library edits', async (t) => {
+  const { cwd, invoke } = await workspace();
+  t.after(() => fs.rm(cwd, { recursive: true, force: true }));
+  const description = (await invoke(['describe', 'model', 'import'])).json.data;
+  assert(
+    description.options.some((option: { flags: string }) =>
+      option.flags.startsWith('--expected-state'),
+    ),
+  );
+  const file = path.join(cwd, 'visual.json');
+  await fs.writeFile(file, JSON.stringify(appearance));
+  assert.equal(
+    (await invoke(['-p', 'project', 'littlewild', 'import', '--definition', file])).status,
+    0,
+  );
+  const before = (await invoke(['-p', 'project', 'inspect'])).json.data;
+  const bundle = path.join(cwd, 'model.json');
+  await invoke(['-p', 'project', 'model', 'export', 'brooklingRound', '--out', bundle]);
+  const recipe = JSON.parse(await fs.readFile(bundle, 'utf8'));
+  recipe.models.brooklingRound.materials.fur.roughness = 0.75;
+  await fs.writeFile(bundle, JSON.stringify(recipe));
+  const args = [
+    '-p',
+    'project',
+    'model',
+    'import',
+    '--file',
+    bundle,
+    '--replace',
+    '--expected-revision',
+    String(before.revision),
+    '--expected-state',
+    before.stateHash,
+  ];
+  assert.equal((await invoke([...args, '--dry-run'])).status, 0);
+  assert.equal((await invoke(['-p', 'project', 'inspect'])).json.data.stateHash, before.stateHash);
+  assert.equal((await invoke(args)).status, 0);
+  const after = (await invoke(['-p', 'project', 'inspect'])).json.data;
+  assert.notEqual(after.stateHash, before.stateHash);
+  recipe.models.brooklingRound.materials.fur.roughness = 0.25;
+  await fs.writeFile(bundle, JSON.stringify(recipe));
+  const conflict = await invoke(args);
+  assert.equal(conflict.status, 1);
+  assert.equal(conflict.json.error.code, 'STATE_CONFLICT');
+  assert.equal((await invoke(['-p', 'project', 'inspect'])).json.data.stateHash, after.stateHash);
+});
+
 test('creature package import is a guarded visual-only transaction', async (t) => {
   const { cwd, invoke } = await workspace();
   t.after(() => fs.rm(cwd, { recursive: true, force: true }));

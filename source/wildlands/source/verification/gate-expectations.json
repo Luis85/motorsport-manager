@@ -3,8 +3,13 @@
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
   "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-bpmn", "business-process-browser", "process-layout-browser", "process-step-editor-browser", "process-definition-browser", "process-renderers-browser", "process-lenses-browser", "process-bpmn-import-browser", "process-readability-browser"],
-  "totalChecks": 2060,
+  "totalChecks": 2065,
   "reviewedAdditions": [
+    {"suite": "wildlands-cli", "name": "Creature CLI lifecycle discovers, authors, imports and refines visuals without ticking or losing gameplay"},
+    {"suite": "wildlands-cli", "name": "Creature CLI rejects stale guards, implicit replacement, invalid batches and occupied outputs atomically"},
+    {"suite": "assets", "name": "Physical material schema and runtime reject invalid surfaces without altering legacy data"},
+    {"suite": "assets", "name": "Physical surfaces survive appearance colors and instantiate actual Three materials"},
+    {"suite": "assets", "name": "Baked geometry ownership isolates renderer lifetimes and releases once"},
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
     {"suite": "renderer-storytelling", "name": "Actual p5 repeated owned layers release focus-hook identities and preserve concurrent focus and external hooks"},
@@ -701,6 +706,8 @@
       "Engine distributions install no game: the engine-only installer leaves the game to its entry point"
     ],
     "wildlands-cli": [
+      "Creature CLI lifecycle discovers, authors, imports and refines visuals without ticking or losing gameplay",
+      "Creature CLI rejects stale guards, implicit replacement, invalid batches and occupied outputs atomically",
       "Cold help and discovery are structured, versioned and machine readable",
       "Create validates a complete default portable project and inspect never ticks",
       "Scenario switching and custom pack authoring stay portable",
@@ -1293,7 +1300,10 @@
       "Catalog rejects substituted array indexes and malformed own properties without publishing",
       "Asset identity text accepts Unicode at the schema limit and rejects beyond it",
       "Pet assets accept bounded baked meshes and per-model rigs",
-      "Generic asset renderer builds baked meshes once per immutable definition"
+      "Generic asset renderer builds baked meshes once per immutable definition",
+      "Physical material schema and runtime reject invalid surfaces without altering legacy data",
+      "Physical surfaces survive appearance colors and instantiate actual Three materials",
+      "Baked geometry ownership isolates renderer lifetimes and releases once"
     ],
     "creatures": [
       "Creature catalog loads every isolated definition folder",

@@ -139,14 +139,14 @@ tabular numerals. The large-text preference raises body text to (1.2rem).
 
 The desktop shell has a brand header, save status, five chapter buttons, a
 left-hand control panel and a flexible viewport. The default workspace uses a
-(minmax(335px, 365px)) control column and an (18px) gap. Above (1600px), the shell
-is bounded at (1800px) and the control column grows to (410px).
+(minmax(355px, 390px)) desktop control column and an (18px) gap. Above (1600px), the shell
+is bounded at (1800px) with the same bounded control column.
 
 At (1250px) and below the chapter navigation occupies its own row. At (900px)
 and below the two-column layout tightens and preview controls reflow. At (680px)
 and below the viewport moves above the form, the panel loses its internal scroll,
-and history/save controls wrap. The mobile viewport is (480px) tall. Controls
-reserve space above and below the canvas so they do not cover the model. At
+and history/save controls wrap. The mobile viewport is (480px) tall. The canvas fills the panel continuously; camera framing reserves space above
+and below the model for controls. At
 (390px) and below header type and gaps tighten while zoom remains available.
 
 Desktop panel scrolling is bounded by the viewport and chapter navigation resets
@@ -224,3 +224,18 @@ editing.
 - Don't use mockup artwork in place of the live authored companion model.
 - Don't rely on color alone for a selected swatch or a field error.
 - Don't hide save failures or imply that a browser save reached project disk.
+
+
+## Authored preview surfaces
+
+Compiler revision 2 uses smooth portable meshes, coat sheen and clear-coated eyes.
+Preset and ear choices show cached renders of actual recipes instead of colored
+placeholders. Collection, review and import use the same portrait renderer. The
+cache holds at most 24 images and releases temporary GPU geometry and materials.
+
+The presentation garden uses deterministic batched plants, stones, lanterns and a
+fogged woodland backdrop. Warm directional light, restrained ambient fill and a
+soft contact shadow keep coat colors readable. The backdrop follows the inspection
+camera to preserve an unobstructed rear view. World and night modes change context
+and illumination without editing the character. Renderer budgets and current
+presentation state are inspectable by browser agents.

@@ -7,6 +7,7 @@ import * as store from './store.js';
 import { StudioError } from './files.js';
 import { discovery, operationSchema } from '../commands/discovery.js';
 import { characterSchema } from '../domain/schema.js';
+import { reviewPlanSchema } from './review.js';
 import { applyOperations } from '../application/transactions.js';
 import { catalog } from '../domain/catalog.js';
 import { validateCharacter } from '../domain/character.js';
@@ -51,8 +52,8 @@ export async function serve(project: string, options: {port?: number} = {}) {
       if (method === 'GET' && url.pathname === '/api/discover') return json(response,200,{...discovery(),http:httpContract});
       if (method === 'GET' && url.pathname === '/api/schema') {
         const kind = url.searchParams.get('kind') ?? 'character';
-        if (!['character','batch'].includes(kind)) throw new StudioError('INVALID_FORMAT','Choose character or batch schema.');
-        return json(response,200,{ok:true,kind,schema:kind === 'batch' ? operationSchema : characterSchema});
+        if (!['character','batch','review'].includes(kind)) throw new StudioError('INVALID_FORMAT','Choose character, batch or review schema.');
+        return json(response,200,{ok:true,kind,schema:kind === 'review' ? reviewPlanSchema : kind === 'batch' ? operationSchema : characterSchema});
       }
       if (method === 'GET' && url.pathname === '/api/lock') return json(response,200,{ok:true,...await store.lockStatus(project)});
       if (method === 'GET' && url.pathname === '/api/catalog') return json(response, 200, { ok: true, catalog });

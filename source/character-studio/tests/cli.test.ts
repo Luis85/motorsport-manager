@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { Script } from 'node:vm';
 
 const executable = resolve(import.meta.dirname, '../../../bin/character-studio');
 async function command(args: string[], input?: unknown, cwd?: string): Promise<any> {
@@ -79,6 +80,7 @@ test('bundled CLI supports guarded dry-run, atomic edit, conflict, history, roun
     const html = join(project, 'preview.html');
     assert.equal((await command(['preview', ...identity, '--out', html, '--mode', 'world', '--pose', 'walk'])).status, 0);
     const previewHtml = await readFile(html, 'utf8');
+    for (const script of previewHtml.matchAll(/<script>([\s\S]*?)<\/script>/g)) new Script(script[1]);
     assert.match(previewHtml, /Moss/);
     assert.match(previewHtml, /"preview":\{"mode":"world","light":"studio","pose":"walk","camera":"front"\}/);
   } finally { await rm(project, {recursive: true, force: true}); }
@@ -91,6 +93,7 @@ test('strict machine discovery and errors reject typos, unsafe paths and malform
   }
   assert.equal((await command(['schema', '--kind', 'batch'])).schema.properties.operations.maxItems, 256);
   assert.equal((await command(['schema', '--kind', 'character'])).schema.properties.format.const, 'littlewild-character');
+  assert.equal((await command(['schema', '--kind', 'review'])).schema.properties.views.maxItems, 12);
   assert.equal((await command(['wat'])).status, 2);
   assert.equal((await command(['create', '--project', '/tmp', '--id', 'test', '--presett', 'pip'])).status, 2);
   assert.equal((await command(['serve', '--project', '/tmp', '--port', '1e2'])).status, 2);

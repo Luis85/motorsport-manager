@@ -5,6 +5,7 @@ import type { StudioState } from './state.js';
 
 export class Dialogs {
   element: HTMLDialogElement;
+  portrait?: (character: Character) => string | undefined;
   returnFocus: HTMLElement | null = null;
   returnAction: string | undefined;
   constructor() {
@@ -33,13 +34,19 @@ export class Dialogs {
   error(error: unknown): void {
     this.show('Your work is still here', `<p class="error-message">${e(error instanceof Error ? error.message : error)}</p><p>Keep editing, retry the action, or export your current draft to keep a copy.</p>`, button('Keep editing', 'close', 'secondary') + button('Export draft JSON', 'export:recipe', 'primary') + (window.__STUDIO__?.server && String(error).includes('changed on disk') ? button('Open disk version · keep recovery copy', 'reload-disk', 'secondary') : ''));
   }
+  portraitMarkup(character: Character): string {
+    try {
+      const src = this.portrait?.(character);
+      return src ? `<img class="review-portrait" src="${e(src)}" alt="Portrait of ${e(character.identity.name || 'your companion')}" width="144" height="144">` : '';
+    } catch { return ''; }
+  }
   review(state: StudioState): void {
     const c = state.character;
     const result = validateCharacter({ ...c, status: 'ready' }, { commit: true });
     const used = Object.values(c.skills).reduce((a, b) => a + b, 0);
     const outfit = Object.values(c.outfits).filter(Boolean).map(id => catalog.outfits.find(o => o.id === id)?.name || id).join(', ') || 'No outfit selected';
     this.show(`Review ${c.identity.name || 'companion'}`,
-      `<p class="dialog-intro">One companion. Ready for a little life of their own.</p><dl class="review-list"><div><dt>Identity</dt><dd>${e(c.identity.name)} · Sproutling<br>${e(c.identity.pronouns)} · ${e(c.identity.gender || 'Gender unspecified')} · ${e(c.identity.voice)}</dd></div><div><dt>Appearance</dt><dd>${e(c.appearance.body)} build · ${e(c.appearance.ears)} ears<br>Coat ${e(c.appearance.coat)} · ${e(c.appearance.tail)} tail</dd></div><div><dt>Personality & skills</dt><dd>${e(c.personality)} · ${used} of 10 points assigned<br>${10 - used} unspent points are valid.</dd></div><div><dt>Outfit</dt><dd>${e(outfit)}</dd></div></dl>${result.errors.length ? `<div role="alert" class="validation"><strong>Resolve these before creating</strong><ul>${result.errors.map(issue => `<li>${e(issue.path)}: ${e(issue.message)}</li>`).join('')}</ul></div>` : ''}<p class="hint">${state.committed ? 'Apply updates the same collection record.' : 'Create adds this companion to your collection.'} This does not insert or alter a companion in a running game. ${window.__STUDIO__?.server ? 'The executable saves to your selected library on disk.' : 'This offline editor saves in this browser; export JSON for a portable copy.'}</p>`,
+      ` ${this.portraitMarkup(c)}<p class="dialog-intro">One companion. Ready for a little life of their own.</p><dl class="review-list"><div><dt>Identity</dt><dd>${e(c.identity.name)} · Sproutling<br>${e(c.identity.pronouns)} · ${e(c.identity.gender || 'Gender unspecified')} · ${e(c.identity.voice)}</dd></div><div><dt>Appearance</dt><dd>${e(c.appearance.body)} build · ${e(c.appearance.ears)} ears<br>Coat ${e(c.appearance.coat)} · ${e(c.appearance.tail)} tail</dd></div><div><dt>Personality & skills</dt><dd>${e(c.personality)} · ${used} of 10 points assigned<br>${10 - used} unspent points are valid.</dd></div><div><dt>Outfit</dt><dd>${e(outfit)}</dd></div></dl>${result.errors.length ? `<div role="alert" class="validation"><strong>Resolve these before creating</strong><ul>${result.errors.map(issue => `<li>${e(issue.path)}: ${e(issue.message)}</li>`).join('')}</ul></div>` : ''}<p class="hint">${state.committed ? 'Apply updates the same collection record.' : 'Create adds this companion to your collection.'} This does not insert or alter a companion in a running game. ${window.__STUDIO__?.server ? 'The executable saves to your selected library on disk.' : 'This offline editor saves in this browser; export JSON for a portable copy.'}</p>`,
       button('Keep editing', 'close', 'secondary') + button(state.committed ? 'Apply changes' : 'Create companion', 'commit', 'primary', result.ok ? '' : 'disabled'));
   }
   importPreview(character: unknown): boolean {
@@ -48,7 +55,7 @@ export class Dialogs {
       this.show('This file could not be imported', `<p>The current draft is unchanged. The original file remains your recovery copy.</p><ul class="validation">${result.errors.map(issue => `<li>${e(issue.path)}: ${e(issue.message)}</li>`).join('')}</ul>`, button('Choose another file', 'import', 'primary') + button('Cancel', 'close', 'secondary'));
       return false;
     }
-    this.show('Import companion', `<p class="dialog-intro">${e(result.value!.identity.name)} · Sproutling</p><p>Companion recipe · version 1 · ready to import.</p><p>Includes identity, appearance, skills, personality and cosmetics. This creates a separate draft with a new ID. Your current companion stays in your collection.</p><p class="hint">Read-only preview. No changes have been made.</p>`, button('Cancel', 'close', 'secondary') + button('Import as new draft', 'confirm-import', 'primary'));
+    this.show('Import companion', `${this.portraitMarkup(result.value!)}<p class="dialog-intro">${e(result.value!.identity.name)} · Sproutling</p><p>Companion recipe · version 1 · ready to import.</p><p>Includes identity, appearance, skills, personality and cosmetics. This creates a separate draft with a new ID. Your current companion stays in your collection.</p><p class="hint">Read-only preview. No changes have been made.</p>`, button('Cancel', 'close', 'secondary') + button('Import as new draft', 'confirm-import', 'primary'));
     return true;
   }
   preferences(paused: boolean): void {

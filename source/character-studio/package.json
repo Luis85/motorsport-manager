@@ -10,7 +10,7 @@
     "build:cli": "node scripts/build.mjs",
     "check:cli": "node scripts/build.mjs --check",
     "test": "node --import tsx --test tests/*.test.ts",
-    "test:e2e": "node --import tsx --test tests/e2e/*.test.ts",
+    "test:e2e": "node --import tsx --test --test-concurrency=1 tests/e2e/*.test.ts",
     "test:integration": "node --import tsx --test tests/integration/*.test.ts",
     "typecheck": "tsc -p tsconfig.json",
     "test:handoff": "node scripts/integration-smoke.mjs"

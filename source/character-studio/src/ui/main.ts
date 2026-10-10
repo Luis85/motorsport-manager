@@ -1,7 +1,8 @@
 import { catalog } from '../domain/catalog.js';
-import { validateCharacter, type Character } from '../domain/character.js';
+import { createCharacter, validateCharacter, type Character } from '../domain/character.js';
 import { compilePackage, compileVisual, importCharacter } from '../application/compiler.js';
 import { createViewport } from './viewport.js';
+import { validatePreviewConfiguration } from './preview-configuration.js';
 import { StudioState } from './state.js';
 import { Dialogs } from './dialogs.js';
 import { fields, chapters } from './fields.js';
@@ -22,6 +23,7 @@ const app = document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML = `<header class="app-header"><a href="#" class="brand" data-action="collection" aria-label="Littlewild Character Studio home">${icon('leaf')}<span>LITTLEWILD</span></a><div class="app-name"><strong>Character Studio</strong><span>Identity. Character. A little life of their own.</span></div><div class="header-actions">${button('Companions', 'collection')}${button(`${icon('settings')} <span>Accessibility</span>`, 'preferences')}</div></header><div id="save-status" class="save-status" role="status" aria-live="polite"></div><main><div id="journey" class="journey"></div><div class="workspace"><section id="editor-panel" tabindex="-1"></section><section class="preview" aria-label="Character preview"><canvas id="viewport"></canvas><div class="preview-top"><div id="preview-modes" class="segmented"></div><div id="preview-lights" class="segmented"></div></div><div class="preview-caption"><span id="preview-caption">Same companion. Every little angle.</span></div><div id="portrait-action"></div><div class="preview-bottom"><div id="preview-cameras" class="segmented"></div><div class="preview-bottom-row"><div id="preview-poses" class="segmented"></div><div class="camera-tools">${button('−', 'zoom:-0.15', 'icon-button', 'aria-label="Zoom out"')}${button('+', 'zoom:0.15', 'icon-button', 'aria-label="Zoom in"')}${button('Reset view', 'reset-view')}</div></div></div></section></div><footer id="editor-actions" class="editor-actions"></footer></main><input id="import-file" type="file" accept="application/json,.json" hidden>`;
 try {
   viewport = createViewport(document.querySelector<HTMLCanvasElement>('#viewport')!);
+  dialogs.portrait = character => viewport?.portrait(character);
   viewport.setMode(mode); viewport.setLight(light); viewport.setPose(pose); viewport.setCamera(camera);
 } catch (error) {
   const notice = document.createElement('p');
@@ -46,7 +48,7 @@ function previewControls(): void {
   if (restore) [...document.querySelectorAll<HTMLElement>('.preview [data-action]')].find(el => el.dataset.action === restore)?.focus();
 }
 function collectionMarkup(): string {
-  return `<header class="panel-heading"><h2>Your companions</h2><p>A familiar face for every little adventure.</p></header><div class="fields"><h3>Choose a starting look</h3><p class="hint">Pip, Fern and Mochi are starting looks for the Sproutling species. Every choice can become your own.</p><div class="starting-looks">${catalog.presets.filter(p => p.id !== 'bramble').map(p => button(`<span class="look-swatch" style="background:${p.appearance.coat}"></span><span><strong>${p.name}</strong><small>${e(p.description)}</small></span>${icon('arrow')}`, `new:${p.id}`, 'starting-look')).join('')}</div>${state.records.size ? '<h3>Your collection</h3><div class="collection-list">' + [...state.records.values()].map(record => button(`${record.thumbnail ? `<img src="${e(record.thumbnail)}" alt="">` : '<span class="collection-symbol">' + icon('person') + '</span>'}<span><strong>${e(record.character.identity.name)}</strong><small>${record.committed ? record.dirty ? 'Companion · unapplied working draft' : 'Companion · saved' : 'Draft · continue editing'}</small></span>${icon('arrow')}`, `open:${record.character.id}`, 'collection-item')).join('') + '</div>' : '<p class="empty-collection">Your collection begins with one little companion.</p>'}${button('Import companion or look', 'import', 'secondary')}${state.recoverySource !== null ? '<p class="validation">Some browser recovery data could not be loaded. The original is preserved. Export it before clearing browser storage.</p>' + button('Export browser recovery data', 'recovery-library', 'secondary') : ''}</div>`;
+  return `<header class="panel-heading"><h2>Your companions</h2><p>A familiar face for every little adventure.</p></header><div class="fields"><h3>Choose a starting look</h3><p class="hint">Pip, Fern and Mochi are starting looks for the Sproutling species. Every choice can become your own.</p><div class="starting-looks">${catalog.presets.filter(p => p.id !== 'bramble').map(p => button(`<img class="collection-portrait" data-portrait-preset="${p.id}" alt="" width="64" height="64"><span><strong>${p.name}</strong><small>${e(p.description)}</small></span>${icon('arrow')}`, `new:${p.id}`, 'starting-look')).join('')}</div>${state.records.size ? '<h3>Your collection</h3><div class="collection-list">' + [...state.records.values()].map(record => button(`${record.thumbnail ? `<img src="${e(record.thumbnail)}" alt="">` : `<img class="collection-portrait" data-portrait-record="${e(record.character.id)}" alt="" width="64" height="64">`}<span><strong>${e(record.character.identity.name)}</strong><small>${record.committed ? record.dirty ? 'Companion · unapplied working draft' : 'Companion · saved' : 'Draft · continue editing'}</small></span>${icon('arrow')}`, `open:${record.character.id}`, 'collection-item')).join('') + '</div>' : '<p class="empty-collection">Your collection begins with one little companion.</p>'}${button('Import companion or look', 'import', 'secondary')}${state.recoverySource !== null ? '<p class="validation">Some browser recovery data could not be loaded. The original is preserved. Export it before clearing browser storage.</p>' + button('Export browser recovery data', 'recovery-library', 'secondary') : ''}</div>`;
 }
 function render(focus = false): void {
   const active = document.activeElement as HTMLElement;
@@ -57,6 +59,17 @@ function render(focus = false): void {
   document.querySelector('#editor-panel')!.innerHTML = collection ? collectionMarkup() : fields(state.character, chapter, face);
   document.querySelector('#editor-actions')!.innerHTML = collection ? `<p>${icon('leaf')} Made for Littlewild. Ready for Scene Forge.</p>${button('Import JSON', 'import', 'secondary')}` : `<div class="history-actions">${button(`${icon('undo')} Undo`, 'undo', '', state.session.canUndo ? '' : 'disabled')}${button(`${icon('redo')} Redo`, 'redo', '', state.session.canRedo ? '' : 'disabled')}${button(`${icon('dice')} Randomize unlocked`, 'randomize')}${button(`${icon('save')} Save draft`, 'save')}${button('Export', 'export', '')}</div>${button(`Review companion ${icon('arrow')}`, 'review', 'primary')}`;
   viewport?.update(state.character);
+  const portraits = [...document.querySelectorAll<HTMLImageElement>('[data-portrait-preset], [data-portrait-ears], [data-portrait-record]')]
+    .map(img => {
+      const character = img.dataset.portraitPreset ? createCharacter('preview', 'Preview', img.dataset.portraitPreset)
+        : img.dataset.portraitRecord ? state.records.get(img.dataset.portraitRecord)?.character : state.character;
+      if (!character) return undefined;
+      const draft = structuredClone(character);
+      if (img.dataset.portraitEars) draft.appearance.ears = img.dataset.portraitEars as Character['appearance']['ears'];
+      return {img, draft};
+    }).filter(item => item !== undefined);
+  const images = viewport?.portraitBatch(portraits.map(item => item.draft)) || [];
+  portraits.forEach(({img}, index) => { if (images[index]) img.src = images[index]; else img.hidden = true; });
   previewControls();
   status();
   document.querySelector('#editor-panel')!.scrollTop = focus ? 0 : scroll;
@@ -99,6 +112,7 @@ async function action(value: string): Promise<void> {
   else if (name === 'open') { state.open(arg); collection = false; render(true); }
   else if (name === 'chapter') { chapter = Number(arg); render(true); }
   else if (name === 'bodytab') { face = arg === 'face'; render(); }
+  else if (name === 'ears' && ['round', 'long', 'pointed'].includes(arg)) set('appearance.ears', arg);
   else if (name === 'preset') { state.apply([{op:'preset',preset:arg}]); render(); }
   else if (name === 'lock') {
     const locks = state.character.locks;
@@ -206,13 +220,22 @@ window.characterStudio = Object.freeze({
     format:'character-studio-browser-api', version:1,
     methods: {inspect:'Detached current character, history availability and persistence status',catalog:'Available looks, slots, equipment, personalities and engine skills',apply:'Atomic operation array; updates the local working draft only',preview:'Preview-only controls; never modifies the character'},
     operations: ['set','add','remove','preset','randomize','look','reset'],
-    preview: {setMode:['studio','world','portrait'],setLight:['studio','daylight','night'],setPose:['idle','walk','work','celebrate'],setCamera:['front','side','back'],zoom:'Finite numeric delta',reset:'Restore front framing',pause:'Boolean',capture:'PNG data URL'},
+    preview: {configure:{description:'Atomic preview configuration; validates every field before rendering once. Reset restores zoom, orbit and time zero.',optional:{mode:['studio','world','portrait'],light:['studio','daylight','night'],pose:['idle','walk','work','celebrate'],camera:['front','side','back'],paused:'boolean',reset:'boolean'}},setMode:['studio','world','portrait'],setLight:['studio','daylight','night'],setPose:['idle','walk','work','celebrate'],setCamera:['front','side','back'],zoom:'Finite numeric delta',reset:'Restore front framing',pause:'Boolean',capture:'PNG data URL',inspect:'Detached presentation state and live renderer resource counts'},
     persistence:'Use the guarded local HTTP API or CLI to save to disk; browser apply edits only the working draft.',
   }),
   inspect: () => ({ character: state.character, canUndo: state.session.canUndo, canRedo: state.session.canRedo, persistence: state.savedStatus }),
   catalog: () => structuredClone(catalog),
   apply: (operations: unknown[]) => { const result = state.apply(operations); collection = false; render(); return result; },
   preview: Object.freeze({
+    configure: (input: unknown) => {
+      const config = validatePreviewConfiguration(input);
+      viewport?.configure(config);
+      mode = config.mode ?? mode; light = config.light ?? light; pose = config.pose ?? pose;
+      camera = config.camera ?? (config.reset ? 'front' : camera); paused = config.paused ?? paused;
+      previewControls();
+      return viewport?.inspect();
+    },
+    inspect: () => viewport?.inspect(),
     setMode: (value: string) => action(`mode:${value}`),
     setLight: (value: string) => action(`light:${value}`),
     setPose: (value: string) => action(`pose:${value}`),

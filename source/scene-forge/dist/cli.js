@@ -120,9 +120,15 @@ var MaterialSchema = z.object({
   color: Color,
   metalness: z.number().min(0).max(1).default(0),
   roughness: z.number().min(0).max(1).default(0.65),
+  sheen: z.number().min(0).max(1).optional(),
+  sheenColor: Color.optional(),
+  sheenRoughness: z.number().min(0).max(1).optional(),
+  clearcoat: z.number().min(0).max(1).optional(),
+  clearcoatRoughness: z.number().min(0).max(1).optional(),
   emissive: Color.optional(),
   emissiveIntensity: z.number().min(0).max(20).optional(),
   opacity: z.number().min(0).max(1).default(1),
+  depthWrite: z.boolean().optional(),
   doubleSided: z.boolean().default(false),
   flatShading: z.boolean().default(false),
   shading: z.enum(["standard", "unlit"]).optional()
@@ -226,6 +232,7 @@ var EnvironmentSchema = z.object({
   background: Color.default("#171d25"),
   exposure: z.number().min(0.1).max(4).optional(),
   toneMapping: z.enum(["filmic", "neutral", "linear"]).optional(),
+  presentation: z.enum(["inspection", "portrait"]).optional(),
   ambient: z.number().min(0).max(5).default(1.8),
   keyIntensity: z.number().min(0).max(10).default(3.5),
   keyPosition: z.tuple([NumberValue, NumberValue, NumberValue]).default([5, 10, 7])
@@ -1027,20 +1034,31 @@ function validateDocument(document2, models = {}, stack = []) {
 // src/application/materials.ts
 import * as THREE4 from "three";
 function createMaterial(m) {
+  if (m.depthWrite === false && m.opacity >= 1)
+    fail(
+      "MATERIAL_DEPTH_WRITE",
+      "Disabling depth writes requires opacity below 1 for portable alpha blending."
+    );
   const common = {
     color: m.color,
     opacity: m.opacity,
     transparent: m.opacity < 1,
+    depthWrite: m.depthWrite ?? true,
     side: m.doubleSided ? THREE4.DoubleSide : THREE4.FrontSide
   };
-  return m.shading === "unlit" ? new THREE4.MeshBasicMaterial(common) : new THREE4.MeshStandardMaterial({
+  if (m.shading === "unlit") return new THREE4.MeshBasicMaterial(common);
+  const standard = {
     ...common,
     metalness: m.metalness,
     roughness: m.roughness,
     emissive: m.emissive ?? "#000000",
     emissiveIntensity: m.emissiveIntensity ?? 1,
     flatShading: m.flatShading
-  });
+  };
+  const physical = Object.fromEntries(
+    ["sheen", "sheenColor", "sheenRoughness", "clearcoat", "clearcoatRoughness"].filter((key) => m[key] !== void 0).map((key) => [key, m[key]])
+  );
+  return Object.keys(physical).length ? new THREE4.MeshPhysicalMaterial({ ...standard, ...physical }) : new THREE4.MeshStandardMaterial(standard);
 }
 
 // src/application/tube.ts
@@ -1097,7 +1115,7 @@ function createResourcePool(warnings) {
   function scopeResources(scope, path12, overrides = {}) {
     const geometryCache = /* @__PURE__ */ new Map();
     const materialCache = /* @__PURE__ */ new Map();
-    function material2(id) {
+    function material(id) {
       if (Object.hasOwn(overrides, id)) return overrides[id];
       if (materialCache.has(id)) return materialCache.get(id);
       const m = scope.materials[id];
@@ -1292,7 +1310,7 @@ function createResourcePool(warnings) {
       geometryPool.set(key, result);
       return result;
     }
-    return { geometry, material: material2 };
+    return { geometry, material };
   }
   return {
     scopeResources,
@@ -1304,7 +1322,7 @@ function createResourcePool(warnings) {
     },
     dispose() {
       geometries.forEach((geometry) => geometry.dispose());
-      materials.forEach((material2) => material2.dispose());
+      materials.forEach((material) => material.dispose());
       geometries.clear();
       materials.clear();
       geometryPool.clear();
@@ -1335,7 +1353,7 @@ function compileScene(document2, models = {}, options = {}) {
   function buildScope(source, target, path12, parameters, overrides = {}, inheritedSlots = {}) {
     const scope = resolveData(source, parameters);
     const slots = (id) => [`${path12}/${id}`, ...inheritedSlots[id] ?? []];
-    const { geometry, material: material2 } = resources.scopeResources(scope, path12, overrides);
+    const { geometry, material } = resources.scopeResources(scope, path12, overrides);
     const objects = /* @__PURE__ */ new Map();
     const make = (node, nodePath) => {
       if (++objectCount > 2e4) fail("SCENE_BUDGET", "Expanded scene exceeds 20,000 objects.");
@@ -1346,7 +1364,7 @@ function compileScene(document2, models = {}, options = {}) {
         meshCount++;
         if (triangleCount > 2e6)
           fail("SCENE_BUDGET", "Expanded scene exceeds 2,000,000 triangles.");
-        object = new THREE7.Mesh(g, material2(node.material));
+        object = new THREE7.Mesh(g, material(node.material));
         object.castShadow = true;
         object.receiveShadow = true;
       } else if (node.type === "light") {
@@ -1361,7 +1379,7 @@ function compileScene(document2, models = {}, options = {}) {
         if (node.type === "model") {
           const model = models[node.model];
           const replace = Object.fromEntries(
-            Object.entries(node.materialOverrides).map(([from, to]) => [from, material2(to)])
+            Object.entries(node.materialOverrides).map(([from, to]) => [from, material(to)])
           );
           buildScope(
             model,
@@ -2945,21 +2963,29 @@ function littlewildId(value) {
   const id = value.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/[^A-Za-z0-9_-]+/g, "-").toLowerCase().replace(/^[^a-z0-9]+/, "").slice(0, 72);
   return id || "node";
 }
-function materialData(material2) {
-  const m = material2;
+function materialData(material) {
+  const m = material;
   const result = {
     color: `#${m.color.getHexString()}`,
     roughness: round(m.roughness ?? 1, 1e-3),
     metalness: round(m.metalness ?? 0, 1e-3),
     flatShading: !!m.flatShading
   };
+  if (material instanceof THREE9.MeshPhysicalMaterial) {
+    result.sheen = round(material.sheen, 1e-3);
+    result.sheenColor = `#${material.sheenColor.getHexString()}`;
+    result.sheenRoughness = round(material.sheenRoughness, 1e-3);
+    result.clearcoat = round(material.clearcoat, 1e-3);
+    result.clearcoatRoughness = round(material.clearcoatRoughness, 1e-3);
+  }
   if (m.emissive && m.emissive.getHex() !== 0) {
     result.emissive = `#${m.emissive.getHexString()}`;
     result.emissiveIntensity = round(m.emissiveIntensity ?? 1, 1e-3);
   }
-  if (material2.side === THREE9.DoubleSide) result.doubleSided = true;
-  if (material2.opacity < 1) {
-    result.opacity = round(material2.opacity, 1e-3);
+  if (material.side === THREE9.DoubleSide) result.doubleSided = true;
+  if (!material.depthWrite) result.depthWrite = false;
+  if (material.opacity < 1) {
+    result.opacity = round(material.opacity, 1e-3);
     result.transparent = true;
   }
   return result;
@@ -3001,19 +3027,19 @@ function boxSize(geometry) {
 function littlewildModel(root, options) {
   const materials = {}, materialRoles = /* @__PURE__ */ new Map(), meshes = {}, meshIds = /* @__PURE__ */ new Map(), ids = /* @__PURE__ */ new Set(), rig = {}, warnings = /* @__PURE__ */ new Set(), stats = { nodes: 0, meshes: 0, primitives: 0, vertices: 0, triangles: 0 };
   const roles = new Set(littlewildPetRoles);
-  function role(material2) {
-    if (Array.isArray(material2))
+  function role(material) {
+    if (Array.isArray(material))
       fail("LITTLEWILD_EXPORT", "Multi-material meshes are unsupported.");
-    const known = materialRoles.get(material2);
+    const known = materialRoles.get(material);
     if (known) return known;
-    if (material2.type === "MeshBasicMaterial")
+    if (material.type === "MeshBasicMaterial")
       warnings.add("Unlit materials are exported as standard Littlewild materials.");
-    const data = materialData(material2), base = (material2.name.split("/").pop() || "material").slice(0, 72);
+    const data = materialData(material), base = (material.name.split("/").pop() || "material").slice(0, 72);
     let name = base;
     for (let n = 2; materials[name] && JSON.stringify(materials[name]) !== JSON.stringify(data); n++)
       name = `${base}-${n}`;
     materials[name] = data;
-    materialRoles.set(material2, name);
+    materialRoles.set(material, name);
     return name;
   }
   function nodeId(object, parentId) {
@@ -3179,6 +3205,21 @@ function registerDiscoveryCommands(c) {
       },
       lights: ["point", "spot", "directional"],
       materialShading: ["standard", "unlit"],
+      materialDepthWrite: "Optional boolean. Use false for alpha-blended shadow decals (opacity < 1); GLB uses alphaMode BLEND.",
+      physicalMaterials: {
+        fields: ["sheen", "sheenColor", "sheenRoughness", "clearcoat", "clearcoatRoughness"],
+        range: "Scalar fields 0..1; sheenColor #RRGGBB. Standard PBR shading only.",
+        authoring: "putMaterial in apply; schema --kind material --raw",
+        exports: [
+          "GLB/glTF KHR_materials_sheen and KHR_materials_clearcoat",
+          "Littlewild visual"
+        ]
+      },
+      previewPresentation: {
+        values: ["inspection", "portrait"],
+        authoring: "setEnvironment in apply; environment.presentation in scene schema",
+        scope: "Preview-only light rig and portrait shadow floor; source geometry unchanged"
+      },
       previewLooks: ["filmic", "neutral", "linear"],
       patterns: ["linear", "radial", "grid", "path"],
       expressions: {
@@ -3292,9 +3333,11 @@ function registerProjectsCommands(c) {
       }))
     );
   });
-  sourceOptions2(
-    model.command("import").description("Copy a model recipe or dependency bundle into this project")
-  ).option("--replace", "Replace an existing model after validating every scene").option("--dry-run", "Validate the complete proposed model registry without writing").action(
+  editOptions2(
+    sourceOptions2(
+      model.command("import").description("Copy a model recipe or dependency bundle into this project")
+    )
+  ).option("--replace", "Replace an existing model after validating every scene").action(
     async (opts) => output(await importModel(global().project, await input(opts), opts.replace, opts))
   );
   editOptions2(
@@ -4737,7 +4780,85 @@ async function writeLittlewildAsset(asset, models, file, options = {}) {
 
 // src/application/littlewild-import.ts
 import * as THREE10 from "three";
+
+// src/application/littlewild-materials.ts
 var plain2 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+var fields = /* @__PURE__ */ new Set([
+  "color",
+  "roughness",
+  "metalness",
+  "opacity",
+  "transparent",
+  "depthWrite",
+  "doubleSided",
+  "flatShading",
+  "emissive",
+  "emissiveIntensity",
+  "sheen",
+  "sheenColor",
+  "sheenRoughness",
+  "clearcoat",
+  "clearcoatRoughness"
+]);
+function importedMaterials(materials, used) {
+  const byValue = /* @__PURE__ */ new Map();
+  return (role, props, nodeId, mesh) => {
+    const base = Object.hasOwn(materials, role) ? materials[role] : role;
+    if (props !== void 0 && !plain2(props))
+      fail("LITTLEWILD_IMPORT", `Node ${nodeId} materialProps must be an object.`);
+    const data = {
+      ...typeof base === "string" ? { color: base } : plain2(base) ? base : {},
+      ...plain2(props) ? props : {}
+    };
+    const unsupported = (field, reason) => fail(
+      "LITTLEWILD_MATERIAL_UNSUPPORTED",
+      `Node ${nodeId} material ${role}: ${field} ${reason}`,
+      { node: nodeId, material: role, field, value: data[field] }
+    );
+    for (const field of Object.keys(data))
+      if (!fields.has(field)) unsupported(field, "is not supported by Scene Forge.");
+    const opacity = data.opacity ?? 1;
+    const transparent = data.transparent ?? false;
+    if (data.depthWrite !== void 0 && typeof data.depthWrite !== "boolean")
+      unsupported("depthWrite", "must be a boolean.");
+    if (data.depthWrite === false && !(transparent === true && typeof opacity === "number" && opacity < 1))
+      unsupported("depthWrite", "false requires an alpha-blended surface with opacity below 1.");
+    if (typeof transparent !== "boolean" || transparent !== (typeof opacity === "number" && opacity < 1))
+      unsupported(
+        "transparent",
+        "must match opacity < 1; change the source explicitly before importing."
+      );
+    if (typeof data.emissiveIntensity === "number" && data.emissiveIntensity > 20)
+      unsupported("emissiveIntensity", "exceeds Scene Forge\u2019s maximum of 20.");
+    const { transparent: _transparent, ...mapped } = data;
+    const material = {
+      roughness: 0.98,
+      metalness: 0,
+      opacity: 1,
+      flatShading: !mesh,
+      ...mapped
+    };
+    const key = canonical([role, material]);
+    const found = byValue.get(key);
+    if (found) return found;
+    const stem = (Object.hasOwn(materials, role) ? role : `c${role.replace("#", "")}`).replace(
+      /[^A-Za-z0-9_-]/g,
+      "-"
+    );
+    const prefix = /^[A-Za-z]/.test(stem) ? stem : `m${stem}`;
+    const hasOverride = plain2(props) && Object.keys(props).length > 0;
+    let id = `${prefix.slice(0, hasOverride ? 32 : 64)}${hasOverride ? `-${nodeId.slice(0, 30)}` : ""}`;
+    const start = id;
+    let collision = 1;
+    while (Object.hasOwn(used, id)) id = `${start.slice(0, 55)}-${collision++}`;
+    used[id] = material;
+    byValue.set(key, id);
+    return id;
+  };
+}
+
+// src/application/littlewild-import.ts
+var plain3 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
 var degrees = (value) => Number(THREE10.MathUtils.radToDeg(value).toFixed(4));
 var triples = (values, step) => {
   const out = [];
@@ -4761,27 +4882,14 @@ function forgeId(value, fallback) {
   return /^[A-Za-z]/.test(id) ? id : `n${id}`.slice(0, 64) || fallback;
 }
 var camel = (value) => value.replace(/[-_]+([a-z0-9])/g, (_, c) => c.toUpperCase()).replace(/[^A-Za-z0-9]/g, "");
-function material(value) {
-  const data = typeof value === "string" ? { color: value } : plain2(value) ? value : { color: "#9bb98c" };
-  return {
-    color: String(data.color),
-    roughness: typeof data.roughness === "number" ? data.roughness : 0.98,
-    metalness: typeof data.metalness === "number" ? data.metalness : 0,
-    opacity: typeof data.opacity === "number" ? data.opacity : 1,
-    // The Littlewild kit shades primitives with facets unless a material opts out.
-    flatShading: typeof data.flatShading === "boolean" ? data.flatShading : true,
-    ...typeof data.emissive === "string" ? { emissive: data.emissive } : {},
-    ...typeof data.emissiveIntensity === "number" ? { emissiveIntensity: Math.min(20, data.emissiveIntensity) } : {}
-  };
-}
 function littlewildModels(asset, prefix) {
-  if (asset.format !== "littlewild-3d-asset" || asset.schemaVersion !== 1 || !plain2(asset.models))
+  if (asset.format !== "littlewild-3d-asset" || asset.schemaVersion !== 1 || !plain3(asset.models))
     fail("LITTLEWILD_IMPORT", "Expected a littlewild-3d-asset visual definition.");
-  const base = forgeId(prefix ?? camel(String(asset.id)), "littlewild"), meshes = plain2(asset.meshes) ? asset.meshes : {}, materials = plain2(asset.materials) ? asset.materials : {}, rig = asset.category === "pet" && plain2(asset.rig) ? asset.rig : {};
+  const base = forgeId(prefix ?? camel(String(asset.id)), "littlewild"), meshes = plain3(asset.meshes) ? asset.meshes : {}, materials = plain3(asset.materials) ? asset.materials : {}, rig = asset.category === "pet" && plain3(asset.rig) ? asset.rig : {};
   const roles = new Set(littlewildPetRoles);
   const models = {};
   for (const [variant, model] of Object.entries(asset.models)) {
-    if (!plain2(model) || !Array.isArray(model.nodes))
+    if (!plain3(model) || !Array.isArray(model.nodes))
       fail("LITTLEWILD_IMPORT", `Variant ${variant} has no nodes.`);
     const suffix = camel(`-${variant}`);
     const id = `${base.slice(0, Math.max(1, 64 - suffix.length))}${suffix}`.slice(0, 64);
@@ -4791,13 +4899,14 @@ function littlewildModels(asset, prefix) {
         `Variants collide at model ID ${id}. Choose distinct variant names or a shorter prefix.`
       );
     const geometries = { box: { type: "box", size: [1, 1, 1] } }, usedMaterials = {}, nodes = [], ids = /* @__PURE__ */ new Set(), tags = /* @__PURE__ */ new Map();
-    for (const [role, refs] of Object.entries(plain2(rig[variant]) ? rig[variant] : {}))
+    for (const [role, refs] of Object.entries(plain3(rig[variant]) ? rig[variant] : {}))
       if (roles.has(role))
         for (const ref of Array.isArray(refs) ? refs : [refs])
           tags.set(String(ref), [...tags.get(String(ref)) ?? [], `rig:${role}`]);
+    const resolveMaterial = importedMaterials(materials, usedMaterials);
     let counter = 0;
     const visit = (input, parent) => {
-      if (!plain2(input)) return;
+      if (!plain3(input)) return;
       const primitive = String(input.primitive), lwId = typeof input.id === "string" ? input.id : void 0;
       let nodeId = forgeId(lwId ?? `${primitive}${++counter}`, `node${++counter}`);
       while (ids.has(nodeId)) nodeId = `${nodeId.slice(0, 58)}${++counter}`;
@@ -4823,7 +4932,7 @@ function littlewildModels(asset, prefix) {
         if (!geometries[geometryId]) {
           if (primitive === "mesh") {
             const data = meshes[String(input.mesh)];
-            if (!plain2(data) || !Array.isArray(data.positions))
+            if (!plain3(data) || !Array.isArray(data.positions))
               fail("LITTLEWILD_IMPORT", `Missing mesh ${String(input.mesh)}.`);
             const positions = data.positions;
             geometries[geometryId] = {
@@ -4835,15 +4944,7 @@ function littlewildModels(asset, prefix) {
           } else geometries[geometryId] = bake(primitiveGeometry(primitive));
         }
         const role = String(input.material);
-        const materialId = forgeId(
-          Object.hasOwn(materials, role) ? role : `c${role.replace("#", "")}`,
-          "material"
-        );
-        usedMaterials[materialId] ??= material(
-          Object.hasOwn(materials, role) ? materials[role] : role
-        );
-        if (primitive === "mesh" && !(plain2(materials[role]) && typeof materials[role].flatShading === "boolean"))
-          usedMaterials[materialId].flatShading = false;
+        const materialId = resolveMaterial(role, input.materialProps, nodeId, primitive === "mesh");
         Object.assign(node, { geometry: geometryId, material: materialId });
       }
       nodes.push(node);

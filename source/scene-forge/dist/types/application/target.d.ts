@@ -11,6 +11,7 @@ export declare function authoringTarget(scene: SceneDocument, models: ModelLibra
         keyPosition: [number, number, number];
         exposure?: number | undefined;
         toneMapping?: "linear" | "filmic" | "neutral" | undefined;
+        presentation?: "inspection" | "portrait" | undefined;
     };
     geometries: Record<string, {
         type: "box";
@@ -92,8 +93,14 @@ export declare function authoringTarget(scene: SceneDocument, models: ModelLibra
         opacity: number;
         doubleSided: boolean;
         flatShading: boolean;
+        sheen?: number | undefined;
+        sheenColor?: string | undefined;
+        sheenRoughness?: number | undefined;
+        clearcoat?: number | undefined;
+        clearcoatRoughness?: number | undefined;
         emissive?: string | undefined;
         emissiveIntensity?: number | undefined;
+        depthWrite?: boolean | undefined;
         shading?: "standard" | "unlit" | undefined;
     }>;
     nodes: ({

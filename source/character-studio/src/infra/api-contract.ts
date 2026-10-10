@@ -22,7 +22,7 @@ export const httpContract = {
   endpoints:[
     {method:'GET',path:'/api/discover',response:'This command and HTTP contract.'},
     {method:'GET',path:'/api/catalog',response:{ok:true,catalog:'presets, skills, outfits, personalities, shapes'}},
-    {method:'GET',path:'/api/schema',query:{kind:{enum:['character','batch'],default:'character'}},response:{ok:true,kind:'requested kind',schema:'JSON Schema draft 2020-12'}},
+    {method:'GET',path:'/api/schema',query:{kind:{enum:['character','batch','review'],default:'character'}},response:{ok:true,kind:'requested kind',schema:'JSON Schema draft 2020-12'}},
     {method:'GET',path:'/api/lock',response:{ok:true,locked:'boolean',state:'active | stale | unknown | unlocked',owner:'optional process/host/time',path:'lock directory'}},
     {method:'GET',path:'/api/characters',response:{ok:true,characters:[envelope]}},
     {method:'GET',path:'/api/characters/:id',response:envelope},

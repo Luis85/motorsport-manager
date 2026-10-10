@@ -118,4 +118,39 @@ test('Generic asset renderer builds baked meshes once per immutable definition',
  assert.throws(()=>sandbox.LWAssetRenderer.create({...kit,T:undefined},parent,'pet','test-pet','baby'),/cannot draw baked mesh/);
 });
 
+test('Physical material schema and runtime reject invalid surfaces without altering legacy data',()=>{
+ const schema=JSON.parse(fs.readFileSync(path.join(schemaRoot,'asset.schema.json'))),Ajv=require('ajv/dist/2020').default,validate=new Ajv({strict:false}).compile(schema);
+ const original=bakedPet(),surface={sheen:.8,sheenColor:'#eed5bb',sheenRoughness:.65,clearcoat:.2,clearcoatRoughness:.3};
+ const authored=bakedPet();Object.assign(authored.materials.skin,surface);authored.models.baby.nodes[0].children[0].materialProps={clearcoat:1};
+ assert(validate(authored),JSON.stringify(validate.errors));assert.equal(JSON.stringify(A.validate(authored)),JSON.stringify(authored));assert.equal(JSON.stringify(A.validate(original)),JSON.stringify(original));
+ for(const [key,value] of [['sheen',1.01],['sheenRoughness',-.1],['clearcoat','1'],['clearcoatRoughness',2],['sheenColor','red']])for(const inline of [false,true]){
+  const invalid=bakedPet();if(inline)invalid.models.baby.nodes[0].children[0].materialProps={[key]:value};else invalid.materials.skin[key]=value;
+  assert.equal(validate(invalid),false,key);assert.throws(()=>A.validate(invalid),/3D asset:/,key);
+ }
+});
+test('Physical surfaces survive appearance colors and instantiate actual Three materials',()=>{
+ const vm=require('node:vm'),realm={};realm.window=realm;vm.runInNewContext(fs.readFileSync(path.resolve(__dirname,'../vendor/three.js'),'utf8'),realm);
+ const sandbox={};vm.runInNewContext('globalThis.LWAssetDefinitions=JSON.parse('+JSON.stringify(JSON.stringify([bakedPet()]))+');\n'+catalogScript()+'\n'+fs.readFileSync(__dirname+'/asset-renderer.js','utf8'),sandbox);
+ const T=realm.THREE,R=sandbox.LWAssetRenderer,definition=sandbox.LWAssets.pet('test-pet'),input=JSON.parse(JSON.stringify(definition));
+ input.materials.skin={color:'#998877',sheen:.8,sheenColor:'#ffeedd',sheenRoughness:.6,clearcoat:.5,clearcoatRoughness:.1};
+ // Input must belong to the validator realm, which enforces plain JSON prototypes.
+ sandbox.input=JSON.stringify(input);vm.runInNewContext('globalThis.authored=JSON.parse(input)',sandbox);
+ const kit={T,mat:(color,extra)=>R.createMaterial(T,color,extra),group(parent){const g=new T.Group();parent.add(g);return g;}};
+ const result=R.createFromDefinition(kit,new T.Group(),sandbox.authored,'baby',{materials:{skin:'#abcdef'}}),material=result.handles.get('head').material;
+ assert.equal(material.isMeshPhysicalMaterial,true);assert.equal(material.sheen,.8);assert.equal(material.sheenRoughness,.6);assert.equal(material.clearcoat,.5);assert.equal(material.clearcoatRoughness,.1);assert.equal(material.color.getHexString(),'abcdef');assert.equal(material.sheenColor.getHexString(),'ffeedd');assert.equal(material.flatShading,false);
+ const legacy=R.createMaterial(T,'#abcdef');assert.equal(legacy.isMeshStandardMaterial,true);assert.equal(legacy.isMeshPhysicalMaterial,undefined);assert.equal(legacy.roughness,.98);assert.equal(legacy.flatShading,true);
+ assert.throws(()=>R.createMaterial({MeshStandardMaterial:T.MeshStandardMaterial},'#fff',{sheen:1}),/does not support authored physical/);
+});
+test('Baked geometry ownership isolates renderer lifetimes and releases once',()=>{
+ const vm=require('node:vm'),sandbox={};vm.runInNewContext('globalThis.LWAssetDefinitions=JSON.parse('+JSON.stringify(JSON.stringify([bakedPet()]))+');\n'+catalogScript()+'\n'+fs.readFileSync(__dirname+'/asset-renderer.js','utf8'),sandbox);
+ let disposed=0;class Obj{constructor(){this.position=this.rotation=this.scale={set(){}};this.userData={};}add(){}}
+ class Mesh extends Obj{constructor(g){super();this.geometry=g;}}
+ const T={Mesh,BufferGeometry:class{setAttribute(){}setIndex(){}computeBoundingSphere(){}dispose(){disposed++;}},Float32BufferAttribute:class{}};
+ const kit=()=>({T,mat:()=>({}),group:()=>new Obj()}),a=kit(),b=kit(),R=sandbox.LWAssetRenderer,parent=new Obj();
+ const first=R.create(a,parent,'pet','test-pet','baby'),second=R.create(b,parent,'pet','test-pet','baby');assert.notEqual(first.handles.get('head').geometry,second.handles.get('head').geometry);
+ R.disposeKit(a);R.disposeKit(a);assert.equal(disposed,1);assert.equal(R.create(b,parent,'pet','test-pet','baby').handles.get('head').geometry,second.handles.get('head').geometry);
+ R.disposeKit(b);assert.equal(disposed,2);assert.notEqual(R.create(a,parent,'pet','test-pet','baby').handles.get('head').geometry,first.handles.get('head').geometry);R.disposeKit(a);assert.equal(disposed,3);
+ R.create(a,parent,'pet','test-pet','baby');const other=sandbox.LWAssets.validate(sandbox.LWAssets.pet('test-pet'));R.createFromDefinition(a,parent,other,'baby');let releases=0;assert.throws(()=>R.disposeKit(a,()=>{releases++;throw Error('release failed');}),/Baked geometry release failed/);assert.equal(releases,2);R.disposeKit(a);assert.equal(releases,2);
+});
+
 const passed=results.filter(r=>r.passed).length,report={passed,total:results.length,assets:A.all().length,results};fs.writeFileSync(__dirname+'/asset-catalog-results.json',JSON.stringify(report,null,2));console.log(passed+'/'+results.length);if(passed!==results.length)process.exitCode=1;

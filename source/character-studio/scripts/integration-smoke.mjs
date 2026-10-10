@@ -6,6 +6,7 @@ import {mkdtempSync, readFileSync, writeFileSync, rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {verifyLifecycle} from './workflow-lifecycle.mjs';
 
 const repository = fileURLToPath(new URL('../../../', import.meta.url));
 const workspace = mkdtempSync(path.join(tmpdir(), 'character-studio-handoff-'));
@@ -63,13 +64,28 @@ try {
       assert.equal(exported.validation.numWarnings,0);
       assert.ok(exported.stats.meshes > 0);
       assert.ok(exported.stats.triangles > 0);
+      const glbBytes = readFileSync(output);
+      const gltf = JSON.parse(glbBytes.subarray(20, 20 + glbBytes.readUInt32LE(12)).toString());
+      const surface = nodeId => {
+        const node = gltf.nodes.find(entry => entry.name?.split('/').at(-1) === nodeId);
+        assert.ok(node && Number.isInteger(node.mesh), `${model}: missing ${nodeId} mesh`);
+        return gltf.materials[gltf.meshes[node.mesh].primitives[0].material];
+      };
+      const nose = surface('nose');
+      assert.equal(nose.pbrMetallicRoughness.roughnessFactor, 0.25, `${model}: nose roughness`);
+      assert.equal(nose.extensions.KHR_materials_clearcoat.clearcoatFactor, 0.6, `${model}: nose clearcoat`);
+      assert.equal(nose.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor, 0.2, `${model}: nose clearcoat roughness`);
+      const shadow = surface('shadow');
+      assert.equal(shadow.alphaMode, 'BLEND', `${model}: shadow alpha blending`);
+      assert.equal(shadow.pbrMetallicRoughness.baseColorFactor[3], 0.16, `${model}: shadow opacity`);
       exports.push({model,sha256:sha256(readFileSync(output)),triangles:exported.stats.triangles});
     }
     const importedRecipe = cli(studio,['import','--project',project+'.roundtrip','--file',file]);
     assert.deepEqual(importedRecipe.character,inspected.character);
     assert.equal(cli(studio,['inspect','--project',project,'--id',id]).stateHash,sourceState);
     assert.equal(sha256(readFileSync(file)),sha256(bytes));
-    reports.push({id,characterState:sourceState,packageSha256:sha256(bytes),forgeState:imported.stateHash,variants,exports});
+    const lifecycle=id==='river-pip'?verifyLifecycle({cli,repository,workspace,id,project,packageFile:file,forgeProject,models:imported.variants}):undefined;
+    reports.push({id,characterState:sourceState,packageSha256:sha256(bytes),forgeState:imported.stateHash,variants,exports,...(lifecycle?{lifecycle}:{})});
   }
-  process.stdout.write(JSON.stringify({ok:true,executableHashes:{studio:sha256(readFileSync(studio)),sceneForge:sha256(readFileSync(forge))},reports},null,2)+'\n');
+  process.stdout.write(JSON.stringify({ok:true,executableHashes:{studio:sha256(readFileSync(studio)),sceneForge:sha256(readFileSync(forge)),engine:sha256(readFileSync(path.join(repository,'bin/wildlands')))},reports},null,2)+'\n');
 } finally {rmSync(workspace,{recursive:true,force:true});}

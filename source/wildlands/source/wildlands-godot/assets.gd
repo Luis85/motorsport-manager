@@ -7,6 +7,8 @@ var materials: Dictionary = {}
 
 func install(records: Array) -> void:
 	definitions.clear()
+	meshes.clear()
+	materials.clear()
 	for record in records:
 		definitions[str(record.category) + ":" + str(record.id)] = record
 
@@ -73,8 +75,14 @@ func material(
 	asset: Dictionary, record: Dictionary, overrides: Dictionary = {}
 ) -> StandardMaterial3D:
 	var role: String = record.get("material", "")
-	var value: Variant = overrides.get(role, asset.get("materials", {}).get(role, "#9bb98c"))
+	var value: Variant = asset.get("materials", {}).get(role, "#9bb98c")
 	var properties: Dictionary = {"color": value} if value is String else value.duplicate()
+	if overrides.has(role):
+		var replacement: Variant = overrides[role]
+		if replacement is String:
+			properties["color"] = replacement
+		else:
+			properties = replacement.duplicate()
 	properties.merge(record.get("materialProps", {}), true)
 	var key := JSON.stringify(properties)
 	if materials.has(key):
@@ -85,6 +93,17 @@ func material(
 	result.roughness = float(properties.get("roughness", 0.98))
 	result.metallic = float(properties.get("metalness", 0.0))
 	result.cull_mode = BaseMaterial3D.CULL_DISABLED
+	result.clearcoat_enabled = float(properties.get("clearcoat", 0)) > 0
+	result.clearcoat = float(properties.get("clearcoat", 0))
+	result.clearcoat_roughness = float(properties.get("clearcoatRoughness", 0))
+	# Godot has no cloth sheen BRDF. Rim is a documented approximation, not parity.
+	result.rim_enabled = float(properties.get("sheen", 0)) > 0
+	result.rim = float(properties.get("sheen", 0))
+	result.set_meta("authored_surface", properties.duplicate(true))
+	if result.rim_enabled:
+		result.set_meta(
+			"surface_limitation", "Sheen uses rim; sheenColor/roughness are retained only."
+		)
 	if properties.get("transparent", false) or result.albedo_color.a < 1:
 		result.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	if properties.has("emissive"):

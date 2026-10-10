@@ -1,3 +1,4 @@
+import { sculptPlushModel } from "./plush-model.js";
 import {
   baseDefinition,
   clone,
@@ -50,6 +51,10 @@ function bakeOutfits(visual: Data, character: Character): void {
         walk(children, (child) => {
           if (child.id) child.id = `${prefix}${node.id}-${child.id}`;
           if (child.material) child.material = prefix + child.material;
+          if (visual.meshes?.["studio-soft"] && child.primitive === "soft") {
+            child.primitive = "mesh";
+            child.mesh = "studio-soft";
+          }
         });
         node.children = [...(node.children || []), ...children];
       });
@@ -58,6 +63,10 @@ function bakeOutfits(visual: Data, character: Character): void {
 }
 /** Compile the canonical rig with authored transforms and cosmetic socket attachments. */
 export function compileVisual(input: Character): Data {
+  return compileVisualRevision(input, 2);
+}
+/** Revision 1 is retained solely to verify unchanged exports made by the original compiler. */
+function compileVisualRevision(input: Character, revision: 1 | 2): Data {
   const character = assertCharacter(input),
     look = character.appearance;
   const visual: Data = clone(baseDefinition.visual);
@@ -111,11 +120,13 @@ export function compileVisual(input: Character): Data {
       pupil: look.eyeColor,
     };
   }
+  if (revision === 2) sculptPlushModel(visual);
   bakeOutfits(visual, character);
   visual.metadata.characterStudio = {
     recipe: clone(character),
     outfits: "cosmetic-only",
     identity: "presentation-only",
+    ...(revision === 2 ? { compilerRevision: 2 } : {}),
   };
   validateAsset(visual);
   return visual;
@@ -195,20 +206,28 @@ export function importCharacter(input: unknown): Character {
   if (visual?.metadata?.characterStudio?.recipe) {
     validateAsset(visual);
     const character = assertCharacter(visual.metadata.characterStudio.recipe);
-    if (canonical(compileVisual(character)) !== canonical(visual))
+    const revision = visual.metadata.characterStudio.compilerRevision ?? 1;
+    if (revision !== 1 && revision !== 2)
+      throw new Error("This export uses an unsupported Character Studio compiler revision.");
+    const expectedVisual = compileVisualRevision(character, revision);
+    if (canonical(expectedVisual) !== canonical(visual))
       throw new Error(
         "This visual was edited outside Character Studio. Import its original recipe or use Scene Forge to preserve advanced edits.",
       );
+    const expectedPackage = value.format === "littlewild-creature-package"
+      ? { ...compilePackage(character), appearanceManifest: expectedVisual } : null;
     if (
-      value.format === "littlewild-creature-package" &&
-      canonical(compilePackage(character)) !== canonical(value)
+      expectedPackage &&
+      canonical(expectedPackage) !== canonical(value)
     )
       throw new Error(
         "This package has advanced gameplay edits. Import its original recipe to avoid discarding those changes.",
       );
+    const expectedDefinition = value.format === "littlewild-definition"
+      ? { ...compileDefinition(character), visual: expectedVisual } : null;
     if (
-      value.format === "littlewild-definition" &&
-      canonical(compileDefinition(character)) !== canonical(value)
+      expectedDefinition &&
+      canonical(expectedDefinition) !== canonical(value)
     )
       throw new Error(
         "This definition has advanced edits. Import its original recipe to avoid discarding those changes.",

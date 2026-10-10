@@ -93,8 +93,14 @@ export declare function importLittlewildDefinition(project: string, file: string
             opacity: number;
             doubleSided: boolean;
             flatShading: boolean;
+            sheen?: number | undefined;
+            sheenColor?: string | undefined;
+            sheenRoughness?: number | undefined;
+            clearcoat?: number | undefined;
+            clearcoatRoughness?: number | undefined;
             emissive?: string | undefined;
             emissiveIntensity?: number | undefined;
+            depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
         }>;
         nodes: ({

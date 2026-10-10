@@ -3,6 +3,8 @@ extends RefCounted
 
 
 static func inspect(host: Object, _result: Variant) -> void:
+	if not _materials(host):
+		return
 	host.stage = 7
 	await host.process_frame
 	if not host._check(
@@ -58,3 +60,31 @@ static func inspect(host: Object, _result: Variant) -> void:
 		):
 			return
 	host.shell.bridge.request("story")
+
+
+static func _materials(host: Object) -> bool:
+	var assets = load("res://native/assets.gd").new()
+	var surface := {
+		"color": "#112233",
+		"sheen": 0.8,
+		"sheenColor": "#ffeedd",
+		"sheenRoughness": 0.6,
+		"clearcoat": 0.5,
+		"clearcoatRoughness": 0.2
+	}
+	var material: StandardMaterial3D = assets.material(
+		{"materials": {"skin": surface}}, {"material": "skin"}, {"skin": "#abcdef"}
+	)
+	return host._check(
+		(
+			material.clearcoat_enabled
+			and is_equal_approx(material.clearcoat, 0.5)
+			and is_equal_approx(material.clearcoat_roughness, 0.2)
+			and material.rim_enabled
+			and is_equal_approx(material.rim, 0.8)
+			and material.albedo_color.to_html(false) == "abcdef"
+			and material.get_meta("authored_surface").sheenColor == "#ffeedd"
+			and material.has_meta("surface_limitation")
+		),
+		"Native physical material mapping or explicit sheen limitation was lost."
+	)

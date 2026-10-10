@@ -2,29 +2,44 @@
 (function(root){'use strict';
  const A=root.LWAssets;
  function material(asset,key,overrides){
-  const chosen=overrides?.[key]??asset.materials[key]??key;
+  const base=asset.materials[key]??key,override=overrides?.[key];
+  // Appearance palettes change colour without discarding the authored surface.
+  const chosen=override===undefined?base:typeof override==='string'&&typeof base==='object'?{...base,color:override}:override;
   if(typeof chosen==='string')return{color:chosen,extra:{}};
   return{color:chosen.color,extra:Object.fromEntries(Object.entries(chosen).filter(([k])=>k!=='color'))};
+ }
+ const physicalKeys=['sheen','sheenRoughness','sheenColor','clearcoat','clearcoatRoughness'];
+ function createMaterial(T,color,extra={},defaults={roughness:.98,flatShading:true}){
+  const options={color,...defaults,...extra},physical=physicalKeys.some(key=>options[key]!==undefined);
+  const Material=physical?T.MeshPhysicalMaterial:T.MeshStandardMaterial;
+  if(!Material)throw Error('This Three renderer does not support authored physical materials');
+  return new Material(options);
  }
  /* Data names a portable doubleSided flag; Three expects its side constant. */
  function materialProps(kit,extra){
   if(extra.doubleSided===undefined)return extra;
   const {doubleSided,...rest}=extra;return doubleSided&&kit.T?{...rest,side:kit.T.DoubleSide}:rest;
  }
- /* Baked meshes are cached per catalog definition object and Three namespace; definitions are immutable. */
+ /* Baked meshes are cached per renderer kit and catalog definition object; definitions are immutable. */
  const meshCache=new WeakMap();
  function meshGeometry(kit,source,asset,id){
   if(!kit.T||!kit.mat)throw Error('This renderer kit cannot draw baked mesh primitives');
-  let byKit=meshCache.get(kit.T);if(!byKit){byKit=new WeakMap();meshCache.set(kit.T,byKit);}
-  let bySource=byKit.get(source);if(!bySource){bySource=new Map();byKit.set(source,bySource);}
+  let cache=meshCache.get(kit);if(!cache){cache={sources:new WeakMap(),geometries:new Set()};meshCache.set(kit,cache);}
+  let bySource=cache.sources.get(source);if(!bySource){bySource=new Map();cache.sources.set(source,bySource);}
   if(!bySource.has(id)){
    const data=asset.meshes[id],g=new kit.T.BufferGeometry();
    g.setAttribute('position',new kit.T.Float32BufferAttribute(data.positions,3));
    if(data.indices)g.setIndex(data.indices);
    if(data.normals)g.setAttribute('normal',new kit.T.Float32BufferAttribute(data.normals,3));else g.computeVertexNormals();
-   g.computeBoundingSphere();bySource.set(id,g);
+   g.computeBoundingSphere();bySource.set(id,g);cache.geometries.add(g);
   }
   return bySource.get(id);
+ }
+ // Kits own their GPU resources. Releasing one view must never invalidate another view.
+ function disposeKit(kit,release=geometry=>geometry.dispose()){
+  const cache=meshCache.get(kit);if(!cache)return;meshCache.delete(kit);const errors=[];
+  for(const geometry of cache.geometries)try{release(geometry);}catch(error){errors.push(error);}
+  if(errors.length)throw new AggregateError(errors,'Baked geometry release failed');
  }
  function makeNode(kit,parent,asset,node,options,handles){
   let o;
@@ -70,6 +85,6 @@
  }
  function createItem(kit,parent,id,model='carry',options={}){return create(kit,parent,'item',id,model,options);}
  function createActor(kit,parent,id,model='world',options={}){if(!id)throw Error('Actor asset ID is required');return create(kit,parent,'actor',id,model,options);}
- root.LWAssetRenderer=Object.freeze({create,createFromDefinition,createBuilding,createItem,createActor});
+ root.LWAssetRenderer=Object.freeze({createMaterial,disposeKit,create,createFromDefinition,createBuilding,createItem,createActor});
  if(typeof module!=='undefined'&&module.exports)module.exports=root.LWAssetRenderer;
 })(typeof globalThis!=='undefined'?globalThis:this);

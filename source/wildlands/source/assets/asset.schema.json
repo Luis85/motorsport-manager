@@ -39,11 +39,33 @@
       "maxLength": 120
     },
     "materials": {
-      "type": "object"
+      "type": "object",
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          },
+          {
+            "$ref": "#/$defs/material"
+          }
+        ]
+      }
     },
     "models": {
       "type": "object",
-      "minProperties": 1
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/node"
+            }
+          }
+        }
+      }
     },
     "metadata": {
       "type": "object"
@@ -224,6 +246,103 @@
             },
             "minItems": 3,
             "maxItems": 49152
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "materialProps": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "emissive": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "sheenColor": {
+          "type": "string",
+          "pattern": "^#[0-9a-fA-F]{6}$"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "roughness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "metalness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "sheen": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "sheenRoughness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "clearcoat": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "clearcoatRoughness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "transparent": {
+          "type": "boolean"
+        },
+        "depthWrite": {
+          "type": "boolean"
+        },
+        "flatShading": {
+          "type": "boolean"
+        },
+        "doubleSided": {
+          "type": "boolean"
+        },
+        "emissiveIntensity": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "material": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/materialProps"
+        },
+        {
+          "required": [
+            "color"
+          ]
+        }
+      ]
+    },
+    "node": {
+      "type": "object",
+      "properties": {
+        "materialProps": {
+          "$ref": "#/$defs/materialProps"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
           }
         }
       }

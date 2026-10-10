@@ -64,13 +64,14 @@ export function registerProjectsCommands(c: CommandContext) {
       })),
     );
   });
-  sourceOptions(
-    model
-      .command('import')
-      .description('Copy a model recipe or dependency bundle into this project'),
+  editOptions(
+    sourceOptions(
+      model
+        .command('import')
+        .description('Copy a model recipe or dependency bundle into this project'),
+    ),
   )
     .option('--replace', 'Replace an existing model after validating every scene')
-    .option('--dry-run', 'Validate the complete proposed model registry without writing')
     .action(async (opts) =>
       output(await importModel(global().project, await input(opts), opts.replace, opts)),
     );

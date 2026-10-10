@@ -7,7 +7,8 @@ import { applyOperations, batchOperations } from '../application/transactions.js
 import * as store from '../infra/store.js';
 import { renderHtml } from '../infra/html.js';
 import { serve } from '../infra/server.js';
-import { captureCharacter } from '../infra/capture.js';
+import { captureCharacter, captureDoctor } from '../infra/capture.js';
+import { reviewCharacter, reviewPlanSchema } from '../infra/review.js';
 import { argumentSchema, commands, discovery, operationSchema, previewValues } from './discovery.js';
 import { CommandError, failure, integerFlag, parse, readJson, stringFlag, writeOutput, type Flags } from './protocol.js';
 
@@ -32,7 +33,8 @@ async function execute(command: string, flags: Flags): Promise<unknown> {
   const id = stringFlag(flags, 'id');
   if (command === 'help' || command === 'discover') return discovery();
   if (command === 'version') return {ok: true, tool: 'character-studio', version: '0.1.0', protocolVersion: 1};
-  if (command === 'doctor') return {ok: true, project, node: process.versions.node, lock: await store.lockStatus(project), recovery: 'If the lock is stale, confirm its owner is no longer running before removing it. Never remove an active or unknown-owner lock.'};
+  if (command === 'doctor') return {ok: true, project, node: process.versions.node, lock: await store.lockStatus(project),
+    ...(flags.capture ? {capture:await captureDoctor()} : {}), recovery: 'If the lock is stale, confirm its owner is no longer running before removing it. Never remove an active or unknown-owner lock.'};
   if (command === 'catalog') return {ok: true, catalog};
   if (command === 'describe') {
     const name = stringFlag(flags, 'command');
@@ -41,8 +43,8 @@ async function execute(command: string, flags: Flags): Promise<unknown> {
   }
   if (command === 'schema') {
     const kind = stringFlag(flags, 'kind', 'character');
-    if (!['character', 'batch'].includes(kind)) throw new CommandError('INVALID_ARGUMENT', '--kind must be character or batch.');
-    return {ok: true, kind, schema: kind === 'batch' ? operationSchema : characterSchema};
+    if (!['character', 'batch', 'review'].includes(kind)) throw new CommandError('INVALID_ARGUMENT', '--kind must be character, batch or review.');
+    return {ok: true, kind, schema: kind === 'review' ? reviewPlanSchema : kind === 'batch' ? operationSchema : characterSchema};
   }
   if (command === 'create') return store.write(project, createCharacter(id, stringFlag(flags, 'name', id), stringFlag(flags, 'preset', 'pip')), {expectedRevision: 0, expectedState: null, dryRun: flags['dry-run'] === true});
   if (command === 'list') return {ok: true, characters: await store.list(project)};
@@ -95,6 +97,10 @@ async function execute(command: string, flags: Flags): Promise<unknown> {
     if (width < 256 || height < 256 || width > 4096 || height > 4096 || width * height > 8388608) throw new CommandError('INVALID_ARGUMENT', 'Capture dimensions must be 256–4096 pixels, at most 8,388,608 pixels total.');
     const character = (await store.read(project, id)).character;
     return {ok: true, ...await captureCharacter(character, stringFlag(flags, 'out'), {...preview, width, height})};
+  }
+  if (command === 'review') {
+    const character = (await store.read(project, id)).character;
+    return {ok:true,...await reviewCharacter(character,stringFlag(flags,'out'),flags.plan ? await readJson(stringFlag(flags,'plan')) : undefined)};
   }
   if (command === 'serve') {
     const port = integerFlag(flags, 'port', 4317)!;

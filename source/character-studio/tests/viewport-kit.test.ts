@@ -47,3 +47,39 @@ test('world scenery toggles without changing the detached character model', () =
   assert.equal(scenery.visible, false);
   stage.dispose();
 });
+
+test('authored cloth and glossy material fields use physical shading without changing base materials', () => {
+  const resources = createRenderKit();
+  const cloth = resources.kit.mat('#caa273', {sheen:.8,sheenRoughness:.7,sheenColor:'#eed8b4',flatShading:false});
+  const eye = resources.kit.mat('#38251f', {clearcoat:1,clearcoatRoughness:.08,roughness:.15});
+  const plain = resources.kit.mat('#ffffff');
+  assert.ok(cloth instanceof THREE.MeshPhysicalMaterial);
+  assert.ok(eye instanceof THREE.MeshPhysicalMaterial);
+  assert.equal(cloth.sheen, .8);
+  assert.equal(cloth.sheenRoughness, .7);
+  assert.equal(cloth.sheenColor.getHexString(), 'eed8b4');
+  assert.equal(eye.clearcoat, 1);
+  assert.equal(eye.clearcoatRoughness, .08);
+  assert.ok(!(plain instanceof THREE.MeshPhysicalMaterial));
+  resources.dispose(new THREE.Group());
+});
+
+test('garden decoration batches draw calls and retains explicit lighting and resource lifetime', () => {
+  const stage = createStage();
+  const geometries = new Set<THREE.BufferGeometry>(), materials = new Set<THREE.Material>();
+  let meshes = 0;
+  stage.root.traverse(node => {
+    if (node instanceof THREE.Mesh) {
+      meshes++; geometries.add(node.geometry); materials.add(node.material as THREE.Material);
+    }
+  });
+  assert.ok(meshes > 0 && meshes < 35, `Static garden should be batched, saw ${meshes} meshes`);
+  const lantern = [...materials].find(value => value instanceof THREE.MeshStandardMaterial && value.emissive.getHex() !== 0) as THREE.MeshStandardMaterial;
+  assert.equal(lantern.emissiveIntensity, .65);
+  stage.setLight(true); assert.equal(lantern.emissiveIntensity, 2);
+  stage.setLight(false); assert.equal(lantern.emissiveIntensity, .65);
+  let disposed = 0;
+  for (const geometry of geometries) geometry.addEventListener('dispose', () => disposed++);
+  stage.dispose();
+  assert.equal(disposed, geometries.size);
+});

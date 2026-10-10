@@ -2,7 +2,11 @@ import * as THREE from 'three';
 import '../../../wildlands/source/asset-catalog.ts';
 import '../infra/engine-renderer.cjs';
 import {compileVisual} from '../application/compiler.ts';
-import {createRenderKit, createStage} from './viewport-kit.ts';
+import {createRenderKit} from './viewport-kit.ts';
+import {createStage} from './viewport-stage.ts';
+import {createPortraits} from './portraits.ts';
+import {validatePreviewConfiguration} from './preview-configuration.ts';
+import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 
 type Mode = 'studio' | 'world' | 'portrait';
 type Light = 'studio' | 'daylight' | 'night';
@@ -20,23 +24,35 @@ export function createViewport(canvas: HTMLCanvasElement) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = .9;
+  const environment = new RoomEnvironment();
+  const generator = new THREE.PMREMGenerator(renderer);
+  const reflection = generator.fromScene(environment, .06);
+  scene.environment = reflection.texture; scene.environmentIntensity = .25;
+  environment.dispose(); generator.dispose();
+  const portrait = createPortraits(renderer, reflection.texture, () => {
+    if (batching) portraitPending = true; else draw();
+  });
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const stage = createStage();
   scene.add(stage.root);
-  const sky = new THREE.HemisphereLight('#fff2d4', '#75968a', 2);
+  const sky = new THREE.HemisphereLight('#fff3dd', '#8d9479', 1.6);
   const sun = new THREE.DirectionalLight('#ffe3b0', 2.7);
-  sun.position.set(-3, 5, 4);
+  sun.position.set(-3, 5, 3);
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024, 1024);
+  sun.shadow.radius = 4;
   Object.assign(sun.shadow.camera, {left: -3, right: 3, top: 3, bottom: -3, near: .1, far: 15});
   sun.shadow.bias = -.0003;
-  sun.shadow.normalBias = .02;
-  scene.add(sky, sun, sun.target);
+  sun.shadow.normalBias = .008;
+  const rim = new THREE.DirectionalLight('#ffe1a3', .8);
+  rim.position.set(2, 3, -3);
+  scene.add(sky, sun, sun.target, rim);
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let disposed = false, paused = reducedMotion.matches, contextLost = false;
-  let mode: Mode = 'studio', pose: Pose = 'idle';
+  let disposed = false, paused = reducedMotion.matches, contextLost = false, batching = false, portraitPending = false;
+  let modelRevision = 0;
+  let mode: Mode = 'studio', light: Light = 'studio', pose: Pose = 'idle';
   let figure: Instance | null = null, resources: ReturnType<typeof createRenderKit> | null = null;
   let rig: Record<string, string | string[]> = {}, footSockets: string[] = [], rest = new Map<string, Rest>();
   let yaw = 0, elevation = .12, zoom = 1, characterHeight = 1.2;
@@ -48,23 +64,31 @@ export function createViewport(canvas: HTMLCanvasElement) {
   canvas.dataset.renderer = 'three-engine';
 
   function setLight(value: Light) {
+    light = value;
     const night = value === 'night', daylight = value === 'daylight';
-    scene.background = new THREE.Color(night ? '#283b3c' : daylight ? '#e5ebdd' : '#f0eee4');
+    const background = night ? '#263d42' : daylight ? '#c9d7bc' : '#d7d8bb';
+    scene.background = new THREE.Color(background);
+    scene.fog = new THREE.Fog(background, 5, 10);
+    stage.setLight(night);
+    rim.intensity = night ? .35 : .8;
+    scene.environmentIntensity = night ? .12 : .25;
     sky.color.set(night ? '#8dadd4' : '#fff2d4');
     sky.groundColor.set(night ? '#46585b' : '#75968a');
-    sky.intensity = night ? 1.1 : 2;
+    sky.intensity = night ? .45 : .65;
     sun.color.set(night ? '#bed6f6' : daylight ? '#fff4dc' : '#ffe3b0');
-    sun.intensity = night ? 1.2 : 2.7;
+    sun.intensity = night ? .85 : daylight ? 2 : 1.85;
     draw();
   }
   function projectCamera() {
+    // The presentation backdrop follows the turntable so it cannot obscure rear inspection.
+    stage.root.rotation.y = yaw;
     const aspect = width / Math.max(height, 1);
     const vertical = (mode === 'world' ? Math.max(1.15, characterHeight * .8) :
-      mode === 'portrait' ? characterHeight * .4 : characterHeight * .67) / zoom;
+      mode === 'portrait' ? characterHeight * .53 : characterHeight * (height < 550 ? 1.06 : .72)) / zoom;
     const halfHeight = Math.max(vertical, (mode === 'world' ? 1.65 : characterHeight * .55) / aspect / zoom);
     camera.left = -halfHeight * aspect; camera.right = halfHeight * aspect;
     camera.top = halfHeight; camera.bottom = -halfHeight;
-    const targetY = characterHeight * (mode === 'portrait' ? .68 : mode === 'world' ? .42 : .46);
+    const targetY = characterHeight * (mode === 'portrait' ? .68 : mode === 'world' ? .48 : height < 550 ? .42 : .50);
     camera.position.set(Math.sin(yaw) * 5 * Math.cos(elevation), targetY + Math.sin(elevation) * 5,
       Math.cos(yaw) * 5 * Math.cos(elevation));
     camera.lookAt(0, targetY, 0);
@@ -102,7 +126,7 @@ export function createViewport(canvas: HTMLCanvasElement) {
     }
   }
   function draw() {
-    if (disposed || contextLost) return;
+    if (disposed || contextLost || batching) return;
     const bounds = canvas.getBoundingClientRect();
     const nextWidth = Math.round(bounds.width), nextHeight = Math.round(bounds.height);
     if (!nextWidth || !nextHeight) return;
@@ -128,7 +152,8 @@ export function createViewport(canvas: HTMLCanvasElement) {
   function update(character: Parameters<typeof compileVisual>[0]) {
     if (disposed) return;
     const visual = compileVisual(character);
-    const next = JSON.stringify(visual);
+    const {metadata: _metadata, ...renderContent} = visual;
+    const next = JSON.stringify(renderContent);
     if (next === stamp) return;
     const appearance = Object.values(visual.behaviors.appearances)[0] as {model: string; materials: Record<string, unknown>; scale: number[]};
     const nextResources = createRenderKit();
@@ -141,7 +166,7 @@ export function createViewport(canvas: HTMLCanvasElement) {
       nextFigure = engine.createFromDefinition(nextResources.kit, staging, visual, appearance.model,
         {materials: appearance.materials, scale: appearance.scale});
     } catch (error) { nextResources.dispose(staging); throw error; }
-    clearFigure(); resources = nextResources; figure = nextFigure; stamp = next;
+    clearFigure(); resources = nextResources; figure = nextFigure; stamp = next; modelRevision++;
     rig = visual.rig as Record<string, string | string[]>;
     footSockets = visual.behaviors.sockets?.feet || [];
     for (const role of ['care', 'carry']) {
@@ -206,8 +231,33 @@ export function createViewport(canvas: HTMLCanvasElement) {
   }, {signal: lifecycle.signal});
   const observer = new ResizeObserver(draw); observer.observe(canvas);
   setLight('studio'); resume();
-  return {
+  const controls = {
     update, setLight, reset, pause, zoom: changeZoom,
+    configure(input: unknown) {
+      const config = validatePreviewConfiguration(input);
+      batching = true;
+      try {
+        if (config.reset) { reset(); time = 0; }
+        if (config.mode !== undefined) controls.setMode(config.mode);
+        if (config.light !== undefined) setLight(config.light);
+        if (config.pose !== undefined) controls.setPose(config.pose);
+        if (config.camera !== undefined) controls.setCamera(config.camera);
+        if (config.paused !== undefined) pause(config.paused);
+      } finally { batching = false; draw(); }
+    },
+    inspect() {
+      return {mode, light, pose, paused, yaw, elevation, zoom, time,
+        renderer: {state: canvas.dataset.renderer, frame: renderer.info.render.frame, calls: renderer.info.render.calls,
+          triangles: renderer.info.render.triangles, textures: renderer.info.memory.textures,
+          geometries: renderer.info.memory.geometries},
+        model: canvas.dataset.model || null, modelRevision, nodes: Number(canvas.dataset.nodes || 0)};
+    },
+    portrait,
+    portraitBatch(characters: Parameters<typeof compileVisual>[0][]) {
+      batching = true; portraitPending = false;
+      try { return characters.map(character => { try { return portrait(character); } catch { return undefined; } }); }
+      finally { batching = false; if (portraitPending) draw(); portraitPending = false; }
+    },
     setMode(value: Mode) { mode = value; stage.setWorld(value === 'world'); draw(); },
     setPose(value: Pose) { pose = value; time = 0; draw(); },
     setCamera(value: 'front' | 'side' | 'back') {
@@ -221,7 +271,8 @@ export function createViewport(canvas: HTMLCanvasElement) {
     dispose() {
       if (disposed) return;
       disposed = true; cancelAnimationFrame(frame); lifecycle.abort(); observer.disconnect();
-      clearFigure(); stage.dispose(); sun.shadow.dispose(); renderer.dispose(); renderer.forceContextLoss();
+      clearFigure(); stage.dispose(); reflection.dispose(); sun.shadow.dispose(); renderer.dispose(); renderer.forceContextLoss();
     },
   };
+  return controls;
 }

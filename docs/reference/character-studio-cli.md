@@ -7,6 +7,9 @@ Authoring commands and the editor need no installation, network connection or
 described below.
 [Source](../../source/character-studio/README.md) and
 [Scene Forge](scene-forge-cli.md) describe development and modeling handoffs.
+The [complete agent workflow](../how-to/character-agent-workflow.md) covers guarded
+maintenance across all three executables, including engine installation and
+attaching Scene Forge visuals without losing gameplay data.
 
 ## Start editing
 
@@ -102,8 +105,10 @@ not gameplay or identity. Keep the original recipe/package. For a Littlewild gam
 folder, review the exported definition before installing it as a new archetype,
 update the creature catalog where appropriate, and validate the whole folder with
 `bin/wildlands validate-game --game DIR`. This tool never rewrites game folders or
-saves implicitly. The engine's detached creature editor can import the package,
-export its complete scenario, then hand that pack to `bin/wildlands create --pack`.
+saves implicitly. Use `bin/wildlands creature discover` for the native creature lifecycle commands.
+They import packages and attach refined visuals into new portable project
+versions using mandatory fingerprint guards and explicit replacement; the source
+project remains unchanged.
 
 Pronouns, gender and voice are independent editor metadata; the current engine
 does not interpret them. Outfits are baked cosmetics, not stat-granting equipment.
@@ -115,6 +120,37 @@ with the character embedded. Its save destination is browser storage; it cannot
 write back to disk without the local server.
 
 ## Visual verification for agents
+
+Compiler revision 2 produces smooth portable meshes, expressive eyes and physical
+coat surfaces. The same rigged geometry travels through the engine and Scene
+Forge; render lighting is presentation. Original revision-1 Studio exports remain
+importable. Unknown future compiler revisions and externally modified exports
+are rejected with explicit guidance. Native Godot exports approximate sheen with
+rim lighting and report that limitation; WebGL and GLB retain the physical fields.
+
+`doctor --project DIR --capture` checks optional Playwright, Chromium and WebGL2
+without installing anything. Inspect `capture.ready`; ordinary `doctor` only
+checks project/lock diagnostics and does not launch a browser.
+
+`review --project DIR --id ID --out NEW_DIRECTORY` captures front, side, back,
+portrait, daylight world and night world views in one browser session. It writes
+`frames/*.png`, `contact-sheet.png`, `manifest.json`, and `replay-plan.json`.
+The manifest binds each image to its SHA-256, recipe hash, compiled visual hash,
+compiler revision and explicit camera/light/pose at time zero. The manifest is
+written last; a failed render removes only the new directory that command created.
+
+Use `--plan previous-review/replay-plan.json` after edits to hold views fixed.
+`schema --kind review` describes custom plans: 1–12 unique named views, at most
+2048 pixels per dimension and 16,777,216 total pixels. Keep the tool build and
+browser fixed when comparing renders; hashes identify the actual bytes, not a
+promise of cross-platform pixel equivalence. Existing output directories are
+never overwritten.
+
+```sh
+bin/character-studio doctor --project ./characters --capture
+bin/character-studio review --project ./characters --id moss --out ./review-v1
+bin/character-studio review --project ./characters --id moss --out ./review-v2 --plan ./review-v1/replay-plan.json
+```
 
 `capture --project DIR --id ID --out NEW.png` renders the actual compiled model.
 Optional `--mode studio|world|portrait`, `--light studio|daylight|night`,
@@ -157,6 +193,8 @@ interface exposed by both the served and offline page:
 | `preview.zoom(delta)` | Adjust the presentation camera |
 | `preview.reset()` | Reset the view |
 | `preview.pause(boolean)` | Pause or resume presentation animation |
+| `preview.inspect()` | Return current mode, lighting, pose, camera, time, pause state and live renderer budgets |
+| `preview.configure(options)` | Validate and apply mode, light, pose, camera, paused and reset together with one render; invalid configuration changes nothing |
 | `preview.capture()` | Return the current canvas as a PNG data URL when the renderer is available |
 
 Browser `apply` changes the current working session; it is not a guarded disk
@@ -170,8 +208,8 @@ reject unsupported choices; zoom requires a finite number and pause a boolean.
 Exit 0 is success, 1 validation/I/O failure, 2 usage failure, and 3 a stale guard or
 existing output. Failures have `ok:false` and an actionable structured `error`.
 Malformed JSON, unknown fields, unsafe IDs, nonfinite numbers, unknown catalog
-items and over-budget allocation fail before mutation. JSON inputs are limited
-to 2 MiB; batches to 256 operations. Unknown content can be exported as the
+items and over-budget allocation fail before mutation. CLI JSON inputs are limited
+to 8 MiB (persisted recipe files and HTTP request bodies remain bounded separately); batches to 256 operations. Unknown content can be exported as the
 original import text from the UI's recovery path, but cannot be committed.
 
 The engine's own creature and visual validators check compiled output. This does

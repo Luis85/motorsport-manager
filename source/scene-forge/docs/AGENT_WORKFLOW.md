@@ -181,3 +181,20 @@ Review manifests include tool/Three.js/Node/Chromium versions, OS/architecture a
 `mesh` geometries accept optional `normals: [[x,y,z], ...]` and `uvs: [[u,v], ...]`, each with one entry per position. Values can use the same bounded scalar expressions as positions. Normals must be nonzero and are normalized by the compiler; absent normals are generated. Duplicate vertices at hard normal edges or UV seams. UVs are preserved as `TEXCOORD_0` in glTF, but image textures and automatic unwrapping are not implemented. Boolean output currently discards UVs.
 
 All JSON input paths enforce a 16 MiB byte limit. Split large content into reusable model files. Inputs use UTF-8 and decode after collecting chunks, so multibyte characters survive stream boundaries.
+
+## Soft materials and portrait review
+
+`schema --kind material --raw` describes optional `sheen`, `sheenColor`,
+`sheenRoughness`, `clearcoat` and `clearcoatRoughness`. Use `putMaterial` in a
+guarded batch; amounts and roughness are 0–1, colors are `#RRGGBB`. Preserve the
+complete material definition when replacing it. These light-responsive fields
+apply to standard PBR shading and survive Littlewild and GLB/glTF exchange.
+GLB uses the Khronos sheen and clearcoat material extensions. Unlit ignores them.
+
+For a warm studio review, use `setEnvironment` with `presentation: "portrait"`,
+`background: "#eee7d8"`, `ambient: 1.1` and `keyIntensity: 3.2`. The optional
+presentation defaults to existing inspection lighting when omitted; explicit
+`"inspection"` restores that rig. This is a recipe-owned preview setting, included
+in scene pack/unpack and review source identity. The shadow floor and lights
+never enter exported geometry. The viewer's **Use portrait studio** command
+produces the same guarded environment operation as CLI batches.

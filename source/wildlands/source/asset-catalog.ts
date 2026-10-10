@@ -78,11 +78,11 @@
   return out;
  }
  function materialProps(input:unknown,path:string,requiredColor=false):void{
-  const value=fields(input,['color','emissive','emissiveIntensity','opacity','transparent','depthWrite','roughness','metalness','flatShading','doubleSided'],path);
+  const value=fields(input,['color','emissive','emissiveIntensity','opacity','transparent','depthWrite','roughness','metalness','flatShading','doubleSided','sheen','sheenRoughness','sheenColor','clearcoat','clearcoatRoughness'],path);
   if(requiredColor&&!color(value.color))fail(path+' invalid color');
-  for(const key of ['color','emissive'])if(value[key]!==undefined&&!color(value[key]))fail(path+' invalid '+key);
+  for(const key of ['color','emissive','sheenColor'])if(value[key]!==undefined&&!color(value[key]))fail(path+' invalid '+key);
   for(const key of ['transparent','depthWrite','flatShading','doubleSided'])if(value[key]!==undefined&&typeof value[key]!=='boolean')fail(path+' invalid '+key);
-  for(const key of ['opacity','roughness','metalness']){const amount=value[key];if(amount!==undefined&&(!finite(amount)||amount<0||amount>1))fail(path+' invalid '+key);}
+  for(const key of ['opacity','roughness','metalness','sheen','sheenRoughness','clearcoat','clearcoatRoughness']){const amount=value[key];if(amount!==undefined&&(!finite(amount)||amount<0||amount>1))fail(path+' invalid '+key);}
   const emissive=value.emissiveIntensity;
   if(emissive!==undefined&&(!finite(emissive)||emissive<0))fail(path+' invalid emissive intensity');
  }

@@ -64,27 +64,75 @@ editor.
 
 ## Character Studio interchange
 
-Character Studio exports version 1 `littlewild-creature-package` documents. They
-contain an archetype, its visual manifest and required asset references; they are
-not complete scenario packs or Wildlands projects. The Littlewild creature
-editor's **Import creature JSON** command validates a package through the engine,
-then **Review & apply** installs it in the captured scene. Export the full scenario
-to carry that edit into the standalone engine CLI:
+Character Studio exports version 1 `littlewild-creature-package` documents. Use
+`wildlands creature discover` for the complete CLI contract, then `creature list`
+to find archetypes and companion IDs in a portable project. These commands use the
+same detached `LWCreatureEditor` authority as the browser editor. They do not
+advance simulation time or edit a live save.
+
+| Command | Required options and behavior |
+|---|---|
+| `creature discover` | No inputs; commands, flags, recipe operations and persistence contract |
+| `creature list` | `--project FILE`; archetypes, scenes, companion IDs and project fingerprint |
+| `creature inspect` | `--project FILE --archetype ID`; full package, editable fields and fingerprint |
+| `creature export` | Inspection selection plus `--output NEW_FILE`; portable creature package |
+| `creature import` | `--project FILE --file PACKAGE --expected-fingerprint HEX`; validated package installation |
+| `creature edit` | `--project FILE --archetype ID --recipe FILE --expected-fingerprint HEX`; native authoring transaction |
+| `creature attach-visual` | `--project FILE --archetype ID --file VISUAL_OR_DEFINITION --expected-fingerprint HEX`; replace appearance and retain gameplay |
+
+Selections accept `--scene ID` (default: project scene), optional `--instance ID`
+for an existing companion, and `--game DIR` only for legacy projects. Import can
+choose an existing seed archetype automatically; it installs the package's own
+archetype ID. Importing an archetype never creates a live companion. An instance
+package requires its matching scene and `--instance` selection.
+
+Mutations require exactly one of `--dry-run` or `--output NEW_PROJECT.json`, plus
+the fingerprint from a fresh list/inspect. Dry-run reports `proposedFingerprint`
+without writing. All creature command outputs are **new-only** and atomically
+published; source projects and input packages stay unchanged. Retain successive
+project files as history and select an earlier version to undo. A stale guard
+requires fresh inspection and reconsideration of the edit. Import requires
+`--replace` when any existing archetype or dependent asset would change; the
+response lists replacements. When reopening a project, the native editor includes its
+item asset catalog as package references; re-export can therefore contain extra
+unchanged dependencies. Imported gameplay, appearance and source dependencies
+remain intact.
 
 ```sh
-bin/wildlands create --game docs/concepts/littlewild --pack edited.pack.json --output character-project.json
-bin/wildlands validate --project character-project.json
+bin/wildlands creature list --project character-project.json
+bin/wildlands creature import --project character-project.json --file moss.package.json --expected-fingerprint HEX --dry-run
+bin/wildlands creature import --project character-project.json --file moss.package.json --expected-fingerprint HEX --output character-project-v2.json
+bin/wildlands validate --project character-project-v2.json
 ```
 
-The engine's existing `LWCreatureEditor.validatePackage` and
-`LWCreatureEditor.create(...).importPackage(...)` APIs provide the same validated
-path for programmatic scenario preparation. Imports preserve detached draft
-history and run whole-scenario validation before accepting changes. A package
-with a selected companion also requires the matching scene and companion context;
-an archetype-only Character Studio export can be reused in other scenes. Discover
-[Character Studio](../../source/character-studio/README.md) for agent authoring
-commands, and [Scene Forge interchange](scene-forge-cli.md#littlewild--wildlands-exchange)
-for visual model import and export.
+`creature edit` takes `wildlands-creature-recipe` schemaVersion 1 with 1–256
+operations. `setField` uses an `id` from inspection and a `value`;
+`updateDefinition`, `updateAppearance` and `updateInstance` take a patch `value`;
+`duplicateArchetype` takes a new `id` and `name`. Each operation uses the native
+validator, and the whole transaction publishes only after all operations and the
+complete resulting project validate. Failure identifies the zero-based operation
+index. Example:
+
+```json
+{"format":"wildlands-creature-recipe","schemaVersion":1,"operations":[
+  {"op":"duplicateArchetype","id":"moss","name":"Moss"},
+  {"op":"updateDefinition","value":{"name":"Moss the Gardener"}}
+]}
+```
+
+`attach-visual` accepts a `littlewild-3d-asset` or the visual facet of a version 1
+`littlewild-definition`. The asset ID must match the selected archetype's visual.
+It preserves gameplay and companion state, while validating appearance, behavior
+mappings, rig bindings and the complete scenario together. Export Scene Forge
+changes into the original complete definition first, so unchanged variants and
+rig metadata survive. Advanced visual edits remain editable in Scene Forge;
+Character Studio refuses to silently reduce them to its simpler recipe.
+
+Follow the [complete agent workflow](../how-to/character-agent-workflow.md) for
+creation, visual review, refinement, handoff and maintenance across all three
+executables. The browser's **Import creature JSON** and **Review & apply**, and
+the existing SDK `validateCreaturePackage`/`createCreatureEditor` methods, remain
+available over the same authority.
 
 ## Protocol
 
@@ -120,14 +168,14 @@ and over-budget failures `bytes` and `budgetBytes`:
 ```
 
 Options take exactly one value each (`--flag value`); a value cannot start with
-`--`. `--with-engine-sources` is the one value-less flag. Options may appear in
+`--`. `--with-engine-sources`, creature `--dry-run` and creature `--replace` are value-less flags. Options may appear in
 any order after the command. Unknown, duplicate and missing required options
 fail with exit 2. Relative paths resolve against the current directory; `output`
 fields in results are absolute paths.
 
 **Writing.** JSON and HTML outputs are written to a uniquely named temporary file
 and then renamed over the destination, so readers never see a partial document.
-An existing output file is replaced, except that an output may never be one of the
+Creature commands refuse existing outputs. Other commands replace an existing output file, except that an output may never be one of the
 command's inputs (same path, hard link or symlink alias): that fails with exit 2
 and leaves the input untouched. Godot outputs are staged in a sibling directory
 and published only when complete.
@@ -769,3 +817,29 @@ payloads.
 | | `--dry-run` | no | Write nothing; conflicts with `--output`. |
 
 The `process` template builds data-only definitions into offline 2D/3D simulations; its manifest names either one `content.definition` or an ordered `content.definitions` list of 1-8 files (never both), and `validate-game` admits every entry and reports the failing index. See [Business process authoring](../how-to/business-process-authoring.md).
+
+
+## Portable physical surfaces
+
+The `littlewild-3d-asset` schema supports optional material properties `sheen`,
+`sheenRoughness`, `clearcoat` and `clearcoatRoughness` (finite numbers from 0 to 1),
+and `sheenColor` (`#RRGGBB`). They apply to named materials and node
+`materialProps`. Schema discovery includes these bounds; runtime admission rejects
+invalid values. Appearance palette overrides retain the authored surface while
+changing its color. Existing assets without physical properties keep their
+original standard material and shading defaults.
+
+Browser WebGL renderers use Three's physical material for authored sheen or
+clearcoat, including the creature editor, detached scene previews, world, pets,
+process scenes and standalone HTML exports. Smooth baked mesh normals remain
+portable through Scene Forge. This is real rendered geometry and lighting, not
+an image substituted for the model. The software compatibility projection retains
+geometry and base color but does not reproduce physical lighting.
+
+Godot maps clearcoat to `StandardMaterial3D`. Cloth sheen uses an approximate rim;
+its color and roughness remain available in `authored_surface` material metadata
+and are explicitly described as limitations in the exported manifest and README.
+Native and browser surfaces are not pixel-identical. Kit authors may use
+`LWAssetRenderer.createMaterial(THREE, color, properties, defaults)` and must call
+`LWAssetRenderer.disposeKit(kit)` when retiring a view to release owned baked
+geometry without invalidating another renderer's cache.

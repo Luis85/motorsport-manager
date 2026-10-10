@@ -10,7 +10,7 @@ declare namespace LWPetRenderer {
  'use strict';
  // Three.js is the vendored global used by the colony renderer; it is intentionally loosely typed here.
  type O=any;
- interface Root {THREE:any;LWAssetRenderer:{createFromDefinition(kit:unknown,parent:O,input:unknown,model?:string,options?:Record<string,unknown>):{root:O;handles:Map<string,O>}};LWPetRenderer?:LWPetRenderer.Api;}
+ interface Root {THREE:any;LWAssetRenderer:{createMaterial(T:O,color:string,extra:Record<string,unknown>,defaults?:Record<string,unknown>):O;disposeKit(kit:unknown):void;createFromDefinition(kit:unknown,parent:O,input:unknown,model?:string,options?:Record<string,unknown>):{root:O;handles:Map<string,O>}};LWPetRenderer?:LWPetRenderer.Api;}
  interface Instance {root:O;handles:Map<string,O>;}
  interface Rest {node:O;position:O;rotation:O;scale:O;}
  const root=inputRoot as Root;
@@ -35,7 +35,7 @@ declare namespace LWPetRenderer {
   }
   function mat(color:string,extra:Record<string,unknown>={}):O{
    const key=color+JSON.stringify(extra);
-   if(!materials.has(key))materials.set(key,new T.MeshStandardMaterial({color,roughness:.9,flatShading:true,...extra}));
+   if(!materials.has(key))materials.set(key,root.LWAssetRenderer.createMaterial(T,color,extra,{roughness:.9,flatShading:true}));
    return materials.get(key);
   }
   const kit={T,mat,group(parent:O){const g=new T.Group();parent.add(g);return g;},
@@ -189,7 +189,7 @@ declare namespace LWPetRenderer {
    destroy(){
     for(const node of owned)scene.remove(node);
     for(const g of geometries.values())g.dispose();for(const m of materials.values())m.dispose();for(const entry of petMaterials)entry.material.dispose();
-    renderer?.dispose();
+    root.LWAssetRenderer.disposeKit(kit);renderer?.dispose();
    }
   };
  }

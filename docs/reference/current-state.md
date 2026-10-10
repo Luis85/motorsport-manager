@@ -12,6 +12,10 @@ are outside this native Motorsport Manager inventory.
 The standalone [Character Studio](character-studio-cli.md) adds a dedicated
 Littlewild companion editor and guarded agent CLI/API. It exports existing engine
 creature packages and Scene Forge visuals; it does not mutate live game saves.
+Its smooth character compiler, physical materials and reproducible multi-view
+reviews share authored data with both tools. The [complete agent workflow](../how-to/character-agent-workflow.md)
+now uses guarded CLI commands for engine creature installation, companion edits
+and Scene Forge visual updates into new immutable project versions.
 
 ## Shipping player experience
 

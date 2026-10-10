@@ -52,3 +52,17 @@ Recover unfinished work. Report actual save destinations and failures. Make
 editing capabilities discoverable to agents. Use stable IDs, bounded atomic edits,
 optimistic guards and actionable diagnostics. Preview the actual exported model.
 Keep identity, character changes and camera presentation independent.
+
+## Visual fidelity and maintenance
+
+Compiler revision 2 shares smooth, bounded meshes and authored sheen/clearcoat
+materials across the editor, engine and Scene Forge. Preset, ear, collection and
+review portraits are generated from actual recipes. A deterministic garden stage
+provides context without becoming gameplay data. Legacy Studio exports remain
+recoverable through the original compiler contract.
+
+Agents can preflight rendering with `doctor --capture`, produce multi-view
+`review` artifacts and repeat a saved view plan. Image, recipe and compiled-visual
+hashes identify the reviewed result. Atomic browser preview configuration avoids
+unnecessary redraws. The engine creature CLI installs and edits immutable project
+versions and attaches Scene Forge visuals while preserving native gameplay.

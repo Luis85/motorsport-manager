@@ -11,10 +11,16 @@ export interface LittlewildMaterial {
   roughness: number;
   metalness: number;
   flatShading: boolean;
+  sheen?: number;
+  sheenColor?: string;
+  sheenRoughness?: number;
+  clearcoat?: number;
+  clearcoatRoughness?: number;
   emissive?: string;
   emissiveIntensity?: number;
   opacity?: number;
   transparent?: boolean;
+  depthWrite?: boolean;
   doubleSided?: boolean;
 }
 export interface LittlewildMesh {
@@ -158,11 +164,19 @@ function materialData(material: THREE.Material): LittlewildMaterial {
     metalness: round(m.metalness ?? 0, 1e-3),
     flatShading: !!m.flatShading,
   };
+  if (material instanceof THREE.MeshPhysicalMaterial) {
+    result.sheen = round(material.sheen, 1e-3);
+    result.sheenColor = `#${material.sheenColor.getHexString()}`;
+    result.sheenRoughness = round(material.sheenRoughness, 1e-3);
+    result.clearcoat = round(material.clearcoat, 1e-3);
+    result.clearcoatRoughness = round(material.clearcoatRoughness, 1e-3);
+  }
   if (m.emissive && m.emissive.getHex() !== 0) {
     result.emissive = `#${m.emissive.getHexString()}`;
     result.emissiveIntensity = round(m.emissiveIntensity ?? 1, 1e-3);
   }
   if (material.side === THREE.DoubleSide) result.doubleSided = true;
+  if (!material.depthWrite) result.depthWrite = false;
   if (material.opacity < 1) {
     result.opacity = round(material.opacity, 1e-3);
     result.transparent = true;
