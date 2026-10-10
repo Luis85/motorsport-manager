@@ -41,11 +41,22 @@ runSuite('process dashboard browser harness', 'process-dashboard-browser-results
   const q = await query(page);
   assert.equal(q.mode, 'dashboard');
   assert.equal(await page.locator('#mode-dashboard').getAttribute('aria-pressed'), 'true');
-  assert.deepEqual([await page.locator('#map').isHidden(), await page.locator('#lens').isHidden(), await page.locator('#dashboard').isVisible()], [true, true, true]);
+  const hosts = [await page.locator('#map').isHidden(), await page.locator('#lens').isHidden(), await page.locator('#dashboard').isVisible()];
+  assert.deepEqual(hosts, [true, true, true]);
   assert.equal(await page.locator('#dashboard .process-dashboard').getAttribute('aria-label'), `${q.definition.name} dashboard`);
   assert.equal(await page.locator('.process-legend [data-legend]').first().isHidden(), true, 'the legend key hides like in the lenses');
   assert.equal(await page.locator('#frame').getAttribute('title'), 'Scroll the dashboard back to its top');
   assert.equal(await live(page), before, 'entering the dashboard never ticks');
+  // Present shows its slides over the 2D map and returns to the dashboard on exit; Fit to view scrolls the dashboard to its top.
+  await page.locator('#mode-present').click();
+  await page.locator('dialog#present[open]').waitFor();
+  assert.equal((await query(page)).mode, '2d');
+  await page.keyboard.press('Escape');
+  await page.locator('dialog#present[open]').waitFor({state: 'hidden'});
+  assert.equal((await query(page)).mode, 'dashboard', 'leaving Present returns to the dashboard');
+  await page.locator('#dashboard').evaluate(e => { e.scrollTop = 400; });
+  await page.locator('#frame').click();
+  assert.equal(await page.locator('#dashboard').evaluate(e => e.scrollTop), 0, 'Fit to view scrolls the dashboard to its top');
   await page.locator('#mode-2d').click();
   assert.equal(await live(page), before, 'leaving the dashboard never ticks');
   assert.equal((await query(page)).mode, '2d');
@@ -107,7 +118,10 @@ runSuite('process dashboard browser harness', 'process-dashboard-browser-results
     const a = document.activeElement;
     return a?.closest('#dashboard') ? a.hasAttribute('data-tip') ? 'mark' : a.hasAttribute('data-select') ? 'step' : 'other' : 'outside';
    });
-   if (kind === 'mark') assert.equal(await page.locator('#dashboard .db-tip').innerText(), await page.evaluate(() => document.activeElement!.getAttribute('aria-label')));
+   if (kind === 'mark') {
+    const name = await page.evaluate(() => document.activeElement!.getAttribute('aria-label'));
+    assert.equal(await page.locator('#dashboard .db-tip').innerText(), name, 'a focused mark shows its value in the tooltip');
+   }
    if (kind === 'mark' || kind === 'step') reached.add(kind);
   }
   assert.deepEqual([...reached].sort(), ['mark', 'step'], 'Tab reaches chart marks (with their tooltip) and step buttons');
@@ -219,7 +233,8 @@ runSuite('process dashboard browser harness', 'process-dashboard-browser-results
   await page.emulateMedia({forcedColors: 'none'});
   await page.addStyleTag({content: 'html{font-size:24px}'});
   await page.waitForFunction(() => document.querySelector('#dashboard [data-panel="capacity"] svg.db-chart')?.getAttribute('height') === '42');
-  const sizes = await page.evaluate(() => [...document.querySelectorAll('#dashboard *')].filter(e => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent!.trim())
+  const sizes = await page.evaluate(() => [...document.querySelectorAll('#dashboard *')]
+   .filter(e => [...e.childNodes].some(n => n.nodeType === 3 && n.textContent!.trim())
    && e.getClientRects().length).map(e => parseFloat(getComputedStyle(e).fontSize)));
   assert(Math.min(...sizes) >= 18, 'smallest text ' + Math.min(...sizes));
   assert.deepEqual(await layout(page), {page: true, dashboard: true, wide: 0});

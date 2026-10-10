@@ -239,8 +239,8 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   assert.equal(await page.getByRole('button', {name: 'Edit process', exact: true}).count(), 1);
   assert.equal(await page.locator('#export-menu').isHidden(), true); assert.equal(await page.locator('#import').isHidden(), true);
   await page.locator('#more-menu').click();
-  assert.deepEqual(await page.locator('#export-items [role=menuitem]:visible').allInnerTexts(), ['Import JSON or BPMN…', 'Present slides', 'Export JSON',
-   'Export BPMN', 'Export BPMN with BPSim', 'Export run report', 'Download HTML', 'New process…', 'Import as a new process…']);
+  assert.deepEqual(await page.locator('#export-items [role=menuitem]:visible').allInnerTexts(), ['Import JSON or BPMN…', 'Present slides', 'Dashboard',
+   'Export JSON', 'Export BPMN', 'Export BPMN with BPSim', 'Export run report', 'Download HTML', 'New process…', 'Import as a new process…']);
   const menuBox = (await page.locator('#export-popup').boundingBox())!; assert(menuBox.x >= 0 && menuBox.x + menuBox.width <= 390, 'the menu stays on screen'); await page.keyboard.press('Escape'); assert.equal(await activeId(), 'more-menu');
   // Steps are a horizontal scroller above the stage; the stage is about 45vh; the inspector and Inputs & outputs collapse.
   const layout = await page.evaluate(() => { const nav = document.querySelector('.process-nav')!.getBoundingClientRect(), view = document.getElementById('viewport')!.getBoundingClientRect(), steps = document.getElementById('steps')!;

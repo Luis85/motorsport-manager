@@ -87,10 +87,11 @@
   if (t.journey) notes.push('Touchpoints without resources never wait for capacity; only steps that have waited are listed.');
   if (!listed.length) return {...base, empty: 'No work has waited yet.', notes};
   const mean = (m: StepMetric) => m.meanWaitMinutes === null ? '—' : U.minutes(m.meanWaitMinutes, d), max = Math.max(1, wait(listed[0]!));
+  const share = (m: StepMetric) => total ? `${U.percent(wait(m), total)} of waiting · ` : '';
   const rows = listed.map(m => {
    const pool = busiest(d, q, steps.get(m.id)!);
    const row: LWProcessDashboardModel.Row = {label: steps.get(m.id)!.name, value: wait(m), max, tone: 'wait', step: m.id,
-    detail: `${U.percent(wait(m), total)} of waiting · ${mean(m)} mean wait · ${U.number(queued(m.id))} waiting now`};
+    detail: `${share(m)}${mean(m)} mean wait · ${U.number(queued(m.id))} waiting now`};
    if (pool) row.extra = {value: pool.utilization, max: 1, text: `${pool.name} ${pct(pool.utilization)} busy`};
    return row;
   });
@@ -98,7 +99,11 @@
    const pool = busiest(d, q, steps.get(m.id)!);
    return [steps.get(m.id)!.name, U.percent(wait(m), total), mean(m), queued(m.id), m.starts, pool ? `${pool.name} (${pct(pool.utilization)})` : 'none'];
   });
-  return {...base, notes, caption: `${steps.get(listed[0]!.id)!.name} holds ${U.percent(wait(listed[0]!), total)} of the waiting.`,
+  const top = listed[0]!, name = steps.get(top.id)!.name;
+  // Before any started work has waited, only the work waiting now is known: the caption says so instead of a share of nothing.
+  const caption = total ? `${name} holds ${U.percent(wait(top), total)} of the waiting.`
+   : `${name} has ${U.number(queued(top.id))} waiting now; no started work has waited yet.`;
+  return {...base, notes, caption,
    chart: {kind: 'rows', title: 'Steps ranked by waiting', rows},
    table: U.table('Waiting by step', ['Step', 'Share of waiting', 'Mean wait per start', 'Waiting now', 'Work starts', 'Busiest pool'], table)};
  }

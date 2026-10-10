@@ -111,6 +111,9 @@ test('Dashboard model before the first finish keeps lead time undefined and show
  assert.match(aging.caption, /^1 open case; the oldest is 600 min/);
  assert.equal(tile(m, 'oldest')!.value, '600 min (≈ 10 h)');
  assert.match(panel(m, 'breakdown').caption, /^Open now: 1 /);
+ const early = panel(model(viewAt(demo('agency'), 5)), 'waiting');
+ assert.equal(early.caption, 'Discovery has 1 waiting now; no started work has waited yet.', 'no share of zero waiting');
+ assert.doesNotMatch(JSON.stringify(early.chart), /of waiting/);
 });
 
 test('Dashboard model of a mid-run open stream names censoring, pruning and the open stream, and the seed sentence', () => {
