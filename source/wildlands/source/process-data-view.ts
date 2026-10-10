@@ -1,5 +1,8 @@
 /// <reference path="./process-contracts.d.ts" />
-/** Shared, accessible I/O inspector. Reads detached observations; never predicts completed outputs. */
+/**
+ * Shared, accessible I/O inspector. Reads detached observations; never predicts completed outputs. The studio draws it only while
+ * the Inputs & outputs panel is open, and a draw that produces the same markup leaves the DOM untouched.
+ */
 declare namespace LWProcessData {
  interface Surface {draw(view: LWProcessApp.View): void; reset(): void;}
  interface Api {create(host: HTMLElement): Surface;}
@@ -58,13 +61,24 @@ declare namespace LWProcessData {
     content = `<p class="process-io-state">${state}</p>${progress}<div class="process-io-columns"><section><h3>${receipt || token?.input ? 'Step inputs' : `Current ${t.one} data`}</h3><p>${receipt || token?.input ? 'Captured when this visit started' : 'No started input snapshot for this visit'}</p>${fields(receipt?.input ?? token?.input ?? c.data, 'No input fields.')}</section><section><h3>${receipt ? 'Step outputs' : 'Expected changes'}</h3><p>${receipt ? 'Observed case data at ' + (step.kind === 'timer' ? 'firing' : 'completion') : 'Authored effects · applied only on ' + (step.kind === 'timer' ? 'firing' : 'completion')}</p>${fields(receipt?.output ?? step.set ?? {}, receipt ? 'No output fields.' : Object.keys(step.add ?? {}).length ? 'No fields set; counters change as listed below.' : 'No fields changed; case data passes through.', receipt ? drawnFields(step) : undefined)}${receipt ? '' : adds(step) + randomness(step)}${counters(step, receipt?.output ?? c.data)}${declared(step)}</section></div>`;
     if (receipt) content += `<details class="process-written" ${expanded ? 'open' : ''}><summary id="process-written-toggle">Fields written by this step</summary>${fields(receipt.changes, 'This step passed case data through unchanged.', drawnFields(step))}</details>`;
    }
-   host.innerHTML = `<div class="process-data-heading"><div><label for="process-case">${t.One}</label><select id="process-case" ${c ? '' : 'disabled'}>${q.cases.map(c => `<option value="${esc(c.id)}" ${c.id === caseId ? 'selected' : ''}>${esc(c.id)} · ${c.status}</option>`).join('') || '<option>No arrivals yet</option>'}</select></div></div>${(works(step) || step?.kind === 'timer') && receipts.length ? `<div class="process-visit"><label for="process-visit">Visit</label><select id="process-visit"><option value="">Latest / current visit</option>${receipts.map(r => `<option value="${esc(r.id)}" ${r.id === receiptId ? 'selected' : ''}>${r.started}–${r.finished} min · completed</option>`).join('')}</select></div>` : ''}${content}${q.receiptsDropped ? `<p class="process-retention">Latest 128 task completions retained; ${q.receiptsDropped} earlier records omitted. Process inputs and final case outputs remain available.</p>` : ''}`;
+   const cases = q.cases.map(c => `<option value="${esc(c.id)}" ${c.id === caseId ? 'selected' : ''}>${esc(c.id)} · ${c.status}</option>`).join('');
+   const visitOptions = receipts.map(r => `<option value="${esc(r.id)}" ${r.id === receiptId ? 'selected' : ''}>`
+    + `${r.started}–${r.finished} min · completed</option>`);
+   const visit = (works(step) || step?.kind === 'timer') && receipts.length ? '<div class="process-visit"><label for="process-visit">Visit</label>'
+    + `<select id="process-visit"><option value="">Latest / current visit</option>${visitOptions.join('')}</select></div>` : '';
+   const retention = q.receiptsDropped ? `<p class="process-retention">Latest 128 task completions retained; ${q.receiptsDropped} earlier records omitted.`
+    + ' Process inputs and final case outputs remain available.</p>' : '';
+   const html = `<div class="process-data-heading"><div><label for="process-case">${t.One}</label><select id="process-case" ${c ? '' : 'disabled'}>`
+    + `${cases || '<option>No arrivals yet</option>'}</select></div></div>${visit}${content}${retention}`;
+   // Unchanged markup is left alone, so an open case list or a focused control survives a pulse that changed nothing here.
+   if (host.dataset.html === html) return;
+   host.dataset.html = html; host.innerHTML = html;
    host.querySelector<HTMLSelectElement>('#process-case')!.onchange = e => {caseId = (e.target as HTMLSelectElement).value; receiptId = ''; draw(latest);};
    const visits = host.querySelector<HTMLSelectElement>('#process-visit');
    if (visits) visits.onchange = e => {receiptId = (e.target as HTMLSelectElement).value; draw(latest);};
    if (focus) host.querySelector<HTMLElement>('#' + focus)?.focus({preventScroll: true});
   }
-  return {draw, reset() {caseId = ''; receiptId = ''; inspection = ''; previousStep = null;}};
+  return {draw, reset() {caseId = ''; receiptId = ''; inspection = ''; previousStep = null; delete host.dataset.html;}};
  }
  root.LWProcessData = {create};
 })(globalThis);
