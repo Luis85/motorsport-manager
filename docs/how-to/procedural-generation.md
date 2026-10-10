@@ -123,10 +123,10 @@ and it never silently replaces work:
 
 | Tool | Preview | Commit |
 |---|---|---|
-| Model Forge `generate`, `variants` | `--dry-run` builds, validates and checks every path | Outputs are new paths only: an existing document fails with `DOCUMENT_EXISTS`, an existing recipe file or non-empty directory with `ALREADY_EXISTS` |
-| Model Forge `scatter` | `--dry-run` | `--expected-revision` and/or `--expected-state` from the read; a history snapshot and an atomic write |
-| Scene Forge `terrain add`, `scatter`, `layout` | `--dry-run`; its `nextCommands[0]` is the exact guarded write | `--expected-revision` and/or `--expected-state`; an existing group or terrain needs `--replace` |
-| Wildlands `generate` | `--dry-run` stages a copy of the folder and runs the engine validators | `--expected-digest <digest>` replaces the one content file atomically, or `--output NEW.json` writes the proposed file elsewhere |
+| Model Forge `generate`, `variants` | `--dry-run` builds, validates and checks every path; its `nextCommands[0]` is the exact write | Outputs are new paths only: an existing document fails with `DOCUMENT_EXISTS`, an existing recipe file or non-empty directory with `ALREADY_EXISTS`. `--review <dir>` renders before anything is written, so a missing browser leaves no files |
+| Model Forge `scatter` | `--dry-run`; its `nextCommands[0]` is the exact guarded write | `--expected-revision` and/or `--expected-state` from the read; a history snapshot and an atomic write |
+| Scene Forge `terrain add`, `scatter`, `layout` | `--dry-run`; its `nextCommands[0]` is the exact guarded write | `--expected-revision` and/or `--expected-state`; an existing scatter group or terrain needs `--replace` |
+| Wildlands `generate` | `--dry-run` stages a copy of the folder and runs the engine validators | `--expected-digest <digest>` replaces the one content file atomically, or `--output NEW.json` creates the proposed file outside the folder (symlinks resolved; an existing file is never replaced) |
 
 A stale guard fails (`REVISION_CONFLICT`, `STATE_CONFLICT`, `stale-digest`)
 without writing. Read the current state again and repeat the dry run; do not
@@ -144,7 +144,7 @@ then its `hint` and `details`. The handbooks list every code.
 | `SCATTER_EMPTY` | Model Forge, Scene Forge | Nothing was placed; `details.rejected` counts `outside`, `exclusion`, `slope` and `budget`. Widen the area, lower spacing or relax filters |
 | `TERRAIN_TRANSFORM` | Model Forge, Scene Forge | Grounding follows only translation, yaw and positive uniform scale of the terrain and parent chain |
 | `VARIANT_RANGE` | Model Forge | A `--vary` range lies outside the parameter's declared range |
-| `DUPLICATE_ID` | Model Forge, Scene Forge | The group or a placement ID exists; pass `--replace` with guards or another `--group` |
+| `DUPLICATE_ID` | Model Forge, Scene Forge | The group or a placement ID exists; pass `--replace` with guards (only a group tagged `scatter` is replaced) or another `--group` |
 | `generate-usage`, `stale-digest`, `duplicate-id`, `generation-failed`, `invalid-generated` | Wildlands | Bad options or recipe; the folder changed since the digest; the mission or quest ID exists (`--replace`); no playable layout for this seed (try another); the engine validators rejected the staged folder |
 
 Full tables: [Model Forge error codes](../reference/model-forge-cli.md#error-codes)

@@ -585,10 +585,12 @@ Placement options for `scatter` and `layout`: `--seed <n>` (0–4294967295, defa
 1), `--group <id>` (default `<first model>-scatter` or `-layout`), `--parent <id>`
 (x,z are then in the parent's frame), `--on <terrain node>` with `--sink <meters>`
 and `--max-slope <degrees>`, `--scale <min..max>` (uniform; one value fixes it),
-`--yaw <min..max>` (degrees; `scatter` defaults to 0..360), `--max <n>` (keep a
+`--yaw <min..max>` (degrees; `scatter` defaults to 0..360), `--tilt <min..max>`
+(degrees about X and Z, default 0), `--max <n>` (keep a
 seeded subset), `--exclude <area>` (repeatable keep-out area), `--avoid <ids>`
 with `--margin <meters>` (keep clear of those nodes' XZ bounds), `--replace`
-(remove the existing group's subtree first), `--allow-empty` (write an empty group
+(remove the existing scatter group's subtree first; only a group tagged `scatter`
+is replaced, any other node of that ID fails with `DUPLICATE_ID`), `--allow-empty` (write an empty group
 instead of failing), and the guards `--expected-revision`, `--expected-state`,
 `--dry-run`.
 
@@ -636,7 +638,7 @@ normalized recipe with every default spelled out), `placement` (`seed`,
 `exclusion`, `slope` and `budget`) and `nextCommands`. A dry run's first next
 command is the exact guarded write of the same plan. Save `recipe` to replay or
 vary it; the file form also accepts what the flags cannot express, such as
-weighted node templates, per-instance model parameters (`vary`) and tilt:
+weighted node templates and per-instance model parameters (`vary`):
 
 ```sh
 cat > stock.scatter.json <<'EOF'
@@ -671,7 +673,9 @@ nodes, so `changed` is false and the revision stays. Replacing a terrain
 Bounds: 2,000 placements per recipe, 20,000 candidate points, 10,000 scene nodes,
 32 items, 64 exclusions, 256 polygon/path points, 256 × 256 terrain vertices.
 Errors carry a flag-level `hint`: `DUPLICATE_ID` (the group exists: `--replace`
-with guards, or another `--group`), `SCATTER_EMPTY` (`details.rejected` says why;
+with guards, or another `--group`; with `--replace`, the ID names content that is
+not a scatter group, so only another `--group` helps), `INPUT_REQUIRED` (a missing
+flag), `SCATTER_EMPTY` (`details.rejected` says why;
 lower `--spacing`, widen the area, relax filters, or `--allow-empty`),
 `PROCEDURAL_BUDGET` (raise spacing, shrink the area, lower `--max`/`--count`) and
 `TERRAIN_TRANSFORM`. `catalog` lists the same in its `procedural` block, with the
@@ -855,7 +859,10 @@ references, and the file's layout. Only edited fields take the exporter's
 normalized form, so an unedited `littlewild import` exports back byte-identically
 and both tools write identical bytes for the same model. A changed material is
 written in full and shared by every variant that names it; the result's
-`warnings` lists retained variants that now use it.
+`warnings` lists retained variants that now use it and kept meshes no variant
+references. A source node without an `id` is matched only through the ID import
+gave it, never by position, so removing one never moves its engine-only fields
+onto another node.
 
 A manifest's `target` is relative to the manifest file; `--file` and
 `--definition` are relative to the working directory. From the repository root,

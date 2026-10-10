@@ -656,7 +656,7 @@ published. Exactly one publication mode is required:
 |---|---|
 | `--dry-run` | Generate and validate the staged copy; write nothing. |
 | `--expected-digest HEX` | Then replace only that one content file in place, by atomic rename, if the folder digest (`inspect-game` `.digest`, or `digest` of a dry run) still equals `HEX`; it is checked again right before the rename. |
-| `--output NEW.json` | Then write the whole proposed content file to a new `.json` path outside the game folder; the folder is unchanged. |
+| `--output NEW.json` | Then write the whole proposed content file to a new `.json` path outside the game folder; the folder is unchanged. Containment is checked on real paths (symlinks resolved), and the file is created exclusively: an existing entry, even one created during the run, is never replaced. |
 
 **Generators.**
 
@@ -685,7 +685,8 @@ published. Exactly one publication mode is required:
   (duration, energy, coins, research, provisions, modifiers, loot quantities and
   chances) lies inside the envelope of the library's existing quests of the same
   tier. `--tier` is 1 to 3 and `--biome` must be an existing biome; unset, each
-  quest follows the library's own tier and biome pairs.
+  quest follows the library's own tier and biome pairs. Display names are
+  distinct within one batch (the next free adjective, then a number).
 
 Generators never add archetypes, items, terrain, skills or balance values. Seeds
 are 0 to 4294967295 (default 1); randomness is keyed (cyrb128 of `seed|stream`
@@ -708,7 +709,7 @@ and biomes), and `nextCommands` the guarded write after a dry run or
 |---|---|---|
 | 2 | `generate-usage` | Unknown, duplicate or missing option or value, an out-of-bounds number, an invalid recipe, or not exactly one publication mode. |
 | 2 | `unknown-reference` | A faction or biome the game does not define. |
-| 2 | `output-refused` | `--output` is not a new `.json` path outside the game folder. |
+| 2 | `output-refused` | `--output` is not a new `.json` path outside the game folder (after resolving symlinks), or the path appeared while the file was being published. |
 | 1 | `invalid-game` | The folder or its content file does not load; run `validate-game`. |
 | 1 | `wrong-template` | The generator needs another template (`rts-mission`: RTS, `adventure-quests`: colony). |
 | 1 | `stale-digest` | The folder digest differs from `--expected-digest`. |

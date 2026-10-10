@@ -431,7 +431,10 @@ ASCII-escaped `JSON.stringify` output). Only edited fields take the exporter's
 normalized form: in the example above the definition gains exactly the two ear
 `scale` arrays. A changed material is written in full and shared by every
 variant that names it (the result's `warnings` lists retained variants that now
-use it). Every variant of every `definition.json` under `docs/concepts` round-trips
+use it, and kept meshes no variant references). A source node without an `id` is
+matched only through the ID import gave it (`<primitive><n>`), never by
+position, so removing one never moves its engine-only fields onto another node.
+Every variant of every `definition.json` under `docs/concepts` round-trips
 unedited through both tools (`tests/littlewild-roundtrip.test.ts` in each project).
 A new definition is written in canonical form. Both tools share the writer, its
 `--family`/`--name` defaults and this contract, so they write identical bytes for
@@ -486,9 +489,9 @@ triangle budget (`limits.maxTriangles`); output above it fails with
 |---|---|
 | `generate list` (or `generate`) | Every generator with its presets, limits and a one-command example |
 | `generate show <generator>` | `parameterSchema` (JSON Schema of the generator parameters), `defaults`, `presets` with their complete values, `limits`, the seed range and example commands. An unknown name fails with `GENERATOR_NOT_FOUND` (`details.available`) |
-| `generate <generator> --out <new.model.json>` | `--preset <name>`, `--seed <0..4294967295>` (default 1), `--set <name=value>` (repeatable; a value is read as JSON when it parses, else as text), `--file`/`--data` (a generator recipe), `--id` and `--name` (defaults: the `--out` name and `<Preset> <generator>`), `--count <1-64>` (then `--out` is a new directory of `<id>-01.model.json`, ... with seeds seed, seed + 1, ...), `--review <new directory>` and `--dry-run`. Values layer as defaults, then the preset, then the recipe, then `--set`; an unknown name fails with `UNKNOWN_PARAMETER`, a value out of range with `SCHEMA_INVALID`, and an unknown `--preset` with `INVALID_OPTION` (`details.available`) |
-| `-d <doc> variants` | `--count <1-64>` (required), `--seed` (default 1), `--vary <parameter=min..max>` (repeatable), `--materials <material=#rrggbb,#rrggbb>` (repeatable), `--out <new directory>` (required), `--review`, `--dry-run`. Writes `<id>-01`, ... documents of the source's kind (a bundle keeps its frozen dependencies) and `variants.json` |
-| `-d <doc> scatter` | A scatter recipe from `--file`/`--data` (`schema --kind scatter`), or flags: `--node <ids>` (template nodes of the document to copy) or `--model <ids>` (dependency models to instance), each `id` or `id:weight`; one of `--spacing <m>` (Poisson), `--grid <m>` (with `--jitter`) or `--count <n>` (uniform); `--area rect:x0,z0,x1,z1 \| circle:x,z,r \| polygon:x,z;x,z;...` (default: the model's XZ footprint), `--exclude <area>` (repeatable), `--avoid <ids> --margin <m>`, `--on <terrain node>` with `--sink` and `--max-slope`, `--scale`, `--yaw` and `--tilt` as `min..max`, `--max <n>`, `--seed`, `--group <id>` (default `scatter`), `--parent <id>`. `--dependency <file>` (repeatable) adds the models of a model or model-bundle file as frozen dependencies in the same edit; `--replace` replaces an existing group; `--allow-empty` accepts a scatter that places nothing. A recipe and placement flags together fail with `INVALID_OPTION` |
+| `generate <generator> --out <new.model.json>` | `--preset <name>`, `--seed <0..4294967295>` (default 1), `--set <name=value>` (repeatable; a value is read as JSON when it parses, else as text), `--file`/`--data` (a generator recipe), `--id` and `--name` (defaults: the `--out` name and `<Preset> <generator>`), `--count <1-64>` (then `--out` is a new directory of `<id>-01.model.json`, ... with seeds seed, seed + 1, ...), `--review <new directory>` and `--dry-run` (its `nextCommands[0]` is the exact write: `--data` with the resolved recipe and the same outputs). Values layer as defaults, then the preset, then the recipe, then `--set`; an unknown name fails with `UNKNOWN_PARAMETER`, a value out of range with `SCHEMA_INVALID` (`details` lists the schema issues; the hint points to `generate show <generator>`), and an unknown `--preset` with `INVALID_OPTION` (`details.available`) |
+| `-d <doc> variants` | `--count <1-64>` (required), `--seed` (default 1), `--vary <parameter=min..max>` (repeatable), `--materials <material=#rrggbb,#rrggbb>` (repeatable), `--out <new directory>` (required), `--review <new directory>` (not `--out`), `--dry-run` (its `nextCommands[0]` is the exact write). Writes `<id>-01`, ... documents of the source's kind (a bundle keeps its frozen dependencies) and `variants.json` |
+| `-d <doc> scatter` | A scatter recipe from `--file`/`--data` (`schema --kind scatter`), or flags: `--node <ids>` (template nodes of the document to copy) or `--model <ids>` (dependency models to instance), each `id` or `id:weight`; one of `--spacing <m>` (Poisson), `--grid <COLUMNSxROWS> --step <m>` (exactly that many cells, centered on `--center x,z`, default 0,0; `--jitter 0..1`; no `--area`), as Scene Forge's `layout --grid`, or `--count <n>` (uniform); `--area rect:x0,z0,x1,z1 \| circle:x,z,r \| polygon:x,z;x,z;...` (default: the model's XZ footprint), `--exclude <area>` (repeatable), `--avoid <ids> --margin <m>`, `--on <terrain node>` with `--sink` and `--max-slope`, `--scale`, `--yaw` and `--tilt` as `min..max` or one value, `--max <n>`, `--seed`, `--group <id>` (default `<first item>-scatter`, as in Scene Forge), `--parent <id>`. `--dependency <file>` (repeatable) adds the models of a model or model-bundle file as frozen dependencies in the same edit; `--replace` replaces an existing scatter group (a node tagged `scatter`; any other node of that ID fails with `DUPLICATE_ID`); `--allow-empty` accepts a scatter that places nothing. A recipe and placement flags together fail with `INVALID_OPTION` |
 
 `generate` writes a **generator recipe** beside every document,
 `<id>.generate.json` (`kind: "generator-recipe"`, `schema --kind
@@ -498,7 +501,8 @@ every parameter resolved. `generate <generator> --file <id>.generate.json --out
 version still runs and reports a warning. Every path (documents, recipes and
 the review directory) is checked before anything is written: an existing
 document fails with `DOCUMENT_EXISTS`, an existing recipe file or a non-empty
-`--out`/`--review` directory with `ALREADY_EXISTS`.
+`--out`/`--review` directory with `ALREADY_EXISTS`. A failure part way through
+the writes names every path already written in `details.written`.
 
 `variants` samples each `--vary` parameter uniformly inside the given range,
 which must lie inside the parameter's declared `min`..`max` with min <= max;
@@ -513,8 +517,10 @@ and every variant's values and `stateHash`.
 lineup scene with one fixed-camera frame per document (at most 36), all framed
 at one common size so that size differences show, plus `contact-sheet.png`,
 `review.json` and `replay-plan.json`. A single generated document gets `iso`,
-`front`, `right` and `top` views instead. `generate` writes the review to the
-`--review` directory; `variants` writes it to `<out>/review`.
+`front`, `right` and `top` views instead. Both commands write the review to the
+`--review` directory, and render it from the planned documents **before**
+writing them: without Chromium (`BROWSER_UNAVAILABLE`) or with a failed render,
+nothing is written, so the same command can be retried.
 
 `scatter` runs the kernel planner on the document's model with its frozen
 dependencies (plus `--dependency` models) as the model library, and commits the
@@ -523,12 +529,14 @@ plan as one guarded edit exactly like `apply`: `--dry-run`, `--expected-revision
 the document read under its lock. The result adds `placement` (`seed`,
 `recipeHash`, `group`, `placed`, `candidates` and `rejected` counts by
 `outside`, `exclusion`, `slope` and `budget`) and the normalized `recipe`, which
-replays the same plan with `--file`. The group node is tagged `scatter` and
+replays the same plan with `--file` or `--data` (a dry run's `nextCommands[0]`
+is that exact guarded write). The group node is tagged `scatter` and
 `scatter:<first 8 recipeHash digits>`; placements are `<group>-1`, `<group>-2`,
 ... Template copies are made visible, so a hidden template stays a template.
 Instancing models needs a `model-bundle` document: convert a model once with
 `import --from <doc> --out <id>.model-bundle.json`. A taken group fails with
-`DUPLICATE_ID` (pass `--replace`), and nothing placed with `SCATTER_EMPTY`
+`DUPLICATE_ID` (pass `--replace` for a scatter group; any other node of that ID
+keeps it and asks for another `--group`), and nothing placed with `SCATTER_EMPTY`
 (`details.rejected`). Grounding follows the terrain's translation, yaw and
 uniform scale only (`TERRAIN_TRANSFORM`); placements and candidates are bounded
 (`PROCEDURAL_BUDGET`).
@@ -543,7 +551,7 @@ bin/model-forge generate tree --file "$OUT/palm.generate.json" --out "$OUT/repla
 cmp "$OUT/palm.model.json" "$OUT/replay/palm.model.json"
 bin/model-forge generate rock --preset boulder --count 4 --seed 10 --out "$OUT/boulders" --review "$OUT/boulders-review"
 bin/model-forge generate building --preset townhouse --set floors=4 --set roofColor=#2f3a44 --out "$OUT/townhouse.model.json" --dry-run
-bin/model-forge -d "$OUT/palm.model.json" variants --count 6 --seed 2 --vary height=5..9 --materials frond=#5f9a3c,#7aa04a --out "$OUT/palms" --review
+bin/model-forge -d "$OUT/palm.model.json" variants --count 6 --seed 2 --vary height=5..9 --materials frond=#5f9a3c,#7aa04a --out "$OUT/palms" --review "$OUT/palms-review"
 bin/scene-forge -p "$OUT/garage" model import --file "$OUT/palm.model.json" --dry-run
 ```
 

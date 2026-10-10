@@ -9,7 +9,7 @@ procedural sections (`docs/reference/model-forge-cli.md`, `scene-forge-cli.md`, 
 | Need | Command | Notes |
 |---|---|---|
 | A new prop for key art | `model-forge generate <rock\|tree\|bush\|crate\|barrel\|fence\|building\|terrain> --preset … --seed … --review DIR` | Seconds per model; `generate list` / `generate show <gen>` give presets and parameter ranges |
-| Several looks of one prop | `model-forge -d <doc> variants --count N --vary <param=min..max> --out DIR --review` | One lineup review |
+| Several looks of one prop | `model-forge -d <doc> variants --count N --vary <param=min..max> --out DIR --review REVIEW_DIR` | One lineup review, rendered before anything is written |
 | Key art ground and dressing | `scene-forge terrain add`, `layout`, `scatter` | Replaces hand-placed compositions |
 | A playable RTS map | `wildlands generate rts-mission --first` | Track C |
 | More colony content | `wildlands generate adventure-quests` | A1; only existing biomes, skills, provisions and loot |
@@ -44,8 +44,11 @@ fails with `UNKNOWN_PARAMETER`, an unknown preset with `INVALID_OPTION` (`detail
   grounds it at the center.
 - Rings: `scatter --area circle:0,0,R --exclude circle:0,0,r`. Keep the front camera's view of the
   hero clear with `--exclude rect:-1,0,1,3` (the `front` view looks from +Z).
-- Iterate with the same group and `--replace` (keep the guard). `terrain add --replace` does not
-  move placements: its result lists `staleScatterGroups` to regenerate.
+- Iterate with the same group and `--replace` (keep the guard). `--replace` regenerates only a
+  group made by `scatter` or `layout`; any other node of that ID (the terrain, for example) fails
+  with `DUPLICATE_ID`, so pick another `--group`. `terrain add --replace` does not move
+  placements: its result lists `staleScatterGroups` to regenerate.
+- Lean props a little with `--tilt -6..6` (degrees about X and Z, like `--yaw`).
 - `SCATTER_EMPTY` means every candidate was rejected: read `details.rejected` (`outside`,
   `exclusion`, `slope`, `budget`) and widen the area or lower `--spacing`.
 
