@@ -28,7 +28,10 @@ draw a source and a device, and meet a verification system step, timers (the ema
 link, day 1 and weekly waits; one day is compressed to about 20 minutes), a
 sessions counter that bounds the weekly loop, and chance routes for form
 abandonment, permission denial, the tour, churn after day 1 and an upgrade. Both
-end in goal and lost outcomes, so the snapshot reports conversion. Both journeys
+end in goal and lost outcomes, so the snapshot reports conversion. Every journey step
+has a one-to-three-sentence `description`, so each Present slide says what happens; they
+were added to the steps that had none with one guarded `putStep` edit per journey (revision
+0 to 1, `process diff` reports only changed steps), which changes no run. Both journeys
 are scenario models with invented numbers, not research data, measured conversion
 or a forecast, and neither has scene assets. The sixth,
 `content/loan-application.process.json`, is a loan application converted from BPMN 2.0
@@ -154,8 +157,9 @@ from BPMN and does not describe a specific company. It was authored with the gua
 `process create`, then a revision- and fingerprint-guarded `process edit` (dry run first)
 with every pool, step, flow and the arrival, then `process validate` and `process run`. The
 description, `seed` 7 and the SIPOC were then added to the JSON directly, because the edit
-vocabulary has no operation for them (the studio's **Edit process…** writes the same
-fields). A second guarded edit (revision 1 to 2) dropped the counters' zero starting values
+vocabulary had no operation for them at the time (the studio's **Edit process…** writes the
+same fields); the guarded `setDescription`, `setSeed` and `setSipoc` operations added since
+make this unnecessary, so do not copy that step. A second guarded edit (revision 1 to 2) dropped the counters' zero starting values
 from the arrival data, so the SIPOC lists only the drawn MVP scope as an input, and labelled
 that need on **MVP scope released?**; the run is unchanged. The result validates strictly. Each step has a scene marker and no scene asset. It
 exports to BPMN with and without BPSim; both exports pass `bin/wildlands process
@@ -180,8 +184,13 @@ bin/wildlands build-game --game docs/concepts/agency-delivery --output demos/age
 The business processes and journeys also carry a descriptive `sipoc` (suppliers and customers) and, for the
 business processes, step `phase` labels that group the SIPOC view; neither affects a run.
 
-Open `demos/agency-delivery.html` in a browser; use Run simulation, 2D/3D,
-and Step scenes. Every file is embedded and the demo runs offline.
+Open `demos/agency-delivery.html` in a browser; use **Run simulation**, **2D**/**3D**, the
+SIPOC or journey lens, **Step scenes**, and **Present** to walk through a process as slides
+beside its map ([Present a process to stakeholders](../../how-to/present-a-process.md)). Every
+file is embedded and the demo runs offline. The studio tunes these processes but cannot add
+steps or create a new process; to build your own, follow
+[Model your first business process](../../tutorials/first-business-process.md).
 
 [Contract](../../reference/business-process-engine.md) ·
-[Agent workflow](../../how-to/business-process-authoring.md).
+[Agent workflow](../../how-to/business-process-authoring.md) ·
+[Tutorial](../../tutorials/first-business-process.md).
