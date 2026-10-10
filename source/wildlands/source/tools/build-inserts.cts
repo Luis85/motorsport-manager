@@ -310,6 +310,8 @@ export const INSERTS: readonly Insert[] = [
   ["PROCESS_APPLICATION", "process-application.js", "script", "template-process"],
   ["PROCESS_ROOMS", "process-rooms.js", "script", "template-process"],
   ["PROCESS_ROOMS_TOUCHPOINT", "process-rooms-touchpoint.js", "script", "template-process"],
+  ["PROCESS_MAP_MARKS", "process-map-marks.js", "script", "template-process"],
+  ["PROCESS_MAP_CARD", "process-map-card.js", "script", "template-process"],
   ["PROCESS_RENDERER_2D", "process-renderer-2d.js", "script", "template-process"],
   ["PROCESS_RENDERER_3D", "process-renderer-3d.js", "script", "template-process"],
   ["PROCESS_ROUTE", "process-route.js", "script", "template-process"],

@@ -1,134 +1,156 @@
 /// <reference path="./process-contracts.d.ts" />
-/** Exact SVG graph/step-scene projection. Selection sends intent; no simulation ownership. */
+/**
+ * Exact SVG graph/step-scene projection with a presentation-only camera. Selection sends intent; no simulation ownership.
+ * Cards come from LWProcessMapCard and shared marks from LWProcessMapMarks. Outside the SVG the surface owns its map dock (zoom
+ * buttons and the card-number key, inside the map host so they travel with it into Present) and, in the studio legend row, the
+ * "Zoom in" button and the caption that shows the hovered or focused card's full name and counts.
+ */
 declare namespace LWProcess2D {
- interface Surface {draw(view: LWProcessApp.View): void; frame(): void; dispose(): void;}
- interface Api {create(host: HTMLElement, select: (id: string) => void): Surface;}
+ /** `neighbours`: frame a selected step together with its direct predecessors and successors (Present) instead of the studio's
+  *  single-step scene. Each frame() call sets it; the map's own reset keeps the current choice. */
+ interface FrameOptions {neighbours?: boolean}
+ interface Surface {draw(view: LWProcessApp.View): void; frame(options?: FrameOptions): void; dispose(): void;}
+ interface Api {create(host: HTMLElement, select: (id: string) => void): Surface; legend(): string;}
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcess2D?: LWProcess2D.Api; LWProcessRooms: LWProcessRooms.Api};
- const NS = 'http://www.w3.org/2000/svg';
- function el<K extends keyof SVGElementTagNameMap>(name: K, attrs: Record<string, string | number> = {}, text?: string): SVGElementTagNameMap[K] {
-  const n = document.createElementNS(NS, name); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, String(v)); if (text !== undefined) n.textContent = text; return n;
+ const root = inputRoot as {LWProcess2D?: LWProcess2D.Api; LWProcessMapMarks: LWProcessMapMarks.Api; LWProcessMapCard: LWProcessMapCard.Api};
+ const {el, small, glyph, TONE} = root.LWProcessMapMarks, Card = root.LWProcessMapCard;
+ /** A name needs about 7 readable characters per line, else cards show their list number; a line holds at most 24 characters. */
+ const MIN_NAME_CHARS = 7, MAX_LINE_CHARS = 24, CHAR_EM = .56, DOCK_GAP = 6;
+ const NUMBERS_KEY = 'Card numbers match the step list';
+ const CAPTION = 'Hover over or focus a card to read its full name and work counts.';
+ /**
+  * Screen-size floors in CSS pixels at a 16px root font, scaled with the reader's text size: titles 11px, secondary text 9px,
+  * non-text cues (pills, badges) 12px, work markers 8px and counts 10px; a numbered card is about 30 x 25px.
+  */
+ function floors(): LWProcessMapCard.Px {
+  const k = Math.max(.5, (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) / 16);
+  const title = 11 * k, line = title * 1.2, pad = 5 * k, mark = 8 * k;
+  // A zoomed-out card is its title lines plus `chrome`: top padding, a gap, the work row and the bottom band with the progress bar.
+  return {title, text: 9 * k, cue: 12 * k, line, mark, count: 10 * k, pad, chrome: pad * 2.5 + mark, char: title * CHAR_EM,
+   badgeW: 30 * k, badgeH: line + 12 * k};
  }
- const MIN_TITLE_PX = 11, MIN_TEXT_PX = 9, MAX_TITLE_CHARS = 20, AUTOMATED = new Set(['machine', 'system']), WORK = new Set(['task', 'touchpoint', 'machine', 'system']);
- /** Screen-size floors: a name needs about 7 readable characters per line, else cards show their list number; a numbered card is about 30 x 25px; markers and pills never shrink below 12px. */
- const MIN_NAME_CHARS = 7, BADGE_W = 30, BADGE_H = MIN_TITLE_PX * 1.2 + 12, LINE_H = MIN_TITLE_PX * 1.2, MIN_CUE_PX = 12, CHAR_EM = .56;
- /** Deadline paths: red when the work is interrupted, amber when it escalates beside the work. Escalated tokens use their own marker colour. */
- const TONE = {interrupt: '#e07a7a', escalate: '#e6b04a'}, ESCALATED = '#ff8a5c', CONDITIONAL = '#c79871';
  const inclusive = (s: LWProcess.Step | undefined) => s?.kind === 'fork' && s.mode === 'inclusive';
  /** Pills stacked above a card (instances, deadline); a selected card that shows a phase tag starts one row higher. */
  const pillRows = (s: LWProcess.Step, selected: boolean) => (s.instances ? 1 : 0) + (s.deadline ? 1 : 0) + (selected && s.phase ? 1 : 0);
-/** Spoken summary of the instances and deadline of a step; '' for other steps. */
- function extras(step: LWProcess.Step, metric: LWProcess.StepMetric, sep: string): string {
-  const out: string[] = [];
-  if (step.instances) out.push(`${step.instances.count ?? 'case-driven number of'} instances ${step.instances.mode}` + (metric.items ? `, ${metric.items.started} items started, ${metric.items.finished} finished` : ''));
-  if (step.deadline) out.push(`${step.deadline.mode} deadline` + (metric.deadlines ? `, ${metric.deadlines.escalated} escalated, ${metric.deadlines.interrupted} interrupted` : ''));
-  return out.length ? sep + out.join(sep) : '';
- }
- /**
-  * Right-aligned pill above a card, drawn at its top-right corner `right`,`top` and enlarged by `k` so it never shrinks below the cue size.
-  * The text is painted only when `full`; otherwise the pill keeps its shape and glyph (clock or item stack) and the wording stays in the
-  * tooltip, the text node and the card's accessible name.
-  */
- function pill(parent: SVGElement, cls: string, right: number, top: number, k: number, text: string, tip: string, tone: string, full: boolean, clock: boolean): void {
-  const lead = clock ? 1.1 : 1.2, w = full ? lead + text.length * .3 + .5 : lead + .2, wrap = el('g', {class: 'pm-pill'}), g = el('g', {class: cls, transform: `translate(${right} ${top}) scale(${k})`});
-  g.append(el('rect', {x: -w, y: 0, width: w, height: .9, rx: .45, fill: '#222c37', stroke: tone, 'stroke-width': .08}));
-  g.append(clock ? glyph('clock', -w + .6, .45, .6, tone, 0) : el('path', {d: `M${-w + .35} .64 h.5 M${-w + .45} .45 h.5 M${-w + .55} .26 h.5`, stroke: tone, 'stroke-width': .1, 'stroke-linecap': 'round', 'aria-hidden': 'true'}));
-  g.append(small(el('text', {x: -w + lead, y: .64, fill: '#edf2f7', 'font-size': .5}, text), full));
-  wrap.append(el('title', {}, tip), g); parent.append(wrap);
- }
- const trunc = (s: string, max: number) => s.length > max ? s.slice(0, Math.max(1, max - 1)).trimEnd() + '…' : s;
- /** Break at spaces into at most `lines` lines of about `per` characters; overflow ends in an ellipsis (the full name stays in the element's title). */
- function wrap(text: string, per: number, lines: number): string[] {
-  const words = text.trim().split(/\s+/), out: string[] = []; let line = '', i = 0;
-  for (; i < words.length; i++) {
-   const word = words[i]!, next = line ? line + ' ' + word : word;
-   if (next.length <= per) {line = next; continue;}
-   if (line) {out.push(line); line = ''; if (out.length === lines) break;}
-   line = trunc(word, per); if (word.length > per) {out.push(line); line = ''; if (out.length === lines) {i++; break;}}
-  }
-  if (line) out.push(line);
-  if (i < words.length && out.length) out[out.length - 1] = trunc(out[out.length - 1] + ' ' + words.slice(i).join(' '), per);
-  return out;
- }
- /** Secondary text stays in the document (readable text content and tooltips) but is not painted while it would render below the minimum screen size. */
- function small<T extends SVGElement>(node: T, visible: boolean): T {node.setAttribute('class', 'pm-secondary'); if (!visible) node.setAttribute('display', 'none'); return node;}
- /** Small per-theme icon: bright and progress-aware while working, muted when idle. Static so refresh redraws stay cheap. */
- function glyph(id: string, x: number, y: number, size: number, color: string, progress: number): SVGGElement {
-  const g = el('g', {transform: `translate(${x} ${y}) scale(${size})`, fill: 'none', stroke: color, 'stroke-width': .09, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'aria-hidden': 'true'});
-  const bars = (n: number) => { for (let i = 0; i < n; i++) g.append(el('path', {d: `M-.3 ${-.08 + i * .18} H${-.3 + .6 * Math.min(1, Math.max(.2, progress * 1.4 - i * .25))}`})); };
-  if (id === 'office') {g.append(el('rect', {x: -.5, y: -.4, width: 1, height: .65, rx: .06}), el('path', {d: 'M-.25 .45 H.25 M0 .25 V.45'})); bars(2);}
-  else if (id === 'studio') g.append(el('path', {d: 'M-.45 .4 L.3 -.35 L.45 -.2 L-.3 .55 Z M-.45 .4 L-.5 .55 L-.3 .55'}), el('path', {d: `M-.5 .62 H${-.5 + progress}`}));
-  else if (id === 'lab') g.append(el('path', {d: 'M-.15 -.5 V-.1 L-.45 .45 H.45 L.15 -.1 V-.5 M-.2 -.5 H.2'}), el('circle', {cx: 0, cy: .2 - progress * .15, r: .07}));
-  else if (id === 'workshop') g.append(el('circle', {cx: 0, cy: 0, r: .22}), el('path', {d: 'M0 -.5 V-.3 M0 .3 V.5 M-.5 0 H-.3 M.3 0 H.5 M-.35 -.35 L-.22 -.22 M.22 .22 L.35 .35 M.35 -.35 L.22 -.22 M-.22 .22 L-.35 .35'}));
-  else if (id === 'review') g.append(el('rect', {x: -.4, y: -.5, width: .8, height: 1, rx: .06}), el('path', {d: 'M-.2 0 L-.05 .15 L.22 -.2'}));
-  else if (id === 'archive') g.append(el('path', {d: 'M-.5 -.35 H-.1 L.05 -.2 H.5 V.4 H-.5 Z'}), el('path', {d: 'M-.5 -.05 H.5'}));
-  else if (id === 'reception') g.append(el('rect', {x: -.5, y: -.35, width: 1, height: .7, rx: .06}), el('path', {d: 'M-.5 -.35 L0 .05 L.5 -.35'}));
-  else if (id === 'dispatch') g.append(el('rect', {x: -.45, y: -.2, width: .6, height: .6}), el('path', {d: 'M.25 .1 H.55 M.45 -.05 L.58 .1 L.45 .25'}));
-  else if (id === 'clock') g.append(el('circle', {cx: 0, cy: 0, r: .42}), el('path', {d: 'M0 -.25 V0 L.2 .12'}));
-  else if (id === 'machine') g.append(el('path', {d: 'M-.45 .5 H-.05 M-.25 .5 V.25 M-.25 .25 L-.05 -.2 L.28 -.1'}), el('path', {d: `M.28 -.1 V${.05 + .25 * progress} M.18 ${.05 + .25 * progress} H.38`}), el('circle', {cx: -.25, cy: .25, r: .08}), el('circle', {cx: -.05, cy: -.2, r: .08}));
-  else if (id === 'system') g.append(el('rect', {x: -.42, y: -.5, width: .84, height: .4, rx: .05}), el('rect', {x: -.42, y: .02, width: .84, height: .4, rx: .05}), el('circle', {cx: -.26, cy: -.3, r: .035}), el('circle', {cx: -.26, cy: .22, r: .035}), el('path', {d: `M-.42 .62 H${-.42 + .84 * progress}`}));
-  else if (id === 'council') g.append(el('circle', {cx: 0, cy: 0, r: .3}), el('path', {d: 'M0 -.5 V-.38 M0 .38 V.5 M-.5 0 H-.38 M.38 0 H.5'}));
-  else if (root.LWProcessRooms.channels[id]) g.append(el('path', {d: root.LWProcessRooms.channels[id]!.glyph}));
-  else if (id === 'journey') g.append(el('circle', {cx: 0, cy: -.22, r: .2}), el('path', {d: 'M-.42 .5 Q-.42 .08 0 .08 Q.42 .08 .42 .5 Z'}));
-  else g.append(el('circle', {cx: 0, cy: 0, r: .12}), el('path', {d: 'M-.5 0 H-.12 M.12 0 H.5 M0 -.5 V-.12 M0 .12 V.5'}));
-  return g;
+ /** The selected step and the steps one flow before or after it, in definition order. */
+ function around(d: LWProcess.Definition, chosen: LWProcess.Step): LWProcess.Step[] {
+  const ids = new Set([chosen.id]);
+  for (const f of d.flows) { if (f.from === chosen.id) ids.add(f.to); if (f.to === chosen.id) ids.add(f.from); }
+  return d.steps.filter(s => ids.has(s.id));
  }
  function create(host: HTMLElement, select: (id: string) => void): LWProcess2D.Surface {
-  const svg = el('svg', {role: 'group', tabindex: 0, 'aria-label': 'Process graph and active work. Drag to pan, scroll or pinch to zoom, arrows pan, plus and minus zoom, zero resets.', preserveAspectRatio: 'xMidYMid meet'}); host.append(svg);
+  const label = 'Process graph and active work. Drag to pan, scroll or pinch to zoom, arrows pan, plus and minus zoom, zero resets.';
+  const svg = el('svg', {role: 'group', tabindex: 0, 'aria-label': label, preserveAspectRatio: 'xMidYMid meet'}); host.append(svg);
   // Presentation-only camera over the fitted bounds: zoom 1 is the full fit; centre offsets are in world units.
-  let fit = {x: 0, y: 0, w: 1, h: 1}, zoom = 1, cx = 0, cy = 0, framed: string | null | undefined, lastView: LWProcessApp.View | undefined, drawnKey = '', dragStart: {x: number; y: number; pid: number} | null = null, panning = false, last = {x: 0, y: 0};
-  // Absolute world distances [dx, dy, dx, dy, ...] between every two steps of the overview, for the card-spacing rules below.
-  let pairs: number[] = [], pairsOf: LWProcess.Definition | undefined;
+  let fit = {x: 0, y: 0, w: 1, h: 1}, zoom = 1, cx = 0, cy = 0, framed: string | null | undefined, lastView: LWProcessApp.View | undefined, drawnKey = '';
+  let dragStart: {x: number; y: number; pid: number} | null = null, panning = false, last = {x: 0, y: 0}, neighbours = false, hoverId: string | null = null;
+  // Whether the camera still shows the framing that place() chose (no pan or zoom since), so a resize frames again.
+  let atFit = false;
+  // Absolute world distances [dx, dy, dx, dy, ...] between every two drawn steps, and their names, for the card-spacing rules below.
+  let pairs: number[] = [], pairsOf: LWProcess.Definition | undefined, pairsKey = '', names: string[] = [];
   const pointers = new Map<number, {x: number; y: number}>();
-  const clampCamera = () => {zoom = Math.max(.5, Math.min(8, zoom)); cx = Math.max(fit.x, Math.min(fit.x + fit.w, cx)); cy = Math.max(fit.y, Math.min(fit.y + fit.h, cy));};
-  // The stage size; a hidden or unmeasured map assumes the usual stage size so the first layout is already sensible.
-  const stage = () => { const r = svg.getBoundingClientRect(); return {width: r.width > 2 ? r.width : 900, height: r.height > 2 ? r.height : 480}; };
-  /** Screen pixels per world unit. */
-  const scale = () => { const s = stage(); return Math.max(1e-6, Math.min(s.width / (fit.w / zoom), s.height / (fit.h / zoom))); };
-  /** Smallest horizontal distance between two steps whose cards, `hPx` tall, would share a row at `ppu`. */
-  const gapX = (ppu: number, hPx: number) => { let m = Infinity; for (let i = 0; i < pairs.length; i += 2) if (pairs[i + 1]! * ppu < hPx + 4) m = Math.min(m, pairs[i]!); return m; };
+  const scene = (view: LWProcessApp.View) => view.selected !== null && !neighbours;
+  const clampCamera = () => {
+   zoom = Math.max(.5, Math.min(8, zoom)); cx = Math.max(fit.x, Math.min(fit.x + fit.w, cx)); cy = Math.max(fit.y, Math.min(fit.y + fit.h, cy));
+  };
+  // The dock: the zoom buttons and, while cards show numbers, the key to them. It sits in the map host, so it also moves into Present.
+  const dock = document.createElement('div'); dock.className = 'process-map-dock';
+  const key = document.createElement('p'); key.className = 'process-map-key'; key.textContent = NUMBERS_KEY; key.hidden = true;
+  const controls = document.createElement('div'); controls.className = 'process-map-controls';
+  controls.setAttribute('role', 'group'); controls.setAttribute('aria-label', 'Map zoom');
+  dock.append(key, controls); host.append(dock);
   /**
-   * Text keeps its screen size, not its world size. Zoomed in ('full') titles are world-sized; zoomed out ('names') they stay at
-   * about 11px in cards as wide as the neighbours allow, on one or two lines of at least 7 characters; when even that does not fit,
-   * cards show their two-digit list number ('numbers'). Secondary lines, pill and tag text appear only once they can be 9px or larger.
+   * The svg size (`W`,`H`; an unmeasured map assumes the usual stage size) and the part the fitted map may use (`w`,`h`, from the
+   * top-left corner). The dock stays clear of the fitted map: either a strip under the map or a column beside it is reserved,
+   * whichever leaves the larger scale.
    */
-  function layout(view: LWProcessApp.View) {
-   const ppu = scale(), single = view.selected !== null, secondary = single || ppu * .46 >= MIN_TEXT_PX;
-   if (single || ppu * .67 >= MIN_TITLE_PX) return {mode: 'full', secondary, font: .67, single, lines: 2, per: 0, width: 8, ppu, key: `full|${secondary}|${single}`};
-   const font = MIN_TITLE_PX / ppu, zoomKey = Math.round(font * 40);
-   for (const lines of [2, 1]) {
-    const width = Math.min(12, gapX(ppu, lines * LINE_H + 12) - 1.2), per = Math.floor((width * ppu - 10) / (MIN_TITLE_PX * CHAR_EM));
-    if (per >= MIN_NAME_CHARS) return {mode: 'names', secondary, font, single, lines, per, width, ppu, key: `names|${lines}|${Math.min(per, MAX_TITLE_CHARS)}|${zoomKey}|${secondary}`};
+  function area(): {W: number; H: number; w: number; h: number} {
+   const r = svg.getBoundingClientRect(), d = dock.getBoundingClientRect();
+   if (r.width <= 2 || r.height <= 2) return {W: 900, H: 480, w: 900, h: 480};
+   if (!d.width) return {W: r.width, H: r.height, w: r.width, h: r.height};
+   const strip = Math.max(0, r.bottom - d.top + DOCK_GAP), column = Math.max(0, r.right - d.left + DOCK_GAP);
+   const below = Math.min(r.width / fit.w, (r.height - strip) / fit.h), beside = Math.min((r.width - column) / fit.w, r.height / fit.h);
+   const size = {W: r.width, H: r.height};
+   return below >= beside ? {...size, w: r.width, h: Math.max(1, r.height - strip)} : {...size, w: Math.max(1, r.width - column), h: r.height};
+  }
+  /** Screen pixels per world unit. */
+  const scale = () => { const a = area(); return Math.max(1e-6, Math.min(a.w / (fit.w / zoom), a.h / (fit.h / zoom))); };
+  /** Smallest horizontal distance between two steps whose cards, `hPx` tall, would share a row at `ppu`. */
+  const gapX = (ppu: number, hPx: number) => {
+   let m = Infinity; for (let i = 0; i < pairs.length; i += 2) if (pairs[i + 1]! * ppu < hPx + 4) m = Math.min(m, pairs[i]!);
+   return m;
+  };
+  /**
+   * Text keeps its screen size, not its world size. Zoomed in ('full') titles are world-sized; zoomed out ('names') they stay at the
+   * title size in cards as wide as the neighbours allow, on the fewest lines (up to three, vertical spacing permitting) that hold every
+   * name, each line at least 7 characters; when even that does not fit, cards show their two-digit list number ('numbers').
+   * Secondary lines, pill and tag text appear only once they reach the secondary text size.
+   */
+  function layout(view: LWProcessApp.View): LWProcessMapCard.Layout {
+   const px = floors(), ppu = scale(), single = scene(view), secondary = single || ppu * .46 >= px.text;
+   if (single || ppu * .67 >= px.title) {
+    return {mode: 'full', secondary, font: .67, single, lines: 2, per: 0, width: 8, ppu, px, key: `full|${secondary}|${single}`};
    }
-   return {mode: 'numbers', secondary, font, single, lines: 1, per: 2, width: BADGE_W / ppu, ppu, key: `numbers|${zoomKey}|${secondary}`};
+   const font = px.title / ppu, zoomKey = Math.round(font * 40);
+   let best: {lines: number; per: number; width: number} | null = null;
+   for (const lines of [1, 2, 3]) {
+    const width = Math.min(12, gapX(ppu, lines * px.line + px.chrome) - 1.2, (MAX_LINE_CHARS * px.char + px.pad * 2) / ppu);
+    const per = Math.floor((width * ppu - px.pad * 2) / px.char);
+    if (per < MIN_NAME_CHARS) break;
+    best = {lines, per, width};
+    if (names.every(n => root.LWProcessMapMarks.fits(n, per, lines))) break;
+   }
+   if (best) return {mode: 'names', secondary, font, single, ...best, ppu, px, key: `names|${best.lines}|${best.per}|${zoomKey}|${secondary}`};
+   return {mode: 'numbers', secondary, font, single, lines: 1, per: 2, width: px.badgeW / ppu, ppu, px, key: `numbers|${zoomKey}|${secondary}`};
   }
   /** The zoom at which numbered cards no longer touch: any pair may be apart sideways or vertically. Zoom 1 is the whole map. */
   function readable(): number {
-   if (!lastView || lastView.selected !== null) return 1;
-   const s = stage(), base = Math.min(s.width / fit.w, s.height / fit.h); let need = 0;
-   for (let i = 0; i < pairs.length; i += 2) need = Math.max(need, Math.min((BADGE_W + 4) / Math.max(1e-6, pairs[i]!), (BADGE_H + 4) / Math.max(1e-6, pairs[i + 1]!)));
+   if (!lastView || scene(lastView)) return 1;
+   const a = area(), px = floors(), base = Math.min(a.w / fit.w, a.h / fit.h); let need = 0;
+   for (let i = 0; i < pairs.length; i += 2) {
+    need = Math.max(need, Math.min((px.badgeW + 4) / Math.max(1e-6, pairs[i]!), (px.badgeH + 4) / Math.max(1e-6, pairs[i + 1]!)));
+   }
    return Math.max(1, Math.min(8, need / base));
   }
-  /** Frames the map: the whole map when it is readable, else the readable zoom starting at the start step (pan or zoom out for the rest). */
+  /** Frames the map: the whole map when it is readable, else the readable zoom starting at the start (or framed) step. */
   function place(): void {
-   zoom = readable(); cx = fit.x + fit.w / 2; cy = fit.y + fit.h / 2;
-   const start = lastView?.definition.steps.find(s => s.id === lastView?.definition.start)?.scene.position;
+   zoom = readable(); cx = fit.x + fit.w / 2; cy = fit.y + fit.h / 2; atFit = true;
+   const anchor = lastView && (neighbours && lastView.selected !== null ? lastView.selected : lastView.definition.start);
+   const start = lastView?.definition.steps.find(s => s.id === anchor)?.scene.position;
    if (zoom > 1 && start) {
-    const s = stage(), ppu = scale(), hw = s.width / ppu / 2, hh = s.height / ppu / 2;
+    const a = area(), ppu = scale(), hw = a.w / ppu / 2, hh = a.h / ppu / 2;
     const clamp = (v: number, lo: number, hi: number, mid: number) => lo > hi ? mid : Math.max(lo, Math.min(hi, v));
     cx = clamp(start[0], fit.x + hw, fit.x + fit.w - hw, cx); cy = clamp(start[1], fit.y + hh, fit.y + fit.h - hh, cy);
    }
   }
-  function setViewBox(): void {clampCamera(); const w = fit.w / zoom, h = fit.h / zoom; svg.setAttribute('viewBox', `${cx - w / 2} ${cy - h / 2} ${w} ${h}`);}
-  function applyCamera(): void {setViewBox(); if (lastView && layout(lastView).key !== drawnKey) draw(lastView);}
-  function frame(): void {place(); applyCamera();}
-  function zoomAt(factor: number, clientX?: number, clientY?: number): void {
-   const r = svg.getBoundingClientRect(), mx = (clientX ?? r.left + r.width / 2) - r.left - r.width / 2, my = (clientY ?? r.top + r.height / 2) - r.top - r.height / 2, before = scale();
-   const wx = cx + mx / before, wy = cy + my / before; zoom *= factor; clampCamera(); const after = scale(); cx = wx - mx / after; cy = wy - my / after; applyCamera();
+  /** The camera centre sits at the middle of the usable area, so the dock corner stays clear at fit. */
+  function setViewBox(): void {
+   clampCamera(); const a = area(), k = scale();
+   svg.setAttribute('viewBox', `${cx - a.w / 2 / k} ${cy - a.h / 2 / k} ${a.W / k} ${a.H / k}`);
   }
-  const panBy = (dx: number, dy: number) => {const k = scale(); cx -= dx / k; cy -= dy / k; applyCamera();};
+  function applyCamera(): void {setViewBox(); if (lastView && layout(lastView).key !== drawnKey) draw(lastView);}
+  /** The map's own reset (button, 0 or F): frames again and keeps the current neighbours choice. */
+  function refit(): void { if (host.hidden || !lastView) { framed = undefined; return; } place(); applyCamera(); }
+  function frame(options: LWProcess2D.FrameOptions = {}): void {
+   neighbours = !!options.neighbours; framed = undefined;
+   if (!host.hidden && lastView) { draw(lastView); applyCamera(); }
+  }
+  function zoomAt(factor: number, clientX?: number, clientY?: number): void {
+   const r = svg.getBoundingClientRect(), a = area();
+   const mx = (clientX ?? r.left + a.w / 2) - r.left - a.w / 2, my = (clientY ?? r.top + a.h / 2) - r.top - a.h / 2;
+   const before = scale(), wx = cx + mx / before, wy = cy + my / before; zoom *= factor; clampCamera(); atFit = false;
+   const after = scale(); cx = wx - mx / after; cy = wy - my / after; applyCamera();
+  }
+  /** "Zoom in for names / details": zooms about the middle of the map to the first level that shows names, or secondary details. */
+  function zoomToRead(): void {
+   if (!lastView) return; const view = lastView, numbers = layout(view).mode === 'numbers', focused = document.activeElement === hint;
+   const ready = () => { const L = layout(view); return numbers ? L.mode !== 'numbers' : L.secondary; };
+   while (!ready() && zoom < 8) { zoom = Math.min(8, zoom * 1.05); clampCamera(); atFit = false; }
+   applyCamera(); if (focused && hint.hidden) svg.focus({preventScroll: true});
+  }
+  const panBy = (dx: number, dy: number) => {const k = scale(); cx -= dx / k; cy -= dy / k; atFit = false; applyCamera();};
   const wheel = (e: WheelEvent) => {e.preventDefault(); zoomAt(Math.exp(-e.deltaY * .0015), e.clientX, e.clientY);};
   const down = (e: PointerEvent) => {
    if (e.button > 2) return; pointers.set(e.pointerId, {x: e.clientX, y: e.clientY}); last = {x: e.clientX, y: e.clientY};
@@ -139,7 +161,9 @@ declare namespace LWProcess2D {
    const known = pointers.get(e.pointerId); if (!known) return;
    if (pointers.size === 2) {
     const [a, b] = [...pointers.values()] as [{x: number; y: number}, {x: number; y: number}], before = Math.hypot(a.x - b.x, a.y - b.y);
-    known.x = e.clientX; known.y = e.clientY; const after = Math.hypot(a.x - b.x, a.y - b.y); if (before > 0 && after > 0) zoomAt(after / before, (a.x + b.x) / 2, (a.y + b.y) / 2); return;
+    known.x = e.clientX; known.y = e.clientY; const after = Math.hypot(a.x - b.x, a.y - b.y);
+    if (before > 0 && after > 0) zoomAt(after / before, (a.x + b.x) / 2, (a.y + b.y) / 2);
+    return;
    }
    known.x = e.clientX; known.y = e.clientY;
    if (!panning && dragStart && Math.hypot(e.clientX - dragStart.x, e.clientY - dragStart.y) > 4) {panning = true; svg.setPointerCapture(e.pointerId); svg.classList.add('panning');}
@@ -149,159 +173,141 @@ declare namespace LWProcess2D {
    pointers.delete(e.pointerId); if (svg.hasPointerCapture(e.pointerId)) svg.releasePointerCapture(e.pointerId);
    if (!pointers.size) {panning = false; dragStart = null; svg.classList.remove('panning');}
   };
-  const key = (e: KeyboardEvent) => {
+  const keys = (e: KeyboardEvent) => {
    if (e.ctrlKey || e.metaKey || e.altKey) return; const step = 60;
-   if (e.key === '+' || e.key === '=') zoomAt(1.25); else if (e.key === '-') zoomAt(.8); else if (e.key === '0' || e.key.toLowerCase() === 'f') frame();
-   else if (e.key === 'ArrowLeft') panBy(step, 0); else if (e.key === 'ArrowRight') panBy(-step, 0); else if (e.key === 'ArrowUp') panBy(0, step); else if (e.key === 'ArrowDown') panBy(0, -step); else return;
+   if (e.key === '+' || e.key === '=') zoomAt(1.25); else if (e.key === '-') zoomAt(.8); else if (e.key === '0' || e.key.toLowerCase() === 'f') refit();
+   else if (e.key === 'ArrowLeft') panBy(step, 0); else if (e.key === 'ArrowRight') panBy(-step, 0); else if (e.key === 'ArrowUp') panBy(0, step);
+   else if (e.key === 'ArrowDown') panBy(0, -step); else return;
    e.preventDefault();
   };
   svg.addEventListener('wheel', wheel, {passive: false}); svg.addEventListener('pointerdown', down); svg.addEventListener('pointermove', move);
-  svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up); svg.addEventListener('lostpointercapture', up); svg.addEventListener('keydown', key);
-  const controls = document.createElement('div'); controls.className = 'process-map-controls'; controls.setAttribute('role', 'group'); controls.setAttribute('aria-label', 'Map zoom');
-  for (const [label, text, action] of [['Zoom in', '+', () => zoomAt(1.25)], ['Zoom out', '−', () => zoomAt(.8)], ['Reset map view', '⌂', frame]] as const) {
-   const b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.title = label; b.setAttribute('aria-label', label); b.addEventListener('click', action); controls.append(b);
+  for (const type of ['pointerup', 'pointercancel', 'lostpointercapture'] as const) svg.addEventListener(type, up);
+  svg.addEventListener('keydown', keys);
+  for (const [name, text, action] of [['Zoom in', '+', () => zoomAt(1.25)], ['Zoom out', '−', () => zoomAt(.8)], ['Reset map view', '⌂', refit]] as const) {
+   const b = document.createElement('button'); b.type = 'button'; b.textContent = text; b.title = name; b.setAttribute('aria-label', name);
+   b.addEventListener('click', () => action()); controls.append(b);
   }
-  host.append(controls);
-  const legend = host.closest('.process-stage')?.querySelector('.process-legend'), hint = document.createElement('span'); hint.id = 'map-zoom-hint'; hint.className = 'map-zoom-hint'; hint.textContent = 'Zoom in for details'; hint.hidden = true;
-  legend?.insertBefore(hint, legend.querySelector('#camera-hint'));
-  const syncHint = () => {
-   const L = lastView && layout(lastView), text = L?.mode === 'numbers' ? 'Card numbers match the step list · zoom in for names' : 'Zoom in for details';
-   hint.hidden = host.hidden || !L || L.secondary; if (hint.textContent !== text) hint.textContent = text;
-  };
+  // Studio legend row: the zoom button and the caption of the hovered or focused card (the caption keeps one fixed row).
+  const legend = host.closest('.process-stage')?.querySelector('.process-legend');
+  const hint = document.createElement('button'), caption = document.createElement('p');
+  hint.type = 'button'; hint.id = 'map-zoom-hint'; hint.className = 'map-zoom-hint'; hint.textContent = 'Zoom in for details'; hint.hidden = true;
+  hint.addEventListener('click', zoomToRead);
+  caption.id = 'map-caption'; caption.className = 'process-map-caption'; caption.textContent = CAPTION; caption.hidden = true;
+  legend?.insertBefore(hint, legend.querySelector('#camera-hint')); legend?.insertBefore(caption, legend.querySelector('#camera-hint'));
+  function syncHint(L = lastView && layout(lastView)): void {
+   const text = L?.mode === 'numbers' ? 'Zoom in for names' : 'Zoom in for details';
+   hint.hidden = host.hidden || !L || L.secondary; if (hint.textContent !== text) hint.textContent = text; caption.hidden = host.hidden || !L;
+  }
+  /** The caption names the hovered card, else the focused one, else says how to use it. */
+  function syncCaption(): void {
+   const at = document.activeElement, focused = at && at !== svg && svg.contains(at) ? at.closest('g[role=button]') : null;
+   const hovered = hoverId ? svg.querySelector('#' + CSS.escape('process-map-' + hoverId)) : null;
+   const text = (hovered ?? focused)?.getAttribute('data-caption') ?? CAPTION;
+   if (caption.textContent !== text) { caption.textContent = text; caption.title = text; }
+  }
+  svg.addEventListener('pointerover', e => {
+   const g = (e.target as Element).closest('g[role=button]'); hoverId = g ? g.id.slice('process-map-'.length) : null; syncCaption();
+  });
+  svg.addEventListener('pointerleave', () => { hoverId = null; syncCaption(); });
+  svg.addEventListener('focusin', syncCaption); svg.addEventListener('focusout', syncCaption);
   const seen = new MutationObserver(() => { syncHint(); if (!host.hidden && lastView) applyCamera(); }); seen.observe(host, {attributes: true, attributeFilter: ['hidden']});
-  const resized = typeof ResizeObserver === 'function' ? new ResizeObserver(() => applyCamera()) : null; resized?.observe(svg);
+  // Screen-sized cards make the fitted bounds depend on the map size: a resize measures them again and keeps an untouched framing.
+  const resize = () => { if (!lastView || host.hidden) return; if (atFit) framed = undefined; draw(lastView); };
+  const resized = typeof ResizeObserver === 'function' ? new ResizeObserver(resize) : null; resized?.observe(svg);
   if (document.getElementById('camera-hint')) svg.setAttribute('aria-describedby', 'camera-hint');
   function draw(view: LWProcessApp.View): void {
    lastView = view; const focusedId = svg.contains(document.activeElement) ? document.activeElement?.id : undefined;
    const {definition: d, snapshot: q} = view; svg.replaceChildren();
-   const selected = d.steps.find(s => s.id === view.selected), steps = selected ? [selected] : d.steps;
-   const locations = new Map(steps.map(s => [s.id, selected ? [0, 0] : s.scene.position]));
-   if (pairsOf !== d) {
-    pairsOf = d; pairs = [];
-    d.steps.forEach((a, i) => d.steps.slice(i + 1).forEach(b => pairs.push(Math.abs(a.scene.position[0] - b.scene.position[0]), Math.abs(a.scene.position[1] - b.scene.position[1]))));
+   const chosen = view.selected === null ? undefined : d.steps.find(s => s.id === view.selected), single = !!chosen && scene(view);
+   const steps = !chosen ? d.steps : single ? [chosen] : around(d, chosen);
+   const locations = new Map(steps.map(s => [s.id, single ? [0, 0] : s.scene.position] as const));
+   const drawnSet = steps.map(s => s.id).join(',');
+   if (pairsOf !== d || pairsKey !== drawnSet) {
+    pairsOf = d; pairsKey = drawnSet; pairs = []; names = steps.map(s => s.name);
+    const apart = (a: LWProcess.Step, b: LWProcess.Step, axis: number) => Math.abs(a.scene.position[axis]! - b.scene.position[axis]!);
+    steps.forEach((a, i) => steps.slice(i + 1).forEach(b => pairs.push(apart(a, b, 0), apart(a, b, 1))));
    }
-   const xs = [...locations.values()].map(p => p[0]!), ys = [...locations.values()].map(p => p[1]!);
-   const rows = Math.max(0, ...steps.map(s => pillRows(s, !!selected))), padTop = Math.max(4.5, rows ? (selected ? 3.5 : 3) + 1.5 + (rows - 1) * 1.05 : 0), minX = Math.min(...xs) - 6.5, minY = Math.min(...ys) - padTop, width = Math.max(...xs) - minX + 6.5, height = Math.max(...ys) - minY + 4.5;
-   fit = {x: minX, y: minY, w: width, h: height};
-   if (framed !== view.selected) {framed = view.selected; place();}
-   setViewBox(); const L = layout(view), compact = L.mode !== 'full', order = new Map(d.steps.map((s, i) => [s.id, String(i + 1).padStart(2, '0')])); drawnKey = L.key; syncHint();
-   // Non-text cues (pills, the outcome badge, the inclusive-fork diamond, the deadline clock) keep at least MIN_CUE_PX on screen.
-   const cue = (worldSize: number) => Math.max(1, MIN_CUE_PX / (worldSize * L.ppu));
-   // Card size per step: fixed in world units when zoomed in. Zoomed out, the screen-sized title wraps within the room the neighbours leave, or the card shows its list number.
-   const dims = new Map(steps.map(step => {
-    const lines = selected ? wrap(step.name, 26, 2) : L.mode === 'numbers' ? [order.get(step.id)!] : compact ? wrap(trunc(step.name, MAX_TITLE_CHARS), L.per, L.lines) : [trunc(step.name, Math.min(MAX_TITLE_CHARS, Math.floor(7.2 / (L.font * .56))))];
-    const text = (Math.max(...lines.map(l => l.length)) * MIN_TITLE_PX * CHAR_EM + 10) / L.ppu;
-    const w = selected ? 10 : L.mode === 'numbers' ? Math.max(L.width, text) : step.kind === 'touchpoint' && !compact ? 9.4 : compact ? Math.min(L.width, Math.max(Math.min(8, L.width), text)) : 8;
-    const h = selected ? 7 : L.mode === 'numbers' ? BADGE_H / L.ppu : Math.max(4.8, lines.length * L.font * 1.2 + 1.5);
-    return [step.id, {lines, w, h}] as const;
-   }));
-   const defs = el('defs'), marker = el('marker', {id: 'process-arrow', markerWidth: 5, markerHeight: 5, refX: 4, refY: 2.5, orient: 'auto', markerUnits: 'strokeWidth'});
-   marker.append(el('path', {d: 'M0 0 L5 2.5 L0 5 Z', fill: '#7b8b9f'})); defs.append(marker);
-   for (const [mode, color] of Object.entries(TONE)) { const m = el('marker', {id: 'process-arrow-' + mode, markerWidth: 5, markerHeight: 5, refX: 4, refY: 2.5, orient: 'auto', markerUnits: 'strokeWidth'}); m.append(el('path', {d: 'M0 0 L5 2.5 L0 5 Z', fill: color})); defs.append(m); }
-   svg.append(defs);
+   fit = fitted(view, steps, locations, single);
+   const placing = framed !== view.selected; framed = view.selected;
+   // Showing or hiding the number key resizes the dock, which changes the usable area and so the layout: settle it in one more pass.
+   let L = layout(view);
+   for (let pass = 0; pass < 2; pass++) {
+    if (placing) place(); setViewBox(); L = layout(view);
+    if (key.hidden === (L.mode !== 'numbers')) break; key.hidden = L.mode !== 'numbers';
+   }
+   drawnKey = L.key; syncHint(L);
+   const order = new Map(d.steps.map((s, i) => [s.id, String(i + 1).padStart(2, '0')]));
+   const dims = new Map(steps.map(step => [step.id, Card.size(step, L, order.get(step.id)!)]));
+   svg.append(arrows());
    const edge = (id: string, ux: number, uy: number) => { const m = dims.get(id); return m ? Math.min(m.w / 2 / Math.max(1e-6, Math.abs(ux)), m.h / 2 / Math.max(1e-6, Math.abs(uy))) : 0; };
    const byId = new Map(d.steps.map(s => [s.id, s]));
-   if (!selected) for (const f of d.flows) {
-    const a = locations.get(f.from), b = locations.get(f.to), source = byId.get(f.from), late = f.on === 'deadline', mode = source?.deadline?.mode === 'escalate' ? 'escalate' : 'interrupt';
-    if (!a || !b) continue;
+   if (!single) for (const f of d.flows) {
+    const a = locations.get(f.from), b = locations.get(f.to), source = byId.get(f.from); if (!a || !b) continue;
+    const late = f.on === 'deadline', mode = source?.deadline?.mode === 'escalate' ? 'escalate' : 'interrupt';
     const dx = b[0]! - a[0]!, dy = b[1]! - a[1]!, length = Math.hypot(dx, dy) || 1, ux = dx / length, uy = dy / length, s0 = edge(f.from, ux, uy) + .15, s1 = edge(f.to, ux, uy) + .3;
     const kind = late ? 'pm-edge pm-edge-deadline pm-edge-' + mode : f.when ? 'pm-edge pm-edge-conditional' + (inclusive(source) ? ' pm-edge-inclusive' : '') : 'pm-edge';
-    svg.append(el('path', {class: kind, 'data-flow': f.id, d: `M${a[0]! + ux * s0},${a[1]! + uy * s0} L${b[0]! - ux * s1},${b[1]! - uy * s1}`, fill: 'none', stroke: late ? TONE[mode] : f.when ? CONDITIONAL : '#65778b', 'stroke-width': late ? .17 : .12, ...late ? {'stroke-dasharray': mode === 'escalate' ? '.6 .3' : '.28 .24'} : {}, 'marker-end': late ? `url(#process-arrow-${mode})` : 'url(#process-arrow)'}));
+    const path = `M${a[0]! + ux * s0},${a[1]! + uy * s0} L${b[0]! - ux * s1},${b[1]! - uy * s1}`;
+    svg.append(el('path', {class: kind, 'data-flow': f.id, d: path, 'marker-end': late ? `url(#process-arrow-${mode})` : 'url(#process-arrow)'}));
     const mx = (a[0]! + b[0]!) / 2, my = (a[1]! + b[1]!) / 2;
-    if (f.label) svg.append(small(el('text', {x: mx, y: my - .4, fill: '#b1bdcd', 'font-size': .55, 'text-anchor': 'middle'}, f.label), scale() * .55 >= MIN_TEXT_PX));
-    if (late) {
-     // The tag text follows the secondary-text rule; below it the tag is a clock disc of at least MIN_CUE_PX with the wording in its tooltip.
-     const text = 'deadline · ' + mode, k = L.secondary ? 1 : cue(.9), w = L.secondary ? text.length * .29 + .9 : .9, top = f.label ? .15 : -.45, tag = el('g', {class: 'pm-deadline-tag', 'data-flow': f.id});
-     const body = el('g', {transform: `translate(${mx} ${my + top}) scale(${k})`});
-     body.append(el('rect', {x: -w / 2, y: 0, width: w, height: .9, rx: .45, fill: '#241d1d', stroke: TONE[mode], 'stroke-width': .07}));
-     if (!L.secondary) body.append(glyph('clock', 0, .45, .6, TONE[mode], 0));
-     body.append(small(el('text', {x: 0, y: .64, fill: '#edf2f7', 'font-size': .5, 'text-anchor': 'middle'}, text), L.secondary));
-     tag.append(el('title', {}, `Deadline path (${mode === 'escalate' ? 'escalates: the work keeps going' : 'interrupts: the work is cancelled'})`), body);
-     svg.append(tag);
+    if (f.label) {
+     const text = el('text', {class: 'pm-edge-label', x: mx, y: my - .4, 'font-size': .55, 'text-anchor': 'middle'}, f.label);
+     svg.append(small(text, L.ppu * .55 >= L.px.text));
     }
+    if (late) svg.append(deadlineTag(f.id, mode, mx, my + (f.label ? .15 : -.45), L));
    }
+   // Tokens are grouped by step once per draw.
+   const metrics = new Map(q.steps.map(m => [m.id, m])), byStep = new Map<string, LWProcess.Token[]>();
+   for (const t of q.tokens) { const list = byStep.get(t.stepId); if (list) list.push(t); else byStep.set(t.stepId, [t]); }
    for (const step of steps) {
-    const at = locations.get(step.id), metric = q.steps.find(s => s.id === step.id), size = dims.get(step.id); if (!at || !metric || !size) continue;
-    const [x, y] = at as [number, number], automated = AUTOMATED.has(step.kind);
-    const {lines, w, h} = size, th = root.LWProcessRooms.theme(step), tp = step.kind === 'touchpoint', channel = step.channel ? root.LWProcessRooms.channels[step.channel]?.label : undefined, timing = metric.timers.waiting > 0, working = metric.active > 0, waiting = !working && (metric.queued > 0 || timing);
-    const tag = automated ? ` (${step.kind}${step.technology ? ', ' + step.technology : ''})` : tp ? ` (touchpoint${channel ? ', ' + channel : ''})` : step.kind === 'end' && step.outcome ? ` (end, ${step.outcome})` : '';
-    const counts = tp ? metric.active + ' in this touchpoint, ' + metric.queued + ' waiting for a team' : metric.active + ' active, ' + metric.queued + ' waiting';
-    const group = el('g', {id: 'process-map-' + step.id, role: 'button', tabindex: 0, 'aria-label': step.name + tag + (step.phase ? ', phase ' + step.phase : '') + ', ' + counts + (metric.timers.waiting ? ', ' + metric.timers.waiting + ' on timer, next due minute ' + metric.timers.nextDue : '') + (automated || tp ? ', ' + metric.completed + ' completed' : '') + (step.kind === 'end' && step.outcome ? ', ' + metric.reached + ' reached' : '') + (inclusive(step) ? ', inclusive fork' : '') + extras(step, metric, ', ')});
-    const outline = `M${x - w / 2} ${y - h / 2} h${w} v${h} h${-w} Z`;
-    group.append(el('path', {class: 'pm-focus-ring', d: outline, 'aria-hidden': 'true'}));
-    // Idle cards use the neutral line colour (CSS class); amber stays for the selected card, the theme accent marks work and light blue marks waiting.
-    group.append(el('rect', {class: 'pm-card' + (working || selected ? ' pm-work' : waiting ? '' : ' pm-idle'), x: x - w / 2, y: y - h / 2, width: w, height: h, rx: .3, fill: working ? '#222c37' : '#181e26', stroke: working ? th.accent : selected ? '#ffbb73' : waiting ? '#91b9d5' : '#364150', 'stroke-width': working || selected ? .18 : .1, opacity: working || waiting || selected ? 1 : .9}));
-    const title = el('text', {class: 'pm-title', x, y: compact ? y - (lines.length - 1) * L.font * .6 + L.font * .35 : y - h / 2 + .85, fill: '#edf2f7', 'font-size': L.font, 'text-anchor': 'middle', ...L.mode === 'numbers' ? {'font-weight': 650} : {}});
-    lines.forEach((line, i) => title.append(el('tspan', {x, dy: i ? L.font * 1.2 : 0}, line)));
-    group.append(title, el('title', {}, step.name + (step.technology ? ' · ' + step.technology : '')));
-    const progress = working ? Math.max(0, Math.min(1, q.tokens.filter(t => t.stepId === step.id && t.status === 'active').reduce((n, t) => n + 1 - t.remaining / (step.duration || 1), 0) / metric.active)) : 0;
-    group.append(el('rect', {x: x - w / 2 + .3, y: y + h / 2 - .35, width: w - .6, height: .08, fill: '#364150'}), el('rect', {x: x - w / 2 + .3, y: y + h / 2 - .35, width: (w - .6) * progress, height: .08, fill: th.accent}));
-    group.append(glyph(th.id, x - w / 2 + .9, y + h / 2 - 1, selected ? 1.3 : .85, working ? th.accent : '#6a7684', progress));
-    const extra = selected ? .75 * (lines.length - 1) : 0;
-    const status = tp ? (working ? 'In this touchpoint' : timing ? 'Waiting on timer' : waiting ? 'Waiting for a team' : 'Idle') : working ? th.task : timing ? 'Waiting on timer' : waiting ? (automated ? 'Waiting for capacity' : 'Waiting to start') : 'Idle · standby';
-    group.append(small(el('text', {x: x - w / 2 + (selected ? 1.8 : 1.5), y: y + h / 2 - .85, fill: working ? '#edf2f7' : '#8a97a8', 'font-size': .46}, status), L.secondary), el('title', {}, th.label));
-    const span = step.kind === 'timer' ? (step.until !== undefined ? 'until minute ' + step.until : (step.duration ?? 0) + ' min') : (step.duration ?? 0) + ' min';
-    group.append(small(el('text', {x, y: y - h / 2 + 1.55 + extra, fill: '#b1bdcd', 'font-size': .46, 'text-anchor': 'middle'}, `${step.kind} · ${span} · ${metric.completed} completed`), L.secondary));
-    const subtitle = automated ? step.technology : tp ? channel : undefined;
-    if (subtitle) group.append(small(el('text', {x, y: y - h / 2 + (selected ? 2.25 : 2.35) + extra, fill: th.accent, 'font-size': .44, 'text-anchor': 'middle'}, trunc(subtitle, 28)), L.secondary));
-    if (selected && step.phase) {
-     const text = 'Phase · ' + trunc(step.phase, 26), tw = Math.min(w, text.length * .3 + 1);
-     group.append(el('rect', {class: 'pm-phase-tag', x: x - w / 2, y: y - h / 2 - 1.15, width: tw, height: .9, rx: .45, fill: '#222c37', stroke: th.accent, 'stroke-width': .06}), el('text', {class: 'pm-phase-text', x: x - w / 2 + .45, y: y - h / 2 - .52, fill: '#edf2f7', 'font-size': .5}, text));
-    }
-    if (step.kind === 'end' && step.outcome) {
-     // Outcome badge at the card's top-right corner: tick or cross always, the count only where secondary text is readable.
-     const goal = step.outcome === 'goal', col = goal ? '#8fd68a' : '#e07a7a', text = (goal ? 'Goal' : 'Lost') + ' · ' + metric.reached, bw = L.secondary ? text.length * .3 + 1.5 : 1.3;
-     const badge = el('g', {transform: `translate(${x + w / 2} ${y - h / 2 - 1.15 * cue(.9)}) scale(${cue(.9)})`});
-     badge.append(el('rect', {class: 'pm-outcome pm-outcome-' + step.outcome, x: -bw, y: 0, width: bw, height: .9, rx: .45, fill: goal ? '#1f3d2a' : '#40222a', stroke: col, 'stroke-width': .08}),
-      el('path', {d: goal ? 'M-.22 0 L-.05 .17 L.25 -.2' : 'M-.2 -.2 L.2 .2 M.2 -.2 L-.2 .2', transform: `translate(${-bw + .65} .45)`, fill: 'none', stroke: col, 'stroke-width': .1, 'stroke-linecap': 'round', 'aria-hidden': 'true'}),
-      small(el('text', {x: -bw + 1.2, y: .64, fill: '#edf2f7', 'font-size': .5}, text), L.secondary));
-     group.append(badge);
-    }
-    const work = q.tokens.filter(t => t.stepId === step.id).sort((a, b) => Number(!!b.escalated) - Number(!!a.escalated));
-    if (inclusive(step)) {
-     const gate = el('g', {class: 'pm-gateway pm-gateway-inclusive', transform: `translate(${x - w / 2} ${y - h / 2}) scale(${cue(1.5)})`, 'aria-hidden': 'true'});
-     gate.append(el('path', {d: 'M0 -.75 L.75 0 L0 .75 L-.75 0 Z', fill: '#181e26', stroke: CONDITIONAL, 'stroke-width': .1}), el('circle', {cx: 0, cy: 0, r: .3, fill: 'none', stroke: CONDITIONAL, 'stroke-width': .1}), el('title', {}, 'Inclusive fork: every branch whose condition is true starts'));
-     group.append(gate);
-    }
-    // Pills above the card: multiple instances (× N and item progress) and the deadline clock with its firing counters. A count driven by a
-    // case field reads "× per case (field)" until items are live, then "× N".
-    let row = selected && step.phase ? 1 : 0;
-    const k = cue(.9), top = () => y - h / 2 - (1.15 + row++ * 1.05) * k, right = x + w / 2, full = L.secondary || !!selected;
-    if (step.instances) {
-     const live = work.find(t => t.items !== undefined)?.items, n = step.instances.count ?? live, label = n !== undefined ? `× ${n}` : `× per case (${step.instances.field})`;
-     const done = metric.items ? ` · ${metric.items.started} started · ${metric.items.finished} done` : '';
-     const about = step.instances.count !== undefined ? `${step.instances.count} instances per case` : `One instance per item; the case field ${step.instances.field} sets how many` + (live !== undefined ? ` (${live} now)` : '');
-     pill(group, 'pm-instances', right, top(), k, label + (full ? done : ''), `${about}, ${step.instances.mode}${done}`, th.accent, full, false);
-    }
-    if (step.deadline) {
-     const dl = metric.deadlines ?? {interrupted: 0, escalated: 0}, counts = `${dl.escalated} escalated · ${dl.interrupted} interrupted`;
-     pill(group, 'pm-deadline-badge pm-deadline-' + step.deadline.mode, right, top(), k, counts, `Deadline ${step.deadline.after !== undefined ? 'after ' + step.deadline.after + ' min' : 'at a random time'}, ${step.deadline.mode}s: ${counts}`, TONE[step.deadline.mode], full, true);
-    }
-    if (selected) {
-     const pending = work.filter(t => t.deadlineAt !== undefined).map(t => t.deadlineAt!), due = pending.length ? ` · deadline at minute ${Math.min(...pending)}` : '';
-     group.append(el('text', {x, y: y - .65, fill: '#ffbb73', 'font-size': .48, 'text-anchor': 'middle'}, (tp ? `${metric.active} here · ${metric.queued} waiting` : `${metric.active} working · ${metric.queued} waiting`) + (metric.timers.waiting ? ` · ${metric.timers.waiting} on timer, next due ${metric.timers.nextDue}` : '')));
-     if (due) group.append(el('text', {class: 'pm-deadline-due', x, y: y + 1.6, fill: TONE[step.deadline?.mode ?? 'interrupt'], 'font-size': .44, 'text-anchor': 'middle'}, due.replace(' · ', '')));
-     const active = work.filter(t => t.status === 'active');
-     if (active.length) {
-      const duration = step.duration, progress = duration ? Math.max(0, Math.min(1, active.reduce((n, t) => n + 1 - t.remaining / duration, 0) / active.length)) : 0;
-      group.append(el('rect', {x: x - 4, y: y - .35, width: 8, height: .07, fill: '#364150'}));
-      group.append(el('rect', {x: x - 4, y: y - .35, width: 8 * progress, height: .07, fill: '#ffbb73'}));
-     }
-    }
-    for (const [i, t] of work.slice(0, selected ? 40 : 8).entries()) group.append(el('circle', {class: 'pm-token' + (t.escalated ? ' pm-token-escalated' : ''), 'data-token': t.id, ...t.item !== undefined ? {'data-item': t.item} : {}, ...t.escalated ? {'data-escalated': 'true', stroke: '#ffffff', 'stroke-width': .07} : {}, cx: x - (selected ? 4 : 3) + (i % (selected ? 10 : 8)) * .8, cy: y + .65 + Math.floor(i / 10) * .6, r: t.escalated ? .26 : .2, fill: t.escalated ? ESCALATED : t.status === 'active' ? '#ffbb73' : t.status === 'held' ? '#e07a7a' : t.status === 'backlog' ? '#b79ad6' : t.status === 'timer' ? '#d9c58a' : '#91b9d5'}));
-    if (work.length > (selected ? 40 : 8)) group.append(small(el('text', {x: x + 3.1, y: y + 1.4, fill: '#edf2f7', 'font-size': .5}, '+' + (work.length - (selected ? 40 : 8))), L.secondary));
-    if (step.backlog) {
-     const stored = work.filter(t => t.status === 'backlog' || WORK.has(step.kind) && t.status === 'queued').length, slots = Math.min(step.backlog.capacity, 8), filled = stored ? Math.max(1, Math.round(stored / step.backlog.capacity * slots)) : 0;
-     for (let i = 0; i < slots; i++) group.append(el('rect', {x: x + w / 2 - .5 - (slots - i) * .38, y: y + h / 2 - 1.15, width: .3, height: .3, fill: i < filled ? '#b79ad6' : 'none', stroke: '#6a7684', 'stroke-width': .05}));
-     group.append(small(el('text', {x: x + w / 2 - .5, y: y + h / 2 - 1.3, fill: '#b79ad6', 'font-size': .4, 'text-anchor': 'end'}, `Backlog ${stored}/${step.backlog.capacity}`), L.secondary));
-    }
-    group.addEventListener('click', () => select(step.id));
-    group.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(step.id); } });
-    svg.append(group);
+    const at = locations.get(step.id)!, metric = metrics.get(step.id), size = dims.get(step.id)!; if (!metric) continue;
+    const current = !single && step.id === view.selected;
+    svg.append(Card.draw({step, metric, work: byStep.get(step.id) ?? [], x: at[0]!, y: at[1]!, size, current}, L, select));
    }
    if (focusedId) (document.getElementById(focusedId) as unknown as SVGElement | null)?.focus({preventScroll: true});
+   syncCaption();
   }
-  return {draw, frame, dispose() {seen.disconnect(); resized?.disconnect(); hint.remove(); svg.remove(); controls.remove();}};
+  /**
+   * World bounds of the drawn steps with room for their cards and the pills above them. Zoomed-out cards and cues keep a screen size,
+   * so each card is bounded at the fitted scale (zoom 1, two passes settle it); the bounds then stay the same at every zoom level.
+   */
+  function fitted(view: LWProcessApp.View, steps: LWProcess.Step[], at: Map<string, readonly number[]>, single: boolean): typeof fit {
+   const xs = [...at.values()].map(p => p[0]!), ys = [...at.values()].map(p => p[1]!), rows = Math.max(0, ...steps.map(s => pillRows(s, single)));
+   const minX = Math.min(...xs) - 6.5, width = Math.max(...xs) - minX + 6.5, pillTop = Math.max(4.5, rows ? (single ? 3.5 : 3) + 1.5 + (rows - 1) * 1.05 : 0);
+   fit = {x: minX, y: Math.min(...ys) - pillTop, w: width, h: Math.max(...ys) - Math.min(...ys) + pillTop + 4.5};
+   if (single) return fit;
+   for (let pass = 0; pass < 2; pass++) {
+    const saved = zoom; zoom = 1; const L = layout(view); zoom = saved;
+    if (L.mode === 'full') break;
+    const half = (L.mode === 'names' ? L.lines * L.px.line + L.px.chrome : L.px.badgeH) / 2 / L.ppu, room = L.px.pad / L.ppu;
+    const k = Math.max(1, L.px.cue / (.9 * L.ppu)), gate = .75 * Math.max(1, L.px.cue / (1.5 * L.ppu));
+    let top = Infinity, bottom = -Infinity;
+    for (const s of steps) {
+     const y = at.get(s.id)![1]!, n = pillRows(s, false) + (s.kind === 'end' && s.outcome ? 1 : 0);
+     top = Math.min(top, y - half - Math.max(n ? (1.15 + (n - 1) * 1.05) * k : 0, inclusive(s) ? gate : 0)); bottom = Math.max(bottom, y + half);
+    }
+    fit = {x: minX, y: top - room, w: width, h: bottom - top + 2 * room};
+   }
+   return fit;
+  }
+  function arrows(): SVGDefsElement {
+   const defs = el('defs');
+   for (const [id, size] of [['process-arrow', .6], ['process-arrow-interrupt', .85], ['process-arrow-escalate', .85]] as const) {
+    const m = el('marker', {id, markerWidth: size, markerHeight: size, viewBox: '0 0 5 5', refX: 4, refY: 2.5, orient: 'auto', markerUnits: 'userSpaceOnUse'});
+    m.append(el('path', {class: 'pm-arrow ' + id.replace('process-', 'pm-'), d: 'M0 0 L5 2.5 L0 5 Z'})); defs.append(m);
+   }
+   return defs;
+  }
+  /** The tag on a deadline path: its text follows the secondary-text rule; below it a clock disc of at least the cue size keeps the wording in its tooltip. */
+  function deadlineTag(flow: string, mode: 'interrupt' | 'escalate', mx: number, my: number, L: LWProcessMapCard.Layout): SVGGElement {
+   const text = 'deadline · ' + mode, k = L.secondary ? 1 : Math.max(1, L.px.cue / (.9 * L.ppu)), w = L.secondary ? text.length * .29 + .9 : .9;
+   const tag = el('g', {class: 'pm-deadline-tag', 'data-flow': flow}), body = el('g', {transform: `translate(${mx} ${my}) scale(${k})`});
+   body.append(el('rect', {class: 'pm-deadline-tag-box', x: -w / 2, y: 0, width: w, height: .9, rx: .45, 'stroke-width': .07, style: `stroke:${TONE[mode]}`}));
+   if (!L.secondary) body.append(glyph('clock', 0, .45, .6, TONE[mode], 0));
+   body.append(small(el('text', {class: 'pm-pill-text', x: 0, y: .64, 'font-size': .5, 'text-anchor': 'middle'}, text), L.secondary));
+   tag.append(el('title', {}, `Deadline path (${mode === 'escalate' ? 'escalates: the work keeps going' : 'interrupts: the work is cancelled'})`), body);
+   return tag;
+  }
+  return {draw, frame, dispose() {seen.disconnect(); resized?.disconnect(); hint.remove(); caption.remove(); svg.remove(); dock.remove();}};
  }
- root.LWProcess2D = {create};
+ root.LWProcess2D = {create, legend: () => root.LWProcessMapMarks.legend()};
 })(globalThis);

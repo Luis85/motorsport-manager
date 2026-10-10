@@ -405,6 +405,8 @@
     "source/process-sdk.cts",
     "source/process-rooms.ts",
     "source/process-rooms-touchpoint.ts",
+    "source/process-map-marks.ts",
+    "source/process-map-card.ts",
     "source/process-renderer-2d.ts",
     "source/process-renderer-3d.ts",
     "source/process-route.ts",
