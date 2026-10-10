@@ -53,7 +53,9 @@ test('Display calendar rejects non-integers, out-of-range values and unknown key
   assert.equal(checked.acceptable, false, JSON.stringify(calendar));
   assert.deepEqual(checked.diagnostics, [{path: where, code: 'shape', message}], JSON.stringify(calendar));
  }
- for (const calendar of [{minutesPerDay: 1, daysPerWeek: 1}, {minutesPerDay: 1440, daysPerWeek: 7}]) assert(catalog.validate(withCalendar(base(), calendar)).ok);
+ for (const calendar of [{minutesPerDay: 1, daysPerWeek: 1}, {minutesPerDay: 1440, daysPerWeek: 7}]) {
+  assert(catalog.validate(withCalendar(base(), calendar)).ok);
+ }
  // Other range messages keep their generic wording.
  const other = base();
  other.seed = -1;

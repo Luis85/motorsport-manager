@@ -16,7 +16,8 @@ const exponential = (mean: number): LWProcess.Dist => ({dist: 'exponential', mea
 function biased(): LWProcess.Definition {
  const quick = stepOf('quick', 'task', {duration: 2, timing: exponential(2), deadline: {mode: 'interrupt', flow: 'quick-late', timing: exponential(1)}});
  const steady = stepOf('steady', 'task', {duration: 10, timing: exponential(10)});
- const flows = [flowOf('start', 'quick'), flowOf('quick', 'steady'), flowOf('steady', 'end'), {id: 'quick-late', from: 'quick', to: 'end', on: 'deadline' as const}];
+ const late: LWProcess.Flow = {id: 'quick-late', from: 'quick', to: 'end', on: 'deadline'};
+ const flows = [flowOf('start', 'quick'), flowOf('quick', 'steady'), flowOf('steady', 'end'), late];
  return build(startEnd(quick, steady), flows, [{at: 0, count: 5, interval: 2, gap: exponential(2), data: {}}]);
 }
 
@@ -35,7 +36,8 @@ test('Rounding notes flag short exponential means and stay silent when whole-min
  // Any distribution follows the same rule; averages that read alike at one decimal are told apart with two.
  assert.equal(view.roundingNote({dist: 'triangular', min: 1, mode: 1, max: 2}),
   'Whole-minute rounding: a triangular distribution with mean 1.33 min draws about 1.25 min on average.');
- assert.match(view.roundingNote({dist: 'exponential', mean: 4, max: 6})!, /^Whole-minute rounding and the declared bounds: an exponential distribution with mean 4 min/);
+ assert.match(view.roundingNote({dist: 'exponential', mean: 4, max: 6})!,
+  /^Whole-minute rounding and the declared bounds: an exponential distribution with mean 4 min/);
  assert.equal(view.roundingNote(undefined), null);
  assert.equal(view.roundingNote({dist: 'exponential'} as LWProcess.Dist), null);
 });
