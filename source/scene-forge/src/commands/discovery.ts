@@ -139,6 +139,19 @@ export function registerDiscoveryCommands(c: CommandContext) {
           'node patch/transform/duplicate/group/reparent/ground/place',
           'offline composer with guarded edit download',
         ],
+        modelAuthoring: {
+          tool: 'bin/model-forge',
+          scope:
+            'Standalone agent-first editor for exactly one model document (<id>.model.json, or <id>.model-bundle.json with frozen nested dependencies); owns the model asset contract and the shared recipe kernel',
+          discovery: 'model-forge discover --compact',
+          handoff: [
+            'model-forge -d <document> export --format model-bundle --out <file>',
+            `${program.name()} -p <project> model import --file <file> --dry-run`,
+            `${program.name()} -p <project> model import --file <file> [--replace --expected-revision <n> --expected-state <hash>]`,
+          ],
+          sceneForgeRole:
+            'model list/inspect/import/instantiate/capture/export remain here for the project registry and scene composition',
+        },
         rigging: {
           commands: ['rig inspect', 'rig bind', 'rig pose', 'rig remove'],
           scope: 'model instance',

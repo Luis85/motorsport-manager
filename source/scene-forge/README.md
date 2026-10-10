@@ -6,6 +6,10 @@ The editable recipe is the source of truth. Generated meshes are build outputs. 
 
 This standalone project has its own Node package, schemas, build and verification. Run the commands below from `source/scene-forge/`.
 
+## Model authoring moved to Model Forge
+
+To author or refine a single model on its own, use [Model Forge](../model-forge/README.md) (`bin/model-forge`, see the [Model Forge CLI handbook](../../docs/reference/model-forge-cli.md)): an agent-first, standalone editor for exactly one `<id>.model.json` or `<id>.model-bundle.json`, with revision guards and history. Model Forge also owns the model asset contract and the shared recipe kernel in `../model-forge/src/kernel`. Scene Forge keeps projects, scene composition, the offline composer, scene-wide Littlewild sync and every `model *` command for its project registry. Hand a model over with `model-forge -d <document> export --format model-bundle --out <file>`, then `model import --file <file> --dry-run` and `model import` (with `--replace` and guards to change an existing definition). `catalog` reports this pointer as `modelAuthoring`.
+
 ## Repository executable
 
 The repository root carries a checked-in, self-contained build of this CLI: `bin/scene-forge`. It needs only Node.js 22+ (no `npm ci`) and accepts the same commands as `forge3d`. `screenshot` and `review` additionally need Playwright and Chromium, which are loaded at runtime rather than bundled. The [Scene Forge CLI handbook](../../docs/reference/scene-forge-cli.md) is its complete manual for people and agents.

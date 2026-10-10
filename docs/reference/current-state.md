@@ -78,7 +78,7 @@ balance or human validation. See the [canonical RTS contract](rts-engine.md) and
 
 ## Standalone command-line tools
 
-Two separate TypeScript projects ship checked-in, self-contained command-line
+Four separate TypeScript projects ship checked-in, self-contained command-line
 bundles under `bin/`. Each needs only Node.js 22 or newer and runs from a fresh
 clone without `npm ci` or `node_modules`:
 
@@ -91,9 +91,20 @@ clone without `npm ci` or `node_modules`:
   `story.export` JSON string verbatim, preserving authored floating point values
   and their validated fingerprints across save/load.
 - [`bin/scene-forge`](scene-forge-cli.md) authors, validates and exports
-  declarative 3D projects from `source/scene-forge/`. Its `screenshot` and
-  `review` capture commands additionally need Playwright and Chromium; `doctor`
-  reports their availability.
+  declarative 3D projects, model registries and composed scenes from
+  `source/scene-forge/`. Its `screenshot` and `review` capture commands
+  additionally need Playwright and Chromium; `doctor` reports their availability.
+- [`bin/model-forge`](model-forge-cli.md) is the agent-first, standalone editor
+  for exactly one model document (`model` or `model-bundle`) from
+  `source/model-forge/`. It owns the model asset contract and the shared model
+  recipe kernel that Scene Forge imports, applies revision-guarded edits with
+  history, and exports model bundles for Scene Forge's `model import`,
+  Littlewild definitions for `wildlands creature attach-visual` and game
+  folders, and GLB/glTF/OBJ/STL/Three.js JSON. Its `review` needs Playwright
+  and Chromium.
+- [`bin/character-studio`](character-studio-cli.md) edits Littlewild companions
+  through a local browser editor, JSON CLI and HTTP API from
+  `source/character-studio/`.
 
 The bundles are generated from their source projects and checked by each
 project's `npm run check:cli`.

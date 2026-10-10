@@ -9,16 +9,17 @@ a tool; each documents its JSON protocol, exit codes and limits.
 | Command | Purpose | Handbook | Source project | Rebuild | Check |
 |---|---|---|---|---|---|
 | `bin/wildlands` | The Wildlands engine without game content: validate, inspect and build game folders (`docs/concepts/<id>/`) into self-contained HTML; create, validate, inspect, play, edit and compile portable projects into Godot desktop projects | [Wildlands CLI](../docs/reference/wildlands-cli.md) | [`source/wildlands/`](../source/wildlands/README.md) | `cd source/wildlands && npm ci && npm run build:cli` | `cd source/wildlands && npm run check:cli` |
-| `bin/scene-forge` | Author, validate, export and review declarative 3D projects, models and scenes | [Scene Forge CLI](../docs/reference/scene-forge-cli.md) | [`source/scene-forge/`](../source/scene-forge/README.md) | `cd source/scene-forge && npm ci && npm run build:cli` | `cd source/scene-forge && npm run check:cli` |
-
+| `bin/scene-forge` | Author, validate, export and review declarative 3D projects, model registries and composed scenes | [Scene Forge CLI](../docs/reference/scene-forge-cli.md) | [`source/scene-forge/`](../source/scene-forge/README.md) | `cd source/scene-forge && npm ci && npm run build:cli` | `cd source/scene-forge && npm run check:cli` |
+| `bin/model-forge` | Agent-first editor for exactly one 3D model document; owns the model asset contract and shared recipe kernel and exports model bundles, Littlewild definitions and GLB/glTF | [Model Forge CLI](../docs/reference/model-forge-cli.md) | [`source/model-forge/`](../source/model-forge/) | `cd source/model-forge && npm ci && npm run build:cli` | `cd source/model-forge && npm run check:cli` |
 | `bin/character-studio` | Create and edit Littlewild companions through a local browser editor, JSON CLI and HTTP API | [Character Studio CLI](../docs/reference/character-studio-cli.md) | [`source/character-studio/`](../source/character-studio/README.md) | `cd source/character-studio && npm ci && npm run build:cli` | `cd source/character-studio && npm run check:cli` |
 
 ## Requirements
 
 - Node.js 22 or newer on `PATH`. Nothing else is needed for most commands: no
   `npm ci`, `node_modules`, build step or network access.
-- `bin/scene-forge screenshot` and `review` additionally need Playwright and a
-  Chromium build; `bin/scene-forge doctor` reports their status.
+- `bin/scene-forge screenshot` and `review`, `bin/model-forge review` and
+  `bin/character-studio capture`/`review` additionally need Playwright and a
+  Chromium build; each tool's `doctor` reports their status.
 - `bin/wildlands` builds and plays only the games you point it at with
   `--game DIR` (for example `docs/concepts/littlewild`); it has no built-in game.
   The HTML files it builds run in a desktop browser from `file://`; the five
@@ -34,21 +35,31 @@ Run from the repository root:
 ```sh
 bin/wildlands --help
 bin/scene-forge --help
+bin/model-forge --compact discover
+bin/character-studio discover
 node bin/wildlands discover
 bin/wildlands validate-game --game docs/concepts/littlewild
 bin/wildlands build-game --game docs/concepts/littlewild --check demos/littlewild.html
 for folder in docs/concepts/*/; do [ -f "$folder/game.json" ] && bin/wildlands validate-game --game "$folder"; done
 ```
 
-`bin/wildlands` always prints one JSON object. `bin/scene-forge` prints JSON for
-its commands; add `--compact` for smaller responses.
+`bin/wildlands` and `bin/character-studio` always print one JSON object.
+`bin/scene-forge` and `bin/model-forge` print JSON for their commands; add
+`--compact` for smaller responses.
+
+`bin/model-forge` edits one model document; `bin/scene-forge` composes registered
+models into scenes. Hand a model over with
+`bin/model-forge -d <document> export --format model-bundle --out <file>` and
+`bin/scene-forge -p <project> model import --file <file>` (dry-run first).
 
 ## Generated files: never edit by hand
 
 All executables are generated bundles. Do not edit, format or patch them
-directly. After any change under `source/wildlands/` or `source/scene-forge/`,
-rebuild the matching executable with its rebuild command and commit it together
-with the source change. Each project's `npm run check:cli` rebuilds the bundle
+directly. After any change under `source/wildlands/`, `source/scene-forge/`,
+`source/model-forge/` or `source/character-studio/`, rebuild the matching
+executable with its rebuild command and commit it together with the source
+change. `source/model-forge/src/kernel/` is bundled into both `bin/model-forge`
+and `bin/scene-forge`, so a kernel change rebuilds and commits both. Each project's `npm run check:cli` rebuilds the bundle
 without replacing it and fails when the checked-in file differs or is not
 executable; CI runs it, and also validates every game folder with the
 checked-in `bin/wildlands` alone, before installing any dependency.

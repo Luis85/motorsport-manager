@@ -7,6 +7,8 @@ import { createEditHistory, sceneEdits } from '../src/preview/edit-state.js';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
+import { Readable } from 'node:stream';
+import { createCli } from '../src/commands/create-cli.js';
 const scene = (extra = {}) =>
   parse(SceneSchema, { schemaVersion: 1, kind: 'scene', id: 'main', name: 'Main', ...extra });
 test('appearance-only editor changes round-trip through operations and undo', () => {
@@ -32,6 +34,24 @@ test('appearance-only editor changes round-trip through operations and undo', ()
     restored = { ...restored, ...state };
   });
   assert.deepEqual(restored.environment, before.environment);
+});
+test('catalog points one-model authoring to Model Forge and keeps the import handoff', async () => {
+  let stdout = '';
+  const cli = createCli({
+    cwd: os.tmpdir(),
+    stdin: Readable.from([]),
+    writeOut: (s) => {
+      stdout += s;
+    },
+    writeErr: () => {},
+  });
+  assert.equal(await cli.run(['catalog']), 0);
+  const { modelAuthoring, workflow } = JSON.parse(stdout).data;
+  assert.equal(modelAuthoring.tool, 'bin/model-forge');
+  assert.match(modelAuthoring.handoff[0], /export --format model-bundle/);
+  assert.match(modelAuthoring.handoff[1], /model import --file <file> --dry-run$/);
+  assert.match(modelAuthoring.handoff[2], /--expected-revision <n> --expected-state <hash>/);
+  assert.ok(workflow.includes('model capture'), 'existing catalog workflow is retained');
 });
 test('bundled examples compile and create portable projects without overwriting files', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'forge-examples-'));

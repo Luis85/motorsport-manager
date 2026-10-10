@@ -6,6 +6,12 @@ recipe and publish it as a validated Littlewild definition. The
 is the working example; the [Pocket Pet reference](../reference/pet-engine.md)
 describes how the game consumes it.
 
+Scene Forge synchronizes every asset of a manifest at once. To refine a single
+model or Littlewild visual on its own, use [Model Forge](../reference/model-forge-cli.md):
+it imports a `definition.json` variant into one guarded model document and
+exports it back with `export --format littlewild`, which merges only the
+`visual` facet through the same writer as Scene Forge.
+
 ## Requirements
 
 - Node.js 22+ and `npm ci` in both `source/scene-forge/` and

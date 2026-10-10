@@ -72,6 +72,8 @@ Put this `pattern` on a mesh or model instance. Grid indices increase X first, t
 
 Use `model import --dry-run` before replacing a model definition. `model capture` extracts an existing assembly. `model export` produces a dependency bundle. `model inspect --parameters`, `preview --model`, `screenshot --model`, `review --model` and `export --model` let you examine a parameter variant without placing it in a scene.
 
+To author or refine one model on its own, use Model Forge (`bin/model-forge`, [handbook](../../../docs/reference/model-forge-cli.md)): it edits exactly one `<id>.model.json` or `<id>.model-bundle.json` with revision guards and history. Hand the result back with `model-forge -d <document> export --format model-bundle --out <file>`, then `model import --file <file> --dry-run` and `model import` here (add `--replace` with `--expected-revision`/`--expected-state` to change an existing definition). The `model *` commands above remain Scene Forge's registry and composition interface.
+
 ```bash
 forge3d -p logistics model inspect rack --parameters '{"width":4,"height":3.5}'
 forge3d -p logistics review --model rack --parameters '{"width":4,"height":3.5}' --out logistics/exports/variant

@@ -14,6 +14,14 @@ is the same program as the `forge3d` package command in `source/scene-forge`, wi
 the program name `scene-forge`. Scene Forge is a standalone tool beside the game;
 it does not read or write Motorsport Manager content, saves or Godot scenes.
 
+Single-model authoring belongs to [Model Forge](model-forge-cli.md)
+(`bin/model-forge`), the standalone editor for exactly one model document. It
+owns the model asset contract and the shared model recipe kernel in
+`source/model-forge/src/kernel`, which Scene Forge bundles through its bridge
+modules. Scene Forge keeps projects, scenes and composition, and its `model *`
+commands remain the project's model registry: import Model Forge's
+`export --format model-bundle` output with `model import` (see [Models](#models)).
+
 Every `sh` block on this page was executed in order, as one shell session, against
 `bin/scene-forge` 0.6.0, both in place and as a lone copy in an empty directory
 without `node_modules` on its module path.
@@ -278,7 +286,7 @@ for the installed build, and `scene-forge help <command path>` as text.
 
 | Command | Options |
 |---|---|
-| `catalog` | none. Commands, geometry types, operations, conventions, limits, unsupported features |
+| `catalog` | none. Commands, geometry types, operations, conventions, limits, unsupported features, and `modelAuthoring` (the Model Forge pointer and model-bundle handoff) |
 | `describe [path...]` | none. Arguments, flags, defaults and choices of a command subtree |
 | `schema` | `--kind <name>` (default `scene`; one of `scene`, `model`, `project`, `batch`, `node`, `geometry`, `material`, `composition`, `model-bundle`, `scene-bundle`, `selector`, `scalar`, `review`, `camera`, `camera-snapshot`, `quality-policy`, `pattern`, `rig`, `littlewild-export`), `--raw` (bare JSON Schema) |
 | `help [command]` | text help |
@@ -411,6 +419,13 @@ scene-forge -p garage scene use main
 ```
 
 ### Models
+
+These commands manage the project's model registry and place models in scenes.
+To author or refine one model on its own, use [Model Forge](model-forge-cli.md)
+and bring the result back with `model import --file <model-bundle> --dry-run`,
+then `model import` (`--replace` with `--expected-revision`/`--expected-state`
+to change an existing definition). `model import` accepts the optional model
+`revision` field that Model Forge maintains.
 
 | Command | Options |
 |---|---|
@@ -891,8 +906,9 @@ H` → `validate` → `audit` → `review` → `export --validate`. On
 **Start from an example.** `example list` → `example create <id> <dir>` → follow
 the returned `nextCommands`.
 
-**Reuse models across projects.** `model capture` (from scene nodes) or
-`model export` → `model import --dry-run` → `model import` in the other project →
+**Reuse models across projects.** `model capture` (from scene nodes),
+`model export`, or Model Forge's `export --format model-bundle` →
+`model import --dry-run` → `model import` in the other project →
 `model instantiate` or `scene compose`. Use `--replace` only to change an existing
 definition deliberately; every scene is revalidated first.
 
@@ -949,6 +965,11 @@ npm run build:cli    # rewrites ../../bin/scene-forge (npm run build also does t
 npm run check:cli    # rebuilds into a temporary directory; exits 1 if the checked-in file differs
 ```
 
+The bundle includes the shared model recipe kernel from
+`source/model-forge/src/kernel`, resolved against this project's `node_modules`,
+so a kernel change also requires rebuilding and committing `bin/scene-forge`
+(and `bin/model-forge`; see [its rebuild steps](model-forge-cli.md#rebuild-and-verify-the-executable)).
+
 The build is a single CommonJS file with a `#!/usr/bin/env node` line, minified,
 without source maps, timestamps or absolute paths, so the same sources and locked
 dependencies produce identical bytes. Its header comment reproduces the license
@@ -957,6 +978,8 @@ and notice texts of every bundled package. For development without rebuilding,
 
 ## Further reading
 
+- [Model Forge CLI](model-forge-cli.md): the one-model editor, the model asset
+  contract and the shared kernel.
 - [Scene Forge README](../../source/scene-forge/README.md): capabilities, export
   targets, editor and release history.
 - [Agent operating guide](../../source/scene-forge/docs/AGENT_WORKFLOW.md):

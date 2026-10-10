@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - 'source/scene-forge/**'
+      - 'source/model-forge/src/kernel/**'
+      - 'source/model-forge/package.json'
+      - 'source/model-forge/package-lock.json'
       - 'bin/scene-forge'
       - 'docs/reference/scene-forge-cli.md'
       - '.github/workflows/scene-forge.yml'

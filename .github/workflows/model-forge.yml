@@ -1,0 +1,49 @@
+name: Model Forge verification
+on:
+  pull_request:
+    paths:
+      - 'source/model-forge/**'
+      - 'bin/model-forge'
+      - 'docs/reference/model-forge-cli.md'
+      - '.github/workflows/model-forge.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: model-forge-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: source/model-forge/package-lock.json
+      - name: Smoke-test checked-in bin/model-forge before installing dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          bin/model-forge --version
+          bin/model-forge --compact discover > /dev/null
+      - name: Install TypeScript toolchain
+        working-directory: source/model-forge
+        run: npm ci --no-audit --no-fund
+      - name: Check formatting
+        working-directory: source/model-forge
+        run: npm run format:check
+      - name: Verify architecture and kernel boundaries
+        working-directory: source/model-forge
+        run: npm run architecture:check
+      - name: Type-check
+        working-directory: source/model-forge
+        run: npm run check
+      - name: Run unit and integration tests
+        working-directory: source/model-forge
+        run: npm test
+      - name: Verify checked-in bin/model-forge matches source
+        working-directory: source/model-forge
+        run: npm run check:cli

@@ -4,6 +4,8 @@ This repository contains a TypeScript CLI for declarative 3D modeling. Use `node
 
 ## Model authoring protocol
 
+To author or refine one model by itself, use Model Forge (`bin/model-forge`, `../model-forge/README.md`, `../../docs/reference/model-forge-cli.md`): it edits exactly one `<id>.model.json` or `<id>.model-bundle.json` with revision/state guards and history, and owns the model asset contract. Bring its result into a project with `model-forge -d <document> export --format model-bundle --out <file>` → `model import --file <file> --dry-run` → `model import` (`--replace` with `--expected-revision`/`--expected-state` for an existing definition). Never let another tool edit a model file inside a project in place. The protocol below covers scene authoring and in-project model capture.
+
 1. Read `catalog`, use `describe <command path>` for machine-readable flags, then `schema --kind batch --raw` and any specific geometry/model schema needed.
 2. Read `inspect --source`. Preserve the scene ID, current revision and `stateHash`.
 3. Give every entity a stable descriptive ID. Use descriptive names and tags to support inspection.
