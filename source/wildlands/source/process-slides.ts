@@ -51,8 +51,15 @@
   }
   return lead || first.split(/\s+/).slice(0, LEAD_WORDS).join(' ') + ' …';
  }
- /** With a display calendar, how long times also read in business days and weeks; nothing without one. */
+ /**
+  * With working hours, that the run uses them and what that means for times; with a display calendar, how long times also read in
+  * business days and weeks; nothing without either (a definition cannot hold both).
+  */
  function calendarNote(d: LWProcess.Definition): string[] {
+  if (d.workingHours) {
+   return [`This process uses working hours (${root.LWProcessTime.hours(d.workingHours)}): its run starts on Monday at the opening, times count `
+    + 'every elapsed minute, and work and arrivals pause outside working hours.'];
+  }
   if (!d.calendar) return [];
   const {minutesPerDay, daysPerWeek} = d.calendar, n = root.LWProcessSlidesText.number;
   return [`This process counts ${n(minutesPerDay)} min as one business day and ${plural(daysPerWeek, 'business day')} as one business week, `

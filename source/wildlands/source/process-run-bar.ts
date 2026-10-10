@@ -12,6 +12,9 @@
  *    from one business day up (`LWProcessTime.span`: "≈ 4.2 business days"), and the Run until presets and the run-length sentence
  *    add the same reading ("Until: 1,440 min (3 business days)"). Below one business day, and without a calendar, every string is
  *    the plain one (hours gloss, "Until: 24 h (1,440 min)");
+ *  - with working hours on the definition (`workingHours`) the gloss under the clock is the run's day and time instead
+ *    (`LWProcessTime.clock`: "Day 2 · Tue 09:30"), and outside working time it adds when work resumes
+ *    (`LWProcessTime.closedUntil`: "Day 1 · Mon 17:30 · Closed until Tue 09:00 on day 2"); the minute count stays elapsed minutes;
  *  - Run to end (`#run-end`, inside Run options on a phone) is one clock command, `app.runToEnd()`: it pauses a playing run first (like
  *    Step and Advance), advances without animation and refreshes once, then says "Ran to minute M: <status in plain words>.". It is
  *    disabled with its reason when the run has no run length ("Set a run length to run to the end.") or has stopped.
@@ -167,7 +170,9 @@ declare namespace LWProcessRunBar {
   function sync(v: LWProcessApp.View, focused: HTMLElement | null): void {
    const q = v.snapshot, stopped = stoppedText(q.status), bar = document.querySelector('.process-toolbar')!;
    get('clock').textContent = num(q.minute) + ' min' + (v.horizon === null ? ' · no limit' : ' of ' + num(v.horizon));
-   const days = business(q.minute, v.definition.calendar), hours = days || (q.minute >= 60 ? num(q.minute / 60) + ' h' : '');
+   const days = business(q.minute, v.definition.calendar), h = v.definition.workingHours, time = root.LWProcessTime;
+   const hours = h ? [time.clock(q.minute, h), time.closedUntil(q.minute, h)].filter(Boolean).join(' · ')
+    : days || (q.minute >= 60 ? num(q.minute / 60) + ' h' : '');
    const gloss = get('clock-hours'); if (gloss.textContent !== hours) gloss.textContent = hours;
    syncPresets(v.definition.calendar); syncHorizon(v.horizon);
    const state = q.status === 'completed' ? 'Completed' : q.status === 'limit' ? 'Run limit reached' : q.status === 'blocked' ? 'Blocked' : 'Paused';

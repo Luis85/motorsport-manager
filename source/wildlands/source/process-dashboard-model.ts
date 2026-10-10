@@ -32,7 +32,7 @@
  */
 declare namespace LWProcessDashboardData {
  /** Token-minutes or case-minutes by work state (research 4.2, 4.3). */
- interface StateMinutes {working: number; waiting: number; blocked: number; backlog: number; timer: number; joining: number}
+ interface StateMinutes {working: number; waiting: number; blocked: number; backlog: number; timer: number; joining: number; closed?: number}
  /** Sampled time series on a fixed business-minute grid (research 4.7); every array has the length of `minutes`. */
  interface Series {
   base: number; every: number; level: number; minutes: number[];
@@ -109,7 +109,8 @@ declare namespace LWProcessDashboardModel {
  interface Tile {id: string; label: string; value: string; line: string; problem: boolean; spark: number[] | null; trend: string}
  interface Strip {identity: string; notice: string; notes: {id: string; text: string}[]; windows: number[]; window: number}
  interface Model {name: string; journey: boolean; minute: number; focus: string | null; strip: Strip; tiles: Tile[]; sections: Section[]}
- type State = keyof LWProcessDashboardData.StateMinutes;
+ /** The six token states; `closed` (working hours only) is time outside working hours, not a token state. */
+ type State = Exclude<keyof LWProcessDashboardData.StateMinutes, 'closed'>;
  /** Shared helpers of the dashboard model modules. */
  interface Util {
   /** A value with thousands separators: whole numbers exact, others rounded for reading (`round`). */

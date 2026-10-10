@@ -486,6 +486,7 @@
         "process-tuning-track.ts",
         "process-tuning-sipoc.ts",
         "process-tuning-calendar.ts",
+        "process-tuning-hours.ts",
         "process-definition-json.ts",
         "process-definition-structure.ts",
         "process-definition-editor.ts",

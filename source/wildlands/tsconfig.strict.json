@@ -476,6 +476,7 @@
     "source/process-tuning-track.ts",
     "source/process-tuning-sipoc.ts",
     "source/process-tuning-calendar.ts",
+    "source/process-tuning-hours.ts",
     "source/process-definition-json.ts",
     "source/process-definition-structure.ts",
     "source/process-definition-editor.ts",
