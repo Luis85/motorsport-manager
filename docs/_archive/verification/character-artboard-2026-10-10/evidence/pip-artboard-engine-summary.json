@@ -1,0 +1,4138 @@
+{
+  "ok": true,
+  "protocolVersion": 1,
+  "projectId": "wildlands-prototype",
+  "fingerprint": "d0101f50cf32aaf0",
+  "selection": {
+    "sceneId": "first-morning",
+    "archetypeId": "pip-artboard"
+  },
+  "visual": {
+    "id": "pip-artboard",
+    "category": "actor",
+    "sha256": "1f4655796132ec60ed852f6504fa6eb10fb232007b6ba131de3096cc4c06463e",
+    "materials": [
+      {
+        "id": "blush-fur-0",
+        "color": "#cc925b",
+        "roughness": 0.91,
+        "metalness": 0,
+        "sheen": 0.8,
+        "sheenColor": "#ffe8cc",
+        "sheenRoughness": 0.9,
+        "surface": {
+          "kind": "fur",
+          "version": 2,
+          "seed": 17,
+          "scale": 5,
+          "strength": 0.55
+        }
+      },
+      {
+        "id": "blush-fur-1",
+        "color": "#cd925f",
+        "roughness": 0.91,
+        "metalness": 0,
+        "sheen": 0.8,
+        "sheenColor": "#ffe8cc",
+        "sheenRoughness": 0.9,
+        "surface": {
+          "kind": "fur",
+          "version": 2,
+          "seed": 17,
+          "scale": 5,
+          "strength": 0.55
+        }
+      },
+      {
+        "id": "blush-fur-2",
+        "color": "#ce9362",
+        "roughness": 0.91,
+        "metalness": 0,
+        "sheen": 0.8,
+        "sheenColor": "#ffe8cc",
+        "sheenRoughness": 0.9,
+        "surface": {
+          "kind": "fur",
+          "version": 2,
+          "seed": 17,
+          "scale": 5,
+          "strength": 0.55
+        }
+      },
+      {
+        "id": "blush-fur-3",
+        "color": "#d09466",
+        "roughness": 0.91,
+        "metalness": 0,
+        "sheen": 0.8,
+        "sheenColor": "#ffe8cc",
+        "sheenRoughness": 0.9,
+        "surface": {
+          "kind": "fur",
+          "version": 2,
+          "seed": 17,
+          "scale": 5,
+          "strength": 0.55
+        }
+      },
+      {
+        "id": "blush-light-0",
+        "color": "#edd2b1",
+        "roughness": 0.91,
+        "metalness": 0,
+        "sheen": 0.8,
+        "sheenColor": "#ffe8cc",
+        "sheenRoughness": 0.9,
+        "surface": {
+          "kind": "fur",
+          "version": 2,
+          "seed": 17,
+          "scale": 5,
+          "strength": 0.55
+        }
+      },
+      {
+        "id": "blush-light-1",
+        "color": "#eccfaf",
+        "roughness": 0.91,
+        "metalness": 0,
+        "sheen": 0.8,
+        "sheenColor": "#ffe8cc",
+        "sheenRoughness": 0.9,
+        "surface": {
+          "kind": "fur",
+          "version": 2,
+          "seed": 17,
+          "scale": 5,
+          "strength": 0.55
+        }
+      },
+      {
+        "id": "blush-light-2",
+        "color": "#ecccad",
+        "roughness": 0.91,
+        "metalness": 0,
+        "sheen": 0.8,
+        "sheenColor": "#ffe8cc",
+        "sheenRoughness": 0.9,
+        "surface": {
+          "kind": "fur",
+          "version": 2,
+          "seed": 17,
+          "scale": 5,
+          "strength": 0.55
+        }
+      },
+      {
+        "id": "blush-light-3",
+        "color": "#ebc9ac",
+        "roughness": 0.91,
+        "metalness": 0,
+        "sheen": 0.8,
+        "sheenColor": "#ffe8cc",
+        "sheenRoughness": 0.9,
+        "surface": {
+          "kind": "fur",
+          "version": 2,
+          "seed": 17,
+          "scale": 5,
+          "strength": 0.55
+        }
+      },
+      {
+        "id": "brow",
+        "color": "#aa7948",
+        "roughness": 0.91,
+        "metalness": 0,
+        "sheen": 0.8,
+        "sheenColor": "#ffe8cc",
+        "sheenRoughness": 0.9,
+        "surface": {
+          "kind": "fur",
+          "version": 2,
+          "seed": 17,
+          "scale": 5,
+          "strength": 0.55
+        }
+      },
+      {
+        "id": "catchlight",
+        "color": "#fff9ee",
+        "roughness": 1
+      },
+      {
+        "id": "eyeDepth",
+        "color": "#332018",
+        "roughness": 0.18,
+        "clearcoat": 0.8,
+        "clearcoatRoughness": 0.12
+      },
+      {
+        "id": "eyeRim",
+        "color": "#68472b",
+        "roughness": 0.8
+      },
+      {
+        "id": "eyeWhite",
+        "color": "#fff1d8",
+        "roughness": 0.48
+      },
+      {
+        "id": "fur",
+        "color": "#c99055",
+        "roughness": 0.91,
+        "metalness": 0,
+        "sheen": 0.8,
+        "sheenColor": "#ffe8cc",
+        "sheenRoughness": 0.9,
+        "surface": {
+          "kind": "fur",
+          "version": 2,
+          "seed": 17,
+          "scale": 5,
+          "strength": 0.55
+        }
+      },
+      {
+        "id": "gold",
+        "color": "#dfbf70"
+      },
+      {
+        "id": "inner",
+        "color": "#d39986",
+        "roughness": 0.91,
+        "metalness": 0,
+        "sheen": 0.8,
+        "sheenColor": "#ffe8cc",
+        "sheenRoughness": 0.9,
+        "surface": {
+          "kind": "fur",
+          "version": 2,
+          "seed": 17,
+          "scale": 5,
+          "strength": 0.55
+        }
+      },
+      {
+        "id": "light",
+        "color": "#eed8b4",
+        "roughness": 0.91,
+        "metalness": 0,
+        "sheen": 0.8,
+        "sheenColor": "#ffe8cc",
+        "sheenRoughness": 0.9,
+        "surface": {
+          "kind": "fur",
+          "version": 2,
+          "seed": 17,
+          "scale": 5,
+          "strength": 0.55
+        }
+      },
+      {
+        "id": "mouthDark",
+        "color": "#583027",
+        "roughness": 0.86
+      },
+      {
+        "id": "nose",
+        "color": "#624032",
+        "roughness": 0.45,
+        "clearcoat": 0.15,
+        "clearcoatRoughness": 0.4
+      },
+      {
+        "id": "outfit-back-dark",
+        "color": "#644731",
+        "roughness": 0.82,
+        "surface": {
+          "kind": "leather",
+          "seed": 23,
+          "scale": 2,
+          "strength": 0.16
+        }
+      },
+      {
+        "id": "outfit-back-glow",
+        "color": "#e7bd73"
+      },
+      {
+        "id": "outfit-back-light",
+        "color": "#bd9764",
+        "roughness": 0.82,
+        "surface": {
+          "kind": "leather",
+          "seed": 23,
+          "scale": 2,
+          "strength": 0.16
+        }
+      },
+      {
+        "id": "outfit-back-metal",
+        "color": "#bd9149",
+        "roughness": 0.38,
+        "metalness": 0.55
+      },
+      {
+        "id": "outfit-back-primary",
+        "color": "#825b3c",
+        "roughness": 0.82,
+        "surface": {
+          "kind": "leather",
+          "seed": 23,
+          "scale": 2,
+          "strength": 0.16
+        }
+      },
+      {
+        "id": "outfit-body-dark",
+        "color": "#3e4e32",
+        "roughness": 0.96,
+        "sheen": 0.28,
+        "sheenColor": "#d6d1ab",
+        "sheenRoughness": 1,
+        "surface": {
+          "kind": "cloth",
+          "seed": 19,
+          "scale": 3,
+          "strength": 0.2
+        }
+      },
+      {
+        "id": "outfit-body-glow",
+        "color": "#e7bd73"
+      },
+      {
+        "id": "outfit-body-light",
+        "color": "#99a275",
+        "roughness": 0.96,
+        "sheen": 0.28,
+        "sheenColor": "#d6d1ab",
+        "sheenRoughness": 1,
+        "surface": {
+          "kind": "cloth",
+          "seed": 19,
+          "scale": 3,
+          "strength": 0.2
+        }
+      },
+      {
+        "id": "outfit-body-metal",
+        "color": "#bd9149",
+        "roughness": 0.38,
+        "metalness": 0.55
+      },
+      {
+        "id": "outfit-body-primary",
+        "color": "#617149",
+        "roughness": 0.96,
+        "sheen": 0.28,
+        "sheenColor": "#d6d1ab",
+        "sheenRoughness": 1,
+        "surface": {
+          "kind": "cloth",
+          "seed": 19,
+          "scale": 3,
+          "strength": 0.2
+        }
+      },
+      {
+        "id": "outfit-feet-dark",
+        "color": "#44352a",
+        "roughness": 0.82,
+        "surface": {
+          "kind": "leather",
+          "seed": 23,
+          "scale": 2,
+          "strength": 0.16
+        }
+      },
+      {
+        "id": "outfit-feet-glow",
+        "color": "#e7bd73"
+      },
+      {
+        "id": "outfit-feet-light",
+        "color": "#b49c77",
+        "roughness": 0.82,
+        "surface": {
+          "kind": "leather",
+          "seed": 23,
+          "scale": 2,
+          "strength": 0.16
+        }
+      },
+      {
+        "id": "outfit-feet-metal",
+        "color": "#bd9149",
+        "roughness": 0.38,
+        "metalness": 0.55
+      },
+      {
+        "id": "outfit-feet-primary",
+        "color": "#77513a",
+        "roughness": 0.82,
+        "surface": {
+          "kind": "leather",
+          "seed": 23,
+          "scale": 2,
+          "strength": 0.16
+        }
+      },
+      {
+        "id": "outfit-head-dark",
+        "color": "#344833",
+        "roughness": 0.96,
+        "sheen": 0.28,
+        "sheenColor": "#d6d1ab",
+        "sheenRoughness": 1,
+        "surface": {
+          "kind": "cloth",
+          "seed": 19,
+          "scale": 3,
+          "strength": 0.2
+        }
+      },
+      {
+        "id": "outfit-head-glow",
+        "color": "#e7bd73"
+      },
+      {
+        "id": "outfit-head-light",
+        "color": "#ceb366",
+        "roughness": 0.96,
+        "sheen": 0.28,
+        "sheenColor": "#d6d1ab",
+        "sheenRoughness": 1,
+        "surface": {
+          "kind": "cloth",
+          "seed": 19,
+          "scale": 3,
+          "strength": 0.2
+        }
+      },
+      {
+        "id": "outfit-head-metal",
+        "color": "#bd9149",
+        "roughness": 0.38,
+        "metalness": 0.55
+      },
+      {
+        "id": "outfit-head-primary",
+        "color": "#536448",
+        "roughness": 0.96,
+        "sheen": 0.28,
+        "sheenColor": "#d6d1ab",
+        "sheenRoughness": 1,
+        "surface": {
+          "kind": "cloth",
+          "seed": 19,
+          "scale": 3,
+          "strength": 0.2
+        }
+      },
+      {
+        "id": "pupil",
+        "color": "#805039",
+        "roughness": 0.2,
+        "clearcoat": 0.8,
+        "clearcoatRoughness": 0.14
+      },
+      {
+        "id": "shadow",
+        "color": "#455f52"
+      },
+      {
+        "id": "tongue",
+        "color": "#d28a77",
+        "roughness": 0.76
+      }
+    ],
+    "meshes": [
+      {
+        "id": "outfit-boot-buckle",
+        "vertices": 51,
+        "triangles": 72,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-boot-cuff-high",
+        "vertices": 330,
+        "triangles": 640,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-boot-sole",
+        "vertices": 375,
+        "triangles": 616,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-boot-toe-seam",
+        "vertices": 135,
+        "triangles": 228,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-boot-upper",
+        "vertices": 465,
+        "triangles": 840,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-boot-welt",
+        "vertices": 231,
+        "triangles": 384,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-cap-band",
+        "vertices": 231,
+        "triangles": 384,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-cap-brim-piping",
+        "vertices": 177,
+        "triangles": 300,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-cap-crown",
+        "vertices": 701,
+        "triangles": 1224,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-cap-curved-bill",
+        "vertices": 450,
+        "triangles": 896,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-cap-leaf",
+        "vertices": 185,
+        "triangles": 288,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-cap-leaf-stem",
+        "vertices": 23,
+        "triangles": 36,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-cap-panel-seams",
+        "vertices": 642,
+        "triangles": 1080,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-cape-drape",
+        "vertices": 1274,
+        "triangles": 2544,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-cape-folded-collar",
+        "vertices": 492,
+        "triangles": 980,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-cape-hem",
+        "vertices": 345,
+        "triangles": 588,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-cape-opening-left",
+        "vertices": 93,
+        "triangles": 156,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-cape-opening-right",
+        "vertices": 93,
+        "triangles": 156,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-rain_cape-clasp-loop",
+        "vertices": 147,
+        "triangles": 240,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-rain_cape-tie-left",
+        "vertices": 121,
+        "triangles": 204,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-rain_cape-tie-right",
+        "vertices": 121,
+        "triangles": 204,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-rounded-box",
+        "vertices": 373,
+        "triangles": 624,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-satchel-buckle",
+        "vertices": 51,
+        "triangles": 72,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-satchel-flap",
+        "vertices": 286,
+        "triangles": 568,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-satchel-seams",
+        "vertices": 165,
+        "triangles": 276,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-satchel-strap",
+        "vertices": 450,
+        "triangles": 896,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "outfit-satchel-strap-fastener",
+        "vertices": 51,
+        "triangles": 72,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio-soft",
+        "vertices": 607,
+        "triangles": 1064,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-blush-fur-0",
+        "vertices": 74,
+        "triangles": 80,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-blush-fur-1",
+        "vertices": 36,
+        "triangles": 34,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-blush-fur-2",
+        "vertices": 18,
+        "triangles": 16,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-blush-light-0",
+        "vertices": 94,
+        "triangles": 94,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-blush-light-1",
+        "vertices": 84,
+        "triangles": 92,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-blush-light-2",
+        "vertices": 48,
+        "triangles": 52,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-blush-light-3",
+        "vertices": 14,
+        "triangles": 12,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-body",
+        "vertices": 823,
+        "triangles": 1472,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-body-fibres",
+        "vertices": 2564,
+        "triangles": 2564,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-brow",
+        "vertices": 229,
+        "triangles": 360,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-ear-fibres",
+        "vertices": 620,
+        "triangles": 620,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-ear-round",
+        "vertices": 691,
+        "triangles": 1216,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-ear-tapered",
+        "vertices": 607,
+        "triangles": 1064,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-eyelid",
+        "vertices": 273,
+        "triangles": 432,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-face-coat",
+        "vertices": 987,
+        "triangles": 1638,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-head",
+        "vertices": 2526,
+        "triangles": 4670,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-head-fibres",
+        "vertices": 3392,
+        "triangles": 3392,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-nose",
+        "vertices": 423,
+        "triangles": 720,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-smile",
+        "vertices": 423,
+        "triangles": 720,
+        "normals": true,
+        "uv": "authored"
+      },
+      {
+        "id": "studio4-tuft",
+        "vertices": 201,
+        "triangles": 352,
+        "normals": true,
+        "uv": "authored"
+      }
+    ],
+    "models": [
+      {
+        "id": "world",
+        "nodes": 118,
+        "primitives": {
+          "mesh": 94,
+          "group": 23,
+          "cylinder": 1
+        },
+        "materials": [
+          "blush-fur-0",
+          "blush-fur-1",
+          "blush-fur-2",
+          "blush-light-0",
+          "blush-light-1",
+          "blush-light-2",
+          "blush-light-3",
+          "brow",
+          "catchlight",
+          "eyeDepth",
+          "eyeRim",
+          "eyeWhite",
+          "fur",
+          "inner",
+          "light",
+          "mouthDark",
+          "nose",
+          "outfit-back-dark",
+          "outfit-back-light",
+          "outfit-back-metal",
+          "outfit-back-primary",
+          "outfit-body-dark",
+          "outfit-body-light",
+          "outfit-body-metal",
+          "outfit-body-primary",
+          "outfit-feet-dark",
+          "outfit-feet-light",
+          "outfit-feet-metal",
+          "outfit-feet-primary",
+          "outfit-head-dark",
+          "outfit-head-light",
+          "outfit-head-primary",
+          "pupil",
+          "shadow",
+          "tongue"
+        ],
+        "bakedMeshInstances": 94,
+        "bakedTriangles": 76408,
+        "surfaces": [
+          {
+            "node": "world/body/torso",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/bib",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/head-shell",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/muzzle-left",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/muzzle-right",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/ear-left/ear-left-outer",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/ear-left/ear-left-inner",
+            "material": "inner",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/ear-right/ear-right-outer",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/ear-right/ear-right-inner",
+            "material": "inner",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/eye-left/eye-left-upper-lid",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/eye-right/eye-right-upper-lid",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/brow-left",
+            "material": "brow",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/brow-right",
+            "material": "brow",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/cheek-left/studio4-blush-fur-0",
+            "material": "blush-fur-0",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/cheek-left/studio4-blush-light-0",
+            "material": "blush-light-0",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/cheek-left/studio4-blush-fur-1",
+            "material": "blush-fur-1",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/cheek-left/studio4-blush-light-1",
+            "material": "blush-light-1",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/cheek-left/studio4-blush-fur-2",
+            "material": "blush-fur-2",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/cheek-left/studio4-blush-light-2",
+            "material": "blush-light-2",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/cheek-left/studio4-blush-light-3",
+            "material": "blush-light-3",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/mouth/muzzle-cushion-left",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/mouth/muzzle-cushion-right",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/headgear-socket/outfit-head-headgear-socket-crown",
+            "material": "outfit-head-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/head/headgear-socket/outfit-head-headgear-socket-brim",
+            "material": "outfit-head-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/head/headgear-socket/outfit-head-headgear-socket-cap-panel-seams",
+            "material": "outfit-head-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/head/headgear-socket/outfit-head-headgear-socket-cap-band",
+            "material": "outfit-head-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/head/headgear-socket/outfit-head-headgear-socket-brim-piping",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/head/headgear-socket/outfit-head-headgear-socket-cap-button",
+            "material": "outfit-head-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/head/headgear-socket/outfit-head-headgear-socket-leaf-left",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/head/headgear-socket/outfit-head-headgear-socket-leaf-right",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/head/headgear-socket/outfit-head-headgear-socket-leaf-stem",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/head/crown-wisp-0",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/crown-wisp-1",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/crown-wisp-2",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/crown-wisp-3",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/head/head-fibres",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/foot-left/foot-left-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/foot-left/foot-left-shin",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/foot-right/foot-right-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/foot-right/foot-right-shin",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/foot-left-socket/outfit-feet-foot-left-socket-boot",
+            "material": "outfit-feet-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/foot-left-socket/outfit-feet-foot-left-socket-sole",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/foot-left-socket/outfit-feet-foot-left-socket-cuff",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/foot-left-socket/outfit-feet-foot-left-socket-welt",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/foot-left-socket/outfit-feet-foot-left-socket-toe-seam",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/foot-left-socket/outfit-feet-foot-left-socket-boot-strap",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/foot-right-socket/outfit-feet-foot-right-socket-boot",
+            "material": "outfit-feet-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/foot-right-socket/outfit-feet-foot-right-socket-sole",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/foot-right-socket/outfit-feet-foot-right-socket-cuff",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/foot-right-socket/outfit-feet-foot-right-socket-welt",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/foot-right-socket/outfit-feet-foot-right-socket-toe-seam",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/foot-right-socket/outfit-feet-foot-right-socket-boot-strap",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/arm-left/arm-left-upper",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/arm-left/arm-left-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/arm-right/arm-right-upper",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/arm-right/arm-right-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/tail/tail-soft",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/body-gear-socket/outfit-body-body-gear-socket-cape",
+            "material": "outfit-body-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/body-gear-socket/outfit-body-body-gear-socket-collar",
+            "material": "outfit-body-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/body-gear-socket/outfit-body-body-gear-socket-cape-hem",
+            "material": "outfit-body-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/body-gear-socket/outfit-body-body-gear-socket-cape-opening-left",
+            "material": "outfit-body-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/body-gear-socket/outfit-body-body-gear-socket-cape-opening-right",
+            "material": "outfit-body-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/body-gear-socket/outfit-body-body-gear-socket-clasp-tie-left",
+            "material": "outfit-body-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/body-gear-socket/outfit-body-body-gear-socket-clasp-tie-right",
+            "material": "outfit-body-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world/body/back-gear-socket/outfit-back-back-gear-socket-pack",
+            "material": "outfit-back-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/back-gear-socket/outfit-back-back-gear-socket-flap",
+            "material": "outfit-back-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/back-gear-socket/outfit-back-back-gear-socket-bag-seams",
+            "material": "outfit-back-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/back-gear-socket/outfit-back-back-gear-socket-strap",
+            "material": "outfit-back-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/back-gear-socket/outfit-back-back-gear-socket-buckle-tab",
+            "material": "outfit-back-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/back-gear-socket/outfit-back-back-gear-socket-front-pocket",
+            "material": "outfit-back-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/back-gear-socket/outfit-back-back-gear-socket-side-gusset",
+            "material": "outfit-back-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world/body/care/care-snack",
+            "material": "inner",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/care/care-cup",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world/body/body-fibres",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          }
+        ]
+      },
+      {
+        "id": "world-long",
+        "nodes": 118,
+        "primitives": {
+          "mesh": 94,
+          "group": 23,
+          "cylinder": 1
+        },
+        "materials": [
+          "blush-fur-0",
+          "blush-fur-1",
+          "blush-fur-2",
+          "blush-light-0",
+          "blush-light-1",
+          "blush-light-2",
+          "blush-light-3",
+          "brow",
+          "catchlight",
+          "eyeDepth",
+          "eyeRim",
+          "eyeWhite",
+          "fur",
+          "inner",
+          "light",
+          "mouthDark",
+          "nose",
+          "outfit-back-dark",
+          "outfit-back-light",
+          "outfit-back-metal",
+          "outfit-back-primary",
+          "outfit-body-dark",
+          "outfit-body-light",
+          "outfit-body-metal",
+          "outfit-body-primary",
+          "outfit-feet-dark",
+          "outfit-feet-light",
+          "outfit-feet-metal",
+          "outfit-feet-primary",
+          "outfit-head-dark",
+          "outfit-head-light",
+          "outfit-head-primary",
+          "pupil",
+          "shadow",
+          "tongue"
+        ],
+        "bakedMeshInstances": 94,
+        "bakedTriangles": 76408,
+        "surfaces": [
+          {
+            "node": "world-long/body/torso",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/bib",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/head-shell",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/muzzle-left",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/muzzle-right",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/ear-left/ear-left-outer",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/ear-left/ear-left-inner",
+            "material": "inner",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/ear-right/ear-right-outer",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/ear-right/ear-right-inner",
+            "material": "inner",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/eye-left/eye-left-upper-lid",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/eye-right/eye-right-upper-lid",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/brow-left",
+            "material": "brow",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/brow-right",
+            "material": "brow",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/cheek-left/studio4-blush-fur-0",
+            "material": "blush-fur-0",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/cheek-left/studio4-blush-light-0",
+            "material": "blush-light-0",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/cheek-left/studio4-blush-fur-1",
+            "material": "blush-fur-1",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/cheek-left/studio4-blush-light-1",
+            "material": "blush-light-1",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/cheek-left/studio4-blush-fur-2",
+            "material": "blush-fur-2",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/cheek-left/studio4-blush-light-2",
+            "material": "blush-light-2",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/cheek-left/studio4-blush-light-3",
+            "material": "blush-light-3",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/mouth/muzzle-cushion-left",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/mouth/muzzle-cushion-right",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/headgear-socket/outfit-head-headgear-socket-crown",
+            "material": "outfit-head-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/head/headgear-socket/outfit-head-headgear-socket-brim",
+            "material": "outfit-head-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/head/headgear-socket/outfit-head-headgear-socket-cap-panel-seams",
+            "material": "outfit-head-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/head/headgear-socket/outfit-head-headgear-socket-cap-band",
+            "material": "outfit-head-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/head/headgear-socket/outfit-head-headgear-socket-brim-piping",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/head/headgear-socket/outfit-head-headgear-socket-cap-button",
+            "material": "outfit-head-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/head/headgear-socket/outfit-head-headgear-socket-leaf-left",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/head/headgear-socket/outfit-head-headgear-socket-leaf-right",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/head/headgear-socket/outfit-head-headgear-socket-leaf-stem",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/head/crown-wisp-0",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/crown-wisp-1",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/crown-wisp-2",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/crown-wisp-3",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/head/head-fibres",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/foot-left/foot-left-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/foot-left/foot-left-shin",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/foot-right/foot-right-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/foot-right/foot-right-shin",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/foot-left-socket/outfit-feet-foot-left-socket-boot",
+            "material": "outfit-feet-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/foot-left-socket/outfit-feet-foot-left-socket-sole",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/foot-left-socket/outfit-feet-foot-left-socket-cuff",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/foot-left-socket/outfit-feet-foot-left-socket-welt",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/foot-left-socket/outfit-feet-foot-left-socket-toe-seam",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/foot-left-socket/outfit-feet-foot-left-socket-boot-strap",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/foot-right-socket/outfit-feet-foot-right-socket-boot",
+            "material": "outfit-feet-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/foot-right-socket/outfit-feet-foot-right-socket-sole",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/foot-right-socket/outfit-feet-foot-right-socket-cuff",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/foot-right-socket/outfit-feet-foot-right-socket-welt",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/foot-right-socket/outfit-feet-foot-right-socket-toe-seam",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/foot-right-socket/outfit-feet-foot-right-socket-boot-strap",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/arm-left/arm-left-upper",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/arm-left/arm-left-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/arm-right/arm-right-upper",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/arm-right/arm-right-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/tail/tail-soft",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/body-gear-socket/outfit-body-body-gear-socket-cape",
+            "material": "outfit-body-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/body-gear-socket/outfit-body-body-gear-socket-collar",
+            "material": "outfit-body-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/body-gear-socket/outfit-body-body-gear-socket-cape-hem",
+            "material": "outfit-body-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/body-gear-socket/outfit-body-body-gear-socket-cape-opening-left",
+            "material": "outfit-body-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/body-gear-socket/outfit-body-body-gear-socket-cape-opening-right",
+            "material": "outfit-body-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/body-gear-socket/outfit-body-body-gear-socket-clasp-tie-left",
+            "material": "outfit-body-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/body-gear-socket/outfit-body-body-gear-socket-clasp-tie-right",
+            "material": "outfit-body-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-long/body/back-gear-socket/outfit-back-back-gear-socket-pack",
+            "material": "outfit-back-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/back-gear-socket/outfit-back-back-gear-socket-flap",
+            "material": "outfit-back-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/back-gear-socket/outfit-back-back-gear-socket-bag-seams",
+            "material": "outfit-back-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/back-gear-socket/outfit-back-back-gear-socket-strap",
+            "material": "outfit-back-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/back-gear-socket/outfit-back-back-gear-socket-buckle-tab",
+            "material": "outfit-back-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/back-gear-socket/outfit-back-back-gear-socket-front-pocket",
+            "material": "outfit-back-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/back-gear-socket/outfit-back-back-gear-socket-side-gusset",
+            "material": "outfit-back-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-long/body/care/care-snack",
+            "material": "inner",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/care/care-cup",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-long/body/body-fibres",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          }
+        ]
+      },
+      {
+        "id": "world-pointed",
+        "nodes": 118,
+        "primitives": {
+          "mesh": 94,
+          "group": 23,
+          "cylinder": 1
+        },
+        "materials": [
+          "blush-fur-0",
+          "blush-fur-1",
+          "blush-fur-2",
+          "blush-light-0",
+          "blush-light-1",
+          "blush-light-2",
+          "blush-light-3",
+          "brow",
+          "catchlight",
+          "eyeDepth",
+          "eyeRim",
+          "eyeWhite",
+          "fur",
+          "inner",
+          "light",
+          "mouthDark",
+          "nose",
+          "outfit-back-dark",
+          "outfit-back-light",
+          "outfit-back-metal",
+          "outfit-back-primary",
+          "outfit-body-dark",
+          "outfit-body-light",
+          "outfit-body-metal",
+          "outfit-body-primary",
+          "outfit-feet-dark",
+          "outfit-feet-light",
+          "outfit-feet-metal",
+          "outfit-feet-primary",
+          "outfit-head-dark",
+          "outfit-head-light",
+          "outfit-head-primary",
+          "pupil",
+          "shadow",
+          "tongue"
+        ],
+        "bakedMeshInstances": 94,
+        "bakedTriangles": 76408,
+        "surfaces": [
+          {
+            "node": "world-pointed/body/torso",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/bib",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/head-shell",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/muzzle-left",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/muzzle-right",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/ear-left/ear-left-outer",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/ear-left/ear-left-inner",
+            "material": "inner",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/ear-right/ear-right-outer",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/ear-right/ear-right-inner",
+            "material": "inner",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/eye-left/eye-left-upper-lid",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/eye-right/eye-right-upper-lid",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/brow-left",
+            "material": "brow",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/brow-right",
+            "material": "brow",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/cheek-left/studio4-blush-fur-0",
+            "material": "blush-fur-0",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/cheek-left/studio4-blush-light-0",
+            "material": "blush-light-0",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/cheek-left/studio4-blush-fur-1",
+            "material": "blush-fur-1",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/cheek-left/studio4-blush-light-1",
+            "material": "blush-light-1",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/cheek-left/studio4-blush-fur-2",
+            "material": "blush-fur-2",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/cheek-left/studio4-blush-light-2",
+            "material": "blush-light-2",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/cheek-left/studio4-blush-light-3",
+            "material": "blush-light-3",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/mouth/muzzle-cushion-left",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/mouth/muzzle-cushion-right",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/headgear-socket/outfit-head-headgear-socket-crown",
+            "material": "outfit-head-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/head/headgear-socket/outfit-head-headgear-socket-brim",
+            "material": "outfit-head-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/head/headgear-socket/outfit-head-headgear-socket-cap-panel-seams",
+            "material": "outfit-head-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/head/headgear-socket/outfit-head-headgear-socket-cap-band",
+            "material": "outfit-head-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/head/headgear-socket/outfit-head-headgear-socket-brim-piping",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/head/headgear-socket/outfit-head-headgear-socket-cap-button",
+            "material": "outfit-head-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/head/headgear-socket/outfit-head-headgear-socket-leaf-left",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/head/headgear-socket/outfit-head-headgear-socket-leaf-right",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/head/headgear-socket/outfit-head-headgear-socket-leaf-stem",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/head/crown-wisp-0",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/crown-wisp-1",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/crown-wisp-2",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/crown-wisp-3",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/head/head-fibres",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-left/foot-left-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-left/foot-left-shin",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-right/foot-right-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-right/foot-right-shin",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-left-socket/outfit-feet-foot-left-socket-boot",
+            "material": "outfit-feet-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-left-socket/outfit-feet-foot-left-socket-sole",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-left-socket/outfit-feet-foot-left-socket-cuff",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-left-socket/outfit-feet-foot-left-socket-welt",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-left-socket/outfit-feet-foot-left-socket-toe-seam",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-left-socket/outfit-feet-foot-left-socket-boot-strap",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-right-socket/outfit-feet-foot-right-socket-boot",
+            "material": "outfit-feet-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-right-socket/outfit-feet-foot-right-socket-sole",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-right-socket/outfit-feet-foot-right-socket-cuff",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-right-socket/outfit-feet-foot-right-socket-welt",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-right-socket/outfit-feet-foot-right-socket-toe-seam",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/foot-right-socket/outfit-feet-foot-right-socket-boot-strap",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/arm-left/arm-left-upper",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/arm-left/arm-left-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/arm-right/arm-right-upper",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/arm-right/arm-right-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/tail/tail-soft",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/body-gear-socket/outfit-body-body-gear-socket-cape",
+            "material": "outfit-body-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/body-gear-socket/outfit-body-body-gear-socket-collar",
+            "material": "outfit-body-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/body-gear-socket/outfit-body-body-gear-socket-cape-hem",
+            "material": "outfit-body-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/body-gear-socket/outfit-body-body-gear-socket-cape-opening-left",
+            "material": "outfit-body-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/body-gear-socket/outfit-body-body-gear-socket-cape-opening-right",
+            "material": "outfit-body-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/body-gear-socket/outfit-body-body-gear-socket-clasp-tie-left",
+            "material": "outfit-body-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/body-gear-socket/outfit-body-body-gear-socket-clasp-tie-right",
+            "material": "outfit-body-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-pointed/body/back-gear-socket/outfit-back-back-gear-socket-pack",
+            "material": "outfit-back-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/back-gear-socket/outfit-back-back-gear-socket-flap",
+            "material": "outfit-back-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/back-gear-socket/outfit-back-back-gear-socket-bag-seams",
+            "material": "outfit-back-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/back-gear-socket/outfit-back-back-gear-socket-strap",
+            "material": "outfit-back-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/back-gear-socket/outfit-back-back-gear-socket-buckle-tab",
+            "material": "outfit-back-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/back-gear-socket/outfit-back-back-gear-socket-front-pocket",
+            "material": "outfit-back-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/back-gear-socket/outfit-back-back-gear-socket-side-gusset",
+            "material": "outfit-back-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-pointed/body/care/care-snack",
+            "material": "inner",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/care/care-cup",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-pointed/body/body-fibres",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          }
+        ]
+      },
+      {
+        "id": "world-round",
+        "nodes": 120,
+        "primitives": {
+          "mesh": 96,
+          "group": 23,
+          "cylinder": 1
+        },
+        "materials": [
+          "blush-fur-0",
+          "blush-fur-1",
+          "blush-fur-2",
+          "blush-light-0",
+          "blush-light-1",
+          "blush-light-2",
+          "blush-light-3",
+          "brow",
+          "catchlight",
+          "eyeDepth",
+          "eyeRim",
+          "eyeWhite",
+          "fur",
+          "inner",
+          "light",
+          "mouthDark",
+          "nose",
+          "outfit-back-dark",
+          "outfit-back-light",
+          "outfit-back-metal",
+          "outfit-back-primary",
+          "outfit-body-dark",
+          "outfit-body-light",
+          "outfit-body-metal",
+          "outfit-body-primary",
+          "outfit-feet-dark",
+          "outfit-feet-light",
+          "outfit-feet-metal",
+          "outfit-feet-primary",
+          "outfit-head-dark",
+          "outfit-head-light",
+          "outfit-head-primary",
+          "pupil",
+          "shadow",
+          "tongue"
+        ],
+        "bakedMeshInstances": 96,
+        "bakedTriangles": 77952,
+        "surfaces": [
+          {
+            "node": "world-round/body/torso",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/bib",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/head-shell",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/muzzle-left",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/muzzle-right",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/ear-left/ear-left-outer",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/ear-left/ear-left-outer/ear-left-outer-fibres",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/ear-left/ear-left-inner",
+            "material": "inner",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/ear-right/ear-right-outer",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/ear-right/ear-right-outer/ear-right-outer-fibres",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/ear-right/ear-right-inner",
+            "material": "inner",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/eye-left/eye-left-upper-lid",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/eye-right/eye-right-upper-lid",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/brow-left",
+            "material": "brow",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/brow-right",
+            "material": "brow",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/cheek-left/studio4-blush-fur-0",
+            "material": "blush-fur-0",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/cheek-left/studio4-blush-light-0",
+            "material": "blush-light-0",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/cheek-left/studio4-blush-fur-1",
+            "material": "blush-fur-1",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/cheek-left/studio4-blush-light-1",
+            "material": "blush-light-1",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/cheek-left/studio4-blush-fur-2",
+            "material": "blush-fur-2",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/cheek-left/studio4-blush-light-2",
+            "material": "blush-light-2",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/cheek-left/studio4-blush-light-3",
+            "material": "blush-light-3",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/mouth/muzzle-cushion-left",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/mouth/muzzle-cushion-right",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/headgear-socket/outfit-head-headgear-socket-crown",
+            "material": "outfit-head-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/head/headgear-socket/outfit-head-headgear-socket-brim",
+            "material": "outfit-head-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/head/headgear-socket/outfit-head-headgear-socket-cap-panel-seams",
+            "material": "outfit-head-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/head/headgear-socket/outfit-head-headgear-socket-cap-band",
+            "material": "outfit-head-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/head/headgear-socket/outfit-head-headgear-socket-brim-piping",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/head/headgear-socket/outfit-head-headgear-socket-cap-button",
+            "material": "outfit-head-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/head/headgear-socket/outfit-head-headgear-socket-leaf-left",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/head/headgear-socket/outfit-head-headgear-socket-leaf-right",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/head/headgear-socket/outfit-head-headgear-socket-leaf-stem",
+            "material": "outfit-head-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/head/crown-wisp-0",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/crown-wisp-1",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/crown-wisp-2",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/crown-wisp-3",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/head/head-fibres",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/foot-left/foot-left-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/foot-left/foot-left-shin",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/foot-right/foot-right-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/foot-right/foot-right-shin",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/foot-left-socket/outfit-feet-foot-left-socket-boot",
+            "material": "outfit-feet-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/foot-left-socket/outfit-feet-foot-left-socket-sole",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/foot-left-socket/outfit-feet-foot-left-socket-cuff",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/foot-left-socket/outfit-feet-foot-left-socket-welt",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/foot-left-socket/outfit-feet-foot-left-socket-toe-seam",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/foot-left-socket/outfit-feet-foot-left-socket-boot-strap",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/foot-right-socket/outfit-feet-foot-right-socket-boot",
+            "material": "outfit-feet-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/foot-right-socket/outfit-feet-foot-right-socket-sole",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/foot-right-socket/outfit-feet-foot-right-socket-cuff",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/foot-right-socket/outfit-feet-foot-right-socket-welt",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/foot-right-socket/outfit-feet-foot-right-socket-toe-seam",
+            "material": "outfit-feet-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/foot-right-socket/outfit-feet-foot-right-socket-boot-strap",
+            "material": "outfit-feet-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/arm-left/arm-left-upper",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/arm-left/arm-left-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/arm-right/arm-right-upper",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/arm-right/arm-right-paw",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/tail/tail-soft",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/body-gear-socket/outfit-body-body-gear-socket-cape",
+            "material": "outfit-body-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/body-gear-socket/outfit-body-body-gear-socket-collar",
+            "material": "outfit-body-primary",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/body-gear-socket/outfit-body-body-gear-socket-cape-hem",
+            "material": "outfit-body-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/body-gear-socket/outfit-body-body-gear-socket-cape-opening-left",
+            "material": "outfit-body-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/body-gear-socket/outfit-body-body-gear-socket-cape-opening-right",
+            "material": "outfit-body-light",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/body-gear-socket/outfit-body-body-gear-socket-clasp-tie-left",
+            "material": "outfit-body-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/body-gear-socket/outfit-body-body-gear-socket-clasp-tie-right",
+            "material": "outfit-body-dark",
+            "surface": {
+              "kind": "cloth",
+              "seed": 19,
+              "scale": 3,
+              "strength": 0.2
+            }
+          },
+          {
+            "node": "world-round/body/back-gear-socket/outfit-back-back-gear-socket-pack",
+            "material": "outfit-back-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/back-gear-socket/outfit-back-back-gear-socket-flap",
+            "material": "outfit-back-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/back-gear-socket/outfit-back-back-gear-socket-bag-seams",
+            "material": "outfit-back-light",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/back-gear-socket/outfit-back-back-gear-socket-strap",
+            "material": "outfit-back-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/back-gear-socket/outfit-back-back-gear-socket-buckle-tab",
+            "material": "outfit-back-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/back-gear-socket/outfit-back-back-gear-socket-front-pocket",
+            "material": "outfit-back-primary",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/back-gear-socket/outfit-back-back-gear-socket-side-gusset",
+            "material": "outfit-back-dark",
+            "surface": {
+              "kind": "leather",
+              "seed": 23,
+              "scale": 2,
+              "strength": 0.16
+            }
+          },
+          {
+            "node": "world-round/body/care/care-snack",
+            "material": "inner",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/care/care-cup",
+            "material": "light",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          },
+          {
+            "node": "world-round/body/body-fibres",
+            "material": "fur",
+            "surface": {
+              "kind": "fur",
+              "version": 2,
+              "seed": 17,
+              "scale": 5,
+              "strength": 0.55
+            }
+          }
+        ]
+      }
+    ],
+    "totals": {
+      "uniqueMeshes": 48,
+      "storedVertices": 22792,
+      "storedTriangles": 35232
+    },
+    "interpretation": "Authored facts only. Baked triangle counts exclude procedural primitives. UV fallback applies to baked meshes without authored UVs. Review actual captures to judge expression, silhouette and material appearance."
+  },
+  "next": "Use creature inspect without --summary for the complete editable package and fields; use creature export --output NEW.json to save it."
+}

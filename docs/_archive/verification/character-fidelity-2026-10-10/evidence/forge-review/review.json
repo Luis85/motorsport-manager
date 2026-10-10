@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "kind": "review-result",
+  "provenance": {
+    "tool": "scene-forge",
+    "version": "0.6.0",
+    "three": "186",
+    "node": "v24.19.0",
+    "platform": "linux",
+    "arch": "x64",
+    "chromium": "151.0.7922.173",
+    "rendererRequested": "ANGLE SwiftShader",
+    "documentTransport": "inline-html"
+  },
+  "scene": "model",
+  "revision": 0,
+  "sourceStateHash": "ac5af1d8b48b7fd7abcee37779fb9e5320faa8176739e61d1a62d5bf8e5f97bf",
+  "renderStateHash": "b88a8fb069b51cd39bb498a3fe175097e74ad11344a68c9c1829b1b80aff904f",
+  "target": {
+    "model": "pipTrailWorldRound",
+    "parameters": {}
+  },
+  "plan": {
+    "schemaVersion": 1,
+    "kind": "review",
+    "width": 768,
+    "height": 768,
+    "grid": false,
+    "wireframe": false,
+    "contactSheet": true,
+    "frames": [
+      {
+        "id": "front",
+        "camera": {
+          "view": "front",
+          "projection": "auto",
+          "azimuth": 45,
+          "elevation": 30,
+          "padding": 1.12,
+          "fov": 40
+        }
+      },
+      {
+        "id": "right",
+        "camera": {
+          "view": "right",
+          "projection": "auto",
+          "azimuth": 45,
+          "elevation": 30,
+          "padding": 1.12,
+          "fov": 40
+        }
+      }
+    ]
+  },
+  "stats": {
+    "nodes": 88,
+    "meshes": 68,
+    "triangles": 40256,
+    "materials": 21,
+    "geometries": 12,
+    "bounds": {
+      "min": [
+        -0.3099400558577058,
+        -0.0010000000000000026,
+        -0.34397475739522865
+      ],
+      "max": [
+        0.3099400558577058,
+        0.9698842874902676,
+        0.392
+      ],
+      "size": [
+        0.6198801117154116,
+        0.9708842874902676,
+        0.7359747573952287
+      ]
+    },
+    "warnings": []
+  },
+  "frames": [
+    {
+      "id": "front",
+      "file": "front.png",
+      "width": 768,
+      "height": 768,
+      "camera": {
+        "projection": "orthographic",
+        "position": [
+          0,
+          0.484442143745134,
+          3.909746253824234
+        ],
+        "target": [
+          0,
+          0.4844421437451338,
+          -0.028987378697614335
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "near": 0.001312911210840616,
+        "far": 1312.911210840616,
+        "zoom": 1,
+        "left": -0.5436952009945499,
+        "right": 0.5436952009945499,
+        "top": 0.5436952009945499,
+        "bottom": -0.5436952009945499
+      },
+      "sha256": "258a360b217b42ea5a90a3d26b2c40bad8312ddc5f86987f007f4b558cee7455",
+      "bytes": 257296
+    },
+    {
+      "id": "right",
+      "file": "right.png",
+      "width": 768,
+      "height": 768,
+      "camera": {
+        "projection": "orthographic",
+        "position": [
+          3.9387336325218483,
+          0.484442143745134,
+          -0.02898737869761497
+        ],
+        "target": [
+          0,
+          0.4844421437451338,
+          -0.028987378697614335
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "near": 0.001312911210840616,
+        "far": 1312.911210840616,
+        "zoom": 1,
+        "left": -0.5436952009945499,
+        "right": 0.5436952009945499,
+        "top": 0.5436952009945499,
+        "bottom": -0.5436952009945499
+      },
+      "sha256": "9c5e0d1b8d2b67d4fdf8c54d3483cdc607323dde58b336452adf91d8faa76a37",
+      "bytes": 219642
+    }
+  ],
+  "contactSheet": {
+    "file": "contact-sheet.png",
+    "width": 960,
+    "height": 512
+  },
+  "replayPlan": "replay-plan.json",
+  "durationMs": 27405
+}

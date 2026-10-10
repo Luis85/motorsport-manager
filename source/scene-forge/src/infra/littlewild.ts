@@ -1,3 +1,8 @@
+import { canonical } from '../domain/canonical.js';
+import {
+  reuseLittlewildMeshes,
+  assertLittlewildComplexity,
+} from '../application/littlewild-resources.js';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import {
@@ -31,10 +36,14 @@ export function definitionText(value: unknown) {
     ) + '\n'
   );
 }
-function renameMaterials(nodes: LittlewildNode[], names: Map<string, string>) {
+function renameMaterials(
+  nodes: LittlewildNode[],
+  names: Map<string, string>,
+  field: 'material' | 'mesh' = 'material',
+) {
   for (const node of nodes) {
-    if (node.material && names.has(node.material)) node.material = names.get(node.material);
-    if (node.children) renameMaterials(node.children, names);
+    if (node[field] && names.has(node[field]!)) node[field] = names.get(node[field]!);
+    if (node.children) renameMaterials(node.children, names, field);
   }
 }
 function collect(nodes: readonly unknown[], key: 'material' | 'mesh', into: Set<string>) {
@@ -94,7 +103,20 @@ export function littlewildVisual(asset: LittlewildAsset, models: ModelLibrary, e
         if (name !== role) names.set(role, name);
       }
       renameMaterials(result.nodes, names);
-      Object.assign(meshes, result.meshes);
+      const meshNames = new Map<string, string>();
+      for (const [id, data] of Object.entries(result.meshes)) {
+        let name = id,
+          suffix = 1;
+        while (
+          (Object.hasOwn(meshes, name) && canonical(meshes[name]) !== canonical(data)) ||
+          (Object.hasOwn(previousMeshes, name) &&
+            canonical(previousMeshes[name]) !== canonical(data))
+        )
+          name = `${id.slice(0, 64)}-${suffix++}`;
+        meshes[name] = data;
+        if (name !== id) meshNames.set(id, name);
+      }
+      renameMaterials(result.nodes, meshNames, 'mesh');
       exported[variant] = { nodes: result.nodes };
       if (Object.keys(result.rig).length) rig[variant] = result.rig;
       result.warnings.forEach((w) => warnings.add(w));
@@ -103,7 +125,7 @@ export function littlewildVisual(asset: LittlewildAsset, models: ModelLibrary, e
       built.dispose();
     }
   }
-  const finalModels: Plain = { ...previousModels, ...exported };
+  const finalModels: Plain = structuredClone({ ...previousModels, ...exported });
   // Retained variants keep their own material and mesh references.
   for (const [name, model] of Object.entries(previousModels)) {
     if (Object.hasOwn(exported, name) || !plain(model) || !Array.isArray(model.nodes)) continue;
@@ -119,7 +141,8 @@ export function littlewildVisual(asset: LittlewildAsset, models: ModelLibrary, e
     for (const id of collect(model.nodes, 'mesh', new Set()))
       if (Object.hasOwn(previousMeshes, id)) meshes[id] ??= previousMeshes[id];
   }
-  const vertices = Object.values(meshes).reduce<number>(
+  const finalMeshes = reuseLittlewildMeshes(finalModels, meshes, Object.keys(previousMeshes));
+  const vertices = Object.values(finalMeshes).reduce<number>(
     (sum, mesh) =>
       sum + (plain(mesh) && Array.isArray(mesh.positions) ? mesh.positions.length / 3 : 0),
     0,
@@ -157,8 +180,9 @@ export function littlewildVisual(asset: LittlewildAsset, models: ModelLibrary, e
     ...(finalRig === undefined || (plain(finalRig) && !Object.keys(finalRig).length)
       ? {}
       : { rig: finalRig }),
-    ...(Object.keys(meshes).length ? { meshes } : {}),
+    ...(Object.keys(finalMeshes).length ? { meshes: finalMeshes } : {}),
   };
+  assertLittlewildComplexity(visual);
   return { visual, report, warnings: [...warnings] };
 }
 export async function readDefinition(file: string) {

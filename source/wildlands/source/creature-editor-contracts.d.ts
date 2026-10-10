@@ -14,5 +14,5 @@ declare namespace LWCreatureEditor {
   select(selection:Selection):void;setField(id:string,value:unknown):void;updateDefinition(patch:Data):void;updateAppearance(patch:Data):void;updateInstance(patch:Data):void;
   importPackage(input:unknown):void;duplicateArchetype(id:string,name:string):void;undo():void;redo():void;
  }
- interface Api {create(input:unknown,selection:Selection):Session;validatePackage(input:unknown,context?:{pack:LWContentPorts.ScenarioPack;selection:Selection}):Validation;}
+ interface Api {readonly MAX_PACKAGE_BYTES:number;create(input:unknown,selection:Selection):Session;validatePackage(input:unknown,context?:{pack:LWContentPorts.ScenarioPack;selection:Selection}):Validation;}
 }

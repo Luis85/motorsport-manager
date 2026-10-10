@@ -1,0 +1,129 @@
+{
+  "format": "wildlands-storyboard",
+  "schemaVersion": 1,
+  "title": "Littlewild · Shape, expression and craft",
+  "intent": "The second artboard fidelity pass. Compare the supplied designs with actual editable 3D characters, identify remaining differences, and retain the authoring and review evidence. Tests establish contracts; these images establish what was actually rendered.",
+  "layout": "comparison",
+  "sections": [
+    {
+      "id": "target",
+      "title": "The supplied target and the new character",
+      "intent": "A warm woodland companion: expressive eyes, a sculpted jaw, distinct legs, a fitted cap and draped cape.",
+      "cards": [
+        {
+          "id": "reference",
+          "title": "Supplied clothed concept",
+          "image": "evidence/supplied-concept.png",
+          "caption": "Page 1 of the supplied high-fidelity mockups. Design target, not implemented software."
+        },
+        {
+          "id": "hero",
+          "title": "Actual revised character · three-quarter view",
+          "image": "evidence/hero.png",
+          "source": "evidence/pip-artboard.recipe.json",
+          "caption": "Real revision-4 geometry rendered from the retained recipe. The recipe selects a rain cape to match the concept’s shoulder garment and the warm Honey coat."
+        },
+        {
+          "id": "before",
+          "title": "Previous revision",
+          "image": "evidence/previous-portrait.png",
+          "caption": "The previous accepted implementation. Different camera and clothing settings; this is a visual history, not a pixel-difference test."
+        },
+        {
+          "id": "reference-bare",
+          "title": "Supplied shape and coat target",
+          "image": "evidence/supplied-unclothed-concept.png",
+          "caption": "Page 9 clarifies the jaw, legs, eye treatment and coat direction without the outfit."
+        },
+        {
+          "id": "bare",
+          "title": "Actual revised body",
+          "image": "evidence/bare.png",
+          "caption": "Actual bare model with distinct legs, inset eyes, shaped jaw and bounded short-fibre geometry. Surface detail and portable geometry remain editable data."
+        }
+      ]
+    },
+    {
+      "id": "editor",
+      "title": "The dedicated editor",
+      "intent": "Keep the real exported model at the center of the UI, with usable desktop and mobile controls.",
+      "cards": [
+        {
+          "id": "desktop",
+          "title": "Desktop editor",
+          "image": "evidence/after-editor-desktop.png",
+          "source": "ui-evidence.json",
+          "caption": "The actual running editor with the new companion, warmer light and repeatable three-quarter camera."
+        },
+        {
+          "id": "mobile",
+          "title": "Mobile editor",
+          "image": "evidence/after-editor-mobile.png",
+          "caption": "The same editor and recipe at 390 px; no separate illustration or mobile-only model."
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "title": "Inspect the silhouette and attachments",
+      "intent": "Neutral views and explicit animation phases expose defects a hero frame can conceal.",
+      "cards": [
+        {
+          "id": "studio-review",
+          "title": "Studio · repeatable multiview review",
+          "source": "evidence/review/manifest.json",
+          "caption": "Front, three-quarter, side, back, portrait and world lighting. The retained plan also captures walking and working at explicit times, so agents can repeat the same pose."
+        },
+        {
+          "id": "forge",
+          "title": "Forge · the same exported companion",
+          "source": "evidence/forge-review/review.json",
+          "caption": "Authored meshes, UVs and versioned textures preserved through the Forge import. See the export receipt for GLB validation; renderer lighting differs."
+        },
+        {
+          "id": "native",
+          "title": "Actual native Godot capture",
+          "image": "evidence/pip-artboard-godot.png",
+          "source": "evidence/pip-artboard-godot.receipt.json",
+          "caption": "The final visual rendered through the actual native asset factory with baked versioned textures. The receipt binds the visual, image, factory and capture script."
+        }
+      ]
+    },
+    {
+      "id": "workflow",
+      "title": "Author, compare and maintain with agents",
+      "intent": "Discover capabilities; perform guarded changes; retain exact source and camera inputs; compare actual captures.",
+      "cards": [
+        {
+          "id": "handoff",
+          "title": "Three executable maintenance workflow",
+          "source": "handoff-receipt.json",
+          "caption": "Executed public-CLI lifecycle with exact binary hashes, guarded dry runs, eight textured GLBs, native rig and gameplay preservation, and engine re-export."
+        },
+        {
+          "id": "refinement",
+          "title": "Maintain the dressed character",
+          "source": "evidence/cape-refinement.receipt.json",
+          "caption": "The actual cap/cape/satchel/boots character refined in Forge and reattached to the engine. Exact unchanged mesh buffers are reused, all variants and gameplay remain intact, and the existing geometry budget stays enforced."
+        },
+        {
+          "id": "installed",
+          "title": "Engine · installed character facts",
+          "source": "evidence/pip-artboard-engine-summary.json",
+          "caption": "Actual read-only inspection of the installed engine character: project fingerprint, variant materials, surface versions, mesh counts and UV coverage."
+        },
+        {
+          "id": "profiles",
+          "title": "Forge silhouette profiles",
+          "source": "evidence/profile-workflow.json",
+          "caption": "Executed bounded organic-profile authoring through the CLI. Stations control width, depth and offset along the height; the mesh remains portable through native assets and GLB."
+        },
+        {
+          "id": "limits",
+          "title": "Remaining visual differences",
+          "caption": "The result is a portable stylized 3D companion. Short geometric fibres and texture maps are not a strand-hair simulation; eyes and gaze remain simpler, the cape is more rigid, and materials, lighting and scenery still differ from the illustration. Native and browser renderers are not pixel-identical. Judge fidelity from these real frames rather than passing contract tests."
+        }
+      ]
+    }
+  ]
+}

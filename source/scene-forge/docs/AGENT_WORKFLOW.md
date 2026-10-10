@@ -181,3 +181,124 @@ Review manifests include tool/Three.js/Node/Chromium versions, OS/architecture a
 `mesh` geometries accept optional `normals: [[x,y,z], ...]` and `uvs: [[u,v], ...]`, each with one entry per position. Values can use the same bounded scalar expressions as positions. Normals must be nonzero and are normalized by the compiler; absent normals are generated. Duplicate vertices at hard normal edges or UV seams. UVs are preserved as `TEXCOORD_0` in glTF, but image textures and automatic unwrapping are not implemented. Boolean output currently discards UVs.
 
 All JSON input paths enforce a 16 MiB byte limit. Split large content into reusable model files. Inputs use UTF-8 and decode after collecting chunks, so multibyte characters survive stream boundaries.
+
+## Soft materials and portrait review
+
+`schema --kind material --raw` describes optional `sheen`, `sheenColor`,
+`sheenRoughness`, `clearcoat` and `clearcoatRoughness`. Use `putMaterial` in a
+guarded batch; amounts and roughness are 0–1, colors are `#RRGGBB`. Preserve the
+complete material definition when replacing it. These light-responsive fields
+apply to standard PBR shading and survive Littlewild and GLB/glTF exchange.
+GLB uses the Khronos sheen and clearcoat material extensions. Unlit ignores them.
+
+For a warm studio review, use `setEnvironment` with `presentation: "portrait"`,
+`background: "#eee7d8"`, `ambient: 1.1` and `keyIntensity: 3.2`. The optional
+presentation defaults to existing inspection lighting when omitted; explicit
+`"inspection"` restores that rig. This is a recipe-owned preview setting, included
+in scene pack/unpack and review source identity. The shadow floor and lights
+never enter exported geometry. The viewer's **Use portrait studio** command
+produces the same guarded environment operation as CLI batches.
+
+## Plush forms and portable surface detail
+
+Use `catalog` → `organicForms` and `surfaceDetails` for machine-readable parameter
+ranges and complete `putGeometry` / `putMaterial` examples. Both operations use the
+normal guarded `apply` transaction; inspect the source and preserve fields before
+replacing a definition. Dry-run the complete geometry/material/node batch, then
+apply it with the same revision and state guards. A stale guard or invalid surface
+rejects the whole transaction. Review using the previous `replay-plan.json` to
+compare the same cameras.
+
+`organic` is a closed smooth form with `size: [x,y,z]` in meters, `roundness`
+(0.65–1.5, default 1), `taper` (−0.65–0.65, default 0), `bend` (−0.75–0.75,
+default 0), and `segments` (12–96, default 32). Roundness below 1 makes a fuller
+shape; positive taper narrows the top, and positive bend offsets both ends along
+X. Size is the untapered diameter; taper/bend can extend the bounds. Inspect actual
+bounds instead of assuming they equal size. UV seams share smooth normals.
+The default form uses 561 vertices; the maximum uses 4,753 and remains within the
+Littlewild per-mesh budget. Large assemblies can exceed its aggregate budget;
+export reports an actionable error instead of silently simplifying them.
+
+An optional `profile` gives agents editable crosssections for a belly, waist,
+cheek, ear or closed garment form. Supply 2–12 stations ordered from `at: -1`
+(bottom) to `at: 1` (top), separated by at least 0.02. Each station has `width`
+and `depth` multipliers (0.1–2) and optional `offset: [x,z]` (−0.75–0.75,
+default `[0,0]`). Offsets use half the corresponding size; the profile composes
+with taper and bend. Smoothstep interpolation never overshoots these values,
+and each station gets an exact mesh ring. Width/depth multiply the closed
+base shape, so the endpoints remain poles. Profiles use at most 5,723 vertices.
+This is a closed sculpted form, not an open cloth sheet or a boolean eye socket.
+
+```json
+{
+  "type": "organic",
+  "size": [1, 2, 1],
+  "profile": [
+    { "at": -1, "width": 1, "depth": 1 },
+    { "at": -0.35, "width": 1.12, "depth": 1.15, "offset": [0, 0.12] },
+    { "at": 0.35, "width": 0.75, "depth": 0.8 },
+    { "at": 1, "width": 0.65, "depth": 0.7, "offset": [0.1, -0.08] }
+  ]
+}
+```
+
+Use a complete `putGeometry` to update the existing geometry ID while retaining
+its nodes, rig tags and material roles. `putGeometry` replaces the full definition:
+start from `inspect --source`, preserve other fields, dry-run with revision/state
+guards, inspect bounds, then compare a fixed `review --file` across edits.
+Littlewild/GLB preserve the resulting silhouette and UVs as baked geometry;
+retain the Forge recipe to edit profile stations again.
+
+A material can include all four `surface` fields:
+
+```json
+{
+  "color": "#c89059",
+  "roughness": 0.9,
+  "sheen": 0.65,
+  "surface": { "kind": "fur", "seed": 7, "scale": 3, "strength": 0.4 }
+}
+```
+
+Kinds are `fur`, `cloth`, and `leather`; seed is an integer 0–65535, scale is repeat
+1–16, strength is 0–1. This requires standard PBR shading. Optional `version: 2` uses fine directional fibres, woven yarn and subtle leather
+grain. Omitted version or `version: 1` retains the original bytes exactly.
+The `littlewild-surface-v1` / `littlewild-surface-v2` algorithms create deterministic 128×128 color and normal
+maps with no external image files, executable shader code, browser or network.
+It adds short surface detail, not strand fur or silhouette volume. Use geometry
+for cheek tufts, ears and clothing thickness. The offline material inspector
+edits the same recipe and exports the same guarded batch.
+
+Littlewild import/export retains each effective material's surface recipe and
+baked mesh UVs. Equal material roles remain distinct so later palette editing
+stays intentional. GLB/glTF embeds the generated PNGs, explicit mesh tangents,
+UV repeat transforms and the surface recipe in material extras. OBJ/STL still
+omit materials. Legacy meshes without UVs receive a local spherical projection;
+author seam-aware `uvs` for precise placement. The engine and Forge implementations
+are checked against the same generated bytes for all kinds and boundary values.
+
+Surface maps are shared across colors with the same version/kind/seed/scale/strength. A
+scene allows at most 256 distinct surface recipes; exceeding it fails with
+`SCENE_BUDGET` before publication. Reuse seeds and scales when changing only color.
+
+Littlewild import returns `variantModels`, a map from original variant names to
+actual model IDs, alongside the retained `variants` array. Select
+`variantModels["world-round"]` for a creature world model instead of guessing
+capitalization, separators or truncation. The dry-run mapping matches apply.
+
+### Maintaining shared Littlewild meshes
+
+A material-only refinement preserves the exact authored mesh buffers, including
+positions, normals, UVs and indices. Export reuses equal buffers across retained
+variants and removes unreferenced mesh resources. Equality includes all buffers:
+small shape changes or different UV placement remain distinct. Mesh names are
+collision-safe; an existing ID never silently replaces a different retained mesh.
+Keep the original definition wrapper when replacing one variant so gameplay,
+rig bindings and other variants remain available.
+
+The complete exported visual is checked against the engine's **400,000 JSON
+values and depth 32** limits, in addition to per-mesh and total vertex budgets.
+This counts every JSON value, not only mesh numbers. An over-budget export fails
+with `LITTLEWILD_BUDGET` before writing; reduce segments, reuse geometry or remove
+unneeded variants. Dry-run and then export the same source. Repeated material
+refinements do not accumulate copies of unchanged authored mesh data.

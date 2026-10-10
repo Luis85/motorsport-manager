@@ -1,30 +1,71 @@
 /* Generic primitive-scene renderer for declarative Littlewild assets. */
 (function(root){'use strict';
  const A=root.LWAssets;
+ const surfaceCache=new WeakMap();
+ function surfaceMaps(T,surface){
+  const S=root.LWAssetSurface;if(!S)throw Error('Portable surface generator is unavailable');
+  let cache=surfaceCache.get(T);if(!cache){cache=new Map();surfaceCache.set(T,cache);}
+  const key=S.key(surface);let entry=cache.get(key);
+  if(!entry){
+   if(cache.size>=256)throw Error('Renderer exceeds 256 active portable surfaces');
+   const pixels=S.generate(surface),make=(data,color)=>{const t=new T.DataTexture(data,pixels.width,pixels.height,T.RGBAFormat);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(surface.scale,surface.scale);t.magFilter=T.LinearFilter;t.minFilter=T.LinearMipmapLinearFilter;t.generateMipmaps=true;if(color)t.colorSpace=T.SRGBColorSpace;t.needsUpdate=true;return t;};
+   entry={map:make(pixels.color,true),normalMap:make(pixels.normal,false),users:0};cache.set(key,entry);
+  }
+  entry.users++;return{map:entry.map,normalMap:entry.normalMap,release(){if(--entry.users===0){cache.delete(key);entry.map.dispose();entry.normalMap.dispose();}}};
+ }
  function material(asset,key,overrides){
-  const chosen=overrides?.[key]??asset.materials[key]??key;
+  const base=asset.materials[key]??key,override=overrides?.[key];
+  // Appearance palettes change colour without discarding the authored surface.
+  const chosen=override===undefined?base:typeof override==='string'&&typeof base==='object'?{...base,color:override}:override;
   if(typeof chosen==='string')return{color:chosen,extra:{}};
   return{color:chosen.color,extra:Object.fromEntries(Object.entries(chosen).filter(([k])=>k!=='color'))};
+ }
+ const physicalKeys=['sheen','sheenRoughness','sheenColor','clearcoat','clearcoatRoughness'];
+ function createMaterial(T,color,extra={},defaults={roughness:.98,flatShading:true}){
+  const options={color,...defaults,...extra},physical=physicalKeys.some(key=>options[key]!==undefined);
+  const Material=physical?T.MeshPhysicalMaterial:T.MeshStandardMaterial;
+  if(!Material)throw Error('This Three renderer does not support authored physical materials');
+  const surface=options.surface;delete options.surface;const maps=surface?surfaceMaps(T,surface):null;
+  let material;try{material=new Material({...options,...(maps?{map:maps.map,normalMap:maps.normalMap}: {})});}catch(error){maps?.release();throw error;}
+  if(maps){let released=false;material.addEventListener('dispose',()=>{if(!released){released=true;maps.release();}});material.userData.surface={...surface};material.userData.surfaceAlgorithm=root.LWAssetSurface.algorithm(surface);}
+  return material;
  }
  /* Data names a portable doubleSided flag; Three expects its side constant. */
  function materialProps(kit,extra){
   if(extra.doubleSided===undefined)return extra;
   const {doubleSided,...rest}=extra;return doubleSided&&kit.T?{...rest,side:kit.T.DoubleSide}:rest;
  }
- /* Baked meshes are cached per catalog definition object and Three namespace; definitions are immutable. */
+ /* Baked meshes are cached per renderer kit and catalog definition object; definitions are immutable. */
  const meshCache=new WeakMap();
  function meshGeometry(kit,source,asset,id){
   if(!kit.T||!kit.mat)throw Error('This renderer kit cannot draw baked mesh primitives');
-  let byKit=meshCache.get(kit.T);if(!byKit){byKit=new WeakMap();meshCache.set(kit.T,byKit);}
-  let bySource=byKit.get(source);if(!bySource){bySource=new Map();byKit.set(source,bySource);}
+  let cache=meshCache.get(kit);if(!cache){cache={sources:new WeakMap(),geometries:new Set()};meshCache.set(kit,cache);}
+  let bySource=cache.sources.get(source);if(!bySource){bySource=new Map();cache.sources.set(source,bySource);}
   if(!bySource.has(id)){
    const data=asset.meshes[id],g=new kit.T.BufferGeometry();
    g.setAttribute('position',new kit.T.Float32BufferAttribute(data.positions,3));
+   if(data.uvs||root.LWAssetSurface)g.setAttribute('uv',new kit.T.Float32BufferAttribute(data.uvs||root.LWAssetSurface.sphereUVs(data.positions),2));
    if(data.indices)g.setIndex(data.indices);
    if(data.normals)g.setAttribute('normal',new kit.T.Float32BufferAttribute(data.normals,3));else g.computeVertexNormals();
-   g.computeBoundingSphere();bySource.set(id,g);
+   if(g.computeTangents&&g.getAttribute('uv')){
+    if(!g.index)g.setIndex(Array.from({length:data.positions.length/3},(_,index)=>index));
+    g.computeTangents();const tangents=g.getAttribute('tangent'),normals=g.getAttribute('normal');
+    // UV poles can leave unused/degenerate tangent vertices. Retain a finite orthogonal basis.
+    for(let index=0;index<tangents.count;index++)if(Math.hypot(tangents.getX(index),tangents.getY(index),tangents.getZ(index))<.5){
+     const nx=normals.getX(index),ny=normals.getY(index),nz=normals.getZ(index),axis=Math.abs(ny)<.9;
+     const tx=axis?nz:0,ty=axis?0:-nz,tz=axis?-nx:ny,length=Math.hypot(tx,ty,tz);
+     tangents.setXYZW(index,length?tx/length:1,length?ty/length:0,length?tz/length:0,1);
+    }
+   }
+   g.computeBoundingSphere();bySource.set(id,g);cache.geometries.add(g);
   }
   return bySource.get(id);
+ }
+ // Kits own their GPU resources. Releasing one view must never invalidate another view.
+ function disposeKit(kit,release=geometry=>geometry.dispose()){
+  const cache=meshCache.get(kit);if(!cache)return;meshCache.delete(kit);const errors=[];
+  for(const geometry of cache.geometries)try{release(geometry);}catch(error){errors.push(error);}
+  if(errors.length)throw new AggregateError(errors,'Baked geometry release failed');
  }
  function makeNode(kit,parent,asset,node,options,handles){
   let o;
@@ -50,9 +91,25 @@
   const asset=A.get(category,id);if(!asset)throw Error('Missing 3D asset '+category+':'+id);
   return createFromDefinition(kit,parent,asset,modelName,options);
  }
+ // Admission happens before attaching a root or asking the kit to allocate any GPU resource.
+ function admitSurfaces(kit,asset,model,options){
+  const recipes=new Set(surfaceCache.get(kit.T)?.keys()||[]);
+  function visit(nodes){for(const node of nodes){
+   if(node.primitive!=='group'){
+    const chosen=material(asset,node.material,options.materials),surface=node.materialProps?.surface??chosen.extra.surface;
+    if(surface){
+     const S=root.LWAssetSurface;if(!S)throw Error('Portable surface generator is unavailable');
+     recipes.add(S.key(surface));if(recipes.size>256)throw Error('Renderer exceeds 256 active portable surfaces');
+    }
+   }
+   visit(node.children||[]);
+  }}
+  visit(model.nodes);
+ }
  function createFromDefinition(kit,parent,input,modelName='world',options={}){
   const asset=A.validate(input),category=asset.category,id=asset.id;options={...options,source:options.source||input};
   const model=asset.models[modelName];if(!model)throw Error('Missing 3D model '+category+':'+id+'/'+modelName);
+  admitSurfaces(kit,asset,model,options);
   const rootGroup=kit.group(parent),handles=new Map(),p=options.position||[0,0,0],r=options.rotation||[0,0,0],s=options.scale||[1,1,1];
   rootGroup.position.set(p[0],p[1],p[2]);rootGroup.rotation.set(r[0],r[1],r[2]);rootGroup.scale.set(s[0],s[1],s[2]);rootGroup.userData.asset=category+':'+id;rootGroup.userData.radius=asset.metadata?.radius||1;
   for(const n of model.nodes)makeNode(kit,rootGroup,asset,n,options,handles);
@@ -70,6 +127,6 @@
  }
  function createItem(kit,parent,id,model='carry',options={}){return create(kit,parent,'item',id,model,options);}
  function createActor(kit,parent,id,model='world',options={}){if(!id)throw Error('Actor asset ID is required');return create(kit,parent,'actor',id,model,options);}
- root.LWAssetRenderer=Object.freeze({create,createFromDefinition,createBuilding,createItem,createActor});
+ root.LWAssetRenderer=Object.freeze({createMaterial,disposeKit,create,createFromDefinition,createBuilding,createItem,createActor});
  if(typeof module!=='undefined'&&module.exports)module.exports=root.LWAssetRenderer;
 })(typeof globalThis!=='undefined'?globalThis:this);

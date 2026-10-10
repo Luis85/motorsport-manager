@@ -1,7 +1,6 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { pathToFileURL } from 'node:url';
 import type { Browser, Page } from 'playwright';
 import { fail, errorMessage, ForgeError } from '../domain/errors.js';
 import { loadPlaywright } from './playwright.js';
@@ -47,8 +46,6 @@ export async function withCaptureSession<T>(
   let browser: CaptureBrowser | undefined;
   let failed = false;
   try {
-    const file = path.join(temp, 'scene.html');
-    await fs.writeFile(file, html);
     try {
       browser = await ports.launch();
     } catch (error) {
@@ -70,7 +67,13 @@ export async function withCaptureSession<T>(
       if (error || pageErrors.length)
         fail('RENDER_FAILED', 'Scene preview failed to render.', { error, pageErrors });
     };
-    await page.goto(pathToFileURL(file).href + (options.ui ? '' : '?capture=1'));
+    // The viewer embeds every asset. Loading its HTML directly avoids OS file-URL
+    // policies and needs neither an HTTP listener nor a network connection.
+    await page.setContent(html, { waitUntil: 'load' });
+    await page.evaluate(
+      (capture) => document.body.classList.toggle('capture', capture),
+      !options.ui,
+    );
     await page.waitForFunction(
       () => window.forgeReady || window.forgeError,
       {},

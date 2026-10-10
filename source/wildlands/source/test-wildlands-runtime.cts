@@ -82,6 +82,28 @@ async function main():Promise<void>{
   await call(runtime,'session.openStory',{story});assert.deepEqual(await call(runtime,'story'),story);
   await call(runtime,'step',{count:13});assert.deepEqual(await call(runtime,'story'),expected);
  }));
+ await test('Opaque story export preserves authored floating point values and strict fingerprint admission',async()=>{
+  const pack=projects.create().pack;
+  pack.resources??=(require('./scenario-resources.js') as {snapshot():LWContentPorts.Resources}).snapshot();
+  const asset=object(pack.resources.assets[0]),models=object(asset.models);
+  const node=object((object(Object.values(models)[0]).nodes as unknown[])[0]);
+  node.position=[1.3175000000000001,0,0];
+  for(const scene of pack.scenes)if(scene.initialState.scenarioResources)scene.initialState.scenarioResources=structuredClone(pack.resources);
+  await using(async runtime=>{
+   const before=await call(runtime,'story'),text=await call(runtime,'story.export');
+   assert.equal(typeof text,'string');assert.equal(text,JSON.stringify(before));
+   assert((text as string).includes('1.3175000000000001'));
+   const transported=JSON.parse(JSON.stringify({result:text})).result as string;
+   await call(runtime,'session.openStory',{story:transported});
+   assert.equal(await call(runtime,'story.export'),text);
+   const corrupted=transported.replaceAll('1.3175000000000001','1.3175');
+   const rejected=await runtime.execute({id:99,method:'session.openStory',params:{story:corrupted}});
+   assert.equal(rejected.ok,false);assert.match(rejected.error!.message,/fingerprint does not match/i);
+   assert.equal(await call(runtime,'story.export'),text);
+   const discovery=object(await call(runtime,'discover'));
+   assert((discovery.operations as Record<string,unknown>[]).some(op=>op.method==='story.export'&&op.clock==='none'&&typeof op.result==='string'));
+  },{pack});
+ });
  await test('Scenario switching uses canonical built-in ownership and rejects stale reflection',()=>using(async runtime=>{
   const view=object(await call(runtime,'session.create',{scenarioId:'office'}));assert.equal(object(view.snapshot).scenarioId,'office');
   for(const params of [{name:'dispose'},{name:'step',args:[1]},{name:'__proto__'},{name:'terrain',args:[1]}])assert.equal((await runtime.execute({id:1,method:'query',params})).ok,false);
@@ -143,12 +165,13 @@ async function main():Promise<void>{
   const runtime=new WildlandsRuntime({project});runtime.dispose();
  });
  await test('JSON-lines process correlates UTF8 requests, recovers malformed lines and closes cleanly',()=>{
-  const input=['{invalid',JSON.stringify({id:'déjà-vu',method:'query',params:{name:'settings'}}),JSON.stringify({id:2,method:'tools.call',params:{facet:'engineExport',method:'validate',args:[{}]}}),JSON.stringify({id:3,method:'shutdown'})].join('\n')+'\n';
+  const input=['{invalid',JSON.stringify({id:'déjà-vu',method:'query',params:{name:'settings'}}),JSON.stringify({id:2,method:'tools.call',params:{facet:'engineExport',method:'validate',args:[{}]}}),JSON.stringify({id:4,method:'story.export'}),JSON.stringify({id:3,method:'shutdown'})].join('\n')+'\n';
   const child=spawnSync(process.execPath,[path.join(__dirname,'tools','wildlands-runtime.cjs'),'--stdio'],{input,encoding:'utf8',timeout:30000,maxBuffer:8*1024*1024});
   assert.ifError(child.error);assert.equal(child.status,0,child.stderr);assert.equal(child.stderr,'');
   const replies=child.stdout.trim().split('\n').map(line=>JSON.parse(line) as RuntimeResponse);
-  assert.equal(replies.length,4);assert.equal(replies[0]!.ok,false);assert.equal(replies[1]!.id,'déjà-vu');assert.equal(replies[1]!.ok,true);
-  assert.equal(object(replies[2]!.result).ok,false);assert.equal(replies[3]!.id,3);
+  assert.equal(replies.length,5);assert.equal(replies[0]!.ok,false);assert.equal(replies[1]!.id,'déjà-vu');assert.equal(replies[1]!.ok,true);
+  assert.equal(object(replies[2]!.result).ok,false);assert.equal(replies[3]!.id,4);assert.equal(typeof replies[3]!.result,'string');
+  assert.equal(JSON.parse(replies[3]!.result as string).version,10);assert.equal(replies[4]!.id,3);
  });
  await test('Oversized line is drained with bounded memory and next request still succeeds',()=>{
   const child=spawnSync(process.execPath,[path.join(__dirname,'tools','wildlands-runtime.cjs')],{input:'x'.repeat(MAX_REQUEST_BYTES+1)+'\n'+JSON.stringify({id:4,method:'shutdown'})+'\n',encoding:'utf8',timeout:30000,maxBuffer:1024*1024});

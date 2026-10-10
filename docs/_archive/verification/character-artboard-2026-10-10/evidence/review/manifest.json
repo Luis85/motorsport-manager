@@ -1,0 +1,183 @@
+{
+  "format": "character-studio-review",
+  "schemaVersion": 1,
+  "characterId": "pip-artboard",
+  "recipeHash": "7db46c9d907c878e082dcaf603e6f2c13f2d844ec680bdf9c95dd3e9e1dd8c31",
+  "visualHash": "8bb18a92d6a38c73cb3aee7c7eb6c19042090799d08197d6716960d98c2c6af0",
+  "compilerRevision": 4,
+  "renderer": "wildlands-three",
+  "paused": true,
+  "plan": "replay-plan.json",
+  "contactSheet": {
+    "file": "contact-sheet.png",
+    "sha256": "258a2c6d310934490d7bd1b4c50254d81f88d77c1feec08a1d900606dc1078d4"
+  },
+  "frames": [
+    {
+      "id": "front",
+      "file": "frames/front.png",
+      "sha256": "6bdcfbd54fb0a9446a82e8314b1e368f532ebb1dec12f76b0e97ebe39b1cfd5f",
+      "bytes": 277690,
+      "preview": {
+        "mode": "studio",
+        "light": "studio",
+        "pose": "idle",
+        "camera": "front",
+        "yaw": 0,
+        "elevation": 0.08,
+        "zoom": 1,
+        "time": 0,
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "three-quarter",
+      "file": "frames/three-quarter.png",
+      "sha256": "82039f907d4274b72dcd79606617b8ade19916345c46b0d8fd15e0f41e3f9ebb",
+      "bytes": 284882,
+      "preview": {
+        "mode": "studio",
+        "light": "studio",
+        "pose": "idle",
+        "camera": "three-quarter",
+        "yaw": 0.4,
+        "elevation": 0.08,
+        "zoom": 1,
+        "time": 0,
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "side",
+      "file": "frames/side.png",
+      "sha256": "5652153f990475b64aeeef5eaaf1857a8ce0ef66fcd12da1303e2e92e44d33c4",
+      "bytes": 211450,
+      "preview": {
+        "mode": "studio",
+        "light": "studio",
+        "pose": "idle",
+        "camera": "side",
+        "yaw": 1.5707963267948966,
+        "elevation": 0.08,
+        "zoom": 1,
+        "time": 0,
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "back",
+      "file": "frames/back.png",
+      "sha256": "81852f267a855f42ef5d0649d632945de9cd89af4e71cbd21546f91ce2f24ca7",
+      "bytes": 226939,
+      "preview": {
+        "mode": "studio",
+        "light": "studio",
+        "pose": "idle",
+        "camera": "back",
+        "yaw": 3.141592653589793,
+        "elevation": 0.08,
+        "zoom": 1,
+        "time": 0,
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "portrait",
+      "file": "frames/portrait.png",
+      "sha256": "9c6d9c906441f0bbd59a5736452e1878047ed924c282f7e81f4b0841e80c11e1",
+      "bytes": 389283,
+      "preview": {
+        "mode": "portrait",
+        "light": "studio",
+        "pose": "idle",
+        "camera": "three-quarter",
+        "yaw": 0.4,
+        "elevation": 0.08,
+        "zoom": 1,
+        "time": 0,
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "world",
+      "file": "frames/world.png",
+      "sha256": "0d065bc0fc2a9d20bd5bce2c460e9f0378864a4d599f33060413a916b9de36b8",
+      "bytes": 340406,
+      "preview": {
+        "mode": "world",
+        "light": "daylight",
+        "pose": "idle",
+        "camera": "three-quarter",
+        "yaw": 0.4,
+        "elevation": 0.08,
+        "zoom": 1,
+        "time": 0,
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "night",
+      "file": "frames/night.png",
+      "sha256": "e53c9ba2656e1afbee959d84a4267f2ddc642c2d02958d0029cb4b132e843d5a",
+      "bytes": 321825,
+      "preview": {
+        "mode": "world",
+        "light": "night",
+        "pose": "idle",
+        "camera": "three-quarter",
+        "yaw": 0.4,
+        "elevation": 0.08,
+        "zoom": 1,
+        "time": 0,
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "walk",
+      "file": "frames/walk.png",
+      "sha256": "f480933072a1f6215ed85b2d050a842980bb2c483ef6eedf88e41aa61d8b46f9",
+      "bytes": 284381,
+      "preview": {
+        "mode": "studio",
+        "light": "studio",
+        "pose": "walk",
+        "camera": "three-quarter",
+        "yaw": 0.4,
+        "elevation": 0.08,
+        "zoom": 1,
+        "time": 0.35,
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "work",
+      "file": "frames/work.png",
+      "sha256": "f49fcdb9d919105e46b507e2563622c6430067ace57c4537d07dc52955138619",
+      "bytes": 211033,
+      "preview": {
+        "mode": "studio",
+        "light": "studio",
+        "pose": "work",
+        "camera": "side",
+        "yaw": 1.5707963267948966,
+        "elevation": 0.08,
+        "zoom": 1,
+        "time": 0.35,
+        "width": 768,
+        "height": 768
+      }
+    }
+  ],
+  "limits": [
+    "Presentation stage is not gameplay state.",
+    "Compare using the same replay plan, tool build and browser for reproducible visual review."
+  ]
+}

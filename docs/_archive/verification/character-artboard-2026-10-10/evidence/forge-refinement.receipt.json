@@ -1,0 +1,552 @@
+{
+  "executableSha256": "9f8586747129b4ed502be80fccc4a566e2c9aff4759e27681ae0dd0caa051ee6",
+  "sourceSha256": "0801872f414423f847a883b4781e7db21d67f4bf54821e89cf1269d3d2096d7f",
+  "definition": "/workspace/work/artboard-pass2-final/forge-refinement/assets/creatures/pip-artboard/definition.json",
+  "definitionSha256": "e4aac9a5233110c3597bd42f97ea099429a573829d49c7dbf77a4c1fb949bac5",
+  "originalValues": 295052,
+  "refinedValues": 292024,
+  "originalMeshes": 48,
+  "refinedMeshes": 47,
+  "preserved": [
+    "creature",
+    "rig"
+  ],
+  "steps": [
+    {
+      "command": [
+        "scene-forge",
+        "init",
+        "/workspace/work/artboard-pass2-final/forge-refinement/project",
+        "--name",
+        "Exact shared mesh refinement"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "11cbdd470c9e0550c1ff186e08682fbc6360f890c3470dce397c45826dbba391",
+      "stdoutBytes": 326,
+      "result": {
+        "project": "/workspace/work/artboard-pass2-final/forge-refinement/project",
+        "manifest": {
+          "schemaVersion": 1,
+          "name": "Exact shared mesh refinement",
+          "activeScene": "main",
+          "scenes": {
+            "main": "scenes/main.scene.json"
+          },
+          "models": {}
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-refinement/project",
+        "inspect"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "200b16f676fb8967f8126d4a766dba62661215f92212879646422267ef32ad24",
+      "stdoutBytes": 657,
+      "result": {
+        "project": "Exact shared mesh refinement",
+        "scene": "main",
+        "revision": 0,
+        "stateHash": "bdcf1ce3a710d52cb37010113647a4e60f36b3b165abbe6a08cd1e2d80ac7db1",
+        "stats": {
+          "nodes": 0,
+          "meshes": 0,
+          "triangles": 0,
+          "materials": 0,
+          "geometries": 0,
+          "bounds": {
+            "min": [
+              0,
+              0,
+              0
+            ],
+            "max": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              0,
+              0,
+              0
+            ]
+          },
+          "warnings": [
+            "Scene has no meshes. Add mesh or model nodes before exporting."
+          ]
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-refinement/project",
+        "littlewild",
+        "import",
+        "--definition",
+        "/workspace/work/artboard-pass2-final/evidence/pip-artboard.package.json",
+        "--expected-revision",
+        "0",
+        "--expected-state",
+        "bdcf1ce3a710d52cb37010113647a4e60f36b3b165abbe6a08cd1e2d80ac7db1"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "9b98a643f681f72b4b8a88fbbe8ba38fa4652809d241260ef6ce570f9d546afc",
+      "stdoutBytes": 1052,
+      "result": {
+        "id": "pipArtboardWorld",
+        "path": "models/pipArtboardWorld.model.json",
+        "parameters": {},
+        "models": [
+          "pipArtboardWorld",
+          "pipArtboardWorldRound",
+          "pipArtboardWorldLong",
+          "pipArtboardWorldPointed"
+        ],
+        "stateHash": "1397b29f73ed74f52155ff949ea572f61cb03d7f4cbf2be749928edb01896f8f",
+        "source": "/workspace/work/artboard-pass2-final/evidence/pip-artboard.package.json",
+        "sourceFormat": "littlewild-creature-package",
+        "importedFacet": "visual",
+        "variants": [
+          "pipArtboardWorld",
+          "pipArtboardWorldRound",
+          "pipArtboardWorldLong",
+          "pipArtboardWorldPointed"
+        ],
+        "variantModels": {
+          "world": "pipArtboardWorld",
+          "world-round": "pipArtboardWorldRound",
+          "world-long": "pipArtboardWorldLong",
+          "world-pointed": "pipArtboardWorldPointed"
+        },
+        "warnings": [
+          "Only appearance models are imported. Gameplay, companion state, behavior mappings and rig bindings remain in the source creature package."
+        ]
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-refinement/project",
+        "model",
+        "export",
+        "pipArtboardWorldRound",
+        "--out",
+        "/workspace/work/artboard-pass2-final/forge-refinement/refinement.model-bundle.json"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "5ef02262faaddbc375f027f8f6add0cffa16a95ba5051ae9160db123e819d22e",
+      "stdoutBytes": 222,
+      "result": {
+        "path": "/workspace/work/artboard-pass2-final/forge-refinement/refinement.model-bundle.json",
+        "entry": "pipArtboardWorldRound",
+        "models": [
+          "pipArtboardWorldRound"
+        ]
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-refinement/project",
+        "inspect"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "7f47aace2786adce8700ee47149792bb4af081bcef4081d38d7961e5b27de39b",
+      "stdoutBytes": 657,
+      "result": {
+        "project": "Exact shared mesh refinement",
+        "scene": "main",
+        "revision": 0,
+        "stateHash": "1397b29f73ed74f52155ff949ea572f61cb03d7f4cbf2be749928edb01896f8f",
+        "stats": {
+          "nodes": 0,
+          "meshes": 0,
+          "triangles": 0,
+          "materials": 0,
+          "geometries": 0,
+          "bounds": {
+            "min": [
+              0,
+              0,
+              0
+            ],
+            "max": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              0,
+              0,
+              0
+            ]
+          },
+          "warnings": [
+            "Scene has no meshes. Add mesh or model nodes before exporting."
+          ]
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-refinement/project",
+        "model",
+        "import",
+        "--file",
+        "/workspace/work/artboard-pass2-final/forge-refinement/refinement.model-bundle.json",
+        "--replace",
+        "--expected-revision",
+        "0",
+        "--expected-state",
+        "1397b29f73ed74f52155ff949ea572f61cb03d7f4cbf2be749928edb01896f8f",
+        "--dry-run"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "7541404e81878d63fa326d14406e9f1255981a18341719a2ac3691c1a800a2ee",
+      "stdoutBytes": 7764164,
+      "result": {
+        "id": "pipArtboardWorldRound",
+        "dryRun": true,
+        "models": [
+          "pipArtboardWorldRound"
+        ],
+        "omittedPayload": {
+          "field": "model",
+          "reason": "Full model retained in recipe/bundle inputs outside evidence",
+          "sha256": "eee6470f314ae7b62d6a64d35dcc94ea1200709dde1ea83ee3129394b5112c8d",
+          "bytes": 2036645
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-refinement/project",
+        "model",
+        "import",
+        "--file",
+        "/workspace/work/artboard-pass2-final/forge-refinement/refinement.model-bundle.json",
+        "--replace",
+        "--expected-revision",
+        "0",
+        "--expected-state",
+        "1397b29f73ed74f52155ff949ea572f61cb03d7f4cbf2be749928edb01896f8f"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "30c41cd2d3ee04ab9686588a3473cf48bebe5d0fc026ab453aa301d368f0bbbe",
+      "stdoutBytes": 283,
+      "result": {
+        "id": "pipArtboardWorldRound",
+        "path": "models/pipArtboardWorldRound.model.json",
+        "parameters": {},
+        "models": [
+          "pipArtboardWorldRound"
+        ],
+        "stateHash": "78ad3ad20103c9a627df2d6d584bd6766029cd15195fca16062562709276c12d"
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-refinement/project",
+        "littlewild",
+        "export",
+        "--model",
+        "pipArtboardWorldRound",
+        "--family",
+        "creatures",
+        "--variant",
+        "world-round",
+        "--out",
+        "/workspace/work/artboard-pass2-final/forge-refinement/assets/creatures/pip-artboard/definition.json",
+        "--dry-run"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "d5ef3e27e58144c0342f0768cfa7dfdce95b73eaa0c1cc608ebf7eb822c86255",
+      "stdoutBytes": 9394,
+      "result": {
+        "path": "/workspace/work/artboard-pass2-final/forge-refinement/assets/creatures/pip-artboard/definition.json",
+        "id": "pip-artboard",
+        "family": "creatures",
+        "changed": true,
+        "written": false,
+        "bytes": 2384920,
+        "variants": [
+          {
+            "variant": "world-round",
+            "model": "pipArtboardWorldRound",
+            "nodes": 120,
+            "meshes": 96,
+            "primitives": 1,
+            "vertices": 21984,
+            "triangles": 77984
+          }
+        ],
+        "warnings": [
+          "Retained variant world now uses the re-exported material shadow.",
+          "Retained variant world now uses the re-exported material fur.",
+          "Retained variant world now uses the re-exported material light.",
+          "Retained variant world now uses the re-exported material inner.",
+          "Retained variant world now uses the re-exported material eyeWhite.",
+          "Retained variant world now uses the re-exported material pupil.",
+          "Retained variant world now uses the re-exported material eyeDepth.",
+          "Retained variant world now uses the re-exported material catchlight.",
+          "Retained variant world now uses the re-exported material eyeRim.",
+          "Retained variant world now uses the re-exported material brow.",
+          "Retained variant world now uses the re-exported material blush-fur-0.",
+          "Retained variant world now uses the re-exported material blush-light-0.",
+          "Retained variant world now uses the re-exported material blush-fur-1.",
+          "Retained variant world now uses the re-exported material blush-light-1.",
+          "Retained variant world now uses the re-exported material blush-fur-2.",
+          "Retained variant world now uses the re-exported material blush-light-2.",
+          "Retained variant world now uses the re-exported material blush-light-3.",
+          "Retained variant world now uses the re-exported material nose.",
+          "Retained variant world now uses the re-exported material mouthDark.",
+          "Retained variant world now uses the re-exported material tongue.",
+          "Retained variant world now uses the re-exported material outfit-head-primary.",
+          "Retained variant world now uses the re-exported material outfit-head-dark.",
+          "Retained variant world now uses the re-exported material outfit-head-light.",
+          "Retained variant world now uses the re-exported material outfit-feet-primary.",
+          "Retained variant world now uses the re-exported material outfit-feet-dark.",
+          "Retained variant world now uses the re-exported material outfit-feet-light.",
+          "Retained variant world now uses the re-exported material outfit-feet-metal.",
+          "Retained variant world now uses the re-exported material outfit-body-primary.",
+          "Retained variant world now uses the re-exported material outfit-body-light.",
+          "Retained variant world now uses the re-exported material outfit-body-metal.",
+          "Retained variant world now uses the re-exported material outfit-body-dark.",
+          "Retained variant world now uses the re-exported material outfit-back-primary.",
+          "Retained variant world now uses the re-exported material outfit-back-dark.",
+          "Retained variant world now uses the re-exported material outfit-back-light.",
+          "Retained variant world now uses the re-exported material outfit-back-metal.",
+          "Retained variant world-long now uses the re-exported material shadow.",
+          "Retained variant world-long now uses the re-exported material fur.",
+          "Retained variant world-long now uses the re-exported material light.",
+          "Retained variant world-long now uses the re-exported material inner.",
+          "Retained variant world-long now uses the re-exported material eyeWhite.",
+          "Retained variant world-long now uses the re-exported material pupil.",
+          "Retained variant world-long now uses the re-exported material eyeDepth.",
+          "Retained variant world-long now uses the re-exported material catchlight.",
+          "Retained variant world-long now uses the re-exported material eyeRim.",
+          "Retained variant world-long now uses the re-exported material brow.",
+          "Retained variant world-long now uses the re-exported material blush-fur-0.",
+          "Retained variant world-long now uses the re-exported material blush-light-0.",
+          "Retained variant world-long now uses the re-exported material blush-fur-1.",
+          "Retained variant world-long now uses the re-exported material blush-light-1.",
+          "Retained variant world-long now uses the re-exported material blush-fur-2.",
+          "Retained variant world-long now uses the re-exported material blush-light-2.",
+          "Retained variant world-long now uses the re-exported material blush-light-3.",
+          "Retained variant world-long now uses the re-exported material nose.",
+          "Retained variant world-long now uses the re-exported material mouthDark.",
+          "Retained variant world-long now uses the re-exported material tongue.",
+          "Retained variant world-long now uses the re-exported material outfit-head-primary.",
+          "Retained variant world-long now uses the re-exported material outfit-head-dark.",
+          "Retained variant world-long now uses the re-exported material outfit-head-light.",
+          "Retained variant world-long now uses the re-exported material outfit-feet-primary.",
+          "Retained variant world-long now uses the re-exported material outfit-feet-dark.",
+          "Retained variant world-long now uses the re-exported material outfit-feet-light.",
+          "Retained variant world-long now uses the re-exported material outfit-feet-metal.",
+          "Retained variant world-long now uses the re-exported material outfit-body-primary.",
+          "Retained variant world-long now uses the re-exported material outfit-body-light.",
+          "Retained variant world-long now uses the re-exported material outfit-body-metal.",
+          "Retained variant world-long now uses the re-exported material outfit-body-dark.",
+          "Retained variant world-long now uses the re-exported material outfit-back-primary.",
+          "Retained variant world-long now uses the re-exported material outfit-back-dark.",
+          "Retained variant world-long now uses the re-exported material outfit-back-light.",
+          "Retained variant world-long now uses the re-exported material outfit-back-metal.",
+          "Retained variant world-pointed now uses the re-exported material shadow.",
+          "Retained variant world-pointed now uses the re-exported material fur.",
+          "Retained variant world-pointed now uses the re-exported material light.",
+          "Retained variant world-pointed now uses the re-exported material inner.",
+          "Retained variant world-pointed now uses the re-exported material eyeWhite.",
+          "Retained variant world-pointed now uses the re-exported material pupil.",
+          "Retained variant world-pointed now uses the re-exported material eyeDepth.",
+          "Retained variant world-pointed now uses the re-exported material catchlight.",
+          "Retained variant world-pointed now uses the re-exported material eyeRim.",
+          "Retained variant world-pointed now uses the re-exported material brow.",
+          "Retained variant world-pointed now uses the re-exported material blush-fur-0.",
+          "Retained variant world-pointed now uses the re-exported material blush-light-0.",
+          "Retained variant world-pointed now uses the re-exported material blush-fur-1.",
+          "Retained variant world-pointed now uses the re-exported material blush-light-1.",
+          "Retained variant world-pointed now uses the re-exported material blush-fur-2.",
+          "Retained variant world-pointed now uses the re-exported material blush-light-2.",
+          "Retained variant world-pointed now uses the re-exported material blush-light-3.",
+          "Retained variant world-pointed now uses the re-exported material nose.",
+          "Retained variant world-pointed now uses the re-exported material mouthDark.",
+          "Retained variant world-pointed now uses the re-exported material tongue.",
+          "Retained variant world-pointed now uses the re-exported material outfit-head-primary.",
+          "Retained variant world-pointed now uses the re-exported material outfit-head-dark.",
+          "Retained variant world-pointed now uses the re-exported material outfit-head-light.",
+          "Retained variant world-pointed now uses the re-exported material outfit-feet-primary.",
+          "Retained variant world-pointed now uses the re-exported material outfit-feet-dark.",
+          "Retained variant world-pointed now uses the re-exported material outfit-feet-light.",
+          "Retained variant world-pointed now uses the re-exported material outfit-feet-metal.",
+          "Retained variant world-pointed now uses the re-exported material outfit-body-primary.",
+          "Retained variant world-pointed now uses the re-exported material outfit-body-light.",
+          "Retained variant world-pointed now uses the re-exported material outfit-body-metal.",
+          "Retained variant world-pointed now uses the re-exported material outfit-body-dark.",
+          "Retained variant world-pointed now uses the re-exported material outfit-back-primary.",
+          "Retained variant world-pointed now uses the re-exported material outfit-back-dark.",
+          "Retained variant world-pointed now uses the re-exported material outfit-back-light.",
+          "Retained variant world-pointed now uses the re-exported material outfit-back-metal."
+        ]
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-refinement/project",
+        "littlewild",
+        "export",
+        "--model",
+        "pipArtboardWorldRound",
+        "--family",
+        "creatures",
+        "--variant",
+        "world-round",
+        "--out",
+        "/workspace/work/artboard-pass2-final/forge-refinement/assets/creatures/pip-artboard/definition.json"
+      ],
+      "exitCode": 0,
+      "stdoutSha256": "5694cc8cef685be0ed4c8065008b3801b4f9ca99870bfee279bb4fc9e04327d6",
+      "stdoutBytes": 9393,
+      "result": {
+        "path": "/workspace/work/artboard-pass2-final/forge-refinement/assets/creatures/pip-artboard/definition.json",
+        "id": "pip-artboard",
+        "family": "creatures",
+        "changed": true,
+        "written": true,
+        "bytes": 2384920,
+        "variants": [
+          {
+            "variant": "world-round",
+            "model": "pipArtboardWorldRound",
+            "nodes": 120,
+            "meshes": 96,
+            "primitives": 1,
+            "vertices": 21984,
+            "triangles": 77984
+          }
+        ],
+        "warnings": [
+          "Retained variant world now uses the re-exported material shadow.",
+          "Retained variant world now uses the re-exported material fur.",
+          "Retained variant world now uses the re-exported material light.",
+          "Retained variant world now uses the re-exported material inner.",
+          "Retained variant world now uses the re-exported material eyeWhite.",
+          "Retained variant world now uses the re-exported material pupil.",
+          "Retained variant world now uses the re-exported material eyeDepth.",
+          "Retained variant world now uses the re-exported material catchlight.",
+          "Retained variant world now uses the re-exported material eyeRim.",
+          "Retained variant world now uses the re-exported material brow.",
+          "Retained variant world now uses the re-exported material blush-fur-0.",
+          "Retained variant world now uses the re-exported material blush-light-0.",
+          "Retained variant world now uses the re-exported material blush-fur-1.",
+          "Retained variant world now uses the re-exported material blush-light-1.",
+          "Retained variant world now uses the re-exported material blush-fur-2.",
+          "Retained variant world now uses the re-exported material blush-light-2.",
+          "Retained variant world now uses the re-exported material blush-light-3.",
+          "Retained variant world now uses the re-exported material nose.",
+          "Retained variant world now uses the re-exported material mouthDark.",
+          "Retained variant world now uses the re-exported material tongue.",
+          "Retained variant world now uses the re-exported material outfit-head-primary.",
+          "Retained variant world now uses the re-exported material outfit-head-dark.",
+          "Retained variant world now uses the re-exported material outfit-head-light.",
+          "Retained variant world now uses the re-exported material outfit-feet-primary.",
+          "Retained variant world now uses the re-exported material outfit-feet-dark.",
+          "Retained variant world now uses the re-exported material outfit-feet-light.",
+          "Retained variant world now uses the re-exported material outfit-feet-metal.",
+          "Retained variant world now uses the re-exported material outfit-body-primary.",
+          "Retained variant world now uses the re-exported material outfit-body-light.",
+          "Retained variant world now uses the re-exported material outfit-body-metal.",
+          "Retained variant world now uses the re-exported material outfit-body-dark.",
+          "Retained variant world now uses the re-exported material outfit-back-primary.",
+          "Retained variant world now uses the re-exported material outfit-back-dark.",
+          "Retained variant world now uses the re-exported material outfit-back-light.",
+          "Retained variant world now uses the re-exported material outfit-back-metal.",
+          "Retained variant world-long now uses the re-exported material shadow.",
+          "Retained variant world-long now uses the re-exported material fur.",
+          "Retained variant world-long now uses the re-exported material light.",
+          "Retained variant world-long now uses the re-exported material inner.",
+          "Retained variant world-long now uses the re-exported material eyeWhite.",
+          "Retained variant world-long now uses the re-exported material pupil.",
+          "Retained variant world-long now uses the re-exported material eyeDepth.",
+          "Retained variant world-long now uses the re-exported material catchlight.",
+          "Retained variant world-long now uses the re-exported material eyeRim.",
+          "Retained variant world-long now uses the re-exported material brow.",
+          "Retained variant world-long now uses the re-exported material blush-fur-0.",
+          "Retained variant world-long now uses the re-exported material blush-light-0.",
+          "Retained variant world-long now uses the re-exported material blush-fur-1.",
+          "Retained variant world-long now uses the re-exported material blush-light-1.",
+          "Retained variant world-long now uses the re-exported material blush-fur-2.",
+          "Retained variant world-long now uses the re-exported material blush-light-2.",
+          "Retained variant world-long now uses the re-exported material blush-light-3.",
+          "Retained variant world-long now uses the re-exported material nose.",
+          "Retained variant world-long now uses the re-exported material mouthDark.",
+          "Retained variant world-long now uses the re-exported material tongue.",
+          "Retained variant world-long now uses the re-exported material outfit-head-primary.",
+          "Retained variant world-long now uses the re-exported material outfit-head-dark.",
+          "Retained variant world-long now uses the re-exported material outfit-head-light.",
+          "Retained variant world-long now uses the re-exported material outfit-feet-primary.",
+          "Retained variant world-long now uses the re-exported material outfit-feet-dark.",
+          "Retained variant world-long now uses the re-exported material outfit-feet-light.",
+          "Retained variant world-long now uses the re-exported material outfit-feet-metal.",
+          "Retained variant world-long now uses the re-exported material outfit-body-primary.",
+          "Retained variant world-long now uses the re-exported material outfit-body-light.",
+          "Retained variant world-long now uses the re-exported material outfit-body-metal.",
+          "Retained variant world-long now uses the re-exported material outfit-body-dark.",
+          "Retained variant world-long now uses the re-exported material outfit-back-primary.",
+          "Retained variant world-long now uses the re-exported material outfit-back-dark.",
+          "Retained variant world-long now uses the re-exported material outfit-back-light.",
+          "Retained variant world-long now uses the re-exported material outfit-back-metal.",
+          "Retained variant world-pointed now uses the re-exported material shadow.",
+          "Retained variant world-pointed now uses the re-exported material fur.",
+          "Retained variant world-pointed now uses the re-exported material light.",
+          "Retained variant world-pointed now uses the re-exported material inner.",
+          "Retained variant world-pointed now uses the re-exported material eyeWhite.",
+          "Retained variant world-pointed now uses the re-exported material pupil.",
+          "Retained variant world-pointed now uses the re-exported material eyeDepth.",
+          "Retained variant world-pointed now uses the re-exported material catchlight.",
+          "Retained variant world-pointed now uses the re-exported material eyeRim.",
+          "Retained variant world-pointed now uses the re-exported material brow.",
+          "Retained variant world-pointed now uses the re-exported material blush-fur-0.",
+          "Retained variant world-pointed now uses the re-exported material blush-light-0.",
+          "Retained variant world-pointed now uses the re-exported material blush-fur-1.",
+          "Retained variant world-pointed now uses the re-exported material blush-light-1.",
+          "Retained variant world-pointed now uses the re-exported material blush-fur-2.",
+          "Retained variant world-pointed now uses the re-exported material blush-light-2.",
+          "Retained variant world-pointed now uses the re-exported material blush-light-3.",
+          "Retained variant world-pointed now uses the re-exported material nose.",
+          "Retained variant world-pointed now uses the re-exported material mouthDark.",
+          "Retained variant world-pointed now uses the re-exported material tongue.",
+          "Retained variant world-pointed now uses the re-exported material outfit-head-primary.",
+          "Retained variant world-pointed now uses the re-exported material outfit-head-dark.",
+          "Retained variant world-pointed now uses the re-exported material outfit-head-light.",
+          "Retained variant world-pointed now uses the re-exported material outfit-feet-primary.",
+          "Retained variant world-pointed now uses the re-exported material outfit-feet-dark.",
+          "Retained variant world-pointed now uses the re-exported material outfit-feet-light.",
+          "Retained variant world-pointed now uses the re-exported material outfit-feet-metal.",
+          "Retained variant world-pointed now uses the re-exported material outfit-body-primary.",
+          "Retained variant world-pointed now uses the re-exported material outfit-body-light.",
+          "Retained variant world-pointed now uses the re-exported material outfit-body-metal.",
+          "Retained variant world-pointed now uses the re-exported material outfit-body-dark.",
+          "Retained variant world-pointed now uses the re-exported material outfit-back-primary.",
+          "Retained variant world-pointed now uses the re-exported material outfit-back-dark.",
+          "Retained variant world-pointed now uses the re-exported material outfit-back-light.",
+          "Retained variant world-pointed now uses the re-exported material outfit-back-metal."
+        ]
+      }
+    }
+  ]
+}

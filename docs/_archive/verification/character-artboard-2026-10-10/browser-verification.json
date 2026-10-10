@@ -1,0 +1,253 @@
+{
+  "kind": "historical-storyboard-browser-check",
+  "desktop": {
+    "width": 1440,
+    "scrollWidth": 1440,
+    "scripts": 0,
+    "images": [
+      {
+        "loaded": true,
+        "width": 1800,
+        "height": 1273
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 1800,
+        "height": 1273
+      },
+      {
+        "loaded": true,
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "loaded": true,
+        "width": 1440,
+        "height": 1059
+      },
+      {
+        "loaded": true,
+        "width": 390,
+        "height": 2232
+      },
+      {
+        "loaded": true,
+        "width": 1152,
+        "height": 1296
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 864,
+        "height": 1024
+      },
+      {
+        "loaded": true,
+        "width": 720,
+        "height": 800
+      },
+      {
+        "loaded": true,
+        "width": 720,
+        "height": 800
+      },
+      {
+        "loaded": true,
+        "width": 720,
+        "height": 800
+      },
+      {
+        "loaded": true,
+        "width": 960,
+        "height": 1100
+      }
+    ],
+    "headings": [
+      "Littlewild · Shape, expression and craft",
+      "The supplied target and the new character",
+      "The dedicated editor",
+      "Inspect the silhouette and attachments",
+      "Author, compare and maintain with agents"
+    ]
+  },
+  "mobile": {
+    "width": 390,
+    "scrollWidth": 390,
+    "scripts": 0,
+    "images": [
+      {
+        "loaded": true,
+        "width": 1800,
+        "height": 1273
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 1800,
+        "height": 1273
+      },
+      {
+        "loaded": true,
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "loaded": true,
+        "width": 1440,
+        "height": 1059
+      },
+      {
+        "loaded": true,
+        "width": 390,
+        "height": 2232
+      },
+      {
+        "loaded": true,
+        "width": 1152,
+        "height": 1296
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 864,
+        "height": 1024
+      },
+      {
+        "loaded": true,
+        "width": 720,
+        "height": 800
+      },
+      {
+        "loaded": true,
+        "width": 720,
+        "height": 800
+      },
+      {
+        "loaded": true,
+        "width": 720,
+        "height": 800
+      },
+      {
+        "loaded": true,
+        "width": 960,
+        "height": 1100
+      }
+    ],
+    "headings": [
+      "Littlewild · Shape, expression and craft",
+      "The supplied target and the new character",
+      "The dedicated editor",
+      "Inspect the silhouette and attachments",
+      "Author, compare and maintain with agents"
+    ]
+  },
+  "errors": [],
+  "externalRequests": []
+}

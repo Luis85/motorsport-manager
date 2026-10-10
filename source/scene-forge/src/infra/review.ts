@@ -124,6 +124,7 @@ export async function reviewScene(
         arch: process.arch,
         chromium: browser.version(),
         rendererRequested: 'ANGLE SwiftShader',
+        documentTransport: 'inline-html',
       },
       scene: scene.id,
       revision: scene.revision,

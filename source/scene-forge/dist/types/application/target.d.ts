@@ -11,6 +11,7 @@ export declare function authoringTarget(scene: SceneDocument, models: ModelLibra
         keyPosition: [number, number, number];
         exposure?: number | undefined;
         toneMapping?: "linear" | "filmic" | "neutral" | undefined;
+        presentation?: "inspection" | "portrait" | undefined;
     };
     geometries: Record<string, {
         type: "box";
@@ -19,6 +20,19 @@ export declare function authoringTarget(scene: SceneDocument, models: ModelLibra
         type: "sphere";
         radius: import("../domain/schema.js").ScalarValue;
         segments?: number | undefined;
+    } | {
+        type: "organic";
+        size: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        roundness: import("../domain/schema.js").ScalarValue;
+        taper: import("../domain/schema.js").ScalarValue;
+        bend: import("../domain/schema.js").ScalarValue;
+        segments: number;
+        profile?: {
+            at: import("../domain/schema.js").ScalarValue;
+            width: import("../domain/schema.js").ScalarValue;
+            depth: import("../domain/schema.js").ScalarValue;
+            offset: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        }[] | undefined;
     } | {
         type: "cylinder";
         radiusTop: import("../domain/schema.js").ScalarValue;
@@ -92,8 +106,21 @@ export declare function authoringTarget(scene: SceneDocument, models: ModelLibra
         opacity: number;
         doubleSided: boolean;
         flatShading: boolean;
+        surface?: {
+            kind: "fur" | "cloth" | "leather";
+            seed: number;
+            scale: number;
+            strength: number;
+            version?: 1 | 2 | undefined;
+        } | undefined;
+        sheen?: number | undefined;
+        sheenColor?: string | undefined;
+        sheenRoughness?: number | undefined;
+        clearcoat?: number | undefined;
+        clearcoatRoughness?: number | undefined;
         emissive?: string | undefined;
         emissiveIntensity?: number | undefined;
+        depthWrite?: boolean | undefined;
         shading?: "standard" | "unlit" | undefined;
     }>;
     nodes: ({

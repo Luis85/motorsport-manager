@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "kind": "review-result",
+  "provenance": {
+    "tool": "scene-forge",
+    "version": "0.6.0",
+    "three": "186",
+    "node": "v24.19.0",
+    "platform": "linux",
+    "arch": "x64",
+    "chromium": "151.0.7922.173",
+    "rendererRequested": "ANGLE SwiftShader",
+    "documentTransport": "inline-html"
+  },
+  "scene": "model",
+  "revision": 0,
+  "sourceStateHash": "b160c40f2d5b3256d3867df2b96ac8c1cfa73d58b164e96359799e8af82f894a",
+  "renderStateHash": "860136c269742e31471db63518fa0fcbc70465d5a9940a2166c46c962570af6a",
+  "target": {
+    "model": "pipWorld",
+    "parameters": {}
+  },
+  "plan": {
+    "schemaVersion": 1,
+    "kind": "review",
+    "width": 512,
+    "height": 512,
+    "grid": false,
+    "wireframe": false,
+    "contactSheet": true,
+    "frames": [
+      {
+        "id": "front",
+        "camera": {
+          "view": "front",
+          "projection": "auto",
+          "azimuth": 45,
+          "elevation": 30,
+          "padding": 1.12,
+          "fov": 40
+        }
+      },
+      {
+        "id": "back",
+        "camera": {
+          "view": "back",
+          "projection": "auto",
+          "azimuth": 45,
+          "elevation": 30,
+          "padding": 1.12,
+          "fov": 40
+        }
+      }
+    ]
+  },
+  "stats": {
+    "nodes": 67,
+    "meshes": 47,
+    "triangles": 30864,
+    "materials": 12,
+    "geometries": 6,
+    "bounds": {
+      "min": [
+        -0.32098646654306884,
+        0.0010000000000000009,
+        -0.36075699410913514
+      ],
+      "max": [
+        0.32098646654306884,
+        1.0671028992180052,
+        0.392
+      ],
+      "size": [
+        0.6419729330861377,
+        1.0661028992180053,
+        0.7527569941091352
+      ]
+    },
+    "warnings": [
+      "Custom meshes without UVs cannot carry texture coordinates into exports. Supply one uv pair per position when needed."
+    ]
+  },
+  "frames": [
+    {
+      "id": "front",
+      "file": "front.png",
+      "width": 512,
+      "height": 512,
+      "camera": {
+        "projection": "orthographic",
+        "position": [
+          0,
+          0.5340514496090019,
+          4.258507181595214
+        ],
+        "target": [
+          0,
+          0.5340514496090025,
+          -0.014378497054567565
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "near": 0.0014242952262165942,
+        "far": 1424.2952262165943,
+        "zoom": 1,
+        "left": -0.597017623562083,
+        "right": 0.597017623562083,
+        "top": 0.597017623562083,
+        "bottom": -0.597017623562083
+      },
+      "sha256": "d0baee7b51723460c66ce545376c5623b551596e84da9510f5a918c724f81d07",
+      "bytes": 85556
+    },
+    {
+      "id": "back",
+      "file": "back.png",
+      "width": 512,
+      "height": 512,
+      "camera": {
+        "projection": "orthographic",
+        "position": [
+          5.232775769481022e-16,
+          0.5340514496090019,
+          -4.28726417570435
+        ],
+        "target": [
+          0,
+          0.5340514496090025,
+          -0.014378497054567565
+        ],
+        "up": [
+          0,
+          1,
+          0
+        ],
+        "near": 0.0014242952262165942,
+        "far": 1424.2952262165943,
+        "zoom": 1,
+        "left": -0.597017623562083,
+        "right": 0.597017623562083,
+        "top": 0.597017623562083,
+        "bottom": -0.597017623562083
+      },
+      "sha256": "b84554e6bb5911293e641c455fd32957cba9ddbe8bb70d32c93a5d6f17f6a3db",
+      "bytes": 70029
+    }
+  ],
+  "contactSheet": {
+    "file": "contact-sheet.png",
+    "width": 960,
+    "height": 512
+  },
+  "replayPlan": "replay-plan.json",
+  "durationMs": 15537
+}

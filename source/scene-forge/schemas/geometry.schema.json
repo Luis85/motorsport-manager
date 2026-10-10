@@ -59,6 +59,98 @@
       "properties": {
         "type": {
           "type": "string",
+          "const": "organic"
+        },
+        "size": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "$ref": "#/$defs/__schema0"
+            },
+            {
+              "$ref": "#/$defs/__schema0"
+            },
+            {
+              "$ref": "#/$defs/__schema0"
+            }
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "roundness": {
+          "default": 1,
+          "$ref": "#/$defs/__schema0"
+        },
+        "taper": {
+          "default": 0,
+          "$ref": "#/$defs/__schema0"
+        },
+        "bend": {
+          "default": 0,
+          "$ref": "#/$defs/__schema0"
+        },
+        "segments": {
+          "default": 32,
+          "type": "integer",
+          "minimum": 12,
+          "maximum": 96
+        },
+        "profile": {
+          "minItems": 2,
+          "maxItems": 12,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "at": {
+                "$ref": "#/$defs/__schema0"
+              },
+              "width": {
+                "$ref": "#/$defs/__schema0"
+              },
+              "depth": {
+                "$ref": "#/$defs/__schema0"
+              },
+              "offset": {
+                "default": [
+                  0,
+                  0
+                ],
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "$ref": "#/$defs/__schema0"
+                  },
+                  {
+                    "$ref": "#/$defs/__schema0"
+                  }
+                ],
+                "items": false,
+                "minItems": 2,
+                "maxItems": 2
+              }
+            },
+            "required": [
+              "at",
+              "width",
+              "depth"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "type",
+        "size"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
           "const": "cylinder"
         },
         "radiusTop": {

@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { pathToFileURL } from 'node:url';
+import { loadOfflinePage } from './offline-page.js';
 import { chromium } from 'playwright';
 import { validateBytes } from 'gltf-validator';
 import { loadProject } from '../../src/infra/project.js';
@@ -117,7 +117,7 @@ test('offline preview renders without network, exposes controls, downloads GLB/P
     page.on('request', (req) => {
       if (/^https?:/.test(req.url())) network.push(req.url());
     });
-    await page.goto(pathToFileURL(html).href);
+    await loadOfflinePage(page, html);
     await page.waitForFunction(() => window.forgeReady || window.forgeError);
     assert.equal(await page.evaluate(() => window.forgeError), undefined);
     assert.equal(await page.locator('canvas').count(), 1);

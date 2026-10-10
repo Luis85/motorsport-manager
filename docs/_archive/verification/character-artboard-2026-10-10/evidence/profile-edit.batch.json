@@ -1,0 +1,60 @@
+{
+  "expectedRevision": 1,
+  "expectedState": "2c0da08e78a412c66e1077ac737367b2355b7db2a356b1b18ac30ad859131c92",
+  "operations": [
+    {
+      "op": "putGeometry",
+      "id": "body",
+      "geometry": {
+        "type": "organic",
+        "size": [
+          0.9,
+          1.1,
+          0.72
+        ],
+        "roundness": 0.9,
+        "taper": 0.22,
+        "bend": 0,
+        "segments": 32,
+        "profile": [
+          {
+            "at": -1,
+            "width": 1,
+            "depth": 1,
+            "offset": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": -0.35,
+            "width": 1.12,
+            "depth": 1.15,
+            "offset": [
+              0,
+              0.12
+            ]
+          },
+          {
+            "at": 0.35,
+            "width": 0.75,
+            "depth": 0.8,
+            "offset": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": 1,
+            "width": 0.65,
+            "depth": 0.7,
+            "offset": [
+              0.1,
+              -0.08
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

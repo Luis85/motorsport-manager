@@ -32,6 +32,7 @@ export function registerDiscoveryCommands(c: CommandContext) {
         geometryTypes: [
           'box',
           'sphere',
+          'organic',
           'cylinder',
           'cone',
           'torus',
@@ -43,6 +44,88 @@ export function registerDiscoveryCommands(c: CommandContext) {
           'boolean',
           'tube',
         ],
+        organicForms: {
+          type: 'organic',
+          units:
+            'size is the untapered diameter on X/Y/Z in meters; taper and bend can extend X/Z bounds',
+          parameters: {
+            roundness: [0.65, 1.5],
+            taper: [-0.65, 0.65],
+            bend: [-0.75, 0.75],
+            segments: [12, 96],
+          },
+          profile: {
+            stations: [2, 12],
+            at: [-1, 1],
+            minimumHeightGap: 0.02,
+            width: [0.1, 2],
+            depth: [0.1, 2],
+            offset: [-0.75, 0.75],
+            meaning:
+              'Optional profile stations start at -1 and end at 1. Width/depth multiply each crosssection; offset [X,Z] moves its center in half-size units. Smoothstep interpolation never overshoots; every station is sampled exactly.',
+            example: [
+              { at: -1, width: 1, depth: 1, offset: [0, 0] },
+              { at: -0.35, width: 1.12, depth: 1.15, offset: [0, 0.12] },
+              { at: 0.35, width: 0.75, depth: 0.8, offset: [0, 0] },
+              { at: 1, width: 0.65, depth: 0.7, offset: [0.1, -0.08] },
+            ],
+          },
+          meaning:
+            'roundness 1 is ellipsoidal, below 1 is fuller; positive taper narrows the top; bend offsets both ends along +X',
+          example: {
+            op: 'putGeometry',
+            id: 'plushBody',
+            geometry: {
+              type: 'organic',
+              size: [0.9, 1.1, 0.72],
+              roundness: 0.9,
+              taper: 0.22,
+              bend: 0,
+              segments: 32,
+            },
+          },
+          export:
+            'Closed smooth mesh with seam-aware UVs. Littlewild receives baked mesh; GLB retains mesh and UVs.',
+          workflow:
+            'inspect --source, apply --dry-run with revision/state guards, apply same batch with guards, review --file previous/replay-plan.json',
+        },
+        surfaceDetails: {
+          algorithm: 'littlewild-surface-v1',
+          versions: {
+            1: 'Original detail, default when omitted; exact replay compatibility',
+            2: 'Fine directional fur fibres, woven yarn and subtle leather grain',
+          },
+          uniqueRecipesPerScene: 256,
+          pooling:
+            'Identical version/kind/seed/scale/strength share maps across material colors; each compilation owns and disposes its pool.',
+          fields: {
+            kind: ['fur', 'cloth', 'leather'],
+            version: [1, 2],
+            seed: [0, 65535],
+            scale: [1, 16],
+            strength: [0, 1],
+          },
+          required: ['kind', 'seed', 'scale', 'strength'],
+          example: {
+            op: 'putMaterial',
+            id: 'plushFur',
+            material: {
+              color: '#c89059',
+              roughness: 0.9,
+              sheen: 0.65,
+              sheenColor: '#ffe4bd',
+              surface: { kind: 'fur', seed: 7, scale: 3, strength: 0.4 },
+            },
+          },
+          outputs:
+            'Deterministic 128×128 color and tangent normal maps; no image files, browser, shader scripts or network needed for GLB export',
+          compatibility:
+            'Standard PBR only. Littlewild preserves recipe and UVs; GLB embeds PNGs with KHR_texture_transform repeat and recipe in material extras.',
+          limits:
+            'Surface detail shades existing geometry; use organic forms or authored meshes for a fluffy silhouette. Not strand fur or cloth simulation.',
+          uvFallback:
+            'Legacy baked meshes without UVs receive local spherical projection; supply seam-aware UVs for precise placement.',
+        },
         composition: [
           'model capture',
           'model bundle import/export',
@@ -63,6 +146,20 @@ export function registerDiscoveryCommands(c: CommandContext) {
         littlewild: {
           commands: ['littlewild sync', 'littlewild export', 'littlewild import'],
           manifest: 'littlewild-export (schema --kind littlewild-export)',
+          importFormats: [
+            'littlewild-definition',
+            'littlewild-3d-asset',
+            'littlewild-creature-package',
+          ],
+          importScope:
+            'Visual models only; creature gameplay and companion state stay in the source package',
+          importGuards: ['--expected-revision', '--expected-state'],
+          importOutputs: {
+            variants: 'Array of imported model IDs (retained compatibility field)',
+            variantModels:
+              'Map of original source variant names to model IDs; use this instead of inferring capitalization or suffixes',
+            example: { 'world-round': 'pipTrailWorldRound' },
+          },
           families: Object.keys(littlewildFamilies),
           output: '<target>/<family>/<id>/definition.json visual facet; other facets are preserved',
           geometry:
@@ -74,6 +171,22 @@ export function registerDiscoveryCommands(c: CommandContext) {
         },
         lights: ['point', 'spot', 'directional'],
         materialShading: ['standard', 'unlit'],
+        materialDepthWrite:
+          'Optional boolean. Use false for alpha-blended shadow decals (opacity < 1); GLB uses alphaMode BLEND.',
+        physicalMaterials: {
+          fields: ['sheen', 'sheenColor', 'sheenRoughness', 'clearcoat', 'clearcoatRoughness'],
+          range: 'Scalar fields 0..1; sheenColor #RRGGBB. Standard PBR shading only.',
+          authoring: 'putMaterial in apply; schema --kind material --raw',
+          exports: [
+            'GLB/glTF KHR_materials_sheen and KHR_materials_clearcoat',
+            'Littlewild visual',
+          ],
+        },
+        previewPresentation: {
+          values: ['inspection', 'portrait'],
+          authoring: 'setEnvironment in apply; environment.presentation in scene schema',
+          scope: 'Preview-only light rig and portrait shadow floor; source geometry unchanged',
+        },
         previewLooks: ['filmic', 'neutral', 'linear'],
         patterns: ['linear', 'radial', 'grid', 'path'],
         expressions: {
@@ -127,7 +240,7 @@ export function registerDiscoveryCommands(c: CommandContext) {
           'inverse kinematics and weight painting',
           'arbitrary GLSL shaders',
           'sculpting',
-          'texture images and automatic UV unwrapping',
+          'external texture image import and automatic UV unwrapping',
           'physics',
           'native .blend authoring',
           'native .tscn authoring',

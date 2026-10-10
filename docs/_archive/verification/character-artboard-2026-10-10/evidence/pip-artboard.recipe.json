@@ -1,0 +1,36 @@
+{
+  "format": "littlewild-character",
+  "schemaVersion": 1,
+  "id": "pip-artboard",
+  "identity": {
+    "name": "Pip",
+    "pronouns": "they/them",
+    "gender": "",
+    "voice": "Soft"
+  },
+  "appearance": {
+    "preset": "pip",
+    "body": "balanced",
+    "ears": "round",
+    "coat": "#c99055",
+    "belly": "#eed8b4",
+    "inner": "#c98f79",
+    "tail": "short",
+    "headSize": 1,
+    "earSize": 1,
+    "eyeSize": 1,
+    "eyeColor": "#805039"
+  },
+  "personality": "curious",
+  "skills": {},
+  "outfits": {
+    "head": "trail_cap",
+    "body": "rain_cape",
+    "back": "field_satchel",
+    "feet": "walking_boots",
+    "tool": null,
+    "charm": null
+  },
+  "locks": [],
+  "status": "draft"
+}

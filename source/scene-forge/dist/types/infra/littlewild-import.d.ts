@@ -1,11 +1,17 @@
+import type { EditOptions } from './project.js';
 /** Registers each Littlewild variant as a Scene Forge model through the guarded model import. */
-export declare function importLittlewildDefinition(project: string, file: string, options: {
+export declare function importLittlewildDefinition(project: string, file: string, options: EditOptions & {
     prefix?: string;
-    dryRun?: boolean;
     replace?: boolean;
 }): Promise<{
+    warnings?: string[] | undefined;
     source: string;
+    sourceFormat: unknown;
+    importedFacet: string;
     variants: string[];
+    variantModels: {
+        [k: string]: string;
+    };
     id: string;
     dryRun: boolean;
     models: string[];
@@ -17,6 +23,19 @@ export declare function importLittlewildDefinition(project: string, file: string
             type: "sphere";
             radius: import("../index.js").ScalarValue;
             segments?: number | undefined;
+        } | {
+            type: "organic";
+            size: [import("../index.js").ScalarValue, import("../index.js").ScalarValue, import("../index.js").ScalarValue];
+            roundness: import("../index.js").ScalarValue;
+            taper: import("../index.js").ScalarValue;
+            bend: import("../index.js").ScalarValue;
+            segments: number;
+            profile?: {
+                at: import("../index.js").ScalarValue;
+                width: import("../index.js").ScalarValue;
+                depth: import("../index.js").ScalarValue;
+                offset: [import("../index.js").ScalarValue, import("../index.js").ScalarValue];
+            }[] | undefined;
         } | {
             type: "cylinder";
             radiusTop: import("../index.js").ScalarValue;
@@ -90,8 +109,21 @@ export declare function importLittlewildDefinition(project: string, file: string
             opacity: number;
             doubleSided: boolean;
             flatShading: boolean;
+            surface?: {
+                kind: "fur" | "cloth" | "leather";
+                seed: number;
+                scale: number;
+                strength: number;
+                version?: 1 | 2 | undefined;
+            } | undefined;
+            sheen?: number | undefined;
+            sheenColor?: string | undefined;
+            sheenRoughness?: number | undefined;
+            clearcoat?: number | undefined;
+            clearcoatRoughness?: number | undefined;
             emissive?: string | undefined;
             emissiveIntensity?: number | undefined;
+            depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
         }>;
         nodes: ({
@@ -279,8 +311,14 @@ export declare function importLittlewildDefinition(project: string, file: string
     parameters?: undefined;
     stateHash?: undefined;
 } | {
+    warnings?: string[] | undefined;
     source: string;
+    sourceFormat: unknown;
+    importedFacet: string;
     variants: string[];
+    variantModels: {
+        [k: string]: string;
+    };
     id: string;
     path: string;
     parameters: Record<string, {

@@ -1,0 +1,325 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-09T20:25:30.956001+00:00",
+  "title": "Design System: Littlewild Character Studio",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "tonalRamp": [
+          "oklch(0.150 0.0123 91.52)",
+          "oklch(0.264 0.0123 91.52)",
+          "oklch(0.379 0.0123 91.52)",
+          "oklch(0.493 0.0123 91.52)",
+          "oklch(0.607 0.0123 91.52)",
+          "oklch(0.721 0.0123 91.52)",
+          "oklch(0.836 0.0123 91.52)",
+          "oklch(0.950 0.0123 91.52)"
+        ],
+        "rampPurpose": "Derived swatch-panel visualization; not an implemented UI palette."
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Panel",
+        "tonalRamp": [
+          "oklch(0.150 0.0082 91.48)",
+          "oklch(0.264 0.0082 91.48)",
+          "oklch(0.379 0.0082 91.48)",
+          "oklch(0.493 0.0082 91.48)",
+          "oklch(0.607 0.0082 91.48)",
+          "oklch(0.721 0.0082 91.48)",
+          "oklch(0.836 0.0082 91.48)",
+          "oklch(0.950 0.0082 91.48)"
+        ],
+        "rampPurpose": "Derived swatch-panel visualization; not an implemented UI palette."
+      },
+      "forest": {
+        "role": "primary",
+        "displayName": "Forest",
+        "tonalRamp": [
+          "oklch(0.150 0.0500 158.92)",
+          "oklch(0.264 0.0500 158.92)",
+          "oklch(0.379 0.0500 158.92)",
+          "oklch(0.493 0.0500 158.92)",
+          "oklch(0.607 0.0500 158.92)",
+          "oklch(0.721 0.0500 158.92)",
+          "oklch(0.836 0.0500 158.92)",
+          "oklch(0.950 0.0500 158.92)"
+        ],
+        "rampPurpose": "Derived swatch-panel visualization; not an implemented UI palette."
+      },
+      "forest-light": {
+        "role": "primary",
+        "displayName": "Forest Light",
+        "tonalRamp": [
+          "oklch(0.150 0.0209 124.67)",
+          "oklch(0.264 0.0209 124.67)",
+          "oklch(0.379 0.0209 124.67)",
+          "oklch(0.493 0.0209 124.67)",
+          "oklch(0.607 0.0209 124.67)",
+          "oklch(0.721 0.0209 124.67)",
+          "oklch(0.836 0.0209 124.67)",
+          "oklch(0.950 0.0209 124.67)"
+        ],
+        "rampPurpose": "Derived swatch-panel visualization; not an implemented UI palette."
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(0.150 0.0254 151.57)",
+          "oklch(0.264 0.0254 151.57)",
+          "oklch(0.379 0.0254 151.57)",
+          "oklch(0.493 0.0254 151.57)",
+          "oklch(0.607 0.0254 151.57)",
+          "oklch(0.721 0.0254 151.57)",
+          "oklch(0.836 0.0254 151.57)",
+          "oklch(0.950 0.0254 151.57)"
+        ],
+        "rampPurpose": "Derived swatch-panel visualization; not an implemented UI palette."
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(0.150 0.0318 123.21)",
+          "oklch(0.264 0.0318 123.21)",
+          "oklch(0.379 0.0318 123.21)",
+          "oklch(0.493 0.0318 123.21)",
+          "oklch(0.607 0.0318 123.21)",
+          "oklch(0.721 0.0318 123.21)",
+          "oklch(0.836 0.0318 123.21)",
+          "oklch(0.950 0.0318 123.21)"
+        ],
+        "rampPurpose": "Derived swatch-panel visualization; not an implemented UI palette."
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(0.150 0.0201 106.80)",
+          "oklch(0.264 0.0201 106.80)",
+          "oklch(0.379 0.0201 106.80)",
+          "oklch(0.493 0.0201 106.80)",
+          "oklch(0.607 0.0201 106.80)",
+          "oklch(0.721 0.0201 106.80)",
+          "oklch(0.836 0.0201 106.80)",
+          "oklch(0.950 0.0201 106.80)"
+        ],
+        "rampPurpose": "Derived swatch-panel visualization; not an implemented UI palette."
+      },
+      "gold": {
+        "role": "secondary",
+        "displayName": "Gold",
+        "tonalRamp": [
+          "oklch(0.150 0.0959 71.33)",
+          "oklch(0.264 0.0959 71.33)",
+          "oklch(0.379 0.0959 71.33)",
+          "oklch(0.493 0.0959 71.33)",
+          "oklch(0.607 0.0959 71.33)",
+          "oklch(0.721 0.0959 71.33)",
+          "oklch(0.836 0.0959 71.33)",
+          "oklch(0.950 0.0959 71.33)"
+        ],
+        "rampPurpose": "Derived swatch-panel visualization; not an implemented UI palette."
+      },
+      "error": {
+        "role": "secondary",
+        "displayName": "Error",
+        "tonalRamp": [
+          "oklch(0.150 0.1162 32.62)",
+          "oklch(0.264 0.1162 32.62)",
+          "oklch(0.379 0.1162 32.62)",
+          "oklch(0.493 0.1162 32.62)",
+          "oklch(0.607 0.1162 32.62)",
+          "oklch(0.721 0.1162 32.62)",
+          "oklch(0.836 0.1162 32.62)",
+          "oklch(0.950 0.1162 32.62)"
+        ],
+        "rampPurpose": "Derived swatch-panel visualization; not an implemented UI palette."
+      },
+      "focus": {
+        "role": "secondary",
+        "displayName": "Focus",
+        "tonalRamp": [
+          "oklch(0.150 0.1006 68.42)",
+          "oklch(0.264 0.1006 68.42)",
+          "oklch(0.379 0.1006 68.42)",
+          "oklch(0.493 0.1006 68.42)",
+          "oklch(0.607 0.1006 68.42)",
+          "oklch(0.721 0.1006 68.42)",
+          "oklch(0.836 0.1006 68.42)",
+          "oklch(0.950 0.1006 68.42)"
+        ],
+        "rampPurpose": "Derived swatch-panel visualization; not an implemented UI palette."
+      },
+      "field": {
+        "role": "neutral",
+        "displayName": "Field",
+        "tonalRamp": [
+          "oklch(0.150 0.0067 97.35)",
+          "oklch(0.264 0.0067 97.35)",
+          "oklch(0.379 0.0067 97.35)",
+          "oklch(0.493 0.0067 97.35)",
+          "oklch(0.607 0.0067 97.35)",
+          "oklch(0.721 0.0067 97.35)",
+          "oklch(0.836 0.0067 97.35)",
+          "oklch(0.950 0.0067 97.35)"
+        ],
+        "rampPurpose": "Derived swatch-panel visualization; not an implemented UI palette."
+      },
+      "selected-text": {
+        "role": "neutral",
+        "displayName": "Selected Text",
+        "tonalRamp": [
+          "oklch(0.150 0.0120 96.42)",
+          "oklch(0.264 0.0120 96.42)",
+          "oklch(0.379 0.0120 96.42)",
+          "oklch(0.493 0.0120 96.42)",
+          "oklch(0.607 0.0120 96.42)",
+          "oklch(0.721 0.0120 96.42)",
+          "oklch(0.836 0.0120 96.42)",
+          "oklch(0.950 0.0120 96.42)"
+        ],
+        "rampPurpose": "Derived swatch-panel visualization; not an implemented UI palette."
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Page heading",
+        "purpose": "Main editing title."
+      },
+      "headline": {
+        "displayName": "Chapter heading",
+        "purpose": "Editor panel headings."
+      },
+      "body": {
+        "displayName": "System controls",
+        "purpose": "Body copy and form controls."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dialog",
+        "value": "0 18px 70px #26391c40",
+        "purpose": "Ambient depth beneath modal dialogs."
+      }
+    ],
+    "backdrops": [
+      {
+        "name": "dialog",
+        "value": "#1f302a70"
+      }
+    ],
+    "focus": {
+      "outline": "3px solid #946223",
+      "outlineOffset": "3px"
+    },
+    "motion": [
+      {
+        "name": "page-scroll",
+        "value": "smooth",
+        "purpose": "Disabled by reduced-motion preference."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide",
+        "value": "1600px"
+      },
+      {
+        "name": "navigation-wrap",
+        "value": "1250px"
+      },
+      {
+        "name": "compact",
+        "value": "900px"
+      },
+      {
+        "name": "stacked",
+        "value": "680px"
+      },
+      {
+        "name": "narrow",
+        "value": "390px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Review or commit the companion.",
+      "html": "<button class=\"ds-primary\">Review companion \u2192</button>",
+      "css": ".ds-primary{font:600 15px/1.25 'Trebuchet MS','Segoe UI',sans-serif;border:1px solid transparent;border-radius:8px;min-height:43px;cursor:pointer;background:var(--gold,#936629);color:#fff;padding:14px 25px}.ds-primary:hover{background:#91652c}.ds-primary:active{background:#dce4d1}.ds-primary:focus-visible{outline:3px solid #946223;outline-offset:3px}"
+    },
+    {
+      "name": "Secondary button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Move to the next chapter.",
+      "html": "<button class=\"ds-secondary\">Next: Coat &amp; Details \u2192</button>",
+      "css": ".ds-secondary{font:600 15px/1.25 'Trebuchet MS','Segoe UI',sans-serif;border:1px solid transparent;border-radius:8px;min-height:43px;cursor:pointer;background:var(--forest-light,#e8eedf);color:var(--forest,#294a38);border-color:#bcc8ad;padding:9px 14px}.ds-secondary:hover{background:#e8ecdf}.ds-secondary:active{background:#dce4d1}.ds-secondary:focus-visible{outline:3px solid #946223;outline-offset:3px}"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A persistent label and readable editable value.",
+      "html": "<label class=\"ds-label\" for=\"ds-name\">Name</label><input class=\"ds-field\" id=\"ds-name\" value=\"Moss\">",
+      "css": ".ds-label{display:block;margin-bottom:7px;font:600 15px \"Trebuchet MS\",\"Segoe UI\",sans-serif;color:var(--ink,#202d23)}.ds-field{font:15px/1.5 \"Trebuchet MS\",\"Segoe UI\",sans-serif;background:#fffef9;color:var(--ink,#202d23);border:1px solid #cdd1c1;border-radius:7px;padding:10px 12px;min-height:44px}.ds-field:hover{border-color:#8e9c81}.ds-field:focus-visible{outline:3px solid #946223;outline-offset:3px}"
+    },
+    {
+      "name": "Chapter navigation",
+      "kind": "nav",
+      "refersTo": "navigation-selected",
+      "description": "Direct access with an explicit current chapter.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Character chapters\"><button>Identity</button><button aria-current=\"step\">Body &amp; Face</button><button>Coat &amp; Details</button></nav>",
+      "css": ".ds-nav{display:flex;flex-wrap:wrap;padding:4px;border:1px solid var(--line,#dedecf);border-radius:13px;background:#f0f0e6;gap:3px}.ds-nav button{font:600 15px/1.25 'Trebuchet MS','Segoe UI',sans-serif;border:1px solid transparent;border-radius:8px;min-height:43px;cursor:pointer;font-weight:400;padding:15px 17px;background:transparent;color:var(--ink,#202d23)}.ds-nav button:hover{background:#e8ecdf}.ds-nav button[aria-current]{background:var(--forest,#294a38);color:#fffdf4}.ds-nav button[aria-current]:hover{background:#365c45}.ds-nav button:focus-visible{outline:3px solid #946223;outline-offset:3px}"
+    },
+    {
+      "name": "Selected coat swatch",
+      "kind": "chip",
+      "description": "A color choice with a visible selected checkmark.",
+      "html": "<button class=\"ds-swatch\" aria-pressed=\"true\"><span>\u2713</span><small>Moss</small></button>",
+      "css": ".ds-swatch{font:600 15px/1.25 'Trebuchet MS','Segoe UI',sans-serif;border:1px solid transparent;border-radius:8px;min-height:43px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;padding:5px 12px;background:var(--forest-light,#e8eedf);outline:1px solid var(--forest,#294a38);color:var(--forest,#294a38)}.ds-swatch span{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#a4ba99;border:1px solid #0002;color:#fff;text-shadow:0 1px 1px #000}.ds-swatch small{font-size:11px}.ds-swatch:hover{background:#dce4d1}.ds-swatch:focus-visible{outline:3px solid #946223;outline-offset:3px}"
+    },
+    {
+      "name": "Companion collection entry",
+      "kind": "card",
+      "description": "A named, reopenable companion with a compact summary.",
+      "html": "<button class=\"ds-companion\"><span class=\"ds-symbol\">\u2726</span><span><strong>Moss</strong><small>Sproutling companion</small></span><span>\u2192</span></button>",
+      "css": ".ds-companion{font:600 15px/1.25 'Trebuchet MS','Segoe UI',sans-serif;border:1px solid transparent;border-radius:8px;min-height:43px;cursor:pointer;display:flex;gap:13px;align-items:center;text-align:left;padding:14px 12px;border:1px solid var(--line,#dedecf);border-radius:10px;background:var(--panel,#fffdf7);color:var(--ink,#202d23)}.ds-companion strong{display:block;font:600 18px Georgia,serif}.ds-companion small{display:block;margin-top:3px;font:12px \"Trebuchet MS\",sans-serif;color:var(--muted,#626955)}.ds-symbol{display:grid;place-items:center;width:40px;height:43px;background:var(--forest-light,#e8eedf);border-radius:8px}.ds-companion:hover{background:#e8ecdf}.ds-companion:focus-visible{outline:3px solid #946223;outline-offset:3px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Littlewild Character Studio",
+    "overview": "The supplied Littlewild Character Studio mockups and walkthrough establish the\nvisual direction: cream paper, forest controls, restrained gold actions and serif\nheadings. The interface places readable controls beside the real authored model.\nThe rendered companion supplies the expressive detail; chrome stays quiet and\nlegible through repeated editing.\n\nThis is an operational editor. Selected states, field labels, persistence feedback\nand keyboard focus remain visible. A portrait or world backdrop is another view\nof the compiled model, not a replacement illustration.",
+    "keyCharacteristics": [
+      "Warm paper surfaces with dark forest selections.",
+      "Serif headings paired with familiar system controls.",
+      "A large live model beside a compact chapter panel.",
+      "Explicit save feedback, full labels and visible focus."
+    ],
+    "rules": [
+      {
+        "name": "The Selection Rule",
+        "body": "Forest fill indicates the active choice; gold identifies the main review or commit action.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do use gold for the review or commit action and forest for selected controls.",
+      "Do keep editable numeric values beside appearance sliders.",
+      "Do reserve room around the model for camera, lighting and pose controls.",
+      "Do preserve visible focus and respect reduced motion and larger text."
+    ],
+    "donts": [
+      "Don't use mockup artwork in place of the live authored companion model.",
+      "Don't rely on color alone for a selected swatch or a field error.",
+      "Don't hide save failures or imply that a browser save reached project disk."
+    ]
+  }
+}

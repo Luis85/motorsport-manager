@@ -1,0 +1,482 @@
+{
+  "executableSha256": "9f8586747129b4ed502be80fccc4a566e2c9aff4759e27681ae0dd0caa051ee6",
+  "source": "/workspace/work/artboard-pass2-final/evidence/pip-artboard.package.json",
+  "sourceSha256": "0801872f414423f847a883b4781e7db21d67f4bf54821e89cf1269d3d2096d7f",
+  "selectedModel": "pipArtboardWorldRound",
+  "steps": [
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-final-project",
+        "inspect"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "project": "Pip concept fidelity handoff",
+          "scene": "main",
+          "revision": 1,
+          "stateHash": "e1eb86f1c2a1cc8a478cd492120a8ec09554f319adf62c14b51675b61758014c",
+          "stats": {
+            "nodes": 0,
+            "meshes": 0,
+            "triangles": 0,
+            "materials": 0,
+            "geometries": 0,
+            "bounds": {
+              "min": [
+                0,
+                0,
+                0
+              ],
+              "max": [
+                0,
+                0,
+                0
+              ],
+              "size": [
+                0,
+                0,
+                0
+              ]
+            },
+            "warnings": [
+              "Scene has no meshes. Add mesh or model nodes before exporting."
+            ]
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-final-project",
+        "littlewild",
+        "import",
+        "--definition",
+        "/workspace/work/artboard-pass2-final/evidence/pip-artboard.package.json",
+        "--expected-revision",
+        "1",
+        "--expected-state",
+        "e1eb86f1c2a1cc8a478cd492120a8ec09554f319adf62c14b51675b61758014c",
+        "--replace",
+        "--dry-run"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "id": "pipArtboardWorld",
+          "dryRun": true,
+          "models": [
+            "pipArtboardWorld",
+            "pipArtboardWorldRound",
+            "pipArtboardWorldLong",
+            "pipArtboardWorldPointed"
+          ],
+          "source": "/workspace/work/artboard-pass2-final/evidence/pip-artboard.package.json",
+          "sourceFormat": "littlewild-creature-package",
+          "importedFacet": "visual",
+          "variants": [
+            "pipArtboardWorld",
+            "pipArtboardWorldRound",
+            "pipArtboardWorldLong",
+            "pipArtboardWorldPointed"
+          ],
+          "variantModels": {
+            "world": "pipArtboardWorld",
+            "world-round": "pipArtboardWorldRound",
+            "world-long": "pipArtboardWorldLong",
+            "world-pointed": "pipArtboardWorldPointed"
+          },
+          "warnings": [
+            "Only appearance models are imported. Gameplay, companion state, behavior mappings and rig bindings remain in the source creature package."
+          ],
+          "omittedPayload": {
+            "field": "model",
+            "reason": "Redundant model buffers retained in source package, outside compact evidence",
+            "sha256": "0ee9587396dbda7ff2db005723d827cb2db74819daa0a3f43deb15cd73a9bb4f",
+            "bytes": 1980851,
+            "fullResultScratch": "/workspace/work/artboard-pass2-final/raw-output/forge-handoff.receipt.full.json"
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-final-project",
+        "littlewild",
+        "import",
+        "--definition",
+        "/workspace/work/artboard-pass2-final/evidence/pip-artboard.package.json",
+        "--expected-revision",
+        "1",
+        "--expected-state",
+        "e1eb86f1c2a1cc8a478cd492120a8ec09554f319adf62c14b51675b61758014c",
+        "--replace"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "id": "pipArtboardWorld",
+          "path": "models/pipArtboardWorld.model.json",
+          "parameters": {},
+          "models": [
+            "pipArtboardWorld",
+            "pipArtboardWorldRound",
+            "pipArtboardWorldLong",
+            "pipArtboardWorldPointed"
+          ],
+          "stateHash": "c06931bff9213d69a9c873bb44380a117ba4d1295129ecb40710d04000c7dd18",
+          "source": "/workspace/work/artboard-pass2-final/evidence/pip-artboard.package.json",
+          "sourceFormat": "littlewild-creature-package",
+          "importedFacet": "visual",
+          "variants": [
+            "pipArtboardWorld",
+            "pipArtboardWorldRound",
+            "pipArtboardWorldLong",
+            "pipArtboardWorldPointed"
+          ],
+          "variantModels": {
+            "world": "pipArtboardWorld",
+            "world-round": "pipArtboardWorldRound",
+            "world-long": "pipArtboardWorldLong",
+            "world-pointed": "pipArtboardWorldPointed"
+          },
+          "warnings": [
+            "Only appearance models are imported. Gameplay, companion state, behavior mappings and rig bindings remain in the source creature package."
+          ]
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-final-project",
+        "inspect"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "project": "Pip concept fidelity handoff",
+          "scene": "main",
+          "revision": 1,
+          "stateHash": "c06931bff9213d69a9c873bb44380a117ba4d1295129ecb40710d04000c7dd18",
+          "stats": {
+            "nodes": 0,
+            "meshes": 0,
+            "triangles": 0,
+            "materials": 0,
+            "geometries": 0,
+            "bounds": {
+              "min": [
+                0,
+                0,
+                0
+              ],
+              "max": [
+                0,
+                0,
+                0
+              ],
+              "size": [
+                0,
+                0,
+                0
+              ]
+            },
+            "warnings": [
+              "Scene has no meshes. Add mesh or model nodes before exporting."
+            ]
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-final-project",
+        "apply",
+        "--file",
+        "/workspace/work/artboard-pass2-final/evidence/forge-presentation.batch.json"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "scene": "main",
+          "revision": 1,
+          "stateHash": "c06931bff9213d69a9c873bb44380a117ba4d1295129ecb40710d04000c7dd18",
+          "proposedStateHash": "c06931bff9213d69a9c873bb44380a117ba4d1295129ecb40710d04000c7dd18",
+          "proposedRevision": 1,
+          "changes": {
+            "nodes": {
+              "added": [],
+              "updated": [],
+              "removed": []
+            },
+            "geometries": {
+              "added": [],
+              "updated": [],
+              "removed": []
+            },
+            "materials": {
+              "added": [],
+              "updated": [],
+              "removed": []
+            },
+            "parameters": {
+              "added": [],
+              "updated": [],
+              "removed": []
+            },
+            "settings": []
+          },
+          "changed": false,
+          "dryRun": false,
+          "operations": 1,
+          "stats": {
+            "nodes": 0,
+            "meshes": 0,
+            "triangles": 0,
+            "materials": 0,
+            "geometries": 0,
+            "bounds": {
+              "min": [
+                0,
+                0,
+                0
+              ],
+              "max": [
+                0,
+                0,
+                0
+              ],
+              "size": [
+                0,
+                0,
+                0
+              ]
+            },
+            "warnings": [
+              "Scene has no meshes. Add mesh or model nodes before exporting."
+            ]
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-final-project",
+        "export",
+        "--model",
+        "pipArtboardWorldRound",
+        "--format",
+        "glb",
+        "--validate",
+        "--out",
+        "/workspace/work/artboard-pass2-final/evidence/pip-forge.glb"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "path": "/workspace/work/artboard-pass2-final/evidence/pip-forge.glb",
+          "format": "glb",
+          "bytes": 1435268,
+          "stats": {
+            "nodes": 115,
+            "meshes": 92,
+            "triangles": 73696,
+            "materials": 33,
+            "geometries": 46,
+            "bounds": {
+              "min": [
+                -0.322,
+                -0.0019999999999999914,
+                -0.34397475739522865
+              ],
+              "max": [
+                0.3244740068912506,
+                0.9755389232334495,
+                0.2935000002384186
+              ],
+              "size": [
+                0.6464740068912507,
+                0.9775389232334495,
+                0.6374747576336472
+              ]
+            },
+            "warnings": []
+          },
+          "warnings": [],
+          "validation": {
+            "validator": "Khronos glTF-Validator",
+            "numErrors": 0,
+            "numWarnings": 0,
+            "numInfos": 24,
+            "numHints": 0,
+            "messages": [
+              {
+                "code": "UNUSED_MESH_TANGENT",
+                "message": "Tangents are not used because the material has no normal texture.",
+                "severity": 2,
+                "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_MESH_TANGENT",
+                "message": "Tangents are not used because the material has no normal texture.",
+                "severity": 2,
+                "pointer": "/meshes/8/primitives/0/attributes/TANGENT"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/8/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_MESH_TANGENT",
+                "message": "Tangents are not used because the material has no normal texture.",
+                "severity": 2,
+                "pointer": "/meshes/9/primitives/0/attributes/TANGENT"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/9/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_MESH_TANGENT",
+                "message": "Tangents are not used because the material has no normal texture.",
+                "severity": 2,
+                "pointer": "/meshes/10/primitives/0/attributes/TANGENT"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/10/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_MESH_TANGENT",
+                "message": "Tangents are not used because the material has no normal texture.",
+                "severity": 2,
+                "pointer": "/meshes/11/primitives/0/attributes/TANGENT"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/11/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_MESH_TANGENT",
+                "message": "Tangents are not used because the material has no normal texture.",
+                "severity": 2,
+                "pointer": "/meshes/13/primitives/0/attributes/TANGENT"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/13/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/22/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/23/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_MESH_TANGENT",
+                "message": "Tangents are not used because the material has no normal texture.",
+                "severity": 2,
+                "pointer": "/meshes/24/primitives/0/attributes/TANGENT"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/24/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_MESH_TANGENT",
+                "message": "Tangents are not used because the material has no normal texture.",
+                "severity": 2,
+                "pointer": "/meshes/25/primitives/0/attributes/TANGENT"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/25/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/42/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/49/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_MESH_TANGENT",
+                "message": "Tangents are not used because the material has no normal texture.",
+                "severity": 2,
+                "pointer": "/meshes/50/primitives/0/attributes/TANGENT"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/50/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/57/primitives/0/attributes/TEXCOORD_0"
+              },
+              {
+                "code": "UNUSED_OBJECT",
+                "message": "This object may be unused.",
+                "severity": 2,
+                "pointer": "/meshes/59/primitives/0/attributes/TEXCOORD_0"
+              }
+            ],
+            "truncated": false
+          }
+        }
+      }
+    }
+  ]
+}

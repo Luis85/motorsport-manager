@@ -1,0 +1,65 @@
+{
+  "format": "character-fidelity-capability-notes",
+  "schemaVersion": 1,
+  "kind": "authored-workflow-not-execution-receipt",
+  "capabilities": {
+    "characterStudio": [
+      "revision-3 companion geometry",
+      "legacy compiler 1/2 verification",
+      "guarded recipes and history",
+      "fixed-camera capture and review"
+    ],
+    "sceneForge": [
+      "organic geometry: roundness, taper, bend",
+      "fur/cloth/leather surfaces",
+      "UV and material-role preservation",
+      "variantModels source-to-model map",
+      "browser-free textured GLB export"
+    ],
+    "wildlands": [
+      "creature inspect --summary",
+      "shared deterministic surface rendering",
+      "baked native color/normal maps",
+      "self-contained deterministic HTML storyboard"
+    ]
+  },
+  "commands": [
+    "bin/character-studio discover",
+    "bin/scene-forge catalog",
+    "bin/scene-forge schema --kind geometry --raw",
+    "bin/scene-forge schema --kind material --raw",
+    "bin/wildlands creature discover",
+    "bin/wildlands creature inspect --project PROJECT.json --archetype pip-trail --summary",
+    "bin/wildlands storyboard build --input storyboard.json --dry-run"
+  ],
+  "surface": {
+    "kind": "fur",
+    "seed": 17,
+    "scale": 3,
+    "strength": 0.35
+  },
+  "surfaceBounds": {
+    "kind": [
+      "fur",
+      "cloth",
+      "leather"
+    ],
+    "seed": [
+      0,
+      65535
+    ],
+    "scale": [
+      1,
+      16
+    ],
+    "strength": [
+      0,
+      1
+    ],
+    "uniqueDescriptors": 256
+  },
+  "limitations": [
+    "Authored workflow notes are not an execution receipt.",
+    "See handoff-receipt.json for the executed three-binary maintenance and export check."
+  ]
+}

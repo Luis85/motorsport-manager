@@ -1,0 +1,49 @@
+{
+  "desktop": {
+    "mode": "studio",
+    "light": "studio",
+    "pose": "idle",
+    "paused": true,
+    "yaw": 0.4,
+    "elevation": 0.08,
+    "zoom": 1,
+    "time": 0,
+    "renderer": {
+      "state": "three-engine",
+      "frame": 46,
+      "calls": 196,
+      "triangles": 233884,
+      "textures": 10,
+      "geometries": 61
+    },
+    "model": "world-round",
+    "modelRevision": 1,
+    "nodes": 120
+  },
+  "mobile": {
+    "width": 390,
+    "scrollWidth": 390,
+    "preview": {
+      "mode": "studio",
+      "light": "studio",
+      "pose": "idle",
+      "paused": true,
+      "yaw": 0.4,
+      "elevation": 0.08,
+      "zoom": 1,
+      "time": 0,
+      "renderer": {
+        "state": "three-engine",
+        "frame": 47,
+        "calls": 195,
+        "triangles": 233540,
+        "textures": 10,
+        "geometries": 61
+      },
+      "model": "world-round",
+      "modelRevision": 1,
+      "nodes": 120
+    }
+  },
+  "errors": []
+}

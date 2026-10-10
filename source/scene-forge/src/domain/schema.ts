@@ -39,6 +39,26 @@ export const GeometrySchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('box'), size: Vec3 }),
   z.strictObject({ type: z.literal('sphere'), radius: Scalar, segments: segments.optional() }),
   z.strictObject({
+    type: z.literal('organic'),
+    size: Vec3,
+    roundness: Scalar.default(1),
+    taper: Scalar.default(0),
+    bend: Scalar.default(0),
+    segments: z.number().int().min(12).max(96).default(32),
+    profile: z
+      .array(
+        z.strictObject({
+          at: Scalar,
+          width: Scalar,
+          depth: Scalar,
+          offset: Vec2.default([0, 0]),
+        }),
+      )
+      .min(2)
+      .max(12)
+      .optional(),
+  }),
+  z.strictObject({
     type: z.literal('cylinder'),
     radiusTop: Scalar,
     radiusBottom: Scalar,
@@ -109,14 +129,29 @@ export type V2 = [ScalarValue, ScalarValue];
 export type TransformSpec = z.infer<typeof Transform>;
 export type Geometry = z.infer<typeof GeometrySchema>;
 
+export const SurfaceSchema = z.strictObject({
+  kind: z.enum(['fur', 'cloth', 'leather']),
+  version: z.union([z.literal(1), z.literal(2)]).optional(),
+  seed: z.number().int().min(0).max(65535),
+  scale: z.number().min(1).max(16),
+  strength: z.number().min(0).max(1),
+});
+export type SurfaceSpec = z.infer<typeof SurfaceSchema>;
 export const MaterialSchema = z
   .object({
     color: Color,
     metalness: z.number().min(0).max(1).default(0),
     roughness: z.number().min(0).max(1).default(0.65),
+    surface: SurfaceSchema.optional(),
+    sheen: z.number().min(0).max(1).optional(),
+    sheenColor: Color.optional(),
+    sheenRoughness: z.number().min(0).max(1).optional(),
+    clearcoat: z.number().min(0).max(1).optional(),
+    clearcoatRoughness: z.number().min(0).max(1).optional(),
     emissive: Color.optional(),
     emissiveIntensity: z.number().min(0).max(20).optional(),
     opacity: z.number().min(0).max(1).default(1),
+    depthWrite: z.boolean().optional(),
     doubleSided: z.boolean().default(false),
     flatShading: z.boolean().default(false),
     shading: z.enum(['standard', 'unlit']).optional(),
@@ -245,6 +280,7 @@ export const EnvironmentSchema = z
     background: Color.default('#171d25'),
     exposure: z.number().min(0.1).max(4).optional(),
     toneMapping: z.enum(['filmic', 'neutral', 'linear']).optional(),
+    presentation: z.enum(['inspection', 'portrait']).optional(),
     ambient: z.number().min(0).max(5).default(1.8),
     keyIntensity: z.number().min(0).max(10).default(3.5),
     keyPosition: z.tuple([NumberValue, NumberValue, NumberValue]).default([5, 10, 7]),

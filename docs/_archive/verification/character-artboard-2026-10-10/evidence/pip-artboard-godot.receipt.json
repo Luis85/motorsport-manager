@@ -1,0 +1,52 @@
+{
+  "format": "littlewild-native-visual-evidence",
+  "schemaVersion": 1,
+  "asset": {
+    "path": "pip-artboard.visual.json",
+    "sha256": "e68a9efb269355368affe89b2b4da61bedf31f65d2f2c0833162dd820f2e724a"
+  },
+  "capture": {
+    "path": "pip-artboard-godot.png",
+    "sha256": "aae503b642a9748f1f8edd3fddcaa6512a87c7dc7274832fbc86848bc5bcf0a2",
+    "width": 960,
+    "height": 1100
+  },
+  "renderer": "Godot 4.6.3 compatibility / OpenGL4.5 Mesa25.0.7 llvmpipe",
+  "nativeAssetFactorySha256": "42ebf7252c56b51bb6109fce5c656ed9792ba3a0268a16aed96a7f9d3c4b9e68",
+  "captureScriptSha256": "1532e94f1cb0009117e8f9d586311b4a0f327df22ed2b4785916ef83448070eb",
+  "model": "world-round",
+  "camera": {
+    "projection": "orthographic",
+    "size": 1.35,
+    "position": [
+      0.12,
+      0.65,
+      5
+    ],
+    "target": [
+      0,
+      0.5,
+      0
+    ]
+  },
+  "lighting": {
+    "ambientEnergy": 0.3,
+    "sunEnergy": 0.65,
+    "fillEnergy": 0.12,
+    "toneMapper": "ACES",
+    "exposure": 0.55
+  },
+  "limitations": [
+    "Godot cloth sheen uses albedo-tinted rim bounded to 8% additive strength; lighting and materials do not claim pixel parity with WebGL.",
+    "This fixed visual fixture does not demonstrate a completed gameplay journey."
+  ],
+  "captureScript": "pip-artboard-godot-capture.gd",
+  "engineExecutableSha256": "bb11f00ce951734ac4393d41fcf1dbaced51c61b965d40822e0d34be203b586c",
+  "surfaceIndexSha256": "054928d964bf8c106300cfd20cde8eb9e307c3b6d5b3b7a674392346146d75ac",
+  "surfaceAlgorithms": [
+    "littlewild-surface-v1",
+    "littlewild-surface-v2"
+  ],
+  "installedProjectFingerprint": "d0101f50cf32aaf0",
+  "sourceNativeAssetFactoryMatches": true
+}

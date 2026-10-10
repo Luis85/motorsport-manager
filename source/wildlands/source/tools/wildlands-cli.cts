@@ -13,16 +13,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {readBytesFile,readJsonFile,writeJsonFile,writeTextFile,emit} from './cli-io.cjs';
+import * as creatureCLI from './creature-cli.cjs';
+import * as storyboardCLI from './storyboard-cli.cjs';
 const usage='wildlands process [discover|--help] | process schema [--kind definition|recipe] | process create --id ID --output FILE [--name NAME] | process validate|inspect --input FILE [--draft] | process edit --input FILE --recipe FILE (--output FILE | --dry-run) [--draft] | process attach --input FILE --asset FILE --step ID --expected-revision N --expected-fingerprint HEX (--output FILE | --dry-run) | process run --input FILE --minutes N --output FILE [--seed S] | process slides --input FILE [--format json|md] [--minutes N [--seed S]] [--output FILE] | process diff --input FILE --against FILE | process build --input FILE --output FILE.html | process forge --input FILE --output NEWDIR | wildlands --help | --version | discover [--game DIR] | scenarios --game DIR | create --game DIR --output project.json [--scenario ID] [--scene ID] [--pack pack.json] [--id ID] [--name NAME] | validate|inspect --project project.json [--game DIR] | scenario --project project.json --scenario ID [--scene ID] --output project.json [--game DIR] | run|edit --project project.json --recipe recipe.json --output project.json [--game DIR] | upgrade --project legacy.json --game DIR --output project.json | compile|export --project project.json --output godot-directory [--with-engine-sources] [--game DIR] | validate-game|inspect-game --game DIR | build-game --game DIR (--output FILE.html | --check FILE.html) [--profile play|studio]';
 /** Repository handbook for humans and agents; reported by --help and every game-required diagnostic. */
 const handbook='docs/reference/wildlands-cli.md';
 const project=['--project','--game'];
-const allowed:Record<string,readonly string[]>={discover:['--game'],scenarios:['--game'],create:['--game','--output','--scenario','--scene','--pack','--id','--name'],
+const allowed:Record<string,readonly string[]>={...creatureCLI.options,discover:['--game'],scenarios:['--game'],create:['--game','--output','--scenario','--scene','--pack','--id','--name'],
  validate:project,inspect:project,scenario:[...project,'--scenario','--scene','--output'],run:[...project,'--recipe','--output'],edit:[...project,'--recipe','--output'],
  upgrade:[...project,'--output'],compile:[...project,'--output','--with-engine-sources'],export:[...project,'--output','--with-engine-sources'],
  'validate-game':['--game'],'inspect-game':['--game'],'build-game':['--game','--output','--check','--profile']};
 /** Value-less opt-in flags; every other option takes exactly one value. */
-const switches=new Set(['--with-engine-sources']);
+const switches=new Set(['--with-engine-sources','--dry-run','--replace','--summary']);
 /** wildlands-project maxBytes, needed before the engine (and its project module) may load. */
 const PROJECT_MAX_BYTES=10*1024*1024;
 /** Largest HTML artifact `build-game --check` reads (game.json budgets are at most 64 MiB). */
@@ -115,10 +117,13 @@ function gameCommand(command:string,values:Map<string,string>):void{
  process.exitCode=1;
 }
 export async function run(args:readonly string[]):Promise<void>{
+ if(args[0]==='storyboard'){storyboardCLI.run(args.slice(1));return;}
  if(args[0]==='process'){(require('./process-cli.cjs') as typeof import('./process-cli.cjs')).run(args.slice(1));return;}
+ if(args[0]==='creature'&&(args.length===1||(args.length===2&&['discover','--help','-h'].includes(args[1]!)))){emit({ok:true,protocolVersion:1,...creatureCLI.discover()});return;}
+ if(args[0]==='creature')args=['creature-'+args[1],...args.slice(2)];
  const command=args[0];
  try{
-  if(args.length===0||(args.length===1&&['--help','-h'].includes(command!))){emit({ok:true,protocolVersion:1,usage,handbook});return;}
+  if(args.length===0||(args.length===1&&['--help','-h'].includes(command!))){emit({ok:true,protocolVersion:1,usage:usage+' | creature discover|list|inspect|export|import|edit|attach-visual (see creature discover) | storyboard discover|schema|build (see storyboard discover)',handbook});return;}
   // Lazy: a broken package manifest cannot affect help, and the single-file bundle inlines this version.
   if(args.length===1&&command==='--version'){const manifest=require('../../package.json') as {name:string;version:string};emit({ok:true,protocolVersion:1,name:manifest.name,version:manifest.version});return;}
   if(!command||!Object.hasOwn(allowed,command))throw Error('Unknown operation. '+usage);
@@ -132,7 +137,7 @@ export async function run(args:readonly string[]):Promise<void>{
   const opened=['discover','scenarios','create'].includes(command)?null:openProject(required('--project'),folder);
   const installed=opened?null:folder!==undefined?installFolder(folder):null;
   const SDK=require('../wildlands-project-sdk.cjs') as typeof import('../wildlands-project-sdk.cjs');
-  if(command==='discover'){const found=SDK.discover();emit({ok:true,...found,game:installed?found.game:null});return;}
+  if(command==='discover'){const found=SDK.discover();emit({ok:true,...found,game:installed?found.game:null,creature:creatureCLI.discover(),storyboard:storyboardCLI.discover()});return;}
   if(command==='scenarios'){emit({ok:true,protocolVersion:1,game:installed!.id,digest:installed!.digest,defaultScenario:SDK.projects.discover().game?.defaultScenario,scenarios:SDK.projects.scenarios()});return;}
   if(command==='create'){
    const config:Wildlands.CreateOptions={};
@@ -147,6 +152,7 @@ export async function run(args:readonly string[]):Promise<void>{
   const input=required('--project'),checked=SDK.projects.validate(opened!.text);
   if(!checked.ok){emit({ok:false,protocolVersion:1,code:'invalid-project',errors:checked.errors});process.exitCode=1;return;}
   const loaded=checked.project,gameId=opened!.gameId;
+  if(Object.hasOwn(creatureCLI.options,command)){creatureCLI.run(command,values,loaded,checked.fingerprint);return;}
   if(command==='validate'){emit({ok:true,protocolVersion:1,fingerprint:checked.fingerprint,projectId:loaded.id,schemaVersion:loaded.schemaVersion,gameId,scenarioId:loaded.scenarioId,sceneId:loaded.sceneId});return;}
   if(command==='inspect'){const inspected=SDK.inspectProject(loaded);emit({ok:true,protocolVersion:1,projectId:loaded.id,schemaVersion:loaded.schemaVersion,gameId,scenarioId:loaded.scenarioId,sceneId:loaded.sceneId,fingerprint:inspected.fingerprint,snapshot:inspected.snapshot,connections:inspected.connections});return;}
   if(command==='upgrade'){

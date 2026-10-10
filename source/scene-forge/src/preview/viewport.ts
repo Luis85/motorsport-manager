@@ -41,6 +41,15 @@ export function createViewport(scene: THREE.Scene, source: SceneDocument, stage:
   const fill = new THREE.DirectionalLight('#b5cbff', 1);
   fill.position.set(-6, 3, -5);
   scene.add(fill);
+  const rim = new THREE.DirectionalLight('#ffe4b5', 2.3);
+  scene.add(rim, rim.target);
+  const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    new THREE.ShadowMaterial({ color: '#493b2d', opacity: 0.22 }),
+  );
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
   const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -61,6 +70,14 @@ export function createViewport(scene: THREE.Scene, source: SceneDocument, stage:
   function environment() {
     env = source.environment;
     scene.background = new THREE.Color(env.background);
+    const portrait = env.presentation === 'portrait';
+    ambient.color.set(portrait ? '#fff5de' : '#dceaff');
+    ambient.groundColor.set(portrait ? '#a5977c' : '#757066');
+    key.color.set(portrait ? '#fff0d4' : '#fff0d9');
+    fill.color.set(portrait ? '#dbe7df' : '#b5cbff');
+    fill.intensity = portrait ? 1.5 : 1;
+    rim.visible = portrait;
+    floor.visible = portrait;
     ambient.intensity = env.ambient;
     key.intensity = env.keyIntensity;
     renderer.toneMapping =
@@ -79,10 +96,23 @@ export function createViewport(scene: THREE.Scene, source: SceneDocument, stage:
       grid.geometry.dispose();
       (Array.isArray(grid.material) ? grid.material : [grid.material]).forEach((m) => m.dispose());
     }
-    grid = new THREE.GridHelper(Math.ceil(span * 2), 24, '#596270', '#333d49');
+    const portrait = env.presentation === 'portrait';
+    grid = new THREE.GridHelper(
+      Math.ceil(span * 2),
+      24,
+      portrait ? '#a69a82' : '#596270',
+      portrait ? '#c8bfad' : '#333d49',
+    );
     grid.position.set(center.x, Math.min(0, box.min.y) - 0.004, center.z);
     grid.visible = gridVisible;
     scene.add(grid);
+    floor.position.set(center.x, box.min.y - span * 0.001, center.z);
+    floor.scale.setScalar(span * 5);
+    rim.target.position.copy(center);
+    rim.position.copy(center).add(new THREE.Vector3(-0.5, 0.8, -1).multiplyScalar(span * 2));
+    if (env.presentation === 'portrait')
+      fill.position.copy(center).add(new THREE.Vector3(-1, 0.6, 1).multiplyScalar(span * 2));
+    else fill.position.set(-6, 3, -5);
     key.target.position.copy(center);
     key.position
       .copy(center)

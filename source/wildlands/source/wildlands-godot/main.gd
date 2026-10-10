@@ -34,7 +34,7 @@ var details := RichTextLabel.new()
 var log := RichTextLabel.new()
 var file_dialog := FileDialog.new()
 var file_action := ""
-var story_to_save: Variant
+var story_to_save := ""
 var play_button: Button
 var selected_command: Dictionary = {}
 var viewport: SubViewport
@@ -80,12 +80,10 @@ func _build_ui() -> void:
 	page.add_child(header)
 	var title := Label.new()
 	title.text = "WILDLANDS · Littlewild"
-	title.add_theme_color_override("font_color", Color("#294f40"))
 	title.add_theme_font_size_override("font_size", 24)
 	header.add_child(title)
 	status.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	status.add_theme_color_override("font_color", Color("#294f40"))
 	header.add_child(status)
 	var toolbar := HBoxContainer.new()
 	page.add_child(toolbar)
@@ -177,7 +175,7 @@ func _build_ui() -> void:
 
 func _request_story_save() -> void:
 	file_action = "save"
-	bridge.request("story")
+	bridge.request("story.export")
 
 
 func _request_story_load() -> void:
@@ -236,9 +234,8 @@ func _response(method: String, result: Variant) -> void:
 		bridge.request("storytelling.inspect")
 	elif method in ["inspect", "start", "pause", "resume"]:
 		_render(result)
-	elif method == "story" and file_action == "save":
-		story_to_save = result
-		_choose_file("save")
+	elif method == "story.export" and file_action == "save":
+		_accept_story_export(result)
 	elif method == "storytelling.inspect":
 		clips = result.get("cutscenes", []).filter(
 			func(clip): return str(clip.sceneId) == str(view.get("snapshot", {}).get("sceneId", ""))
@@ -253,9 +250,9 @@ func _response(method: String, result: Variant) -> void:
 		world.apply_timeline(result)
 		if not playback.is_empty() and float(playback.time) >= float(playback.duration):
 			_stop_clip()
-	elif method == "query":
+	elif method in ["query", "story", "story.export"]:
 		if bridge.last_response_id != floors.last_handled_request:
-			_append_log(JSON.stringify(result))
+			_append_log(JSON.stringify(result) if method == "query" else "Story snapshot received.")
 	else:
 		_append_log(JSON.stringify(result))
 		bridge.request("inspect")
@@ -384,6 +381,14 @@ func _stop_clip() -> void:
 	world.clear_timeline()
 
 
+func _accept_story_export(result: Variant) -> void:
+	if not result is String or result.is_empty():
+		_error("The runtime did not return serialized story text.")
+		return
+	story_to_save = result
+	_choose_file("save")
+
+
 func _choose_file(action: String) -> void:
 	file_action = action
 	file_dialog.file_mode = (
@@ -400,7 +405,8 @@ func _file_selected(path: String) -> void:
 		if file == null:
 			_error("Cannot write story: " + error_string(FileAccess.get_open_error()))
 			return
-		file.store_string(JSON.stringify(story_to_save, "\t", true, true) + "\n")
+		# Keep engine-authored numbers opaque: native JSON parsing can change their bits.
+		file.store_string(story_to_save)
 		file.flush()
 		var error := file.get_error()
 		file.close()

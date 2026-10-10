@@ -291,6 +291,102 @@ scene-forge schema --kind batch --raw > batch.schema.json
 scene-forge schema --kind composition --compact
 ```
 
+Littlewild import returns `variants` (the existing model-ID array) and
+`variantModels` (original source variant name → actual imported model ID).
+Use `variantModels["world-round"]` when choosing a model for preview or export;
+do not infer normalized suffixes. Dry-run and apply return the same mapping,
+including custom prefixes and long IDs.
+
+### Plush forms and portable surface detail
+
+`catalog` exposes `organicForms` and `surfaceDetails`, including complete JSON
+batch operations, parameter ranges, export behavior and visual review workflow.
+Use `schema --kind geometry --raw` and `schema --kind material --raw` for the
+installed contracts. Apply both through the existing guarded `apply` transaction.
+
+The `organic` geometry makes closed, smoothly rounded forms with seam-aware UVs:
+
+```json
+{
+  "op": "putGeometry",
+  "id": "plushBody",
+  "geometry": {
+    "type": "organic", "size": [0.9, 1.1, 0.72], "roundness": 0.9,
+    "taper": 0.22, "bend": 0, "segments": 32
+  }
+}
+```
+
+`size` is the untapered diameter in meters. `roundness` is 0.65–1.5 (default 1;
+lower values fill out the form), `taper` is −0.65–0.65 (positive narrows the top),
+`bend` is −0.75–0.75 (positive offsets both ends along X), and `segments` is
+12–96 (default 32). Inspect actual bounds because taper and bend can extend them.
+The default has 561 vertices; the maximum has 4,753. Organic forms export as
+baked Littlewild meshes and ordinary GLB meshes.
+
+An optional `profile` gives agents editable crosssections for a belly, waist,
+cheek, ear or closed garment form. Supply 2–12 stations ordered from `at: -1`
+(bottom) to `at: 1` (top), separated by at least 0.02. Each station has `width`
+and `depth` multipliers (0.1–2) and optional `offset: [x,z]` (−0.75–0.75,
+default `[0,0]`). Offsets use half the corresponding size; the profile composes
+with taper and bend. Smoothstep interpolation never overshoots these values,
+and each station gets an exact mesh ring. Width/depth multiply the closed
+base shape, so the endpoints remain poles. Profiles use at most 5,723 vertices.
+This is a closed sculpted form, not an open cloth sheet or a boolean eye socket.
+
+```json
+{
+"type": "organic", "size": [1, 2, 1],
+"profile": [
+  {"at": -1, "width": 1, "depth": 1},
+  {"at": -0.35, "width": 1.12, "depth": 1.15, "offset": [0, 0.12]},
+  {"at": 0.35, "width": 0.75, "depth": 0.8},
+  {"at": 1, "width": 0.65, "depth": 0.7, "offset": [0.1, -0.08]}
+]
+}
+```
+
+Use a complete `putGeometry` to update the existing geometry ID while retaining
+its nodes, rig tags and material roles. `putGeometry` replaces the full definition:
+start from `inspect --source`, preserve other fields, dry-run with revision/state
+guards, inspect bounds, then compare a fixed `review --file` across edits.
+Littlewild/GLB preserve the resulting silhouette and UVs as baked geometry;
+retain the Forge recipe to edit profile stations again.
+
+Standard PBR materials accept a versioned deterministic surface recipe:
+
+```json
+{
+  "op": "putMaterial", "id": "plushFur",
+  "material": {
+    "color": "#c89059", "roughness": 0.9, "sheen": 0.65,
+    "surface": { "kind": "fur", "seed": 7, "scale": 3, "strength": 0.4 }
+  }
+}
+```
+
+All four surface fields are required. Kinds are `fur`, `cloth`, `leather`; seed
+is an integer 0–65535, scale is UV repeat 1–16, and strength is 0–1. The
+`littlewild-surface-v1` algorithm creates 128×128 color and tangent normal maps.
+Optional `version: 2` chooses fine directional fur fibres, woven yarn and subtle
+leather grain (`littlewild-surface-v2`). Omitted version or `version: 1` retains
+the original pixels exactly. The inspector exposes this as Detail style.
+GLB/glTF embeds PNGs, mesh tangents, UV transforms and recipe metadata without
+requiring Chromium. Littlewild retains the recipe, per-node effective material
+roles and mesh UVs. Unlit surfaces reject this detail instead of silently ignoring
+it; OBJ/STL continue to omit materials. Legacy meshes without UVs get a local
+spherical projection; authored seam-aware UVs give precise placement.
+
+These maps shade short fur and fabric detail. Silhouette volume, tufts, eyelids,
+clothing thickness and facial proportions still require geometry. Use a complete
+batch with revision/state guards, inspect the dry run, apply the same batch, and
+compare `review --file previous/replay-plan.json` captures. The material inspector
+edits the same fields and downloads guarded recipe changes.
+
+Surface maps are shared across colors with the same version/kind/seed/scale/strength. A
+scene allows at most 256 distinct surface recipes; exceeding it fails with
+`SCENE_BUDGET` before publication. Reuse seeds and scales when changing only color.
+
 ### Projects and scenes
 
 | Command | Options |
@@ -320,7 +416,7 @@ scene-forge -p garage scene use main
 |---|---|
 | `model list` | none |
 | `model inspect <id>` | `--parameters <json>`. Parameters, dependencies, dimensions of a variant |
-| `model import` | `--file`, `--data`, `--replace`, `--dry-run`. Accepts a model or a `model-bundle` |
+| `model import` | `--file`, `--data`, `--replace`, `--dry-run`, `--expected-revision`, `--expected-state`. Accepts a model or a `model-bundle` |
 | `model instantiate <model> <id>` | `--at <x,y,z>` (default `0,0,0`), `--rotate <x,y,z>`, `--scale <x,y,z>` (default `1,1,1`), `--parameters <json>`, `--parent <id>`, `--name <name>`, guards, `--dry-run` |
 | `model capture <id>` | `--nodes <ids>` (required), `--name <name>`, `--replace`, guards, `--dry-run`. Turns scene nodes into a model |
 | `model export <id>` | `-o, --out <path>` (required). Model bundle with nested dependencies |
@@ -497,6 +593,60 @@ scene-forge -p garage preview --model crate --parameters '{"bands":4}' --out gar
 scene-forge -p garage preview --all-scenes --out garage/exports/workshop.html
 ```
 
+Physical materials support `sheen`, `sheenColor`, `sheenRoughness`, `clearcoat`
+and `clearcoatRoughness`. Scalar values are 0–1; colors use `#RRGGBB`. Omitted
+fields keep legacy standard shading. Sheen is useful for soft cloth and fur
+surfaces; clearcoat adds a polished layer for eyes, glazed props and varnish.
+These controls require standard PBR shading; unlit materials do not light them.
+GLB/glTF preserve them through `KHR_materials_sheen` and
+`KHR_materials_clearcoat`; Littlewild import/export preserves the same values.
+Littlewild node `materialProps` are merged over their base material into isolated,
+deduplicated editable slots, preserving individual nose, cheek and ear finishes.
+Equal values on differently named base roles remain separate. Per-node overrides
+are baked into new slots: downstream appearance palettes must target those slots
+explicitly when recoloring an edited definition; source behavioral palette
+inheritance is not rewritten automatically.
+Littlewild mesh `castShadow` and `receiveShadow` flags currently use Scene Forge’s
+mesh defaults after import. A native shadow decal may therefore cast an additional
+contact shadow in lit previews; GLB does not carry engine-specific shadow flags.
+Material opacity and depth-write behavior are retained.
+Native shadow decals preserve `depthWrite: false` together with alpha blending
+and opacity below 1. GLB represents these with `alphaMode: BLEND`; Scene Forge
+recipes, previews and Littlewild output retain the explicit depth setting.
+Imports reject opaque `depthWrite: false`, transparency inconsistent with `opacity < 1`,
+and emission above 20 with `LITTLEWILD_MATERIAL_UNSUPPORTED`; change those source
+settings explicitly before importing. Scene Forge does not silently approximate
+them.
+The material inspector exposes these fields under **Soft fabric & polished
+surfaces**. Full `putMaterial` definitions replace the previous material.
+
+For a warm artboard-like review, set `environment.presentation` to `portrait`,
+with a pale background, or use **Use portrait studio** in the viewer. This adds
+a warm rim light and a soft shadow receiver in the preview only. Inspection
+remains available as `inspection`; existing recipes retain their previous look.
+The presentation setting is retained by scene bundles and guarded edits, and
+applies to screenshots and review captures. It never adds geometry or lights to
+the exported GLB. `setEnvironment` replaces the environment, so retain any
+custom intensity and key position values you want to keep.
+
+Example operations for a guarded `apply` batch (read revision/state first):
+
+```json
+{
+  "operations": [
+    { "op": "putMaterial", "id": "softCoat", "material": {
+      "color": "#bc8151", "roughness": 0.88,
+      "sheen": 0.75, "sheenColor": "#ffe3bc", "sheenRoughness": 0.8
+    } },
+    { "op": "setEnvironment", "environment": {
+      "presentation": "portrait", "background": "#eee7d8",
+      "ambient": 1.1, "keyIntensity": 3.2, "keyPosition": [5, 10, 7],
+      "exposure": 1, "toneMapping": "filmic"
+    } }
+  ]
+}
+```
+
 GLB is the primary format (Blender: File → Import → glTF 2.0; Three.js:
 `GLTFLoader`; Godot: copy the `.glb` into the project). glTF embeds its buffer;
 OBJ omits materials; STL omits materials, hierarchy and units. Hidden subtrees are
@@ -543,7 +693,19 @@ covers rig roles, mesh budgets and manifests.
 |---|---|
 | `littlewild sync` | `--file <path>` (required `littlewild-export` manifest), `--asset <id>`, `--dry-run`, `--check` (fail with `LITTLEWILD_STALE`, never write) |
 | `littlewild export` | `--model <id>` and `--out <family>/<id>/definition.json` (required), `--family items\|buildings\|creatures\|pets`, `--variant <name>`, `--name <name>`, `--parameters <json>`, `--materials <json>`, `--dry-run` |
-| `littlewild import` | `--definition <path>` (required), `--prefix <id>`, `--dry-run`, `--replace` |
+| `littlewild import` | `--definition <path>` (required), `--prefix <id>`, `--dry-run`, `--replace`, `--expected-revision <n>`, `--expected-state <hash>` |
+
+`littlewild import` accepts a `littlewild-definition`, a raw `littlewild-3d-asset`,
+or a version 1 `littlewild-creature-package` exported by Character Studio. Package
+imports use `appearanceManifest` and report `importedFacet: "visual"`; gameplay,
+companion state, behavior mappings and actor rig bindings stay in the source
+package. Keep the source recipe for Character Studio; externally edited visuals
+continue in Scene Forge and are rejected by the Studio recipe importer to prevent
+loss of advanced edits. Export changed visuals into the existing Littlewild
+definition to retain its gameplay and actor rig. Read `inspect` for the revision
+and state hash, then pass both guards when
+replacing existing models to reject intervening edits. Dry runs validate the same
+model dependency closure without writing.
 
 A manifest's `target` is relative to the manifest file; `--file` and
 `--definition` are relative to the working directory. From the repository root,
@@ -615,7 +777,9 @@ scene-forge -p motion export --validate --out motion/exports/animated.glb
 without it they fail with `PLAYWRIGHT_UNAVAILABLE` and `details.remedies`. A
 review writes one PNG per frame, `contact-sheet.png`, `review.json` (cameras,
 source/render hashes, environment) and `replay-plan.json` for fixed-camera
-comparisons. Rendering never changes the source or its revision.
+comparisons. Rendering never changes the source or its revision. Capture loads the self-contained
+viewer as inline HTML, so browser restrictions on `file://` URLs do not prevent
+`screenshot` or `review`, and no local HTTP server is needed.
 
 ```sh
 cat > review.plan.json <<'EOF'
@@ -769,7 +933,8 @@ History and other scenes are not included; use Git for full project history.
 
 Limits: 20,000 expanded objects, 2,000,000 triangles, 256 pattern copies, model
 depth 16, 32 authored lights, 16 MiB per JSON input. Not supported: inverse
-kinematics, weight painting, sculpting, image textures and UV unwrapping, physics,
+kinematics, weight painting, sculpting, external image texture import and automatic
+UV unwrapping, physics,
 mesh import, native `.blend`/`.tscn` output, arbitrary scripts or GLSL.
 
 ## Rebuild and verify the executable
@@ -803,3 +968,21 @@ and notice texts of every bundled package. For development without rebuilding,
   [code quality map](../../source/scene-forge/docs/CODE_QUALITY.md).
 - [Contributor instructions](../../source/scene-forge/AGENTS.md) and
   [third-party notices](../../source/scene-forge/THIRD_PARTY_NOTICES.md).
+
+
+### Maintaining shared Littlewild meshes
+
+A material-only refinement preserves the exact authored mesh buffers, including
+positions, normals, UVs and indices. Export reuses equal buffers across retained
+variants and removes unreferenced mesh resources. Equality includes all buffers:
+small shape changes or different UV placement remain distinct. Mesh names are
+collision-safe; an existing ID never silently replaces a different retained mesh.
+Keep the original definition wrapper when replacing one variant so gameplay,
+rig bindings and other variants remain available.
+
+The complete exported visual is checked against the engine's **400,000 JSON
+values and depth 32** limits, in addition to per-mesh and total vertex budgets.
+This counts every JSON value, not only mesh numbers. An over-budget export fails
+with `LITTLEWILD_BUDGET` before writing; reduce segments, reuse geometry or remove
+unneeded variants. Dry-run and then export the same source. Repeated material
+refinements do not accumulate copies of unchanged authored mesh data.

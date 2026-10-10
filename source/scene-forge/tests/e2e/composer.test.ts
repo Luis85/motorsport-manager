@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { loadOfflinePage } from './offline-page.js';
 import { chromium } from 'playwright';
 import { validateBytes } from 'gltf-validator';
 
@@ -80,7 +80,7 @@ test('offline composer adds models, edits transforms, undoes changes and round-t
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
-    await page.goto(pathToFileURL(html).href);
+    await loadOfflinePage(page, html);
     await page.waitForFunction(() => window.forgeReady || window.forgeError);
     assert.equal(await page.evaluate(() => window.forgeError), undefined);
     const baseline = await page.evaluate(() => window.forgeViewer.getSource().nodes.length);
@@ -174,7 +174,7 @@ test('an empty scene can be composed on mobile and invalid numeric input is reco
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
-    await page.goto(pathToFileURL(html).href);
+    await loadOfflinePage(page, html);
     await page.waitForFunction(() => window.forgeReady || window.forgeError);
     assert.equal(await page.evaluate(() => window.forgeError), undefined);
     assert.match((await page.locator('#objects').textContent()) ?? '', /empty/);
