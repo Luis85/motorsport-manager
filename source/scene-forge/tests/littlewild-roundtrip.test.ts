@@ -130,3 +130,23 @@ test('an edited variant changes only the edited fields and keeps engine-only dat
     assert.equal(typeof after.visual.materials.fur, 'string', 'shared string references stay');
     assert.equal((await fs.readFile(out, 'utf8')).includes('"position": [\n'), true);
   }));
+
+test('the example projects publish current Littlewild definitions', () =>
+  withWorkspace(async (_cwd, invoke) => {
+    for (const name of ['pocket-pet', 'agency-delivery']) {
+      const project = path.join(import.meta.dirname, '../examples', name);
+      const manifest = path.join(project, 'littlewild.export.json');
+      // --check never writes; it fails with LITTLEWILD_STALE when a recipe and its definition differ.
+      const result = await invoke([
+        '-p',
+        project,
+        'littlewild',
+        'sync',
+        '--file',
+        manifest,
+        '--check',
+      ]);
+      assert.deepEqual(result.stale, [], name);
+      assert.ok(result.assets.length > 0, name);
+    }
+  }));
