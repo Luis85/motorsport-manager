@@ -125,6 +125,7 @@
     {"name": "process-dashboard-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-dashboard-browser.js", "result": "verification/v15/process-dashboard-browser-results.json", "timeout": 300, "cost": 70},
     {"name": "process-hostile-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-hostile-browser.js", "result": "verification/v15/process-hostile-browser-results.json", "timeout": 300, "cost": 70},
     {"name": "process-hostile-editors-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-hostile-editors-browser.js", "result": "verification/v15/process-hostile-editors-browser-results.json", "timeout": 300, "cost": 70},
-    {"name": "process-scale-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-scale-browser.js", "result": "verification/v15/process-scale-browser-results.json", "timeout": 300, "cost": 70}
+    {"name": "process-scale-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-scale-browser.js", "result": "verification/v15/process-scale-browser-results.json", "timeout": 300, "cost": 70},
+    {"name": "business-process-checkpoint", "kind": "node", "tier": "full", "entry": ".generated/test-process-checkpoint.cjs", "result": ".generated/process-checkpoint-results.json", "timeout": 180, "cost": 35}
   ]
 }
