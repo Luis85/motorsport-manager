@@ -250,6 +250,7 @@
     "source/tools/engine-export-bundle.cts",
     "source/tools/balancing-cli.cts",
     "source/tools/build-inserts.cts",
+    "source/tools/build-inserts-process.cts",
     "source/tools/artifact-profiles.cts",
     "source/tools/artifact-assembler.cts",
     "source/tools/artifact-report.cts",
