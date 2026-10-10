@@ -14,7 +14,7 @@ None of the words is wrong; this table maps them.
 |---|---|---|
 | **Process** selector, process name | process, process definition | a `wildlands-process` definition; `content.definitions` in `game.json` |
 | A card on the map, an entry in the step list, **Step scenes** | step, step scene | `steps[]`, each with a `scene` |
-| A path in the step editor ("Path 1 of 1 · to …") | flow | `flows[]` (`from`, `to`, `when`, `on`) |
+| A path in the step editor ("Path 1 of 1 · to …", **Where work goes next**, **Add path to…**, **Go to**, **Remove path**) | flow | `flows[]` (`from`, `to`, `when`, `on`) |
 | **Shared resources** (People, Machine, System) | resource pool | `resources[]` with `kind` `people`, `machine` or `system` |
 | Cases, customers or users | case | `cases`, `tokens` in the snapshot |
 | **Edit process…**, Definition editor (**Tune values**, **Raw JSON**) | Definition editor | process-setting recipe operations such as `setDescription` and `setSeed` |
@@ -23,9 +23,13 @@ None of the words is wrong; this table maps them.
 | **Apply draft and reset run**, **Apply and reset run** | applied (active) definition | `revision` and `fingerprint` |
 | **Present**, **Present slides** (phone menu) | Present mode, slide deck | `process slides`; `format: wildlands-process-slides` |
 | working (people) or running (machines and systems) / waiting; slides: "Now in progress", "now waiting" | in progress, queued | `active`, `queued` per step |
-| "min", the clock, "minute M" in Present | business minute | `duration`, `minute`, `--minutes` |
+| Map legend **Working**, **Waiting**, **Timer**, **Backlog**, **Blocked** | work state of a case token | token `status` `active`, `queued`, `timer`, `backlog`, `held` |
+| **Blocked after finishing** (inspector), "blocked" (SIPOC, slides) | held work | `held` per step (a subset of `queued`) |
+| **Work cost**; **Capacity cost** | work cost; capacity cost | `metrics.cost`; `metrics.capacityCost` (read model) |
+| **Mean cycle** ("—" until a case finishes); **Mean age in progress** | mean cycle time; mean age | `metrics.meanCycleMinutes`; `metrics.meanAgeMinutes` (read model) |
+| "min" (slides and SIPOC measures add an hours gloss from 120 min: "19,007 min (≈ 316.8 h)"), the clock "M min of H" with an hours line, "business minute M" in Present | business minute | `duration`, `minute`, `--minutes` |
 | **Seed** | seed | `seed`, `--seed` |
-| **Run until** | run length | `horizon` (`Runtime.create` option) |
+| **Run until** ("Until: 24 h (1,440 min)", …, "Until: no limit", "Until: custom…") | run length | `horizon` (`Runtime.create` option) |
 | **Process type** | genre | `genre` (`process`, `customer-journey`, `user-journey`) |
 | **Tracked measures** | tracked fields | `track` |
 | **Random timing**, **Random outcomes (draws)** | random timing, draws | `timing`, `draws` |
@@ -138,7 +142,7 @@ outcomes are opt-in per step (Randomness, seeds and steady arrivals).
 9. A case finishes only at an end with no outstanding parallel tokens (tokens spawned by a
    non-interrupting deadline run beside the main route; the case finishes with the last of them). Throughput,
    active/queued cases, completed/failed cases, cycle time, task waiting time,
-   resource utilization and simulated cost derive from that same state.
+   resource utilization and work cost derive from that same state (see Run metrics and costs).
 10. **Counters.** A task or timer may declare `add: {<field>: <delta>}` with one to eight
    fields, each a nonzero whole number within ±1,000,000. At completion the engine
    applies `set` effects and then adds each delta (a missing field counts as 0; a field
@@ -167,6 +171,16 @@ out-of-range values, dangling flows/resources, invalid scene geometry, impossibl
 resource demands, unreachable steps and steps without a route to an end. These
 checks do not prove all data-dependent loops terminate. Bounded execution makes
 those failures observable.
+
+Diagnostics name the cause in plain words. A wrong number of outgoing flows says what the
+step kind needs and what it has (`A task needs exactly 1 outgoing flow; this one has 0.`;
+`... besides its deadline flow` when the step has a deadline). A demand on a pool that does not
+exist reads `Uses pool "x", which is not defined.`; a demand above an existing pool's capacity
+reads `Demand exceeds the available pool.` A flow whose `from` or `to` step is missing reads
+`Both endpoints must exist.`, and while any flow has a missing endpoint the reachability and
+route-to-end checks are skipped, so one bad flow is reported once instead of as a cascade of
+unreachable steps. A list over its size limit names the limit and the count (`A process holds at
+most 128 steps; this one has 150.`, likewise for flows, resource pools and arrival rules).
 
 ## Randomness, seeds and steady arrivals
 
@@ -316,8 +330,16 @@ finished cases are pruned.
 `visits`) and `reached`, the number of distinct cases that entered the step at least
 once. A rework loop raises `entered` but not `reached`. `reached` is kept with a small
 per-case visited marker that is dropped when the case finishes, so it is exact under
-pruning and does not grow with the run. Drop-off between two steps is the difference of
-their `reached` values.
+pruning and does not grow with the run. The difference of two steps' `reached` values is not
+all drop-off: it also holds cases that took an alternative route and cases still in progress.
+
+The Journey map's funnel row shows, for each main-route step, the cases that reached it and
+their share of the first step. Its drop-off ("−N% lost (n)") counts only cases that finished at
+an end with `outcome: "lost"` branching off since the previous main-route step; a branch that
+comes back reads "split, rejoins at <step>", and cases still between the two steps read "n in
+progress", so neither shows as a loss. Failed cases are not counted there. The main route is
+`LWProcessRoute.next` at each step (the rule the SIPOC view and the slides share), except that the
+journey map keeps a fork's first branch on the route and draws the others as branches.
 
 **Tracked fields.** `track` (definition level, up to six `{field, label?}`; the field
 follows the case-field name rule, `label` is 1..40 characters, fields may not repeat)
@@ -567,15 +589,25 @@ deliveries, and measures from the snapshot. Do not repeat derived content in `si
 How the SIPOC view derives its columns (pure `model()` in `process-sipoc-model.ts`, drawn by `process-renderer-sipoc.ts`; the main-route walk and phase grouping are the shared `process-route.ts`, also used by the slide deck):
 suppliers and customers come only from `sipoc`, otherwise one muted "Add suppliers/customers
 in Edit process" card; inputs are the fields in arrival `data` and `draws` plus `needs` that
-no step delivers through `set`, `add` or `draws` (label from the need, else the declared
-output, else the field name, with live "cases arrived"); the process column follows the main
+no step delivers through `set`, `add` or `draws`, except internal state: a field that steps set
+or add to and that every arrival seeds with the same constant (a counter starting at 0, a flag
+starting false) is not an input, while a field the arrivals draw or seed with different values
+stays one. An input's label comes from a presence need (a need without `op`; a tested need's
+label describes a condition, not the field), else the declared output, else the field name; its
+example lists the distinct arrival values (at most four, then "…") and plain descriptions of
+draws, with live "cases arrived". The process column follows the main
 route (first unconditional flow at decisions, a fork with its branches as one "in parallel"
 stage), grouped by `phase` in order of first appearance, or collapsed into at most 7 stages
-named by their first step; a stage shows live in-progress, waiting and completed sums and a
-dashed "variant" marker when it holds a decision or rework loop; outputs are declared step
+named by their first step; a stage shows live in-progress, waiting (`queued` minus `held`) and,
+when any, blocked sums, a dashed "variant" marker when it holds a decision or rework loop, and
+**completed**: the distinct cases that left the stage (the `reached` count of the next
+main-route step, plus cases that finished at an end reached only from inside the stage, not
+counting the ends of escalation paths), never a sum of step completions, so rework visits,
+decisions and joins do not count as extra cases. Outputs are declared step
 `outputs`, fields delivered just before end steps and one entry per end step (goal, lost or
-reached) with its completed count; a measures strip shows completed, in progress, mean cycle,
-cost, throughput per 100 minutes, conversion and tracked means when present.
+reached) with its completed count; a measures strip shows completed, in progress, mean cycle
+("—" until a case finishes), mean age in progress, work cost, capacity cost, throughput per 100
+minutes, conversion and tracked means when present.
 
 ## Authoring and ownership
 
@@ -619,8 +651,14 @@ definition. Exported HTML starts a fresh paused run; it is not a checkpoint.
 When a game lists more than one process, the header shows a labelled **Process**
 selector (hidden for one process) naming each definition. Switching has replace
 semantics: a new paused session at minute 0, nothing selected, receipts and
-inspector reset, the 3D surface and 2D frame rebuilt, with run length and view mode
-kept. It never ticks the clock, even from a running process. The studio keeps each
+inspector reset, the 3D scene and 2D frame rebuilt, with run length and view mode
+kept. It never ticks the clock, even from a running process. When the run is past minute 0,
+choosing another process first asks "Switch to <process>?" in a small modal that starts on
+**Cancel** and names the minute and case count it discards (and that unapplied drafts are kept);
+**Cancel**, Escape or Close restore the selector and its focus and leave the run unchanged
+("Stayed on <process>. The run is unchanged."), and **Switch process** switches. A run seed
+typed into **Seed** applies only to the process it was typed for; the status says so after a
+switch ("Run seed 9 applied only to <process>; this process uses its own seed 7."). The studio keeps each
 process's applied (edited, applied or imported) definition and its unapplied draft
 text in memory, so switching back restores both. Import and Apply replace only the
 active process in place. Export JSON, BPMN, draft and run report act on the active
@@ -835,6 +873,7 @@ warning.
 | `UnitCost` on a lane, participant or resource | pool `costPerMinute` (per the unit, rounded to a whole number) |
 | `FixedCost` on a task | step `cost` (rounded) |
 | `Duration` of the scenario | a horizon hint (`info.horizon`) and the `until` above |
+| `seed` of `ScenarioParameters` | the definition `seed` when the Wildlands extension names none; a seed that is not a whole number from 0 to 2147483647 is ignored with a warning, and an extension seed that differs wins with a warning |
 | `replication`, `Selection`, `Priority`, `Interruptible` and any other parameter | ignored, one warning per parameter name |
 
 Where the Wildlands extension and BPSim both describe a value and disagree, the extension wins
@@ -852,7 +891,20 @@ there are any); `info` holds `process`, `processes`, `scenario`, `scenarios`, `h
 so a dialog can offer the choices before importing, and `options(options)` validates an options
 object. Warnings never replace the engine's own checks: the definition is validated like any other,
 and a draft with diagnostics can be kept (`--draft`). XML with DOCTYPE or entity declarations,
-more than 8 MiB or 64 levels of nesting is refused.
+more than 8 MiB or 64 levels of nesting is refused. DOCTYPE, ENTITY and the other markup
+declarations are refused as markup tokens ("DOCTYPE and entity declarations are not allowed."),
+so a comment or CDATA section that merely contains the text `<!DOCTYPE` is still read.
+
+**Size bound.** Events, pass-through gateways and inlined container boundaries fold away, so a
+file may hold more elements than the definition it becomes, but not without limit: before any
+analysis that grows with the file, a process (and, after inlining call activities, its copies)
+with more than 4 times the definition limits, 512 flow nodes or 1,024 sequence flows, is
+rejected in one linear pass with a plain message, for example "This process is too large to
+import: it has 602 flow nodes and 601 sequence flows, but a Wildlands process holds at most 128
+steps and 256 flows. Import reads at most 512 flow nodes and 1,024 sequence flows, which leaves
+room for events and gateways that fold away; split the model into smaller processes." (a
+rejection with `type: "import"`). Within the bound the gateway and flow passes look edges up
+in an index built once per process instead of scanning every flow for each element.
 
 ### Exporting BPSim
 
@@ -862,11 +914,25 @@ with one scenario in minutes (`baseTimeUnit="min"`): `ProcessingTime` for work s
 costs, `Probability` per flow (the marginal share for chained chance routes of a decision whose
 non-default flows are all plain chances; the percent for plain chance flows of an inclusive fork),
 `InterTriggerTimer` (the `gap` or the interval) and `TriggerCount` for the first arrival,
-the scenario `Duration` (the span from minute 0, i.e. `until`) for an `until` arrival, and
-`Quantity` / `UnitCost` per pool. Deadlines travel only on the boundary event and in the
-extension, not as a BPSim parameter. The extension stays authoritative: a definition exported
-with and without `--bpsim` imports back to the same fingerprint with no warning, and other
+the first arrival's case data as start-event `Property` parameters (constants as
+`NumericParameter`, `FloatingParameter`, `BooleanParameter` or `StringParameter`, and each `int`
+draw as a `UniformDistribution(min, max)`), the definition `seed` as the `seed` attribute of
+`ScenarioParameters`, the scenario `Duration` (the span from minute 0, i.e. `until`) for an
+`until` arrival, and `Quantity` / `UnitCost` per pool. Deadlines travel only on the boundary event
+and in the extension, not as a BPSim parameter. The extension stays authoritative: a definition
+exported with and without `--bpsim` imports back to the same fingerprint with no warning, and other
 BPSim-aware tools see the same numbers.
+
+**Fidelity notes.** `LWProcessBpmn.fidelity(definition, {bpsim})` (and the `fidelity` field that
+`process export-bpmn` prints) lists, in plain sentences, what only the Wildlands extension carries,
+so a tool that drops the extension loses it; the list is empty when nothing is lost. Without BPSim
+the first note says that arrivals, durations, probabilities, pool sizes and costs are extension
+only. With BPSim the notes name arrival rules after the first ("BPSim carries arrival rule 1 of 2;
+rule 2 is only in the Wildlands extension."), a first arrival that starts after minute 0, case
+fields other than constants and whole-number draws, steps whose case fields and counters, needs
+and declared outputs, absolute-minute timers, random deadline timing or backlogs are extension
+only, and pool kinds other than `people`. Lists of names keep the first four and count the rest.
+The studio's export status line does not show these notes.
 
 Exports are checked for well-formedness with the in-repository XML reader and, in the registered
 `business-process-bpmn` suite, with the built-in conformance validator below: the exports of
@@ -960,7 +1026,7 @@ parent), `element-missing`, `element-abstract`, `element-undeclared` (strict wil
 specification states in prose (which events may carry which definitions, gateway and flow
 constraints, a flow staying inside one process, BPSim value meaning such as probabilities summing
 to 1) are not checked, nor are references into imported files. A file must also pass the XML
-reader's limits (8 MiB, 64 levels, no DOCTYPE). Compared with libxml2's `xmllint` on the same
+reader's limits (8 MiB, 64 levels, no DOCTYPE or entity declaration). Compared with libxml2's `xmllint` on the same
 rules, known differences are where `xmllint` is more lenient than XML Schema: it does not report
 id references that name no id, it accepts an element of a repeated particle again after elements
 of an immediately following repeated substitution group (for example a `laneSet` after flow
@@ -986,6 +1052,37 @@ recorded run used the files), BPMN prose-semantics conformance, or native Godot 
 claimed.
 Graph layout and scene presentation do not influence scheduling. Simulation
 results describe authored assumptions and are not measured project forecasts.
+
+## Run metrics and costs
+
+The snapshot reports two costs, both in simulated units, not money. `metrics.cost` is the
+**work cost**: each task start charges its fixed `cost` once and occupied pool slots charge their
+`costPerMinute` for each minute they actually work (execution rule 3). `metrics.capacityCost` is
+the **capacity cost**: every pool unit charged for every minute so far, busy or idle
+(the sum of `capacity × costPerMinute × minute`), so adding capacity is never free in a what-if.
+Capacity cost is a read-model value computed when the snapshot is built; it never feeds the
+engine, a fingerprint or a decision.
+
+`metrics.meanCycleMinutes` covers finished cases only and is 0 until one finishes; the studio
+shows **Mean cycle** as "—" and the slides say "none yet" until then. `metrics.meanAgeMinutes`
+(read model) is the mean number of minutes since arrival of the cases still in progress, rounded
+to three decimals, or `null` when none is; it shows as **Mean age in progress**. These are means
+of one seeded run, not distributions or confidence intervals.
+
+Each step metric adds `held` (read model): tokens at the step with status `held`, work that
+finished there and waits for room in the next step's backlog. It is a subset of `queued`; views
+show it apart from waiting work (**Blocked after finishing** in the inspector, "blocked" in the
+SIPOC stages and on slides), and blocked time is not counted in `waitMinutes`. Each pool reports
+`utilization`, the average share of its capacity that was busy since minute 0, and `busy`, the
+units busy right now; the inspector's meter reads "Average since minute 0 · b/c busy now".
+
+In the studio the KPI strip under the stage shows the finished count, the journey outcomes,
+**In progress**, **Mean cycle**, **Mean age in progress**, **Work cost**, **Capacity cost**,
+**Failed**, **Dropped** (when any) and up to two tracked averages; a sentence under the pool
+meters tells the two costs apart. A step with random timing reads "Planned N min (the average
+shown in estimates)" when its draws average within 5% of the planned `duration`, and otherwise
+"Planned N min; draws average about M min" (for example a triangular 240/720/1800 averages about
+920), computed with the engine's own rounding and clamping (`LWProcessRandomView.meanOf`).
 
 ## Observed inputs and outputs
 
@@ -1027,30 +1124,56 @@ Actor hands, heads and posture animate only during playback and remain still
 when paused or reduced motion is requested. These actors are a representation
 of active work, not staff allocation, additional capacity or travel time.
 Room props, shadows, task progress and occupancy labels are presentation only.
-The 3D camera supports pointer orbit/zoom, right-drag or Shift-drag pan, and keyboard arrows (orbit), Shift+arrows or WASD (pan), +/− and F to frame. The 2D map supports drag pan, wheel/pinch zoom, arrows, +/−, 0 and on-screen zoom buttons. Cameras are presentation-only and never tick the run.
+The 3D camera supports pointer orbit/zoom, right-drag or Shift-drag pan, and keyboard arrows (orbit), Shift+arrows or WASD (pan), +/− and F to frame. The 2D map supports drag pan, wheel/pinch zoom, arrows, +/−, 0 and on-screen zoom buttons. With a step selected, Escape on the 2D map or the 3D scene returns to the whole process, and a **← Whole process** button in the stage header (`#back-overview`, at every width) does the same and moves focus to the stage heading, which then reads "Whole process"; selecting a step on a phone scrolls only the step strip, not the page. The 3D canvas has `role="img"` and an inset focus ring. Cameras are presentation-only and never tick the run.
 
 On touch devices (`pointer: coarse`) the camera hint under the stage uses touch wording ("Drag to orbit · Tap a room to enter it · Frame view resets the camera", "Drag to pan · Pinch or + − to zoom · Tap a scene to select it") instead of mouse and keyboard hints.
 
-**Readability.** Map text keeps a screen size, not a world size. The 2D map draws titles at their world size when zoomed in; zoomed out they stay at about 11 px in cards as wide as the neighbouring steps allow, on one or two lines of at least seven characters. When even that does not fit (large maps, phones), cards show their two-digit list number instead of the name, matching the order of the step list, and the hint reads "Card numbers match the step list · zoom in for names"; **Frame view** then frames the zoom at which numbered cards no longer touch, starting at the start step, rather than the whole map. Secondary lines and the text of pills and deadline tags appear only once they can be drawn at 9 px or larger. Below that, small cues (the deadline tag, the instance and deadline pills, the inclusive-fork marker, the outcome badge) hide their text but keep a glyph of at least 12 px, and their wording stays in the SVG title (tooltip) and the card's accessible name. For a count taken from a case field the 2D instance pill reads "× per case (field)" until items are live, then "× n"; the 3D caption keeps "× per case (field)" and its live line adds "× n now". A fixed count reads "× n". In 3D the room caption hangs below the room's front edge, clear of the queue rail and bench; captions grow until their lines reach 12 px, up to the width of a room (a selected room may widen its caption to most of the stage), and an overview caption that would still be smaller is not drawn, like the 2D map's secondary text; the inspector and step list keep the same counts. A portrait stage frames a selected room by its width.
+**Readability.** Map text keeps a screen size, not a world size. The 2D map draws titles at their world size when zoomed in; zoomed out they stay at about 11 px in cards as wide as the neighbouring steps allow, on the fewest lines (up to three, spacing permitting, each of at least seven and at most 24 characters) that hold every name. Lines break between words; a word longer than a line is hyphen-broken with at least three characters on each side, and a name that still does not fit keeps its whole leading words and ends in an ellipsis, never cut mid-word. Hovering or focusing a card shows its full name and work counts in the caption row under the map (`#map-caption`, "Hover over or focus a card to read its full name and work counts." otherwise). When a card cannot hold even one line of seven characters (large maps, phones), cards show their two-digit list number instead of the name, matching the order of the step list, and the key "Card numbers match the step list" appears in the map's dock beside the zoom buttons (inside the map host, so it also shows in Present); **Frame view** then frames the zoom at which numbered cards no longer touch, starting at the start step, rather than the whole map. While names or details are hidden, a **Zoom in for names** (or **Zoom in for details**) button in the legend row zooms about the middle of the map to the first level that shows them. Fitting the map leaves room for the zoom dock, so the zoom buttons never cover a fitted card. These screen sizes are given for a 16 px root font and scale with the browser's default font size, as do the marker and cue minimums. Secondary lines and the text of pills and deadline tags appear only once they can be drawn at 9 px or larger. Below that, small cues (the deadline tag, the instance and deadline pills, the inclusive-fork marker, the outcome badge) hide their text but keep a glyph of at least 12 px, and their wording stays in the SVG title (tooltip) and the card's accessible name. For a count taken from a case field the 2D instance pill reads "× per case (field)" until items are live, then "× n"; the 3D caption keeps "× per case (field)" and its live line adds "× n now". A fixed count reads "× n". In 3D the room caption hangs below the room's front edge, clear of the queue rail and bench; captions grow until their lines reach 12 px, up to the width of a room (a selected room may widen its caption to most of the stage), and an overview caption that would still be smaller is not drawn, like the 2D map's secondary text; the inspector and step list keep the same counts. A portrait stage frames a selected room by its width.
+
+**2D state encoding.** The legend under the stage and the map share one encoding
+(`LWProcessMapMarks`, styled by `data-status` rules in `process.css`), so the key and the picture
+cannot drift apart. Each work state has its own marker shape as well as its colour: **Working** a
+filled disc, **Waiting** a ring, **Timer** an hourglass, **Backlog** a square and **Blocked** a cross;
+markers are at least 8 px on screen and never sit on a card title. A card's border shows the step's
+work state only (Blocked first, then Working, Waiting, Timer, Backlog), or an idle border with at
+least 3:1 contrast against the stage; the room theme colours only the glyph and the progress bar.
+Zoomed out with names shown, a row under each title shows one marker and count per work state, so
+queues and blocked work read at the default framing (numbered cards do not show it); zoomed in
+and in a step scene every work item has its own marker. In a card's accessible name the waiting count adds
+blocked and backlog counts when there are any ("3 waiting (2 blocked, 1 in backlog)"). Conditional paths are drawn
+long-dashed and deadline paths dotted (red when they interrupt, amber when they escalate), and the
+legend shows both after the five states. The legend hides in the SIPOC and journey lenses, which
+draw no work markers. In the step list each step's dot shows its live state in the same colours
+and is absent for an idle step. In forced-colours (high contrast) mode the legend samples, map
+markers, utilisation bar fills and step-list dots keep their colours, the utilisation bars gain a
+border, and pressed view buttons, the selected step and the primary button gain a `Highlight`
+outline or border.
 
 Rooms use a presentation theme chosen from the step kind: start (Reception), end (Dispatch dock), decision (Decision room), fork and join (Junction; a join with a backlog is the Backlog room), machine (Automation cell), system (Software system), timer (Waiting room), touchpoint (one room per channel, such as Website or Documents, else a generic Touchpoint kiosk), and a task one of Office, Design studio, Test lab, Workshop, Review desk and Records room by a stable hash of the step id. A step with working tokens shows its animated task props and lit lamps; a step with none shows an idle variant (covered equipment, dimmed lamp, standby sign). Process Forge starter geometry (desk/monitor or podium/marker) yields to the themed room; custom attached geometry is drawn as authored.
 
 Run length is a session option, not part of the definition or fingerprint. It defaults to the engine limit (100,000 minutes); `Runtime.create(definition, {horizon})` and `Session.setHorizon` accept a whole number of minutes or `null` for no clock limit. An unlimited run still stops when all work completes or cannot advance, and each clock command remains bounded to 100,000 minutes. A run with an `open` arrival stream never completes or blocks by itself: with no horizon it goes on until paused, and it reports `limit` only when a set horizon is reached. Case count and retained history limits are unchanged for `count` arrivals; streams use the active and retained caps described in Randomness, seeds and steady arrivals.
 
-The **Definition editor** edits the process as a whole in its own native modal `<dialog>` (`LWProcessDefinitionEditor`, size wide, 1000 px), opened with **Edit process…** in the header actions (`#open-definition`, before Import) or with the **unapplied draft chip** beside it (`#draft-chip`, for example "Unapplied draft · 3 steps, 1 resource changed", hidden while the draft matches the running definition). There is no bottom Definition tab any more. Opening it pauses a running simulation (a command, never a tick) and its subtitle says so ("<process name> · revision N · The run is paused while this window is open"); like every dialog of the studio it is one at a time, traps focus, closes with Escape or Close and returns focus to the opener. Both panes write the shared draft (`LWProcessDraft`) on every input, so closing can never lose text and there is deliberately no discard guard. Edits update the draft only; **Apply draft and reset run** validates through the catalog and starts a fresh paused run that keeps the chosen run length (when the run is past minute 0 the shared `LWProcessDialog.confirmApplyOverRun` in-footer confirm first says "Applying starts a fresh paused run and discards minute N (X cases). Export the run report first if you need it." with **Back** (default) and **Apply and reset**). **Restore active definition** is disabled while the draft matches and otherwise asks "Replace the draft with the running definition?" with **Download draft first**, **Restore** and **Keep draft** (the default); **Validate** reports "Valid definition. Applying starts a fresh paused run." or the problem count; **Export draft** saves the text exactly as written.
+The **Definition editor** edits the process as a whole in its own native modal `<dialog>` (`LWProcessDefinitionEditor`, size wide, 1000 px), opened with **Edit process…** in the header actions (`#open-definition`, before Import) or with the **unapplied draft chip** beside it (`#draft-chip`, for example "Unapplied draft · 3 steps, 1 resource changed", hidden while the draft matches the running definition). There is no bottom Definition tab any more. Opening it pauses a running simulation (a command, never a tick) and its subtitle says so ("<process name> · revision N · The run is paused while this window is open"); like every dialog of the studio it is one at a time, traps focus, closes with Escape or Close and returns focus to the opener. Both panes write the shared draft (`LWProcessDraft`) on every input, so closing can never lose text and there is deliberately no discard guard. Edits update the draft only; **Apply draft and reset run** validates through the catalog and starts a fresh paused run that keeps the chosen run length (when the run is past minute 0 the shared `LWProcessDialog.confirmApplyOverRun` in-footer confirm first says "Applying starts a fresh paused run and discards minute N (X cases). Export the run report first if you need it." with **Back** (default) and **Apply and reset**). **Apply draft and reset run** is disabled while the draft holds the running definition, ignoring formatting and key order ("Nothing to apply: the draft holds the running definition. Use Reset run to restart the run."), so applying never bumps the revision for nothing. Applying a new revision of the same process keeps a run seed typed into **Seed** (while the definition's own `seed` is unchanged) and keeps the selected step while it still exists; the status names what carried over ("Run seed 9 kept.", or "Run seed 9 dropped; this run uses the definition seed 7.", and "<step> no longer exists, so the whole process is shown."). **Restore active definition** is disabled while the draft matches and otherwise asks "Replace the draft with the running definition?" with **Download draft first**, **Restore** and **Keep draft** (the default); **Validate** reports "Valid definition. Applying starts a fresh paused run." or the problem count; **Export draft** saves the text exactly as written.
+
+**Undo and redo.** The draft store keeps an in-memory history of the active process's draft (at most 100 steps; typing from one pane within a second is one step, and every removal is its own step). Inside the Definition editor, outside the JSON textarea, Ctrl+Z (Cmd+Z on a Mac) undoes, and Ctrl+Shift+Z, Cmd+Shift+Z or Ctrl+Y redoes ("Undone. …", "Redone. …", "Nothing to undo."); the textarea keeps the browser's own text undo. Removing a row in Tune values (a resource, an arrival rule, a case field and the like) shows "Removed <name>. **Undo**" ("Removed Product owner", "Removed arrival 2"). The history is never written to storage and starts again whenever the studio applies, imports or switches process; the step editor has no undo of its own beyond **Cancel**.
+
+Removing a resource that steps still demand first asks in the footer, naming them ("Discovery and Delivery still use Developers. Removing the pool also clears those demands."), with **Cancel** (default) and **Remove and clear demands**; each resource row says which steps use it ("Used by …" or "Not used by any step yet.").
 
 On a desktop the modal has two columns, below 1000 px two tabs and at phone width a full sheet. **Tune values** (`LWProcessTuning`, with `LWProcessTuningFields` and `LWProcessTuningArrivals`) edits the process name, description and `seed` (a whole number from 0 to 2,147,483,647; empty leaves the seed out and the engine uses 1; "Same seed, same run. Change it to see another scenario."), the shared resources (name, kind People, Machine or System, capacity, cost per minute; `kind` is written only when it is not `people`, and resources can be added and removed) and each arrival: the end rule (**Fixed number of cases**, **Until a minute** or **Keeps arriving (open stream)**), first arrival minute, planning interval, an optional **Random gap** (None, Uniform, Triangular, Exponential), the typed case data fields and the random case fields (chance, weighted choice, whole-number range). The form never decides what is valid: the catalog's diagnostics are shown beside the field their path names, with `aria-invalid` on the control and a summary of the problems at the top; problems in steps or flows are counted and point to Raw JSON. The form also holds a **Process type** select (Business process, Customer journey or User journey, one sentence of help each; it writes `genre`, and leaves it out for a business process) and a **Tracked measures** section (`LWProcessTuningTrack`): up to six rows of a case field and an optional name, with Add and Remove, a field-name suggestion list built from the fields that steps and arrivals already write, and the explanation that the simulation averages these values when cases finish and at every step to draw the measured curve; Add is disabled with a visible reason at six. Raw JSON labels these paths as "Process › process type" and "Tracked measure 2 › field". The step-level form belongs to the step editor. **Raw JSON** shows the draft in a monospace textarea (no wrapping) with a synced line-number gutter, a status line ("Draft matches the running definition", "Unapplied draft: 3 steps, 1 resource changed" or "Invalid JSON: line 4, column 15 · …" using the pure `LWProcessJsonPath` scanner for the position), a details list of the changed steps, **Format JSON** (disabled while invalid), **Copy** (falls back to selecting all text when the clipboard is blocked) and the diagnostic list. `LWProcessCatalog.validate(draft, true)` returns every shape problem (up to 100) and stops there; the relationship checks (flows, needs, arrivals, draws) run only once the structure is valid, which the list says. Each entry reads "Step name › field" (paths are translated with the draft's step names) and is a button that selects the offending property in the textarea (the first line of a block, or the nearest block when the field is missing). Typing in Raw JSON updates the form after a short pause ("Updating form…" then "Form in sync"); while the JSON is invalid the form is disabled with "Fix the JSON to use the form".
 
-A single step is edited in the **step editor**, a native modal `<dialog>` opened with **Edit step…** beside **Frame view** (the stage header). It is the same draft, not a second state: the dialog reads the shared unapplied draft (`LWProcessDraft`, below) into a detached form model (`LWProcessStepModel`, pure functions with no DOM, session or storage), renders it with `LWProcessStepSections` and writes edits back into a copy of the draft (`LWProcessStepEditor` is the UI surface). Sections follow the step kind: basics; timing and cost (task, machine and system duration and fixed cost, or a timer's duration or until-minute); **Automation** (machine and system steps: the display-only `technology` label with a character counter); people (tasks), **Equipment** (machine steps) or **Systems** (system steps), listing only pools of the matching kind with an "N available · 0 = not needed" hint, an explanation when the process has no pool of that kind, and any wrongly-kinded pool the step still demands, shown with its problem so it can be set to 0; **Random timing** (task, machine, system and duration-timer steps only: None, Uniform, Triangular, Exponential, Normal (mean, a spread of at least 1 and optional bounds) or Erlang (1 to 32 phases and a mean) with their whole-minute parameters, a note that the planning duration stays the average shown in estimates, and inline problems for inconsistent parameters from a local check plus the engine message); completion `set` values and `add` counters (task, machine, system and timer); **Random outcomes (draws)** (task, machine, system and timer: up to eight rows, each a chance, weighted choice of 2 to 12 values or whole-number range, applied after `set` and before `add`, with duplicate-field and set-collision problems shown on the row); **Declared outputs** (task, machine, system: a field and optional label per row, each of which must be delivered by this step's own `set` or `add`); needs from earlier steps; backlog (work steps and joins); and this step's outgoing flows with their label and, for decisions, condition (a value, another field, or a random share of cases from 1 to 99 percent, with ordering) under a one-line summary of the checked order ("1. If iteration < iterations → Iteration planning", "2. Otherwise → …"). A chance path appears in that summary as "2. 8% of cases → Repack" and is edited like any other condition. Inputs & outputs shows "Took N min (planned M)" for a receipt with a realized `duration` and labels drawn fields `drawn`; `LWProcessRandomView` holds the pure plain-language sentences shared by these views. **Touchpoints** (`kind: touchpoint`) are edited like tasks with three differences: the **Journey** section (phase text with suggestions from the phases already used in the draft, **Channel** with plain labels such as Website, Phone call and Documents and forms, a **Feeling** from Very frustrated (-3) through Neutral to Delighted (+3), a **Pain point** and an **Opportunity**), **Backstage teams and systems (optional)** listing pools of every kind with a People, Machine or System badge and no required demand (customers do not consume capacity), and no Technology label. Every other kind has a collapsed **Journey notes (optional)** section with the same phase, feeling, pain point and opportunity, and **end** steps add an **Outcome** select (None, Goal reached, Customer or user lost). The words for feelings, channels and outcomes come from `LWProcessRandomView.describeEmotion`, `describeChannel` and `describeOutcome`. Empty notes are removed from the definition, not written as empty strings. The BPMN-class fields use the same pure model and sections (`LWProcessStepLogic` holds their read, write and local checks, `LWProcessStepLogicSections` their markup): a **fork** adds **Branching** (Parallel, all branches, or Inclusive, every branch whose condition is true with the branch without a condition as the default), and the paths of an inclusive fork use the same condition editor as a decision's; the condition editor also offers **All of these**, **Any of these** and **Not** groups of rows (at most three levels and eight tests, with Add test and Remove and the path summary reading "If iteration < iterations AND 8% of cases → Repack"); work steps add **Multiple instances** (Once, a fixed number from 2 to 50 or a case field, run in parallel or one after another; disabled with a visible reason while the step keeps a backlog) and **Deadline** (none, fixed minutes or a random time, Interrupt or Escalate, and a choice among the step's existing outgoing flows for the deadline path, which the editor marks `on: "deadline"`; when the step has only one flow it explains where to add the second flow in the JSON instead of creating one). Random timing and a deadline's random time share one distribution editor that also offers Normal and Erlang, and the arrival gap in the Definition editor offers the same two with the engine's range messages.
+A single step is edited in the **step editor**, a native modal `<dialog>` opened with **Edit step…** beside **Frame view** (the stage header). It is the same draft, not a second state: the dialog reads the shared unapplied draft (`LWProcessDraft`, below) into a detached form model (`LWProcessStepModel`, pure functions with no DOM, session or storage), renders it with `LWProcessStepSections` and writes edits back into a copy of the draft (`LWProcessStepEditor` is the UI surface). Sections follow the step kind: basics; timing and cost (task, machine and system duration and fixed cost, or a timer's duration or until-minute); **Automation** (machine and system steps: the display-only `technology` label with a character counter); people (tasks), **Equipment** (machine steps) or **Systems** (system steps), listing only pools of the matching kind with an "N available · 0 = not needed" hint, an explanation when the process has no pool of that kind, and any wrongly-kinded pool the step still demands, shown with its problem so it can be set to 0; **Random timing** (task, machine, system and duration-timer steps only: None, Uniform, Triangular, Exponential, Normal (mean, a spread of at least 1 and optional bounds) or Erlang (1 to 32 phases and a mean) with their whole-minute parameters, a note that the planning duration stays the average shown in estimates, and inline problems for inconsistent parameters from a local check plus the engine message); completion `set` values and `add` counters (task, machine, system and timer); **Random outcomes (draws)** (task, machine, system and timer: up to eight rows, each a chance, weighted choice of 2 to 12 values or whole-number range, applied after `set` and before `add`, with duplicate-field and set-collision problems shown on the row); **Declared outputs** (task, machine, system: a field and optional label per row, each of which must be delivered by this step's own `set` or `add`); needs from earlier steps; backlog (work steps and joins); and **Where work goes next**, this step's outgoing paths (`LWProcessStepFlows`, `process-step-flows.ts`). Each path is a card "Path n of N · to <step>" with **Go to** (any step except the start and this step), **Label shown on this path** and, for decisions and inclusive forks, its condition (a value, another field, or a random share of cases from 1 to 99 percent); a decision's paths add **Move up** and **Move down** under a one-line summary of the checked order ("1. If iteration < iterations → Iteration planning", "2. Otherwise → …"). **Remove path** is disabled with its reason while removing it would leave fewer paths than the kind needs ("A task needs exactly one outgoing path.", "A decision needs at least two outgoing paths."); removing the deadline path also clears the deadline's choice. **Add path to…** picks a target step and **Add path** adds a path without a label or condition (id `<step>-<target>`, numbered when taken). The editor never decides whether the result is valid: an extra path on a task, for example, is reported by the catalog until it becomes the deadline path or is removed. An end step says it has no outgoing paths. Case-field inputs (needs, conditions, effects, outputs) suggest names from the draft through datalists: fields delivered earlier for needs, fields usable by this step's conditions, and every known name. A chance path appears in that summary as "2. 8% of cases → Repack" and is edited like any other condition. Inputs & outputs shows "Took N min (planned M)" for a receipt with a realized `duration` and labels drawn fields `drawn`; `LWProcessRandomView` holds the pure plain-language sentences shared by these views. **Touchpoints** (`kind: touchpoint`) are edited like tasks with three differences: the **Journey** section (phase text with suggestions from the phases already used in the draft, **Channel** with plain labels such as Website, Phone call and Documents and forms, a **Feeling** from Very frustrated (-3) through Neutral to Delighted (+3), a **Pain point** and an **Opportunity**), **Backstage teams and systems (optional)** listing pools of every kind with a People, Machine or System badge and no required demand (customers do not consume capacity), and no Technology label. Every other kind has a collapsed **Journey notes (optional)** section with the same phase, feeling, pain point and opportunity, and **end** steps add an **Outcome** select (None, Goal reached, Customer or user lost). The words for feelings, channels and outcomes come from `LWProcessRandomView.describeEmotion`, `describeChannel` and `describeOutcome`. Empty notes are removed from the definition, not written as empty strings. The BPMN-class fields use the same pure model and sections (`LWProcessStepLogic` holds their read, write and local checks, `LWProcessStepLogicSections` their markup): a **fork** adds **Branching** (Parallel, all branches, or Inclusive, every branch whose condition is true with the branch without a condition as the default), and the paths of an inclusive fork use the same condition editor as a decision's; the condition editor also offers **All of these**, **Any of these** and **Not** groups of rows (at most three levels and eight tests, with Add test and Remove and the path summary reading "If iteration < iterations AND 8% of cases → Repack"); work steps add **Multiple instances** (Once, a fixed number from 2 to 50 or a case field, run in parallel or one after another; disabled with a visible reason while the step keeps a backlog) and **Deadline** (none, fixed minutes or a random time, Interrupt or Escalate, and **Which outgoing flow is the deadline path?**, a choice among the step's outgoing paths, which the editor marks `on: "deadline"`; when the step has only one path it says that a deadline needs a second path and links to **Add path to…** under **Where work goes next**, then the new path can be chosen here). Random timing and a deadline's random time share one distribution editor that also offers Normal and Erlang, and the arrival gap in the Definition editor offers the same two with the engine's range messages.
 
-Every edit is checked live with `LWProcessCatalog.validate(candidate, true)`. Engine diagnostics for this step are rewritten in plain language that names the field and its range ("Task duration must be 1 or more"), appear beside the field with `aria-invalid` on the control, and show one problem per field (a local representation problem hides the engine message for the same field). The status area is empty when there are no problems; otherwise it lists "This step" problems as links that focus the field and an "Elsewhere in the draft" group with paths translated to names ("Discovery › duration"). Nothing blocks typing. Representation problems that no definition can express (a blank or repeated field name, a non-numeric number) disable the footer actions with a visible reason. **Save to draft** writes the candidate to the draft and closes; **Apply and reset run** requires a fully valid draft (otherwise the diagnostics stay in the dialog and the draft is not written) and applies exactly like **Apply draft & reset run**; when the run is past minute 0 an in-footer confirm first states "Applying starts a fresh paused run and discards minute N (X cases). Export the run report first if you need it." with **Back** (default) and **Apply and reset**. A banner summarises other unapplied changes outside this step. If the draft is not valid JSON, **Edit step…** opens the Definition editor on the JSON pane with the syntax error selected instead of opening the step editor, and the step editor's **Open the Definition editor** button closes it (asking first when it holds unsaved edits) and opens the Definition editor on the first problem. Opening the dialog pauses a running simulation (a command, never a tick).
+Every edit is checked live with `LWProcessCatalog.validate(candidate, true)`. Engine diagnostics for this step are rewritten in plain language that names the field and its range ("Task duration must be 1 or more"), appear beside the field with `aria-invalid` on the control, and show one problem per field (a local representation problem hides the engine message for the same field). The status area is empty when there are no problems; otherwise it lists "This step" problems as links that focus the field and an "Elsewhere in the draft" group with paths translated to names ("Discovery › duration"). Nothing blocks typing. Representation problems that no definition can express (a blank or repeated field name, a non-numeric number) disable the footer actions with a visible reason ("Fix the highlighted fields before saving or applying."). **Save to draft** writes the candidate to the draft and closes; it is disabled until something changed ("Save to draft is unavailable until you change something."). **Apply and reset run** is disabled with its reason while this step has problems ("Fix the problems in this step before applying.") or while the step and the draft hold the running definition ("Nothing to apply: this step and the draft hold the running definition. Use Reset run to restart the run."); problems elsewhere in the draft do not stop **Save to draft**, but an apply refused for them shows "The draft cannot be applied yet. Fix these problems and try again." with the same plain, linked list, and nothing is written. It applies exactly like **Apply draft and reset run**, including the kept run seed and selection; when the run is past minute 0 an in-footer confirm first states "Applying starts a fresh paused run and discards minute N (X cases). Export the run report first if you need it." with **Back** (default) and **Apply and reset**. A banner summarises other unapplied changes outside this step. If the draft is not valid JSON, **Edit step…** opens the Definition editor on the JSON pane with the syntax error selected instead of opening the step editor, and the step editor's **Open the Definition editor** button closes it and opens the Definition editor on the first problem; with unsaved edits it first asks "Open the Definition editor? Your changes to <step> are not in the draft yet." with **Keep editing** (default), **Save to draft and open** (offered when the edits can be written) and **Discard changes**. **Previous step: <name>** and **Next step: <name>** in the dialog move through the steps in draft order (disabled at either end with "This is the first step." or "This is the last step.") behind the same question ("Go to <step>? …" with **Save to draft and go**). Opening the dialog pauses a running simulation (a command, never a tick).
 
 The dialog shell is the reusable `LWProcessDialog` (`process-dialog.ts`; its header comment is the contract for the Definition and Activity editors). It owns the native `showModal` dialog, the Tab trap, `inert` on the studio root, body scroll lock, sticky header and footer, focus on open (first `[autofocus]` control, else Close; read-only dialogs focus the heading) and focus restore to the invoker or a fallback, and **one dirty guard**: Escape, **Close**, a cancel action and a backdrop click all call `requestClose`, which closes a clean dialog and otherwise shows the in-footer "Keep editing / Discard changes" confirm that starts on **Keep editing**. Only one dialog may be open at a time (no stacking). Sizes are `form` (760 px), `wide` (1000 px, with a `.pd-split` two-column grid) and `list` (640 px); at 650 px and below every dialog is a full-screen sheet with stacked full-width footer buttons, and motion is used only when reduced motion is not requested. In windows under 560 px tall (200% zoom on a laptop, a phone in landscape) every dialog except Activity becomes one full-screen sheet that scrolls as a single page: header, subtitle, footer reason and secondary actions scroll with the content and only the primary action stays in view at the bottom (the Activity list keeps its own scroller). Dialog openers carry `aria-haspopup="dialog"`. Dialog styles live in `process-dialogs.css` (the BPMN import dialog adds `process-bpmn-dialog.css`); the studio shell is `process.css` and the SIPOC and journey lenses `process-lenses.css`. All share the tokens at the top of `process.css`; type sizes are `rem`, so the browser's default font size is honoured. The studio has a single dark theme; there is no light theme.
 
-**BPMN import dialog.** In the studio, **Import…** (or **Import JSON or BPMN…** in the phone menu) still replaces the active process at once for a JSON file. A `.bpmn` or `.xml` file (or text starting with `<`) instead opens **Import BPMN** (`LWProcessBpmnDialog`, `process-bpmn-dialog.ts`, dialog id `bi`, size wide), with read-only markup from `LWProcessBpmnPreview` (`process-bpmn-preview.ts`). `LWProcessBpmn.inspect` fills the **Process** and **BPSim scenario** pickers (the scenario picker is disabled when the file has none or BPSim is off) and lists the chosen process's lanes and element counts. The options are **Lanes** (resource pools or ignore), **Unsupported constructs** (reject or drop), **People per lane pool**, **System pool capacity**, **Business minutes per day**, **Default duration in minutes**, **Use BPSim simulation parameters** and **Run service-type tasks on automated system pools**; each field is validated by `LWProcessBpmn.options` and shows its own problem (business minutes per hour is a CLI/API option only and keeps 60). Shortly after each change, a preview from `LWProcessBpmn.analyze` (a UI debounce, never a simulation clock) shows the verdict, whether the result is runnable (`ok`) and acceptable as a draft, the process, scenario, step, flow, pool and arrival counts, the suggested run length from the BPSim scenario `Duration` (shown, not applied: import keeps the current **Run until** setting), rejections with their element ids, definition problems, warnings and the mapping grouped by target (steps, flows, resource pools, case fields, arrivals, SIPOC, folded or ignored). Above the panes, a **Standards check** note (`role="note"`, from `LWProcessBpmnConformance.validate`, computed once when the file opens) reads "Conforms to BPMN 2.0 and BPSim 1.0 · N elements checked", or the problem count with the first three problems and their lines, plus the number of elements not covered; it says that it never blocks import, and it does not gate **Import**. **Import** is disabled with a visible reason while an option is invalid, the preview lists rejections or the definition cannot run. It re-runs `LWProcessBpmn.import` with the same options and applies the definition through the studio's replace path: a fresh paused run at minute 0 that never ticks. When that would discard a run past minute 0 or an unapplied draft, an in-footer confirm names what is lost and starts on **Cancel** (Escape also cancels), with **Import and replace**. Opening the dialog does not pause the run; Cancel, Close and Escape change nothing and return focus to the control that opened the file picker. The Export menu adds **Export BPMN with BPSim** (`<id>.bpsim.bpmn`, the same as `export-bpmn --bpsim`).
+**JSON import.** In the studio, **Import…** (or **Import JSON or BPMN…** in the phone menu) reads a JSON file of at most 8 MiB (`LWProcessIO`, `process-io.ts`) and checks it before anything changes. A rejected file changes nothing and is summarised in plain words in the status line, which shows at most two lines: "Import rejected: the file is not valid JSON (line 1, column 2). Choose a .process.json exported from the studio, or a BPMN file.", "Import rejected: this file is not a Wildlands process (N problems). …" or "Import rejected: this process has N problems; first, <path>: <message>. Fix the file, then import it again." A valid file that would discard a run past minute 0 or an unapplied draft first asks "Replace <process>?" in the same Cancel-first modal as a process switch, naming what is lost ("Importing <file> replaces <process> and discards minute 120 of the current run and the unapplied draft (1 step changed). Export the run report or the draft first if you need them."); **Cancel** keeps everything and returns focus to the control that opened the file picker, and **Import and replace** imports. A JSON import of a new revision of the same process keeps the run seed and selection like an apply.
 
-`LWProcessDraft` (`process-draft.ts`) is the single source of truth for the unapplied draft text, one per process: `read`, `write(text, source)`, `parse`, `activeText`, `changed`, `diff` (counts of changed steps, flows, resources, arrival rules and process settings plus the names of changed steps), `describeDiff` ("Unapplied draft: 3 steps, 1 resource changed"), `subscribe`, and `enter`/`leave`/`restore` for apply, process switching and reset. The raw JSON textarea is a mirror of the store.
-Static paused scenes render only when the view or camera changes.
+**BPMN import dialog.** A `.bpmn` or `.xml` file (or text starting with `<`) instead opens **Import BPMN** (`LWProcessBpmnDialog`, `process-bpmn-dialog.ts`, dialog id `bi`, size wide), with read-only markup from `LWProcessBpmnPreview` (`process-bpmn-preview.ts`). `LWProcessBpmn.inspect` fills the **Process** and **BPSim scenario** pickers (the scenario picker is disabled when the file has none or BPSim is off) and lists the chosen process's lanes and element counts. The options are **Lanes** (resource pools or ignore), **Unsupported constructs** (reject or drop), **People per lane pool**, **System pool capacity**, **Business minutes per day**, **Default duration in minutes**, **Use BPSim simulation parameters** and **Run service-type tasks on automated system pools**; each field is validated by `LWProcessBpmn.options` and shows its own problem (business minutes per hour is a CLI/API option only and keeps 60). Shortly after each change, a preview from `LWProcessBpmn.analyze` (a UI debounce, never a simulation clock) shows the verdict, whether the result is runnable (`ok`) and acceptable as a draft, the process, scenario, step, flow, pool and arrival counts, the suggested run length from the BPSim scenario `Duration` (shown, not applied: import keeps the current **Run until** setting), rejections with their element ids, definition problems, warnings and the mapping grouped by target (steps, flows, resource pools, case fields, arrivals, SIPOC, folded or ignored). Each mapping group lists at most 200 rows and ends with "… N more entries not shown"; a process over the import size bound (see Importing foreign BPMN for simulation) shows only its plain rejection, without mapping groups. Above the panes, a **Standards check** note (`role="note"`, from `LWProcessBpmnConformance.validate`, computed once when the file opens) reads "Conforms to BPMN 2.0 and BPSim 1.0 · N elements checked", or the problem count with the first three problems and their lines, plus the number of elements not covered; it says that it never blocks import, and it does not gate **Import**. **Import** is disabled with a visible reason while an option is invalid, the preview lists rejections or the definition cannot run. It reuses the preview's analysis of the shown options (a pending preview is computed first; the file is not analysed a second time) and applies that definition through the studio's replace path: a fresh paused run at minute 0 that never ticks. When that would discard a run past minute 0 or an unapplied draft, an in-footer confirm names what is lost and starts on **Cancel** (Escape also cancels), with **Import and replace**. Opening the dialog does not pause the run; Cancel, Close and Escape change nothing and return focus to the control that opened the file picker. The Export menu adds **Export BPMN with BPSim** (`<id>.bpsim.bpmn`, the same as `export-bpmn --bpsim`).
+
+`LWProcessDraft` (`process-draft.ts`) is the single source of truth for the unapplied draft text, one per process: `read`, `write(text, source, label?)` (`label` names a removal such as "Removed Product owner"), `parse`, `activeText`, `changed`, `same` (whether a text holds the running definition, ignoring formatting and key order), `diff` (counts of changed steps, flows, resources, arrival rules and process settings plus the names of changed steps), `describeDiff` ("Unapplied draft: 3 steps, 1 resource changed"), `undo`/`redo`/`canUndo`/`canRedo` (the in-memory history above), `subscribe`, and `enter`/`leave`/`restore` for apply, process switching and reset. The raw JSON textarea is a mirror of the store.
+
+One WebGL renderer and canvas serve the page's lifetime (`LWProcess3D.stage`); rebuilding the 3D view for an apply, import or process switch replaces and frees only its scene, so no renderer, GL context or canvas accumulates (`LWProcess3D.live()` reports the renderers and GPU resources still held). 3D frames are drawn on demand: after a camera, selection or snapshot change and, while the run plays, only when a visible actor or room animates, at most about 30 times a second. Static paused scenes render only when the view or camera changes. The shadow map is `PCFShadowMap`.
 
 Each 2D scene shows a bounded marker sample plus an overflow count. All cases
 remain in the data inspector, simulation and reports. Resource occupancy appears
@@ -1074,28 +1197,93 @@ branches and the deadline path; `LWProcessActivity` (`process-activity.ts`, dial
 `act`, size list) owns the event tracker, the batched `#feed-announcer` (polite, atomic, at most
 one batch per five seconds, failures, blocked work and dropped arrivals at once) and the
 Activity modal. The engine's events have no sequence numbers, so the tracker counts appended
-events by overlapping each new 128-event window with the previous one; the badge, the
-"latest N of M events" subtitle and the new-events pill derive from that count. The controller
-gains `seed(value | null)`: a fresh paused run with that seed (Reset keeps it; replace and
-process switch drop it). Neither the modal nor the menu ticks, pauses or retains the simulation.
+events by overlapping each new 128-event window with the previous one; the "latest N of M
+events" subtitle and the new-events pill derive from that count. The **Activity** badge counts
+only problems not yet shown in the modal (failed work, blocked work and dropped arrivals; routine
+events never raise it), in the danger tone, as " · N" (99+ at most), and the button's accessible
+name becomes "Activity, N new problems". The controller gains `seed(value | null)`: a fresh
+paused run with that seed. Reset keeps it; `replace` keeps it for a new revision of the same
+process (same id) while the definition's own `seed` is unchanged, and keeps the selected step
+while it still exists; a process switch, or a replacement by another process, drops both. Neither
+the modal nor the menu ticks, pauses or retains the simulation.
+
+**Run bar and status line.** `LWProcessRunBar` (`process-run-bar.ts`) owns the toolbar and the
+one status line under the stage title. **Speed** offers 1 min, 5 min (default), 30 min, 2 h and
+24 h of simulated time per tick while the run plays. **Run until** offers 24 h (1,440 min), 168 h
+(10,080 min), 720 h (43,200 min), 100,000 min (≈1,667 h), no limit and custom; a custom length
+opens a **Minutes** field and is confirmed in the status line ("Run length set to 600 minutes (10
+h)."). The clock reads "M min of H" (or "· no limit") with an hours line once 60 minutes have
+passed, and **Advance 30 min** names the minutes it will really advance when fewer than 30 remain
+before the run length. Once the run stops (completed, run limit or blocked), Run, Step and Advance
+are disabled with the reason as their title, **Reset run** becomes the primary button (on a phone it
+stays outside **Run options**) and takes focus from a control that was just disabled, and the
+status says what to do next ("Run completed. Export the report or reset to run again."). A note
+gives way to the run guidance on the next state change (play or pause, a new run status, another
+process or revision, or a new minute while paused); an error stays until the next successful
+command; an editor notice also gives way when the editor closes. The guidance never names the
+minute, so the polite live region does not speak on every tick.
+
+**Work protection.** `LWProcessGuard` (`process-guard.ts`) owns the one "are you sure?" modal
+outside the editors (dialog id `ask`, built on `LWProcessDialog`): process switching and JSON
+import past minute 0 or over an unapplied draft ask there first, starting on **Cancel** (Escape,
+Close and a backdrop click also cancel), and focus returns to the invoker. While any process holds
+an unapplied draft, leaving or reloading the page asks the browser's own "leave site?" question
+(`beforeunload`); nothing is written to storage, so a draft that is left anyway is gone. A page
+entering the back/forward cache (`pagehide` with `persisted`) only suspends the animation loop and
+resumes on `pageshow`; a page that is really unloaded is disposed. **Export ▾** says when an
+unapplied draft exists that JSON, BPMN and the run report use the running definition and the draft
+is not included, and then offers **Export draft JSON** (`<id>.draft.json`, the draft exactly as
+written); every export names what it saved in the status line ("Exported agency.process.json (the
+running definition).").
+
+**Phones and accessibility.** At 650 px wide or less a business process opens in **2D** (3D is
+one press away; a journey keeps its Journey map), and the header's **Edit** button is named "Edit
+process". At 400% zoom (320 x 256) no focus stop hides under the sticky run bar. The run groups are
+separated by spacing rather than divider lines, so a wrapped toolbar never starts with a stray
+rule, and the custom **Minutes** field is sized for six digits, keeping the desktop toolbar on one
+row. Side columns are sized in `rem`, so they follow
+a larger default text size. Glyphs such as ▾ and ← are hidden from accessible names; the run
+metrics are a labelled group and the stage heading reads "Whole process" when no step is selected.
+
+**Studio modules.** The studio shell `process-ui.ts` composes these presentation modules (all in
+the `process-presentation` context of `source/wildlands/source/architecture/domain-map.json`);
+none of them ticks, retains a session or touches storage:
+
+| Module | Owns |
+|---|---|
+| `process-run-bar.ts` (`LWProcessRunBar`) | the run toolbar (Run, Step, Advance, Reset, Speed, Run until, Seed, clock) and the status line rules |
+| `process-step-list.ts` (`LWProcessStepList`) | the step list markup with live counts and state dots, and keeping the selected step in sight |
+| `process-io.ts` (`LWProcessIO`) | the Export menu items, Download HTML, the file picker, JSON import checks and the BPMN import dialog hand-off |
+| `process-guard.ts` (`LWProcessGuard`) | the Cancel-first "are you sure?" modal, the leave-page guard and the back/forward-cache lifecycle |
+| `process-map-marks.ts` (`LWProcessMapMarks`) | the 2D drawing vocabulary: SVG helper, glyphs, pills, state markers, the legend and label wrapping |
+| `process-map-card.ts` (`LWProcessMapCard`) | one 2D step card: size, state border, title, markers or per-state counts, pills and badges |
+| `process-renderer-2d.ts` (`LWProcess2D`) | the 2D map surface, its camera, zoom dock, card-number key, zoom button and caption |
+| `process-step-flows.ts` (`LWProcessStepFlows`) | the step editor's **Where work goes next** section and its pure path operations |
+| `process-time.ts` (`LWProcessTime`) | shared wording of business minutes with an hours gloss, used by the SIPOC model and the slides |
 
 **Present mode.** **Present** (`#mode-present`, after the lens button; hidden at 650 px and
 below) or, on a phone, **⋯** then **Present slides** (`#present-item`, after the import item)
 opens `LWProcessPresent` (`process-present.ts`, `process-present.css`): a full-window native
 `<dialog id="present">` (`showModal`, studio root `inert`) that shows the [slide deck](#slide-deck)
 of the **active** definition, never the unapplied draft. The header names the process and
-"Slide n of N" (`#present-count`), adds "Live facts come from one simulated run at minute M (seed
-S)." when the run is past minute 0 and "The run is paused while you present." when entering
-paused it, and holds **Contents** (`#present-toc`, the slide list grouped by section; the
+"Slide n of N" (`#present-count`), adds "Live facts come from one simulated run at business minute
+M (seed S, <status>)." when the run is past minute 0 (the status in plain words: still running,
+completed, blocked or stopped at the time limit), "The run is paused while you present." when
+entering paused it and "Showing the applied definition; your unapplied draft is not included."
+(`#present-draft`) when the studio holds an unapplied draft, and holds **Contents** (`#present-toc`, the slide list grouped by section; the
 current slide is marked) and **Exit** (`#present-exit`); **Previous** and **Next**
 (`#present-prev`, `#present-next`) sit in the footer. The studio's single 2D map host (`#map`)
 moves into the map pane and back to its exact place on exit, so there is never a second
-renderer: a step slide selects and frames its step through the studio's selection command, a
-section slide its first step, the other slides the whole process, and choosing a step on the
-map moves the deck to that step's slide. Present opens on the selected step's slide, else slide
+renderer: a step slide selects its step through the studio's selection command and frames it
+together with its direct predecessors and successors, a section slide does the same for its first
+step, the other slides frame the whole process, and choosing a step on the map moves the deck to
+that step's slide. When the map shows card numbers, their key ("Card numbers match the step
+list") sits in the map's own dock and so stays visible in Present. Present opens on the selected step's slide, else slide
 1, and refuses to open while another studio dialog is open ("Close the open window first.").
-Keys: Right or Page Down next, Left or Page Up previous, Home first, End last (arrow keys inside
-the map pan it instead); Escape closes Contents when it is open, otherwise exits. It never
+Keys: Right, Page Down or `n` next, Left, Page Up or `p` previous, Home first, End last (arrow
+keys inside the map pan it instead); while the slide itself has focus, Space and Down page forward
+and Shift+Space and Up page back, but only once the slide cannot scroll further that way, so a long
+slide still scrolls first. Escape closes Contents when it is open, otherwise exits. It never
 ticks: entering pauses a playing run with a command and switches to 2D, and exit never resumes
 the run ("Presentation closed. The run stays paused; choose Run simulation to continue."); exit
 restores the previous view mode (including the 2D or 3D choice behind a lens) and selection and
@@ -1137,9 +1325,27 @@ or randomness; its inputs are copied first and the deck shares no object with th
   parallel fork, inclusive gateway, join, multi-instance, deadline, backlog). All text is plain
   text derived from the definition; the model never invents data. When the description calls
   its values synthetic or illustrative, the title slide repeats that they are assumptions.
-- **Live facts.** Only when a snapshot is passed: step slides and the summary add a block whose
-  heading names one simulated run, its minute and seed, and the deck carries
-  `live: {minute, seed, status}`. The studio passes its detached snapshot only past minute 0;
+- **Title and counts.** The title slide's lead is the description's first paragraph, cut after
+  the last whole sentence that keeps it within about 60 words (a longer first sentence is cut at
+  60 words with "…"); when that is not the whole description, a **Process description** block
+  repeats it in full. "How to read this deck" says that times are simulated business minutes (min),
+  not wall-clock time, and that long times also show hours. Section slides and the overview's
+  **Process** stages count the steps between the start and the end ("2 steps on the main route
+  and 1 step off it"), and the overview and summary say the main route counts "start and end
+  included", so every slide counts steps the same way. The resources slide explains work cost
+  against capacity cost.
+- **Live facts.** Only when a snapshot is passed: step slides, the resources slide and the
+  summary add a block whose heading names one simulated run, its business minute and seed ("One
+  simulated run · business minute 165 · seed 7"), and the deck carries `live: {minute, seed,
+  status}`. The title slide adds **Key results** right after its lead: run status, arrived and
+  finished counts, mean cycle time, work cost and the most utilised pool. The resources slide lists
+  each pool, most utilised first, with its average utilisation since minute 0, busy time, units
+  busy now and the work waiting at its steps. The summary adds the run status in plain words, mean
+  cycle time ("none yet" until a case finishes), mean age of the cases in progress, work cost,
+  capacity cost and the most utilised pool. Step facts list work blocked after finishing apart from
+  waiting work and drop "so far" once the run has completed. The Markdown ends with a reviewer's
+  tip naming `bin/wildlands process slides --minutes N` and `process run`; the deck shown in
+  Present has no command-line tip. The studio passes its detached snapshot only past minute 0;
   `process slides --minutes N [--seed S]` runs one fresh bounded run, the same as `process run`.
   These facts describe that one run, not a forecast.
 
