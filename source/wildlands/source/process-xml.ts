@@ -18,6 +18,7 @@ declare namespace LWProcessXml {
  'use strict';
  const root = inputRoot as {LWProcessXml?: LWProcessXml.Api};
  const MAX_CHARS = 8 * 1024 * 1024, MAX_NODES = 200000, MAX_DEPTH = 64, ENTITY = /&(#x[0-9a-fA-F]+|#[0-9]+|lt|gt|amp|quot|apos);/g;
+ const DECLARATION = /^(DOCTYPE|ENTITY|ELEMENT|ATTLIST|NOTATION)/i;
  const NAMED: Record<string, string> = {lt: '<', gt: '>', amp: '&', quot: '"', apos: "'"};
  /** Characters outside the XML 1.0 `Char` production: C0 controls other than tab, line feed and carriage return, U+FFFE, U+FFFF and unpaired surrogates. */
  const ILLEGAL = /[\x00-\x08\x0B\x0C\x0E-\x1F￾￿]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
@@ -68,7 +69,6 @@ declare namespace LWProcessXml {
  function parse(input: string, options?: {positions?: boolean}): LWProcessXml.Node {
   if (typeof input !== 'string' || input.length > MAX_CHARS) throw Error('The XML document is missing or larger than 8 MiB.');
   const source = input.replace(/^﻿/, '');
-  if (/<!DOCTYPE|<!ENTITY/i.test(source)) throw Error('DOCTYPE and entity declarations are not allowed.');
   const bad = ILLEGAL.exec(source); if (bad) throw Error('The XML document contains the character ' + hex(bad[0]) + ', which XML 1.0 does not allow.');
   // A namespace scope inherits its parent's declarations through the prototype chain: an element copies nothing unless it declares a prefix.
   const stack: {node: LWProcessXml.Node; raw: string; scope: Scope}[] = [], empty = Object.create(null) as Scope;
@@ -88,6 +88,10 @@ declare namespace LWProcessXml {
     parent.node.text += source.slice(i + 9, j); i = j + 3; continue;
    }
    if (source.startsWith('<?', i)) { const j = source.indexOf('?>', i + 2); if (j < 0) throw Error('Unterminated processing instruction.'); i = j + 2; continue; }
+   // Any other markup declaration is refused as a token, so a comment or CDATA section that only mentions <!DOCTYPE is still read.
+   if (source.startsWith('<!', i)) {
+    throw Error(DECLARATION.test(source.slice(i + 2, i + 10)) ? 'DOCTYPE and entity declarations are not allowed.' : 'Invalid markup declaration.');
+   }
    const start = i, end = tagEnd(source, i + 1), body = source.slice(i + 1, end); i = end + 1;
    if (body.startsWith('/')) {
     const closed = stack.pop(); if (!closed || closed.raw !== body.slice(1).trim()) throw Error('Mismatched closing tag: ' + body);

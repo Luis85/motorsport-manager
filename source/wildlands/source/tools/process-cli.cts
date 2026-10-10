@@ -23,10 +23,10 @@ const descriptions: Record<string, string> = {discover: 'Discover commands, limi
  edit: 'Apply a revision/fingerprint guarded transaction; --draft allows intermediate graph diagnostics.', run: 'Run a fresh deterministic session for a bounded number of business minutes; --seed N replaces the definition seed.',
  build: 'Build one self-contained offline HTML file.',
  'validate-bpmn': 'Check a BPMN 2.0 XML file (and its BPSim 1.0 data) against the built-in conformance rules (no schema files); prints the report (errors with line, path, code and message; elements not covered; unchecked extension content); exit 0 when it conforms, 2 when not.',
- 'export-bpmn': 'Export a BPMN 2.0 XML file (with Wildlands extension values and diagram layout); --bpsim adds a BPSim scenario (processing times, probabilities, arrivals, pool quantities and costs).',
+ 'export-bpmn': 'Export a BPMN 2.0 XML file (with Wildlands extension values and diagram layout); --bpsim adds a BPSim scenario (processing times, probabilities, arrivals, pool quantities and costs); fidelity lists what only the Wildlands extension carries.',
  'import-bpmn': 'Import a BPMN 2.0 XML file into a simulatable definition (lanes, sub-processes, call activities, gateways, loops, boundary timers, expressions and BPSim parameters are mapped); prints the structured report (warnings, mapping counts, rejections); unsupported elements are rejected (exit 2) or, with --unsupported drop, dropped with warnings.', forge: 'Create an editable Scene Forge project with one scene per step.', attach: 'Attach a Scene Forge Wildlands asset to a step using edit guards.',
  slides: 'Explain the process as a slide deck (title, overview, resources, main route by phase, variants, summary); --format json (default) or md (Markdown printed as plain text without --output); --minutes N [--seed S] adds read-only facts from one fresh bounded run.',
- diff: 'Report what changed from --against (the reference) to --input: counts of changed steps, flows, resources, arrival rules and process settings, the changed steps and settings, and both revisions and fingerprints.'};
+ diff: 'Report what changed from --against (the reference) to --input: counts of changed steps, flows, resources, arrival rules and process settings; the changed steps, resources, flows, arrival rules and settings; every changed value with its path, before and after; and both revisions and fingerprints.'};
 function recipeSchema(): Record<string, unknown> {
  const properties = catalog.schema.properties as Record<string, Record<string, unknown>>;
  const operation = (op: string, key: string, value: unknown) => ({type: 'object', additionalProperties: false, required: ['op', key], properties: {op: {const: op}, [key]: value}});
@@ -132,11 +132,13 @@ export function run(args: readonly string[]): void {
    const identical = catalog.fingerprint(after) === catalog.fingerprint(before), counted = changes.steps + changes.flows + changes.resources + changes.arrivals + changes.meta > 0, revisionChanged = after.revision !== before.revision;
    const summary = counted ? diff.describe(changes, 'Changes') : revisionChanged ? `Changes: revision only (${before.revision} to ${after.revision})` : 'Changes: none';
    success({input: identity(after, file), against: identity(before, reference), identical, revisionChanged, summary,
-    changes: {steps: changes.steps, flows: changes.flows, resources: changes.resources, arrivals: changes.arrivals, settings: changes.meta}, changedSteps: changes.changedSteps, changedSettings: diff.settings(a, b)}); return;
+    changes: {steps: changes.steps, flows: changes.flows, resources: changes.resources, arrivals: changes.arrivals, settings: changes.meta}, changedSteps: changes.changedSteps,
+    changedSettings: diff.settings(a, b), ...diff.detail(a, b)}); return;
   }
   if (command === 'export-bpmn') {
    const target = required('--output'); if (!/\.(bpmn|xml)$/.test(target)) throw Error('BPMN output must end in .bpmn or .xml.');
-   success({output: writeTextFile(target, bpmn.export(input, values.has('--bpsim') ? {bpsim: true} : {}), [file]), bpsim: values.has('--bpsim')}); return;
+   const options = values.has('--bpsim') ? {bpsim: true} : {};
+   success({output: writeTextFile(target, bpmn.export(input, options), [file]), bpsim: values.has('--bpsim'), fidelity: bpmn.fidelity(input, options)}); return;
   }
   if (command === 'validate') {
    const checked = catalog.validate(input, values.has('--draft')), accepted = values.has('--draft') ? checked.acceptable : checked.ok;

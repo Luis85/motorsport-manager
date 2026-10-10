@@ -3,7 +3,7 @@
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
   "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-bpmn", "business-process-browser", "process-layout-browser", "process-step-editor-browser", "process-definition-browser", "process-renderers-browser", "process-lenses-browser", "process-bpmn-import-browser", "process-readability-browser", "process-present-browser"],
-  "totalChecks": 2079,
+  "totalChecks": 2083,
   "reviewedAdditions": [
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
@@ -540,7 +540,11 @@
     {"suite": "process-present-browser", "name": "Present fits phones and short windows in both fonts: menu entry, no sideways overflow, 44 px Previous and Next, unclipped text"},
     {"suite": "process-present-browser", "name": "Every bundled process presents its pinned deck with each step on exactly one slide and no errors"},
     {"suite": "process-present-browser", "name": "Present refuses to open over another studio dialog and keeps the studio behind it unreachable"},
-    {"suite": "process-present-browser", "name": "Process present browser lifecycle emits no runtime errors or network requests"}
+    {"suite": "process-present-browser", "name": "Process present browser lifecycle emits no runtime errors or network requests"},
+    {"suite": "business-process-bpmn", "name": "BPMN import analysis stays bounded: an oversized file is rejected early in plain words, files within the bound fold quickly, and list limits name the limit and the count"},
+    {"suite": "business-process-bpmn", "name": "BPMN export with BPSim carries the first arrival rule's constants, whole-number draws and the seed without the Wildlands extension, and names what only the extension carries"},
+    {"suite": "business-process-bpmn", "name": "The XML reader refuses DOCTYPE and entity declarations as markup tokens, not as text inside comments or CDATA"},
+    {"suite": "process-bpmn-import-browser", "name": "BPMN import dialog caps each mapping group at 200 rows and counts the rest, refuses a process too large for a definition in plain words, and Import reuses the preview analysis"}
   ],
   "renames": [
     {"suite": "wildlands-acceptance", "from": "Every discovered built-in scenario compiles complete resources with verified manifest hashes", "to": "Every discovered game folder scenario compiles complete resources with verified manifest hashes", "reason": "Phase 4A (decision D1): the engine CLI has no built-in scenarios. The check now compiles every scenario of every colony game folder (scenarios --game DIR) instead of the three former built-in packs; its assertions on complete resources and manifest hashes are unchanged."}
@@ -2738,7 +2742,10 @@
       "BPMN conformance: recognised but uncovered elements are listed in notCovered with path and line and do not change conforms",
       "BPMN conformance: wildlands process validate-bpmn prints the report and exits 0 when the file conforms and 2 when it does not",
       "BPMN conformance: a large BPSim export (16 maximum-size processes in one file) is validated within a bounded time",
-      "XML reader positions are opt-in: plain parsing keeps the five node fields and positions add line, name and scope"
+      "XML reader positions are opt-in: plain parsing keeps the five node fields and positions add line, name and scope",
+      "BPMN import analysis stays bounded: an oversized file is rejected early in plain words, files within the bound fold quickly, and list limits name the limit and the count",
+      "BPMN export with BPSim carries the first arrival rule's constants, whole-number draws and the seed without the Wildlands extension, and names what only the extension carries",
+      "The XML reader refuses DOCTYPE and entity declarations as markup tokens, not as text inside comments or CDATA"
     ],
     "business-process-browser": [
       "Process artifact starts paused with one selectable scene per step and real WebGL",
@@ -2832,7 +2839,8 @@
       "Export BPMN with BPSim downloads XML with a BPSim scenario that re-imports through the dialog to the same definition",
       "BPMN import dialog fits the 390x844 phone sheet without horizontal overflow and keeps every control reachable, also with DejaVu Sans injected",
       "BPMN import browser lifecycle emits no runtime errors or network requests",
-      "BPMN import dialog Standards check: the loan example conforms to BPMN 2.0 and BPSim 1.0, and a non-conforming file lists its first problems while Import stays available"
+      "BPMN import dialog Standards check: the loan example conforms to BPMN 2.0 and BPSim 1.0, and a non-conforming file lists its first problems while Import stays available",
+      "BPMN import dialog caps each mapping group at 200 rows and counts the rest, refuses a process too large for a definition in plain words, and Import reuses the preview analysis"
     ],
     "process-readability-browser": [
       "2D maps with 20 or more steps stay legible on desktop and phone: numbered cards, no overlapping or spilling titles",

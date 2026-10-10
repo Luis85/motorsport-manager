@@ -13,10 +13,12 @@ declare namespace LWProcessBpmnPreview {
  interface Api {
   /** Lanes, element counts and executability of one inspected process. */
   contents(process: LWProcessBpmn.Inspection['processes'][number] | undefined): string;
-  /** Verdict, facts, rejections, problems, warnings and the mapping grouped by target. `open` names the mapping groups shown expanded. */
+  /** Verdict, facts, rejections, problems, warnings and the mapping grouped by target (at most `ROWS` rows per group). `open` names the groups shown expanded. */
   preview(result: LWProcessBpmn.ImportResult, open: ReadonlySet<string>): Rendered;
   /** The Standards check line: conformance and elements checked, or the problem count with the first three problems; elements not covered are counted. */
   standards(report: LWProcessBpmnConformance.Report): string;
+  /** Mapping rows rendered per group; the rest are counted in a last row, so a large file never floods the dialog. */
+  readonly ROWS: number;
  }
 }
 (function(inputRoot: unknown) {
@@ -27,6 +29,7 @@ declare namespace LWProcessBpmnPreview {
  /** `userTask` reads as "user task"; counts stay next to the full element name. */
  const words = (local: string) => local.replace(/([A-Z])/g, ' $1').toLowerCase();
  /** Mapping targets in reading order, each with a full heading. Unknown prefixes follow under their own name. */
+ const ROWS = 200;
  const GROUPS: [string, string][] = [['step', 'Steps'], ['flow', 'Flows'], ['pool', 'Resource pools'], ['field', 'Case fields'], ['arrival', 'Arrivals'], ['sipoc', 'SIPOC suppliers and customers'], ['none', 'Folded, inlined or ignored']];
  function contents(p: LWProcessBpmn.Inspection['processes'][number] | undefined): string {
   if (!p) return '';
@@ -57,10 +60,15 @@ declare namespace LWProcessBpmnPreview {
  function mapping(rows: LWProcessBpmn.Mapping[], open: ReadonlySet<string>): string {
   if (!rows.length) return '';
   const groups = new Map<string, LWProcessBpmn.Mapping[]>();
-  for (const m of rows) { const key = m.target.includes(':') ? m.target.slice(0, m.target.indexOf(':')) : m.target; groups.set(key, [...groups.get(key) ?? [], m]); }
+  for (const m of rows) {
+   const key = m.target.includes(':') ? m.target.slice(0, m.target.indexOf(':')) : m.target, group = groups.get(key);
+   if (group) group.push(m); else groups.set(key, [m]);
+  }
   const order = [...GROUPS.filter(([k]) => groups.has(k)), ...[...groups.keys()].filter(k => !GROUPS.some(([g]) => g === k)).map(k => [k, k] as [string, string])];
   const table = (items: LWProcessBpmn.Mapping[]) => `<table class="bi-map"><thead><tr><th scope="col">Element in the file</th><th scope="col">Becomes</th><th scope="col">How</th></tr></thead><tbody>`
-   + items.map(m => `<tr><td data-label="Element"><code>${esc(m.id || '(file)')}</code> <small>${esc(m.type)}</small></td><td data-label="Becomes">${m.target === 'none' ? 'Nothing simulated' : `<code>${esc(m.target.slice(m.target.indexOf(':') + 1))}</code>`}</td><td data-label="How">${esc(m.how)}</td></tr>`).join('') + '</tbody></table>';
+   + items.slice(0, ROWS).map(m => `<tr><td data-label="Element"><code>${esc(m.id || '(file)')}</code> <small>${esc(m.type)}</small></td><td data-label="Becomes">${m.target === 'none' ? 'Nothing simulated' : `<code>${esc(m.target.slice(m.target.indexOf(':') + 1))}</code>`}</td><td data-label="How">${esc(m.how)}</td></tr>`).join('')
+   + (items.length > ROWS ? `<tr class="bi-more"><td colspan="3">… ${plural(items.length - ROWS, 'more entry', 'more entries')} not shown</td></tr>` : '')
+   + '</tbody></table>';
   return `<h4>Mapping (${plural(rows.length, 'entry', 'entries')})</h4>` + order.map(([key, label]) => `<details class="bi-group" data-group="${esc(key)}"${open.has(key) ? ' open' : ''}><summary>${esc(label)} (${groups.get(key)!.length})</summary>${table(groups.get(key)!)}</details>`).join('');
  }
  function preview(r: LWProcessBpmn.ImportResult, open: ReadonlySet<string>): LWProcessBpmnPreview.Rendered {
@@ -77,5 +85,5 @@ declare namespace LWProcessBpmnPreview {
   const first = r.errors.slice(0, 3).map(e => `<li>${e.line ? `Line ${e.line}: ` : ''}${esc(e.message)}</li>`).join('') + (r.errors.length > 3 ? `<li>and ${plural(r.errors.length - 3, 'more problem')}</li>` : '');
   return `<p><strong>Standards check:</strong> ${head}</p>${first ? `<ul>${first}</ul>` : ''}`;
  }
- root.LWProcessBpmnPreview = {contents, preview, standards};
+ root.LWProcessBpmnPreview = {contents, preview, standards, ROWS};
 })(globalThis);

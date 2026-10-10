@@ -86,7 +86,12 @@ declare namespace LWProcessBpmnTail {
   const idTaken = new Set<string>(), arrivals = arrivalsOf(ctx, proc, p), start = p.net.items.find(i => i.kind === 'start')!;
   const definition: LWProcess.Definition = {format: 'wildlands-process', schemaVersion: 1, revision: (meta && ext.whole(meta.attrs, 'revision', 'Process')) ?? 0, id: meta?.attrs.id ?? ext.sanitize(proc.attrs.id ?? 'imported-process', idTaken, 'process'),
    name: (proc.attrs.name || doc.attrs.name || proc.attrs.id || 'Imported process').slice(0, 120), start: start.id!, resources: p.resources, steps: p.steps, flows: p.flows, arrivals, ...meta?.attrs.schema ? {$schema: meta.attrs.schema} : {}};
-  const seed = meta ? ext.whole(meta.attrs, 'seed', 'Process') : undefined; if (seed !== undefined) definition.seed = seed;
+  // The extension seed wins; a BPSim scenario seed alone (a tool that dropped the extension) still repeats the same run.
+  const seed = meta ? ext.whole(meta.attrs, 'seed', 'Process') : undefined, bpsimSeed = ctx.bps?.seed ?? null;
+  if (seed !== undefined) definition.seed = seed; else if (bpsimSeed !== null) definition.seed = bpsimSeed;
+  if (seed !== undefined && bpsimSeed !== null && seed !== bpsimSeed) {
+   ctx.warn('BPSim seed ' + bpsimSeed + ' disagrees with the Wildlands seed ' + seed + '; the extension wins.');
+  }
   ext.trackOf(proc, meta, definition); ext.sipocOf(proc, definition); sipocFrom(ctx, doc, proc, collab, participants, definition);
   const description = ext.documentation(proc, meta !== undefined); if (description !== undefined) definition.description = description.slice(0, 4000);
   for (const k of ext.empties(meta, ['track', 'sipoc', 'suppliers', 'customers'] as const, 'Process')) {
@@ -98,7 +103,9 @@ declare namespace LWProcessBpmnTail {
   for (const [type, ids] of p.net.ignored) ctx.warn('Ignored ' + ids.length + ' ' + type + ' element' + (ids.length === 1 ? '' : 's') + ' (' + ids.slice(0, 6).join(', ') + (ids.length > 6 ? ', ...' : '') + '): no simulation behaviour.');
   const ids = new Set<string>(), collect = (n: X) => { if (n.attrs.id) ids.add(n.attrs.id); n.children.forEach(collect); }; collect(doc);
   for (const ref of ctx.bps?.elements.keys() ?? []) if (!ids.has(ref)) ctx.warn('BPSim parameters for "' + ref + '" match no element of the file and are ignored.');
-  const stepById = new Map(p.steps.map(s => [s.id, s] as const));
+  const stepById = new Map(p.steps.map(s => [s.id, s] as const)), flowById = new Map<string, LWProcess.Flow>();
+  // The first flow of an id wins, as a duplicate id is reported by validation later.
+  for (const f of p.flows) if (!flowById.has(f.id)) flowById.set(f.id, f);
   for (const i of p.net.items) {
    const s = stepById.get(i.id!)!, pools = Object.keys(s.resources ?? {}).join(', ');
    const how = i.how || (s.kind === 'start' ? 'start event' : s.kind === 'end' ? (s.outcome === 'lost' ? 'end event with outcome "lost"' : 'end event') : s.kind === 'timer' ? 'timer step' + (s.timing ? ' with ' + s.timing.dist + ' timing' : '')
@@ -107,7 +114,7 @@ declare namespace LWProcessBpmnTail {
    ctx.note(i.xml, i.local, 'step:' + s.id, how);
   }
   for (const e of p.net.edges) {
-   const f = p.flows.find(x => x.id === e.id)!, w = f.when, text = w ? (w.chance !== undefined ? 'chance ' + w.chance + '%' : root.LWProcessBpmnExpr.format(w) ?? 'condition from the extension') : undefined;
+   const f = flowById.get(e.id!)!, w = f.when, text = w ? (w.chance !== undefined ? 'chance ' + w.chance + '%' : root.LWProcessBpmnExpr.format(w) ?? 'condition from the extension') : undefined;
    ctx.note(e.xml, 'sequenceFlow', 'flow:' + f.id, f.on ? 'deadline flow (' + stepById.get(f.from)!.deadline!.mode + ')' : text ? 'conditional flow: ' + text : 'flow');
   }
   return definition;

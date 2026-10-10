@@ -8,8 +8,8 @@
  * importing at once: `LWProcessBpmn.inspect` fills the Process and BPSim scenario pickers and lists lanes and element counts;
  * every option field is validated with `LWProcessBpmn.options` and shows its own inline problem; a preview from
  * `LWProcessBpmn.analyze` (recomputed shortly after each change by a plain UI debounce, never a simulation clock) lists the
- * verdict, warnings, rejections with element ids and the mapping grouped by target. Import re-runs `LWProcessBpmn.import` with the
- * same options and hands the definition to `env.apply`, the studio's existing replace path (a fresh paused run). When that discards
+ * verdict, warnings, rejections with element ids and the mapping grouped by target. Import reuses that analysis of the shown options
+ * (the file is never analysed again) and hands its definition to `env.apply`, the studio's existing replace path (a fresh paused run). When that discards
  * a run past minute 0 or an unapplied draft, the footer asks first, starting on Cancel. This module never ticks, holds no
  * session and never touches storage; Cancel, Close and Escape change nothing and return focus to the invoker. On open, the file is
  * also checked once with `LWProcessBpmnConformance.validate` and summarised in a Standards check note that never gates Import.
@@ -137,10 +137,13 @@ declare namespace LWProcessBpmnDialog {
    if (lost.length) {
     const choice = await dialog.confirm(`Importing replaces ${a.name} and discards ${lost.join(' and ')}. Export the run report or the draft first if you need them.`, [{id: 'keep', label: 'Cancel', default: true}, {id: 'replace', label: 'Import and replace'}], {escape: 'keep'});
     if (choice !== 'replace' || !dialog.isOpen() || !file || !used) return;
+    if (timer) compute();
    }
-   let imported: LWProcessBpmn.ImportResult;
-   try { imported = root.LWProcessBpmn.import(file.text, used); } catch (e) { dialog.setStatus(`<p><strong>The file can no longer be imported with these options.</strong> ${esc(e instanceof Error ? e.message : e)}</p>`, 'alert'); return; }
-   if (!imported.ok || !imported.definition) return;
+   // `compute` sets `used` and `result` together, so the preview's analysis is exactly what `LWProcessBpmn.import(file, used)` would return.
+   const imported = result;
+   if (!imported?.ok || !imported.definition) {
+    dialog.setStatus('<p><strong>The file can no longer be imported with these options.</strong> The preview lists why.</p>', 'alert'); return;
+   }
    dialog.setStatus('');
    if (env.apply(imported.definition, file.name, imported.warnings)) dialog.close('action');
    else dialog.setStatus('<p><strong>The definition could not be imported.</strong> See the status message on the page.</p>', 'alert');
