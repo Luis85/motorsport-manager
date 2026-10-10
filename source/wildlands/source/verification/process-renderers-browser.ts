@@ -6,7 +6,7 @@ import {waitForReady, openArtifact, nextFrames} from './browser-harness';
 import {query, OUT, runSuite} from './process-browser-fixture';
 import {timerFixture, automationFixture, roomsFixture, claimsDesk} from './process-browser-models';
 runSuite('process renderers browser harness', 'process-renderers-browser-results.json', async studio => {
- const {page, file, fixtureUrls, check, checkLifecycle, freshStudio, showIo, switchTo, applyDraft, importClaims, importJson} = studio;
+ const {page, file, fixtureUrls, check, checkLifecycle, freshStudio, showIo, switchTo, applyDraft, importClaims, importJson, COUNT} = studio;
  await check('Actor joints animate only during playback, respect reduced motion, and do not tick the process', async () => {
   await page.locator('#reset').click();
   const exercise = async (reduced: boolean) => {
@@ -295,6 +295,53 @@ runSuite('process renderers browser harness', 'process-renderers-browser-results
   await page.locator('[data-step="approve"]').click(); assert.match(await page.locator('#inspector').innerText(), /Deadline path to\s+<img src=x/);
   await page.locator('[data-step="route"]').click(); assert.match(await page.locator('#inspector').innerText(), /Joins at\s+<img src=x/);
   assert.equal(await page.locator('#inspector img').count(), 0); assert.equal(await page.evaluate(() => (globalThis as any).__pwned), undefined);
+ });
+ // Renderer lifecycle and on-demand drawing (3D performance): one renderer for the page, scenes freed on rebuild, frames only when something changes.
+ await check('3D keeps one WebGL renderer and canvas across process switches, frees each scene, '
+  + 'and redraws on demand at most 30 times a second while playing', async () => {
+  await freshStudio(); await page.locator('#mode-3d').click(); await nextFrames(page);
+  type Live = {renderers: number; geometries: number; textures: number; programs: number; same: boolean};
+  await page.evaluate(() => { (globalThis as any).__canvas3d = document.getElementById('canvas'); });
+  const facts = () => page.evaluate(() => {
+   const w = globalThis as any; return {...w.LWProcess3D.live(), same: document.getElementById('canvas') === w.__canvas3d} as Live;
+  });
+  const first = await facts(); assert.equal(first.renderers, 1);
+  assert(first.same && first.geometries > 0 && first.textures > 0 && first.programs > 0, JSON.stringify(first));
+  // Every switch rebuilds the scene on the same renderer; back on the first process the GPU holds exactly what it held before.
+  for (let round = 0; round < 3; round++) {
+   for (let i = 1; i < COUNT; i++) { await switchTo(i); await nextFrames(page); assert.equal((await facts()).renderers, 1, 'process ' + i); }
+   await switchTo(0); await nextFrames(page); assert.deepEqual(await facts(), first, 'round ' + round);
+  }
+  // A probe surface on its own canvas counts frames for fixed 10 ms draws; reduced motion is switched between its calls.
+  const probe = (run: string) => page.evaluate(r => (globalThis as any).__probe[r](), run);
+  await page.evaluate(() => {
+   const w = globalThis as any, T = w.THREE, view = w.LWProcessStudio.query(), before = w.LWProcess3D.live().renderers;
+   const canvas = document.createElement('canvas'); canvas.style.cssText = 'width:400px;height:300px'; document.body.append(canvas);
+   let renders = 0, type = -1; const Original = T.WebGLRenderer;
+   T.WebGLRenderer = class extends Original {
+    constructor(options: any) {
+     super(options); const render = this.render;
+     this.render = (s: any, c: any) => {renders++; type = this.shadowMap.type; return render.call(this, s, c);};
+    }
+   };
+   const surface = w.LWProcess3D.create(canvas, view.definition, () => {}), during = w.LWProcess3D.live().renderers; T.WebGLRenderer = Original;
+   const count = (v: any) => { const start = renders; for (let i = 0; i < 40; i++) surface.draw(v, .01); return renders - start; };
+   w.__probe = {
+    // 40 frames of 10 ms while playing: the snapshot frame, then one frame per 40 ms of animation (rooms move their props while the run plays).
+    first: () => {
+     const paused = count({...view, playing: false}), playing = count({...view, playing: true});
+     return {paused, playing, shadow: type === T.PCFShadowMap, renderers: [before, during]};
+    },
+    // With reduced motion nothing animates, so a playing run draws only its new snapshot.
+    reduced: () => count({...view, playing: true}),
+    dispose: () => { surface.dispose(); canvas.remove(); delete w.__probe; },
+   };
+  });
+  try {
+   assert.deepEqual(await probe('first'), {paused: 1, playing: 10, shadow: true, renderers: [1, 2]});
+   await page.emulateMedia({reducedMotion: 'reduce'}); assert.equal(await probe('reduced'), 1);
+  } finally { await page.emulateMedia({reducedMotion: 'no-preference'}); await probe('dispose'); }
+  assert.equal((await facts()).renderers, 1, 'a surface on its own canvas releases its renderer');
  });
  await checkLifecycle('Process renderers browser lifecycle emits no runtime errors or network requests');
 });

@@ -1,31 +1,68 @@
 /// <reference path="./process-contracts.d.ts" />
-/** Three.js view using the engine's asset interpreter. Camera and interpolation are presentation only. */
+/**
+ * Three.js view using the engine's asset interpreter. Camera and interpolation are presentation only. A page keeps one `Stage` (one
+ * WebGLRenderer on one canvas) for its lifetime: a surface created on it disposes only its own scene, so rebuilding never adds a renderer,
+ * GL context or canvas. A surface created on a bare canvas owns a renderer and disposes it with the scene. Frames are drawn on demand: after
+ * a camera, selection or snapshot change, and while playing only when a visible actor or room animates, at most about 30 times a second.
+ */
 declare namespace LWProcess3D {
  interface Surface {draw(view: LWProcessApp.View, delta: number): void; frame(): void; dispose(): void;}
- interface Api {create(canvas: HTMLCanvasElement, definition: LWProcess.Definition, select: (id: string) => void): Surface;}
+ /** One WebGL renderer on one canvas for the page's lifetime; `dispose` releases the renderer and its GL context for good. */
+ interface Stage {readonly canvas: HTMLCanvasElement; dispose(): void;}
+ /** Read-only lifecycle facts of the renderers this module has created and not disposed: how many, and the GPU resources they hold. */
+ interface Live {renderers: number; geometries: number; textures: number; programs: number;}
+ interface Api {
+  create(target: HTMLCanvasElement | Stage, definition: LWProcess.Definition, select: (id: string) => void): Surface;
+  stage(canvas: HTMLCanvasElement): Stage;
+  live(): Live;
+ }
 }
 (function(inputRoot: unknown) {
  'use strict';
  // Vendored Three.js has the same intentionally loose adapter boundary as pet-renderer.ts.
  type O = any;
  const root = inputRoot as {THREE: O; LWAssetRenderer: {createFromDefinition(kit: O, parent: O, input: unknown, model?: string): {root: O}}; LWProcessRooms: LWProcessRooms.Api; LWProcess3D?: LWProcess3D.Api};
- function create(canvas: HTMLCanvasElement, definition: LWProcess.Definition, select: (id: string) => void): LWProcess3D.Surface {
-  const renderer = new root.THREE.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true});
-  try {return build(renderer, canvas, definition, select);}
-  catch (e) {renderer.dispose(); renderer.forceContextLoss(); throw e;}
+ /** While playing, animated frames are drawn at most this often (seconds). */
+ const FRAME = 1 / 30;
+ const renderers = new Set<O>(), stages = new WeakMap<LWProcess3D.Stage, O>();
+ const open = (canvas: HTMLCanvasElement): O => {
+  const r = new root.THREE.WebGLRenderer({canvas, antialias: true, preserveDrawingBuffer: true}); renderers.add(r); return r;
+ };
+ const release = (r: O) => {if (!renderers.delete(r)) return; r.dispose(); r.forceContextLoss();};
+ function stage(canvas: HTMLCanvasElement): LWProcess3D.Stage {
+  const r = open(canvas), s: LWProcess3D.Stage = Object.freeze({canvas, dispose() {stages.delete(s); release(r);}});
+  stages.set(s, r); return s;
  }
- function build(renderer: O, canvas: HTMLCanvasElement, definition: LWProcess.Definition, select: (id: string) => void): LWProcess3D.Surface {
+ function live(): LWProcess3D.Live {
+  const out = {renderers: renderers.size, geometries: 0, textures: 0, programs: 0};
+  for (const r of renderers) {
+   out.geometries += r.info.memory.geometries; out.textures += r.info.memory.textures; out.programs += r.info.programs?.length ?? 0;
+  }
+  return out;
+ }
+ type Select = (id: string) => void;
+ function create(target: HTMLCanvasElement | LWProcess3D.Stage, definition: LWProcess.Definition, select: Select): LWProcess3D.Surface {
+  const bare = target instanceof HTMLCanvasElement, shared = bare ? undefined : stages.get(target);
+  if (!bare && !shared) throw Error('The 3D stage was disposed.');
+  const canvas = bare ? target : target.canvas, renderer = shared ?? open(canvas);
+  // A shared renderer outlives every scene; an owned one goes with its surface.
+  const done = shared ? () => {renderer.renderLists.dispose();} : () => release(renderer);
+  try {return build(renderer, canvas, definition, select, done);}
+  catch (e) {if (!shared) release(renderer); throw e;}
+ }
+ function build(renderer: O, canvas: HTMLCanvasElement, definition: LWProcess.Definition, select: Select, done: () => void): LWProcess3D.Surface {
   const T = root.THREE, AUTOMATED = new Set(['touchpoint', 'machine', 'system']);
   // Deadline paths are red when the work is interrupted and amber when it escalates beside it; escalated tokens have their own colour.
   const TONE: Record<string, string> = {interrupt: '#e07a7a', escalate: '#e6b04a'}, ESCALATED = '#ff8a5c';
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setClearColor('#13181f');
-  renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
+  // PCFSoftShadowMap is deprecated in this three.js and falls back to PCFShadowMap with a warning; asking for it directly draws the same.
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFShadowMap;
   renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.2;
   const scene = new T.Scene(), camera = new T.PerspectiveCamera(38, 1, .1, 3000), target = new T.Vector3();
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const stepIndex = new Map(definition.steps.map(s => [s.id, s]));
   const rooms = new Map<string, LWProcessRooms.Room>(), moods: O[] = [], roomProgress = new Map<string, number>(), indicators = new Map<string, {bar: O; lamp: O; status: O; sub: string; font: number}>(), names: {sprite: O; text: string}[] = [];
-  let needsRender = true;
+  let needsRender = true, animating = false, sinceRender = 0;
   const motionChanged = () => {needsRender = true;}; reducedMotion.addEventListener('change', motionChanged);
   let phase = 0, previousView: LWProcessApp.View | undefined;
   const objects: O[] = [], textures: O[] = [], stations = new Map<string, O>(), markers = new Map<string, O>();
@@ -275,6 +312,9 @@ declare namespace LWProcess3D {
      indicator.status.userData.draw(lines); indicator.status.userData.caption = text;
     }
    }
+   // Only visible actors and rooms with moving props change between snapshots while the run plays.
+   animating = [...markers.values()].some(m => m.userData.actor)
+    || [...rooms].some(([id, room]) => room.moving && (!selected || selected === id));
   }
   // Room names keep a minimum on-screen text size (about 11px) in the overview, wrapping to the room spacing so neighbours never collide.
   // Front captions grow until their lines reach 12px, up to the width of a room; a caption that would still be smaller (a zoomed-out
@@ -315,8 +355,9 @@ declare namespace LWProcess3D {
    if (width !== viewportWidth || height !== viewportHeight) {
     viewportWidth = width; viewportHeight = height; renderer.setSize(width, height, false); fit(false);
    }
-   if (!needsRender && !moving) return;
-   needsRender = false; layoutNames();
+   sinceRender += delta;
+   if (!needsRender && !(moving && animating && sinceRender >= FRAME)) return;
+   needsRender = false; sinceRender = 0; layoutNames();
    camera.aspect = width / height; camera.near = Math.max(.1, distance / 10000); camera.far = Math.max(3000, distance * 3); camera.updateProjectionMatrix();
    camera.position.set(target.x + Math.sin(yaw) * Math.cos(pitch) * distance, target.y + Math.sin(pitch) * distance, target.z + Math.cos(yaw) * Math.cos(pitch) * distance);
    camera.lookAt(target); renderer.render(scene, camera);
@@ -327,8 +368,8 @@ declare namespace LWProcess3D {
    canvas.removeEventListener('pointerdown', pointerDown); canvas.removeEventListener('pointermove', pointerMove); canvas.removeEventListener('pointerup', pointerUp); canvas.removeEventListener('wheel', wheel);
    const allGeometry = new Set<O>(geometries.values()), allMaterials = new Set<O>(materials.values());
    scene.traverse((o: O) => {if (o.geometry) allGeometry.add(o.geometry); if (o.material) for (const m of Array.isArray(o.material) ? o.material : [o.material]) allMaterials.add(m);});
-   allGeometry.forEach(g => g.dispose()); allMaterials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); renderer.dispose(); renderer.forceContextLoss();
+   allGeometry.forEach(g => g.dispose()); allMaterials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); light.dispose(); done();
   }};
  }
- root.LWProcess3D = {create};
+ root.LWProcess3D = Object.freeze({create, stage, live});
 })(globalThis);
