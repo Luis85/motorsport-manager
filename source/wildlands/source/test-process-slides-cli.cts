@@ -79,7 +79,7 @@ test('Guarded process-setting edits set and remove description, seed, genre, SIP
  const Ajv = require('ajv'); const recipe = new Ajv({strict: false, allowUnionTypes: true}).compile(spawnJson(['schema', '--kind', 'recipe']).schema);
  assert(recipe(guard(d, [{op: 'setDescription', value: null}, {op: 'setSeed', value: 4}, {op: 'setGenre', value: 'process'}, {op: 'setSipoc', value: sipoc}, {op: 'setTrack', value: null}])), JSON.stringify(recipe.errors));
  assert(!recipe(guard(d, [{op: 'setGenre', value: null} as never])));
- assert.deepEqual(spawnJson(['discover']).editOperations.slice(-5), ['setDescription', 'setSeed', 'setSipoc', 'setTrack', 'setGenre']);
+ assert.deepEqual(spawnJson(['discover']).editOperations.slice(-6), ['setDescription', 'setSeed', 'setSipoc', 'setTrack', 'setCalendar', 'setGenre']);
  workspace((call, _raw, dir) => {
   const a = claims(); fs.writeFileSync(path.join(dir, 'recipe.json'), JSON.stringify(guard(a, [{op: 'setDescription', value: null}, {op: 'setSeed', value: 11}])));
   const listing = fs.readdirSync(dir).sort().join(), dry = call(['edit', '--input', 'a.json', '--recipe', 'recipe.json', '--dry-run']);

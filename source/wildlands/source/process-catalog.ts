@@ -43,12 +43,19 @@
   // Only the local `#/definitions/<name>` reference form exists; it makes recursive condition combinators expressible.
   const schema = typeof node.$ref === 'string' ? definitions[node.$ref.slice('#/definitions/'.length)]! : node;
   const fail = (message: string) => { if (errors.length < 100) errors.push({path, code: 'shape', message}); };
+  // A node's own description replaces the generic type and range messages (the display calendar names its field and range).
+  const plain = typeof schema.description === 'string' ? schema.description : undefined;
   if ('const' in schema && value !== schema.const) fail('Expected ' + String(schema.const) + '.');
   if (Array.isArray(schema.enum) && !schema.enum.includes(value)) fail('Expected one of ' + schema.enum.join(', ') + '.');
   const type = value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value;
   const types = Array.isArray(schema.type) ? schema.type : schema.type ? [schema.type] : [];
-  if (types.length && !types.includes(type) && !(type === 'number' && Number.isInteger(value) && types.includes('integer'))) { fail('Expected ' + types.join(' or ') + '.'); return; }
-  if (typeof value === 'number' && (value < Number(schema.minimum ?? -Infinity) || value > Number(schema.maximum ?? Infinity))) fail('Number is out of range.');
+  const integral = type === 'number' && Number.isInteger(value) && types.includes('integer');
+  if (types.length && !types.includes(type) && !integral) {
+   fail(plain ?? 'Expected ' + types.join(' or ') + '.');
+   return;
+  }
+  const outside = typeof value === 'number' && (value < Number(schema.minimum ?? -Infinity) || value > Number(schema.maximum ?? Infinity));
+  if (outside) fail(plain ?? 'Number is out of range.');
   if (typeof value === 'string' && (value.length < Number(schema.minLength ?? 0) || value.length > Number(schema.maxLength ?? Infinity) || typeof schema.pattern === 'string' && !new RegExp(schema.pattern).test(value))) fail('String has invalid length or format.');
   if (Array.isArray(value)) {
    if (value.length < Number(schema.minItems ?? 0) || value.length > Number(schema.maxItems ?? Infinity)) fail(lengthMessage(path, value.length, schema));

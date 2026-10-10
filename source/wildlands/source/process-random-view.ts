@@ -16,6 +16,19 @@ declare namespace LWProcessRandomView {
   describeTiming(step: Pick<LWProcess.Step, 'duration' | 'until' | 'timing'>): string;
   /** Average whole-minute value of a distribution's draws, rounding and clamping included (triangular 240/720/1800: about 920); null when unknown. */
   meanOf(dist: LWProcess.Dist | undefined): number | null;
+  /**
+   * The authored mean of a distribution: (min + max) / 2 for uniform, (min + mode + max) / 3 for triangular, otherwise `mean`;
+   * null when a parameter is missing.
+   */
+  authoredMean(dist: LWProcess.Dist | undefined): number | null;
+  /**
+   * A non-blocking note when whole-minute draws bias a distribution: every draw is rounded to a whole minute of at least 1
+   * (and kept within declared bounds), so the average draw (`meanOf`) can differ from the authored mean. Returns
+   * 'Whole-minute rounding: an exponential distribution with mean 2 min draws about 2.2 min on average.' when the two differ
+   * by more than 5% of the authored mean (the same rule as `describeTiming`); the lead names 'the declared bounds' too when
+   * an exponential max or a normal min or max is set. Null otherwise, or when either mean is unknown.
+   */
+  roundingNote(dist: LWProcess.Dist | undefined): string | null;
   /** 'Sets defect to true in 12% of cases, otherwise false'. */
   describeDraw(draw: LWProcess.Draw): string;
   /** 'If iteration < iterations', '8% of cases take this path', 'Otherwise (no condition)' or, for all/any/not combinators, 'If A and (B or not C)'. */
@@ -125,6 +138,23 @@ declare namespace LWProcessRandomView {
  }
  /** A displayed average: whole minutes from 100 up, one decimal below. */
  const average = (n: number) => n >= 100 ? String(Math.round(n)) : String(Math.round(n * 10) / 10);
+ function authoredMean(d: LWProcess.Dist | undefined): number | null {
+  if (!d) return null;
+  const ok = (...values: (number | undefined)[]) => values.every(v => typeof v === 'number' && Number.isFinite(v));
+  if (d.dist === 'uniform') return ok(d.min, d.max) ? (d.min! + d.max!) / 2 : null;
+  if (d.dist === 'triangular') return ok(d.min, d.mode, d.max) ? (d.min! + d.mode! + d.max!) / 3 : null;
+  return ok(d.mean) ? d.mean! : null;
+ }
+ function roundingNote(d: LWProcess.Dist | undefined): string | null {
+  const authored = authoredMean(d), drawn = meanOf(d);
+  if (!d || authored === null || drawn === null || authored <= 0 || Math.abs(drawn - authored) / authored <= .05) return null;
+  const bounded = d.dist === 'exponential' && d.max !== undefined || d.dist === 'normal' && (d.min !== undefined || d.max !== undefined);
+  const article = d.dist === 'exponential' || d.dist === 'erlang' ? 'an' : 'a';
+  const lead = bounded ? 'Whole-minute rounding and the declared bounds' : 'Whole-minute rounding';
+  // Two averages that read the same at one decimal are shown with two, so the note never claims '1.3 draws about 1.3'.
+  const same = average(authored) === average(drawn), show = (n: number) => same ? String(Math.round(n * 100) / 100) : average(n);
+  return `${lead}: ${article} ${d.dist} distribution with mean ${show(authored)} min draws about ${show(drawn)} min on average.`;
+ }
  function describeTiming(step: Pick<LWProcess.Step, 'duration' | 'until' | 'timing'>): string {
   if (step.duration === undefined) return '';
   if (!step.timing) return `Takes ${step.duration} min`;
@@ -192,7 +222,7 @@ declare namespace LWProcessRandomView {
  const describeEmotion = (n: number | undefined): string => EMOTIONS.find(([value]) => value === n)?.[1] ?? '';
  const describeChannel = (channel: string | undefined): string => CHANNELS.find(([value]) => value === channel)?.[1] ?? '';
  const describeOutcome = (outcome: string | undefined): string => (outcome !== undefined && Object.hasOwn(OUTCOMES, outcome) ? OUTCOMES[outcome] : undefined) ?? '';
- root.LWProcessRandomView = {describeDist, describeTiming, meanOf, describeDraw, describeWhen, describeInstances, describeDeadline, describeFork,
-  describeArrival, scalar, describeEmotion, describeChannel, describeOutcome, EMOTIONS, CHANNELS};
+ root.LWProcessRandomView = {describeDist, describeTiming, meanOf, authoredMean, roundingNote, describeDraw, describeWhen, describeInstances,
+  describeDeadline, describeFork, describeArrival, scalar, describeEmotion, describeChannel, describeOutcome, EMOTIONS, CHANNELS};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessRandomView;
 })(globalThis);

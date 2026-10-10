@@ -1,7 +1,7 @@
 /// <reference path="../process-contracts.d.ts" />
 /** Noninteractive process agent tools. All outputs are guarded and atomic via shared CLI I/O. */
 import {createHash} from 'node:crypto';
-import {catalog, runtime, authoring, bpmn, conformance, slides} from '../process-sdk.cjs';
+import {catalog, runtime, authoring, bpmn, conformance, slides, diff, advice} from '../process-sdk.cjs';
 import {emit, readJsonFile, writeJsonFile, writeTextFile} from './cli-io.cjs';
 import {assembleGame} from './game-build.cjs';
 import {writeForgeProject} from './process-forge.cjs';
@@ -47,7 +47,8 @@ function recipeSchema(): Record<string, unknown> {
     ...['Step', 'Flow', 'Resource'].map((name, i) => operation('put' + name, 'value', properties[['steps', 'flows', 'resources'][i]!]!.items)),
     ...['Step', 'Flow', 'Resource'].map(name => operation('remove' + name, 'id', properties.id)),
     operation('setArrivals', 'value', properties.arrivals), operation('setStart', 'value', properties.start), operation('rename', 'value', properties.name),
-    ...([['setDescription', 'description'], ['setSeed', 'seed'], ['setSipoc', 'sipoc'], ['setTrack', 'track']] as const).map(([op, key]) => operation(op, 'value', {oneOf: [properties[key], {type: 'null'}]})),
+    ...([['setDescription', 'description'], ['setSeed', 'seed'], ['setSipoc', 'sipoc'], ['setTrack', 'track'], ['setCalendar', 'calendar']] as const)
+     .map(([op, key]) => operation(op, 'value', {oneOf: [properties[key], {type: 'null'}]})),
     operation('setGenre', 'value', properties.genre)
    ]}}}};
 }
@@ -156,7 +157,9 @@ export function run(args: readonly string[]): void {
   }
   if (command === 'validate') {
    const checked = catalog.validate(input, values.has('--draft')), accepted = values.has('--draft') ? checked.acceptable : checked.ok;
-   emit({ok: accepted, protocolVersion: 1, runnable: checked.ok, diagnostics: checked.diagnostics});
+   // Advisories never change acceptance; they need a definition that passed the structural schema.
+   const advisories = checked.definition ? advice.advise(checked.definition) : [];
+   emit({ok: accepted, protocolVersion: 1, runnable: checked.ok, diagnostics: checked.diagnostics, advisories});
    if (!accepted) process.exitCode = 1; return;
   }
   if (command === 'edit' || command === 'attach') {
@@ -177,7 +180,7 @@ export function run(args: readonly string[]): void {
    const checked = catalog.validate(input, true);
    if (!checked.acceptable) throw Error(checked.diagnostics.map(e => e.path + ': ' + e.message).join('\n'));
    const d = checked.definition!, runnable = !checked.diagnostics.length, temporary = runnable ? runtime.create(d) : null;
-   try {success({id: d.id, revision: d.revision, fingerprint: catalog.fingerprint(d), runnable, diagnostics: checked.diagnostics,
+   try {success({id: d.id, revision: d.revision, fingerprint: catalog.fingerprint(d), runnable, diagnostics: checked.diagnostics, advisories: advice.advise(d),
     scenes: d.steps.map(s => ({id: s.scene.id, stepId: s.id, name: s.name, position: s.scene.position})), snapshot: temporary?.query() ?? null});}
    finally {temporary?.dispose();} return;
   }

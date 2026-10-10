@@ -92,7 +92,11 @@ declare namespace LWProcessBpmnTail {
   if (seed !== undefined && bpsimSeed !== null && seed !== bpsimSeed) {
    ctx.warn('BPSim seed ' + bpsimSeed + ' disagrees with the Wildlands seed ' + seed + '; the extension wins.');
   }
-  ext.trackOf(proc, meta, definition); ext.sipocOf(proc, definition); sipocFrom(ctx, doc, proc, collab, participants, definition);
+  ext.trackOf(proc, meta, definition);
+  // Only a Wildlands export carries a display calendar; foreign files never gain one.
+  ext.calendarOf(meta, definition);
+  ext.sipocOf(proc, definition);
+  sipocFrom(ctx, doc, proc, collab, participants, definition);
   const description = ext.documentation(proc, meta !== undefined); if (description !== undefined) definition.description = description.slice(0, 4000);
   for (const k of ext.empties(meta, ['track', 'sipoc', 'suppliers', 'customers'] as const, 'Process')) {
    if (k === 'track') { if (definition.track) throw Error('Process: track is marked empty but has entries.'); definition.track = []; continue; }
