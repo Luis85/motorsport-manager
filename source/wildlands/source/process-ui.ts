@@ -5,7 +5,7 @@
  *  - LWProcessRunBar: the run bar and the status line; LWProcessStepList: the step list;
  *  - LWProcessSlots: the Process selector, switching (each process keeps its own paused run) and adding processes;
  *  - LWProcessIO: file import and export; LWProcessGuard: the questions outside editors and the page lifecycle;
- *  - LWProcessRecovery: the opt-in recovery copy of unapplied drafts in browser storage (the studio's only storage use);
+ *  - LWProcessRecovery: the automatic recovery copy of unapplied drafts in browser storage (the studio's only storage use);
  *  - LWProcessDraftActions: Add step…, Tidy layout and moving cards on the 2D map (the map's `move` option), each one draft step;
  *  - LWProcessActivity: the event feed, one tracker per process slot (a switch restores the slot's feed silently);
  *  - the editors binding below (step editor and Definition editor over the shared LWProcessDraft), the Present binding and the

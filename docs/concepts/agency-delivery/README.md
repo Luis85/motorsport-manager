@@ -38,8 +38,9 @@ or a forecast, and neither has scene assets. The sixth,
 (see below), and the seventh, `content/delivery-release.process.json`, is a product
 team's weekly delivery cadence and release train (see below). None of them models a
 real company, warehouse, bank, vendor or team; all values are authored, illustrative and synthetic, and the automated steps
-are simulated assumptions, not integrations. Switching restarts the chosen process
-paused at minute 0; Download HTML keeps all seven with your edits.
+are simulated assumptions, not integrations. Each process keeps its own paused run when you
+switch between them; Download HTML keeps all seven, and any process you add, with your applied
+edits.
 
 ## Loan application converted from BPMN
 
@@ -218,13 +219,17 @@ bin/wildlands build-game --game docs/concepts/agency-delivery --output demos/age
 The business processes and journeys also carry a descriptive `sipoc` (suppliers and customers) and, for the
 business processes, step `phase` labels that group the SIPOC view; neither affects a run.
 
-Open `demos/agency-delivery.html` in a browser; use **Run simulation**, **2D**/**3D**, the
-SIPOC or journey lens, **Step scenes**, and **Present** to walk through a process as slides
-beside its map ([Present a process to stakeholders](../../how-to/present-a-process.md)). For
-the release train, which runs for about 19,000 business minutes, choose **Speed** 2 h or 24 h and
-a **Run until** of 720 h. Every file is embedded and the demo runs offline. The
-studio tunes these processes (including where each step's paths lead) but cannot add steps or
-create a new process; to build your own, follow
+Open `demos/agency-delivery.html` in a browser; use **Run simulation** (or **Run to end**),
+**2D**/**3D**, the SIPOC or journey lens, the **Steps** list, the **Dashboard**
+([Read a process dashboard](../../how-to/read-a-process-dashboard.md)) and **Present** to walk
+through a process as slides beside its map
+([Present a process to stakeholders](../../how-to/present-a-process.md)). For
+the release train, which runs for about 19,000 business minutes, choose a **Run until** of 720 h
+and **Run to end**, or **Speed** 2 h or 24 h to watch it. Every file is embedded and the demo runs
+offline. The studio can change these processes in an unapplied draft (step values, paths, added,
+duplicated or deleted steps, the layout) and add an eighth process with **New process…** or
+**Import as a new process…**; edits stay in the page until you export or download them, apart from
+a recovery copy of an unapplied draft in your browser. To build your own from scratch, follow
 [Model your first business process](../../tutorials/first-business-process.md).
 
 [Contract](../../reference/business-process-engine.md) ·

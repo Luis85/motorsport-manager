@@ -7,7 +7,7 @@
  * simulation runs; the draft never changes it. The store keeps one draft per process index, so switching process never
  * discards edits. It also keeps a bounded undo/redo history of the active process's draft, in memory only (the history is never
  * stored): typing from one source within a second is one step, and a labelled write (a removed row) is always its own step.
- * Nothing here touches the DOM, a session or storage. The opt-in recovery copy of the draft text in browser storage is
+ * Nothing here touches the DOM, a session or storage. The automatic recovery copy of the draft text in browser storage is
  * LWProcessRecovery's policy (`process-recovery.ts`): it subscribes to this store and writes the copy itself; a recovered copy comes
  * back through `write(text, 'recovery')`.
  *

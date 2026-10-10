@@ -80,7 +80,7 @@ test('The actual architecture policy rejects asset-catalog DOM/platform and pres
   const tools=path.join(fixture,'.generated','tools');fs.mkdirSync(tools,{recursive:true});
   const checkerFiles=['architecture-check.cjs','architecture-analysis.cjs','architecture-data.cjs','architecture-contracts.cjs',
    'definition-source.cjs','bundled-content.cjs','bundled-assets.cjs','bundled-library-schema.cjs','artifact-profiles.cjs','build-inserts.cjs',
-   'game-folder.cjs','game-manifest.cjs'];
+   'build-inserts-process.cjs','game-folder.cjs','game-manifest.cjs'];
   for(const file of checkerFiles)fs.copyFileSync(path.join(__dirname,'tools',file),path.join(tools,file));
   // game-folder.cjs requires the compiled engine schemas (content/*.schema.json) relative to itself.
   fs.cpSync(path.join(__dirname,'content'),path.join(fixture,'.generated','content'),{recursive:true});

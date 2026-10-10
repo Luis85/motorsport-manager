@@ -16,8 +16,9 @@
  * - tools/process-forge.cts, tools/process-cli-analytics.cts (with tools/process-event-log.cts): the
  *   process CLI's own forge, run, replicate, compare and diff modules, shared rather than copied so outputs
  *   stay byte-identical while Wildlands keeps changing them.
- * - tools/build-inserts.cts, tools/artifact-profiles.cts (with tools/game-manifest.cts) and
- *   tools/artifact-placement.cts: the pure profile and placement rules of a process play artifact.
+ * - tools/build-inserts.cts (with tools/build-inserts-process.cts, the `template-process` inserts it appends),
+ *   tools/artifact-profiles.cts (with tools/game-manifest.cts) and tools/artifact-placement.cts: the pure
+ *   insert order, profile and placement rules of a process play artifact.
  */
 export {catalog, runtime, authoring, bpmn, conformance, slides, diff, replicate, advice} from '../../wildlands/source/process-sdk.cjs';
 export {readJsonFile, writeJsonFile, writeTextFile} from '../../wildlands/source/tools/cli-io.cjs';

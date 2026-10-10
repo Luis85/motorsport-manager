@@ -26,8 +26,10 @@ export const ENGINE_CLOSURE = [
 /** Node tool modules of the process CLI: shared atomic I/O, forge, run/replicate/compare/diff and the event log. */
 export const TOOL_CLOSURE = ['tools/cli-io.cts', 'tools/process-forge.cts', 'tools/process-cli-analytics.cts', 'tools/process-event-log.cts'] as const;
 
-/** Pure artifact rules of a process play build: insert table, game profiles (with the manifest's template features), placement. */
-export const BUILD_CLOSURE = ['tools/build-inserts.cts', 'tools/artifact-profiles.cts', 'tools/game-manifest.cts', 'tools/artifact-placement.cts'] as const;
+/** Pure artifact rules of a process play build: insert table (with its template-process part), game profiles (with the manifest's template features), placement. */
+export const BUILD_CLOSURE = [
+ 'tools/build-inserts.cts', 'tools/build-inserts-process.cts', 'tools/artifact-profiles.cts', 'tools/game-manifest.cts', 'tools/artifact-placement.cts'
+] as const;
 
 export const CLOSURE: readonly string[] = [...ENGINE_CLOSURE, ...TOOL_CLOSURE, ...BUILD_CLOSURE];
 
