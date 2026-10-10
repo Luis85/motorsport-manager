@@ -24,7 +24,9 @@
 .process-studio button[aria-pressed=true],.process-studio button.selected { background:var(--accent-bg); border-color:var(--accent-line); }
 .process-studio button.primary { background:var(--accent); color:var(--bg); font-weight:650; border-color:var(--accent); }
 .process-studio button.primary:hover { background:var(--accent-hover); }
-.process-studio button.primary:disabled,.process-studio button.primary:disabled:hover { background:var(--accent); border-color:var(--accent); }
+/* A disabled primary button uses the neutral disabled look: the accent fill means "the next action", never "unavailable". */
+.process-studio button.primary:disabled,.process-studio button.primary:disabled:hover {
+ background:var(--panel); border-color:var(--control-border); color:var(--text); font-weight:inherit; }
 .process-studio button.ghost { background:transparent; color:var(--muted); }
 .process-studio button.ghost:hover { background:var(--surface-2); color:var(--text); }
 .process-studio button.ghost:disabled,.process-studio button.ghost:disabled:hover { background:transparent; }
@@ -57,23 +59,34 @@
 .process-studio #export-items button { width:100%; text-align:left; border-color:transparent; background:transparent; }
 .process-studio #export-items button:hover,.process-studio #export-items button:focus-visible { background:var(--surface-2); }
 .process-studio #export-items button:focus-visible { outline-offset:-2px; }
-.process-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); padding:var(--s2) var(--s4); border-bottom:1px solid var(--line); background:var(--bg); }
+/* The run groups are separated by a wider column gap rather than divider lines, so a wrapped row never starts with a stray rule. */
+.process-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2) var(--s3); padding:var(--s2) var(--s4); border-bottom:1px solid var(--line);
+ background:var(--bg); }
 .run-actions,.run-config,.run-status { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); }
-.run-config,.run-status { padding-left:var(--s2); border-left:1px solid var(--line); }
 .run-status { margin-left:auto; }
 .run-config label { display:flex; align-items:center; gap:6px; color:var(--muted); }
 /* Eight seed digits stay visible without spin buttons, so the toolbar keeps one row at 1366 px in wider fallback fonts; arrow keys still step. */
 .run-seed input { width:calc(8ch + 2 * var(--s2) + 2px); appearance:textfield; }
-.run-seed input::-webkit-inner-spin-button,.run-seed input::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
-#horizon-custom { width:7em; }
+.run-seed input::-webkit-inner-spin-button,.run-seed input::-webkit-outer-spin-button,
+#horizon-custom::-webkit-inner-spin-button,#horizon-custom::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+/* Six digits without spin buttons, so a custom run length keeps the desktop toolbar on one row. */
+#horizon-custom { width:calc(6ch + 2 * var(--s2) + 2px); appearance:textfield; }
 #play { min-width:132px; }
 .options-toggle,.panel-toggle { display:none; }
 .act-count { margin-left:var(--s1); font-weight:650; color:var(--accent); font-variant-numeric:tabular-nums; }
-.run-readout { display:flex; align-items:baseline; gap:var(--s2); }
-.process-clock { font-size:var(--t-base); font-variant-numeric:tabular-nums; font-weight:650; }
-#run-status { min-width:62px; color:var(--muted); font-size:var(--t-sm); }
+.act-count.urgent { color:var(--danger-text); }
+/* The clock keeps exact minutes on its own line; the hours reading and the run status share a small second line within the control height. */
+.run-readout { display:flex; flex-direction:column; justify-content:center; min-height:var(--control-h); line-height:1.2; }
+.process-clock { font-size:var(--t-md); font-variant-numeric:tabular-nums; font-weight:650; white-space:nowrap; }
+.run-sub { display:flex; gap:var(--s1); font-size:var(--t-xs); white-space:nowrap; }
+.clock-gloss { color:var(--muted); font-variant-numeric:tabular-nums; }
+.clock-gloss:not(:empty)::after { content:" \00b7" / ""; }
+.clock-gloss:empty { display:none; }
+#run-status { color:var(--muted); }
+/* Selects take the width of their chosen option, so "Until: custom…" leaves room for the minutes field. */
+#speed,#horizon { field-sizing:content; }
 /* Workspace. Short or narrow windows scroll as a page; desktop windows fit one viewport and each column scrolls inside itself. */
-.process-workspace { display:grid; grid-template-columns:clamp(200px,24vw,260px) minmax(0,1fr); border-bottom:1px solid var(--line); }
+.process-workspace { display:grid; grid-template-columns:clamp(12.5rem,24vw,16.25rem) minmax(0,1fr); border-bottom:1px solid var(--line); }
 .process-nav { grid-column:1; grid-row:1; }.process-stage { grid-column:2; grid-row:1; }.process-inspector { grid-column:1/-1; grid-row:2; border-top:1px solid var(--line); }
 .process-nav,.process-inspector { background:var(--panel); padding:0 var(--s4) var(--s4); min-width:0; overflow-wrap:anywhere; }
 .process-nav { border-right:1px solid var(--line); }
@@ -81,6 +94,7 @@
 .process-panel-heading { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--s3); color:var(--muted); }
 .process-panel-heading h2,.process-sticky>h2 { color:var(--text); }
 .process-panel-heading { gap:var(--s2); } .process-panel-heading h2 { min-width:0; overflow-wrap:anywhere; }
+#step-count { flex:none; overflow-wrap:normal; white-space:nowrap; }
 #overview { width:100%; text-align:left; }
 .process-steps { list-style:none; margin:0; padding:0; }
 .process-steps li { scroll-margin-block:96px var(--s5); }
@@ -89,18 +103,28 @@
 .process-studio button.process-step.selected { background:var(--accent-bg); border-color:transparent; box-shadow:inset 3px 0 0 var(--accent); }
 .process-step strong { display:block; font-size:var(--t-sm); font-weight:600; overflow-wrap:break-word; hyphens:auto; }
 .process-step small { display:block; font-size:var(--t-xs); color:var(--muted); }
-.process-step i { width:6px; height:6px; border-radius:50%; margin-left:auto; flex-shrink:0; }
+/* The list dot is the step's live state in the legend's colours (blocked, working, timer, backlog, waiting); an idle step has none. */
+.process-step i { width:8px; height:8px; border-radius:50%; margin-left:auto; flex-shrink:0; }
+.process-step i[data-state=held] { background:var(--danger); }.process-step i[data-state=active] { background:var(--accent); }
+.process-step i[data-state=timer] { background:var(--state-timer); }.process-step i[data-state=backlog] { background:var(--state-backlog); }
+.process-step i[data-state=queued] { background:var(--state-queue); }
 .process-order { color:var(--order); font-size:var(--t-xs); font-variant-numeric:tabular-nums; flex:none; min-width:2ch; white-space:nowrap; }
 .process-studio .process-note { margin-top:var(--s4); font-size:var(--t-xs); }
 .process-stage { min-width:0; display:flex; flex-direction:column; }
 .process-stagebar { display:flex; justify-content:space-between; align-items:flex-start; gap:var(--s3); padding:var(--s3) var(--s4) var(--s2); }
 .process-stagebar>div:first-child { min-width:0; overflow-wrap:anywhere; }
+/* The title block has a fixed basis, so a long status message wraps inside it instead of pushing the view buttons onto more rows. */
+.process-stagetitle { flex:1 1 14rem; }
+.process-view-controls { flex:0 0 auto; max-width:100%; }
 .process-stagebar h2 { font-size:var(--t-lg); }
 .process-stagebar p { font-size:var(--t-xs); margin-top:2px; overflow-wrap:anywhere; }
-.process-message { max-height:4.5em; overflow:auto; }
+/* At most two lines: screen readers still hear the whole message, and the stage bar keeps its height. */
+.process-message { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
 .process-message.error { color:var(--danger-text); }
 #viewport { position:relative; flex:none; height:clamp(320px,50vh,480px); }
 #canvas,#map { width:100%; height:100%; position:absolute; inset:0; display:block; touch-action:none; }
+/* The stage clips its edges, so the canvas ring is drawn inside it. */
+.process-studio #canvas:focus-visible { outline-offset:-3px; }
 #map svg { width:100%; height:100%; }
 #lens { width:100%; height:100%; position:absolute; inset:0; overflow:auto; overscroll-behavior:contain; background:var(--bg); }
 .process-outcome { display:inline-block; padding:1px 8px; border:1px solid var(--line); border-radius:999px; font-size:var(--t-xs); font-weight:650; }
@@ -111,6 +135,8 @@
 .process-legend i { width:6px; height:6px; border-radius:50%; display:inline-block; }
 .active-dot { background:var(--accent); }.queue-dot { background:var(--state-queue); }.timer-dot { background:var(--state-timer); }.backlog-dot { background:var(--state-backlog); }.held-dot { background:var(--danger); }
 #camera-hint { margin-left:auto; }
+/* SIPOC and Journey lenses draw no work markers, so only the hint stays. */
+.process-legend[data-view=lens] > :not(#camera-hint):not(#marker-count) { display:none; }
 .process-metrics { display:flex; flex-wrap:wrap; align-items:flex-end; gap:var(--s1) var(--s5); padding:var(--s2) var(--s4); border-top:1px solid var(--line); font-variant-numeric:tabular-nums; }
 .process-metrics span { display:block; font-size:var(--t-xs); color:var(--muted); }
 .process-metrics strong { display:block; font-size:var(--t-lg); font-weight:550; line-height:1.3; }
@@ -121,8 +147,9 @@
 .process-io { border-top:1px solid var(--line); min-width:0; }
 .process-io>summary { display:flex; align-items:center; gap:var(--s2); min-height:40px; padding:0 var(--s4); cursor:pointer; font-weight:650; list-style:none; }
 .process-io>summary::-webkit-details-marker { display:none; }
-.process-io>summary::before { content:"\25B8"; color:var(--muted); }
-.process-io[open]>summary::before { content:"\25BE"; }
+/* The disclosure triangles are decoration: the empty alternative text keeps them out of the summary's accessible name. */
+.process-io>summary::before { content:"\25B8" / ""; color:var(--muted); }
+.process-io[open]>summary::before { content:"\25BE" / ""; }
 .process-io>summary:focus-visible { outline-offset:-2px; }
 #process-data { min-width:0; max-height:min(30vh,300px); overflow:auto; padding:var(--s2) var(--s4) var(--s4); }
 .process-data-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s3); margin-bottom:var(--s3); }
@@ -185,7 +212,7 @@
 /* Desktop: the studio fits one viewport. Header and toolbar take their height, the workspace takes the rest, and each column scrolls inside itself. */
 @media(min-width:1100px) and (min-height:600px) {
  #process-shell { display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto minmax(0,1fr); height:100dvh; overflow:hidden; }
- .process-workspace { grid-template-columns:clamp(216px,15vw,280px) minmax(0,1fr) clamp(265px,18vw,360px); min-height:0; border-bottom:0; }
+ .process-workspace { grid-template-columns:clamp(13.5rem,15vw,17.5rem) minmax(0,1fr) clamp(16.5625rem,18vw,22.5rem); min-height:0; border-bottom:0; }
  .process-inspector { grid-column:3; grid-row:1; border-top:0; border-left:1px solid var(--line); }
  .process-nav,.process-inspector,.process-stage { min-height:0; overflow:auto; overscroll-behavior:contain; }
  .process-nav::after,.process-inspector::after { content:""; display:block; position:sticky; bottom:0; height:28px; margin-top:-28px; background:linear-gradient(to bottom,transparent,var(--panel)); pointer-events:none; }
@@ -193,7 +220,9 @@
  #viewport { flex:1 1 0; height:auto; min-height:320px; }
 }
 /* Tablet and narrow windows: the page scrolls, the inspector sits under the stage. */
-@media(max-width:1099px) { .run-config,.run-status { padding-left:0; border-left:0; } .run-status { margin-left:0; } .process-metrics { flex-wrap:wrap; } .process-stagebar { flex-wrap:wrap; } .process-file-actions { justify-content:flex-start; } }
+@media(max-width:1099px) {
+ .run-status { margin-left:0; } .process-metrics { flex-wrap:wrap; } .process-stagebar { flex-wrap:wrap; } .process-file-actions { justify-content:flex-start; }
+}
 /* Phone: compact header, sticky run bar with the secondary controls under Run options, steps as a scroller above a 45vh stage. */
 @media(max-width:650px) {
  .process-studio button,.process-studio select,.process-studio input[type=text],.process-studio input[type=number] { min-height:44px; }
@@ -210,14 +239,16 @@
  .process-toolbar { position:sticky; top:0; z-index:8; padding:var(--s2) var(--s4); gap:var(--s2); }
  .process-toolbar.options-open { position:static; }
  .run-actions,.run-config,.run-status { display:contents; }
- .run-config,.run-status { padding-left:0; border-left:0; }
  #play { order:1; flex:1 1 150px; } #step { order:2; } #open-activity { order:3; }
- .run-readout { order:4; flex:1 1 90px; flex-direction:column; align-items:flex-start; gap:0; min-width:0; }
- .process-clock { font-size:var(--t-md); } #run-status { min-width:0; }
+ .run-readout { order:4; flex:1 1 90px; align-items:flex-start; min-width:0; }
+ .process-clock { font-size:var(--t-md); }
  .options-toggle { display:block; order:5; }
  .process-toolbar:not(.options-open) :is(#advance,#reset,#speed,#horizon,#horizon-custom-label,.run-seed) { display:none; }
  #advance { order:6; flex:1 1 40%; } #reset { order:7; flex:1 1 40%; } #speed { order:8; flex:1 1 40%; } #horizon { order:9; flex:1 1 40%; } #horizon-custom-label { order:10; flex:1 1 40%; } .run-seed { order:11; flex:1 1 40%; }
  .run-seed input,#horizon-custom { flex:1 1 auto; width:100%; min-width:0; }
+ /* A stopped run: Reset is the next action, so it leaves Run options and sits beside the disabled Run; Step has nothing to do. */
+ .process-toolbar.run-stopped:not(.options-open) #reset { display:block; order:2; flex:1 1 120px; }
+ .process-toolbar.run-stopped:not(.options-open) #step { display:none; }
  .process-workspace { display:flex; flex-direction:column; border-bottom:0; }
  .process-nav { order:-1; display:flex; gap:var(--s2); align-items:stretch; overflow-x:auto; padding:var(--s2) var(--s4); border-right:0; border-bottom:1px solid var(--line); }
  .process-nav .process-sticky { position:static; flex:none; padding:0; }
@@ -245,9 +276,21 @@
  .process-studio button.process-more { min-height:44px; }
 }
 @media(max-height:500px) { #viewport { height:min(350px,60vh); } }
+/* Short phone windows (and 400% zoom): a sticky run bar would cover most of the screen and hide focused controls, so it scrolls away. */
+@media(max-width:650px) and (max-height:500px) { .process-toolbar { position:static; } }
 /* Short tablet windows (and 200% zoom on laptops): the secondary run controls fold under Run options like on a phone. */
 @media(min-width:651px) and (max-width:1099px) and (max-height:600px) {
  .options-toggle { display:block; }
  .process-toolbar:not(.options-open) :is(#advance,#reset,#speed,#horizon,#horizon-custom-label,.run-seed) { display:none; }
+ .process-toolbar.run-stopped:not(.options-open) #reset { display:block; }
+}
+/* Forced colours (Windows High Contrast) drop backgrounds and shadows: keep the state swatches and meter fills, and mark the pressed
+   view and the current step with system colours. */
+@media(forced-colors:active) {
+ .process-legend i,.pool-bar i,.process-step i { forced-color-adjust:none; }
+ .pool-bar { border:1px solid CanvasText; }
+ .process-studio button[aria-pressed=true],.process-studio button.selected { outline:2px solid Highlight; outline-offset:-4px; }
+ .process-studio button.process-step.selected { border-left:4px solid Highlight; }
+ .process-studio button.primary { border:2px solid Highlight; }
 }
 @media(prefers-reduced-motion:reduce) { .process-studio * { scroll-behavior:auto!important; transition:none!important; } }
