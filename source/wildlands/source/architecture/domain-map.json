@@ -490,6 +490,7 @@
         "process-definition-editor.ts",
         "process-bpmn-preview.ts",
         "process-bpmn-dialog.ts",
+        "process-present-view.ts",
         "process-present.ts",
         "process-run-bar.ts",
         "process-step-list.ts",

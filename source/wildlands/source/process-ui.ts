@@ -156,7 +156,8 @@
   if (setHtml('steps', root.LWProcessStepList.markup(view))) {
    get('steps').querySelectorAll<HTMLButtonElement>('button').forEach(b => b.onclick = () => command(() => app.select(b.dataset.step!)));
   }
-  if (lastSelected !== selected) {
+  // The step list behind Present is not rendered; it is not scrolled either, so exiting finds it where the reader left it.
+  if (lastSelected !== selected && !present.isOpen()) {
    lastSelected = selected; root.LWProcessStepList.reveal(document.querySelector<HTMLElement>('.process-nav')!, get('steps'), selected);
   }
   get('overview').classList.toggle('selected', !selected);
@@ -320,10 +321,11 @@
   inertRoot: host, map: get('map'),
   enter: () => {
    const paused = view.playing; if (paused) command(() => app.play(false));
-   before = {mode: view.mode, flat, selected: view.selected}; command(() => app.mode('2d'));
+   before = {mode: view.mode, flat, selected: view.selected}; svg.frame({neighbours: true}); command(() => app.mode('2d'));
    status(paused ? 'Presenting slides. The run is paused while you present.' : 'Presenting slides.'); return {view, paused, draft: draft.changed()};
   },
-  show: step => {command(() => app.select(step)); svg.frame({neighbours: true});},
+  // One map draw per slide: a new step draws (and frames) through the selection command; the same step is framed again.
+  show: step => {if (view.selected === step) svg.frame({neighbours: true}); else command(() => app.select(step));},
   leave: paused => {
    const b = before; command(() => {if (b.mode === 'lens' || b.mode === 'dashboard') app.mode(b.flat); app.mode(b.mode); app.select(b.selected);}); svg.frame();
    status(paused ? 'Presentation closed. The run stays paused; choose Run simulation to continue.' : 'Presentation closed.');

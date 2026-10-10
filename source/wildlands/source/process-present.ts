@@ -1,6 +1,7 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-slides-contracts.d.ts" />
 /// <reference path="./process-html.ts" />
+/// <reference path="./process-present-view.ts" />
 /**
  * Present mode of Process Studio (LWProcessPresent): a full-window native `<dialog id="present">` that shows the slide deck of the
  * ACTIVE definition (LWProcessSlides.build; never the unapplied draft) beside the studio's own 2D map.
@@ -14,14 +15,23 @@
  *  - Keys: ArrowRight/PageDown/n next, ArrowLeft/PageUp/p previous, Home first, End last (arrow keys inside the map pan it instead);
  *    while the slide itself has focus, Space and ArrowDown page forward (Shift+Space and ArrowUp back) once the slide cannot scroll
  *    further;
- *    Escape closes the contents list when it is open, otherwise exits and returns focus to the invoker (or the fallback).
+ *    Escape closes the contents list when it is open, otherwise exits and returns focus to the invoker (or the fallback); while the
+ *    presentation is full screen, the first Escape only leaves full screen. F toggles full screen.
+ *  - View controls (LWProcessPresentView, `process-present-view.ts`): **Wide text** and **Full screen** in the header, and the key
+ *    hint in the footer. They change only how the deck is shown.
+ *  - While presenting, the studio root behind the opaque full-window dialog is inert and not rendered (`data-presenting`:
+ *    `content-visibility:hidden` at its measured size, so its scroll positions and the page geometry survive). The studio still
+ *    refreshes behind it, but no longer lays out, paints or rasterises on every slide.
+ *  - A slide shown within the entrance animation's time (ENTRANCE_MS) of the previous one appears without it, so paging quickly (a
+ *    held key, a run of clicks) does not re-composite a moving slide on every page.
  *  - Brief deck: the Contents list has a **Section slides only** switch (`#present-brief`, a button with `aria-pressed`) that
  *    rebuilds the deck in place from the same detached definition and snapshot (LWProcessSlides.build with `{brief: true}`; never
  *    ticks). The position follows: a step slide moves to its section's slide, every other slide keeps its place, and switching back
  *    without moving returns to that step. The live region says which cut and slide are shown, the counter adds "· section slides
  *    only", and a step chosen on the map moves the brief deck to its section's slide. Every open starts with the full deck.
  * Ids: present, present-title, present-count, present-run, present-note, present-draft (shown when the studio has an unapplied draft),
- *   present-toc, present-exit, present-contents, present-brief, present-prev, present-next, present-live.
+ *   present-toc, present-wide, present-fullscreen, present-exit, present-contents, present-brief, present-prev, present-keys,
+ *   present-next, present-live.
  */
 declare namespace LWProcessPresent {
  interface State {index: number; count: number; id: string}
@@ -53,10 +63,12 @@ declare namespace LWProcessPresent {
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessPresent?: LWProcessPresent.Api; LWProcessSlides: LWProcessSlides.Api; LWProcessSlidesText: LWProcessSlidesText.Api;
-  LWProcessDialog: LWProcessDialog.Api; LWProcessHtml: LWProcessHtml.Api};
+  LWProcessDialog: LWProcessDialog.Api; LWProcessHtml: LWProcessHtml.Api; LWProcessPresentView: LWProcessPresentView.Api};
  const {html, join} = root.LWProcessHtml;
  type Safe = LWProcessHtml.Safe;
  const FOCUSABLE = 'button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+ /** The slide entrance animation's length (`present-in` in process-present.css), in milliseconds. */
+ const ENTRANCE_MS = 160;
  const shown = (n: HTMLElement | null): n is HTMLElement => !!n && n.isConnected && n.getClientRects().length > 0
   && !(n as HTMLButtonElement).disabled;
  const list = (b: LWProcessSlides.Block) => html`<ul>${b.items.map(item => html`<li>${item}</li>`)}</ul>`;
@@ -90,12 +102,12 @@ declare namespace LWProcessPresent {
   + `<p id="present-note" class="present-note" hidden>The run is paused while you present.</p>
    <p id="present-draft" class="present-note" hidden>Showing the applied definition; your unapplied draft is not included.</p></div>
    <div class="present-actions"><button type="button" id="present-toc" aria-expanded="false" aria-controls="present-contents">Contents</button>`
-  + `<button type="button" id="present-exit">Exit</button></div></header>
+  + root.LWProcessPresentView.controls + `<button type="button" id="present-exit">Exit</button></div></header>
    <nav id="present-contents" class="present-contents" aria-label="Slides" hidden></nav>
    <div class="present-main"><article id="present-slide" class="present-slide" aria-labelledby="present-title" tabindex="0"></article>
    <section class="present-map" aria-label="Process map"><div id="present-stage" class="present-stage"></div>`
   + `<p id="present-map-hint" class="present-map-hint"></p></section></div>
-   <footer class="present-foot"><button type="button" id="present-prev">Previous</button>`
+   <footer class="present-foot"><button type="button" id="present-prev">Previous</button>` + root.LWProcessPresentView.hint
   + `<button type="button" id="present-next" class="primary">Next</button></footer>
    <div id="present-live" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>`;
  function create(host: HTMLElement, env: LWProcessPresent.Env): LWProcessPresent.Surface {
@@ -109,7 +121,10 @@ declare namespace LWProcessPresent {
   const main = dlg.querySelector<HTMLElement>('.present-main')!, contents = q('present-contents'), toc = q<HTMLButtonElement>('present-toc');
   const foot = dlg.querySelector<HTMLElement>('.present-foot')!;
   const prev = q<HTMLButtonElement>('present-prev'), next = q<HTMLButtonElement>('present-next');
+  const controls = root.LWProcessPresentView.create(dlg, env.map, text => { q('present-live').textContent = text; });
   let deck: LWProcessSlides.Deck | null = null, index = 0, opened = false, moving = false, paused = false, escapedNow = false;
+  /** When the current slide was shown (performance.now), so quick paging can skip the entrance animation. */
+  let shownAt = -Infinity;
   // The full deck, the brief deck (built on first use), the detached inputs both come from, and the step a brief switch left.
   let full: LWProcessSlides.Deck | null = null, brief: LWProcessSlides.Deck | null = null;
   let source: {definition: LWProcess.Definition; snapshot: LWProcess.Snapshot | null} | null = null, left: {brief: string; full: string} | null = null;
@@ -146,8 +161,11 @@ declare namespace LWProcessPresent {
    const at = Math.max(0, Math.min(deck.slides.length - 1, i)), slide = deck.slides[at]!;
    const section = sectionOf(at)?.title ?? '', count = deck.slides.length;
    const focused = document.activeElement as HTMLElement | null, wasTitle = focused?.id === 'present-title';
-   index = at;
+   // A slide shown within the entrance time of the previous one appears at once (see the header).
+   const now = performance.now(), quick = now - shownAt < ENTRANCE_MS;
+   index = at; shownAt = now;
    q('present-slide').innerHTML = slideHtml(slide, section);
+   if (quick) q('present-slide').querySelector('.present-body')!.classList.add('present-quick');
    q('present-slide').scrollTop = 0;
    if (!fromMap) dlg.scrollTop = 0;
    q('present-count').textContent = `Slide ${at + 1} of ${count}` + (deck.brief ? ' · section slides only' : '');
@@ -201,6 +219,7 @@ declare namespace LWProcessPresent {
    const target = e.target as Element | null;
    if (e.key === 'Escape') {
     e.preventDefault(); e.stopPropagation(); escapedNow = true; setTimeout(() => { escapedNow = false; }, 0);
+    if (controls.escape(e)) return;
     if (!contents.hidden) setContents(false); else close(); return;
    }
    if (e.key === 'Tab') {
@@ -216,6 +235,7 @@ declare namespace LWProcessPresent {
     }
     return;
    }
+   if (controls.key(e)) return;
    // Arrow keys inside the map pan it; they are not slide navigation.
    if (e.key.startsWith('Arrow') && target && env.map.contains(target)) return;
    const to = keyTarget(e, slideKey(e, target));
@@ -255,16 +275,32 @@ declare namespace LWProcessPresent {
    else if (t.closest('#present-next')) go(index + 1);
   });
   // Escape is handled on keydown; a cancel or close that still arrives (the browser's close watcher) is the same exit intent.
-  dlg.addEventListener('cancel', e => { e.preventDefault(); if (!escapedNow) close(); });
+  dlg.addEventListener('cancel', e => { e.preventDefault(); if (!escapedNow && !controls.escape(e)) close(); });
   dlg.addEventListener('close', () => { if (opened) close(); });
   /** 'Live facts come from one simulated run at business minute 217 (seed 1, completed).' */
   function runText(live: NonNullable<LWProcessSlides.Deck['live']>): string {
    const text = root.LWProcessSlidesText, status = text.statusText({status: live.status as LWProcess.Snapshot['status']});
    return `Live facts come from one simulated run at business minute ${text.number(live.minute)} (seed ${live.seed}, ${status}).`;
   }
+  /**
+   * The studio root behind the opaque dialog is not rendered while presenting; it keeps its size measured before opening (`box`,
+   * while layout is still clean), so the page does not reflow and its scroll positions survive. Shown again before the studio view
+   * is restored on exit (no `box`).
+   */
+  function hideBehind(box?: DOMRect): void {
+   const behind = env.inertRoot;
+   if (box) {
+    behind.style.setProperty('--present-behind', `${Math.round(box.width)}px ${Math.round(box.height)}px`);
+    behind.dataset.presenting = 'true';
+   } else if (behind.dataset.presenting) {
+    delete behind.dataset.presenting;
+    behind.style.removeProperty('--present-behind');
+   }
+  }
   function open(from: HTMLElement, focusFallback: () => HTMLElement | null): boolean {
    if (opened || root.LWProcessDialog.active()) return false;
-   opened = true; invoker = from; fallback = focusFallback; moving = true;
+   opened = true; invoker = from; fallback = focusFallback; moving = true; shownAt = -Infinity;
+   const box = env.inertRoot.getBoundingClientRect();
    let view: LWProcessApp.View, draft = false;
    try { const entered = env.enter(); view = entered.view; paused = entered.paused; draft = entered.draft === true; }
    catch (e) { opened = false; throw e; } finally { moving = false; }
@@ -280,10 +316,10 @@ declare namespace LWProcessPresent {
     q('present-map-hint').textContent = matchMedia('(pointer: coarse)').matches
      ? 'Drag to pan · Pinch or + − to zoom · Tap a step to show its slide'
      : 'Drag to pan · Scroll to zoom · Arrow keys pan while the map has focus · Select a step to show its slide';
-    renderContents(d); setContents(false, false);
+    renderContents(d); setContents(false, false); controls.open();
     home = {parent: env.map.parentNode!, next: env.map.nextSibling};
     env.inertRoot.inert = true; document.documentElement.classList.add('pd-locked');
-    dlg.showModal(); dlg.scrollTop = 0; q('present-stage').append(env.map);
+    dlg.showModal(); dlg.scrollTop = 0; q('present-stage').append(env.map); hideBehind(box);
     document.addEventListener('keydown', keydown);
     const start = view.selected ? d.slides.findIndex(s => s.id === 'step-' + view.selected) : 0;
     go(start < 0 ? 0 : start); (next.disabled ? prev : next).focus();
@@ -293,7 +329,7 @@ declare namespace LWProcessPresent {
   /** Exits: the map returns to its exact place, the studio view is restored, focus returns to the invoker or the fallback. */
   function close(): void {
    if (!opened) return;
-   opened = false; document.removeEventListener('keydown', keydown);
+   opened = false; document.removeEventListener('keydown', keydown); controls.close(); hideBehind();
    if (home) { home.parent.insertBefore(env.map, home.next && home.next.parentNode === home.parent ? home.next : null); home = null; }
    if (dlg.open) dlg.close();
    env.inertRoot.inert = false; document.documentElement.classList.remove('pd-locked');
@@ -316,7 +352,7 @@ declare namespace LWProcessPresent {
     }
     if (at >= 0) go(at, true);
    },
-   dispose() { close(); dlg.remove(); },
+   dispose() { close(); controls.dispose(); dlg.remove(); },
   };
  }
  root.LWProcessPresent = {create};

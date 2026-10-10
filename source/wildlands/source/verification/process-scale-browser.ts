@@ -37,10 +37,12 @@ const BOUND = {
  refresh2d: 6000,
  /** Every Dashboard section rendered after choosing Dashboard: measured 67 to 1,460 ms. */
  dashboard: 8000,
- /** Present opened on its first slide: measured 256 to 1,230 ms. */
+ /** Present opened on its first slide: measured 256 to 1,230 ms; after the Present speed work 258 to 1,234 ms (the first frame dominates). */
  present: 8000,
- /** Mean time to show the next slide while paging through the whole deck: measured 217 to 391 ms. */
- page: 2000,
+ /** Mean time to show the next slide while paging through the whole deck: measured 217 to 391 ms before the Present speed work
+  *  (the hidden studio refreshed, laid out and painted behind the dialog, two map draws and an entrance animation per slide), 85 to
+  *  192 ms after it; the bound keeps the earlier margin of about five times the largest. */
+ page: 1000,
  /** The longest gap between the five frames after Run to end: measured 333 to 600 ms (one long frame among them). */
  frame: 2500,
  /** Run to end over 10,000 minutes, the click to the first frame after it: measured 2,257 to 3,138 ms. */
