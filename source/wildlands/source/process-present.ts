@@ -13,8 +13,13 @@
  *  - Keys: ArrowRight/PageDown/n next, ArrowLeft/PageUp/p previous, Home first, End last (arrow keys inside the map pan it instead);
  *    while the slide itself has focus, Space and ArrowDown page forward (Shift+Space and ArrowUp back) once the slide cannot scroll further;
  *    Escape closes the contents list when it is open, otherwise exits and returns focus to the invoker (or the fallback).
+ *  - Brief deck: the Contents list has a **Section slides only** switch (`#present-brief`, a button with `aria-pressed`) that
+ *    rebuilds the deck in place from the same detached definition and snapshot (LWProcessSlides.build with `{brief: true}`; never
+ *    ticks). The position follows: a step slide moves to its section's slide, every other slide keeps its place, and switching back
+ *    without moving returns to that step. The live region says which cut and slide are shown, the counter adds "· section slides
+ *    only", and a step chosen on the map moves the brief deck to its section's slide. Every open starts with the full deck.
  * Ids: present, present-title, present-count, present-run, present-note, present-draft (shown when the studio has an unapplied draft),
- *   present-toc, present-exit, present-contents, present-prev, present-next, present-live.
+ *   present-toc, present-exit, present-contents, present-brief, present-prev, present-next, present-live.
  */
 declare namespace LWProcessPresent {
  interface State {index: number; count: number; id: string}
@@ -78,27 +83,65 @@ declare namespace LWProcessPresent {
   const foot = dlg.querySelector<HTMLElement>('.present-foot')!;
   const prev = q<HTMLButtonElement>('present-prev'), next = q<HTMLButtonElement>('present-next');
   let deck: LWProcessSlides.Deck | null = null, index = 0, opened = false, moving = false, paused = false, escapedNow = false;
+  // The full deck, the brief deck (built on first use), the detached inputs both come from, and the step a brief switch left.
+  let full: LWProcessSlides.Deck | null = null, brief: LWProcessSlides.Deck | null = null;
+  let source: {definition: LWProcess.Definition; snapshot: LWProcess.Snapshot | null} | null = null, left: {brief: string; full: string} | null = null;
   let invoker: HTMLElement | null = null, fallback: () => HTMLElement | null = () => null, home: {parent: Node; next: Node | null} | null = null;
   const sectionOf = (i: number) => deck!.sections.find(s => i >= s.first && i < s.first + s.count);
   const inDialog = (n: Element | null) => !!n && n !== document.body && dlg.contains(n);
   function renderContents(d: LWProcessSlides.Deck): void {
-   contents.innerHTML = `<h2 class="present-contents-title">Contents</h2><div class="present-groups">` + d.sections.map((s, g) => `<section class="present-group" aria-labelledby="present-group-${g}"><h3 id="present-group-${g}">${esc(s.title)}</h3><ol start="${s.first + 1}">`
-    + d.slides.slice(s.first, s.first + s.count).map((slide, j) => `<li><button type="button" data-slide="${s.first + j}"><span class="present-num" aria-hidden="true">${s.first + j + 1}</span><span>${esc(slide.title)}</span></button></li>`).join('') + '</ol></section>').join('') + '</div>';
+   const cut = `<div class="present-cut"><button type="button" id="present-brief" aria-pressed="${d.brief === true}" aria-describedby="present-brief-hint">`
+    + 'Section slides only</button><p id="present-brief-hint" class="present-cut-hint">Title, overview, resources, one slide per section and the summary; '
+    + 'no step slides.</p></div>';
+   const head = `<div class="present-contents-head"><h2 class="present-contents-title">Contents</h2>${cut}</div>`;
+   const item = (slide: LWProcessSlides.Slide, at: number) => `<li><button type="button" data-slide="${at}">`
+    + `<span class="present-num" aria-hidden="true">${at + 1}</span><span>${esc(slide.title)}</span></button></li>`;
+   const group = (s: LWProcessSlides.Section, g: number) => `<section class="present-group" aria-labelledby="present-group-${g}">`
+    + `<h3 id="present-group-${g}">${esc(s.title)}</h3><ol start="${s.first + 1}">`
+    + d.slides.slice(s.first, s.first + s.count).map((slide, j) => item(slide, s.first + j)).join('') + '</ol></section>';
+   contents.innerHTML = head + '<div class="present-groups">' + d.sections.map(group).join('') + '</div>';
   }
-  /** Shows slide `i`: text, counters, contents marker, the announcement and the map scene. Focus that the change removed returns to the slide title. */
-  function go(i: number, fromMap = false): void {
+  /**
+   * Shows slide `i`: text, counters, contents marker, the announcement and the map scene. Focus that the change removed returns to
+   * the slide title. `step` is the step the map shows: the slide's own, unless a step chosen on the map moved the brief deck to its
+   * section's slide, which keeps that choice.
+   */
+  function go(i: number, fromMap = false, step?: string): void {
    if (!deck) return;
+   left = null;
    const at = Math.max(0, Math.min(deck.slides.length - 1, i)), slide = deck.slides[at]!, section = sectionOf(at)?.title ?? '', count = deck.slides.length;
    const focused = document.activeElement as HTMLElement | null, wasTitle = focused?.id === 'present-title';
    index = at; q('present-slide').innerHTML = slideHtml(slide, section); q('present-slide').scrollTop = 0; if (!fromMap) dlg.scrollTop = 0;
-   q('present-count').textContent = `Slide ${at + 1} of ${count}`;
+   q('present-count').textContent = `Slide ${at + 1} of ${count}` + (deck.brief ? ' · section slides only' : '');
    prev.disabled = at === 0; next.disabled = at === count - 1;
    for (const b of contents.querySelectorAll<HTMLButtonElement>('[data-slide]')) { if (Number(b.dataset.slide) === at) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); }
    q('present-live').textContent = `Slide ${at + 1} of ${count}: ${slide.title}`;
-   moving = true; try { env.show(slide.step); } finally { moving = false; }
+   moving = true; try { env.show(step ?? slide.step); } finally { moving = false; }
    if (wasTitle) q('present-title').focus({preventScroll: true});
    else if (focused === next && next.disabled) prev.focus(); else if (focused === prev && prev.disabled) next.focus();
    else if (!inDialog(document.activeElement)) q('present-title').focus({preventScroll: true});
+  }
+  /**
+   * Switches between the full deck and the brief deck in place: a step slide becomes its section's slide, and switching back
+   * without moving returns to that step. Says which cut and slide are shown, and keeps focus on the switch.
+   */
+  function setBrief(on: boolean): void {
+   if (!deck || !full || !source || on === (deck.brief === true)) return;
+   const current = deck.slides[index]!;
+   let target = current.id;
+   if (on) {
+    brief ??= root.LWProcessSlides.build(source.definition, source.snapshot, {brief: true});
+    if (current.kind === 'step') target = 'section-' + current.section;
+   } else if (left && left.brief === current.id) target = left.full;
+   deck = on ? brief! : full;
+   renderContents(deck);
+   const at = Math.max(0, deck.slides.findIndex(s => s.id === target)), shown = deck.slides[at]!;
+   go(at);
+   // Remembered only until the brief deck moves (go() forgets it), so switching straight back returns to the step.
+   left = on && current.kind === 'step' ? {brief: target, full: current.id} : null;
+   const from = on && current.kind === 'step' ? `, the section of “${current.title}”` : '';
+   q('present-live').textContent = `${on ? 'Section slides only' : 'All slides'}: ${deck.slides.length} slides. Slide ${at + 1}: ${shown.title}${from}.`;
+   q('present-brief').focus();
   }
   function setContents(open: boolean, focus = true): void {
    contents.hidden = !open; main.hidden = open; toc.setAttribute('aria-expanded', String(open));
@@ -140,6 +183,7 @@ declare namespace LWProcessPresent {
   dlg.addEventListener('click', e => {
    const t = e.target as HTMLElement, item = t.closest<HTMLButtonElement>('button[data-slide]');
    if (item) { setContents(false, false); go(Number(item.dataset.slide)); q('present-title').focus(); }
+   else if (t.closest('#present-brief')) setBrief(deck?.brief !== true);
    else if (t.closest('#present-toc')) setContents(contents.hidden);
    else if (t.closest('#present-exit')) close();
    else if (t.closest('#present-prev')) go(index - 1);
@@ -161,7 +205,8 @@ declare namespace LWProcessPresent {
    catch (e) { opened = false; throw e; } finally { moving = false; }
    // Entering already paused the run and switched the view: any failure from here on is undone by close(), never left half open.
    try {
-    const d = root.LWProcessSlides.build(view.definition, view.snapshot.minute > 0 ? view.snapshot : null); deck = d;
+    source = {definition: view.definition, snapshot: view.snapshot.minute > 0 ? view.snapshot : null}; brief = null; left = null;
+    const d = root.LWProcessSlides.build(source.definition, source.snapshot); deck = d; full = d;
     q('present-process').textContent = d.process.name; q('present-note').hidden = !paused; q('present-draft').hidden = !draft;
     q('present-run').hidden = !d.live; q('present-run').textContent = d.live ? runText(d.live) : '';
     // The studio's status region is inert behind the modal, so the dialog itself describes the pause, the draft and the live facts.
@@ -185,7 +230,7 @@ declare namespace LWProcessPresent {
    if (home) { home.parent.insertBefore(env.map, home.next && home.next.parentNode === home.parent ? home.next : null); home = null; }
    if (dlg.open) dlg.close();
    env.inertRoot.inert = false; document.documentElement.classList.remove('pd-locked');
-   deck = null; q('present-slide').innerHTML = ''; contents.innerHTML = '';
+   deck = null; full = null; brief = null; source = null; left = null; q('present-slide').innerHTML = ''; contents.innerHTML = '';
    moving = true; try { env.leave(paused); } finally { moving = false; }
    const target = shown(invoker) ? invoker : fallback(); invoker = null; target?.focus();
   }
@@ -194,7 +239,15 @@ declare namespace LWProcessPresent {
    state: () => opened && deck ? {index, count: deck.slides.length, id: deck.slides[index]!.id} : null,
    follow(selected) {
     if (!opened || moving || !deck || selected === null || deck.slides[index]!.step === selected) return;
-    const at = deck.slides.findIndex(s => s.id === 'step-' + selected); if (at >= 0) go(at, true);
+    let at = deck.slides.findIndex(s => s.id === 'step-' + selected);
+    // The brief deck has no step slides: a step chosen on the map shows the slide of the section that holds it.
+    const owner = full?.slides.find(s => s.id === 'step-' + selected)?.section;
+    if (at < 0 && deck.brief && owner) {
+     at = deck.slides.findIndex(s => s.id === 'section-' + owner);
+     if (at >= 0 && at !== index) go(at, true, selected);
+     return;
+    }
+    if (at >= 0) go(at, true);
    },
    dispose() { close(); dlg.remove(); },
   };

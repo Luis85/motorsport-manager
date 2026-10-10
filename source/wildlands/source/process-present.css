@@ -33,6 +33,11 @@
 .present .present-map-hint { padding:6px var(--s4); border-top:1px solid var(--line); font-size:var(--t-xs); overflow-wrap:anywhere; }
 .present-contents { min-height:0; overflow:auto; overscroll-behavior:contain; padding:var(--s4) var(--s5) var(--s5); }
 .present .present-contents-title { font-size:var(--t-lg); }
+/* The Contents head: the title and the "Section slides only" switch with its one-line explanation; they wrap on narrow windows. */
+.present-contents-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s2) var(--s4); }
+.present-cut { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s1) var(--s3); min-width:0; }
+.present #present-brief[aria-pressed=true] { background:var(--accent-bg); border-color:var(--accent-line); }
+.present .present-cut-hint { flex:1 1 14rem; min-width:0; font-size:var(--t-sm); overflow-wrap:anywhere; }
 .present-groups { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,18rem),1fr)); gap:var(--s2) var(--s5); }
 .present .present-group h3 { margin:var(--s4) 0 var(--s2); color:var(--muted); font-size:var(--t-sm); }
 .present-group ol { list-style:none; margin:0; padding:0; display:grid; gap:2px; }
@@ -63,4 +68,5 @@
  .present-contents { padding:var(--s3) var(--s4) var(--s5); }
  .present-foot { padding:var(--s2) var(--s4); }
  .present .present-foot button { flex:1 1 0; min-width:0; }
+ .present #present-brief { min-height:44px; }
 }

@@ -55,7 +55,8 @@ test('CLI process slides and diff reject bad arguments with exit 2 before writin
  assert.equal(fs.readdirSync(dir).sort().join(), before, 'rejected invocations write nothing');
  assert.deepEqual(JSON.parse(read(dir, 'a.json')), claims());
  const discovered = call(['discover']);
- assert.deepEqual(discovered.operations.filter((o: Json) => ['slides', 'diff'].includes(o.id)).map((o: Json) => [o.id, o.options]), [['slides', ['--input', '--format', '--minutes', '--seed', '--output']], ['diff', ['--input', '--against']]]);
+ const options = discovered.operations.filter((o: Json) => ['slides', 'diff'].includes(o.id)).map((o: Json) => [o.id, o.options]);
+ assert.deepEqual(options, [['slides', ['--input', '--format', '--minutes', '--seed', '--output', '--brief']], ['diff', ['--input', '--against']]]);
 }));
 
 test('Guarded process-setting edits set and remove description, seed, genre, SIPOC and tracked fields all-or-nothing', () => {

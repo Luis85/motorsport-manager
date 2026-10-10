@@ -14,6 +14,7 @@ import './test-process-slides.cjs';
 import './test-process-slides-cli.cjs';
 import './test-process-route.cjs';
 import './test-process-work-state.cjs';
+import './test-process-slides-brief.cjs';
 import './test-process-analytics.cjs';
 import './test-process-analytics-cli.cjs';
 import './test-process-calendar.cjs';
