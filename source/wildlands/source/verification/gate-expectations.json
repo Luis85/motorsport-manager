@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
-  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-bpmn", "business-process-analysis", "business-process-browser", "process-layout-browser", "process-step-editor-browser", "process-definition-browser", "process-renderers-browser", "process-lenses-browser", "process-bpmn-import-browser", "process-readability-browser", "process-present-browser", "process-shell-browser", "business-process-readmodel", "process-draft-browser", "process-present-brief-browser", "process-dashboard-browser"],
-  "totalChecks": 2239,
+  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-bpmn", "business-process-analysis", "business-process-browser", "process-layout-browser", "process-step-editor-browser", "process-definition-browser", "process-renderers-browser", "process-lenses-browser", "process-bpmn-import-browser", "process-readability-browser", "process-present-browser", "process-shell-browser", "business-process-readmodel", "process-draft-browser", "process-present-brief-browser", "process-dashboard-browser", "process-hostile-browser", "process-hostile-editors-browser", "process-scale-browser"],
+  "totalChecks": 2265,
   "reviewedAdditions": [
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
@@ -700,7 +700,33 @@
     {"suite": "process-dashboard-browser", "name": "Dashboard draws every flow, time, lead, quality and cost panel and the journey outcomes with charts and data tables after a run"},
     {"suite": "process-dashboard-browser", "name": "Measure from minute W and the lead-time target change the windowed figures without ticking the run"},
     {"suite": "process-dashboard-browser", "name": "What-if takes the measuring start as each replication's warm-up and marks results out of date when it changes"},
-    {"suite": "process-dashboard-browser", "name": "On a phone every dashboard section folds into a keyboard disclosure whose state lasts for the session"}
+    {"suite": "process-dashboard-browser", "name": "On a phone every dashboard section folds into a keyboard disclosure whose state lasts for the session"},
+    {"suite": "process-hostile-browser", "name": "The probe sees a handler the test inserts run, reported by the policy and recorded, so a clean page ran nothing"},
+    {"suite": "process-hostile-browser", "name": "A hostile process imported as JSON shows its text in the header, step list, inspector, pools and Inputs & outputs and runs nothing"},
+    {"suite": "process-hostile-browser", "name": "Every hostile step in 2D and 3D shows its name as text in the scene title, card title and caption without ticking"},
+    {"suite": "process-hostile-browser", "name": "The SIPOC lens of the hostile process and the Journey lens of the hostile journey show parties, phases and notes as text"},
+    {"suite": "process-hostile-browser", "name": "The Dashboard of the hostile process renders every section, every step focus and What-if, and its CSV keeps the text in cells"},
+    {"suite": "process-hostile-browser", "name": "The Dashboard of the hostile journey renders its journey sections and every step focus as text"},
+    {"suite": "process-hostile-browser", "name": "Present shows the hostile process in the full and brief decks and in Contents as text without ticking"},
+    {"suite": "process-hostile-browser", "name": "Activity lists hostile step names as text, and its CSV and JSON exports keep them in cells and strings"},
+    {"suite": "process-hostile-browser", "name": "Process hostile browser lifecycle emits no runtime errors, console errors or network requests"},
+    {"suite": "process-hostile-editors-browser", "name": "The probe sees a handler the test inserts run, reported by the policy and recorded, so a clean page ran nothing"},
+    {"suite": "process-hostile-editors-browser", "name": "The step editor shows every hostile step in every section as control values and text without ticking"},
+    {"suite": "process-hostile-editors-browser", "name": "The Definition editor shows a pasted hostile draft in Tune values, its diff and its diagnostics as text and applies it"},
+    {"suite": "process-hostile-editors-browser", "name": "Add step and New process show hostile names as text in Place it after, the status line, the title and the Process selector"},
+    {"suite": "process-hostile-editors-browser", "name": "BPMN export refuses hostile control characters in plain words, and the XML-safe copy round-trips through the Import BPMN preview"},
+    {"suite": "process-hostile-editors-browser", "name": "Download HTML of the hostile process reopens with the same definition, shows it as text and runs nothing"},
+    {"suite": "process-hostile-editors-browser", "name": "A game whose own definitions are hostile builds, opens, switches and offers its hostile draft for recovery as text"},
+    {"suite": "process-hostile-editors-browser", "name": "Process hostile editors browser lifecycle emits no runtime errors, console errors or network requests"},
+    {"suite": "process-scale-browser", "name": "A generated process at the limits (128 steps, 256 flows) opens as a game and imports as JSON within the load bounds"},
+    {"suite": "process-scale-browser", "name": "2D draws the 128-step map and refreshes it after Advance within bounds, keeping every card element"},
+    {"suite": "process-scale-browser", "name": "3D draws the 128-step process within the renderer draw-call budget without ticking"},
+    {"suite": "process-scale-browser", "name": "The Dashboard renders every section of the 128-step process within its bound"},
+    {"suite": "process-scale-browser", "name": "Present builds the 128-step deck and pages through every slide within bounds without ticking"},
+    {"suite": "process-scale-browser", "name": "At 1366x768 the 128-step map shows numbered cards with their key, no horizontal overflow, and the keyboard reaches the last step"},
+    {"suite": "process-scale-browser", "name": "Run to end over 10,000 minutes of the 128-step process stops at the run length and the page paints again within its bound"},
+    {"suite": "process-scale-browser", "name": "Process scale browser lifecycle emits no runtime errors or network requests"},
+    {"suite": "process-hostile-editors-browser", "name": "A foreign BPMN file with hostile names, an unsupported gateway and a dangling flow shows them as text and imports nothing"}
   ],
   "renames": [
     {"suite": "wildlands-acceptance", "from": "Every discovered built-in scenario compiles complete resources with verified manifest hashes", "to": "Every discovered game folder scenario compiles complete resources with verified manifest hashes", "reason": "Phase 4A (decision D1): the engine CLI has no built-in scenarios. The check now compiles every scenario of every colony game folder (scenarios --game DIR) instead of the three former built-in packs; its assertions on complete resources and manifest hashes are unchanged."},
@@ -3191,6 +3217,38 @@
       "Measure from minute W and the lead-time target change the windowed figures without ticking the run",
       "What-if takes the measuring start as each replication's warm-up and marks results out of date when it changes",
       "On a phone every dashboard section folds into a keyboard disclosure whose state lasts for the session"
+    ],
+    "process-hostile-browser": [
+      "The probe sees a handler the test inserts run, reported by the policy and recorded, so a clean page ran nothing",
+      "A hostile process imported as JSON shows its text in the header, step list, inspector, pools and Inputs & outputs and runs nothing",
+      "Every hostile step in 2D and 3D shows its name as text in the scene title, card title and caption without ticking",
+      "The SIPOC lens of the hostile process and the Journey lens of the hostile journey show parties, phases and notes as text",
+      "The Dashboard of the hostile process renders every section, every step focus and What-if, and its CSV keeps the text in cells",
+      "The Dashboard of the hostile journey renders its journey sections and every step focus as text",
+      "Present shows the hostile process in the full and brief decks and in Contents as text without ticking",
+      "Activity lists hostile step names as text, and its CSV and JSON exports keep them in cells and strings",
+      "Process hostile browser lifecycle emits no runtime errors, console errors or network requests"
+    ],
+    "process-hostile-editors-browser": [
+      "The probe sees a handler the test inserts run, reported by the policy and recorded, so a clean page ran nothing",
+      "The step editor shows every hostile step in every section as control values and text without ticking",
+      "The Definition editor shows a pasted hostile draft in Tune values, its diff and its diagnostics as text and applies it",
+      "Add step and New process show hostile names as text in Place it after, the status line, the title and the Process selector",
+      "BPMN export refuses hostile control characters in plain words, and the XML-safe copy round-trips through the Import BPMN preview",
+      "A foreign BPMN file with hostile names, an unsupported gateway and a dangling flow shows them as text and imports nothing",
+      "Download HTML of the hostile process reopens with the same definition, shows it as text and runs nothing",
+      "A game whose own definitions are hostile builds, opens, switches and offers its hostile draft for recovery as text",
+      "Process hostile editors browser lifecycle emits no runtime errors, console errors or network requests"
+    ],
+    "process-scale-browser": [
+      "A generated process at the limits (128 steps, 256 flows) opens as a game and imports as JSON within the load bounds",
+      "2D draws the 128-step map and refreshes it after Advance within bounds, keeping every card element",
+      "3D draws the 128-step process within the renderer draw-call budget without ticking",
+      "The Dashboard renders every section of the 128-step process within its bound",
+      "Present builds the 128-step deck and pages through every slide within bounds without ticking",
+      "At 1366x768 the 128-step map shows numbered cards with their key, no horizontal overflow, and the keyboard reaches the last step",
+      "Run to end over 10,000 minutes of the 128-step process stops at the run length and the page paints again within its bound",
+      "Process scale browser lifecycle emits no runtime errors or network requests"
     ]
   }
 }
