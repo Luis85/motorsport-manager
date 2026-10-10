@@ -1,10 +1,10 @@
 {
   "format": "wildlands-process",
   "schemaVersion": 1,
-  "revision": 0,
+  "revision": 2,
   "id": "loan-application",
   "name": "Loan application (BPMN import)",
-  "description": "Converted from the illustrative BPMN 2.0 file examples/bpmn/loan-application.bpmn and its BPSim scenario with process import-bpmn (default options); afterwards only descriptions, phases, SIPOC and the scene layout were edited. Applications arrive with an exponential gap (mean 30 minutes) until minute 960, the scenario's 16 business hours, so the run completes by itself shortly afterwards; each draws a whole loan amount (1,000 to 50,000) and customer years (0 to 10). The embedded sub-process Document check verifies three documents in parallel (multi-instance), the call activity Fraud screening runs on the credit engine, and a risk decision sends 45% low, 55% of the rest medium and the rest high. Medium risk opens an inclusive gateway: income verification for amounts over 20,000, an employer check for customers under two years or amounts over 40,000, both, or neither. High risk goes to a manual review with a non-interrupting 90-minute SLA: a late review spawns an escalation that notifies the supervisor while the review continues; 70% of reviews approve. Lanes become pools (customer, three bank clerks, a four-slot credit engine); service tasks are simulated automated system steps and execute nothing. Every random value derives from the definition seed 7 and the case and step, so the same seed always gives the same run. All durations, probabilities, amounts, capacities and costs are synthetic illustrative assumptions, not a real bank, measured behaviour or a forecast.",
+  "description": "Converted from the illustrative BPMN 2.0 file examples/bpmn/loan-application.bpmn and its BPSim scenario with process import-bpmn (default options). Afterwards descriptions, phases, SIPOC and the scene layout were edited, and two guarded edits changed the model without changing a simulated time, chance, cost or case: the applicant is the case, not a capacity, so the imported 50-slot Customer pool was removed and the applicant's two steps (Submit application and Sign contract) became touchpoints that keep their BPSim times; and the end steps declare outcomes (Loan paid out is a goal, Application rejected is lost), so a run reports goals, lost applications and conversion. Applications arrive with an exponential gap (mean 30 minutes) until minute 960, the scenario's 16 business hours, so the run completes by itself shortly afterwards; each draws a whole loan amount (1,000 to 50,000) and customer years (0 to 10). The embedded sub-process Document check verifies three documents in parallel (multi-instance), the call activity Fraud screening runs on the credit engine, and a risk decision sends 45% low, 55% of the rest medium and the rest high. Medium risk opens an inclusive gateway: income verification for amounts over 20,000, an employer check for customers under two years or amounts over 40,000, both, or neither. High risk goes to a manual review with a non-interrupting 90-minute SLA: a late review spawns an escalation that notifies the supervisor while the review continues; 70% of reviews approve. The escalation's end, SLA breach logged, has no outcome because it ends the escalation, not the application. The bank's lanes become pools (three bank clerks and a four-slot credit engine), the archive service task outside any lane runs on a four-slot Automation pool, and service tasks are simulated automated system steps that execute nothing. Every random value derives from the definition seed 7 and the case and step, so the same seed always gives the same run. All durations, probabilities, amounts, capacities and costs are synthetic illustrative assumptions, not a real bank, measured behaviour or a forecast.",
   "seed": 7,
   "start": "start-received",
   "sipoc": {
@@ -34,12 +34,6 @@
     ]
   },
   "resources": [
-    {
-      "id": "customer",
-      "name": "Customer",
-      "capacity": 50,
-      "costPerMinute": 0
-    },
     {
       "id": "bank-clerk",
       "name": "Bank clerk",
@@ -80,7 +74,7 @@
     {
       "id": "task-submit",
       "name": "Submit application",
-      "kind": "task",
+      "kind": "touchpoint",
       "phase": "Application",
       "scene": {
         "id": "scene-task-submit",
@@ -90,7 +84,7 @@
         ],
         "color": "#ffbb73"
       },
-      "description": "The customer fills in the loan form online and uploads the supporting documents.",
+      "description": "The applicant fills in the loan form online and uploads the supporting documents (BPSim triangular 5, 8, 15 minutes). The BPMN user task in the customer lane is modelled as a touchpoint without a pool: the applicant is the case, not bank capacity, so the step keeps its time but never queues and adds no utilisation.",
       "duration": 9,
       "timing": {
         "dist": "triangular",
@@ -98,9 +92,7 @@
         "mode": 8,
         "max": 15
       },
-      "resources": {
-        "customer": 1
-      }
+      "channel": "web"
     },
     {
       "id": "sub-docs-task-verify",
@@ -385,9 +377,10 @@
           154,
           -26
         ],
-        "color": "#77b5a0"
+        "color": "#d9777f"
       },
-      "description": "End event of rejected applications."
+      "outcome": "lost",
+      "description": "End event of rejected applications. This is a lost outcome: a rejection counts against conversion."
     },
     {
       "id": "task-notify",
@@ -421,12 +414,12 @@
         ],
         "color": "#77b5a0"
       },
-      "description": "End of the escalation token; the case still finishes on its main route."
+      "description": "End of the escalation token; the application itself still finishes on its main route. It declares no outcome: the engine never counts an escalation end's outcome, because the case is counted once, at the end of its main route (paid out or rejected)."
     },
     {
       "id": "task-sign",
       "name": "Sign contract",
-      "kind": "task",
+      "kind": "touchpoint",
       "phase": "Contract and payout",
       "scene": {
         "id": "scene-task-sign",
@@ -443,10 +436,8 @@
         "mode": 10,
         "max": 20
       },
-      "resources": {
-        "customer": 1
-      },
-      "description": "User task in the customer lane (BPSim triangular 5, 10, 20 minutes). Low risk, finished additional checks and approved reviews all arrive here (the merge gateway was folded into its flows)."
+      "description": "The applicant signs the loan contract (BPMN user task in the customer lane, BPSim triangular 5, 10, 20 minutes), modelled as a touchpoint without a pool because the applicant is the case, not bank capacity. Low risk, finished additional checks and approved reviews all arrive here (the merge gateway was folded into its flows).",
+      "channel": "document"
     },
     {
       "id": "task-disburse",
@@ -481,7 +472,8 @@
         ],
         "color": "#77b5a0"
       },
-      "description": "End event of paid-out loans."
+      "outcome": "goal",
+      "description": "End event of paid-out loans. This is a goal outcome and counts towards conversion."
     }
   ],
   "flows": [

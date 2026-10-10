@@ -53,8 +53,22 @@ on **Manual review** that spawns an escalation to the supervisor while the revie
 Applications arrive with an exponential gap (mean 30 minutes) until minute 960, each
 drawing a whole amount and customer years, so the run completes by itself shortly after
 (at minute 984 with the definition seed 7: 32 applications, 31 paid out, 1 rejected,
-1 SLA escalation, work cost 2414). Step descriptions name the BPMN construct and
-BPSim value behind each step.
+conversion 96.9%, 1 SLA escalation, work cost 2414, the bank-clerk pool 31% utilised;
+with seed 8 at minute 1104: 34 applications, 31 paid out, 3 rejected, conversion 91.2%,
+work cost 3301). Step descriptions name the BPMN construct and BPSim value behind each
+step.
+
+The applicant is the case, not a capacity. **Submit application** and **Sign contract**,
+the user tasks of the BPMN customer lane, are `touchpoint` steps (channels Website and
+Documents and forms) with their BPSim times and no pool: they take the applicant's time,
+never queue and add no utilisation or capacity cost. A touchpoint with `timing` is the
+engine's recipe for time spent by the case itself; a `timer` would say the same about
+time, but these are interactions with the bank, which is what a touchpoint means. The end
+steps declare outcomes: **Loan paid out** is a `goal` and **Application rejected** is
+`lost` (drawn in the lost-end colour), so a run reports goals, lost applications and
+conversion. **SLA breach logged** declares none: it ends the escalation token while the
+application carries on to its own end, and the engine never counts an escalation end's
+outcome, so an outcome there would promise a count that cannot happen.
 
 The SIPOC **Process** column and the journey map follow the definition's main route: from
 the start, the first flow without a condition at each step (never a deadline flow). For
@@ -89,18 +103,35 @@ replications are ignored (vary the seed instead); the merge gateway is folded in
 flows; the risk probabilities 0.45/0.30/0.25 become chained whole-percent chances (45%,
 then 55% of the rest, the rest the default: 30.25% and 24.75%); six service-type tasks run
 as automated `system` steps that execute nothing; and the message flows to the credit bureau
-are ignored (the bureau is a SIPOC supplier and customer). Every simulated value (durations,
-distributions, probabilities, conditions, pools, costs, arrivals) is exactly as imported, and
-a seed-7 run gives the same numbers as the example's documented run. Only descriptive data
-was edited afterwards: the id `loan-application`, the name, the process and step
-descriptions, `seed` 7, step `phase` labels for the steps outside the sub-process and call
-activity (Application, Credit decision, Contract and payout, so the SIPOC view groups the
-route correctly), the applicant and supervisor in the SIPOC, and the scene positions, laid
-out on the left-to-right grid of the other processes because the BPMN diagram coordinates
-overlapped and placed the inlined fraud steps at the callee's separate diagram. Each step
-has a scene marker and, like every process here except the agency pipeline, no scene asset. All durations,
-probabilities, amounts, capacities and costs are the example file's synthetic assumptions,
-not a real bank, measured behaviour or a forecast.
+are ignored (the bureau is a SIPOC supplier and customer). The import also turns the
+Customer lane into a 50-slot people pool. Descriptive data was then edited: the id
+`loan-application`, the name, the process and step descriptions, `seed` 7, step `phase`
+labels for the steps outside the sub-process and call activity (Application, Credit
+decision, Contract and payout, so the SIPOC view groups the route correctly), the applicant
+and supervisor in the SIPOC, and the scene positions, laid out on the left-to-right grid of
+the other processes because the BPMN diagram coordinates overlapped and placed the inlined
+fraud steps at the callee's separate diagram (revision 0, fingerprint `7054f46b249415d1`).
+
+Two guarded `process edit` revisions then changed the model (revision 0 to 2, fingerprint
+`221bcc4d80ed5e55`; `process diff` reports nothing else): revision 1 made **Submit
+application** and **Sign contract** pool-free touchpoints and removed the Customer pool,
+which only inflated capacity and utilisation (it was about 1% busy); revision 2 gave the
+ends their outcomes, coloured the lost end, and rewrote the end and process descriptions
+to say so. Every simulated time, distribution, probability, condition, cost and arrival is
+still exactly as imported, and both seeds give the same cases, step counts, cost and cycle
+time as before the edits; only the Customer pool's line has gone from the resources, and
+the goal, lost and conversion counts are new. The definition validates strictly. Each step
+has a scene marker and, like every process here except the agency pipeline, no scene asset.
+
+BPMN results: `process export-bpmn`, with and without `--bpsim`, gives files that
+`process validate-bpmn` reports as conforming (no errors), and importing either back gives
+the same fingerprint. The touchpoints export as BPMN user tasks that the Wildlands
+extension marks as touchpoints, and the outcomes as extension attributes on plain end
+events; the export's only fidelity note with BPSim is that the system kinds of the Credit
+engine and Automation pools exist only in the extension. The 30-slide deck keeps its
+seven sections and titles. All durations, probabilities, amounts, capacities and costs
+are the example file's synthetic assumptions, and the seeded runs are illustrations, not
+a real bank, measured behaviour or a forecast.
 
 ## Weekly delivery and release train
 
