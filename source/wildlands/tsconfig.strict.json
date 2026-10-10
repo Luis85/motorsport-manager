@@ -474,6 +474,7 @@
     "source/process-step-list.ts",
     "source/process-guard.ts",
     "source/process-io.ts",
+    "source/process-draft-actions.ts",
     "source/process-ui.ts",
     "source/process-dom.ts",
     "source/process-recovery.ts",

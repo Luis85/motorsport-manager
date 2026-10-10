@@ -15,6 +15,11 @@
  * control has focus. Otherwise it freezes and a status pill "N new events - Show" re-renders on request. The list itself is never
  * a live region; the separate announcer says at most one batched sentence every five seconds, and failures, blocked work and
  * dropped arrivals immediately.
+ *
+ * Each process slot keeps its own tracker (its retained rows, the counts above and what the modal already showed). `slot(index)`
+ * puts the active one aside and restores the chosen slot's, or starts empty for a slot not seen before, so switching back to a kept
+ * run restores its feed silently: the restored events are not counted again, the badge shows only that run's unseen problems and
+ * nothing is announced. Pending announcements of the slot left behind are dropped. `reset()` forgets the active slot's tracker only.
  */
 declare namespace LWProcessActivity {
  interface Env {
@@ -43,8 +48,10 @@ declare namespace LWProcessActivity {
   problems(): number;
   /** 'Latest: 120 min · case-0007 · failed · Quality review', or '' without events. */
   latest(): string;
-  /** Forgets everything (a new run started). */
+  /** Forgets the active slot's tracker (a new run started). */
   reset(): void;
+  /** Keeps the active slot's tracker and restores the tracker of process slot `index` (empty when new); announces nothing. */
+  slot(index: number): void;
   dispose(): void;
  }
  interface Api {
@@ -181,6 +188,21 @@ declare namespace LWProcessActivity {
    }
    env.badge(problems()); render(false);
   }
+  /** The trackers of the slots left behind, by slot index; the active slot's tracker lives in the variables above. */
+  type Kept = {rows: Row[]; keys: string[]; total: number; seen: number; rendered: number; lastMinute: number; urgent: [number, number, number]};
+  const kept = new Map<number, Kept>();
+  let slotIndex = -1;
+  function slot(index: number): void {
+   if (index === slotIndex) return;
+   if (slotIndex >= 0) kept.set(slotIndex, {rows, keys, total, seen, rendered, lastMinute, urgent: [urgentTotal, urgentSeen, urgentRendered]});
+   slotIndex = index; wipe(); filter.kind = filter.step = filter.caseId = '';
+   const back = kept.get(index);
+   if (back) {
+    ({rows, keys, total, seen, rendered, lastMinute} = back);
+    [urgentTotal, urgentSeen, urgentRendered] = back.urgent;
+   }
+   env.badge(problems());
+  }
   dialog.body.addEventListener('change', e => {
    const t = e.target as HTMLSelectElement; if (t.id === 'act-kind') filter.kind = t.value; else if (t.id === 'act-step') filter.step = t.value; else if (t.id === 'act-case') filter.caseId = t.value; else return;
    render(true);
@@ -192,7 +214,7 @@ declare namespace LWProcessActivity {
    else if (step) { chosen = step.dataset.actStep!; env.select(chosen); dialog.close('action'); }
   });
   return {
-   ingest, isOpen: () => dialog.isOpen(), unseen, problems,
+   ingest, slot, isOpen: () => dialog.isOpen(), unseen, problems,
    open(invoker) { if (!dialog.open({invoker: invoker ?? null})) return false; render(true); return true; },
    latest() { const e = rows.at(-1)?.event; return e ? `Latest: ${num(e.minute)} min · ${e.caseId} · ${kindText(e.kind)}${stepName(env.view().definition, e.stepId) ? ' · ' + stepName(env.view().definition, e.stepId) : ''}` : ''; },
    reset() { wipe(); filter.kind = filter.step = filter.caseId = ''; env.badge(0); },

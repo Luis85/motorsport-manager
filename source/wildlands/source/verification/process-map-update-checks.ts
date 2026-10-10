@@ -168,14 +168,17 @@ export async function mapUpdateChecks(studio: Studio): Promise<void> {
   });
   assert.equal(kept, true, 'the map never changes the definition it was given');
   assert.deepEqual((await query(page)).snapshot, before.snapshot, 'moving cards never ticks the run');
-  // The studio map has no move option: dragging a card pans, Alt+Arrow does nothing.
+  // The studio map has the move option (AUTH-11): a card drag moves the card in the draft, never in the running definition.
   await page.locator('#mode-2d').click();
-  assert.equal(await page.locator('#map svg').evaluate(s => s.classList.contains('movable')), false);
-  const studioBox = await page.locator('#map svg').getAttribute('viewBox'), qaCard = (await page.locator('#process-map-qa .pm-card').boundingBox())!;
+  assert.equal(await page.locator('#map svg').evaluate(s => s.classList.contains('movable')), true);
+  const qaCard = (await page.locator('#process-map-qa .pm-card').boundingBox())!;
   await page.mouse.move(qaCard.x + qaCard.width / 2, qaCard.y + qaCard.height / 2); await page.mouse.down();
   await page.mouse.move(qaCard.x + qaCard.width / 2 + 40, qaCard.y + qaCard.height / 2, {steps: 4}); await page.mouse.up();
-  assert.notEqual(await page.locator('#map svg').getAttribute('viewBox'), studioBox, 'without the option a card drag pans');
-  assert.deepEqual((await query(page)).definition, before.definition);
+  assert.equal(await page.locator('#message').innerText(), 'Moved Quality review in the draft. Apply the draft to keep it.');
+  const drafted = await page.evaluate(() => (JSON.parse((document.getElementById('draft') as HTMLTextAreaElement).value) as LWProcess.Definition)
+   .steps.find(s => s.id === 'qa')!.scene.position);
+  assert(drafted[0]! > qa[0]! && drafted[1] === qa[1], `the draft holds the moved card (${drafted.join()})`);
+  assert.deepEqual([(await query(page)).definition, (await query(page)).snapshot], [before.definition, before.snapshot]);
  });
  await check('Outcome badges sit inside numbered and zoomed-out cards, clear of the number, the title and other cards, with a 12px glyph',
   async () => {

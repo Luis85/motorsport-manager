@@ -8,6 +8,10 @@
  *  - once the run stops (completed, limit or blocked) Run, Step, Advance and Run to end are disabled with their reason, Reset becomes
  *    the primary action (it stays visible on a phone, outside Run options) and takes focus from a control that was just disabled;
  *  - Advance names the minutes it will really advance near the run length; the clock keeps exact minutes and adds an hours gloss;
+ *  - with a display calendar on the definition (`calendar: {minutesPerDay, daysPerWeek}`) the gloss reads in business days or weeks
+ *    from one business day up (`LWProcessTime.span`: "≈ 4.2 business days"), and the Run until presets and the run-length sentence
+ *    add the same reading ("Until: 1,440 min (3 business days)"). Below one business day, and without a calendar, every string is
+ *    the plain one (hours gloss, "Until: 24 h (1,440 min)");
  *  - Run to end (`#run-end`, inside Run options on a phone) is one clock command, `app.runToEnd()`: it pauses a playing run first (like
  *    Step and Advance), advances without animation and refreshes once, then says "Ran to minute M: <status in plain words>.". It is
  *    disabled with its reason when the run has no run length ("Set a run length to run to the end.") or has stopped.
@@ -54,7 +58,7 @@ declare namespace LWProcessRunBar {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessRunBar?: LWProcessRunBar.Api; LWProcessDom: LWProcessDom.Api};
+ const root = inputRoot as {LWProcessRunBar?: LWProcessRunBar.Api; LWProcessDom: LWProcessDom.Api; LWProcessTime: LWProcessTime.Api};
  const num = (n: number) => Number(n.toFixed(1)).toLocaleString();
  const get = <T extends HTMLElement = HTMLElement>(id: string) => root.LWProcessDom.must<T>(id);
  const plain = (error: unknown) => (error instanceof Error ? error.message : String(error)).replace(/^(\w*Error: )+/, '').trim();
@@ -65,6 +69,14 @@ declare namespace LWProcessRunBar {
  const SPEEDS: [number, string][] = [[1, '1 min'], [5, '5 min'], [30, '30 min'], [120, '2 h'], [1440, '24 h']];
  const STEP = 30;
  const NO_LENGTH = 'Set a run length to run to the end.';
+ /** The business day or week reading of `minutes` under a display calendar ('≈ 4.2 business days'); '' below one business day or without one. */
+ function business(minutes: number, calendar: LWProcess.Calendar | undefined): string {
+  const time = root.LWProcessTime, span = time.span(minutes, calendar);
+  return span === time.minutes(minutes) ? '' : span.slice(span.indexOf('(') + 1, -1);
+ }
+ /** A preset's Run until label: the plain label, or the business reading when the calendar has one for it. */
+ const presetLabel = (minutes: number, plainLabel: string, calendar: LWProcess.Calendar | undefined) =>
+  'Until: ' + (business(minutes, calendar) ? root.LWProcessTime.span(minutes, calendar) : plainLabel);
  function outcome(q: LWProcess.Snapshot): string {
   if (q.status === 'completed') return 'the run completed';
   if (q.status === 'limit') return 'the run length is reached';
@@ -73,7 +85,7 @@ declare namespace LWProcessRunBar {
  }
  function markup(): string {
   const speeds = SPEEDS.map(([v, label]) => `<option value="${v}"${v === 5 ? ' selected' : ''}>Speed: ${label}</option>`).join('');
-  const presets = PRESETS.map(([v, label]) => `<option value="${v}">Until: ${label}</option>`).join('');
+  const presets = PRESETS.map(([v, label]) => `<option value="${v}">${presetLabel(v, label, undefined)}</option>`).join('');
   return `<div class="process-toolbar" role="group" aria-label="Simulation controls">
   <div class="run-actions" role="group" aria-label="Run"><button id="play" class="primary">Run simulation</button><button id="step">Step 1 min</button>
    <button id="advance">Advance ${STEP} min</button><button id="run-end">Run to end</button>
@@ -135,13 +147,28 @@ declare namespace LWProcessRunBar {
    select.value = horizon === null ? 'unlimited' : presets.has(String(horizon)) ? String(horizon) : 'custom';
    get('horizon-custom-label').hidden = select.value !== 'custom'; if (horizon !== null && select.value === 'custom') custom.value = String(horizon);
   }
+  /** Rewrites the Run until preset labels when the display calendar of the shown process changes the words. */
+  let presetWords = PRESETS.map(([v, label]) => presetLabel(v, label, undefined)).join('|');
+  function syncPresets(calendar: LWProcess.Calendar | undefined): void {
+   const labels = PRESETS.map(([v, label]) => presetLabel(v, label, calendar)), words = labels.join('|');
+   if (words === presetWords) return;
+   presetWords = words;
+   const options = [...get<HTMLSelectElement>('horizon').options];
+   PRESETS.forEach(([v], i) => { options.find(o => o.value === String(v))!.textContent = labels[i]!; });
+  }
+  /** "Run length set to 1,440 minutes (24 h)." with the business reading added under a display calendar. */
+  function lengthSet(n: number): string {
+   const gloss = [n >= 60 ? num(n / 60) + ' h' : '', business(n, env.view().definition.calendar)].filter(Boolean).join(', ');
+   return `Run length set to ${num(n)} minutes${gloss ? ` (${gloss})` : ''}.`;
+  }
   /** Minutes the Advance button moves: 30, or what is left before the run length. */
   const stride = (v: LWProcessApp.View) => Math.max(1, Math.min(STEP, v.horizon === null ? STEP : v.horizon - v.snapshot.minute));
   function sync(v: LWProcessApp.View, focused: HTMLElement | null): void {
    const q = v.snapshot, stopped = stoppedText(q.status), bar = document.querySelector('.process-toolbar')!;
    get('clock').textContent = num(q.minute) + ' min' + (v.horizon === null ? ' · no limit' : ' of ' + num(v.horizon));
-   const hours = q.minute >= 60 ? num(q.minute / 60) + ' h' : '', gloss = get('clock-hours'); if (gloss.textContent !== hours) gloss.textContent = hours;
-   syncHorizon(v.horizon);
+   const days = business(q.minute, v.definition.calendar), hours = days || (q.minute >= 60 ? num(q.minute / 60) + ' h' : '');
+   const gloss = get('clock-hours'); if (gloss.textContent !== hours) gloss.textContent = hours;
+   syncPresets(v.definition.calendar); syncHorizon(v.horizon);
    const state = q.status === 'completed' ? 'Completed' : q.status === 'limit' ? 'Run limit reached' : q.status === 'blocked' ? 'Blocked' : 'Paused';
    get('run-status').textContent = v.playing ? 'Running' : state;
    get('play').textContent = v.playing ? 'Pause' : 'Run simulation';
@@ -200,13 +227,13 @@ declare namespace LWProcessRunBar {
    if (select.value === 'custom') {
     if (!custom.value) { custom.focus(); status('Enter a whole number of minutes for the custom run length.'); return; }
     const n = Number(custom.value);
-    if (env.command(() => env.app.horizon(n))) status(`Run length set to ${num(n)} minutes${n >= 60 ? ` (${num(n / 60)} h)` : ''}.`);
+    if (env.command(() => env.app.horizon(n))) status(lengthSet(n));
     return;
    }
    const value = select.value === 'unlimited' ? null : Number(select.value);
    if (!env.command(() => env.app.horizon(value))) return;
    if (value === null) status('Unlimited run length. The run still stops when all work is complete or blocked.');
-   else status(`Run length set to ${num(value)} minutes (${num(value / 60)} h).`);
+   else status(lengthSet(value));
   }
   get<HTMLSelectElement>('horizon').onchange = applyHorizon; get<HTMLInputElement>('horizon-custom').onchange = applyHorizon;
   return {

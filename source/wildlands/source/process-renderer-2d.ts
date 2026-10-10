@@ -15,6 +15,8 @@
  *    keyboard alternative). The map calls `move(stepId, [x, y])` once per drop or key press, in world units snapped to 0.5, and keeps
  *    drawing the card there as a presentation-only override until the definition it draws changes (the callback's owner writes the
  *    draft; applying it ends the override). Moving is off in a single-step scene. Without the option dragging a card pans the map.
+ *    `setMoves(positions)` replaces those overrides ({} clears them), so the owner keeps them in step with its draft (a refused move,
+ *    an undo).
  */
 declare namespace LWProcess2D {
  /** `neighbours`: frame a selected step together with its direct predecessors and successors (Present) instead of the studio's
@@ -24,7 +26,11 @@ declare namespace LWProcess2D {
   /** Called once per completed card move (pointer drop or Alt+Arrow) with the step id and its new world position, snapped to 0.5. */
   move?: (stepId: string, position: [number, number]) => void;
  }
- interface Surface {draw(view: LWProcessApp.View): void; frame(options?: FrameOptions): void; dispose(): void;}
+ interface Surface {
+  draw(view: LWProcessApp.View): void; frame(options?: FrameOptions): void; dispose(): void;
+  /** Replaces the presentation-only positions of moved cards by step id ({} clears them) and redraws a shown map. */
+  setMoves(positions: Record<string, [number, number]>): void;
+ }
  interface Api {create(host: HTMLElement, select: (id: string) => void, options?: Options): Surface; legend(): string;}
 }
 (function(inputRoot: unknown) {
@@ -292,7 +298,12 @@ declare namespace LWProcess2D {
    document.removeEventListener('pointerover', outside);
    seen.disconnect(); resized?.disconnect(); drag?.cancel(); focus.dispose(); row.dispose(); camera.dispose(); svg.remove();
   }
-  return {draw, frame, dispose};
+  function setMoves(positions: Record<string, [number, number]>): void {
+   moved.clear();
+   for (const [id, at] of Object.entries(positions)) moved.set(id, [at[0], at[1]]);
+   if (lastView && !host.hidden) draw(lastView);
+  }
+  return {draw, frame, dispose, setMoves};
  }
  root.LWProcess2D = {create, legend: () => root.LWProcessMapLegend.markup()};
 })(globalThis);

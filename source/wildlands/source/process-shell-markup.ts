@@ -1,13 +1,15 @@
 /// <reference path="./process-contracts.d.ts" />
 /**
  * The static markup of the Process Studio shell, written once by `process-ui.ts`: the header (title, Process selector, Edit
- * process…, the draft chip, Import… and the Export/⋯ menu), the run bar slot, the step list, the stage with its view controls, the
- * legend, the metrics, Inputs & outputs and the inspector. Pure strings with fixed ids and wording; no DOM access, session or
- * storage. Every id here is a contract with the browser suites and the shell modules (LWProcessDom.must names a missing one).
+ * process…, Add step… and Tidy layout (LWProcessDraftActions; from 1,200 px wide), the draft chip, Import… and the Export/⋯ menu),
+ * the run bar slot, the step list, the stage with its view controls, the legend, the metrics, Inputs & outputs and the inspector.
+ * Pure strings with fixed ids and wording; no DOM access, session or storage. Every id here is a contract with the browser suites
+ * and the shell modules (LWProcessDom.must names a missing one).
  *
- * The Export/⋯ menu holds, in order: Import JSON or BPMN… and Present slides (phone only), Export JSON, Export draft JSON (while a
- * draft exists), Export BPMN, Export BPMN with BPSim, Show export notes… (after a BPMN export with notes), Export run report,
- * Download HTML, New process… and Import as a new process….
+ * The Export/⋯ menu holds, in order: Import JSON or BPMN… and Present slides (phone only), Add step… and Tidy layout (below 1,200 px
+ * wide, where the header has no room for them), Export JSON, Export draft JSON (while a draft exists), Export BPMN, Export BPMN with
+ * BPSim, Show export notes… (after a BPMN export with notes), Export run report, Download HTML, New process… and Import as a new
+ * process….
  */
 declare namespace LWProcessShellMarkup {
  interface Parts {
@@ -27,6 +29,7 @@ declare namespace LWProcessShellMarkup {
   const items = [
    item('import-item', 'Import JSON or BPMN…', ' class="menu-phone"'),
    item('present-item', 'Present slides', ' class="menu-phone" aria-haspopup="dialog"'),
+   item('add-step-item', 'Add step…', ' class="menu-draft" aria-haspopup="dialog"'), item('tidy-item', 'Tidy layout', ' class="menu-draft"'),
    item('json', 'Export JSON'), item('draft-json', 'Export draft JSON', ' hidden'), item('bpmn', 'Export BPMN'),
    item('bpmn-bpsim', 'Export BPMN with BPSim'), item('export-notes', 'Show export notes…', ' aria-haspopup="dialog" hidden'),
    item('report', 'Export run report'), item('html', 'Download HTML'),
@@ -37,13 +40,15 @@ declare namespace LWProcessShellMarkup {
  <div class="process-file-actions">
   <label id="process-switch-label" class="process-switch" hidden>Process <select id="process-switch" aria-describedby="process-subtitle"></select></label>
   <button id="open-definition" aria-haspopup="dialog" aria-label="Edit process" title="Edit process…">Edit<span class="long"> process…</span></button>
+  <button id="add-step" class="draft-action" aria-haspopup="dialog">Add step…</button>
+  <button id="tidy-layout" class="draft-action">Tidy layout</button>
   <button id="draft-chip" class="process-draft-chip" aria-haspopup="dialog" hidden></button>
   <button id="import" title="Import a process from a JSON or BPMN file">Import…</button>
   <div class="process-menu">
    <button id="export-menu" class="menu-long" aria-haspopup="menu" aria-expanded="false" aria-controls="export-items">Export ${caret}</button>
    <button id="more-menu" class="menu-short" aria-haspopup="menu" aria-expanded="false" aria-controls="export-items" aria-label="More actions">⋯</button>
    <div id="export-popup" class="process-menu-popup" hidden><p id="export-hint" class="menu-hint"></p>
-    <div id="export-items" role="menu" aria-label="Import, present, export and add processes">
+    <div id="export-items" role="menu" aria-label="Import, present, edit, export and add processes">
      ${items}</div></div></div>
   <input type="file" id="file" accept=".json,.bpmn,.xml,application/json,application/xml,text/xml" hidden></div></header>`;
  }

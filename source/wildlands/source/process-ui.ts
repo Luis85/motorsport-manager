@@ -6,6 +6,8 @@
  *  - LWProcessSlots: the Process selector, switching (each process keeps its own paused run) and adding processes;
  *  - LWProcessIO: file import and export; LWProcessGuard: the questions outside editors and the page lifecycle;
  *  - LWProcessRecovery: the opt-in recovery copy of unapplied drafts in browser storage (the studio's only storage use);
+ *  - LWProcessDraftActions: Add step…, Tidy layout and moving cards on the 2D map (the map's `move` option), each one draft step;
+ *  - LWProcessActivity: the event feed, one tracker per process slot (a switch restores the slot's feed silently);
  *  - the editors binding below (step editor and Definition editor over the shared LWProcessDraft) and the Present binding.
  * UI code emits commands through `command()` and renders detached values; only the animation loop's pulse and explicit clock
  * commands move time.
@@ -19,7 +21,7 @@
   LWProcessLens: LWProcessLens.Api; LWProcessPresent: LWProcessPresent.Api; LWProcessRunBar: LWProcessRunBar.Api; LWProcessIO: LWProcessIO.Api;
   LWProcessGuard: LWProcessGuard.Api; LWProcessStepList: LWProcessStepList.Api; LWProcessDom: LWProcessDom.Api; LWProcessSlots: LWProcessSlots.Api;
   LWProcessRecovery: LWProcessRecovery.Api; LWProcessShellMarkup: LWProcessShellMarkup.Api; LWProcessSlidesText: LWProcessSlidesText.Api;
-  LWProcessStudio?: unknown; __wildlandsReady?: boolean};
+  LWProcessDraftActions: LWProcessDraftActions.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
  const host = root.LWProcessDom.maybe('process-shell'); if (!host) return;
  const pristine = '<!doctype html>\n' + document.documentElement.outerHTML;
  const num = (n: number) => Number(n.toFixed(1)).toLocaleString();
@@ -34,7 +36,8 @@
  };
  const shown = (n: HTMLElement | null) => !!n && n.getClientRects().length > 0;
  let view = app.query(), three: LWProcess3D.Surface | null = null, stage: LWProcess3D.Stage | null = null;
- const newMap = () => root.LWProcess2D.create(get('map'), id => command(() => app.select(id)));
+ /** The 2D map; dragging a card (or Alt+Arrow) writes one draft step through the draft actions, created below. */
+ const newMap = () => root.LWProcess2D.create(get('map'), id => command(() => app.select(id)), {move: (id, at) => actions.move(id, at)});
  let svg = newMap();
  /** The SIPOC grid or Journey map, built on demand for the process type and drawn only while it is the chosen view. */
  const lens = root.LWProcessLens.create(get('lens'), id => command(() => app.select(id)));
@@ -90,8 +93,10 @@
   chip.hidden = !text; if (chip.textContent !== text) chip.textContent = text;
   chip.title = text ? 'Open the Definition editor to review, apply or restore this draft. Export JSON and Download HTML use the running definition.' : '';
  }
- function rebuild(): void {
-  three?.dispose(); three = null; unavailable = ''; dataView.reset(); activity.reset(); lens.reset();
+ /** Rebuilds the scene views for the active process: a switch (`switched`) restores that slot's Activity feed, anything else starts it afresh. */
+ function rebuild(switched = false): void {
+  three?.dispose(); three = null; unavailable = ''; dataView.reset(); lens.reset();
+  activity.slot(app.query().active); if (!switched) activity.reset();
   // One WebGL renderer and canvas serve the page's lifetime; a rebuild replaces only the 3D scene.
   try {
    stage ??= root.LWProcess3D.stage(get<HTMLCanvasElement>('canvas'));
@@ -120,13 +125,17 @@
  }
  const slots = root.LWProcessSlots.create({
   app, host, view: () => view, draft, recovery, status, changed: () => files.sync(),
-  reopen: () => {dataView.reset(); svg.dispose(); svg = newMap(); rebuild(); refresh();},
+  reopen: () => {dataView.reset(); svg.dispose(); svg = newMap(); rebuild(true); refresh();},
  });
  const files = root.LWProcessIO.create({
   host, view: () => view, definitions: () => app.definitions(), pristine, draft, status, download, replace,
   add: definition => slots.add(definition), canAdd: () => slots.canAdd(), ask: options => guard.ask(options), choose: options => guard.choose(options),
  });
  draft.subscribe(() => {draftChip(); files.sync();});
+ const actions = root.LWProcessDraftActions.create({
+  host, view: () => view, draft, status, map: () => svg, presenting: () => present.isOpen(),
+  menuTrigger: () => [get('more-menu'), get('export-menu')].find(shown) ?? null,
+ });
  /** The selected step's subtitle: its kind in plain words and its phase when it has one; the whole process counts steps and cases. */
  function subtitle(d: LWProcess.Definition, step: LWProcess.Step | undefined, q: LWProcess.Snapshot, terms: LWProcessTerms.Terms): string {
   if (step) return root.LWProcessSlidesText.kindLabel(step) + (step.phase ? ' · ' + step.phase : '');
@@ -319,7 +328,7 @@
  function dispose(): void {
   if (disposed) return; disposed = true; cancelAnimationFrame(frameId); fit.disconnect(); document.removeEventListener('close', dialogClosed, true);
   recovery.dispose();
-  for (const surface of [present, three, stage, svg, lens, definitionEditor, stepEditor, files, slots, activity, menu, app]) surface?.dispose();
+  for (const surface of [present, three, stage, svg, lens, definitionEditor, stepEditor, actions, files, slots, activity, menu, app]) surface?.dispose();
  }
  // Business processes open on the readable 2D map on a phone; 3D stays one press away. A journey keeps its Journey map.
  if (matchMedia('(max-width:650px)').matches && app.query().mode === '3d') app.mode('2d');
