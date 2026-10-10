@@ -229,14 +229,21 @@ test('Resource kinds, automated steps and declared outputs are validated explici
 });
 test('Loan application demo converted from BPMN completes with exact inclusive, multi-instance and SLA escalation evidence', () => {
  const loan = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../docs/concepts/agency-delivery/content/loan-application.process.json'), 'utf8')) as LWProcess.Definition;
- const admission = catalog.validate(loan); assert.equal(admission.ok, true); assert.deepEqual(admission.diagnostics, []); assert.equal(catalog.fingerprint(loan), '7054f46b249415d1');
+ const admission = catalog.validate(loan); assert.equal(admission.ok, true); assert.deepEqual(admission.diagnostics, []); assert.equal(catalog.fingerprint(loan), '221bcc4d80ed5e55');
  assert.equal(loan.id, 'loan-application'); assert.equal(loan.seed, 7); assert(loan.steps.every(s => s.scene && !s.scene.asset && typeof s.phase === 'string'), 'every step has a scene marker and a phase');
  const at = (id: string) => loan.steps.find(s => s.id === id)!;
  assert.equal(at('gw-extra').mode, 'inclusive'); assert.deepEqual(at('sub-docs-task-verify').instances, {count: 3, mode: 'parallel'}); assert.deepEqual(at('task-review').deadline, {mode: 'escalate', flow: 'f-sla', after: 90});
+ // The applicant is the case, not a capacity: its two steps are pool-free touchpoints and no Customer pool remains.
+ const applicant = ['task-submit', 'task-sign'].map(id => [at(id).kind, at(id).channel, at(id).resources]);
+ assert.deepEqual(applicant, [['touchpoint', 'web', undefined], ['touchpoint', 'document', undefined]]);
+ assert.deepEqual(loan.resources.map(r => r.id), ['bank-clerk', 'credit-engine', 'automation']);
+ // Main-route ends carry outcomes; the escalation end has none (an escalation end's outcome is never counted).
+ assert.deepEqual(['end-paid', 'end-rejected', 'end-breach'].map(id => at(id).outcome), ['goal', 'lost', undefined]);
  assert.deepEqual(loan.arrivals, [{at: 0, until: 960, interval: 30, gap: {dist: 'exponential', mean: 30}, draws: [{field: 'amount', kind: 'int', min: 1000, max: 50000}, {field: 'years', kind: 'int', min: 0, max: 10}], data: {}}]);
  const q = run(loan, 1500), step = (id: string) => q.steps.find(s => s.id === id)!;
  assert.deepEqual([q.seed, q.minute, q.status, q.metrics.arrived, q.metrics.completed, q.metrics.failed, q.metrics.cost, q.metrics.meanCycleMinutes], [7, 984, 'completed', 32, 32, 0, 2414, 50.125]);
- assert.deepEqual(q.resources.map(r => [r.id, r.kind, r.busyMinutes]), [['customer', 'people', 656], ['bank-clerk', 'people', 923], ['credit-engine', 'system', 253], ['automation', 'system', 64]]);
+ assert.deepEqual([q.metrics.goals, q.metrics.lost, q.metrics.conversion, q.metrics.capacityCost], [31, 1, 969, 13776]);
+ assert.deepEqual(q.resources.map(r => [r.id, r.kind, r.busyMinutes]), [['bank-clerk', 'people', 923], ['credit-engine', 'system', 253], ['automation', 'system', 64]]);
  assert.equal(Math.round(q.resources.find(r => r.id === 'bank-clerk')!.utilization * 1000), 313);
  assert.deepEqual(step('sub-docs-task-verify').items, {started: 96, finished: 96}); assert.equal(step('sub-docs-task-verify').completed, 32);
  assert.deepEqual(step('task-review').deadlines, {interrupted: 0, escalated: 1}); assert.deepEqual(['task-notify', 'end-breach'].map(id => step(id).completed), [1, 1]);
@@ -249,6 +256,7 @@ test('Loan application demo converted from BPMN completes with exact inclusive, 
  assert.deepEqual(JSON.parse(JSON.stringify(run(copy(loan), 1500))), q);
  const other = (() => { const s = runtime.create(loan, {seed: 8}); try { return s.advance(1500); } finally { s.dispose(); } })();
  assert.deepEqual([other.seed, other.minute, other.metrics.arrived, other.metrics.completed, other.metrics.cost], [8, 1104, 34, 34, 3301]);
+ assert.deepEqual([other.metrics.goals, other.metrics.lost, other.metrics.conversion], [31, 3, 912]);
 });
 
 test('Weekly delivery and release train runs refinement, planning, dailies, review and retro from a 0.1.0 skeleton to the 1.0.0 MVP with exact evidence', () => {

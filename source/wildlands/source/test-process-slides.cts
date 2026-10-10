@@ -15,7 +15,7 @@ const CONTENT = path.resolve(__dirname, '../../../docs/concepts/agency-delivery/
 export const demos = fs.readdirSync(CONTENT).filter(f => f.endsWith('.process.json')).sort().map(f => [f, JSON.parse(fs.readFileSync(path.join(CONTENT, f), 'utf8')) as LWProcess.Definition] as const);
 const sha = (text: string) => createHash('sha256').update(text).digest('hex');
 /** Pinned LWProcessSipoc.model JSON of the seven demos (see the SIPOC check). */
-const SIPOC_LENGTH = 41578, SIPOC_SHA = '6c1f38b83644cf1107b871161050ab2d0d4479a2b744e7ecff72cfc8ba1c743e';
+const SIPOC_LENGTH = 41653, SIPOC_SHA = '956f6461c8b9e44ba7d2f667517f94fb2b9d586588ee14ee1f3bee48f840f9fa';
 const seeded = (d: LWProcess.Definition, minutes: number, seed: number) => { const s = runtime.create(d, {seed}); try { return s.advance(minutes); } finally { s.dispose(); } };
 const deepFreeze = <T,>(v: T): T => { if (v && typeof v === 'object') { for (const x of Object.values(v)) deepFreeze(x); Object.freeze(v); } return v; };
 /** A small claims desk: an interrupting deadline, a decision with a chance route, a parallel fork with a timer branch and three phases. */
@@ -152,7 +152,8 @@ test('Slides are deterministic, detached from frozen inputs and carry live facts
 test('SIPOC model is pinned for every demo, counts cases per stage and shares the LWProcessRoute main route with the slides', () => {
  // LWProcessSipoc.model for the 7 demos at minute 0 and after 1,440 minutes with seed 7. First pinned when the main route moved into
  // LWProcessRoute; re-pinned when stages began to count cases that left them, inputs dropped internal counters and need-condition labels,
- // and the measures gained '—' before a case finishes, the mean age in progress, work cost and capacity cost.
+ // and the measures gained '—' before a case finishes, the mean age in progress, work cost and capacity cost; re-pinned for DOM-17, when the
+ // loan demo's applicant steps became touchpoints (stage kinds) and its ends gained outcomes (outputs and a Conversion measure).
  const runs = demos.map(([file, d]) => {
   const s = runtime.create(d, {seed: 7});
   try { const q0 = s.query(), q1 = s.advance(1440); return [file, d, q1, sipoc.model(d, q0), sipoc.model(d, q1)] as const; } finally { s.dispose(); }

@@ -14,8 +14,12 @@ import {test} from './test-process-helpers.cjs';
 import {claims, demos} from './test-process-slides.cjs';
 const route = (globalThis as unknown as {LWProcessRoute: LWProcessRoute.Api}).LWProcessRoute;
 const sha = (text: string) => createHash('sha256').update(text).digest('hex');
-/** JSON of [file, deck, Markdown] for the seven demos without a snapshot, pinned before the journey map's walk moved here. */
-const DECKS_LENGTH = 363938, DECKS_SHA = 'bd2d756d22516ff827ae6fe0ea33a750ac8c2b71d42a99acc84ddd304e0d7ba2';
+/**
+ * JSON of [file, deck, Markdown] for the seven demos without a snapshot, pinned before the journey map's walk moved here. Re-pinned
+ * for a deliberate content change (DOM-17): the loan demo's applicant steps became pool-free touchpoints, its Customer pool was
+ * removed, its ends declare goal and lost outcomes, and its descriptions say so (same slide count, sections and titles).
+ */
+const DECKS_LENGTH = 367586, DECKS_SHA = '7374437a0a88356ba7eb9eb889f8cf04151cf4a37b7714a789bc6aaa1730ceb9';
 /** The journey map's main route of every demo, as its own walk drew it before it used LWProcessRoute ('first-branch' forks). */
 const JOURNEY_ROUTES: Record<string, string[]> = {
  'agency.process.json': ['intake', 'discovery', 'design-split', 'product-design', 'design-ready', 'implementation', 'qa', 'review-gate', 'handover',
