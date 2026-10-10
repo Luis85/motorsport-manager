@@ -5,6 +5,7 @@ import path from 'node:path';
 import {results} from './test-process-helpers.cjs';
 import './test-process-engine.cjs';
 import './test-process-authoring.cjs';
+import './test-process-structure.cjs';
 import './test-process-steps.cjs';
 import './test-process-random.cjs';
 import './test-process-journeys.cjs';
