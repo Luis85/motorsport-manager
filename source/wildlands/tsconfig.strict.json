@@ -458,6 +458,8 @@
     "source/test-process.cts",
     "source/test-process-bpmn.cts",
     "source/test-process-helpers.cts",
+    "source/test-process-analytics.cts",
+    "source/test-process-analytics-cli.cts",
     "source/test-process-engine.cts",
     "source/test-process-authoring.cts",
     "source/test-process-steps.cts",

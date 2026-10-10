@@ -3,7 +3,7 @@
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
   "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-bpmn", "business-process-browser", "process-layout-browser", "process-step-editor-browser", "process-definition-browser", "process-renderers-browser", "process-lenses-browser", "process-bpmn-import-browser", "process-readability-browser", "process-present-browser"],
-  "totalChecks": 2097,
+  "totalChecks": 2107,
   "reviewedAdditions": [
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
@@ -558,7 +558,17 @@
     {"suite": "process-renderers-browser", "name": "2D card borders, work markers and the legend share one shape-coded state encoding, and zoomed-out cards count waiting work"},
     {"suite": "process-renderers-browser", "name": "Present frames a step slide with its direct neighbours and keeps the card-number key beside a numbered map"},
     {"suite": "process-readability-browser", "name": "2D map titles break only between words or at a hyphen, and the hovered or focused card shows its full name and counts"},
-    {"suite": "process-readability-browser", "name": "Map zoom controls never cover a fitted card, Zoom in reaches names, and map text follows the root font size"}
+    {"suite": "process-readability-browser", "name": "Map zoom controls never cover a fitted card, Zoom in reaches names, and map text follows the root font size"},
+    {"suite": "business-process", "name": "Run ledger reports mean wait, throughput, per-pool and per-step cost and the cycle histogram exactly for a FIFO queue"},
+    {"suite": "business-process", "name": "Every demo keeps the cost breakdown, mean wait and cycle histogram exact under chunked advances and pruning"},
+    {"suite": "business-process", "name": "The event sink streams every engine event in order as detached values, identical across chunks, with the history as its tail"},
+    {"suite": "business-process", "name": "Replication statistics use the sample sd, Student t intervals and nearest-rank percentiles as computed by hand"},
+    {"suite": "business-process", "name": "Replications run consecutive seeds in fresh sessions, step one at a time and refuse bad plans before any run"},
+    {"suite": "business-process", "name": "Paired comparisons share seeds: identical definitions differ by exactly zero and more capacity shortens a small queue"},
+    {"suite": "business-process", "name": "CLI process run streams every engine event to a CSV or XES event log without changing the run or its report"},
+    {"suite": "business-process", "name": "Event log cells are escaped like the Activity CSV and XES refuses text XML 1.0 cannot represent"},
+    {"suite": "business-process", "name": "CLI process replicate and compare print seeded reports or write them, and match the pure module"},
+    {"suite": "business-process", "name": "Process commands name --minutes, --runs and --format in their errors and refuse a clashing event log before writing"}
   ],
   "renames": [
     {"suite": "wildlands-acceptance", "from": "Every discovered built-in scenario compiles complete resources with verified manifest hashes", "to": "Every discovered game folder scenario compiles complete resources with verified manifest hashes", "reason": "Phase 4A (decision D1): the engine CLI has no built-in scenarios. The check now compiles every scenario of every colony game folder (scenarios --game DIR) instead of the three former built-in packs; its assertions on complete resources and manifest hashes are unchanged."},
@@ -2729,7 +2739,17 @@
       "CLI process slides and diff reject bad arguments with exit 2 before writing files",
       "Guarded process-setting edits set and remove description, seed, genre, SIPOC and tracked fields all-or-nothing",
       "CLI process diff reports changed steps, flows, resources, arrivals and settings with both identities; the draft summary is unchanged",
-      "SIPOC model is pinned for every demo, counts cases per stage and shares the LWProcessRoute main route with the slides"
+      "SIPOC model is pinned for every demo, counts cases per stage and shares the LWProcessRoute main route with the slides",
+      "Run ledger reports mean wait, throughput, per-pool and per-step cost and the cycle histogram exactly for a FIFO queue",
+      "Every demo keeps the cost breakdown, mean wait and cycle histogram exact under chunked advances and pruning",
+      "The event sink streams every engine event in order as detached values, identical across chunks, with the history as its tail",
+      "Replication statistics use the sample sd, Student t intervals and nearest-rank percentiles as computed by hand",
+      "Replications run consecutive seeds in fresh sessions, step one at a time and refuse bad plans before any run",
+      "Paired comparisons share seeds: identical definitions differ by exactly zero and more capacity shortens a small queue",
+      "CLI process run streams every engine event to a CSV or XES event log without changing the run or its report",
+      "Event log cells are escaped like the Activity CSV and XES refuses text XML 1.0 cannot represent",
+      "CLI process replicate and compare print seeded reports or write them, and match the pure module",
+      "Process commands name --minutes, --runs and --format in their errors and refuse a clashing event log before writing"
     ],
     "business-process-bpmn": [
       "BPMN round trip preserves timer steps, counters and field-to-field conditions losslessly",
