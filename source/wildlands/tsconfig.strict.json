@@ -581,6 +581,7 @@
     "source/verification/process-dashboard-browser.ts",
     "source/verification/process-dashboard-wire-checks.ts",
     "source/verification/process-dashboard-phone-checks.ts",
+    "source/verification/process-dashboard-layout-checks.ts",
     "source/verification/process-hostile-models.ts",
     "source/verification/process-hostile-probe.ts",
     "source/verification/process-hostile-kit.ts",

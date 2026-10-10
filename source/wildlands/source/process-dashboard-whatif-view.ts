@@ -36,7 +36,8 @@ declare namespace LWProcessDashboardWhatIfView {
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessReplicate: LWProcessReplicate.Api; LWProcessCatalog: LWProcess.Catalog;
-  LWProcessDashboardWhatIf: LWProcessDashboardWhatIf.Api; LWProcessDashboardWhatIfView?: LWProcessDashboardWhatIfView.Api};
+  LWProcessDashboardModel: LWProcessDashboardModel.Api; LWProcessDashboardWhatIf: LWProcessDashboardWhatIf.Api;
+  LWProcessDashboardWhatIfView?: LWProcessDashboardWhatIfView.Api};
  type Inputs = LWProcessDashboardWhatIf.Inputs;
  type Mode = LWProcessDashboardWhatIf.Mode;
  type Report = LWProcessReplicate.Report | LWProcessReplicate.Comparison;
@@ -72,7 +73,7 @@ declare namespace LWProcessDashboardWhatIfView {
   const live = $('#db-progress'), bar = $<HTMLProgressElement>('#db-progress-bar'), results = $('#db-results');
   const spread = $<HTMLInputElement>('input[value=spread]'), compare = $<HTMLInputElement>('input[value=compare]');
   let view: LWProcessApp.View | null = null, width = 600, rem = 16, warm = 0, dirty = new Set<string>(), frame = 0, announced = 0;
-  let job: {runner: Runner; key: Key} | null = null, last: {result: LWProcessDashboardWhatIf.Result; key: Key} | null = null;
+  let job: {runner: Runner; key: Key; random: boolean} | null = null, last: {result: LWProcessDashboardWhatIf.Result; key: Key} | null = null;
   let cached: {text: string; draft: Draft} | null = null;
   /** The draft's state; validation and fingerprint run once per distinct draft text. */
   function draft(): Draft {
@@ -114,7 +115,7 @@ declare namespace LWProcessDashboardWhatIfView {
    if (note) note.hidden = !stale;
   }
   function render(): void {
-   if (job) last = {result: W.result(job.runner.report(), job.runner.done()), key: job.key};
+   if (job) last = {result: W.result(job.runner.report(), job.runner.done(), job.random), key: job.key};
    results.innerHTML = last ? STALE + W.markup(last.result, width, rem) : '';
   }
   function stop(message: string): void {
@@ -162,7 +163,8 @@ declare namespace LWProcessDashboardWhatIfView {
    try {
     const R = root.LWProcessReplicate;
     const runner = inputs.mode === 'compare' && d.definition ? R.comparison(view.definition, d.definition, options) : R.replications(view.definition, options);
-    job = {runner: runner as Runner, key: keyOf(view, d, inputs.mode)};
+    const U = root.LWProcessDashboardModel.util, random = U.random(view.definition) || inputs.mode === 'compare' && !!d.definition && U.random(d.definition);
+    job = {runner: runner as Runner, key: keyOf(view, d, inputs.mode), random};
    } catch (err) {
     $('#db-problems').textContent = String(err instanceof Error ? err.message : err);
     return;

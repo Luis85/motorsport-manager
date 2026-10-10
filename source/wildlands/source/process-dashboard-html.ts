@@ -135,7 +135,7 @@ declare namespace LWProcessDashboardHtml {
    case 'dots': return C().dots(f(rem * 1.75), rem, c.rows, c.zero);
    case 'points': {
     const key = c.columns ? `<p class="db-note">Columns in route order: ${c.columns.map((name, i) => `${i + 1} ${esc(name)}`).join(' · ')}</p>` : '';
-    return C().points(f(rem * 13), rem, c.points, {columns: c.columns, xMax: c.xMax, yMax: c.yMax, bands: c.bands}) + key;
+    return C().points(f(rem * 13), rem, c.points, {columns: c.columns, xMin: c.xMin ?? 0, xMax: c.xMax, yMax: c.yMax, bands: c.bands}) + key;
    }
    case 'rows': return rows(p, c, ctx);
    case 'sparks': {

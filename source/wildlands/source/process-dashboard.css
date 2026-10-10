@@ -36,7 +36,11 @@
 .db-tile-value { font-size:var(--t-lg); font-weight:600; line-height:1.3; }
 .db-tile.problem .db-tile-line { color:var(--danger-text); }
 /* Sections and panels: cards on a grid that reflows from several columns to one. */
+/* Sections stand further apart than a heading from its own panels, so each heading reads with the panels below it. */
+.process-dashboard > [data-part=sections] { display:grid; gap:var(--s5); min-width:0; }
 .db-section { display:grid; gap:var(--s3); min-width:0; }
+/* A section without its own tiles leaves no empty grid row (and no second gap) between its heading and its panels. */
+.db-section [data-part]:empty,.db-section-head:empty { display:none; }
 .db-section-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s2); }
 .process-studio .db-section h2 { font-size:var(--t-base); }
 .db-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr)); gap:var(--s3); }
@@ -47,7 +51,8 @@
 .process-studio .db-empty { color:var(--text); padding:var(--s2) 0; }
 .process-studio .db-note,.process-studio .db-caption,.process-studio .db-plan,.process-studio .db-why { font-size:var(--t-xs); margin-top:var(--s1); }
 .process-studio .db-why:empty,.db-status:empty { display:none; }
-.db-figure { margin:0; display:grid; gap:var(--s2); min-width:0; }
+/* One track as wide as the panel: a wide table scrolls in its own region instead of widening the panel and the dashboard. */
+.db-figure { margin:0; display:grid; grid-template-columns:minmax(0,1fr); gap:var(--s2); min-width:0; }
 .db-figure figcaption { color:var(--muted); font-size:var(--t-xs); }
 .db-plot { min-width:0; overflow:hidden; }
 .db-chart,.db-spark,.db-meter,.db-key { display:block; max-width:100%; overflow:visible; }
@@ -100,6 +105,8 @@ div.db-row { display:grid; gap:var(--s1); padding:var(--s1) var(--s2); }
 .db-scroll tbody th { min-width:8rem; font-weight:600; }
 .db-scroll .num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .db-scroll thead th { color:var(--muted); font-weight:600; }
+/* Column headings wrap at their words (numbers never do), so a long heading does not push the value columns out of view. */
+.db-scroll thead th.num { white-space:normal; }
 /* What-if. */
 .db-whatif fieldset { margin:0 0 var(--s2); padding:0; border:0; display:flex; flex-wrap:wrap; gap:var(--s1) var(--s4); }
 .db-whatif legend { padding:0; margin-bottom:var(--s1); color:var(--muted); font-size:var(--t-xs); }
@@ -110,8 +117,9 @@ div.db-row { display:grid; gap:var(--s1); padding:var(--s1) var(--s2); }
 .db-actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); margin-top:var(--s2); }
 .db-actions progress { flex:1 1 8rem; height:6px; accent-color:var(--accent); }
 .process-studio .db-status { color:var(--text); margin-top:var(--s2); }
+#db-results > .db-figure { margin-top:var(--s3); }
 #db-results.stale .db-figure { opacity:.6; }
-.db-data button { margin-top:var(--s2); }
+.db-data button { justify-self:start; margin-top:var(--s2); }
 /* The shared tooltip: a mark's value on hover and keyboard focus (every value is also in the table). */
 .db-tip { position:absolute; z-index:5; max-width:min(22rem,90%); padding:var(--s1) var(--s2); border:1px solid var(--control-border);
  border-radius:var(--r-sm); background:var(--surface-card); color:var(--text); font-size:var(--t-xs); pointer-events:none;

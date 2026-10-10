@@ -102,7 +102,8 @@
   const rows = steps.map(s => [s.name, `${V.describeEmotion(s.emotion)} (${signed(s.emotion!)})`, measured(s)]);
   const column = field ? `; the measured column is the mean ${label} on entry.` : '; no field is tracked.';
   return {...base, caption: `${U.plural(steps.length, 'step')} declare an expected feeling${column}`,
-   table: U.table('Authored feeling and measured value per step', ['Step', 'Authored feeling', `Measured ${label} (mean on entry)`], rows)};
+   table: U.table('Authored feeling and measured value per step', ['Step', 'Authored feeling', `Measured ${label} (mean on entry)`], rows,
+    [false, false, true])};
  }
  function channels(input: Input): Panel {
   const {definition: d, snapshot: q} = input.view, U = u(), V = root.LWProcessRandomView, entered = new Map(q.steps.map(s => [s.id, s.entered]));

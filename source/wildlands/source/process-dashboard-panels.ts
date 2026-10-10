@@ -8,7 +8,8 @@
  *
  * Rules: percentiles are nearest-rank brackets of histogram bins (`[edges[i], edges[i + 1])`), hidden below 10 finished cases;
  * lead time is arrival to finish of completed cases (the studio's "cycle"); the scatter draws the retained (or `recent()`) finished
- * cases only and says so, with whole-run percentile bands; aging dots use the case age (minute minus arrival) per open token, at
+ * cases only and says so, with whole-run percentile bands, placed by finish minute on an axis that starts at the first drawn case
+ * (so the latest cases of a long run are not pressed into its last sliver); aging dots use the case age (minute minus arrival) per open token, at
  * most 500, and pace per step needs 10 exits of the age-at-exit distribution. Jitter is a hash of the identity, never random.
  *
  * Target share (the whole-run panel, with the fine distribution only): the viewer may choose a target from the upper edges of the
@@ -101,14 +102,15 @@ declare namespace LWProcessDashboardPanels {
   const base = U.panel('recent', `Lead time of recent finished ${t.many}`, `Are recent ${t.many} slower than earlier ones? Which were outliers?`, {});
   const list = finishedCases(input).sort((a, b) => a.finished - b.finished);
   if (!list.length) return {...base, empty: `No ${t.one} has finished yet.`};
-  const T = Math.max(1, q.minute), ages = list.map(c => c.finished - c.entered);
+  // The finish-minute axis starts at the first drawn case: the latest cases of a long run spread over the plot instead of its last sliver.
+  const first = list[0]!.finished, T = Math.max(first + 1, q.minute), span = T - first, ages = list.map(c => c.finished - c.entered);
   const bands = [band(input, 50, 'median, whole run'), band(input, 85, '85th percentile, whole run')].filter((b): b is LWProcessChart.Band => !!b);
-  const points = list.map(c => ({x: Math.min(T, Math.max(0, c.finished + (hash(c.caseId) - .5) * T * .004)), y: c.finished - c.entered, ...look(c)}));
+  const points = list.map(c => ({x: Math.min(T, Math.max(first, c.finished + (hash(c.caseId) - .5) * span * .004)), y: c.finished - c.entered, ...look(c)}));
   const median = (xs: number[]) => [...xs].sort((x, y) => x - y)[Math.ceil(xs.length / 2) - 1] ?? 0, half = Math.floor(list.length / 2);
   const drawn = U.plural(list.length, `finished ${t.one}`, `finished ${t.many}`);
   const caption = list.length >= 4 ? `Median lead time of the earlier half ${U.minutes(median(ages.slice(0, half)), d)}, `
    + `of the later half ${U.minutes(median(ages.slice(half)), d)}.` : `${drawn} drawn.`;
-  const notes = [`Dots are the latest ${drawn}; the bands use the whole run.`];
+  const notes = [`Dots are the latest ${drawn}, placed by finish minute; the bands use the whole run.`];
   const pruned = q.retention.finishedDropped;
   if (pruned > 0) notes.push(`${U.number(pruned)} earlier finished ${t.many} are counted in the totals but not drawn.`);
   const legend: LWProcessDashboardModel.Legend[] = [{label: 'Completed', tone: 'join', glyph: 'active'}, {label: 'Failed', tone: 'blocked', glyph: 'failed'}];
@@ -116,7 +118,8 @@ declare namespace LWProcessDashboardPanels {
   const rows = [...list].sort((x, y) => (y.finished - y.entered) - (x.finished - x.entered))
    .map(c => [c.caseId, c.entered, c.finished, c.finished - c.entered, c.status, c.outcome ?? '—']);
   const title = `Lead time by finish minute of recent finished ${t.many}`;
-  return {...base, caption, notes, legend, chart: {kind: 'points', title, points, columns: null, xMax: T, yMax: Math.max(...ages), bands},
+  const chart: LWProcessDashboardModel.Chart = {kind: 'points', title, points, columns: null, xMin: first, xMax: T, yMax: Math.max(...ages), bands};
+  return {...base, caption, notes, legend, chart,
    table: U.table(`Recent finished ${t.many}, longest first`, [t.One, 'Arrived (minute)', 'Finished (minute)', 'Lead time (minutes)', 'Status', 'Outcome'],
     rows, [false, true, true, true, false, false])};
  }

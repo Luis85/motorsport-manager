@@ -14,7 +14,9 @@
  * own limit. A comparison needs a draft that differs from the running definition and is valid. Utilisation reads as a percentage
  * and conversion (permille in the report) as a percentage; the difference is applied minus draft, worded from the draft's side, and
  * "no clear difference" when its 95% interval contains 0. Results always carry the honesty text: spread under the authored
- * assumptions, from runs that start empty, never a forecast.
+ * assumptions, from runs that start empty, never a forecast. When every seed gave the same values (`flat`) no intervals are drawn:
+ * a design without random behaviour says so, and a random design (`random`, from the runner) says its draws did not change the
+ * measures in that run length, never that it has no random behaviour. Each dot-interval row has its own scale, and the caption says so.
  *
  * Warm-up: `warmup` is the dashboard's "Measure from minute W" (0 or absent: none). It must be less than the minutes per run; the
  * replications then report, besides the whole-run measures, the measures labelled "after minute W" (LWProcessReplicate `warmup`),
@@ -33,8 +35,13 @@ declare namespace LWProcessDashboardWhatIf {
  interface Result {
   kind: Mode; complete: boolean; done: number; runs: number; minutes: number; seeds: number[]; kpis: Kpi[];
   honesty: string; status: string;
-  /** Every run gave the same values (no random behaviour): there is no spread to draw. */
+  /** Every run gave the same values: there is no spread to draw. */
   flat: boolean;
+  /**
+   * The design draws at random. A flat result of such a design means its draws did not change these measures within the minutes
+   * run, not that the process has no random behaviour, and is worded so.
+   */
+  random: boolean;
  }
  interface Limits {readonly runsMin: number; readonly runsMax: number; readonly minutes: number; readonly work: number; readonly seed: number}
  interface Api {
@@ -45,7 +52,7 @@ declare namespace LWProcessDashboardWhatIf {
   /** Why a comparison cannot run, or null when it can. */
   compareReason(draft: Draft): string | null;
   check(inputs: Inputs, view: LWProcessApp.View, draft: Draft): Check;
-  result(report: LWProcessReplicate.Report | LWProcessReplicate.Comparison, done: number): Result;
+  result(report: LWProcessReplicate.Report | LWProcessReplicate.Comparison, done: number, random?: boolean): Result;
   /** The results as markup: honesty text, one dot-interval chart per KPI and the table (`rem` in px, `width` of the panel). */
   markup(result: Result, width: number, rem: number): string;
   table(result: Result): LWProcessDashboardModel.Table;
@@ -125,7 +132,7 @@ declare namespace LWProcessDashboardWhatIf {
    p90: at(s.p90), tip: `${label}: mean ${show(id, s.mean)}, 95% interval ${ci}, n ${s.n}`};
   return {id, label, n: s.n, mean: show(id, s.mean), ci, spread, sentence: sentence(id, label, s, runs, compare, ci), interval};
  }
- function result(r: LWProcessReplicate.Report | LWProcessReplicate.Comparison, done: number): Result {
+ function result(r: LWProcessReplicate.Report | LWProcessReplicate.Comparison, done: number, random = false): Result {
   const U = u(), compare = r.format === 'wildlands-process-comparison';
   const pairs = compare ? (r as LWProcessReplicate.Comparison).kpis : [], single = compare ? [] : (r as LWProcessReplicate.Report).kpis;
   const kpis = compare ? pairs.map(k => kpi(k.id, k.label, k.difference, done, true)) : single.map(k => kpi(k.id, k.label, k, done, false));
@@ -138,7 +145,8 @@ declare namespace LWProcessDashboardWhatIf {
    + 'slightly narrow between 31 and about 120). This is not a forecast.'
    + (compare ? ' Both designs run on the same seeds, so they share random numbers wherever they agree.' : '');
   const status = r.complete ? (compare ? 'Comparison complete.' : 'Replications complete.') : `Partial results (${done} of ${r.runs} runs).`;
-  return {kind: compare ? 'compare' : 'spread', complete: r.complete, done, runs: r.runs, minutes: r.minutes, seeds: r.seeds, kpis, honesty, status, flat};
+  return {kind: compare ? 'compare' : 'spread', complete: r.complete, done, runs: r.runs, minutes: r.minutes, seeds: r.seeds, kpis, honesty, status, flat,
+   random};
  }
  function table(r: Result): LWProcessDashboardModel.Table {
   const compare = r.kind === 'compare', range = '10th · 50th · 90th percentile';
@@ -149,7 +157,10 @@ declare namespace LWProcessDashboardWhatIf {
  }
  function markup(r: Result, width: number, rem: number): string {
   const C = root.LWProcessChart, esc = root.LWProcessHtml.esc, w = Math.max(160, Math.floor(width)), compare = r.kind === 'compare';
-  const flat = r.flat ? '<p class="db-note">This process has no random behaviour; every seed gives the same result, so there is no spread to show.</p>' : '';
+  const same = r.random ? `Every seed gave the same value for every measure by minute ${u().count(r.minutes)}: the random draws did not change `
+   + 'them in this run length, so there is no spread to show.'
+   : 'This process has no random behaviour; every seed gives the same result, so there is no spread to show.';
+  const flat = r.flat ? `<p class="db-note">${esc(same)}</p>` : '';
   const title = (k: LWProcessDashboardWhatIf.Kpi) => `${k.label}: dot is the mean, bold line the 95% interval, thin line the 10th to 90th percentile`;
   const item = (k: LWProcessDashboardWhatIf.Kpi, i: number) => '<li>'
    + `<span class="db-row-label"><strong>${esc(k.label)}</strong><span>mean ${esc(k.mean)} · 95% interval ${esc(k.ci)} · n ${k.n}</span></span>`
@@ -157,8 +168,10 @@ declare namespace LWProcessDashboardWhatIf {
    + (k.sentence ? `<span class="db-note">${esc(k.sentence)}</span>` : '') + '</li>';
   const named = compare ? 'Applied minus draft per measure' : 'Spread per measure';
   const list = r.flat ? '' : `<ul class="db-intervals" aria-label="${named}">${r.kpis.map(item).join('')}</ul>`;
-  const caption = compare ? 'Paired difference per measure: applied design minus draft; the vertical rule marks no difference.'
-   : 'Per measure: the dot is the mean, the bold line its 95% interval and the thin line the 10th to 90th percentile across seeds.';
+  const caption = r.flat ? 'Per measure across seeds; every seed gave the same value.'
+   : compare ? 'Paired difference per measure: applied design minus draft; the vertical rule marks no difference. Each row has its own scale.'
+   : 'Per measure: the dot is the mean, the bold line its 95% interval and the thin line the 10th to 90th percentile across seeds. Each row '
+   + 'has its own scale from 0, so rows are not compared by position.';
   const data = root.LWProcessDashboardHtml.table(table(r), 'whatif', {width: w, rem, expanded: new Set()});
   // A complete run is announced by the section's status line; partial results say how far they got.
   return `${r.complete ? '' : `<p class="db-status">${esc(r.status)}</p>`}<p class="db-notice" role="note">${esc(r.honesty)}</p>${flat}`
