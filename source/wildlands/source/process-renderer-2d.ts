@@ -11,6 +11,10 @@
  *    snapshot refresh changes only the attributes, text and markers that differ. The structure is rebuilt only when the definition,
  *    the drawn steps or their positions, or the layout key (label mode, lines and characters per line, the zoom-dependent text size,
  *    secondary detail) changes. Selection, the hovered or focused card's caption, keyboard focus and the camera survive both paths.
+ *  - Framing is path-independent: a camera nobody panned or zoomed since its last framing is framed again on every draw (number key
+ *    state included) for the svg size the last rendering update reported, so an untouched map always equals a fresh draw of the same
+ *    view in a host of the same size, also when the studio draws it while text around the stage is about to change (see the camera's
+ *    `settled`). A camera the reader panned or zoomed keeps its view across ticks.
  *  - `options.move` (optional) lets cards be moved: dragging a card past 4px, or Alt+Arrow on a focused card (one world unit, the
  *    keyboard alternative). The map calls `move(stepId, [x, y])` once per drop or key press, in world units snapped to 0.5, and keeps
  *    drawing the card there as a presentation-only override until the definition it draws changes (the callback's owner writes the
@@ -180,8 +184,10 @@ declare namespace LWProcess2D {
   svg.addEventListener('focusin', syncCaption); svg.addEventListener('focusout', syncCaption);
   const seen = new MutationObserver(() => { syncHint(); if (!host.hidden && lastView) applyCamera(); });
   seen.observe(host, {attributes: true, attributeFilter: ['hidden']});
-  // Screen-sized cards make the fitted bounds depend on the map size: a resize measures them again and keeps an untouched framing.
-  const resize = () => { if (!lastView || host.hidden) return; if (camera.atFit) framed = undefined; draw(lastView); };
+  // Screen-sized cards make the fitted bounds depend on the map size: a resize measures them again and frames an untouched map again.
+  // The camera frames for the size this observer last reported (LWProcessMapCamera `settled`), so a draw inside a command never
+  // frames for a passing layout; a real resize is reported before it is painted and draws the map again.
+  const resize = () => { camera.settled(); if (lastView && !host.hidden) draw(lastView); };
   const resized = typeof ResizeObserver === 'function' ? new ResizeObserver(resize) : null;
   resized?.observe(svg);
   if (document.getElementById('camera-hint')) svg.setAttribute('aria-describedby', 'camera-hint');
@@ -193,6 +199,23 @@ declare namespace LWProcess2D {
    camera.zoom = saved;
    return L;
   }
+  /**
+   * Measures the fitted bounds and frames the camera (when `placing`) for the number key's state, then shows or hides the key for the
+   * layout found. The key sits in the dock, so toggling it changes the usable area, which changes the bounds (cards keep a screen
+   * size) and the layout: the bounds are measured again in up to two more passes. A framing starts where a fresh map starts, with the
+   * key hidden, so the result never depends on the map's earlier states; a kept camera starts from the key it shows.
+   */
+  function settle(view: LWProcessApp.View, steps: LWProcess.Step[], single: boolean, placing: boolean): LWProcessMapCard.Layout {
+   if (placing) camera.key.hidden = true;
+   for (let pass = 0; ; pass++) {
+    camera.fit = Fit.bounds(steps, drawnAt, single, box => atFit(view, box));
+    if (placing) place();
+    camera.setViewBox();
+    const L = layout(view), hide = L.mode !== 'numbers';
+    if (camera.key.hidden === hide || pass === 2) return L;
+    camera.key.hidden = hide;
+   }
+  }
   function draw(view: LWProcessApp.View): void {
    lastView = view;
    const active = document.activeElement, focusedId = active && svg.contains(active) ? active.id : undefined;
@@ -203,17 +226,11 @@ declare namespace LWProcess2D {
    drawnAt = new Map(steps.map(s => [s.id, single ? [0, 0] as const : worldOf(s)]));
    const shape = steps.map(s => s.id + '@' + drawnAt.get(s.id)!.join(',')).join(';');
    if (shape !== spacingKey) { spacingKey = shape; spacing = Fit.spacing(steps, drawnAt); }
-   camera.fit = Fit.bounds(steps, drawnAt, single, box => atFit(view, box));
-   const placing = framed !== view.selected;
+   // An untouched camera is framed again on every draw, so it always shows what a fresh draw of the same view would; a camera the
+   // reader panned or zoomed keeps its view until the selection changes or the map is reset.
+   const placing = framed !== view.selected || camera.atFit;
    framed = view.selected;
-   // Showing or hiding the number key resizes the dock, which changes the usable area and so the layout: settle it in one more pass.
-   let L = layout(view);
-   for (let pass = 0; pass < 2; pass++) {
-    if (placing) place();
-    camera.setViewBox(); L = layout(view);
-    if (camera.key.hidden === (L.mode !== 'numbers')) break;
-    camera.key.hidden = L.mode !== 'numbers';
-   }
+   const L = settle(view, steps, single, placing);
    drawnKey = L.key; syncHint(L);
    const fresh = content(view, steps, L, single), next = [print, shape, L.key, single].join('|');
    if (next !== structure) {

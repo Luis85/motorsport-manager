@@ -1,5 +1,5 @@
 /// <reference path="../process-contracts.d.ts" />
-/** Read-only probes of the 2D map that the renderers suite compares with the legend: no page mutation, no clock. */
+/** Read-only probes of the 2D map that the renderers suite compares with the legend, and the fonts drawing it: no page mutation, no clock. */
 import type {Page} from 'playwright';
 /** Map cards and markers against the legend: colours, marker shapes, marker size, overlap with titles and the per-state counts. */
 export const encoding = (page: Page) => page.evaluate(() => {
@@ -42,6 +42,19 @@ export const badges = (page: Page) => page.evaluate(() => {
    numbered: /^\d+$/.test(title.textContent ?? '')};
  });
 });
+/** The platform fonts that really draw each selector's text (CDP), so a font check cannot pass on a host without the font. */
+export async function renderedFamilies(page: Page, selectors: string[]): Promise<Record<string, string[]>> {
+ const cdp = await page.context().newCDPSession(page), out: Record<string, string[]> = {};
+ try {
+  await cdp.send('DOM.enable'); await cdp.send('CSS.enable');
+  const {root} = await cdp.send('DOM.getDocument');
+  for (const selector of selectors) {
+   const {nodeId} = await cdp.send('DOM.querySelector', {nodeId: root.nodeId, selector});
+   out[selector] = [...new Set((await cdp.send('CSS.getPlatformFontsForNode', {nodeId})).fonts.map(f => f.familyName))];
+  }
+ } finally { await cdp.detach(); }
+ return out;
+}
 export const STATE = {active: 'Working', queued: 'Waiting', timer: 'Timer', backlog: 'Backlog', held: 'Blocked'} as const;
 const OTHER = ['active', 'timer', 'backlog', 'held'];
 export const waitingAt = (q: LWProcess.Snapshot, id: string) => q.tokens.filter(t => t.stepId === id && !OTHER.includes(t.status)).length;
