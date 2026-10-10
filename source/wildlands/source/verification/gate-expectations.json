@@ -526,7 +526,6 @@
     {"suite": "business-process", "name": "Slides pin the deck length, sections and ordered titles of every demo"},
     {"suite": "business-process", "name": "Slides explain a small fixture with a chance route, fork, deadline and timer in exact Markdown and JSON"},
     {"suite": "business-process", "name": "Slides are deterministic, detached from frozen inputs and carry live facts only with a snapshot"},
-    {"suite": "business-process", "name": "SIPOC model stays byte-identical after the main route moved into the shared LWProcessRoute"},
     {"suite": "business-process", "name": "CLI process slides emits JSON, prints Markdown, writes either file and adds live facts from one seeded bounded run"},
     {"suite": "business-process", "name": "CLI process slides and diff reject bad arguments with exit 2 before writing files"},
     {"suite": "business-process", "name": "Guarded process-setting edits set and remove description, seed, genre, SIPOC and tracked fields all-or-nothing"},
