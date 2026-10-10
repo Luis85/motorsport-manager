@@ -7,7 +7,7 @@
 declare namespace LWProcessLens {
  interface Surface {
   draw(view: LWProcessApp.View): void;
-  /** Resets the lens' own scroll or fit state (the Frame view button). */
+  /** Resets the lens' own scroll or fit state (the Fit to view button). */
   frame(): void;
   /** Drops the current lens surface (a different process or a replaced definition); the next draw builds a fresh one. */
   reset(): void;
