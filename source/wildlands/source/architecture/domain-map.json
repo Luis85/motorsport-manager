@@ -412,7 +412,10 @@
         "process-kernel.ts",
         "process-routing.ts",
         "process-systems.ts",
-        "process-series.ts"
+        "process-series.ts",
+        "process-engine-state.ts",
+        "process-checkpoint-check.ts",
+        "process-checkpoint.ts"
       ]
     },
     {
@@ -631,6 +634,9 @@
     "LWProcessLedgerCases",
     "LWProcessLedgerExact",
     "LWProcessSeries",
+    "LWProcessEngineState",
+    "LWProcessCheckpointCheck",
+    "LWProcessCheckpoint",
     "LWProcessKernel",
     "LWProcessRouting",
     "LWProcessDefinition",

@@ -132,6 +132,7 @@
  const files = root.LWProcessIO.create({
   host, view: () => view, definitions: () => app.definitions(), pristine, draft, status, download, replace,
   add: definition => slots.add(definition), canAdd: () => slots.canAdd(), ask: options => guard.ask(options), choose: options => guard.choose(options),
+  checkpoint: () => app.checkpoint(), restore: c => {app.restore(c); dataView.reset(); activity.reset(); dashboard.reset(); refresh();},
  });
  draft.subscribe(() => {draftChip(); files.sync();});
  const actions = root.LWProcessDraftActions.create({
