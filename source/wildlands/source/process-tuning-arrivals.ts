@@ -1,15 +1,17 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-tuning-fields.ts" />
+/// <reference path="./process-html.ts" />
 /**
  * The arrivals part of the Definition editor's tuning form: end rule (count, until, open), first arrival, planning interval,
  * the optional random gap, arrival data fields and arrival draws. `markup` renders one arrival; `special` and `act` apply the
  * edits that change structure (they mutate the detached draft object they are given and never touch the DOM or the draft store).
+ * Markup is LWProcessHtml `html` (returned as `Safe`): every draft value is escaped and numbers reach attributes only when finite.
  */
 declare namespace LWProcessTuningArrivals {
  /** What the form should do after an edit: write the draft, rebuild the markup, move focus, or show a local problem instead. */
  interface Result {write: boolean; rerender: boolean; focus?: string; local?: [string, string]}
  interface Api {
-  markup(a: LWProcess.Arrival, index: number, total: number): string;
+  markup(a: LWProcess.Arrival, index: number, total: number): LWProcessHtml.Safe;
   /** Edits that need more than "set this path to this value"; null when the control is a plain field. */
   special(def: LWProcess.Definition, el: HTMLElement): Result | null;
   /** A click on an add/remove button (`data-act`). */
@@ -19,49 +21,108 @@ declare namespace LWProcessTuningArrivals {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessTuningFields: LWProcessTuningFields.Api; LWProcessTuningArrivals?: LWProcessTuningArrivals.Api};
- const F = root.LWProcessTuningFields, esc = F.esc, MINUTES = 100000;
+ const root = inputRoot as {LWProcessTuningFields: LWProcessTuningFields.Api; LWProcessHtml: LWProcessHtml.Api;
+  LWProcessTuningArrivals?: LWProcessTuningArrivals.Api};
+ const F = root.LWProcessTuningFields, {html} = root.LWProcessHtml, MINUTES = 100000;
+ type Safe = LWProcessHtml.Safe;
  type Result = LWProcessTuningArrivals.Result;
  const NAME = /^[a-z][a-zA-Z0-9_]{0,63}$/, SAFE = /^[A-Za-z0-9_]+$/, NAME_HINT = 'Start with a lowercase letter, then letters, digits or underscores (up to 64).';
  const DISTS: [string, string][] = [['none', 'None (exact spacing)'], ['uniform', 'Uniform (min to max)'], ['triangular', 'Triangular (min, most likely, max)'], ['exponential', 'Exponential (average, optional cap)'], ['normal', 'Normal (average and spread, optional bounds)'], ['erlang', 'Erlang (phases and average)']];
  const KINDS: [string, string][] = [['chance', 'Chance (happens or not)'], ['choice', 'Weighted choice'], ['int', 'Whole number in a range']];
  const mins = (id: string, label: string, path: string, value: number | undefined, extra: {optional?: boolean; help?: string} = {}) => F.int(id, label, path, value, {min: 1, max: MINUTES, unit: 'minutes', ...extra});
- function gap(a: LWProcess.Arrival, p: string, id: string): string {
-  const g = a.gap, d = g?.dist ?? 'none';
-  const params = d === 'uniform' ? mins(id + '-min', 'Shortest gap', p + '.gap.min', g?.min) + mins(id + '-max', 'Longest gap', p + '.gap.max', g?.max)
-   : d === 'triangular' ? mins(id + '-min', 'Shortest gap', p + '.gap.min', g?.min) + mins(id + '-mode', 'Most likely gap', p + '.gap.mode', g?.mode) + mins(id + '-max', 'Longest gap', p + '.gap.max', g?.max)
-   : d === 'exponential' ? mins(id + '-mean', 'Average gap', p + '.gap.mean', g?.mean) + mins(id + '-max', 'Longest gap (optional cap)', p + '.gap.max', g?.max, {optional: true})
-   : d === 'normal' ? mins(id + '-mean', 'Average gap', p + '.gap.mean', g?.mean) + mins(id + '-sd', 'Spread of the gap (standard deviation, at least 1)', p + '.gap.sd', g?.sd) + mins(id + '-min', 'Shortest gap (optional, default 1)', p + '.gap.min', g?.min, {optional: true}) + mins(id + '-max', 'Longest gap (optional, default average + 6 × spread)', p + '.gap.max', g?.max, {optional: true})
-   : d === 'erlang' ? F.int(id + '-k', 'Phases k', p + '.gap.k', g?.k, {min: 1, max: 32, help: 'Whole number from 1 to 32. More phases make the gaps more regular; one phase is exponential.'}) + mins(id + '-mean', 'Average gap', p + '.gap.mean', g?.mean) : '';
-  return F.choice(id + '-dist', 'Random gap between arrivals', p + '.gap.dist', d, DISTS, 'With a random gap, the planning interval above is the average spacing and each gap is drawn from this distribution.')
-   + (params ? `<div class="de-grid de-gap-params" role="group" aria-label="Random gap values (minutes)">${params}</div>` : '') + `<div class="de-errs" id="${id}-group-err" data-errs="${esc(p)}.gap"></div>`;
+ const ERLANG_HELP = 'Whole number from 1 to 32. More phases make the gaps more regular; one phase is exponential.';
+ const GAP_HELP = 'With a random gap, the planning interval above is the average spacing and each gap is drawn from this distribution.';
+ function gap(a: LWProcess.Arrival, p: string, id: string): Safe {
+  const g = a.gap, d = g?.dist ?? 'none', optional = {optional: true};
+  const low = () => mins(id + '-min', 'Shortest gap', p + '.gap.min', g?.min), high = () => mins(id + '-max', 'Longest gap', p + '.gap.max', g?.max);
+  const mean = () => mins(id + '-mean', 'Average gap', p + '.gap.mean', g?.mean);
+  const params = d === 'uniform' ? [low(), high()]
+   : d === 'triangular' ? [low(), mins(id + '-mode', 'Most likely gap', p + '.gap.mode', g?.mode), high()]
+   : d === 'exponential' ? [mean(), mins(id + '-max', 'Longest gap (optional cap)', p + '.gap.max', g?.max, optional)]
+   : d === 'normal' ? [mean(),
+    mins(id + '-sd', 'Spread of the gap (standard deviation, at least 1)', p + '.gap.sd', g?.sd),
+    mins(id + '-min', 'Shortest gap (optional, default 1)', p + '.gap.min', g?.min, optional),
+    mins(id + '-max', 'Longest gap (optional, default average + 6 × spread)', p + '.gap.max', g?.max, optional)]
+   : d === 'erlang' ? [F.int(id + '-k', 'Phases k', p + '.gap.k', g?.k, {min: 1, max: 32, help: ERLANG_HELP}), mean()] : [];
+  const group = params.length ? html`<div class="de-grid de-gap-params" role="group" aria-label="Random gap values (minutes)">${params}</div>` : '';
+  const choice = F.choice(id + '-dist', 'Random gap between arrivals', p + '.gap.dist', d, DISTS, GAP_HELP);
+  return html`${choice}${group}<div class="de-errs" id="${id}-group-err" data-errs="${p}.gap"></div>`;
  }
- function dataRows(a: LWProcess.Arrival, p: string, id: string): string {
+ function dataRows(a: LWProcess.Arrival, p: string, id: string): Safe {
   const rows = Object.entries(a.data ?? {}).map(([name, value], n) => {
    const key = `${p}.data.${name}`, rid = `${id}-data-${n}`;
-   if (!SAFE.test(name)) return `<div class="de-row"><p class="de-help">Field "${esc(name)}" has characters the form cannot edit. Change it in Raw JSON.</p></div>`;
-   return `<div class="de-row">${F.text(rid + '-name', 'Field name', key, name, {max: 64, hint: NAME_HINT}).replace('data-kind="text"', 'data-kind="data-name" data-from="' + esc(name) + '" data-i="' + n + '"')}${F.scalar(rid + '-value', 'Value', key, value, false)}<button type="button" class="de-mini" data-act="data-remove" data-name="${esc(name)}" aria-label="Remove field ${esc(name)}">Remove</button></div>`;
-  }).join('');
-  return `<h5 id="${id}-data-h">Case data given at arrival</h5><p class="de-help">Each case starts with these fields; steps can read them in needs and conditions.</p>${rows}<button type="button" class="de-add" data-act="data-add">Add data field</button>`;
+   if (!SAFE.test(name)) {
+    return html`<div class="de-row"><p class="de-help">Field "${name}" has characters the form cannot edit. Change it in Raw JSON.</p></div>`;
+   }
+   const field = F.text(rid + '-name', 'Field name', key, name, {max: 64, hint: NAME_HINT, kind: 'data-name', attrs: html` data-from="${name}" data-i="${n}"`});
+   const remove = html`<button type="button" class="de-mini" data-act="data-remove" data-name="${name}" aria-label="Remove field ${name}">Remove</button>`;
+   return html`<div class="de-row">${field}${F.scalar(rid + '-value', 'Value', key, value, false)}${remove}</div>`;
+  });
+  const intro = html`<p class="de-help">Each case starts with these fields; steps can read them in needs and conditions.</p>`;
+  const add = html`<button type="button" class="de-add" data-act="data-add">Add data field</button>`;
+  return html`<h5 id="${id}-data-h">Case data given at arrival</h5>${intro}${rows}${add}`;
  }
- function draws(a: LWProcess.Arrival, p: string, id: string): string {
+ /** The weighted values of a choice draw, each with its weight and a Remove button, then Add choice. */
+ function choiceValues(d: LWProcess.Draw, k: number, dp: string, did: string): Safe {
+  const rows = (d.values ?? []).map((v, j) => {
+   const help = 'Higher weight, more often.';
+   const weight = F.int(`${did}-w${j}`, `Weight of choice ${j + 1}`, `${dp}.values.${j}.weight`, v.weight, {min: 1, max: 1000, help});
+   const label = `Remove choice ${j + 1}`;
+   const remove = html`<button type="button" class="de-mini" data-act="value-remove" data-k="${k}" data-j="${j}" aria-label="${label}">Remove</button>`;
+   return html`<div class="de-row">${F.scalar(`${did}-v${j}`, `Choice ${j + 1}`, `${dp}.values.${j}.value`, v.value, false)}${weight}${remove}</div>`;
+  });
+  const add = html`<button type="button" class="de-add" data-act="value-add" data-k="${k}">Add choice</button>`;
+  return html`<div class="de-values">${rows}${add}</div><div class="de-errs" id="${did}-values-err" data-errs="${dp}.values"></div>`;
+ }
+ /** The value controls of one random arrival field, by its kind. */
+ function drawBody(d: LWProcess.Draw, k: number, dp: string, did: string): Safe {
+  if (d.kind === 'chance') {
+   const percent = F.int(did + '-percent', 'Chance of happening', dp + '.percent', d.percent, {min: 0, max: 100, unit: '%'});
+   const yes = F.scalar(did + '-true', 'Value when it happens', dp + '.whenTrue', d.whenTrue, true);
+   return html`<div class="de-grid">${percent}${yes}${F.scalar(did + '-false', 'Value when it does not', dp + '.whenFalse', d.whenFalse, true)}</div>`;
+  }
+  const wide = {min: -1000000000, max: 1000000000};
+  if (d.kind === 'int') {
+   const low = F.int(did + '-min', 'Lowest value', dp + '.min', d.min, wide), high = F.int(did + '-max', 'Highest value', dp + '.max', d.max, wide);
+   return html`<div class="de-grid">${low}${high}</div>`;
+  }
+  return choiceValues(d, k, dp, did);
+ }
+ function draws(a: LWProcess.Arrival, p: string, id: string): Safe {
   const rows = (a.draws ?? []).map((d, k) => {
    const dp = `${p}.draws.${k}`, did = `${id}-draw-${k}`;
-   const body = d.kind === 'chance' ? `<div class="de-grid">${F.int(did + '-percent', 'Chance of happening', dp + '.percent', d.percent, {min: 0, max: 100, unit: '%'})}${F.scalar(did + '-true', 'Value when it happens', dp + '.whenTrue', d.whenTrue, true)}${F.scalar(did + '-false', 'Value when it does not', dp + '.whenFalse', d.whenFalse, true)}</div>`
-    : d.kind === 'int' ? `<div class="de-grid">${F.int(did + '-min', 'Lowest value', dp + '.min', d.min, {min: -1000000000, max: 1000000000})}${F.int(did + '-max', 'Highest value', dp + '.max', d.max, {min: -1000000000, max: 1000000000})}</div>`
-    : `<div class="de-values">${(d.values ?? []).map((v, j) => `<div class="de-row">${F.scalar(`${did}-v${j}`, `Choice ${j + 1}`, `${dp}.values.${j}.value`, v.value, false)}${F.int(`${did}-w${j}`, `Weight of choice ${j + 1}`, `${dp}.values.${j}.weight`, v.weight, {min: 1, max: 1000, help: 'Higher weight, more often.'})}<button type="button" class="de-mini" data-act="value-remove" data-k="${k}" data-j="${j}" aria-label="Remove choice ${j + 1}">Remove</button></div>`).join('')}<button type="button" class="de-add" data-act="value-add" data-k="${k}">Add choice</button></div><div class="de-errs" id="${did}-values-err" data-errs="${dp}.values"></div>`;
-   return `<fieldset class="de-card de-sub"><legend>Random field ${k + 1}</legend><div class="de-grid">${F.text(did + '-field', 'Field name', dp + '.field', d.field, {max: 64, hint: NAME_HINT})}${F.choice(did + '-kind', 'Kind of draw', dp + '.kind', d.kind, KINDS)}</div>${body}<div class="de-errs" id="${did}-err2" data-errs="${dp}"></div><button type="button" class="de-mini" data-act="draw-remove" data-k="${k}">Remove random field ${k + 1}</button></fieldset>`;
-  }).join('');
-  return `<h5 id="${id}-draws-h">Random case fields</h5><p class="de-help">Each arriving case gets these fields drawn from the seed. The same seed gives the same values.</p>${rows}<button type="button" class="de-add" data-act="draw-add">Add random field</button>`;
+   const field = F.text(did + '-field', 'Field name', dp + '.field', d.field, {max: 64, hint: NAME_HINT});
+   const head = html`<div class="de-grid">${field}${F.choice(did + '-kind', 'Kind of draw', dp + '.kind', d.kind, KINDS)}</div>`;
+   const remove = html`<button type="button" class="de-mini" data-act="draw-remove" data-k="${k}">Remove random field ${k + 1}</button>`;
+   const errors = html`<div class="de-errs" id="${did}-err2" data-errs="${dp}"></div>`;
+   return html`<fieldset class="de-card de-sub"><legend>Random field ${k + 1}</legend>${head}${drawBody(d, k, dp, did)}${errors}${remove}</fieldset>`;
+  });
+  const intro = html`<p class="de-help">Each arriving case gets these fields drawn from the seed. The same seed gives the same values.</p>`;
+  return html`<h5 id="${id}-draws-h">Random case fields</h5>${intro}${rows}<button type="button" class="de-add" data-act="draw-add">Add random field</button>`;
  }
- function markup(a: LWProcess.Arrival, i: number, total: number): string {
+ const UNTIL_HELP = 'Cases stop arriving after this minute. It must be later than the first arrival.';
+ const INTERVAL_HELP = 'Exact time between arrivals, or the average when a random gap is chosen. 0 means all at once.';
+ function markup(a: LWProcess.Arrival, i: number, total: number): Safe {
   const p = `arrivals.${i}`, id = `tune-arr-${i}`, rule = a.open ? 'open' : a.until !== undefined ? 'until' : 'count';
   const ends: [string, string][] = [['count', 'Fixed number of cases'], ['until', 'Until a minute'], ['open', 'Keeps arriving (open stream)']];
-  const radios = `<fieldset class="de-radios" id="${id}-end-set" aria-describedby="${id}-end-err"><legend>How this stream ends</legend>${ends.map(([v, name]) => `<label class="de-radio"><input type="radio" name="${id}-end" id="${id}-end-${v}" data-path="${p}.end" data-kind="end" value="${v}"${rule === v ? ' checked' : ''}> ${esc(name)}</label>`).join('')}<div class="de-errs" id="${id}-end-err" data-errs="${p}.end"></div></fieldset>`;
+  const radio = ([v, name]: [string, string]) => {
+   const checked = rule === v ? html` checked` : '';
+   const input = html`<input type="radio" name="${id}-end" id="${id}-end-${v}" data-path="${p}.end" data-kind="end" value="${v}"${checked}>`;
+   return html`<label class="de-radio">${input} ${name}</label>`;
+  };
+  const endErrors = html`<div class="de-errs" id="${id}-end-err" data-errs="${p}.end"></div>`;
+  const legend = html`<legend>How this stream ends</legend>`;
+  const radios = html`<fieldset class="de-radios" id="${id}-end-set" aria-describedby="${id}-end-err">${legend}${ends.map(radio)}${endErrors}</fieldset>`;
   const value = rule === 'count' ? F.int(id + '-count', 'Number of cases', p + '.count', a.count, {min: 1, max: 200, unit: 'cases'})
-   : rule === 'until' ? F.int(id + '-until', 'Last arrival minute', p + '.until', a.until, {min: 1, max: MINUTES, unit: 'minutes', help: 'Cases stop arriving after this minute. It must be later than the first arrival.'})
-   : '<p class="de-help">Cases keep arriving for as long as the run lasts. The run length (Run until) ends it.</p>';
-  return `<fieldset class="de-card" id="${id}" data-arrival="${i}"><legend>Arrival ${i + 1}</legend><div class="de-errs" id="${id}-err" data-errs="${p}"></div>${radios}<div class="de-grid">${value}${F.int(id + '-at', 'First arrival', p + '.at', a.at, {min: 0, max: MINUTES, unit: 'minute'})}${F.int(id + '-interval', 'Planning interval', p + '.interval', a.interval, {min: 0, max: MINUTES, unit: 'minutes', help: 'Exact time between arrivals, or the average when a random gap is chosen. 0 means all at once.'})}</div>${gap(a, p, id + '-gap')}${dataRows(a, p, id)}${draws(a, p, id)}<button type="button" class="de-mini de-remove" data-act="arr-remove" data-i="${i}"${total < 2 ? ' disabled title="A process needs at least one arrival."' : ''}>Remove arrival ${i + 1}</button></fieldset>`;
+   : rule === 'until' ? F.int(id + '-until', 'Last arrival minute', p + '.until', a.until, {min: 1, max: MINUTES, unit: 'minutes', help: UNTIL_HELP})
+   : html`<p class="de-help">Cases keep arriving for as long as the run lasts. The run length (Run until) ends it.</p>`;
+  const interval = F.int(id + '-interval', 'Planning interval', p + '.interval', a.interval, {min: 0, max: MINUTES, unit: 'minutes', help: INTERVAL_HELP});
+  const first = F.int(id + '-at', 'First arrival', p + '.at', a.at, {min: 0, max: MINUTES, unit: 'minute'});
+  const only = total < 2 ? html` disabled title="A process needs at least one arrival."` : '';
+  const remove = html`<button type="button" class="de-mini de-remove" data-act="arr-remove" data-i="${i}"${only}>Remove arrival ${i + 1}</button>`;
+  const body = html`${radios}<div class="de-grid">${value}${first}${interval}</div>${gap(a, p, id + '-gap')}${dataRows(a, p, id)}${draws(a, p, id)}${remove}`;
+  const errors = html`<div class="de-errs" id="${id}-err" data-errs="${p}"></div>`;
+  return html`<fieldset class="de-card" id="${id}" data-arrival="${i}"><legend>Arrival ${i + 1}</legend>${errors}${body}</fieldset>`;
  }
  const unique = (taken: Iterable<string>, base: string) => { const set = new Set(taken); let n = 1; while (set.has(base + n)) n++; return base + n; };
  const DEFAULTS: Record<string, () => LWProcess.Draw> = {

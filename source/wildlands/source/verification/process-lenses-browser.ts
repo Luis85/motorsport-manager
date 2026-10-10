@@ -308,7 +308,9 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   assert.equal(await page.locator('label[for="process-case"]').innerText(), 'Case'); assert.match(await page.locator('#scene-subtitle').innerText(), /\d cases? admitted$/);
   for (let i = 0; i < 6; i++) await page.locator('#advance').click();
   const ran = (await query(page)).snapshot, after = await kpis(); assert(ran.metrics.completed > 0);
-  assert.equal(after['Mean cycle'], Number(ran.metrics.meanCycleMinutes.toFixed(1)).toLocaleString() + ' min');
+  // Durations in the strip use the shared time wording (DOM-7): business minutes with an hours gloss from 120 minutes.
+  const cycle = await page.evaluate(n => (globalThis as any).LWProcessTime.span(n) as string, ran.metrics.meanCycleMinutes);
+  assert.equal(after['Mean cycle'], cycle); assert.match(cycle, /^[\d,.]+ min( \(≈ [\d,.]+ h\))?$/);
   assert.equal(after['Capacity cost'], Number(ran.metrics.capacityCost.toFixed(1)).toLocaleString());
   assert.deepEqual(await labelsOf(), PROCESS_KPIS); assert.doesNotMatch(await page.locator('#inspector').innerText(), /Process type|Tracked measures|Conversion/);
   await page.locator('#open-activity').click(); await page.locator('dialog.act-dialog[open]').waitFor(); assert.equal(await page.locator('#act-case-label').innerText(), 'Case'); assert.equal(await page.locator('#act-case option').first().innerText(), 'All cases'); await page.keyboard.press('Escape'); await page.locator('dialog.act-dialog[open]').waitFor({state: 'hidden'});
