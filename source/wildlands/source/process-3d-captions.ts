@@ -8,7 +8,8 @@
  *    sized to the measured text (rounded up to a multiple of 32 x 16 pixels, at most 640 x 128), and the sprite's own quad covers
  *    just that canvas in the middle of the box. A canvas grows or shrinks when its text does, and `free` releases it with the quad;
  *    `held()` reports the canvases and pixels still held.
- *  - Held work (`StepMetric.held`, part of `queued`) reads as blocked, not waiting: "2 working · 3 waiting · 1 blocked".
+ *  - Held work (`StepMetric.held`, part of `queued`) reads as blocked, not waiting: "2 working · 3 waiting · 1 blocked". The counts
+ *    are LWProcessWorkState.step, the studio's one work-state derivation; the pill and its second line use palette roles.
  *  - Readability: room names keep about 11 px in the overview, wrapping to the room spacing. Front captions grow until their lines
  *    reach 12 px, up to the width of a room (a selected room may widen its caption to most of the stage); an overview caption that
  *    would still be smaller is not drawn, like the 2D map's secondary text.
@@ -39,7 +40,10 @@ declare namespace LWProcess3DCaptions {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcess3DCaptions?: LWProcess3DCaptions.Api};
+ const root = inputRoot as {
+  LWProcess3DCaptions?: LWProcess3DCaptions.Api; LWProcessWorkState: LWProcessWorkState.Api; LWProcessPalette: LWProcessPalette.Api;
+ };
+ const palette = root.LWProcessPalette;
  /** The logical box of every caption, in canvas pixels; the sprite scale maps it to world units. */
  const BOX = {w: 640, h: 128};
  const held: LWProcess3DCaptions.Held = {canvases: 0, pixels: 0};
@@ -70,9 +74,9 @@ declare namespace LWProcess3DCaptions {
   ctx.arcTo(x, y + height, x, y, r);
   ctx.arcTo(x, y, x + width, y, r);
   ctx.closePath();
-  ctx.fillStyle = 'rgba(14,18,24,.9)';
+  ctx.fillStyle = palette.value('caption-pill');
   ctx.fill();
-  ctx.strokeStyle = 'rgba(177,189,205,.5)';
+  ctx.strokeStyle = palette.value('caption-edge');
   ctx.lineWidth = 2;
   ctx.stroke();
  }
@@ -114,7 +118,7 @@ declare namespace LWProcess3DCaptions {
    style(ctx);
    pill(ctx, (w - width) / 2, (h - height) / 2, width, height);
    rows.forEach((l, k) => {
-    ctx.fillStyle = k ? '#9fb0c4' : color;
+    ctx.fillStyle = k ? palette.value('caption-detail') : color;
     ctx.fillText(l, w / 2, h / 2 + (k - (rows.length - 1) / 2) * lineHeight, maxWidth);
    });
    const x = w / BOX.w / 2, y = h / BOX.h / 2;
@@ -137,17 +141,18 @@ declare namespace LWProcess3DCaptions {
  }
  function status(step: LWProcess.Step, metric: LWProcess.StepMetric, stored: number): string {
   const join = (...parts: string[]) => parts.filter(Boolean).join(' · ');
-  const waiting = metric.queued - metric.held, blocked = metric.held ? `${metric.held} blocked` : '';
+  const {working, waiting, blocked: held, timers} = root.LWProcessWorkState.step(metric);
+  const blocked = held ? `${held} blocked` : '';
   if (step.kind === 'end' && step.outcome) return (step.outcome === 'goal' ? 'Goal' : 'Lost') + ` · ${metric.reached} reached`;
-  if (metric.timers.waiting) {
-   const timer = `${metric.timers.waiting} on timer · next due minute ${metric.timers.nextDue}`;
+  if (timers) {
+   const timer = `${timers} on timer · next due minute ${metric.timers.nextDue}`;
    return join(timer, metric.completed ? `${metric.completed} completed` : '', blocked);
   }
-  if (step.backlog) return join(`Backlog ${stored}/${step.backlog.capacity}`, metric.active ? `${metric.active} working` : '', blocked);
+  if (step.backlog) return join(`Backlog ${stored}/${step.backlog.capacity}`, working ? `${working} working` : '', blocked);
   const touch = step.kind === 'touchpoint';
-  if (metric.active && touch) return join(`${metric.active} in this touchpoint`, waiting ? `${waiting} waiting` : '', blocked);
-  if (metric.active) return join(`${metric.active} working`, `${waiting} waiting`, blocked);
-  if (metric.queued) return join(waiting ? `${waiting} ${touch ? 'waiting for a team' : 'waiting'}` : '', blocked);
+  if (working && touch) return join(`${working} in this touchpoint`, waiting ? `${waiting} waiting` : '', blocked);
+  if (working) return join(`${working} working`, `${waiting} waiting`, blocked);
+  if (waiting || held) return join(waiting ? `${waiting} ${touch ? 'waiting for a team' : 'waiting'}` : '', blocked);
   return metric.completed ? `${metric.completed} completed` : 'Ready';
  }
  function extra(step: LWProcess.Step, metric: LWProcess.StepMetric, tokens: readonly LWProcess.Token[]): string {

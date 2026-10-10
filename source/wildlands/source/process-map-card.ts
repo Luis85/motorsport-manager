@@ -9,6 +9,8 @@
  *    never sit on the title and are at least `px.mark` on screen.
  *  - Held work (finished here, waiting for room in the next backlog) counts as **blocked**, never as waiting: the waiting count is
  *    `queued - held` in the counts row, the caption and the accessible name ("3 waiting, 2 blocked"). The snapshot is unchanged.
+ *    Counts, the border state, each marker's state and the progress bar's share all come from LWProcessWorkState, the studio's
+ *    one work-state derivation; other colours are palette roles (LWProcessPalette).
  *  - An end step's outcome badge (goal or lost) keeps a glyph of at least the cue size. Zoomed in it sits above the card's top-right
  *    corner with its count; zoomed out it sits inside the card, at the right end of the work row ('names') or right of the list
  *    number ('numbers', whose card is widened for it), so it never covers a title, a number or a neighbouring card.
@@ -40,9 +42,12 @@ declare namespace LWProcessMapCard {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessMapCard?: LWProcessMapCard.Api; LWProcessRooms: LWProcessRooms.Api; LWProcessMapMarks: LWProcessMapMarks.Api};
- const M = root.LWProcessMapMarks, {el, small, glyph, pill, mark, TONE} = M;
- type Counts = Record<LWProcessMapMarks.Status, number>;
+ const root = inputRoot as {
+  LWProcessMapCard?: LWProcessMapCard.Api; LWProcessRooms: LWProcessRooms.Api; LWProcessMapMarks: LWProcessMapMarks.Api;
+  LWProcessWorkState: LWProcessWorkState.Api; LWProcessPalette: LWProcessPalette.Api;
+ };
+ const M = root.LWProcessMapMarks, {el, small, glyph, pill, mark, TONE} = M, W = root.LWProcessWorkState;
+ type Counts = LWProcessWorkState.Counts;
  const AUTOMATED = new Set(['machine', 'system']), WORK = new Set(['task', 'touchpoint', 'machine', 'system']);
  /** Order of the per-state counts under a zoomed-out title: what needs attention first. */
  const URGENCY: LWProcessMapMarks.Status[] = ['held', 'queued', 'active', 'timer', 'backlog'];
@@ -65,20 +70,12 @@ declare namespace LWProcessMapCard {
   const lines = M.wrap(step.name, L.per, L.lines), text = (Math.max(...lines.map(l => l.length)) * px.char + px.pad * 2) / L.ppu;
   return {lines, w: Math.min(L.width, Math.max(Math.min(8, L.width), text)), h: (L.lines * px.line + px.chrome) / L.ppu};
  }
- /** Work counts per state; `held` items finished here and wait because the next step's backlog is full. */
- function counts(work: LWProcess.Token[]): Counts {
-  const n = {active: 0, queued: 0, timer: 0, backlog: 0, held: 0};
-  for (const t of work) n[M.statusOf(t)]++;
-  return n;
- }
- /** The border state: Blocked first, then Working, Waiting, Timer and Backlog; idle when nothing is here. */
- const borderOf = (n: Counts) => n.held ? 'held' : n.active ? 'active' : n.queued ? 'queued' : n.timer ? 'timer' : n.backlog ? 'backlog' : 'idle';
  /** Waiting work at a step: everything queued there except held (blocked) work. */
- const waitingOf = (metric: LWProcess.StepMetric) => Math.max(0, metric.queued - metric.held);
+ const waitingOf = (metric: LWProcess.StepMetric) => W.step(metric).waiting;
  /** The accessible name, and the visible caption (full name, kind and counts) the map shows while the card is hovered or focused. */
  function speech(card: LWProcessMapCard.Card, n: Counts): {label: string; caption: string} {
-  const {step, metric} = card, tp = step.kind === 'touchpoint', timers = metric.timers, held = metric.held;
-  const waiting = waitingOf(metric);
+  const {step, metric} = card, tp = step.kind === 'touchpoint', timers = metric.timers;
+  const {waiting, blocked: held} = W.step(metric);
   const channel = step.channel ? root.LWProcessRooms.channels[step.channel]?.label : undefined;
   const tag = AUTOMATED.has(step.kind) ? ` (${step.kind}${step.technology ? ', ' + step.technology : ''})`
    : tp ? ` (touchpoint${channel ? ', ' + channel : ''})` : step.kind === 'end' && step.outcome ? ` (end, ${step.outcome})` : '';
@@ -100,11 +97,11 @@ declare namespace LWProcessMapCard {
  }
  function draw(card: LWProcessMapCard.Card, L: LWProcessMapCard.Layout): SVGGElement {
   const {step, metric, work, x, y} = card, {lines, w, h} = card.size, px = L.px, top = y - h / 2, bottom = y + h / 2, left = x - w / 2;
-  const th = root.LWProcessRooms.theme(step), n = counts(work), working = metric.active > 0, {label, caption} = speech(card, n);
+  const th = root.LWProcessRooms.theme(step), n = W.counts(work), working = metric.active > 0, {label, caption} = speech(card, n);
   // Non-text cues keep at least the cue size on screen.
   const cue = (world: number) => Math.max(1, px.cue / (world * L.ppu));
   const group = el('g', {
-   id: 'process-map-' + step.id, role: 'button', tabindex: card.tab ? 0 : -1, 'data-status': borderOf(n), 'aria-label': label,
+   id: 'process-map-' + step.id, role: 'button', tabindex: card.tab ? 0 : -1, 'data-status': W.border(n), 'aria-label': label,
    'data-caption': caption,
   });
   if (card.current) group.setAttribute('aria-current', 'true');
@@ -114,12 +111,10 @@ declare namespace LWProcessMapCard {
    group.append(el('rect', {class: 'pm-current', x: left - .4, y: top - .4, width: w + .8, height: h + .8, rx: .5, 'aria-hidden': 'true'}));
   }
   title(group, card, L);
-  const active = work.filter(t => t.status === 'active');
-  const done = active.reduce((s, t) => s + 1 - t.remaining / (step.duration || 1), 0) / metric.active;
-  const progress = working ? Math.max(0, Math.min(1, done)) : 0;
+  const progress = W.progress(step, work);
   group.append(el('rect', {class: 'pm-track', x: left + .3, y: bottom - .35, width: w - .6, height: .08}));
   group.append(el('rect', {x: left + .3, y: bottom - .35, width: (w - .6) * progress, height: .08, style: `fill:${th.accent}`}));
-  const tone = working ? th.accent : 'var(--axis)';
+  const tone = working ? th.accent : root.LWProcessPalette.css('axis');
   const extra = L.single ? .75 * (lines.length - 1) : L.mode === 'full' ? .8 * (lines.length - 1) : 0;
   if (L.mode === 'full' || L.single) group.append(glyph(th.id, left + .9, bottom - 1, L.single ? 1.3 : .85, tone, progress));
   texts(group, card, L, th, extra);
@@ -225,18 +220,16 @@ declare namespace LWProcessMapCard {
  /** Step scene extras: the counts line, the next deadline and the overall progress of the work here. */
  function scene(group: SVGGElement, card: LWProcessMapCard.Card): void {
   const {step, metric, work, x, y} = card, tp = step.kind === 'touchpoint', mid = {x, 'text-anchor': 'middle'};
-  const pending = work.filter(t => t.deadlineAt !== undefined).map(t => t.deadlineAt!), held = metric.held;
-  const timers = metric.timers.waiting ? ` · ${metric.timers.waiting} on timer, next due ${metric.timers.nextDue}` : '';
-  const text = `${metric.active} ${tp ? 'here' : 'working'} · ${waitingOf(metric)} waiting` + (held ? ` · ${held} blocked` : '') + timers;
+  const pending = work.filter(t => t.deadlineAt !== undefined).map(t => t.deadlineAt!), n = W.step(metric);
+  const timers = n.timers ? ` · ${n.timers} on timer, next due ${metric.timers.nextDue}` : '';
+  const text = `${n.working} ${tp ? 'here' : 'working'} · ${n.waiting} waiting` + (n.blocked ? ` · ${n.blocked} blocked` : '') + timers;
   group.append(el('text', {class: 'pm-counts', ...mid, y: y - .65, 'font-size': .48}, text));
   if (pending.length) {
    const style = `fill:${TONE[step.deadline?.mode ?? 'interrupt']}`;
    group.append(el('text', {class: 'pm-deadline-due', ...mid, y: y + 1.6, 'font-size': .44, style}, `deadline at minute ${Math.min(...pending)}`));
   }
-  const active = work.filter(t => t.status === 'active'), duration = step.duration;
-  if (!active.length) return;
-  const share = duration ? active.reduce((s, t) => s + 1 - t.remaining / duration, 0) / active.length : 0;
-  const progress = Math.max(0, Math.min(1, share));
+  if (!work.some(t => t.status === 'active')) return;
+  const progress = W.progress(step, work);
   group.append(el('rect', {class: 'pm-track', x: x - 4, y: y - .35, width: 8, height: .07}));
   group.append(el('rect', {class: 'pm-progress', x: x - 4, y: y - .35, width: 8 * progress, height: .07}));
  }
@@ -249,7 +242,7 @@ declare namespace LWProcessMapCard {
   for (const [i, t] of sorted.slice(0, cap).entries()) {
    const attrs = {class: 'pm-token' + (t.escalated ? ' pm-token-escalated' : ''), 'data-token': t.id, ...t.item !== undefined ? {'data-item': t.item} : {}};
    const cx = start + (i % perRow) * (L.single ? .8 : gap), cy = top + Math.floor(i / perRow) * (L.single ? .6 : gap);
-   group.append(mark(M.statusOf(t), cx, cy, t.escalated ? size * 1.3 : size, t.escalated ? {...attrs, 'data-escalated': 'true'} : attrs));
+   group.append(mark(W.statusOf(t), cx, cy, t.escalated ? size * 1.3 : size, t.escalated ? {...attrs, 'data-escalated': 'true'} : attrs));
   }
   if (work.length <= cap) return;
   const more = {x: L.single ? x + 3.1 : x + w / 2 - .5, y: L.single ? y + 1.4 : top + size / 2, 'font-size': .5, 'text-anchor': L.single ? 'start' : 'end'};
@@ -263,7 +256,7 @@ declare namespace LWProcessMapCard {
   L: LWProcessMapCard.Layout): void {
   const px = L.px, u = 1 / L.ppu, {x, y} = card, {w, h} = card.size;
   const cy = y - h / 2 + (px.pad + L.lines * px.line + px.pad / 2 + px.mark / 2) * u;
-  const escalated = new Set(card.work.filter(t => t.escalated).map(M.statusOf));
+  const escalated = new Set(card.work.filter(t => t.escalated).map(W.statusOf));
   const end = x + w / 2 - (px.pad / 2 + (outcomeOf(card.step) ? badgePx(px) + px.pad : 0)) * u;
   let at = x - w / 2 + px.pad * u;
   group.append(glyph(room, at + px.mark / 2 * u, cy, (px.mark + 2) * u, tone, progress));

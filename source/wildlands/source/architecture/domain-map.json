@@ -430,6 +430,7 @@
       "layer": "presentation",
       "files": [
         "process-html.ts",
+        "process-palette.ts",
         "process-rooms.ts",
         "process-rooms-work.ts",
         "process-rooms-automation.ts",
@@ -455,6 +456,7 @@
         "process-work-state.ts",
         "process-sipoc-model.ts",
         "process-renderer-sipoc.ts",
+        "process-journey-model.ts",
         "process-renderer-journey.ts",
         "process-lens.ts",
         "process-tuning.ts",

@@ -89,7 +89,8 @@ declare namespace LWThree {
   Raycaster: new () => Raycaster;
   Vector2: new (x?: number, y?: number) => Vector2; Vector3: new (x?: number, y?: number, z?: number) => Vector3;
   Euler: new () => Euler; Quaternion: new () => Quaternion; Matrix4: new () => Matrix4; Matrix3: new () => Matrix3;
-  Color: new (color: ColorInput) => Color;
+  /** Without an argument the colour is white. */
+  Color: new (color?: ColorInput) => Color;
   BufferGeometry: new () => BufferGeometry; BufferAttribute: new (array: TypedArray, itemSize: number) => BufferAttribute;
   BoxGeometry: new (width: number, height: number, depth: number) => BufferGeometry;
   PlaneGeometry: new (width: number, height: number) => BufferGeometry;
