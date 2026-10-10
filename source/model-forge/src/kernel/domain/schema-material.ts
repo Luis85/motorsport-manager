@@ -27,6 +27,8 @@ export const MaterialSchema = z
     doubleSided: z.boolean().default(false),
     flatShading: z.boolean().default(false),
     shading: z.enum(['standard', 'unlit']).optional(),
+    /** Multiply the base color by the geometry's vertex colors (heightfield bands). */
+    vertexColors: z.boolean().optional(),
   })
   .strict();
 export type MaterialSpec = z.infer<typeof MaterialSchema>;

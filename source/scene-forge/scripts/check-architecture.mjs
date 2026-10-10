@@ -109,6 +109,38 @@ function walk(file, stack = []) {
   visited.add(file);
 }
 for (const file of files) walk(file);
+// The shared kernel generates procedural content from seeds; like ../model-forge's own check,
+// refuse ambient randomness and wall-clock reads anywhere in it.
+const kernelRoot = '../model-forge/src/kernel';
+for (const file of (await readdir(kernelRoot, { recursive: true })).filter((f) =>
+  f.endsWith('.ts'),
+)) {
+  const name = `${kernelRoot}/${file.split(path.sep).join('/')}`;
+  const tree = ts.createSourceFile(
+    name,
+    await readFile(name, 'utf8'),
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  (function scan(node) {
+    const parent = node.parent;
+    if (
+      ts.isPropertyAccessExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      ((node.expression.text === 'Math' && node.name.text === 'random') ||
+        (node.expression.text === 'crypto' && node.name.text === 'getRandomValues'))
+    )
+      errors.push(`${name}: ${node.getText()} is nondeterministic; use the kernel's createRandom`);
+    if (
+      ts.isIdentifier(node) &&
+      node.text === 'Date' &&
+      !(parent && ts.isPropertyAccessExpression(parent) && parent.name === node) &&
+      !(parent && ts.isPropertyAssignment(parent) && parent.name === node)
+    )
+      errors.push(`${name}: Date reads the wall clock; the kernel takes times as input`);
+    ts.forEachChild(node, scan);
+  })(tree);
+}
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));
 const version = (await readFile('src/version.ts', 'utf8')).match(/VERSION = '([^']+)'/)?.[1];
 if (pkg.version !== version) errors.push('package.json and src/version.ts disagree');
@@ -143,5 +175,5 @@ if (errors.length) {
   process.exitCode = 1;
 } else
   console.log(
-    `Architecture passed: ${files.length} modules, kernel only through its bridges, inward dependencies, no runtime cycles or explicit any, kernel packages locked like ../model-forge.`,
+    `Architecture passed: ${files.length} modules, kernel only through its bridges, inward dependencies, no runtime cycles or explicit any, kernel packages locked like ../model-forge, deterministic kernel (no Math.random or Date).`,
   );

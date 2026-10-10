@@ -52,6 +52,12 @@ export const errorRemedies: Record<string, string> = {
   PARAMETER_INTEGER: 'Use a whole-number value for parameters marked integer: true.',
   PATTERN_PATH: 'Separate successive XZ positions for yaw orientation, or use orient: none.',
   PATTERN_COUNT: 'Resolve pattern counts to positive integers; their product must not exceed 256.',
+  PROCEDURAL_BUDGET:
+    'Procedural output is bounded (2,000 placements, 20,000 candidate points, 10,000 document nodes, 256 x 256 terrain vertices). Increase spacing, shrink the area or lower counts; read details.limit.',
+  SCATTER_EMPTY:
+    'Nothing was placed. Read details.rejected (outside, exclusion, slope, budget) and widen the area, lower the spacing or relax exclusions and maxSlope.',
+  TERRAIN_TRANSFORM:
+    'Grounding follows only translation, yaw and positive uniform scale. Remove tilt, nonuniform scale or patterns from the terrain node, the scatter parent and their ancestors.',
   RIG_INVALID:
     'Run schema --kind rig --raw. Check the single root, joint references, cycles and increasing keyframe times.',
   RIG_BINDING: 'Run rig inspect <node> and use the exact relative mesh paths returned.',

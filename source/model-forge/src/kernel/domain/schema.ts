@@ -8,4 +8,5 @@ export * from './schema-documents.js';
 export * from './schema-operations.js';
 export * from './schema-review.js';
 export * from './schema-littlewild.js';
+export * from './schema-procedural.js';
 export { parse } from './parse.js';

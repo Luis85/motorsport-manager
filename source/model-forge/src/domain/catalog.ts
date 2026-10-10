@@ -177,6 +177,7 @@ export function discoverCatalog(tool: string, version: string, commands: string[
       'mesh',
       'boolean',
       'tube',
+      'heightfield',
     ],
     patterns: ['linear', 'radial', 'grid', 'path'],
     lights: ['point', 'spot', 'directional'],

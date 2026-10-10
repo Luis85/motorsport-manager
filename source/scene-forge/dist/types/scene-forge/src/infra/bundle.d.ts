@@ -14,6 +14,25 @@ export declare function packScene(scene: SceneDocument, library: ModelLibrary): 
             presentation?: "inspection" | "portrait" | undefined;
         };
         geometries: Record<string, {
+            type: "heightfield";
+            size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
+            amplitude: import("../kernel.js").ScalarValue;
+            resolution: [number, number];
+            seed: number;
+            noise: {
+                kind: "value" | "ridged" | "billow";
+                octaves: number;
+                frequency: number;
+                lacunarity: number;
+                gain: number;
+            };
+            falloff: "none" | "island" | "basin";
+            terrace: number;
+            bands?: {
+                below: number;
+                color: string;
+            }[] | undefined;
+        } | {
             type: "box";
             size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
         } | {
@@ -122,6 +141,7 @@ export declare function packScene(scene: SceneDocument, library: ModelLibrary): 
             emissiveIntensity?: number | undefined;
             depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
+            vertexColors?: boolean | undefined;
         }>;
         nodes: ({
             type: "light";
@@ -305,6 +325,25 @@ export declare function packScene(scene: SceneDocument, library: ModelLibrary): 
     };
     models: Record<string, {
         geometries: Record<string, {
+            type: "heightfield";
+            size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
+            amplitude: import("../kernel.js").ScalarValue;
+            resolution: [number, number];
+            seed: number;
+            noise: {
+                kind: "value" | "ridged" | "billow";
+                octaves: number;
+                frequency: number;
+                lacunarity: number;
+                gain: number;
+            };
+            falloff: "none" | "island" | "basin";
+            terrace: number;
+            bands?: {
+                below: number;
+                color: string;
+            }[] | undefined;
+        } | {
             type: "box";
             size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
         } | {
@@ -413,6 +452,7 @@ export declare function packScene(scene: SceneDocument, library: ModelLibrary): 
             emissiveIntensity?: number | undefined;
             depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
+            vertexColors?: boolean | undefined;
         }>;
         nodes: ({
             type: "light";

@@ -67,6 +67,8 @@ for (const file of files) {
     : editor === 'domain' || editor === 'application' || editor === 'preview';
   const dependencies = [];
   const report = (message) => errors.push(`${file}: ${message}`);
+  // Procedural output must be a pure function of its seed: no ambient randomness or clock.
+  const deterministic = inKernel || file.startsWith('src/application/generators/');
   bareImports.set(file, []);
   if (codeLines(text) > 400) report('module exceeds 400 code lines; separate responsibilities');
   function dependency(specifier, typeOnly = false) {
@@ -144,6 +146,25 @@ for (const file of files) {
       ['process', 'window', 'localStorage', 'fetch'].includes(node.text)
     )
       report(`ambient environment access ${node.text} is forbidden in a pure layer`);
+    if (deterministic) {
+      const parent = node.parent;
+      const member = (object, name) =>
+        ts.isPropertyAccessExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === object &&
+        node.name.text === name;
+      if (member('Math', 'random') || member('crypto', 'getRandomValues'))
+        report(`${node.getText()} is nondeterministic; use the keyed createRandom(seed, stream)`);
+      if (
+        ts.isIdentifier(node) &&
+        node.text === 'Date' &&
+        !(parent && ts.isPropertyAccessExpression(parent) && parent.name === node) &&
+        !(parent && ts.isPropertyAssignment(parent) && parent.name === node)
+      )
+        report(
+          'Date reads the wall clock; take times as explicit input (or performance.now for durations)',
+        );
+    }
     ts.forEachChild(node, visit);
   }
   visit(tree);
@@ -197,7 +218,8 @@ if (errors.length) {
 } else
   console.log(
     `Architecture passed: ${files.length} modules; self-contained kernel with shared packages only, ` +
-      `browser-safe render entry (${reachable.size} modules), layered editor ` +
+      `browser-safe render entry (${reachable.size} modules), deterministic kernel and generators ` +
+      `(no Math.random or Date), layered editor ` +
       `(domain -> application -> infra -> commands, browser-only preview), size budgets, ` +
       `no runtime cycles or explicit any.`,
   );

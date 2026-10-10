@@ -51,6 +51,33 @@ var Transform = z.object({ position: Vec3.optional(), rotation: Vec3.optional(),
 // ../model-forge/src/kernel/domain/schema-geometry.ts
 import { z as z2 } from "zod";
 var segments = z2.number().int().min(3).max(128);
+var HEIGHTFIELD_MAX_RESOLUTION = 256;
+var gridAxis = z2.number().int().min(2).max(HEIGHTFIELD_MAX_RESOLUTION);
+var HeightfieldNoiseSchema = z2.strictObject({
+  kind: z2.enum(["value", "ridged", "billow"]).default("value"),
+  octaves: z2.number().int().min(1).max(8).default(4),
+  frequency: z2.number().min(0.1).max(64).default(3),
+  lacunarity: z2.number().min(1).max(4).default(2),
+  gain: z2.number().min(0).max(1).default(0.5)
+});
+var HeightfieldGeometrySchema = z2.strictObject({
+  type: z2.literal("heightfield"),
+  size: Vec2,
+  amplitude: Scalar,
+  resolution: z2.tuple([gridAxis, gridAxis]).default([64, 64]),
+  seed: z2.number().int().min(0).max(4294967295).default(1),
+  noise: HeightfieldNoiseSchema.default({
+    kind: "value",
+    octaves: 4,
+    frequency: 3,
+    lacunarity: 2,
+    gain: 0.5
+  }),
+  falloff: z2.enum(["none", "island", "basin"]).default("none"),
+  terrace: z2.number().int().min(0).max(32).default(0),
+  /** Vertex colors by normalized height (0..1 of amplitude); the first band at or above wins. */
+  bands: z2.array(z2.strictObject({ below: z2.number().min(0).max(1), color: Color })).min(1).max(8).optional()
+});
 var GeometrySchema = z2.discriminatedUnion("type", [
   z2.strictObject({ type: z2.literal("box"), size: Vec3 }),
   z2.strictObject({ type: z2.literal("sphere"), radius: Scalar, segments: segments.optional() }),
@@ -133,7 +160,8 @@ var GeometrySchema = z2.discriminatedUnion("type", [
     right: Id,
     leftTransform: Transform.optional(),
     rightTransform: Transform.optional()
-  })
+  }),
+  HeightfieldGeometrySchema
 ]);
 
 // ../model-forge/src/kernel/domain/schema-material.ts
@@ -161,7 +189,9 @@ var MaterialSchema = z3.object({
   depthWrite: z3.boolean().optional(),
   doubleSided: z3.boolean().default(false),
   flatShading: z3.boolean().default(false),
-  shading: z3.enum(["standard", "unlit"]).optional()
+  shading: z3.enum(["standard", "unlit"]).optional(),
+  /** Multiply the base color by the geometry's vertex colors (heightfield bands). */
+  vertexColors: z3.boolean().optional()
 }).strict();
 
 // ../model-forge/src/kernel/domain/schema-nodes.ts
@@ -489,6 +519,100 @@ var LittlewildAssetSchema = z8.object({
   metadata: z8.record(z8.string().max(64), z8.union([z8.number(), z8.string().max(120)])).default({})
 }).strict();
 
+// ../model-forge/src/kernel/domain/schema-procedural.ts
+import { z as z9 } from "zod";
+var PROCEDURAL_MAX_PLACEMENTS = 2e3;
+var Point = z9.tuple([NumberValue, NumberValue]);
+var positive = z9.number().finite().positive().max(1e6);
+var range = (min, max) => z9.tuple([z9.number().min(min).max(max), z9.number().min(min).max(max)]).refine(([low, high]) => low <= high, "Range minimum must not exceed its maximum.");
+var AreaSchema = z9.discriminatedUnion("type", [
+  z9.strictObject({ type: z9.literal("rect"), min: Point, max: Point }).refine(
+    (area) => area.min[0] < area.max[0] && area.min[1] < area.max[1],
+    "rect min must be below max on both axes."
+  ),
+  z9.strictObject({ type: z9.literal("circle"), center: Point, radius: positive }),
+  z9.strictObject({ type: z9.literal("polygon"), points: z9.array(Point).min(3).max(256) }),
+  z9.strictObject({
+    type: z9.literal("path"),
+    points: z9.array(Point).min(2).max(256),
+    width: positive
+  })
+]);
+var DistributionSchema = z9.discriminatedUnion("type", [
+  /** Blue-noise points no closer than minDistance (Bridson, deterministic). */
+  z9.strictObject({ type: z9.literal("poisson"), minDistance: positive }),
+  /** A centered grid with step spacing; jitter moves each point up to jitter * step / 2. */
+  z9.strictObject({
+    type: z9.literal("grid"),
+    step: positive,
+    jitter: z9.number().min(0).max(1).default(0)
+  }),
+  /** Points every spacing meters along a polyline; orient yaw faces +Z along the path. */
+  z9.strictObject({
+    type: z9.literal("path"),
+    points: z9.array(Point).min(2).max(256),
+    spacing: positive,
+    orient: z9.enum(["none", "yaw"]).default("yaw")
+  }),
+  /** count uniformly random points inside the area. */
+  z9.strictObject({
+    type: z9.literal("random"),
+    count: z9.number().int().min(1).max(PROCEDURAL_MAX_PLACEMENTS)
+  })
+]);
+var ScatterItemSchema = z9.strictObject({
+  /** A registered model to instance. */
+  model: Id.optional(),
+  /** Or an existing mesh/model node of the document to copy (in-model scatter). */
+  node: Id.optional(),
+  weight: z9.number().finite().positive().max(1e6).default(1),
+  /** Per-instance model parameters drawn uniformly from [min, max]. */
+  vary: z9.record(Id, range(-1e6, 1e6)).default({})
+}).refine((item) => item.model === void 0 !== (item.node === void 0), {
+  message: "Each item names exactly one of model or node."
+});
+var GroundSchema = z9.discriminatedUnion("mode", [
+  /** Place each origin on a heightfield mesh node, sunk by sink; reject slopes above maxSlope. */
+  z9.strictObject({
+    mode: z9.literal("terrain"),
+    node: Id,
+    sink: z9.number().min(-1e3).max(1e3).default(0),
+    maxSlope: z9.number().min(0).max(90).default(90)
+  }),
+  z9.strictObject({ mode: z9.literal("plane"), y: NumberValue.default(0) }),
+  z9.strictObject({ mode: z9.literal("none") })
+]);
+var ScatterRecipeSchema = z9.strictObject({
+  schemaVersion: z9.literal(1),
+  kind: z9.literal("scatter"),
+  seed: z9.number().int().min(0).max(4294967295).default(1),
+  /** The group node that owns every placement; instances are `<group>-<n>`. */
+  group: Id.refine((id) => id.length <= 56, "Group IDs are at most 56 characters."),
+  parent: Id.optional(),
+  /** Required except for path distributions, where it optionally clips the path. */
+  area: AreaSchema.optional(),
+  exclude: z9.array(AreaSchema).max(64).default([]),
+  avoidNodes: z9.strictObject({
+    ids: z9.array(Id).min(1).max(256),
+    margin: z9.number().min(0).max(1e3).default(0)
+  }).optional(),
+  distribution: DistributionSchema,
+  maxCount: z9.number().int().min(1).max(PROCEDURAL_MAX_PLACEMENTS).default(PROCEDURAL_MAX_PLACEMENTS),
+  items: z9.array(ScatterItemSchema).min(1).max(32),
+  /** Uniform scale drawn from [min, max]. */
+  scale: range(1e-3, 1e3).default([1, 1]),
+  rotation: z9.strictObject({
+    /** Degrees; defaults to [0, 360], or [0, 0] added to the path heading for orient yaw. */
+    yaw: range(-3600, 3600).optional(),
+    /** Degrees about X and Z, each drawn from this range. */
+    tilt: range(-90, 90).default([0, 0])
+  }).default({ tilt: [0, 0] }),
+  ground: GroundSchema.default({ mode: "none" })
+}).refine((recipe) => recipe.area !== void 0 || recipe.distribution.type === "path", {
+  message: "area is required unless the distribution is a path.",
+  path: ["area"]
+});
+
 // ../model-forge/src/kernel/domain/parse.ts
 function parse(schema, input) {
   const pending = [[input, 0, false]];
@@ -783,16 +907,16 @@ function validateDocument(document2, models = {}, stack = []) {
     if (geometryStack.size > 64)
       fail("DEPTH_LIMIT", "Geometry dependency chain exceeds 64 levels.");
     geometryStack.add(id);
-    const positive = (v, label, allowZero = false) => {
+    const positive2 = (v, label, allowZero = false) => {
       if (typeof v !== "number" || !Number.isFinite(v) || (allowZero ? v < 0 : v <= 0))
         fail(
           "INVALID_GEOMETRY",
           `${id}.${label} must be ${allowZero ? "nonnegative" : "positive"}.`
         );
     };
-    if ("size" in g) g.size.forEach((v) => positive(v, "size"));
+    if ("size" in g) g.size.forEach((v) => positive2(v, "size"));
     for (const k of ["radius", "height", "tube", "depth"])
-      if (k in g) positive(g[k], k);
+      if (k in g) positive2(g[k], k);
     if (g.type === "organic") {
       for (const [field, min, max] of [
         ["roundness", 0.65, 1.5],
@@ -831,14 +955,19 @@ function validateDocument(document2, models = {}, stack = []) {
       }
     }
     if (g.type === "cylinder") {
-      positive(g.radiusTop, "radiusTop", true);
-      positive(g.radiusBottom, "radiusBottom", true);
+      positive2(g.radiusTop, "radiusTop", true);
+      positive2(g.radiusBottom, "radiusBottom", true);
       if (g.radiusTop === 0 && g.radiusBottom === 0)
         fail("INVALID_GEOMETRY", `${id} needs at least one nonzero radius.`);
     }
-    if (g.type === "capsule") positive(g.length, "length", true);
-    if (g.type === "extrude" && g.bevel !== void 0) positive(g.bevel, "bevel", true);
-    if (g.type === "lathe") g.points.forEach((p) => positive(p[0], "point radius", true));
+    if (g.type === "capsule") positive2(g.length, "length", true);
+    if (g.type === "heightfield") {
+      positive2(g.amplitude, "amplitude", true);
+      if (g.bands?.some((band, index) => index > 0 && band.below <= g.bands[index - 1].below))
+        fail("INVALID_GEOMETRY", `${id}.bands must list strictly increasing below values.`);
+    }
+    if (g.type === "extrude" && g.bevel !== void 0) positive2(g.bevel, "bevel", true);
+    if (g.type === "lathe") g.points.forEach((p) => positive2(p[0], "point radius", true));
     if (g.type === "mesh" && (g.indices.length % 3 || g.indices.some((i) => i >= g.positions.length)))
       fail("INVALID_GEOMETRY", `${id} needs triangle indices inside the positions array.`);
     if (g.type === "mesh") {
@@ -862,6 +991,74 @@ function validateDocument(document2, models = {}, stack = []) {
   };
   Object.keys(d.geometries).forEach(checkGeometry);
 }
+
+// ../model-forge/src/kernel/domain/digest.ts
+var K = new Uint32Array([
+  1116352408,
+  1899447441,
+  3049323471,
+  3921009573,
+  961987163,
+  1508970993,
+  2453635748,
+  2870763221,
+  3624381080,
+  310598401,
+  607225278,
+  1426881987,
+  1925078388,
+  2162078206,
+  2614888103,
+  3248222580,
+  3835390401,
+  4022224774,
+  264347078,
+  604807628,
+  770255983,
+  1249150122,
+  1555081692,
+  1996064986,
+  2554220882,
+  2821834349,
+  2952996808,
+  3210313671,
+  3336571891,
+  3584528711,
+  113926993,
+  338241895,
+  666307205,
+  773529912,
+  1294757372,
+  1396182291,
+  1695183700,
+  1986661051,
+  2177026350,
+  2456956037,
+  2730485921,
+  2820302411,
+  3259730800,
+  3345764771,
+  3516065817,
+  3600352804,
+  4094571909,
+  275423344,
+  430227734,
+  506948616,
+  659060556,
+  883997877,
+  958139571,
+  1322822218,
+  1537002063,
+  1747873779,
+  1955562222,
+  2024104815,
+  2227730452,
+  2361852424,
+  2428436474,
+  2756734187,
+  3204031479,
+  3329325298
+]);
 
 // ../model-forge/src/kernel/application/surfaces.ts
 import * as THREE from "three";
@@ -894,12 +1091,12 @@ function generateSurface(surface) {
       heights[y * SIZE + x] = h;
     }
   if (surface.version === 2) fineHeights(surface, heights);
-  const height = (x, y) => heights[(y + SIZE) % SIZE * SIZE + (x + SIZE) % SIZE];
+  const height2 = (x, y) => heights[(y + SIZE) % SIZE * SIZE + (x + SIZE) % SIZE];
   for (let y = 0; y < SIZE; y++)
     for (let x = 0; x < SIZE; x++) {
-      const i = (y * SIZE + x) * 4, h = height(x, y), strength = surface.strength;
+      const i = (y * SIZE + x) * 4, h = height2(x, y), strength = surface.strength;
       const relief = surface.version === 2 ? 0.38 : 0.65;
-      const dx = (height(x - 1, y) - height(x + 1, y)) * strength * relief, dy = (height(x, y - 1) - height(x, y + 1)) * strength * relief;
+      const dx = (height2(x - 1, y) - height2(x + 1, y)) * strength * relief, dy = (height2(x, y - 1) - height2(x, y + 1)) * strength * relief;
       const length = Math.hypot(dx, dy, 1), shade = Math.round(
         255 - (1 - h) * strength * (surface.version === 2 ? 18 : surface.kind === "fur" ? 26 : 20)
       );
@@ -951,9 +1148,9 @@ function fineHeights(surface, heights) {
 function sphereUVs(positions) {
   const out = [];
   for (let i = 0; i < positions.length; i += 3) {
-    const x = positions[i], y = positions[i + 1], z12 = positions[i + 2], r = Math.hypot(x, y, z12);
+    const x = positions[i], y = positions[i + 1], z13 = positions[i + 2], r = Math.hypot(x, y, z13);
     out.push(
-      0.5 + Math.atan2(z12, x) / (2 * Math.PI),
+      0.5 + Math.atan2(z13, x) / (2 * Math.PI),
       r ? Math.acos(Math.max(-1, Math.min(1, y / r))) / Math.PI : 0.5
     );
   }
@@ -1198,7 +1395,7 @@ function createLight(node) {
 }
 
 // ../model-forge/src/kernel/application/compiler.ts
-import * as THREE9 from "three";
+import * as THREE10 from "three";
 
 // ../model-forge/src/kernel/application/mesh-source.ts
 var sources = /* @__PURE__ */ new WeakMap();
@@ -1252,7 +1449,9 @@ function createMaterial(m, surfaces) {
     opacity: m.opacity,
     transparent: m.opacity < 1,
     depthWrite: m.depthWrite ?? true,
-    side: m.doubleSided ? THREE5.DoubleSide : THREE5.FrontSide
+    side: m.doubleSided ? THREE5.DoubleSide : THREE5.FrontSide,
+    // Only set when requested, so materials without the field build exactly as before.
+    ...m.vertexColors ? { vertexColors: true } : {}
   };
   if (m.shading === "unlit" && m.surface)
     fail(
@@ -1391,8 +1590,101 @@ function tubeGeometry(spec) {
   return geometry;
 }
 
-// ../model-forge/src/kernel/application/resources.ts
+// ../model-forge/src/kernel/application/heightfield.ts
 import * as THREE8 from "three";
+function lattice(x, z13, octave, seed) {
+  let h = Math.imul(x | 0, 668265261) ^ Math.imul(z13 | 0, 374761393);
+  h = Math.imul(h ^ seed, 2246822507) ^ Math.imul(octave + 1, 3266489909);
+  h ^= h >>> 15;
+  h = Math.imul(h, 739982445);
+  h ^= h >>> 12;
+  h = Math.imul(h, 695872825);
+  h ^= h >>> 15;
+  return (h >>> 0) / 4294967296;
+}
+var fade = (t) => t * t * t * (t * (t * 6 - 15) + 10);
+var clamp01 = (v) => v < 0 ? 0 : v > 1 ? 1 : v;
+var smooth = (t) => t * t * (3 - 2 * t);
+function valueNoise(x, z13, octave, seed) {
+  const x0 = Math.floor(x), z0 = Math.floor(z13), tx = fade(x - x0), tz = fade(z13 - z0);
+  const a = lattice(x0, z0, octave, seed), b = lattice(x0 + 1, z0, octave, seed), c = lattice(x0, z0 + 1, octave, seed), d = lattice(x0 + 1, z0 + 1, octave, seed);
+  const top = a + (b - a) * tx, bottom = c + (d - c) * tx;
+  return top + (bottom - top) * tz;
+}
+function height(spec, u, v) {
+  const { kind, octaves, frequency, lacunarity, gain } = spec.noise;
+  let sum = 0, weight = 0, amplitude = 1, f = frequency;
+  for (let octave = 0; octave < octaves; octave++) {
+    const n = valueNoise(u * f, v * f, octave, spec.seed);
+    const signed = 2 * n - 1, folded = signed < 0 ? -signed : signed;
+    const shaped = kind === "ridged" ? (1 - folded) * (1 - folded) : kind === "billow" ? folded : n;
+    sum += shaped * amplitude;
+    weight += amplitude;
+    amplitude *= gain;
+    f *= lacunarity;
+  }
+  let h = weight > 0 ? sum / weight : 0;
+  const dx = 2 * u - 1, dz = 2 * v - 1, d2 = clamp01(dx * dx + dz * dz);
+  if (spec.falloff === "island") h *= smooth(clamp01((1 - d2) * 1.25));
+  else if (spec.falloff === "basin") h = h * 0.5 + 0.5 * smooth(d2);
+  if (spec.terrace > 0) {
+    const t = h * spec.terrace, step = Math.floor(t), frac = t - step;
+    h = (step + frac * frac * frac * frac) / spec.terrace;
+  }
+  return clamp01(h);
+}
+function heightGrid(spec) {
+  const [nx, nz] = spec.resolution;
+  const grid = new Float64Array(nx * nz);
+  for (let iz = 0; iz < nz; iz++)
+    for (let ix = 0; ix < nx; ix++)
+      grid[iz * nx + ix] = height(spec, ix / (nx - 1), iz / (nz - 1)) * spec.amplitude;
+  return grid;
+}
+function heightfieldGeometry(spec) {
+  const grid = heightGrid(spec);
+  const [nx, nz] = spec.resolution, [sx, sz] = spec.size;
+  const positions = new Float32Array(nx * nz * 3), uvs = new Float32Array(nx * nz * 2);
+  for (let iz = 0; iz < nz; iz++)
+    for (let ix = 0; ix < nx; ix++) {
+      const i = iz * nx + ix;
+      positions[i * 3] = -sx / 2 + sx * ix / (nx - 1);
+      positions[i * 3 + 1] = grid[i];
+      positions[i * 3 + 2] = -sz / 2 + sz * iz / (nz - 1);
+      uvs[i * 2] = ix / (nx - 1);
+      uvs[i * 2 + 1] = 1 - iz / (nz - 1);
+    }
+  const indices = [];
+  for (let iz = 0; iz < nz - 1; iz++)
+    for (let ix = 0; ix < nx - 1; ix++) {
+      const a = iz * nx + ix, b = a + 1, c = a + nx, d = c + 1;
+      indices.push(a, c, b, b, c, d);
+    }
+  const geometry = new THREE8.BufferGeometry();
+  geometry.setAttribute("position", new THREE8.BufferAttribute(positions, 3));
+  geometry.setAttribute("uv", new THREE8.BufferAttribute(uvs, 2));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  if (spec.bands) {
+    const bands = spec.bands.map((band) => ({
+      below: band.below,
+      color: new THREE8.Color(band.color)
+    }));
+    const colors = new Float32Array(nx * nz * 3);
+    for (let i = 0; i < nx * nz; i++) {
+      const normalized = spec.amplitude > 0 ? grid[i] / spec.amplitude : 0;
+      const band = bands.find((entry) => normalized <= entry.below) ?? bands[bands.length - 1];
+      colors[i * 3] = band.color.r;
+      colors[i * 3 + 1] = band.color.g;
+      colors[i * 3 + 2] = band.color.b;
+    }
+    geometry.setAttribute("color", new THREE8.BufferAttribute(colors, 3));
+  }
+  return geometry;
+}
+
+// ../model-forge/src/kernel/application/resources.ts
+import * as THREE9 from "three";
 import { Brush, Evaluator, ADDITION, SUBTRACTION, INTERSECTION } from "three-bvh-csg/src/index.js";
 function createResourcePool(warnings) {
   const surfaces = createSurfacePool();
@@ -1437,20 +1729,20 @@ function createResourcePool(warnings) {
       let result;
       switch (g.type) {
         case "box":
-          result = new THREE8.BoxGeometry(...g.size);
+          result = new THREE9.BoxGeometry(...g.size);
           break;
         case "organic":
           result = organicGeometry(g);
           break;
         case "sphere":
-          result = new THREE8.SphereGeometry(
+          result = new THREE9.SphereGeometry(
             g.radius,
             g.segments ?? 32,
             Math.max(8, (g.segments ?? 32) / 2)
           );
           break;
         case "cylinder":
-          result = new THREE8.CylinderGeometry(
+          result = new THREE9.CylinderGeometry(
             g.radiusTop,
             g.radiusBottom,
             g.height,
@@ -1460,34 +1752,37 @@ function createResourcePool(warnings) {
           );
           break;
         case "cone":
-          result = new THREE8.ConeGeometry(g.radius, g.height, g.segments ?? 32);
+          result = new THREE9.ConeGeometry(g.radius, g.height, g.segments ?? 32);
           break;
         case "torus":
-          result = new THREE8.TorusGeometry(g.radius, g.tube, 12, g.segments ?? 48);
+          result = new THREE9.TorusGeometry(g.radius, g.tube, 12, g.segments ?? 48);
           break;
         case "capsule":
-          result = new THREE8.CapsuleGeometry(g.radius, g.length, 8, g.segments ?? 24);
+          result = new THREE9.CapsuleGeometry(g.radius, g.length, 8, g.segments ?? 24);
           break;
         case "tube":
           result = tubeGeometry(g);
           break;
+        case "heightfield":
+          result = heightfieldGeometry(g);
+          break;
         case "plane":
-          result = new THREE8.PlaneGeometry(...g.size);
+          result = new THREE9.PlaneGeometry(...g.size);
           break;
         case "lathe":
-          result = new THREE8.LatheGeometry(
-            g.points.map((p) => new THREE8.Vector2(p[0], p[1])),
+          result = new THREE9.LatheGeometry(
+            g.points.map((p) => new THREE9.Vector2(p[0], p[1])),
             g.segments ?? 32
           );
           break;
         case "extrude": {
-          const shape = new THREE8.Shape(
-            g.points.map((p) => new THREE8.Vector2(p[0], p[1]))
+          const shape = new THREE9.Shape(
+            g.points.map((p) => new THREE9.Vector2(p[0], p[1]))
           );
           shape.holes = (g.holes ?? []).map(
-            (points) => new THREE8.Path(points.map((p) => new THREE8.Vector2(p[0], p[1])))
+            (points) => new THREE9.Path(points.map((p) => new THREE9.Vector2(p[0], p[1])))
           );
-          result = new THREE8.ExtrudeGeometry(shape, {
+          result = new THREE9.ExtrudeGeometry(shape, {
             depth: g.depth,
             steps: 1,
             bevelEnabled: (g.bevel ?? 0) > 0,
@@ -1498,13 +1793,13 @@ function createResourcePool(warnings) {
           break;
         }
         case "mesh": {
-          result = new THREE8.BufferGeometry();
-          result.setAttribute("position", new THREE8.Float32BufferAttribute(g.positions.flat(), 3));
+          result = new THREE9.BufferGeometry();
+          result.setAttribute("position", new THREE9.Float32BufferAttribute(g.positions.flat(), 3));
           result.setIndex(g.indices);
           if (g.normals)
-            result.setAttribute("normal", new THREE8.Float32BufferAttribute(g.normals.flat(), 3));
+            result.setAttribute("normal", new THREE9.Float32BufferAttribute(g.normals.flat(), 3));
           else result.computeVertexNormals();
-          if (g.uvs) result.setAttribute("uv", new THREE8.Float32BufferAttribute(g.uvs.flat(), 2));
+          if (g.uvs) result.setAttribute("uv", new THREE9.Float32BufferAttribute(g.uvs.flat(), 2));
           else
             warnings.add(
               "Custom mesh uses local spherical UV fallback; author seam-aware uvs for precise surface placement."
@@ -1553,7 +1848,7 @@ function createResourcePool(warnings) {
       }
       if (!result.getAttribute("uv")) {
         const positions = Array.from(result.getAttribute("position").array);
-        result.setAttribute("uv", new THREE8.Float32BufferAttribute(sphereUVs(positions), 2));
+        result.setAttribute("uv", new THREE9.Float32BufferAttribute(sphereUVs(positions), 2));
       }
       geometries.add(result);
       result.name = `${path13}/${id}`;
@@ -1561,7 +1856,7 @@ function createResourcePool(warnings) {
       if ((g.type === "lathe" || g.type === "capsule") && result.index) {
         const positions = result.getAttribute("position");
         const kept = [];
-        const a = new THREE8.Vector3(), b = new THREE8.Vector3(), c = new THREE8.Vector3();
+        const a = new THREE9.Vector3(), b = new THREE9.Vector3(), c = new THREE9.Vector3();
         for (let i = 0; i < result.index.count; i += 3) {
           const ids = [0, 1, 2].map((j) => result.index.getX(i + j));
           a.fromBufferAttribute(positions, ids[0]);
@@ -1581,7 +1876,7 @@ function createResourcePool(warnings) {
       result.clearGroups();
       const normals = result.getAttribute("normal");
       if (normals) {
-        const normal = new THREE8.Vector3();
+        const normal = new THREE9.Vector3();
         for (let i = 0; i < normals.count; i++) {
           normal.fromBufferAttribute(normals, i);
           if (normal.lengthSq() < 1e-12) normal.set(0, 1, 0);
@@ -1595,7 +1890,7 @@ function createResourcePool(warnings) {
       for (let i = 0; i < position.array.length; i++)
         if (!Number.isFinite(position.array[i]))
           fail("INVALID_GEOMETRY", `Geometry ${id} generated non-finite coordinates.`);
-      const baked = new THREE8.BufferGeometry().copy(result);
+      const baked = new THREE9.BufferGeometry().copy(result);
       baked.uuid = result.uuid;
       geometries.delete(result);
       result.dispose();
@@ -1631,10 +1926,10 @@ function createResourcePool(warnings) {
 // ../model-forge/src/kernel/application/compiler.ts
 function compileScene(document2, models = {}, options = {}) {
   validateDocument(document2, models);
-  const scene = new THREE9.Scene();
+  const scene = new THREE10.Scene();
   scene.name = document2.name;
   scene.uuid = uuid(document2.id);
-  const content2 = new THREE9.Group();
+  const content2 = new THREE10.Group();
   content2.name = document2.id;
   content2.uuid = uuid(`${document2.id}/content`);
   scene.add(content2);
@@ -1662,9 +1957,9 @@ function compileScene(document2, models = {}, options = {}) {
         if (triangleCount > 2e6)
           fail("SCENE_BUDGET", "Expanded scene exceeds 2,000,000 triangles.");
         const surface = material(node.material);
-        if (surface instanceof THREE9.MeshStandardMaterial && surface.normalMap)
+        if (surface instanceof THREE10.MeshStandardMaterial && surface.normalMap)
           ensureSurfaceTangents(g);
-        object = new THREE9.Mesh(g, surface);
+        object = new THREE10.Mesh(g, surface);
         object.castShadow = true;
         object.receiveShadow = true;
       } else if (node.type === "light") {
@@ -1675,7 +1970,7 @@ function compileScene(document2, models = {}, options = {}) {
           );
         object = createLight(node);
       } else {
-        object = new THREE9.Group();
+        object = new THREE10.Group();
         if (node.type === "model") {
           const model = models[node.model];
           const replace = Object.fromEntries(
@@ -1723,7 +2018,7 @@ function compileScene(document2, models = {}, options = {}) {
       let object;
       if (node.pattern) {
         if (++objectCount > 2e4) fail("SCENE_BUDGET", "Expanded scene exceeds 20,000 objects.");
-        object = new THREE9.Group();
+        object = new THREE10.Group();
         object.name = nodePath;
         object.uuid = uuid(nodePath);
         object.visible = node.visible;
@@ -1799,7 +2094,7 @@ function compileScene(document2, models = {}, options = {}) {
           `World transform overflow at ${object.name}. Reduce nested scales or coordinates.`
         );
     });
-    const bounds = new THREE9.Box3().setFromObject(content2);
+    const bounds = new THREE10.Box3().setFromObject(content2);
     if (!bounds.isEmpty() && ![...bounds.min.toArray(), ...bounds.max.toArray()].every(Number.isFinite))
       fail("TRANSFORM_RANGE", "World bounds overflowed. Reduce nested scales or coordinates.");
     const empty = bounds.isEmpty();
@@ -1812,7 +2107,7 @@ function compileScene(document2, models = {}, options = {}) {
       bounds: {
         min: empty ? [0, 0, 0] : bounds.min.toArray(),
         max: empty ? [0, 0, 0] : bounds.max.toArray(),
-        size: empty ? [0, 0, 0] : bounds.getSize(new THREE9.Vector3()).toArray()
+        size: empty ? [0, 0, 0] : bounds.getSize(new THREE10.Vector3()).toArray()
       },
       warnings: [...warnings]
     };
@@ -1829,7 +2124,7 @@ function compileScene(document2, models = {}, options = {}) {
 import { Box3 as Box32, Vector3 as Vector37, PerspectiveCamera, OrthographicCamera, MathUtils as MathUtils4 } from "three";
 
 // ../model-forge/src/kernel/application/gltf-scene.ts
-import * as THREE10 from "three";
+import * as THREE11 from "three";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 function gltfScene(root) {
   const copy = clone(root);
@@ -1839,15 +2134,15 @@ function gltfScene(root) {
   cloned.forEach((object, i) => {
     object.uuid = original[i].uuid;
   });
-  const scene = copy instanceof THREE10.Scene ? copy : new THREE10.Scene();
+  const scene = copy instanceof THREE11.Scene ? copy : new THREE11.Scene();
   if (scene !== copy) {
     scene.name = root.name;
     scene.add(copy);
   }
   const skins = [];
   scene.traverse((object) => {
-    if (object instanceof THREE10.SkinnedMesh) skins.push(object);
-    if (object instanceof THREE10.SpotLight || object instanceof THREE10.DirectionalLight)
+    if (object instanceof THREE11.SkinnedMesh) skins.push(object);
+    if (object instanceof THREE11.SpotLight || object instanceof THREE11.DirectionalLight)
       orientLight(object);
   });
   for (const skin of skins) {
@@ -2518,7 +2813,7 @@ function auditScene(scene, models = {}, input = {}) {
 }
 
 // ../model-forge/src/kernel/application/littlewild.ts
-import * as THREE11 from "three";
+import * as THREE12 from "three";
 
 // ../model-forge/src/kernel/application/littlewild-native.ts
 var natives = /* @__PURE__ */ new Map();
@@ -2585,36 +2880,36 @@ var littlewildPetRoles = [
   "back"
 ];
 function roofGeometry() {
-  const shape = new THREE11.Shape();
+  const shape = new THREE12.Shape();
   shape.moveTo(-0.5, 0);
   shape.lineTo(0.5, 0);
   shape.lineTo(0, 0.62);
   shape.closePath();
-  const geometry = new THREE11.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false });
+  const geometry = new THREE12.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false });
   geometry.translate(0, 0, -0.5);
   return geometry;
 }
 function primitiveGeometry(kind) {
   switch (kind) {
     case "ball":
-      return new THREE11.IcosahedronGeometry(1, 0);
+      return new THREE12.IcosahedronGeometry(1, 0);
     case "tiny":
-      return new THREE11.SphereGeometry(1, 6, 4);
+      return new THREE12.SphereGeometry(1, 6, 4);
     case "soft":
-      return new THREE11.SphereGeometry(1, 10, 7);
+      return new THREE12.SphereGeometry(1, 10, 7);
     case "cone":
-      return new THREE11.ConeGeometry(1, 1, 7);
+      return new THREE12.ConeGeometry(1, 1, 7);
     case "cylinder":
-      return new THREE11.CylinderGeometry(1, 1, 1, 8);
+      return new THREE12.CylinderGeometry(1, 1, 1, 8);
     case "ring":
-      return new THREE11.TorusGeometry(1, 0.07, 4, 16);
+      return new THREE12.TorusGeometry(1, 0.07, 4, 16);
     case "roof":
       return roofGeometry();
     case "ground": {
-      const g = new THREE11.BufferGeometry();
+      const g = new THREE12.BufferGeometry();
       g.setAttribute(
         "position",
-        new THREE11.Float32BufferAttribute(
+        new THREE12.Float32BufferAttribute(
           [-0.5, 0, -0.5, -0.5, 0, 0.5, 0.5, 0, 0.5, 0.5, 0, -0.5],
           3
         )
@@ -2659,7 +2954,7 @@ function materialData(material) {
     flatShading: !!m.flatShading
   };
   if (material.userData.surface) result.surface = structuredClone(material.userData.surface);
-  if (material instanceof THREE11.MeshPhysicalMaterial) {
+  if (material instanceof THREE12.MeshPhysicalMaterial) {
     result.sheen = round(material.sheen, 1e-3);
     result.sheenColor = `#${material.sheenColor.getHexString()}`;
     result.sheenRoughness = round(material.sheenRoughness, 1e-3);
@@ -2670,7 +2965,7 @@ function materialData(material) {
     result.emissive = `#${m.emissive.getHexString()}`;
     result.emissiveIntensity = round(m.emissiveIntensity ?? 1, 1e-3);
   }
-  if (material.side === THREE11.DoubleSide) result.doubleSided = true;
+  if (material.side === THREE12.DoubleSide) result.doubleSided = true;
   if (!material.depthWrite) result.depthWrite = false;
   if (material.opacity < 1) {
     result.opacity = round(material.opacity, 1e-3);
@@ -2710,7 +3005,7 @@ function boxSize(geometry) {
   const position = geometry.getAttribute("position");
   if (!position || position.count !== 24 || geometry.index?.count !== 36) return null;
   geometry.computeBoundingBox();
-  const box = geometry.boundingBox, size = box.getSize(new THREE11.Vector3()).toArray(), center = box.getCenter(new THREE11.Vector3()).toArray();
+  const box = geometry.boundingBox, size = box.getSize(new THREE12.Vector3()).toArray(), center = box.getCenter(new THREE12.Vector3()).toArray();
   if (center.some((v) => Math.abs(v) > 1e-6) || size.some((v) => v <= 0)) return null;
   for (let i = 0; i < 24; i++)
     for (let axis = 0; axis < 3; axis++)
@@ -2755,7 +3050,7 @@ function littlewildModel(root, options) {
     if (!same(s, 1)) node.scale = s;
   }
   function convert(object, parentId) {
-    if (object instanceof THREE11.Light) {
+    if (object instanceof THREE12.Light) {
       warnings.add("Lights are not part of Littlewild assets and were skipped.");
       return null;
     }
@@ -2763,7 +3058,7 @@ function littlewildModel(root, options) {
     stats.nodes++;
     transform2(object, node);
     if (!object.visible) node.visible = false;
-    if (object instanceof THREE11.Mesh) {
+    if (object instanceof THREE12.Mesh) {
       const geometry = object.geometry, size = object.userData.geometryType === "box" ? boxSize(geometry) : null;
       node.material = role(object.material, object.userData.material);
       const native = nativePrimitive(object);
@@ -2831,7 +3126,7 @@ function littlewildModel(root, options) {
 }
 
 // ../model-forge/src/kernel/application/littlewild-import.ts
-import * as THREE12 from "three";
+import * as THREE13 from "three";
 
 // ../model-forge/src/kernel/application/littlewild-materials.ts
 var plain = (value) => !!value && typeof value === "object" && !Array.isArray(value);
@@ -2912,7 +3207,7 @@ function importedMaterials(materials, used) {
 
 // ../model-forge/src/kernel/application/littlewild-import.ts
 var plain2 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
-var degrees = (value) => Number(THREE12.MathUtils.radToDeg(value).toFixed(4));
+var degrees = (value) => Number(THREE13.MathUtils.radToDeg(value).toFixed(4));
 var triples = (values, step) => {
   const out = [];
   for (let i = 0; i < values.length; i += 3)
@@ -3094,6 +3389,9 @@ function assertLittlewildComplexity(visual) {
   visit(visual, 0);
 }
 
+// ../model-forge/src/kernel/application/scatter.ts
+import { Box3 as Box36, Matrix4 as Matrix42, Vector3 as Vector312 } from "three";
+
 // ../model-forge/src/kernel/io/files.ts
 import { promises as fs, createReadStream } from "node:fs";
 import path from "node:path";
@@ -3149,15 +3447,15 @@ function chunk(name, bytes) {
   return Buffer.concat([header, body, tail]);
 }
 function png(image, flipY) {
-  const { width, height, data } = image;
+  const { width, height: height2, data } = image;
   const header = Buffer.alloc(13);
   header.writeUInt32BE(width, 0);
-  header.writeUInt32BE(height, 4);
+  header.writeUInt32BE(height2, 4);
   header[8] = 8;
   header[9] = 6;
-  const rows = Buffer.alloc(height * (width * 4 + 1));
-  for (let y = 0; y < height; y++) {
-    const sourceY = flipY ? height - y - 1 : y;
+  const rows = Buffer.alloc(height2 * (width * 4 + 1));
+  for (let y = 0; y < height2; y++) {
+    const sourceY = flipY ? height2 - y - 1 : y;
     rows.set(
       data.subarray(sourceY * width * 4, (sourceY + 1) * width * 4),
       y * (width * 4 + 1) + 1
@@ -3250,7 +3548,7 @@ function installBlobReader() {
 import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
 import { OBJExporter } from "three/addons/exporters/OBJExporter.js";
 import { STLExporter } from "three/addons/exporters/STLExporter.js";
-import { Box3 as Box36, Vector3 as Vector312, Mesh as Mesh6 } from "three";
+import { Box3 as Box37, Vector3 as Vector313, Mesh as Mesh6 } from "three";
 var exportFormats = ["glb", "gltf", "obj", "stl", "three"];
 async function validateExport(data, format) {
   if (format !== "glb" && format !== "gltf")
@@ -3274,7 +3572,7 @@ async function exportScene(document2, models, format, nodeId) {
     ))
       fail("NODE_HIDDEN", `Node ${nodeId} is hidden by itself or an ancestor.`);
     hidden.forEach((object) => object.removeFromParent());
-    const bounds = new Box36().setFromObject(built.scene);
+    const bounds = new Box37().setFromObject(built.scene);
     const usedMaterials = /* @__PURE__ */ new Set();
     const usedGeometries = /* @__PURE__ */ new Set();
     let nodes2 = 0, meshes = 0, triangles2 = 0;
@@ -3299,7 +3597,7 @@ async function exportScene(document2, models, format, nodeId) {
       bounds: {
         min: bounds.isEmpty() ? [0, 0, 0] : bounds.min.toArray(),
         max: bounds.isEmpty() ? [0, 0, 0] : bounds.max.toArray(),
-        size: bounds.isEmpty() ? [0, 0, 0] : bounds.getSize(new Vector312()).toArray()
+        size: bounds.isEmpty() ? [0, 0, 0] : bounds.getSize(new Vector313()).toArray()
       }
     };
     let data;
@@ -3337,7 +3635,7 @@ import path2 from "node:path";
 import { promises as fs2 } from "node:fs";
 
 // ../model-forge/src/kernel/application/littlewild-preserve.ts
-import * as THREE13 from "three";
+import * as THREE14 from "three";
 var plain4 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
 var owned = /* @__PURE__ */ new Set([
   "primitive",
@@ -3394,16 +3692,16 @@ function resolvedMaterial(table, key, props, mesh) {
   return canonical(data);
 }
 function derivedBuffers(positions, indices) {
-  const geometry = new THREE13.BufferGeometry();
+  const geometry = new THREE14.BufferGeometry();
   try {
-    const position = new THREE13.Float32BufferAttribute(positions, 3);
+    const position = new THREE14.Float32BufferAttribute(positions, 3);
     geometry.setAttribute("position", position);
     geometry.setIndex(indices);
     geometry.computeVertexNormals();
     const normal = geometry.getAttribute("normal");
     return {
       normals: Array.from(normal.array, (v) => round2(v, 1e-3)),
-      uvs: new THREE13.Float32BufferAttribute(sphereUVs(Array.from(position.array)), 2).array
+      uvs: new THREE14.Float32BufferAttribute(sphereUVs(Array.from(position.array)), 2).array
     };
   } finally {
     geometry.dispose();
@@ -3950,7 +4248,7 @@ async function reviewRender(scene, models, output, input, renderer, options = {}
       "ALREADY_EXISTS",
       "Review directory is not empty. Choose a new directory or pass --overwrite."
     );
-  const started = Date.now();
+  const started = performance.now();
   const html = await renderer.buildHtml(scene, models, { stateHash: options.sourceStateHash });
   return withCaptureSession(
     html,
@@ -3982,8 +4280,8 @@ async function reviewRender(scene, models, output, input, renderer, options = {}
           }))
         );
         const result = await page.evaluate(
-          async ({ images: images2, width, height }) => {
-            const scale = Math.min(1, 640 / width, 480 / height), cellWidth = Math.max(1, Math.round(width * scale)), cellHeight = Math.max(1, Math.round(height * scale)), columns = Math.min(3, Math.ceil(Math.sqrt(images2.length))), rows = Math.ceil(images2.length / columns), label = 32;
+          async ({ images: images2, width, height: height2 }) => {
+            const scale = Math.min(1, 640 / width, 480 / height2), cellWidth = Math.max(1, Math.round(width * scale)), cellHeight = Math.max(1, Math.round(height2 * scale)), columns = Math.min(3, Math.ceil(Math.sqrt(images2.length))), rows = Math.ceil(images2.length / columns), label = 32;
             const canvas = document.createElement("canvas");
             canvas.width = columns * cellWidth;
             canvas.height = rows * (cellHeight + label);
@@ -4038,7 +4336,7 @@ async function reviewRender(scene, models, output, input, renderer, options = {}
         frames,
         contactSheet,
         replayPlan: "replay-plan.json",
-        durationMs: Date.now() - started
+        durationMs: Math.round(performance.now() - started)
       };
       const replay = parse(ReviewPlanSchema, {
         ...plan,
@@ -4073,40 +4371,40 @@ import { promises as fs6 } from "node:fs";
 import path7 from "node:path";
 
 // src/domain/schema.ts
-import { z as z9 } from "zod";
-var ProjectSchema = z9.object({
-  schemaVersion: z9.literal(1),
-  name: z9.string().min(1).max(120),
+import { z as z10 } from "zod";
+var ProjectSchema = z10.object({
+  schemaVersion: z10.literal(1),
+  name: z10.string().min(1).max(120),
   activeScene: Id,
-  scenes: z9.record(Id, z9.string()),
-  models: z9.record(Id, z9.string())
+  scenes: z10.record(Id, z10.string()),
+  models: z10.record(Id, z10.string())
 }).strict();
-var CompositionSchema = z9.object({
-  schemaVersion: z9.literal(1),
-  kind: z9.literal("composition"),
+var CompositionSchema = z10.object({
+  schemaVersion: z10.literal(1),
+  kind: z10.literal("composition"),
   ...guards,
-  groups: z9.array(z9.object({ ...nodeBase, type: z9.literal("group").default("group") }).strict()).default([]),
-  instances: z9.array(
-    z9.object({
+  groups: z10.array(z10.object({ ...nodeBase, type: z10.literal("group").default("group") }).strict()).default([]),
+  instances: z10.array(
+    z10.object({
       ...nodeBase,
-      type: z9.literal("model").default("model"),
+      type: z10.literal("model").default("model"),
       model: Id,
-      parameters: z9.record(Id, Scalar).default({}),
-      materialOverrides: z9.record(Id, Id).default({})
+      parameters: z10.record(Id, Scalar).default({}),
+      materialOverrides: z10.record(Id, Id).default({})
     }).strict()
   ).min(1).max(1e4)
 }).strict();
-var SceneBundleSchema = z9.object({
-  schemaVersion: z9.literal(1),
-  kind: z9.literal("scene-bundle"),
+var SceneBundleSchema = z10.object({
+  schemaVersion: z10.literal(1),
+  kind: z10.literal("scene-bundle"),
   scene: SceneSchema,
-  models: z9.record(Id, ModelSchema)
+  models: z10.record(Id, ModelSchema)
 }).strict();
-var LittlewildExportSchema = z9.object({
-  schemaVersion: z9.literal(1),
-  kind: z9.literal("littlewild-export"),
-  target: z9.string().min(1).max(512),
-  assets: z9.array(LittlewildAssetSchema).min(1).max(128)
+var LittlewildExportSchema = z10.object({
+  schemaVersion: z10.literal(1),
+  kind: z10.literal("littlewild-export"),
+  target: z10.string().min(1).max(512),
+  assets: z10.array(LittlewildAssetSchema).min(1).max(128)
 }).strict();
 var schemas = {
   scene: SceneSchema,
@@ -4133,7 +4431,7 @@ var schemaKinds = Object.keys(schemas);
 function jsonSchema(kind) {
   if (!Object.hasOwn(schemas, kind))
     fail("UNKNOWN_SCHEMA", `Unknown schema ${kind}.`, { available: Object.keys(schemas) });
-  return z9.toJSONSchema(schemas[kind], {
+  return z10.toJSONSchema(schemas[kind], {
     target: "draft-2020-12",
     io: "input"
   });
@@ -4571,7 +4869,7 @@ function registerRigCommands(c) {
 }
 
 // src/infra/examples.ts
-import { z as z10 } from "zod";
+import { z as z11 } from "zod";
 
 // src/infra/assets.ts
 import { promises as fs7 } from "node:fs";
@@ -4673,18 +4971,18 @@ async function unpackScene(directory, input) {
 }
 
 // src/infra/examples.ts
-var Entry = z10.object({
+var Entry = z11.object({
   id: Id,
-  name: z10.string(),
-  description: z10.string(),
-  features: z10.array(z10.string()),
-  models: z10.array(Id),
-  stats: z10.unknown()
+  name: z11.string(),
+  description: z11.string(),
+  features: z11.array(z11.string()),
+  models: z11.array(Id),
+  stats: z11.unknown()
 }).strict();
 async function exampleData(name) {
   return JSON.parse(await readAsset(`examples/${name}`));
 }
-var listExamples = async () => parse(z10.array(Entry), await exampleData("index.json"));
+var listExamples = async () => parse(z11.array(Entry), await exampleData("index.json"));
 async function exampleBundle(id) {
   parse(Id, id);
   const examples = await listExamples();
@@ -4766,7 +5064,10 @@ function formatCliError(error) {
           PATTERN_COUNT: "Resolve pattern counts to positive integers; their product must not exceed 256.",
           QUALITY_GATE_FAILED: "Read details.findings, repair the listed geometry or budgets, and run audit again.",
           INPUT_TOO_LARGE: "Split the recipe into smaller reusable models; JSON inputs are limited to 16 MiB.",
-          EMPTY_SELECTION: "Run node list with the same filters and check the IDs/tags."
+          EMPTY_SELECTION: "Run node list with the same filters and check the IDs/tags.",
+          PROCEDURAL_BUDGET: "Procedural output is bounded (2,000 placements, 20,000 candidate points, 10,000 scene nodes, 256 x 256 terrain vertices). Increase spacing, shrink the area or lower counts.",
+          SCATTER_EMPTY: "Nothing was placed. Read details.rejected and widen the area, lower the spacing or relax exclusions and maxSlope.",
+          TERRAIN_TRANSFORM: "Grounding follows only translation, yaw and positive uniform scale on the terrain node, the scatter parent and their ancestors."
         }[forge.code],
         ...forge.details !== void 0 ? { details: forge.details } : {}
       }
@@ -4795,7 +5096,7 @@ var sourceOptions = (cmd) => cmd.option("--file <path>", "Read JSON from file, o
 var editOptions = (cmd) => cmd.option("--expected-revision <n>", "Reject if current revision differs", integer).option("--expected-state <hash>", "Reject if the scene or model library changed").option("--dry-run", "Validate and compile without writing");
 
 // src/commands/input.ts
-import { z as z11 } from "zod";
+import { z as z12 } from "zod";
 import path9 from "node:path";
 var parseJson = (value) => {
   if (Buffer.byteLength(value) > 16 * 1024 * 1024)
@@ -4823,7 +5124,7 @@ async function readInput(runtime, options) {
   }
   return readJson(path9.resolve(runtime.cwd, options.file));
 }
-var parseParameters = (value) => parse(z11.record(Id, NumberValue), parseJson(value));
+var parseParameters = (value) => parse(z12.record(Id, NumberValue), parseJson(value));
 
 // src/commands/discovery.ts
 import { Option } from "commander";
@@ -4861,7 +5162,8 @@ function registerDiscoveryCommands(c) {
         "extrude",
         "mesh",
         "boolean",
-        "tube"
+        "tube",
+        "heightfield"
       ],
       organicForms: {
         type: "organic",

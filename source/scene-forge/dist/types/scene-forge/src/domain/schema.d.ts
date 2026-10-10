@@ -205,6 +205,33 @@ export declare const SceneBundleSchema: z.ZodObject<{
                 rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                 scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
             }, z.core.$strict>>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"heightfield">;
+            size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+            amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+            resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            seed: z.ZodDefault<z.ZodNumber>;
+            noise: z.ZodDefault<z.ZodObject<{
+                kind: z.ZodDefault<z.ZodEnum<{
+                    value: "value";
+                    ridged: "ridged";
+                    billow: "billow";
+                }>>;
+                octaves: z.ZodDefault<z.ZodNumber>;
+                frequency: z.ZodDefault<z.ZodNumber>;
+                lacunarity: z.ZodDefault<z.ZodNumber>;
+                gain: z.ZodDefault<z.ZodNumber>;
+            }, z.core.$strict>>;
+            falloff: z.ZodDefault<z.ZodEnum<{
+                none: "none";
+                island: "island";
+                basin: "basin";
+            }>>;
+            terrace: z.ZodDefault<z.ZodNumber>;
+            bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                below: z.ZodNumber;
+                color: z.ZodString;
+            }, z.core.$strict>>>;
         }, z.core.$strict>], "type">>>;
         materials: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodObject<{
             color: z.ZodString;
@@ -236,6 +263,7 @@ export declare const SceneBundleSchema: z.ZodObject<{
                 standard: "standard";
                 unlit: "unlit";
             }>>;
+            vertexColors: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>>;
         nodes: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
             type: z.ZodLiteral<"light">;
@@ -521,6 +549,33 @@ export declare const SceneBundleSchema: z.ZodObject<{
                 rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                 scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
             }, z.core.$strict>>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"heightfield">;
+            size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+            amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+            resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            seed: z.ZodDefault<z.ZodNumber>;
+            noise: z.ZodDefault<z.ZodObject<{
+                kind: z.ZodDefault<z.ZodEnum<{
+                    value: "value";
+                    ridged: "ridged";
+                    billow: "billow";
+                }>>;
+                octaves: z.ZodDefault<z.ZodNumber>;
+                frequency: z.ZodDefault<z.ZodNumber>;
+                lacunarity: z.ZodDefault<z.ZodNumber>;
+                gain: z.ZodDefault<z.ZodNumber>;
+            }, z.core.$strict>>;
+            falloff: z.ZodDefault<z.ZodEnum<{
+                none: "none";
+                island: "island";
+                basin: "basin";
+            }>>;
+            terrace: z.ZodDefault<z.ZodNumber>;
+            bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                below: z.ZodNumber;
+                color: z.ZodString;
+            }, z.core.$strict>>>;
         }, z.core.$strict>], "type">>>;
         materials: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodObject<{
             color: z.ZodString;
@@ -552,6 +607,7 @@ export declare const SceneBundleSchema: z.ZodObject<{
                 standard: "standard";
                 unlit: "unlit";
             }>>;
+            vertexColors: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>>;
         nodes: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
             type: z.ZodLiteral<"light">;
@@ -801,6 +857,7 @@ export declare const LittlewildExportSchema: z.ZodObject<{
                     standard: "standard";
                     unlit: "unlit";
                 }>>;
+                vertexColors: z.ZodOptional<z.ZodBoolean>;
             }, z.core.$strict>>>;
         }, z.core.$strict>>;
         metadata: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodUnion<readonly [z.ZodNumber, z.ZodString]>>>;
@@ -921,6 +978,33 @@ export declare const schemas: {
                 rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                 scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
             }, z.core.$strict>>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"heightfield">;
+            size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+            amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+            resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            seed: z.ZodDefault<z.ZodNumber>;
+            noise: z.ZodDefault<z.ZodObject<{
+                kind: z.ZodDefault<z.ZodEnum<{
+                    value: "value";
+                    ridged: "ridged";
+                    billow: "billow";
+                }>>;
+                octaves: z.ZodDefault<z.ZodNumber>;
+                frequency: z.ZodDefault<z.ZodNumber>;
+                lacunarity: z.ZodDefault<z.ZodNumber>;
+                gain: z.ZodDefault<z.ZodNumber>;
+            }, z.core.$strict>>;
+            falloff: z.ZodDefault<z.ZodEnum<{
+                none: "none";
+                island: "island";
+                basin: "basin";
+            }>>;
+            terrace: z.ZodDefault<z.ZodNumber>;
+            bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                below: z.ZodNumber;
+                color: z.ZodString;
+            }, z.core.$strict>>>;
         }, z.core.$strict>], "type">>>;
         materials: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodObject<{
             color: z.ZodString;
@@ -952,6 +1036,7 @@ export declare const schemas: {
                 standard: "standard";
                 unlit: "unlit";
             }>>;
+            vertexColors: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>>;
         nodes: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
             type: z.ZodLiteral<"light">;
@@ -1237,6 +1322,33 @@ export declare const schemas: {
                 rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                 scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
             }, z.core.$strict>>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"heightfield">;
+            size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+            amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+            resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            seed: z.ZodDefault<z.ZodNumber>;
+            noise: z.ZodDefault<z.ZodObject<{
+                kind: z.ZodDefault<z.ZodEnum<{
+                    value: "value";
+                    ridged: "ridged";
+                    billow: "billow";
+                }>>;
+                octaves: z.ZodDefault<z.ZodNumber>;
+                frequency: z.ZodDefault<z.ZodNumber>;
+                lacunarity: z.ZodDefault<z.ZodNumber>;
+                gain: z.ZodDefault<z.ZodNumber>;
+            }, z.core.$strict>>;
+            falloff: z.ZodDefault<z.ZodEnum<{
+                none: "none";
+                island: "island";
+                basin: "basin";
+            }>>;
+            terrace: z.ZodDefault<z.ZodNumber>;
+            bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                below: z.ZodNumber;
+                color: z.ZodString;
+            }, z.core.$strict>>>;
         }, z.core.$strict>], "type">>>;
         materials: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodObject<{
             color: z.ZodString;
@@ -1268,6 +1380,7 @@ export declare const schemas: {
                 standard: "standard";
                 unlit: "unlit";
             }>>;
+            vertexColors: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>>;
         nodes: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
             type: z.ZodLiteral<"light">;
@@ -1843,6 +1956,33 @@ export declare const schemas: {
                     rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                     scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                 }, z.core.$strict>>;
+            }, z.core.$strict>, z.ZodObject<{
+                type: z.ZodLiteral<"heightfield">;
+                size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+                amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+                resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+                seed: z.ZodDefault<z.ZodNumber>;
+                noise: z.ZodDefault<z.ZodObject<{
+                    kind: z.ZodDefault<z.ZodEnum<{
+                        value: "value";
+                        ridged: "ridged";
+                        billow: "billow";
+                    }>>;
+                    octaves: z.ZodDefault<z.ZodNumber>;
+                    frequency: z.ZodDefault<z.ZodNumber>;
+                    lacunarity: z.ZodDefault<z.ZodNumber>;
+                    gain: z.ZodDefault<z.ZodNumber>;
+                }, z.core.$strict>>;
+                falloff: z.ZodDefault<z.ZodEnum<{
+                    none: "none";
+                    island: "island";
+                    basin: "basin";
+                }>>;
+                terrace: z.ZodDefault<z.ZodNumber>;
+                bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                    below: z.ZodNumber;
+                    color: z.ZodString;
+                }, z.core.$strict>>>;
             }, z.core.$strict>], "type">;
         }, z.core.$strict>, z.ZodObject<{
             op: z.ZodLiteral<"removeGeometry">;
@@ -1880,6 +2020,7 @@ export declare const schemas: {
                     standard: "standard";
                     unlit: "unlit";
                 }>>;
+                vertexColors: z.ZodOptional<z.ZodBoolean>;
             }, z.core.$strict>;
         }, z.core.$strict>, z.ZodObject<{
             op: z.ZodLiteral<"removeMaterial">;
@@ -2007,12 +2148,12 @@ export declare const schemas: {
             id: z.ZodString;
             target: z.ZodString;
             side: z.ZodEnum<{
+                below: "below";
                 left: "left";
                 right: "right";
                 front: "front";
                 back: "back";
                 above: "above";
-                below: "below";
             }>;
             gap: z.ZodDefault<z.ZodNumber>;
             center: z.ZodDefault<z.ZodBoolean>;
@@ -2296,6 +2437,33 @@ export declare const schemas: {
             rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
             scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
         }, z.core.$strict>>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"heightfield">;
+        size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+        amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+        resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+        seed: z.ZodDefault<z.ZodNumber>;
+        noise: z.ZodDefault<z.ZodObject<{
+            kind: z.ZodDefault<z.ZodEnum<{
+                value: "value";
+                ridged: "ridged";
+                billow: "billow";
+            }>>;
+            octaves: z.ZodDefault<z.ZodNumber>;
+            frequency: z.ZodDefault<z.ZodNumber>;
+            lacunarity: z.ZodDefault<z.ZodNumber>;
+            gain: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>;
+        falloff: z.ZodDefault<z.ZodEnum<{
+            none: "none";
+            island: "island";
+            basin: "basin";
+        }>>;
+        terrace: z.ZodDefault<z.ZodNumber>;
+        bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            below: z.ZodNumber;
+            color: z.ZodString;
+        }, z.core.$strict>>>;
     }, z.core.$strict>], "type">;
     material: z.ZodObject<{
         color: z.ZodString;
@@ -2327,6 +2495,7 @@ export declare const schemas: {
             standard: "standard";
             unlit: "unlit";
         }>>;
+        vertexColors: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strict>;
     composition: z.ZodObject<{
         groups: z.ZodDefault<z.ZodArray<z.ZodObject<{
@@ -2506,6 +2675,33 @@ export declare const schemas: {
                     rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                     scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                 }, z.core.$strict>>;
+            }, z.core.$strict>, z.ZodObject<{
+                type: z.ZodLiteral<"heightfield">;
+                size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+                amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+                resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+                seed: z.ZodDefault<z.ZodNumber>;
+                noise: z.ZodDefault<z.ZodObject<{
+                    kind: z.ZodDefault<z.ZodEnum<{
+                        value: "value";
+                        ridged: "ridged";
+                        billow: "billow";
+                    }>>;
+                    octaves: z.ZodDefault<z.ZodNumber>;
+                    frequency: z.ZodDefault<z.ZodNumber>;
+                    lacunarity: z.ZodDefault<z.ZodNumber>;
+                    gain: z.ZodDefault<z.ZodNumber>;
+                }, z.core.$strict>>;
+                falloff: z.ZodDefault<z.ZodEnum<{
+                    none: "none";
+                    island: "island";
+                    basin: "basin";
+                }>>;
+                terrace: z.ZodDefault<z.ZodNumber>;
+                bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                    below: z.ZodNumber;
+                    color: z.ZodString;
+                }, z.core.$strict>>>;
             }, z.core.$strict>], "type">>>;
             materials: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodObject<{
                 color: z.ZodString;
@@ -2537,6 +2733,7 @@ export declare const schemas: {
                     standard: "standard";
                     unlit: "unlit";
                 }>>;
+                vertexColors: z.ZodOptional<z.ZodBoolean>;
             }, z.core.$strict>>>;
             nodes: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
                 type: z.ZodLiteral<"light">;
@@ -2854,6 +3051,33 @@ export declare const schemas: {
                     rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                     scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                 }, z.core.$strict>>;
+            }, z.core.$strict>, z.ZodObject<{
+                type: z.ZodLiteral<"heightfield">;
+                size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+                amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+                resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+                seed: z.ZodDefault<z.ZodNumber>;
+                noise: z.ZodDefault<z.ZodObject<{
+                    kind: z.ZodDefault<z.ZodEnum<{
+                        value: "value";
+                        ridged: "ridged";
+                        billow: "billow";
+                    }>>;
+                    octaves: z.ZodDefault<z.ZodNumber>;
+                    frequency: z.ZodDefault<z.ZodNumber>;
+                    lacunarity: z.ZodDefault<z.ZodNumber>;
+                    gain: z.ZodDefault<z.ZodNumber>;
+                }, z.core.$strict>>;
+                falloff: z.ZodDefault<z.ZodEnum<{
+                    none: "none";
+                    island: "island";
+                    basin: "basin";
+                }>>;
+                terrace: z.ZodDefault<z.ZodNumber>;
+                bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                    below: z.ZodNumber;
+                    color: z.ZodString;
+                }, z.core.$strict>>>;
             }, z.core.$strict>], "type">>>;
             materials: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodObject<{
                 color: z.ZodString;
@@ -2885,6 +3109,7 @@ export declare const schemas: {
                     standard: "standard";
                     unlit: "unlit";
                 }>>;
+                vertexColors: z.ZodOptional<z.ZodBoolean>;
             }, z.core.$strict>>>;
             nodes: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
                 type: z.ZodLiteral<"light">;
@@ -3170,6 +3395,33 @@ export declare const schemas: {
                     rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                     scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                 }, z.core.$strict>>;
+            }, z.core.$strict>, z.ZodObject<{
+                type: z.ZodLiteral<"heightfield">;
+                size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+                amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+                resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+                seed: z.ZodDefault<z.ZodNumber>;
+                noise: z.ZodDefault<z.ZodObject<{
+                    kind: z.ZodDefault<z.ZodEnum<{
+                        value: "value";
+                        ridged: "ridged";
+                        billow: "billow";
+                    }>>;
+                    octaves: z.ZodDefault<z.ZodNumber>;
+                    frequency: z.ZodDefault<z.ZodNumber>;
+                    lacunarity: z.ZodDefault<z.ZodNumber>;
+                    gain: z.ZodDefault<z.ZodNumber>;
+                }, z.core.$strict>>;
+                falloff: z.ZodDefault<z.ZodEnum<{
+                    none: "none";
+                    island: "island";
+                    basin: "basin";
+                }>>;
+                terrace: z.ZodDefault<z.ZodNumber>;
+                bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                    below: z.ZodNumber;
+                    color: z.ZodString;
+                }, z.core.$strict>>>;
             }, z.core.$strict>], "type">>>;
             materials: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodObject<{
                 color: z.ZodString;
@@ -3201,6 +3453,7 @@ export declare const schemas: {
                     standard: "standard";
                     unlit: "unlit";
                 }>>;
+                vertexColors: z.ZodOptional<z.ZodBoolean>;
             }, z.core.$strict>>>;
             nodes: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
                 type: z.ZodLiteral<"light">;
@@ -3637,6 +3890,7 @@ export declare const schemas: {
                         standard: "standard";
                         unlit: "unlit";
                     }>>;
+                    vertexColors: z.ZodOptional<z.ZodBoolean>;
                 }, z.core.$strict>>>;
             }, z.core.$strict>>;
             metadata: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodUnion<readonly [z.ZodNumber, z.ZodString]>>>;
@@ -3733,6 +3987,33 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
         rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
         scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
     }, z.core.$strict>>;
+}, z.core.$strict>, z.ZodObject<{
+    type: z.ZodLiteral<"heightfield">;
+    size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+    amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+    resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+    seed: z.ZodDefault<z.ZodNumber>;
+    noise: z.ZodDefault<z.ZodObject<{
+        kind: z.ZodDefault<z.ZodEnum<{
+            value: "value";
+            ridged: "ridged";
+            billow: "billow";
+        }>>;
+        octaves: z.ZodDefault<z.ZodNumber>;
+        frequency: z.ZodDefault<z.ZodNumber>;
+        lacunarity: z.ZodDefault<z.ZodNumber>;
+        gain: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>>;
+    falloff: z.ZodDefault<z.ZodEnum<{
+        none: "none";
+        island: "island";
+        basin: "basin";
+    }>>;
+    terrace: z.ZodDefault<z.ZodNumber>;
+    bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        below: z.ZodNumber;
+        color: z.ZodString;
+    }, z.core.$strict>>>;
 }, z.core.$strict>], "type"> | z.ZodObject<{
     color: z.ZodString;
     metalness: z.ZodDefault<z.ZodNumber>;
@@ -3763,6 +4044,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
         standard: "standard";
         unlit: "unlit";
     }>>;
+    vertexColors: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strict> | z.ZodDiscriminatedUnion<[z.ZodObject<{
     type: z.ZodLiteral<"path">;
     points: z.ZodArray<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
@@ -4117,6 +4399,33 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
             scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
         }, z.core.$strict>>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"heightfield">;
+        size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+        amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+        resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+        seed: z.ZodDefault<z.ZodNumber>;
+        noise: z.ZodDefault<z.ZodObject<{
+            kind: z.ZodDefault<z.ZodEnum<{
+                value: "value";
+                ridged: "ridged";
+                billow: "billow";
+            }>>;
+            octaves: z.ZodDefault<z.ZodNumber>;
+            frequency: z.ZodDefault<z.ZodNumber>;
+            lacunarity: z.ZodDefault<z.ZodNumber>;
+            gain: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>;
+        falloff: z.ZodDefault<z.ZodEnum<{
+            none: "none";
+            island: "island";
+            basin: "basin";
+        }>>;
+        terrace: z.ZodDefault<z.ZodNumber>;
+        bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            below: z.ZodNumber;
+            color: z.ZodString;
+        }, z.core.$strict>>>;
     }, z.core.$strict>], "type">>>;
     materials: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodObject<{
         color: z.ZodString;
@@ -4148,6 +4457,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             standard: "standard";
             unlit: "unlit";
         }>>;
+        vertexColors: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strict>>>;
     nodes: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
         type: z.ZodLiteral<"light">;
@@ -4432,6 +4742,33 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
             scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
         }, z.core.$strict>>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"heightfield">;
+        size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+        amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+        resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+        seed: z.ZodDefault<z.ZodNumber>;
+        noise: z.ZodDefault<z.ZodObject<{
+            kind: z.ZodDefault<z.ZodEnum<{
+                value: "value";
+                ridged: "ridged";
+                billow: "billow";
+            }>>;
+            octaves: z.ZodDefault<z.ZodNumber>;
+            frequency: z.ZodDefault<z.ZodNumber>;
+            lacunarity: z.ZodDefault<z.ZodNumber>;
+            gain: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>;
+        falloff: z.ZodDefault<z.ZodEnum<{
+            none: "none";
+            island: "island";
+            basin: "basin";
+        }>>;
+        terrace: z.ZodDefault<z.ZodNumber>;
+        bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            below: z.ZodNumber;
+            color: z.ZodString;
+        }, z.core.$strict>>>;
     }, z.core.$strict>], "type">>>;
     materials: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodObject<{
         color: z.ZodString;
@@ -4463,6 +4800,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             standard: "standard";
             unlit: "unlit";
         }>>;
+        vertexColors: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strict>>>;
     nodes: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
         type: z.ZodLiteral<"light">;
@@ -4758,6 +5096,33 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                 scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
             }, z.core.$strict>>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"heightfield">;
+            size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+            amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+            resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            seed: z.ZodDefault<z.ZodNumber>;
+            noise: z.ZodDefault<z.ZodObject<{
+                kind: z.ZodDefault<z.ZodEnum<{
+                    value: "value";
+                    ridged: "ridged";
+                    billow: "billow";
+                }>>;
+                octaves: z.ZodDefault<z.ZodNumber>;
+                frequency: z.ZodDefault<z.ZodNumber>;
+                lacunarity: z.ZodDefault<z.ZodNumber>;
+                gain: z.ZodDefault<z.ZodNumber>;
+            }, z.core.$strict>>;
+            falloff: z.ZodDefault<z.ZodEnum<{
+                none: "none";
+                island: "island";
+                basin: "basin";
+            }>>;
+            terrace: z.ZodDefault<z.ZodNumber>;
+            bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                below: z.ZodNumber;
+                color: z.ZodString;
+            }, z.core.$strict>>>;
         }, z.core.$strict>], "type">>>;
         materials: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodObject<{
             color: z.ZodString;
@@ -4789,6 +5154,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 standard: "standard";
                 unlit: "unlit";
             }>>;
+            vertexColors: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>>;
         nodes: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
             type: z.ZodLiteral<"light">;
@@ -5357,6 +5723,33 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                 scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
             }, z.core.$strict>>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"heightfield">;
+            size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+            amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+            resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            seed: z.ZodDefault<z.ZodNumber>;
+            noise: z.ZodDefault<z.ZodObject<{
+                kind: z.ZodDefault<z.ZodEnum<{
+                    value: "value";
+                    ridged: "ridged";
+                    billow: "billow";
+                }>>;
+                octaves: z.ZodDefault<z.ZodNumber>;
+                frequency: z.ZodDefault<z.ZodNumber>;
+                lacunarity: z.ZodDefault<z.ZodNumber>;
+                gain: z.ZodDefault<z.ZodNumber>;
+            }, z.core.$strict>>;
+            falloff: z.ZodDefault<z.ZodEnum<{
+                none: "none";
+                island: "island";
+                basin: "basin";
+            }>>;
+            terrace: z.ZodDefault<z.ZodNumber>;
+            bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                below: z.ZodNumber;
+                color: z.ZodString;
+            }, z.core.$strict>>>;
         }, z.core.$strict>], "type">;
     }, z.core.$strict>, z.ZodObject<{
         op: z.ZodLiteral<"removeGeometry">;
@@ -5394,6 +5787,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 standard: "standard";
                 unlit: "unlit";
             }>>;
+            vertexColors: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>;
     }, z.core.$strict>, z.ZodObject<{
         op: z.ZodLiteral<"removeMaterial">;
@@ -5521,12 +5915,12 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
         id: z.ZodString;
         target: z.ZodString;
         side: z.ZodEnum<{
+            below: "below";
             left: "left";
             right: "right";
             front: "front";
             back: "back";
             above: "above";
-            below: "below";
         }>;
         gap: z.ZodDefault<z.ZodNumber>;
         center: z.ZodDefault<z.ZodBoolean>;
@@ -5858,6 +6252,33 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                 scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
             }, z.core.$strict>>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"heightfield">;
+            size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+            amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+            resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            seed: z.ZodDefault<z.ZodNumber>;
+            noise: z.ZodDefault<z.ZodObject<{
+                kind: z.ZodDefault<z.ZodEnum<{
+                    value: "value";
+                    ridged: "ridged";
+                    billow: "billow";
+                }>>;
+                octaves: z.ZodDefault<z.ZodNumber>;
+                frequency: z.ZodDefault<z.ZodNumber>;
+                lacunarity: z.ZodDefault<z.ZodNumber>;
+                gain: z.ZodDefault<z.ZodNumber>;
+            }, z.core.$strict>>;
+            falloff: z.ZodDefault<z.ZodEnum<{
+                none: "none";
+                island: "island";
+                basin: "basin";
+            }>>;
+            terrace: z.ZodDefault<z.ZodNumber>;
+            bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                below: z.ZodNumber;
+                color: z.ZodString;
+            }, z.core.$strict>>>;
         }, z.core.$strict>], "type">>>;
         materials: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodObject<{
             color: z.ZodString;
@@ -5889,6 +6310,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 standard: "standard";
                 unlit: "unlit";
             }>>;
+            vertexColors: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>>;
         nodes: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
             type: z.ZodLiteral<"light">;
@@ -6174,6 +6596,33 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
                 scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>>;
             }, z.core.$strict>>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"heightfield">;
+            size: z.ZodTuple<[z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>, z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>], null>;
+            amplitude: z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>>;
+            resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            seed: z.ZodDefault<z.ZodNumber>;
+            noise: z.ZodDefault<z.ZodObject<{
+                kind: z.ZodDefault<z.ZodEnum<{
+                    value: "value";
+                    ridged: "ridged";
+                    billow: "billow";
+                }>>;
+                octaves: z.ZodDefault<z.ZodNumber>;
+                frequency: z.ZodDefault<z.ZodNumber>;
+                lacunarity: z.ZodDefault<z.ZodNumber>;
+                gain: z.ZodDefault<z.ZodNumber>;
+            }, z.core.$strict>>;
+            falloff: z.ZodDefault<z.ZodEnum<{
+                none: "none";
+                island: "island";
+                basin: "basin";
+            }>>;
+            terrace: z.ZodDefault<z.ZodNumber>;
+            bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                below: z.ZodNumber;
+                color: z.ZodString;
+            }, z.core.$strict>>>;
         }, z.core.$strict>], "type">>>;
         materials: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodObject<{
             color: z.ZodString;
@@ -6205,6 +6654,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 standard: "standard";
                 unlit: "unlit";
             }>>;
+            vertexColors: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>>;
         nodes: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
             type: z.ZodLiteral<"light">;
@@ -6453,6 +6903,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                     standard: "standard";
                     unlit: "unlit";
                 }>>;
+                vertexColors: z.ZodOptional<z.ZodBoolean>;
             }, z.core.$strict>>>;
         }, z.core.$strict>>;
         metadata: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodUnion<readonly [z.ZodNumber, z.ZodString]>>>;

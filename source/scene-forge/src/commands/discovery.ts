@@ -48,6 +48,7 @@ export function registerDiscoveryCommands(c: CommandContext) {
           'mesh',
           'boolean',
           'tube',
+          'heightfield',
         ],
         organicForms: {
           type: 'organic',

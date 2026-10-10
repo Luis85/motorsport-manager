@@ -4,6 +4,7 @@ import { createMaterial } from './materials.js';
 import { sphereUVs } from './surface-pattern.js';
 import { organicGeometry } from './organic.js';
 import { tubeGeometry } from './tube.js';
+import { heightfieldGeometry } from './heightfield.js';
 import * as THREE from 'three';
 import { Brush, Evaluator, ADDITION, SUBTRACTION, INTERSECTION } from 'three-bvh-csg/src/index.js';
 import {
@@ -101,6 +102,9 @@ export function createResourcePool(warnings: Set<string>) {
           break;
         case 'tube':
           result = tubeGeometry(g);
+          break;
+        case 'heightfield':
+          result = heightfieldGeometry(g);
           break;
         case 'plane':
           result = new THREE.PlaneGeometry(...(g.size as [number, number]));

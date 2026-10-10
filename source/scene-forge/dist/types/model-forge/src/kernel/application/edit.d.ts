@@ -26,6 +26,25 @@ export declare function prepareSceneEdit(snapshot: SceneState, operations: Opera
             presentation?: "inspection" | "portrait" | undefined;
         };
         geometries: Record<string, {
+            type: "heightfield";
+            size: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
+            amplitude: import("../domain/schema-values.js").ScalarValue;
+            resolution: [number, number];
+            seed: number;
+            noise: {
+                kind: "value" | "ridged" | "billow";
+                octaves: number;
+                frequency: number;
+                lacunarity: number;
+                gain: number;
+            };
+            falloff: "none" | "island" | "basin";
+            terrace: number;
+            bands?: {
+                below: number;
+                color: string;
+            }[] | undefined;
+        } | {
             type: "box";
             size: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
         } | {
@@ -134,6 +153,7 @@ export declare function prepareSceneEdit(snapshot: SceneState, operations: Opera
             emissiveIntensity?: number | undefined;
             depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
+            vertexColors?: boolean | undefined;
         }>;
         nodes: ({
             type: "light";

@@ -20,6 +20,25 @@ export declare const newScene: (id: string, name?: string) => {
         presentation?: "inspection" | "portrait" | undefined;
     };
     geometries: Record<string, {
+        type: "heightfield";
+        size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
+        amplitude: import("../kernel.js").ScalarValue;
+        resolution: [number, number];
+        seed: number;
+        noise: {
+            kind: "value" | "ridged" | "billow";
+            octaves: number;
+            frequency: number;
+            lacunarity: number;
+            gain: number;
+        };
+        falloff: "none" | "island" | "basin";
+        terrace: number;
+        bands?: {
+            below: number;
+            color: string;
+        }[] | undefined;
+    } | {
         type: "box";
         size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
     } | {
@@ -128,6 +147,7 @@ export declare const newScene: (id: string, name?: string) => {
         emissiveIntensity?: number | undefined;
         depthWrite?: boolean | undefined;
         shading?: "standard" | "unlit" | undefined;
+        vertexColors?: boolean | undefined;
     }>;
     nodes: ({
         type: "light";
@@ -332,6 +352,25 @@ export declare function loadProjectScenes(start: string): Promise<{
             presentation?: "inspection" | "portrait" | undefined;
         };
         geometries: Record<string, {
+            type: "heightfield";
+            size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
+            amplitude: import("../kernel.js").ScalarValue;
+            resolution: [number, number];
+            seed: number;
+            noise: {
+                kind: "value" | "ridged" | "billow";
+                octaves: number;
+                frequency: number;
+                lacunarity: number;
+                gain: number;
+            };
+            falloff: "none" | "island" | "basin";
+            terrace: number;
+            bands?: {
+                below: number;
+                color: string;
+            }[] | undefined;
+        } | {
             type: "box";
             size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
         } | {
@@ -440,6 +479,7 @@ export declare function loadProjectScenes(start: string): Promise<{
             emissiveIntensity?: number | undefined;
             depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
+            vertexColors?: boolean | undefined;
         }>;
         nodes: ({
             type: "light";
@@ -679,6 +719,25 @@ export declare function importModel(start: string, input: unknown, replace?: boo
     models: string[];
     model: {
         geometries: Record<string, {
+            type: "heightfield";
+            size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
+            amplitude: import("../kernel.js").ScalarValue;
+            resolution: [number, number];
+            seed: number;
+            noise: {
+                kind: "value" | "ridged" | "billow";
+                octaves: number;
+                frequency: number;
+                lacunarity: number;
+                gain: number;
+            };
+            falloff: "none" | "island" | "basin";
+            terrace: number;
+            bands?: {
+                below: number;
+                color: string;
+            }[] | undefined;
+        } | {
             type: "box";
             size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
         } | {
@@ -787,6 +846,7 @@ export declare function importModel(start: string, input: unknown, replace?: boo
             emissiveIntensity?: number | undefined;
             depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
+            vertexColors?: boolean | undefined;
         }>;
         nodes: ({
             type: "light";
@@ -994,6 +1054,25 @@ export declare function importModel(start: string, input: unknown, replace?: boo
     models: string[];
     model: {
         geometries: Record<string, {
+            type: "heightfield";
+            size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
+            amplitude: import("../kernel.js").ScalarValue;
+            resolution: [number, number];
+            seed: number;
+            noise: {
+                kind: "value" | "ridged" | "billow";
+                octaves: number;
+                frequency: number;
+                lacunarity: number;
+                gain: number;
+            };
+            falloff: "none" | "island" | "basin";
+            terrace: number;
+            bands?: {
+                below: number;
+                color: string;
+            }[] | undefined;
+        } | {
             type: "box";
             size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
         } | {
@@ -1102,6 +1181,7 @@ export declare function importModel(start: string, input: unknown, replace?: boo
             emissiveIntensity?: number | undefined;
             depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
+            vertexColors?: boolean | undefined;
         }>;
         nodes: ({
             type: "light";
@@ -1310,6 +1390,25 @@ export declare function captureProjectModel(start: string, sceneId: string | und
     models: string[];
     model: {
         geometries: Record<string, {
+            type: "heightfield";
+            size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
+            amplitude: import("../kernel.js").ScalarValue;
+            resolution: [number, number];
+            seed: number;
+            noise: {
+                kind: "value" | "ridged" | "billow";
+                octaves: number;
+                frequency: number;
+                lacunarity: number;
+                gain: number;
+            };
+            falloff: "none" | "island" | "basin";
+            terrace: number;
+            bands?: {
+                below: number;
+                color: string;
+            }[] | undefined;
+        } | {
             type: "box";
             size: [import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue, import("../kernel.js").ScalarValue];
         } | {
@@ -1418,6 +1517,7 @@ export declare function captureProjectModel(start: string, sceneId: string | und
             emissiveIntensity?: number | undefined;
             depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
+            vertexColors?: boolean | undefined;
         }>;
         nodes: ({
             type: "light";

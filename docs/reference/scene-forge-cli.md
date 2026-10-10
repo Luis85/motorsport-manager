@@ -909,9 +909,12 @@ Batch operations: `putNode`, `patchNode`, `patchNodes`, `removeNode`,
 `expectedRevision` and `expectedState`. Geometry types: `box`, `sphere`,
 `cylinder`, `cone`, `torus`, `capsule`, `plane`, `tube`, `lathe`, `extrude`
 (profile with optional holes and bevel), `mesh` (indexed triangles with optional
-`normals`/`uvs`) and `boolean` (`union`, `subtract`, `intersect`). Patterns:
-`linear`, `radial`, `grid` (at most 256 copies) and `path`. Materials are
-metallic/roughness PBR or unlit. `scene-forge catalog` lists the current set.
+`normals`/`uvs`), `boolean` (`union`, `subtract`, `intersect`) and `heightfield`
+(seeded noise terrain on at most 256 x 256 vertices, optional height `bands` as
+vertex colors). Patterns: `linear`, `radial`, `grid` (at most 256 copies) and
+`path`. Materials are metallic/roughness PBR or unlit; `vertexColors: true`
+multiplies the base color by vertex colors. `scene-forge catalog` lists the
+current set.
 
 ## Common workflows
 

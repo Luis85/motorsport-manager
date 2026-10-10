@@ -364,6 +364,33 @@ export declare const OperationSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
             rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>>;
             scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>>;
         }, z.core.$strict>>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"heightfield">;
+        size: z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>;
+        amplitude: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+        resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+        seed: z.ZodDefault<z.ZodNumber>;
+        noise: z.ZodDefault<z.ZodObject<{
+            kind: z.ZodDefault<z.ZodEnum<{
+                value: "value";
+                ridged: "ridged";
+                billow: "billow";
+            }>>;
+            octaves: z.ZodDefault<z.ZodNumber>;
+            frequency: z.ZodDefault<z.ZodNumber>;
+            lacunarity: z.ZodDefault<z.ZodNumber>;
+            gain: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>;
+        falloff: z.ZodDefault<z.ZodEnum<{
+            none: "none";
+            island: "island";
+            basin: "basin";
+        }>>;
+        terrace: z.ZodDefault<z.ZodNumber>;
+        bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            below: z.ZodNumber;
+            color: z.ZodString;
+        }, z.core.$strict>>>;
     }, z.core.$strict>], "type">;
 }, z.core.$strict>, z.ZodObject<{
     op: z.ZodLiteral<"removeGeometry">;
@@ -401,6 +428,7 @@ export declare const OperationSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
             standard: "standard";
             unlit: "unlit";
         }>>;
+        vertexColors: z.ZodOptional<z.ZodBoolean>;
     }, z.core.$strict>;
 }, z.core.$strict>, z.ZodObject<{
     op: z.ZodLiteral<"removeMaterial">;
@@ -528,12 +556,12 @@ export declare const OperationSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     id: z.ZodString;
     target: z.ZodString;
     side: z.ZodEnum<{
+        below: "below";
         left: "left";
         right: "right";
         front: "front";
         back: "back";
         above: "above";
-        below: "below";
     }>;
     gap: z.ZodDefault<z.ZodNumber>;
     center: z.ZodDefault<z.ZodBoolean>;
@@ -910,6 +938,33 @@ export declare const BatchSchema: z.ZodObject<{
                 rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>>;
                 scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>>;
             }, z.core.$strict>>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"heightfield">;
+            size: z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>;
+            amplitude: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+            resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            seed: z.ZodDefault<z.ZodNumber>;
+            noise: z.ZodDefault<z.ZodObject<{
+                kind: z.ZodDefault<z.ZodEnum<{
+                    value: "value";
+                    ridged: "ridged";
+                    billow: "billow";
+                }>>;
+                octaves: z.ZodDefault<z.ZodNumber>;
+                frequency: z.ZodDefault<z.ZodNumber>;
+                lacunarity: z.ZodDefault<z.ZodNumber>;
+                gain: z.ZodDefault<z.ZodNumber>;
+            }, z.core.$strict>>;
+            falloff: z.ZodDefault<z.ZodEnum<{
+                none: "none";
+                island: "island";
+                basin: "basin";
+            }>>;
+            terrace: z.ZodDefault<z.ZodNumber>;
+            bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                below: z.ZodNumber;
+                color: z.ZodString;
+            }, z.core.$strict>>>;
         }, z.core.$strict>], "type">;
     }, z.core.$strict>, z.ZodObject<{
         op: z.ZodLiteral<"removeGeometry">;
@@ -947,6 +1002,7 @@ export declare const BatchSchema: z.ZodObject<{
                 standard: "standard";
                 unlit: "unlit";
             }>>;
+            vertexColors: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>;
     }, z.core.$strict>, z.ZodObject<{
         op: z.ZodLiteral<"removeMaterial">;
@@ -1074,12 +1130,12 @@ export declare const BatchSchema: z.ZodObject<{
         id: z.ZodString;
         target: z.ZodString;
         side: z.ZodEnum<{
+            below: "below";
             left: "left";
             right: "right";
             front: "front";
             back: "back";
             above: "above";
-            below: "below";
         }>;
         gap: z.ZodDefault<z.ZodNumber>;
         center: z.ZodDefault<z.ZodBoolean>;

@@ -41,6 +41,12 @@ export function formatCliError(error: unknown): string {
               INPUT_TOO_LARGE:
                 'Split the recipe into smaller reusable models; JSON inputs are limited to 16 MiB.',
               EMPTY_SELECTION: 'Run node list with the same filters and check the IDs/tags.',
+              PROCEDURAL_BUDGET:
+                'Procedural output is bounded (2,000 placements, 20,000 candidate points, 10,000 scene nodes, 256 x 256 terrain vertices). Increase spacing, shrink the area or lower counts.',
+              SCATTER_EMPTY:
+                'Nothing was placed. Read details.rejected and widen the area, lower the spacing or relax exclusions and maxSlope.',
+              TERRAIN_TRANSFORM:
+                'Grounding follows only translation, yaw and positive uniform scale on the terrain node, the scatter parent and their ancestors.',
             } as Record<string, string>
           )[forge.code],
           ...(forge.details !== undefined ? { details: forge.details } : {}),

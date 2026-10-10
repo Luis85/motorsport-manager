@@ -49,6 +49,7 @@ export declare const LittlewildAssetSchema: z.ZodObject<{
                 standard: "standard";
                 unlit: "unlit";
             }>>;
+            vertexColors: z.ZodOptional<z.ZodBoolean>;
         }, z.core.$strict>>>;
     }, z.core.$strict>>;
     metadata: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodUnion<readonly [z.ZodNumber, z.ZodString]>>>;

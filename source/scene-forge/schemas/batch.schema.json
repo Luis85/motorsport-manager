@@ -2708,6 +2708,151 @@
                       "right"
                     ],
                     "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "heightfield"
+                      },
+                      "size": {
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "$ref": "#/$defs/__schema0"
+                          },
+                          {
+                            "$ref": "#/$defs/__schema0"
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 2,
+                        "maxItems": 2
+                      },
+                      "amplitude": {
+                        "$ref": "#/$defs/__schema0"
+                      },
+                      "resolution": {
+                        "default": [
+                          64,
+                          64
+                        ],
+                        "type": "array",
+                        "prefixItems": [
+                          {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 256
+                          },
+                          {
+                            "type": "integer",
+                            "minimum": 2,
+                            "maximum": 256
+                          }
+                        ],
+                        "items": false,
+                        "minItems": 2,
+                        "maxItems": 2
+                      },
+                      "seed": {
+                        "default": 1,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4294967295
+                      },
+                      "noise": {
+                        "default": {
+                          "kind": "value",
+                          "octaves": 4,
+                          "frequency": 3,
+                          "lacunarity": 2,
+                          "gain": 0.5
+                        },
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "default": "value",
+                            "type": "string",
+                            "enum": [
+                              "value",
+                              "ridged",
+                              "billow"
+                            ]
+                          },
+                          "octaves": {
+                            "default": 4,
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 8
+                          },
+                          "frequency": {
+                            "default": 3,
+                            "type": "number",
+                            "minimum": 0.1,
+                            "maximum": 64
+                          },
+                          "lacunarity": {
+                            "default": 2,
+                            "type": "number",
+                            "minimum": 1,
+                            "maximum": 4
+                          },
+                          "gain": {
+                            "default": 0.5,
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 1
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "falloff": {
+                        "default": "none",
+                        "type": "string",
+                        "enum": [
+                          "none",
+                          "island",
+                          "basin"
+                        ]
+                      },
+                      "terrace": {
+                        "default": 0,
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 32
+                      },
+                      "bands": {
+                        "minItems": 1,
+                        "maxItems": 8,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "below": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "color": {
+                              "type": "string",
+                              "pattern": "^#[0-9a-fA-F]{6}$"
+                            }
+                          },
+                          "required": [
+                            "below",
+                            "color"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "size",
+                      "amplitude"
+                    ],
+                    "additionalProperties": false
                   }
                 ]
               }
@@ -2870,6 +3015,9 @@
                       "standard",
                       "unlit"
                     ]
+                  },
+                  "vertexColors": {
+                    "type": "boolean"
                   }
                 },
                 "required": [

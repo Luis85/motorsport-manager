@@ -1,4 +1,49 @@
 import { z } from 'zod';
+/** Vertices per axis of a heightfield grid: at most 256 x 256 (130,050 triangles). */
+export declare const HEIGHTFIELD_MAX_RESOLUTION = 256;
+export declare const HeightfieldNoiseSchema: z.ZodObject<{
+    kind: z.ZodDefault<z.ZodEnum<{
+        value: "value";
+        ridged: "ridged";
+        billow: "billow";
+    }>>;
+    octaves: z.ZodDefault<z.ZodNumber>;
+    frequency: z.ZodDefault<z.ZodNumber>;
+    lacunarity: z.ZodDefault<z.ZodNumber>;
+    gain: z.ZodDefault<z.ZodNumber>;
+}, z.core.$strict>;
+/**
+ * Deterministic terrain: fBm noise on an integer lattice (+ - * / only), sampled on a
+ * resolution[0] x resolution[1] vertex grid centered on the origin, from y = 0 up to amplitude.
+ */
+export declare const HeightfieldGeometrySchema: z.ZodObject<{
+    type: z.ZodLiteral<"heightfield">;
+    size: z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>;
+    amplitude: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+    resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+    seed: z.ZodDefault<z.ZodNumber>;
+    noise: z.ZodDefault<z.ZodObject<{
+        kind: z.ZodDefault<z.ZodEnum<{
+            value: "value";
+            ridged: "ridged";
+            billow: "billow";
+        }>>;
+        octaves: z.ZodDefault<z.ZodNumber>;
+        frequency: z.ZodDefault<z.ZodNumber>;
+        lacunarity: z.ZodDefault<z.ZodNumber>;
+        gain: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>>;
+    falloff: z.ZodDefault<z.ZodEnum<{
+        none: "none";
+        island: "island";
+        basin: "basin";
+    }>>;
+    terrace: z.ZodDefault<z.ZodNumber>;
+    bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        below: z.ZodNumber;
+        color: z.ZodString;
+    }, z.core.$strict>>>;
+}, z.core.$strict>;
 export declare const GeometrySchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     type: z.ZodLiteral<"box">;
     size: z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>;
@@ -88,5 +133,33 @@ export declare const GeometrySchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
         rotation: z.ZodOptional<z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>>;
         scale: z.ZodOptional<z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>>;
     }, z.core.$strict>>;
+}, z.core.$strict>, z.ZodObject<{
+    type: z.ZodLiteral<"heightfield">;
+    size: z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>;
+    amplitude: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+    resolution: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+    seed: z.ZodDefault<z.ZodNumber>;
+    noise: z.ZodDefault<z.ZodObject<{
+        kind: z.ZodDefault<z.ZodEnum<{
+            value: "value";
+            ridged: "ridged";
+            billow: "billow";
+        }>>;
+        octaves: z.ZodDefault<z.ZodNumber>;
+        frequency: z.ZodDefault<z.ZodNumber>;
+        lacunarity: z.ZodDefault<z.ZodNumber>;
+        gain: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>>;
+    falloff: z.ZodDefault<z.ZodEnum<{
+        none: "none";
+        island: "island";
+        basin: "basin";
+    }>>;
+    terrace: z.ZodDefault<z.ZodNumber>;
+    bands: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        below: z.ZodNumber;
+        color: z.ZodString;
+    }, z.core.$strict>>>;
 }, z.core.$strict>], "type">;
 export type Geometry = z.infer<typeof GeometrySchema>;
+export type HeightfieldGeometry = z.infer<typeof HeightfieldGeometrySchema>;

@@ -226,6 +226,11 @@ export function validateDocument(
         fail('INVALID_GEOMETRY', `${id} needs at least one nonzero radius.`);
     }
     if (g.type === 'capsule') positive(g.length, 'length', true);
+    if (g.type === 'heightfield') {
+      positive(g.amplitude, 'amplitude', true);
+      if (g.bands?.some((band, index) => index > 0 && band.below <= g.bands![index - 1].below))
+        fail('INVALID_GEOMETRY', `${id}.bands must list strictly increasing below values.`);
+    }
     if (g.type === 'extrude' && g.bevel !== undefined) positive(g.bevel, 'bevel', true);
     if (g.type === 'lathe') g.points.forEach((p) => positive(p[0], 'point radius', true));
     if (

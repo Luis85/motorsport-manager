@@ -69,7 +69,8 @@ export async function reviewRender(
       'ALREADY_EXISTS',
       'Review directory is not empty. Choose a new directory or pass --overwrite.',
     );
-  const started = Date.now();
+  // A monotonic clock: the kernel never reads wall-clock time (architecture check).
+  const started = performance.now();
   const html = await renderer.buildHtml(scene, models, { stateHash: options.sourceStateHash });
   return withCaptureSession(
     html,
@@ -165,7 +166,7 @@ export async function reviewRender(
         frames,
         contactSheet,
         replayPlan: 'replay-plan.json',
-        durationMs: Date.now() - started,
+        durationMs: Math.round(performance.now() - started),
       };
       const replay = parse(ReviewPlanSchema, {
         ...plan,

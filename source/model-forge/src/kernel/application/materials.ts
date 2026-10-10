@@ -18,6 +18,8 @@ export function createMaterial(
     transparent: m.opacity < 1,
     depthWrite: m.depthWrite ?? true,
     side: m.doubleSided ? THREE.DoubleSide : THREE.FrontSide,
+    // Only set when requested, so materials without the field build exactly as before.
+    ...(m.vertexColors ? { vertexColors: true } : {}),
   };
   if (m.shading === 'unlit' && m.surface)
     fail(

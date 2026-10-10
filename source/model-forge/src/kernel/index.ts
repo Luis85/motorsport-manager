@@ -9,6 +9,8 @@ export * from './domain/canonical.js';
 export * from './domain/identity.js';
 export * from './domain/validate.js';
 export { validateRig } from './domain/rig.js';
+export * from './domain/random.js';
+export * from './domain/digest.js';
 
 export * from './application/compiler.js';
 export * from './application/resources.js';
@@ -29,6 +31,11 @@ export * from './application/quality.js';
 export * from './application/littlewild.js';
 export * from './application/littlewild-import.js';
 export * from './application/littlewild-resources.js';
+export * from './application/heightfield.js';
+export * from './application/terrain.js';
+export * from './application/terrain-presets.js';
+export * from './application/placement.js';
+export * from './application/scatter.js';
 
 export * from './io/files.js';
 export * from './io/state-hash.js';

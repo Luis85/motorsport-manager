@@ -41,5 +41,6 @@ export declare const MaterialSchema: z.ZodObject<{
         standard: "standard";
         unlit: "unlit";
     }>>;
+    vertexColors: z.ZodOptional<z.ZodBoolean>;
 }, z.core.$strict>;
 export type MaterialSpec = z.infer<typeof MaterialSchema>;

@@ -264,6 +264,25 @@ export declare function sceneEdits(initial: SceneDocument, source: SceneDocument
         op: "putGeometry";
         id: string;
         geometry: {
+            type: "heightfield";
+            size: [import("../kernel-render.js").ScalarValue, import("../kernel-render.js").ScalarValue];
+            amplitude: import("../kernel-render.js").ScalarValue;
+            resolution: [number, number];
+            seed: number;
+            noise: {
+                kind: "value" | "ridged" | "billow";
+                octaves: number;
+                frequency: number;
+                lacunarity: number;
+                gain: number;
+            };
+            falloff: "none" | "island" | "basin";
+            terrace: number;
+            bands?: {
+                below: number;
+                color: string;
+            }[] | undefined;
+        } | {
             type: "box";
             size: [import("../kernel-render.js").ScalarValue, import("../kernel-render.js").ScalarValue, import("../kernel-render.js").ScalarValue];
         } | {
@@ -378,6 +397,7 @@ export declare function sceneEdits(initial: SceneDocument, source: SceneDocument
             emissiveIntensity?: number | undefined;
             depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
+            vertexColors?: boolean | undefined;
         };
     } | {
         op: "removeMaterial";
@@ -491,7 +511,7 @@ export declare function sceneEdits(initial: SceneDocument, source: SceneDocument
         op: "placeNode";
         id: string;
         target: string;
-        side: "left" | "right" | "front" | "back" | "above" | "below";
+        side: "below" | "left" | "right" | "front" | "back" | "above";
         gap: number;
         center: boolean;
     })[];
