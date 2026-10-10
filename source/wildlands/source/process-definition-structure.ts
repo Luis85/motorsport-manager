@@ -1,14 +1,14 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-structure.ts" />
 /// <reference path="./process-layout.ts" />
-/// <reference path="./process-dialog.ts" />
+/// <reference path="./process-html.ts" />
 /**
  * The Definition editor's "Steps" section in Tune values (owner: the authoring package): **Add step** (kind, name, after which
  * step, and whether to insert it into that step's only path) for adding a step without a selection, and **Tidy layout**
  * (LWProcessLayout.tidy). Both build a new draft definition and hand it to `env.write(text, label)` with a label ("Added step
  * Review", "Tidied the layout"), so the Definition editor's undo history covers them; nothing applies, ticks or touches storage.
  * The section follows the draft through `refresh()` (the step list of "After") and is disabled with the form while the JSON
- * cannot be read.
+ * cannot be read. Its markup is built with LWProcessHtml's `html` template, so step names and ids from the draft are escaped.
  */
 declare namespace LWProcessDefinitionStructure {
  interface Env {
@@ -29,12 +29,12 @@ declare namespace LWProcessDefinitionStructure {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessStructure: LWProcessStructure.Api; LWProcessLayout: LWProcessLayout.Api; LWProcessDialog: LWProcessDialog.Api;
+ const root = inputRoot as {LWProcessStructure: LWProcessStructure.Api; LWProcessLayout: LWProcessLayout.Api; LWProcessHtml: LWProcessHtml.Api;
   LWProcessDefinitionStructure?: LWProcessDefinitionStructure.Api};
- const esc = (v: unknown) => root.LWProcessDialog.escape(v);
+ const {html} = root.LWProcessHtml;
  function create(host: HTMLElement, env: LWProcessDefinitionStructure.Env): LWProcessDefinitionStructure.Surface {
   const S = root.LWProcessStructure;
-  const kinds = S.KINDS.map(([k, label]) => `<option value="${k}">${esc(label)}</option>`).join('');
+  const kinds = String(html`${S.KINDS.map(([k, label]) => html`<option value="${k}">${label}</option>`)}`);
   host.insertAdjacentHTML('beforeend', `<section class="de-sec de-structure" aria-labelledby="de-structure-h">
    <h4 id="de-structure-h" tabindex="-1">Steps</h4>
    <p class="de-help">Add a step, or tidy the map so the main route reads left to right. Both change the draft only; Ctrl+Z (Cmd+Z on a Mac) undoes them.</p>
@@ -51,10 +51,10 @@ declare namespace LWProcessDefinitionStructure {
   const kind = q<HTMLSelectElement>('de-add-kind'), name = q<HTMLInputElement>('de-add-name'), after = q<HTMLSelectElement>('de-add-after');
   function refresh(): void {
    const steps = env.read()?.steps ?? [], chosen = after.value || steps.at(-1)?.id || '';
-   const html = steps.map(s => `<option value="${esc(s.id)}"${s.id === chosen ? ' selected' : ''}>${esc(s.name)}</option>`).join('');
-   if (after.dataset.html !== html) {
-    after.dataset.html = html;
-    after.innerHTML = html;
+   const options = String(html`${steps.map(s => html`<option value="${s.id}"${s.id === chosen ? html` selected` : ''}>${s.name}</option>`)}`);
+   if (after.dataset.html !== options) {
+    after.dataset.html = options;
+    after.innerHTML = options;
    }
   }
   function add(): void {

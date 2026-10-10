@@ -427,6 +427,7 @@
       "id": "process-presentation",
       "layer": "presentation",
       "files": [
+        "process-html.ts",
         "process-rooms.ts",
         "process-rooms-work.ts",
         "process-rooms-automation.ts",
