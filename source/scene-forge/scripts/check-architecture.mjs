@@ -112,10 +112,36 @@ for (const file of files) walk(file);
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));
 const version = (await readFile('src/version.ts', 'utf8')).match(/VERSION = '([^']+)'/)?.[1];
 if (pkg.version !== version) errors.push('package.json and src/version.ts disagree');
+// The kernel runs on this project's node_modules, so both projects must lock the same
+// versions of its packages (model-forge tests/kernel-lockfiles.test.ts checks the same).
+const kernelPackages = [
+  'three',
+  'three-bvh-csg',
+  'three-mesh-bvh',
+  'zod',
+  'gltf-validator',
+  'playwright',
+  'playwright-core',
+  '@types/three',
+  'typescript',
+];
+const [sceneLock, modelLock] = await Promise.all(
+  ['package-lock.json', '../model-forge/package-lock.json'].map(async (file) =>
+    JSON.parse(await readFile(file, 'utf8')),
+  ),
+);
+for (const name of kernelPackages) {
+  const scene = sceneLock.packages[`node_modules/${name}`],
+    model = modelLock.packages[`node_modules/${name}`];
+  if (!scene?.version || scene.version !== model?.version || scene.integrity !== model?.integrity)
+    errors.push(
+      `Kernel package ${name} is locked as ${scene?.version} here but ${model?.version} in ../model-forge; align both package-lock.json files.`,
+    );
+}
 if (errors.length) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else
   console.log(
-    `Architecture passed: ${files.length} modules, kernel only through its bridges, inward dependencies, no runtime cycles or explicit any.`,
+    `Architecture passed: ${files.length} modules, kernel only through its bridges, inward dependencies, no runtime cycles or explicit any, kernel packages locked like ../model-forge.`,
   );
