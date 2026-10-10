@@ -1,0 +1,2418 @@
+{
+  "browser": "151.0.7922.173",
+  "renderer": "SwiftShader software",
+  "frames": 21,
+  "before": {
+    "format": "wildlands-armored-snapshot",
+    "version": 1,
+    "tick": 0,
+    "seconds": 0,
+    "status": "running",
+    "controlled": "able-1",
+    "missionId": "crossroads",
+    "playerFaction": "allies",
+    "vehicles": [
+      {
+        "id": "able-1",
+        "definition": "m4-sherman",
+        "faction": "allies",
+        "transform": {
+          "position": {
+            "x": 264,
+            "y": -0.21316666666666667,
+            "z": 92
+          },
+          "yaw": 0,
+          "pitch": 0,
+          "roll": 0
+        },
+        "previous": {
+          "position": {
+            "x": 264,
+            "y": -0.21316666666666667,
+            "z": 92
+          },
+          "yaw": 0,
+          "pitch": 0,
+          "roll": 0
+        },
+        "body": {
+          "velocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "yawVelocity": 0,
+          "leftForce": 0,
+          "rightForce": 0,
+          "contacts": 6,
+          "slip": 0,
+          "grounded": true
+        },
+        "motor": {
+          "throttle": 0,
+          "steer": 0,
+          "brake": 0,
+          "cruise": 0
+        },
+        "weapon": {
+          "turretYaw": 0,
+          "elevation": 0,
+          "aimYaw": 0,
+          "aimElevation": 0,
+          "reload": 0,
+          "ammo": "ap75",
+          "reserves": {
+            "ap75": 15,
+            "he75": 15,
+            "smoke75": 15
+          },
+          "trigger": false,
+          "recoil": 0
+        },
+        "damage": {
+          "status": "operational",
+          "components": {
+            "leftTrack": 100,
+            "rightTrack": 100,
+            "engine": 100,
+            "transmission": 100,
+            "turretDrive": 100,
+            "mantlet": 100,
+            "gun": 100,
+            "ammunition": 100
+          },
+          "crew": {
+            "commander": 1,
+            "gunner": 1,
+            "driver": 1,
+            "loader": 1
+          },
+          "fire": 0,
+          "repair": 0,
+          "repairKits": 3,
+          "componentMaximum": 100
+        },
+        "order": {
+          "kind": "hold",
+          "targetId": "",
+          "position": {
+            "x": 264,
+            "y": -0.17130000000000006,
+            "z": 92
+          }
+        }
+      },
+      {
+        "id": "able-2",
+        "definition": "m4-sherman",
+        "faction": "allies",
+        "transform": {
+          "position": {
+            "x": 247,
+            "y": -0.1851333333333331,
+            "z": 72
+          },
+          "yaw": 0,
+          "pitch": 0,
+          "roll": 0
+        },
+        "previous": {
+          "position": {
+            "x": 247,
+            "y": -0.1851333333333331,
+            "z": 72
+          },
+          "yaw": 0,
+          "pitch": 0,
+          "roll": 0
+        },
+        "body": {
+          "velocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "yawVelocity": 0,
+          "leftForce": 0,
+          "rightForce": 0,
+          "contacts": 6,
+          "slip": 0,
+          "grounded": true
+        },
+        "motor": {
+          "throttle": 0,
+          "steer": 0,
+          "brake": 0,
+          "cruise": 0
+        },
+        "weapon": {
+          "turretYaw": 0,
+          "elevation": 0,
+          "aimYaw": 0,
+          "aimElevation": 0,
+          "reload": 0,
+          "ammo": "ap75",
+          "reserves": {
+            "ap75": 15,
+            "he75": 15,
+            "smoke75": 15
+          },
+          "trigger": false,
+          "recoil": 0
+        },
+        "damage": {
+          "status": "operational",
+          "components": {
+            "leftTrack": 100,
+            "rightTrack": 100,
+            "engine": 100,
+            "transmission": 100,
+            "turretDrive": 100,
+            "mantlet": 100,
+            "gun": 100,
+            "ammunition": 100
+          },
+          "crew": {
+            "commander": 1,
+            "gunner": 1,
+            "driver": 1,
+            "loader": 1
+          },
+          "fire": 0,
+          "repair": 0,
+          "repairKits": 3,
+          "componentMaximum": 100
+        },
+        "order": {
+          "kind": "hold",
+          "targetId": "",
+          "position": {
+            "x": 247,
+            "y": -0.2578,
+            "z": 72
+          }
+        }
+      },
+      {
+        "id": "able-3",
+        "definition": "m4-sherman",
+        "faction": "allies",
+        "transform": {
+          "position": {
+            "x": 281,
+            "y": -0.5757000000000001,
+            "z": 72
+          },
+          "yaw": 0,
+          "pitch": 0,
+          "roll": 0
+        },
+        "previous": {
+          "position": {
+            "x": 281,
+            "y": -0.5757000000000001,
+            "z": 72
+          },
+          "yaw": 0,
+          "pitch": 0,
+          "roll": 0
+        },
+        "body": {
+          "velocity": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "yawVelocity": 0,
+          "leftForce": 0,
+          "rightForce": 0,
+          "contacts": 6,
+          "slip": 0,
+          "grounded": true
+        },
+        "motor": {
+          "throttle": 0,
+          "steer": 0,
+          "brake": 0,
+          "cruise": 0
+        },
+        "weapon": {
+          "turretYaw": 0,
+          "elevation": 0,
+          "aimYaw": 0,
+          "aimElevation": 0,
+          "reload": 0,
+          "ammo": "ap75",
+          "reserves": {
+            "ap75": 15,
+            "he75": 15,
+            "smoke75": 15
+          },
+          "trigger": false,
+          "recoil": 0
+        },
+        "damage": {
+          "status": "operational",
+          "components": {
+            "leftTrack": 100,
+            "rightTrack": 100,
+            "engine": 100,
+            "transmission": 100,
+            "turretDrive": 100,
+            "mantlet": 100,
+            "gun": 100,
+            "ammunition": 100
+          },
+          "crew": {
+            "commander": 1,
+            "gunner": 1,
+            "driver": 1,
+            "loader": 1
+          },
+          "fire": 0,
+          "repair": 0,
+          "repairKits": 3,
+          "componentMaximum": 100
+        },
+        "order": {
+          "kind": "hold",
+          "targetId": "",
+          "position": {
+            "x": 281,
+            "y": -0.5362,
+            "z": 72
+          }
+        }
+      }
+    ],
+    "projectiles": [],
+    "events": [],
+    "objectives": {
+      "clear-road": 0,
+      "secure-crossroads": 0
+    },
+    "terrainRevision": 0,
+    "obstacles": [
+      {
+        "id": "farmhouse-0",
+        "position": {
+          "x": 240,
+          "y": 4.2079,
+          "z": 288
+        },
+        "size": {
+          "x": 15,
+          "y": 7,
+          "z": 20
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-0",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-1",
+        "position": {
+          "x": 302,
+          "y": 5.0637,
+          "z": 282
+        },
+        "size": {
+          "x": 13,
+          "y": 7,
+          "z": 17
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-1",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-2",
+        "position": {
+          "x": 220,
+          "y": 3.6467,
+          "z": 326
+        },
+        "size": {
+          "x": 12,
+          "y": 7,
+          "z": 14
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-2",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-3",
+        "position": {
+          "x": 311,
+          "y": 4.9046,
+          "z": 334
+        },
+        "size": {
+          "x": 19,
+          "y": 7,
+          "z": 14
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-3",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-4",
+        "position": {
+          "x": 210,
+          "y": 3.651,
+          "z": 267
+        },
+        "size": {
+          "x": 9,
+          "y": 7,
+          "z": 11
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-4",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-5",
+        "position": {
+          "x": 338,
+          "y": 5.006,
+          "z": 303
+        },
+        "size": {
+          "x": 11,
+          "y": 7,
+          "z": 12
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-5",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-6",
+        "position": {
+          "x": 290,
+          "y": 4.2757,
+          "z": 379
+        },
+        "size": {
+          "x": 14,
+          "y": 7,
+          "z": 12
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-6",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-7",
+        "position": {
+          "x": 239,
+          "y": 3.9465,
+          "z": 371
+        },
+        "size": {
+          "x": 14,
+          "y": 7,
+          "z": 14
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-7",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-0",
+        "position": {
+          "x": 180,
+          "y": 0.3647,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-0",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-1",
+        "position": {
+          "x": 183.5,
+          "y": 0.3647,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-1",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-2",
+        "position": {
+          "x": 187,
+          "y": 0.5761000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-2",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-3",
+        "position": {
+          "x": 190.5,
+          "y": 0.5761000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-3",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-4",
+        "position": {
+          "x": 194,
+          "y": 0.5761000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-4",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-5",
+        "position": {
+          "x": 197.5,
+          "y": 0.5761000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-5",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-6",
+        "position": {
+          "x": 201,
+          "y": 0.7979,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-6",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-7",
+        "position": {
+          "x": 204.5,
+          "y": 0.7979,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-7",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-8",
+        "position": {
+          "x": 208,
+          "y": 0.7979,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-8",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-9",
+        "position": {
+          "x": 211.5,
+          "y": 1.0231000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-9",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-10",
+        "position": {
+          "x": 215,
+          "y": 1.0231000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-10",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-11",
+        "position": {
+          "x": 218.5,
+          "y": 1.0231000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-11",
+        "destroyed": false
+      },
+      {
+        "id": "pine-0",
+        "position": {
+          "x": 95,
+          "y": 3.4318999999999997,
+          "z": 280
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-0",
+        "destroyed": false
+      },
+      {
+        "id": "pine-1",
+        "position": {
+          "x": 117,
+          "y": 3.4596999999999998,
+          "z": 280
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-1",
+        "destroyed": false
+      },
+      {
+        "id": "pine-2",
+        "position": {
+          "x": 139,
+          "y": 3.685,
+          "z": 280
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-2",
+        "destroyed": false
+      },
+      {
+        "id": "pine-3",
+        "position": {
+          "x": 161,
+          "y": 3.8636,
+          "z": 280
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-3",
+        "destroyed": false
+      },
+      {
+        "id": "pine-4",
+        "position": {
+          "x": 183,
+          "y": 4.324,
+          "z": 280
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-4",
+        "destroyed": false
+      },
+      {
+        "id": "pine-5",
+        "position": {
+          "x": 95,
+          "y": 3.4585,
+          "z": 309
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-5",
+        "destroyed": false
+      },
+      {
+        "id": "pine-6",
+        "position": {
+          "x": 117,
+          "y": 3.4859,
+          "z": 309
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-6",
+        "destroyed": false
+      },
+      {
+        "id": "pine-7",
+        "position": {
+          "x": 139,
+          "y": 3.7074,
+          "z": 309
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-7",
+        "destroyed": false
+      },
+      {
+        "id": "pine-8",
+        "position": {
+          "x": 161,
+          "y": 3.883,
+          "z": 309
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-8",
+        "destroyed": false
+      },
+      {
+        "id": "pine-9",
+        "position": {
+          "x": 183,
+          "y": 4.3355,
+          "z": 309
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-9",
+        "destroyed": false
+      },
+      {
+        "id": "pine-10",
+        "position": {
+          "x": 95,
+          "y": 3.6067,
+          "z": 338
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-10",
+        "destroyed": false
+      },
+      {
+        "id": "pine-11",
+        "position": {
+          "x": 117,
+          "y": 3.6314,
+          "z": 338
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-11",
+        "destroyed": false
+      },
+      {
+        "id": "pine-12",
+        "position": {
+          "x": 139,
+          "y": 3.8316,
+          "z": 338
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-12",
+        "destroyed": false
+      },
+      {
+        "id": "pine-13",
+        "position": {
+          "x": 161,
+          "y": 3.9903,
+          "z": 338
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-13",
+        "destroyed": false
+      },
+      {
+        "id": "pine-14",
+        "position": {
+          "x": 183,
+          "y": 4.3994,
+          "z": 338
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-14",
+        "destroyed": false
+      },
+      {
+        "id": "pine-15",
+        "position": {
+          "x": 95,
+          "y": 3.9996,
+          "z": 367
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-15",
+        "destroyed": false
+      },
+      {
+        "id": "pine-16",
+        "position": {
+          "x": 117,
+          "y": 4.0174,
+          "z": 367
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-16",
+        "destroyed": false
+      },
+      {
+        "id": "pine-17",
+        "position": {
+          "x": 139,
+          "y": 4.1611,
+          "z": 367
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-17",
+        "destroyed": false
+      },
+      {
+        "id": "pine-18",
+        "position": {
+          "x": 161,
+          "y": 4.275,
+          "z": 367
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-18",
+        "destroyed": false
+      },
+      {
+        "id": "pine-19",
+        "position": {
+          "x": 183,
+          "y": 4.5687999999999995,
+          "z": 367
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-19",
+        "destroyed": false
+      },
+      {
+        "id": "pine-20",
+        "position": {
+          "x": 95,
+          "y": 4.3497,
+          "z": 396
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-20",
+        "destroyed": false
+      },
+      {
+        "id": "pine-21",
+        "position": {
+          "x": 117,
+          "y": 4.3612,
+          "z": 396
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-21",
+        "destroyed": false
+      }
+    ],
+    "smoke": []
+  },
+  "after": {
+    "format": "wildlands-armored-snapshot",
+    "version": 1,
+    "tick": 127,
+    "seconds": 2.1166666666666667,
+    "status": "running",
+    "controlled": "able-1",
+    "missionId": "crossroads",
+    "playerFaction": "allies",
+    "vehicles": [
+      {
+        "id": "able-1",
+        "definition": "m4-sherman",
+        "faction": "allies",
+        "transform": {
+          "position": {
+            "x": 264.0029565156785,
+            "y": -0.1525926550728161,
+            "z": 97.6065519929494
+          },
+          "yaw": 0,
+          "pitch": 0.011137852243015098,
+          "roll": -0.008009435403972127
+        },
+        "previous": {
+          "position": {
+            "x": 264.00293468950025,
+            "y": -0.15328072250896424,
+            "z": 97.54419191451147
+          },
+          "yaw": 0,
+          "pitch": 0.011126724043010532,
+          "roll": -0.008019081502608527
+        },
+        "body": {
+          "velocity": {
+            "x": 0.0013095706921165866,
+            "y": 0,
+            "z": 3.7416047062760436
+          },
+          "yawVelocity": 0,
+          "leftForce": 0,
+          "rightForce": 0,
+          "contacts": 6,
+          "slip": 0.001311147930544885,
+          "grounded": true
+        },
+        "motor": {
+          "throttle": 0,
+          "steer": 0,
+          "brake": 0,
+          "cruise": 0
+        },
+        "weapon": {
+          "turretYaw": 0.325,
+          "elevation": 0,
+          "aimYaw": 0.325,
+          "aimElevation": 0,
+          "reload": 5.400000000000001,
+          "ammo": "ap75",
+          "reserves": {
+            "ap75": 14,
+            "he75": 15,
+            "smoke75": 15
+          },
+          "trigger": false,
+          "recoil": 0
+        },
+        "damage": {
+          "status": "operational",
+          "components": {
+            "leftTrack": 100,
+            "rightTrack": 100,
+            "engine": 100,
+            "transmission": 100,
+            "turretDrive": 100,
+            "mantlet": 100,
+            "gun": 100,
+            "ammunition": 100
+          },
+          "crew": {
+            "commander": 1,
+            "gunner": 1,
+            "driver": 1,
+            "loader": 1
+          },
+          "fire": 0,
+          "repair": 0,
+          "repairKits": 3,
+          "componentMaximum": 100
+        },
+        "order": {
+          "kind": "hold",
+          "targetId": "",
+          "position": {
+            "x": 264,
+            "y": -0.17130000000000006,
+            "z": 92
+          }
+        }
+      },
+      {
+        "id": "able-2",
+        "definition": "m4-sherman",
+        "faction": "allies",
+        "transform": {
+          "position": {
+            "x": 247.00502424540514,
+            "y": -0.18455728212174,
+            "z": 71.99776234467421
+          },
+          "yaw": 0,
+          "pitch": 0.006465905624488481,
+          "roll": -0.014516942255922437
+        },
+        "previous": {
+          "position": {
+            "x": 247.00498468395838,
+            "y": -0.18455659632791682,
+            "z": 71.99777996451259
+          },
+          "yaw": 0,
+          "pitch": 0.006465902682667636,
+          "roll": -0.014516939580882425
+        },
+        "body": {
+          "velocity": {
+            "x": 0.0023736868060477,
+            "y": 0,
+            "z": -0.0010571903026262743
+          },
+          "yawVelocity": 0,
+          "leftForce": 0,
+          "rightForce": 0,
+          "contacts": 6,
+          "slip": 0.002373686368586473,
+          "grounded": true
+        },
+        "motor": {
+          "throttle": 0,
+          "steer": 0,
+          "brake": 1,
+          "cruise": 0
+        },
+        "weapon": {
+          "turretYaw": 0.04879398051784681,
+          "elevation": 0.0035595243218684066,
+          "aimYaw": 0.048793980517846815,
+          "aimElevation": 0.0035595243218684066,
+          "reload": 0,
+          "ammo": "ap75",
+          "reserves": {
+            "ap75": 15,
+            "he75": 15,
+            "smoke75": 15
+          },
+          "trigger": false,
+          "recoil": 0
+        },
+        "damage": {
+          "status": "operational",
+          "components": {
+            "leftTrack": 100,
+            "rightTrack": 100,
+            "engine": 100,
+            "transmission": 100,
+            "turretDrive": 100,
+            "mantlet": 100,
+            "gun": 100,
+            "ammunition": 100
+          },
+          "crew": {
+            "commander": 1,
+            "gunner": 1,
+            "driver": 1,
+            "loader": 1
+          },
+          "fire": 0,
+          "repair": 0,
+          "repairKits": 3,
+          "componentMaximum": 100
+        },
+        "order": {
+          "kind": "hold",
+          "targetId": "",
+          "position": {
+            "x": 247,
+            "y": -0.2578,
+            "z": 72
+          },
+          "reason": "Holding"
+        }
+      },
+      {
+        "id": "able-3",
+        "definition": "m4-sherman",
+        "faction": "allies",
+        "transform": {
+          "position": {
+            "x": 281.00273123287207,
+            "y": -0.5746657653947067,
+            "z": 71.9963184164879
+          },
+          "yaw": 0,
+          "pitch": 0.010637274768541082,
+          "roll": -0.007892012994011837
+        },
+        "previous": {
+          "position": {
+            "x": 281.00270972669017,
+            "y": -0.5746652940448833,
+            "z": 71.99634740415499
+          },
+          "yaw": 0,
+          "pitch": 0.010637281637962518,
+          "roll": -0.007892010598650943
+        },
+        "body": {
+          "velocity": {
+            "x": 0.0012903709143965473,
+            "y": 0,
+            "z": -0.001739260025177951
+          },
+          "yawVelocity": 0,
+          "leftForce": 0,
+          "rightForce": 0,
+          "contacts": 6,
+          "slip": 0.001290370522730647,
+          "grounded": true
+        },
+        "motor": {
+          "throttle": 0,
+          "steer": 0,
+          "brake": 1,
+          "cruise": 0
+        },
+        "weapon": {
+          "turretYaw": -0.27873152846897586,
+          "elevation": 0.0033777714040727747,
+          "aimYaw": -0.27873152846897586,
+          "aimElevation": 0.0033777714040727747,
+          "reload": 0,
+          "ammo": "ap75",
+          "reserves": {
+            "ap75": 15,
+            "he75": 15,
+            "smoke75": 15
+          },
+          "trigger": false,
+          "recoil": 0
+        },
+        "damage": {
+          "status": "operational",
+          "components": {
+            "leftTrack": 100,
+            "rightTrack": 100,
+            "engine": 100,
+            "transmission": 100,
+            "turretDrive": 100,
+            "mantlet": 100,
+            "gun": 100,
+            "ammunition": 100
+          },
+          "crew": {
+            "commander": 1,
+            "gunner": 1,
+            "driver": 1,
+            "loader": 1
+          },
+          "fire": 0,
+          "repair": 0,
+          "repairKits": 3,
+          "componentMaximum": 100
+        },
+        "order": {
+          "kind": "hold",
+          "targetId": "",
+          "position": {
+            "x": 281,
+            "y": -0.5362,
+            "z": 72
+          },
+          "reason": "Holding"
+        }
+      },
+      {
+        "id": "guard-1",
+        "definition": "panzer-iv",
+        "faction": "axis",
+        "transform": {
+          "position": {
+            "x": 263.99908827262595,
+            "y": 0.6082780376951102,
+            "z": 420.0043019658265
+          },
+          "yaw": 3.141592653589793,
+          "pitch": 0.012430137721170792,
+          "roll": -0.002634183678311577
+        },
+        "previous": {
+          "position": {
+            "x": 263.9990954507931,
+            "y": 0.608278479219908,
+            "z": 420.00426809195665
+          },
+          "yaw": 3.141592653589793,
+          "pitch": 0.012430137003325003,
+          "roll": -0.002634188272055343
+        },
+        "body": {
+          "velocity": {
+            "x": -0.0004306900275794768,
+            "y": 0,
+            "z": 0.0020324321943868354
+          },
+          "yawVelocity": 0,
+          "leftForce": 0,
+          "rightForce": 0,
+          "contacts": 6,
+          "slip": 0.000430690778661794,
+          "grounded": true
+        },
+        "motor": {
+          "throttle": 0,
+          "steer": 0,
+          "brake": 1,
+          "cruise": 0
+        },
+        "weapon": {
+          "turretYaw": 3.1415807474997357,
+          "elevation": -0.001471455241997654,
+          "aimYaw": 3.1415807474997357,
+          "aimElevation": -0.001471455241997654,
+          "reload": 0,
+          "ammo": "ap75",
+          "reserves": {
+            "ap75": 15,
+            "he75": 15,
+            "smoke75": 15
+          },
+          "trigger": false,
+          "recoil": 0
+        },
+        "damage": {
+          "status": "operational",
+          "components": {
+            "leftTrack": 100,
+            "rightTrack": 100,
+            "engine": 100,
+            "transmission": 100,
+            "turretDrive": 100,
+            "mantlet": 100,
+            "gun": 100,
+            "ammunition": 100
+          },
+          "crew": {
+            "commander": 1,
+            "gunner": 1,
+            "driver": 1,
+            "loader": 1
+          },
+          "fire": 0,
+          "repair": 0,
+          "repairKits": 3,
+          "componentMaximum": 100
+        },
+        "order": {
+          "kind": "hold",
+          "targetId": "",
+          "position": {
+            "x": 264,
+            "y": 0.6089,
+            "z": 420
+          },
+          "reason": "Holding"
+        }
+      },
+      {
+        "id": "guard-2",
+        "definition": "panzer-iv",
+        "faction": "axis",
+        "transform": {
+          "position": {
+            "x": 329.9999977768921,
+            "y": 0.4197911209188005,
+            "z": 435.0057981982521
+          },
+          "yaw": 3.141592653589793,
+          "pitch": 0.016752599420567713,
+          "roll": -0.0000065975494817331
+        },
+        "previous": {
+          "position": {
+            "x": 329.9999977948704,
+            "y": 0.4197918858321558,
+            "z": 435.00575254314754
+          },
+          "yaw": 3.141592653589793,
+          "pitch": 0.016752599419482577,
+          "roll": -0.000006594791152499084
+        },
+        "body": {
+          "velocity": {
+            "x": -0.0000010786993402793484,
+            "y": 0,
+            "z": 0.002739306271782529
+          },
+          "yawVelocity": 0,
+          "leftForce": 0,
+          "rightForce": 0,
+          "contacts": 6,
+          "slip": 0.0000010782483534492316,
+          "grounded": true
+        },
+        "motor": {
+          "throttle": 0,
+          "steer": 0,
+          "brake": 1,
+          "cruise": 0
+        },
+        "weapon": {
+          "turretYaw": -2.948461155246881,
+          "elevation": -0.00045015381435423374,
+          "aimYaw": -2.948461155246881,
+          "aimElevation": -0.00045015381435423374,
+          "reload": 0,
+          "ammo": "ap75",
+          "reserves": {
+            "ap75": 15,
+            "he75": 15,
+            "smoke75": 15
+          },
+          "trigger": false,
+          "recoil": 0
+        },
+        "damage": {
+          "status": "operational",
+          "components": {
+            "leftTrack": 100,
+            "rightTrack": 100,
+            "engine": 100,
+            "transmission": 100,
+            "turretDrive": 100,
+            "mantlet": 100,
+            "gun": 100,
+            "ammunition": 100
+          },
+          "crew": {
+            "commander": 1,
+            "gunner": 1,
+            "driver": 1,
+            "loader": 1
+          },
+          "fire": 0,
+          "repair": 0,
+          "repairKits": 3,
+          "componentMaximum": 100
+        },
+        "order": {
+          "kind": "hold",
+          "targetId": "",
+          "position": {
+            "x": 330,
+            "y": 0.46909999999999996,
+            "z": 435
+          },
+          "reason": "Holding"
+        }
+      },
+      {
+        "id": "guard-3",
+        "definition": "panzer-iv",
+        "faction": "axis",
+        "transform": {
+          "position": {
+            "x": 189.99636038844534,
+            "y": 0.20557207600123442,
+            "z": 389.99848098076643
+          },
+          "yaw": 3.141592653589793,
+          "pitch": -0.004389638052024739,
+          "roll": -0.010516603377061921
+        },
+        "previous": {
+          "position": {
+            "x": 189.99638904724608,
+            "y": 0.20557242991385302,
+            "z": 389.99849294260696
+          },
+          "yaw": 3.141592653589793,
+          "pitch": -0.004389631882542184,
+          "roll": -0.010516600802231985
+        },
+        "body": {
+          "velocity": {
+            "x": -0.0017195280452805201,
+            "y": 0,
+            "z": -0.0007177104313474614
+          },
+          "yawVelocity": 0,
+          "leftForce": 0,
+          "rightForce": 0,
+          "contacts": 6,
+          "slip": 0.0017195276242492616,
+          "grounded": true
+        },
+        "motor": {
+          "throttle": 0,
+          "steer": 0,
+          "brake": 1,
+          "cruise": 0
+        },
+        "weapon": {
+          "turretYaw": 2.8937423040821093,
+          "elevation": -0.0006337901104631298,
+          "aimYaw": 2.8937423040821093,
+          "aimElevation": -0.0006337901104631298,
+          "reload": 0,
+          "ammo": "ap75",
+          "reserves": {
+            "ap75": 15,
+            "he75": 15,
+            "smoke75": 15
+          },
+          "trigger": false,
+          "recoil": 0
+        },
+        "damage": {
+          "status": "operational",
+          "components": {
+            "leftTrack": 100,
+            "rightTrack": 100,
+            "engine": 100,
+            "transmission": 100,
+            "turretDrive": 100,
+            "mantlet": 100,
+            "gun": 100,
+            "ammunition": 100
+          },
+          "crew": {
+            "commander": 1,
+            "gunner": 1,
+            "driver": 1,
+            "loader": 1
+          },
+          "fire": 0,
+          "repair": 0,
+          "repairKits": 3,
+          "componentMaximum": 100
+        },
+        "order": {
+          "kind": "hold",
+          "targetId": "",
+          "position": {
+            "x": 190,
+            "y": 0.2029,
+            "z": 390
+          },
+          "reason": "Holding"
+        }
+      }
+    ],
+    "projectiles": [],
+    "events": [
+      {
+        "kind": "shot",
+        "entityId": "able-1",
+        "position": {
+          "x": 265.17694060682646,
+          "y": 1.3608994215142578,
+          "z": 99.82776052351484
+        },
+        "velocity": {
+          "x": 217.06232856229613,
+          "y": -3.5870773683543926,
+          "z": 696.9727960222459
+        },
+        "ammo": "ap75",
+        "tick": 103,
+        "sequence": 9
+      },
+      {
+        "kind": "impact",
+        "source": "able-1",
+        "target": "terrain",
+        "position": {
+          "x": 294.7240376825885,
+          "y": 0.7815401824810515,
+          "z": 194.7015371002012
+        },
+        "ammo": "ap75",
+        "material": "terrain",
+        "tick": 112,
+        "sequence": 10
+      }
+    ],
+    "objectives": {
+      "clear-road": 0,
+      "secure-crossroads": 0
+    },
+    "terrainRevision": 0,
+    "obstacles": [
+      {
+        "id": "farmhouse-0",
+        "position": {
+          "x": 240,
+          "y": 4.2079,
+          "z": 288
+        },
+        "size": {
+          "x": 15,
+          "y": 7,
+          "z": 20
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-0",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-1",
+        "position": {
+          "x": 302,
+          "y": 5.0637,
+          "z": 282
+        },
+        "size": {
+          "x": 13,
+          "y": 7,
+          "z": 17
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-1",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-2",
+        "position": {
+          "x": 220,
+          "y": 3.6467,
+          "z": 326
+        },
+        "size": {
+          "x": 12,
+          "y": 7,
+          "z": 14
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-2",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-3",
+        "position": {
+          "x": 311,
+          "y": 4.9046,
+          "z": 334
+        },
+        "size": {
+          "x": 19,
+          "y": 7,
+          "z": 14
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-3",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-4",
+        "position": {
+          "x": 210,
+          "y": 3.651,
+          "z": 267
+        },
+        "size": {
+          "x": 9,
+          "y": 7,
+          "z": 11
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-4",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-5",
+        "position": {
+          "x": 338,
+          "y": 5.006,
+          "z": 303
+        },
+        "size": {
+          "x": 11,
+          "y": 7,
+          "z": 12
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-5",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-6",
+        "position": {
+          "x": 290,
+          "y": 4.2757,
+          "z": 379
+        },
+        "size": {
+          "x": 14,
+          "y": 7,
+          "z": 12
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-6",
+        "destroyed": false
+      },
+      {
+        "id": "farmhouse-7",
+        "position": {
+          "x": 239,
+          "y": 3.9465,
+          "z": 371
+        },
+        "size": {
+          "x": 14,
+          "y": 7,
+          "z": 14
+        },
+        "material": "masonry",
+        "destructible": true,
+        "health": 120,
+        "definition": "farmhouse-7",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-0",
+        "position": {
+          "x": 180,
+          "y": 0.3647,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-0",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-1",
+        "position": {
+          "x": 183.5,
+          "y": 0.3647,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-1",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-2",
+        "position": {
+          "x": 187,
+          "y": 0.5761000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-2",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-3",
+        "position": {
+          "x": 190.5,
+          "y": 0.5761000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-3",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-4",
+        "position": {
+          "x": 194,
+          "y": 0.5761000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-4",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-5",
+        "position": {
+          "x": 197.5,
+          "y": 0.5761000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-5",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-6",
+        "position": {
+          "x": 201,
+          "y": 0.7979,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-6",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-7",
+        "position": {
+          "x": 204.5,
+          "y": 0.7979,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-7",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-8",
+        "position": {
+          "x": 208,
+          "y": 0.7979,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-8",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-9",
+        "position": {
+          "x": 211.5,
+          "y": 1.0231000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-9",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-10",
+        "position": {
+          "x": 215,
+          "y": 1.0231000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-10",
+        "destroyed": false
+      },
+      {
+        "id": "orchard-wall-11",
+        "position": {
+          "x": 218.5,
+          "y": 1.0231000000000001,
+          "z": 230
+        },
+        "size": {
+          "x": 3.4,
+          "y": 1.8,
+          "z": 0.8
+        },
+        "material": "stone",
+        "destructible": true,
+        "health": 40,
+        "definition": "orchard-wall-11",
+        "destroyed": false
+      },
+      {
+        "id": "pine-0",
+        "position": {
+          "x": 95,
+          "y": 3.4318999999999997,
+          "z": 280
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-0",
+        "destroyed": false
+      },
+      {
+        "id": "pine-1",
+        "position": {
+          "x": 117,
+          "y": 3.4596999999999998,
+          "z": 280
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-1",
+        "destroyed": false
+      },
+      {
+        "id": "pine-2",
+        "position": {
+          "x": 139,
+          "y": 3.685,
+          "z": 280
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-2",
+        "destroyed": false
+      },
+      {
+        "id": "pine-3",
+        "position": {
+          "x": 161,
+          "y": 3.8636,
+          "z": 280
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-3",
+        "destroyed": false
+      },
+      {
+        "id": "pine-4",
+        "position": {
+          "x": 183,
+          "y": 4.324,
+          "z": 280
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-4",
+        "destroyed": false
+      },
+      {
+        "id": "pine-5",
+        "position": {
+          "x": 95,
+          "y": 3.4585,
+          "z": 309
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-5",
+        "destroyed": false
+      },
+      {
+        "id": "pine-6",
+        "position": {
+          "x": 117,
+          "y": 3.4859,
+          "z": 309
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-6",
+        "destroyed": false
+      },
+      {
+        "id": "pine-7",
+        "position": {
+          "x": 139,
+          "y": 3.7074,
+          "z": 309
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-7",
+        "destroyed": false
+      },
+      {
+        "id": "pine-8",
+        "position": {
+          "x": 161,
+          "y": 3.883,
+          "z": 309
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-8",
+        "destroyed": false
+      },
+      {
+        "id": "pine-9",
+        "position": {
+          "x": 183,
+          "y": 4.3355,
+          "z": 309
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-9",
+        "destroyed": false
+      },
+      {
+        "id": "pine-10",
+        "position": {
+          "x": 95,
+          "y": 3.6067,
+          "z": 338
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-10",
+        "destroyed": false
+      },
+      {
+        "id": "pine-11",
+        "position": {
+          "x": 117,
+          "y": 3.6314,
+          "z": 338
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-11",
+        "destroyed": false
+      },
+      {
+        "id": "pine-12",
+        "position": {
+          "x": 139,
+          "y": 3.8316,
+          "z": 338
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-12",
+        "destroyed": false
+      },
+      {
+        "id": "pine-13",
+        "position": {
+          "x": 161,
+          "y": 3.9903,
+          "z": 338
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-13",
+        "destroyed": false
+      },
+      {
+        "id": "pine-14",
+        "position": {
+          "x": 183,
+          "y": 4.3994,
+          "z": 338
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-14",
+        "destroyed": false
+      },
+      {
+        "id": "pine-15",
+        "position": {
+          "x": 95,
+          "y": 3.9996,
+          "z": 367
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-15",
+        "destroyed": false
+      },
+      {
+        "id": "pine-16",
+        "position": {
+          "x": 117,
+          "y": 4.0174,
+          "z": 367
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-16",
+        "destroyed": false
+      },
+      {
+        "id": "pine-17",
+        "position": {
+          "x": 139,
+          "y": 4.1611,
+          "z": 367
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-17",
+        "destroyed": false
+      },
+      {
+        "id": "pine-18",
+        "position": {
+          "x": 161,
+          "y": 4.275,
+          "z": 367
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-18",
+        "destroyed": false
+      },
+      {
+        "id": "pine-19",
+        "position": {
+          "x": 183,
+          "y": 4.5687999999999995,
+          "z": 367
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-19",
+        "destroyed": false
+      },
+      {
+        "id": "pine-20",
+        "position": {
+          "x": 95,
+          "y": 4.3497,
+          "z": 396
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-20",
+        "destroyed": false
+      },
+      {
+        "id": "pine-21",
+        "position": {
+          "x": 117,
+          "y": 4.3612,
+          "z": 396
+        },
+        "size": {
+          "x": 1.8,
+          "y": 10,
+          "z": 1.8
+        },
+        "material": "wood",
+        "destructible": true,
+        "health": 45,
+        "definition": "pine-21",
+        "destroyed": false
+      }
+    ],
+    "smoke": []
+  },
+  "errors": []
+}

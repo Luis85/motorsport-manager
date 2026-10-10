@@ -3,8 +3,8 @@
 The full requested parity target remains **incomplete**. This is a provisional
 requirements and evidence inventory, not a claim that a reduced proving ground
 matches the complete reference. Initial baseline audit is against `749a9f6296f3beb665eedf1eda57ae8cbfd00b39`.
-The implementation update below records the dirty integration branch and scoped
-reports; integrated changes require source-bound evidence before rows can close. See [current status](current-state.md)
+The implementation update records source checkpoint `bc47aaeb65910ecae6f2c802800a288b81daea28`
+and scoped reports; integrated changes require source-bound evidence before rows can close. See [current status](current-state.md)
 and the [dated reference register, situations and budget proposals](../_archive/armored-platoon-2026-10-10-reference.md).
 
 ## Reading and updating rows
@@ -171,6 +171,7 @@ must pass in the same shipping gameplay route used for performance measurement.
 | Q06 | Replay claim | Exact tested version/content/init order only | Recorded command stream | Runtime/Verification | Re-run declared scope; compare canonical checkpoints | Cross-browser lockstep unverified | partial |
 | Q07 | Repository regression | Complete registered gates and regenerated CLI/demos | Integrator serialized build queue | Build/Verification | All relevant gates, old games, native boundaries | New source acceptance pending | partial |
 | Q08 | Handoff | Source identity/artifacts/gaps/reproduction; draft PR, no merge | Delivery evidence | Integrator | Reproduce built game from clean checkout | Final M0–M5 exits not achieved | partial |
+
 ## Integrated foundation and measured scope
 
 Implementation is progressing in the same branch; the rows above remain open
@@ -182,7 +183,7 @@ for the initial slice. This is a capability boundary, not M1/M2 completion.
 | G01–G05, P12 | [session](../../source/wildlands/source/armored-session.ts), [physics](../../source/wildlands/source/armored-physics.ts), [checkpoint](../../source/wildlands/source/armored-checkpoint.ts) | Separate 60 Hz ECS authority and tracked-force reconstruction; this is an explicit approximation, not proven rigid-body suspension/contact parity. Source tests cover query isolation, differential forces, braking/reverse, command rejection and checkpoint continuation. |
 | G13, G16–G21 | [combat](../../source/wildlands/source/armored-combat.ts) | AP/HE/SMOKE ammo, reload, swept fixed trajectories, coarse oriented hull regions/angle outcomes, component/crew/fire state and timed repair. No historical calibration, complete spall, exposed-crew volumes, machine guns, blast-radius HE damage or resupply. |
 | G25–G32 | [AI](../../source/wildlands/source/armored-ai.ts) | Orders, contact memory, 10 Hz acquisition and fresh line-of-sight checks before live target aiming; bounded grid path proposals feed motors. No complete traffic/cover tactics, swept footprint navigation or formation-through-choke guarantee. |
-| G35–G39 | [mission rules](../../source/wildlands/source/armored-missions.ts) | Eliminate/reach/survive and time-limit outcomes only; cumulative crew damage and disabled-vehicle neutralization correction is present; Pine and corrected Crossroads command-only completion are demonstrated; browser mission completion remains open. No complete trigger graph, campaign, Field HQ/logistics or reward progression. |
+| G35–G39 | [mission rules](../../source/wildlands/source/armored-missions.ts) | Eliminate/reach/survive and time-limit outcomes only; cumulative crew damage and disabled-vehicle neutralization correction is present; Pine and corrected Crossroads command-only completion are demonstrated; Pine also reaches a visible browser debrief through public commands with an accelerated supplied clock. No complete trigger graph, campaign, Field HQ/logistics or reward progression. |
 | T01–T06 | [catalog admission](../../source/wildlands/source/armored-catalog.ts), [visual admission](../../source/wildlands/source/armored-visuals.ts) | Bounded v1 data and static scalar-PBR Forge visuals/semantic bindings; production texture/skin/animation ingest and binary streaming remain open. |
 | P01–P10 | [renderer](../../source/wildlands/source/armored-renderer.ts), [world](../../source/wildlands/source/armored-world.ts), [audio](../../source/wildlands/source/armored-audio.ts) | Developing direct-control browser presentation with original assembled vehicle assets; no reference-matched motion/fidelity or baseline hardware claim. |
 
@@ -199,8 +200,9 @@ All complete-scope gates remain open until their own acceptance evidence exists.
 ## Verification checkpoint and mission progression defect
 
 As of this ledger update, the authoritative integration branch is
-`codex/armored-platoon` on base `749a9f6296f3beb665eedf1eda57ae8cbfd00b39` with
-uncommitted changes. Final commit/content hashes and complete-gate results belong
+`codex/armored-platoon`, source checkpoint `bc47aaeb65910ecae6f2c802800a288b81daea28`,
+on base `749a9f6296f3beb665eedf1eda57ae8cbfd00b39`. Per-run source/content hashes
+and complete-gate results belong
 in the [integration record](../_archive/armored-platoon-2026-10-10-integration.md).
 Old logs with failed type checks or formatting are retained evidence of their
 own run; neither later source edits nor earlier green checks supersede them
@@ -214,11 +216,14 @@ without a corresponding rerun.
 | Browser captures | Chase/gunner, 1024/1440 and phone observation from Chromium 151 software SwiftShader | Actual application visual evidence, not hardware performance, Safari coverage, approved regression baselines or reference fidelity. |
 | Real motion capture | 5.6066 m movement, 0.325 rad traverse, ammo 15 → 14, tick 0 → 127 across 15.196 seconds wall time / 21 captured frames | Actual application motion; sparse software capture is not a rendered-FPS benchmark or reference motion comparison. |
 | Model Forge complete gate | 176 unit + 4 end-to-end tests passed after formatting correction | Tool gate evidence; no production-art or other-project gate acceptance inferred. |
-| Native baseline | VIEWS failed at untouched `749a9f6296f3beb665eedf1eda57ae8cbfd00b39` with Godot 4.6.3; the same targeted test passed on CI-SHA-verified Godot 4.7.2: 1 test, 73.962 seconds | Targeted environment mismatch resolved; full native gate awaits clean source identity/worktree and Xvfb provisioning. No full native pass claimed. |
-| Wildlands complete gate | Running, final result pending | Focused tests cannot substitute for the registered complete gate. |
+| Scene Forge and CLI checks | Existing inline-HTML e2e mode passed 15/15 after file-URL policy blocked the initial run; both Forge check:cli checks passed; all four CLI bundles regenerated | `FORGE_TEST_INLINE_HTML=1` disclosed; Character initial handoff passed, final regeneration-bound handoff pending. |
+| Native baseline | VIEWS failed at untouched `749a9f6296f3beb665eedf1eda57ae8cbfd00b39` with Godot 4.6.3; the same targeted test passed on CI-SHA-verified Godot 4.7.2: 1 test, 73.962 seconds | Targeted environment mismatch resolved; full native 103-check run is underway at `022da2a41bf1be7dc09681b041c04e2229608b72` with pinned 4.7.2 and user Xvfb; no full pass claimed. |
+| Wildlands complete gate | Generation/check chain running before the complete gate; final results pending | Focused tests cannot substitute for the registered complete gate. |
 | Forge authoring | Two distinct original studies and guarded Model Forge → Scene Forge → runtime handoff are present | Scalar-PBR development geometry with semantic pivots/volumes; not production-textured M1 assets. Damage still uses its approximation rather than authored semantic-volume collision. |
 
-The browser report is emitted at
+Portable captures, motion and the Pine browser route are indexed in the
+[evidence archive](../_archive/armored-platoon-2026-10-10-evidence/README.md).
+The intermediate browser report is emitted at
 `source/wildlands/verification/v15/armored-browser-results.json`; its captures
 share that directory with `armored-` prefixes. Read its source/artifact identity
 before citing results because the rerun replaces the prior report. The browser
@@ -245,11 +250,11 @@ destroyed** targets; immobilization alone does not count. Mantlet damage remains
 excluded from crew loss/firing disable. The content correction changes objective
 copy to “Neutralize.” The correction and focused
 cumulative-hit/objective regression are in the integration source. A post-correction
-Crossroads command route subsequently passed, as described below; browser
-menu-to-debrief confirmation remains pending. These are original development
+Crossroads command route subsequently passed, and Pine reached a visible browser
+debrief, as described below. These are original development
 rules and a playability correction, not measured reference tuning. G18–G20,
-G35 and G39 remain partial because browser mission, balance and broader parity
-acceptance are not established by focused rules tests or command routes.
+G35 and G39 remain partial because full content, normal-play balance and broader
+parity acceptance are not established by these development scenarios.
 
 A separate **Pine Ridge** bounded run completed the actual authored runtime
 mission: fresh session, 1,800 accepted drive commands, no checkpoint restore or
@@ -261,9 +266,9 @@ report `work/armored-combat-review/pine-route-report.json` records Node v24.19.0
 base `749a9f6296f3beb665eedf1eda57ae8cbfd00b39`, individual runtime source hashes,
 and catalog SHA-256
 `34150dde0b643234feebc3ec58db3a8bc8b03a8090725a47a49f7805b38929f9`.
-This establishes one command-only original mission completion. Actual browser
-mission completion is in progress; human balance, M2 and reference mission
-parity remain unverified.
+This establishes one command-only original mission completion. The separate
+browser route below additionally establishes functional deployment/debrief;
+human balance, M2 and reference mission parity remain unverified.
 
 The subsequent **corrected Crossroads** authored runtime route also succeeded:
 **5,692 validated commands**, victory at **tick 12,069 / 201.15 seconds**, and
@@ -278,6 +283,22 @@ command-route reachability after the correction while exposing an AI/ammunition
 balance weakness; it does not establish ordinary-play difficulty or human
 usability. Keep the failed pre-correction route alongside this successful one.
 
+The final-artifact **Pine browser route** passed menu → mission selection →
+deployment → victory/debrief at **tick 10,800**, through **1,799 accepted drive
+commands**, with `hold-ridge=180`, `rally-platoon=1` and zero script errors.
+The artifact is **1,803,580 bytes**, SHA-256
+`9b561acf571dcce27c76ba68bcdc85e0ef02b8215cefe1d471401b32a60f686e`.
+The route used only public queries/commands, with no restore or state injection.
+SwiftShader execution took **437.834 seconds wall time**, supplying 100 ms per
+RAF callback through the application's six-tick cap. Route viewport was 480×320
+then 320×240; the final visible debrief was captured at 1440×900. Report:
+`work/armored-pine-browser/pine-browser-result.json`, preserved in the portable
+evidence archive with `pine-victory-debrief.png`. This is functional browser
+coverage under a supplied accelerated clock and disclosed small viewport,
+not an ordinary human realtime session or performance/fidelity evidence.
+It does not transfer the intermediate artifact's 9/9 suite result to a different
+artifact or establish a complete Crossroads browser route.
+
 ## Continuation contract
 
 Do not narrow the intended full reference scope to these three original
@@ -291,15 +312,17 @@ A continuation must preserve this branch/worktree and record the actual HEAD,
 last runnable artifact hash, frozen catalog/content digest, active owner changes,
 executed/failed/skipped checks and report paths. The immediate executable work is:
 
-1. Complete actual browser mission routes and assess ordinary-play balance;
-   preserve failed Crossroads and successful Pine/corrected-Crossroads command
-   reports. Keep each result tied to its source/content/artifact identity.
+1. Preserve the passed Pine browser deployment/debrief route and complete
+   Crossroads browser coverage; assess ordinary-play balance with human input
+   and realtime clocks. Retain failed/successful command reports and exact
+   source/content/artifact identities.
 2. Retain the intermediate 9/9 browser report and motion capture; revalidate
    changed shipping artifacts and remaining focus/mobile/persistence edges
    without weakening assertions or inventing performance from sparse frames.
-3. Run the root-owned serialized complete build/verification queue; regenerate
-   both Forge CLIs for kernel changes and every Wildlands demo for engine changes.
-   Record native gate/tool/hardware failures separately from regressions.
+3. Finish the root-owned Wildlands generation/check chain and complete gate,
+   the running native 103-check suite and final Character handoff. Both Forge
+   CLI checks already passed; ensure every changed-engine demo is regenerated.
+   Record each source identity and separate unavailable hardware from failures.
 4. Obtain installed reference build/roster evidence and ordinary-gameplay motion
    for all twelve situations. Continue production texture/rig/physics work and
    measured baseline-hardware review toward M1; the current models do not pass it.

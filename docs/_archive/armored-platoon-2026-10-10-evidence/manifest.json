@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-10",
+  "algorithm": "SHA-256",
+  "scope": "Retained evidence files; this manifest excludes itself and the explanatory README. JSON reports copied byte-for-byte except the explicitly selected intermediate identity manifest.",
+  "files": {
+    "armored-browser-results.json": {
+      "bytes": 1193,
+      "sha256": "3941cfebe99a9a17e75c8a83448decb035403e797161f6d585db213e87360ef3"
+    },
+    "armored-chase.png": {
+      "bytes": 473917,
+      "sha256": "a2a8bc54dd876cb1dfafbc1a4a53f7df298438d2805ec8f620be0109182ec0f2"
+    },
+    "armored-gunner.png": {
+      "bytes": 273520,
+      "sha256": "acaea34cfa71d1a1ab84fe1a16e5ba038741bd66f2ce74083314bfa0e92c2e9b"
+    },
+    "armored-motion.mp4": {
+      "bytes": 302921,
+      "sha256": "4f82ddcdf1cff9cac6b9b3f3052854d837908dfb5c8f659882645f99da695889"
+    },
+    "armored-phone-observation.png": {
+      "bytes": 150306,
+      "sha256": "529c908c06cfca57e730fc4701db931976a65585654f47a71f803dafd3da87e7"
+    },
+    "crossroads-session-command-report.json": {
+      "bytes": 693280,
+      "sha256": "ed9810b6d392431390a1694bde4c980c1d8210dd526edd2c151258f3c372be08"
+    },
+    "intermediate-browser-identity.json": {
+      "bytes": 1610,
+      "sha256": "ca84ce271809bf294e1f3b000e75dfa94e4a6132d7534050bf3cd8e2379c4930"
+    },
+    "motion-observations.json": {
+      "bytes": 53311,
+      "sha256": "90fc75216f7906ccddc631638592affce6d77d364844c6e76ba154c0ad38ac7d"
+    },
+    "pine-browser-result.json": {
+      "bytes": 593322,
+      "sha256": "26cc6db6dd2679acb5df96986433b34677720c1fdd6cdd325fefdf98b38008e1"
+    },
+    "pine-session-command-report.json": {
+      "bytes": 221975,
+      "sha256": "71717c6dd82261e90eaa4154fa18543d45ab3abd2fe5238617756d220f5b3be2"
+    },
+    "pine-victory-debrief.png": {
+      "bytes": 675678,
+      "sha256": "7afb3a55f750142ea739dd90b71e0bf7580540dfd85be11f965cb1473cd89019"
+    },
+    "published-identity.json": {
+      "bytes": 735,
+      "sha256": "d9d8961977b99e8e8c428431d0f945dee1e0c00d2f570ab9430711ab7777ec38"
+    }
+  }
+}

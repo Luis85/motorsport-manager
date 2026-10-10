@@ -1,0 +1,42 @@
+{
+  "passed": 9,
+  "total": 9,
+  "results": [
+    {
+      "name": "Armored compiled artifact enters a mission through briefing and renders WebGL",
+      "passed": true
+    },
+    {
+      "name": "Armored keyboard driving applies motor intent and moves the physical chassis",
+      "passed": true
+    },
+    {
+      "name": "Armored pause and detached inspection preserve the authoritative checkpoint",
+      "passed": true
+    },
+    {
+      "name": "Armored gunner and binocular camera switches retain one live canvas",
+      "passed": true
+    },
+    {
+      "name": "Armored keyboard fire consumes ammunition once and enters reload",
+      "passed": true
+    },
+    {
+      "name": "Armored platoon handover and two-stage hold order reach the same authority",
+      "passed": true
+    },
+    {
+      "name": "Armored checkpoint replacement rejects corruption and restores complete paused state",
+      "passed": true
+    },
+    {
+      "name": "Armored desktop and compact HUD retain accessible canvas without horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "Armored offline play completes without script errors or external requests",
+      "passed": true
+    }
+  ]
+}
