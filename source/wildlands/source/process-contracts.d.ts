@@ -72,11 +72,15 @@ declare namespace LWProcess {
  interface Resource { id: string; name: string; capacity: number; costPerMinute: number; kind?: ResourceKind; }
  /** Exactly one end rule: `count` (1..200), `until` (absolute minute) or `open: true`. `interval` is the spacing, or the planning mean when `gap` draws it. */
  interface Arrival { at: number; count?: number; until?: number; open?: true; interval: number; gap?: Dist; draws?: Draw[]; data: Fields; }
+ /** Business minutes per working day (1..1440) and working days per week (1..7), for display only. */
+ interface Calendar { minutesPerDay: number; daysPerWeek: number; }
  interface Definition {
   $schema?: string; format: 'wildlands-process'; schemaVersion: 1; revision: number;
   id: string; name: string; description?: string; start: string; seed?: number;
   /** Display preset only (terminology and default view); no runtime effect. Absent means `process`. */
   genre?: Genre; track?: Track[]; sipoc?: Sipoc;
+  /** Display-only working calendar (added after v1): how views word durations; never read by a run. */
+  calendar?: Calendar;
   resources: Resource[]; steps: Step[]; flows: Flow[]; arrivals: Arrival[];
  }
  interface Diagnostic { path: string; code: string; message: string; }
@@ -165,7 +169,7 @@ declare namespace LWProcess {
    {op: 'setArrivals'; value: Arrival[]} | {op: 'setStart'; value: string} | {op: 'rename'; value: string} |
    /** Process settings: null removes the field; `setGenre` with `process` removes `genre`. All validation stays with the catalog. */
    {op: 'setDescription'; value: string | null} | {op: 'setSeed'; value: number | null} | {op: 'setGenre'; value: Genre} |
-   {op: 'setSipoc'; value: Sipoc | null} | {op: 'setTrack'; value: Track[] | null})[];
+   {op: 'setSipoc'; value: Sipoc | null} | {op: 'setTrack'; value: Track[] | null} | {op: 'setCalendar'; value: Calendar | null})[];
  }
  interface Authoring {
   create(id: string, name: string): Definition;

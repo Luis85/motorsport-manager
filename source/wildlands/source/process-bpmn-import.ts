@@ -61,7 +61,14 @@
   const d = root.LWProcessCatalog.validate(input, true).definition;
   if (!d) throw Error('Only a structurally valid process definition can be exported.');
   if (!root.LWProcessBpmnBpsimWrite) throw Error('The BPSim writer is not loaded.');
-  return root.LWProcessBpmnBpsimWrite.notes(d, options.bpsim === true);
+  const notes = root.LWProcessBpmnBpsimWrite.notes(d, options.bpsim === true);
+  // The display calendar has no BPMN or BPSim form: it travels only in the extension, with or without BPSim.
+  if (d.calendar) {
+   const {minutesPerDay, daysPerWeek} = d.calendar;
+   notes.push(`The display calendar (${minutesPerDay} minutes per business day, ${daysPerWeek} days per week) is only in the Wildlands extension; `
+    + 'it changes how times are shown, never a run.');
+  }
+  return notes;
  }
  root.LWProcessBpmn = {export: root.LWProcessBpmnExport.export, fidelity, import: importBpmn, analyze, inspect, options: resolve};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessBpmn;

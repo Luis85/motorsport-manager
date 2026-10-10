@@ -3,9 +3,11 @@
 /// <reference path="./process-tuning-arrivals.ts" />
 /// <reference path="./process-tuning-track.ts" />
 /// <reference path="./process-tuning-sipoc.ts" />
+/// <reference path="./process-tuning-calendar.ts" />
 /// <reference path="./process-json-path.ts" />
 /**
- * The "Tune values" form of the Definition editor: process name, description, process type and seed, shared resources (name, kind,
+ * The "Tune values" form of the Definition editor: process name, description, process type, seed and display-only working
+ * calendar (process-tuning-calendar.ts), shared resources (name, kind,
  * capacity, cost), case arrivals, tracked measures and the SIPOC suppliers and customers. It edits the unapplied draft TEXT through the `write` callback; applying still goes through
  * catalog admission and resets the run. The catalog's diagnostics are handed in with `setDiagnostics` and shown beside the field
  * they name, with `aria-invalid` on the control; the form never decides what is valid. Per-step values belong to the step editor.
@@ -33,10 +35,13 @@ declare namespace LWProcessTuning {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessTuningFields: LWProcessTuningFields.Api; LWProcessTuningArrivals: LWProcessTuningArrivals.Api; LWProcessTuningTrack: LWProcessTuningTrack.Api; LWProcessTuningSipoc: LWProcessTuningSipoc.Api; LWProcessJsonPath: LWProcessJsonPath.Api; LWProcessTuning?: LWProcessTuning.Api};
+ const root = inputRoot as {LWProcessTuningFields: LWProcessTuningFields.Api; LWProcessTuningArrivals: LWProcessTuningArrivals.Api;
+  LWProcessTuningTrack: LWProcessTuningTrack.Api; LWProcessTuningSipoc: LWProcessTuningSipoc.Api; LWProcessTuningCalendar: LWProcessTuningCalendar.Api;
+  LWProcessJsonPath: LWProcessJsonPath.Api; LWProcessTuning?: LWProcessTuning.Api};
  const F = root.LWProcessTuningFields, A = root.LWProcessTuningArrivals, T = root.LWProcessTuningTrack, P = root.LWProcessTuningSipoc, esc = F.esc;
+ const C = root.LWProcessTuningCalendar;
  const KINDS: [string, string][] = [['people', 'People'], ['machine', 'Machine'], ['system', 'System']];
- const SEED = 2147483647;
+ const SEED = 2147483647, SEED_HELP = 'Same seed, same run. Change it to see another scenario. Leave empty for the default seed (1).';
  /** Names of the steps that demand pool `id`, in draft order. */
  const users = (d: LWProcess.Definition, id: string) =>
   d.steps.filter(s => s.resources && typeof s.resources === 'object' && Object.hasOwn(s.resources, id)).map(s => String(s.name));
@@ -57,7 +62,8 @@ declare namespace LWProcessTuning {
   return `<div id="tune-summary" class="de-summary"></div>
    <section class="de-sec" aria-labelledby="tune-h-process"><h4 id="tune-h-process" tabindex="-1">Process</h4><div class="de-errs" id="tune-err" data-errs=""></div>
     ${F.text('tune-name', 'Name', 'name', d.name)}${F.text('tune-desc', 'Description', 'description', d.description, {max: 4000, long: true})}
-    ${T.genreMarkup(d)}${F.int('tune-seed', 'Seed', 'seed', d.seed, {min: 0, max: SEED, optional: true, help: 'Same seed, same run. Change it to see another scenario. Leave empty for the default seed (1).'})}</section>
+    ${T.genreMarkup(d)}${F.int('tune-seed', 'Seed', 'seed', d.seed, {min: 0, max: SEED, optional: true, help: SEED_HELP})}
+    ${C.markup(d)}</section>
    <section class="de-sec" aria-labelledby="tune-h-res"><h4 id="tune-h-res" tabindex="-1">Shared resources</h4><div class="de-errs" id="tune-res-err" data-errs="resources"></div><p class="de-help">Pools of people, machines or systems that steps wait for.</p>${res}<button type="button" class="de-add" id="tune-res-add" data-act="res-add">Add resource</button></section>
    <section class="de-sec" aria-labelledby="tune-h-arr"><h4 id="tune-h-arr" tabindex="-1">Case arrivals</h4><div class="de-errs" id="tune-arr-err" data-errs="arrivals"></div><p class="de-help">When new cases enter the process.</p>${arrivals || '<p class="de-help">No arrivals are defined.</p>'}<button type="button" class="de-add" id="tune-arr-add" data-act="arr-add">Add arrival</button></section>
    ${T.trackMarkup(d)}
@@ -127,7 +133,7 @@ declare namespace LWProcessTuning {
    const el = e.target as HTMLInputElement, kind = el.dataset?.kind, path = el.dataset?.path; if (!kind || !path) return;
    if (WAIT_FOR_CHANGE.has(kind) !== (e.type === 'change')) return;
    const def = parse(); if (!def) { render(); return; }
-   const special = T.special(def, el) ?? A.special(def, el);
+   const special = T.special(def, el) ?? C.special(def, el) ?? A.special(def, el);
    if (special) { if (special.local) { local.set(...special.local); show(); } else { local.delete(path); if (special.write) commit(def, special.focus, special.rerender); else show(); } return; }
    let value: unknown;
    if (kind === 'int') {

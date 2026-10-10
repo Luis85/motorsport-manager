@@ -116,7 +116,12 @@ declare namespace LWProcessBpmn {
   add(1, `<bpmn:process id="${pid}" name="${esc(d.name)}" isExecutable="false">`);
   if (d.description !== undefined) add(2, `<bpmn:documentation>${xml().text(d.description)}</bpmn:documentation>`);
   const processEmpty = emptied({track: d.track, sipoc: d.sipoc, suppliers: d.sipoc?.suppliers, customers: d.sipoc?.customers}, ['track', 'sipoc', 'suppliers', 'customers']);
-  add(2, '<bpmn:extensionElements>'); add(3, `<wl:process id="${d.id}" revision="${d.revision}"${d.$schema ? ` schema="${esc(d.$schema)}"` : ''}${d.seed !== undefined ? ` seed="${d.seed}"` : ''}${d.genre !== undefined ? ` genre="${d.genre}"` : ''}${attrs({empty: processEmpty})}/>`);
+  add(2, '<bpmn:extensionElements>');
+  const schema = d.$schema ? ` schema="${esc(d.$schema)}"` : '', seed = d.seed !== undefined ? ` seed="${d.seed}"` : '';
+  const genre = d.genre !== undefined ? ` genre="${d.genre}"` : '';
+  // The display calendar travels only in this extension; without one the element is written exactly as before it existed.
+  const calendar = attrs({minutesPerDay: d.calendar?.minutesPerDay, daysPerWeek: d.calendar?.daysPerWeek});
+  add(3, `<wl:process id="${d.id}" revision="${d.revision}"${schema}${seed}${genre}${calendar}${attrs({empty: processEmpty})}/>`);
   for (const t of d.track ?? []) add(3, `<wl:track${attrs({field: t.field, label: t.label})}/>`);
   for (const p of d.sipoc?.suppliers ?? []) add(3, `<wl:supplier${attrs({name: p.name, supplies: p.supplies})}/>`);
   for (const p of d.sipoc?.customers ?? []) add(3, `<wl:customer${attrs({name: p.name, receives: p.receives})}/>`);

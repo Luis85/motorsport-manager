@@ -10,8 +10,12 @@
     {id: 'end', name: 'Handover', kind: 'end', scene: {id: 'scene-end', position: [24, 0], color: '#77b5a0'}}],
    flows: [{id: 'start-work', from: 'start', to: 'work'}, {id: 'work-end', from: 'work', to: 'end'}], arrivals: [{at: 0, count: 1, interval: 0, data: {}}]});
  }
- /** Process-setting operations: they write one optional top-level field, and null (or `process` for the genre) removes it. */
- const SETTINGS = {setDescription: 'description', setSeed: 'seed', setGenre: 'genre', setSipoc: 'sipoc', setTrack: 'track'} as const;
+ /**
+  * Process-setting operations: they write one optional top-level field, and null (or `process` for the genre) removes it.
+  * `setCalendar` writes the display-only working calendar ({minutesPerDay, daysPerWeek}); the catalog judges its values.
+  */
+ const SETTINGS = {setDescription: 'description', setSeed: 'seed', setGenre: 'genre', setSipoc: 'sipoc', setTrack: 'track',
+  setCalendar: 'calendar'} as const;
  /** Writes or removes a top-level field; a new field is placed in schema order among the existing keys, which keep their order. */
  function setting(d: LWProcess.Definition, key: string, value: unknown, remove: boolean): void {
   const record = d as unknown as Record<string, unknown>;

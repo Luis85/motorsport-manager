@@ -1,5 +1,11 @@
 /// <reference path="./process-contracts.d.ts" />
-/** The JSON Schema is also the runtime structural grammar; no generated validator drift. */
+/**
+ * The JSON Schema is also the runtime structural grammar; no generated validator drift.
+ * Version note: `schemaVersion` stays 1. Optional fields added after v1 (`genre`, `track`, `sipoc` and the display
+ * `calendar`) are strictly additive: a definition without them is admitted, fingerprinted and run exactly as before, and
+ * engines from before a field reject it as an unknown field. A node's `description` is also the plain diagnostic shown when
+ * a value has the wrong type or range (process-catalog.ts), so it names the field and its range.
+ */
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessSchema?: Record<string, unknown>; LWProcessLimits?: LWProcess.Limits};
@@ -46,10 +52,17 @@
  // SIPOC parties are descriptive only: suppliers and customers; inputs, process and outputs are derived by views.
  const party = (detail: string) => object({name: {type: 'string', minLength: 1, maxLength: 60}, [detail]: {type: 'string', minLength: 1, maxLength: 160}}, ['name']);
  const sipoc = object({suppliers: list(party('supplies'), 8), customers: list(party('receives'), 8)}, []);
+ // Display calendar: added after v1 as an optional display field; engines before it reject the field. It only changes how
+ // views word durations (LWProcessTime.span); the runtime, scheduling, timers, arrivals and metrics never read it.
+ const calendar = object({
+  minutesPerDay: {...integer(1440, 1), description: 'The display calendar needs minutesPerDay as a whole number of minutes from 1 to 1440.'},
+  daysPerWeek: {...integer(7, 1), description: 'The display calendar needs daysPerWeek as a whole number of days from 1 to 7.'}});
+ const track = list(object({field: fieldName, label: {type: 'string', minLength: 1, maxLength: 40}}, ['field']), 6);
+ // Property order is the schema order guarded edits place a new top-level field in (LWProcessAuthoring).
  const schema = {$schema: 'http://json-schema.org/draft-07/schema#', $id: 'wildlands-process.schema.json', definitions: {condition},
   ...object({$schema: {type: 'string', maxLength: 256}, format: {const: 'wildlands-process'}, schemaVersion: {const: 1},
    revision: integer(1000000000), seed: integer(2147483647), id, name: text, description: {type: 'string', maxLength: 4000}, start: id,
-   genre: {enum: ['process', 'customer-journey', 'user-journey']}, track: list(object({field: fieldName, label: {type: 'string', minLength: 1, maxLength: 40}}, ['field']), 6), sipoc,
+   genre: {enum: ['process', 'customer-journey', 'user-journey']}, calendar, track, sipoc,
    resources: list(resource, 32), steps: list(step, 128, 2), flows: list(flow, 256, 1), arrivals: list(arrival, 32, 1)},
    ['format', 'schemaVersion', 'revision', 'id', 'name', 'start', 'resources', 'steps', 'flows', 'arrivals'])};
  root.LWProcessLimits = limits; root.LWProcessSchema = schema;

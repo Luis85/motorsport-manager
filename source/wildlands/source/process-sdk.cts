@@ -1,6 +1,7 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-slides-contracts.d.ts" />
 /// <reference path="./process-diff.ts" />
+/// <reference path="./process-advice.ts" />
 /** Public Node ports; no game installer and no ambient process definition. */
 require('./ecs.js');
 require('./asset-catalog.js');
@@ -38,11 +39,12 @@ require('./process-route.js');
 require('./process-sipoc-model.js');
 require('./process-time.js');
 require('./process-random-view.js');
+require('./process-advice.js');
 require('./process-terms.js');
 require('./process-slides-text.js');
 require('./process-slides.js');
 const root = globalThis as unknown as {LWProcessCatalog: LWProcess.Catalog; LWProcessRuntime: LWProcess.Runtime; LWProcessAuthoring: LWProcess.Authoring; LWProcessBpmn: LWProcessBpmn.Api; LWProcessBpmnConformance: LWProcessBpmnConformance.Api;
- LWProcessSlides: LWProcessSlides.Api; LWProcessDiff: LWProcessDiff.Api};
+ LWProcessSlides: LWProcessSlides.Api; LWProcessDiff: LWProcessDiff.Api; LWProcessAdvice: LWProcessAdvice.Api};
 export const catalog = root.LWProcessCatalog;
 export const runtime = root.LWProcessRuntime;
 export const authoring = root.LWProcessAuthoring;
@@ -50,3 +52,4 @@ export const bpmn = root.LWProcessBpmn;
 export const conformance = root.LWProcessBpmnConformance;
 export const slides = root.LWProcessSlides;
 export const diff = root.LWProcessDiff;
+export const advice = root.LWProcessAdvice;

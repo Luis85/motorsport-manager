@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {nextFrames} from './browser-harness';
 import {query, OUT, runSuite} from './process-browser-fixture';
+import {calendarChecks} from './process-definition-calendar-checks';
 runSuite('process definition editor browser harness', 'process-definition-browser-results.json', async studio => {
  const {page, diagnostics, dir, check, checkLifecycle, freshStudio, defOpen, openDef, closeDef, restoreDef, applyDef, draftText, defOf, inSync, dialogOpen, activeId, importFeed, importRandom, openRandom, savedStep, importJourney, pasteDraft} = studio;
  await check('Definition editor opens as a modal from the header, pauses the run and applies a fresh paused run', async () => {
@@ -413,5 +414,6 @@ runSuite('process definition editor browser harness', 'process-definition-browse
   assert.match(await page.locator('#se-pools-0-count-help').innerText(), /<img src=x/); await nextFrames(page); assert.equal(await pwned(), undefined);
   await page.locator('#se-close').click(); await openDef(); await restoreDef(); await closeDef();
  });
+ await calendarChecks(studio);
  await checkLifecycle('Process definition editor browser lifecycle emits no runtime errors or network requests');
 });

@@ -1,5 +1,9 @@
 /// <reference path="./process-bpmn.ts" />
-/** Readers of the Wildlands extension elements (`urn:wildlands:process:1`) shared by the BPMN importer: scalars, distributions, draws, conditions, journey notes, tracked fields and SIPOC parties. Shape is judged here; ranges stay with the engine validator. */
+/**
+ * Readers of the Wildlands extension elements (`urn:wildlands:process:1`) shared by the BPMN importer: scalars,
+ * distributions, draws, conditions, journey notes, tracked fields, SIPOC parties and the display calendar. Shape is judged
+ * here; ranges stay with the engine validator, except the display calendar, whose ranges are rejected here explicitly.
+ */
 declare namespace LWProcessBpmnExt {
  type X = LWProcessXml.Node;
  interface Api {
@@ -18,7 +22,10 @@ declare namespace LWProcessBpmnExt {
   OPS: readonly LWProcess.Op[];
   distOf(n: X, where: string): LWProcess.Dist; single(nodes: X[], what: string, where: string): X | undefined; drawsOf(nodes: X[], where: string): LWProcess.Draw[];
   chanceOf(ext: X | undefined, expression: X | undefined, where: string): LWProcess.ChanceCondition | undefined; whenOf(n: X, where: string): LWProcess.When;
-  journeyOf(ext: X, step: LWProcess.Step, where: string): void; trackOf(proc: X, meta: X | undefined, definition: LWProcess.Definition): void; sipocOf(proc: X, definition: LWProcess.Definition): void;
+  journeyOf(ext: X, step: LWProcess.Step, where: string): void; trackOf(proc: X, meta: X | undefined, definition: LWProcess.Definition): void;
+  sipocOf(proc: X, definition: LWProcess.Definition): void;
+  /** The display calendar from `<wl:process minutesPerDay daysPerWeek>`: both or neither, whole numbers in range. */
+  calendarOf(meta: X | undefined, definition: LWProcess.Definition): void;
  }
 }
 (function(inputRoot: unknown) {
@@ -60,7 +67,8 @@ declare namespace LWProcessBpmnExt {
  const VOCABULARY: Record<string, Record<string, string[]>> = {
   step: {step: ['id', 'kind', 'duration', 'until', 'cost', 'join', 'technology', 'channel', 'outcome', 'phase', 'emotion', 'pain', 'opportunity', 'empty'], timing: DIST_ATTRS, instances: ['count', 'field', 'mode'],
    draw: DRAW_ATTRS, output: ['field', 'label'], add: ['name', 'delta'], set: ['name', ...SCALAR], need: ['field', 'op', 'label', ...SCALAR], backlog: ['capacity', 'order', 'priority', 'pull'], scene: ['id', 'x', 'y', 'color']},
-  process: {process: ['id', 'revision', 'schema', 'seed', 'genre', 'empty'], track: ['field', 'label'], supplier: ['name', 'supplies'], customer: ['name', 'receives'], arrival: ['at', 'count', 'until', 'open', 'interval', 'empty']},
+  process: {process: ['id', 'revision', 'schema', 'seed', 'genre', 'minutesPerDay', 'daysPerWeek', 'empty'], track: ['field', 'label'],
+   supplier: ['name', 'supplies'], customer: ['name', 'receives'], arrival: ['at', 'count', 'until', 'open', 'interval', 'empty']},
   flow: {flow: ['id'], when: ['combine', 'chance', 'field', 'op', 'valueField', ...SCALAR]}, resource: {resource: ['id', 'capacity', 'costPerMinute', 'kind']}, lane: {lane: ['resource']},
   performer: {demand: ['quantity']}, boundary: {deadline: ['mode', 'flow', 'after'], timing: DIST_ATTRS}};
  /** Elements whose own readers judge their attributes and children (with their own messages); `vet` only admits them here. */
@@ -174,6 +182,16 @@ declare namespace LWProcessBpmnExt {
   const suppliers = read('supplier', 'supplies'), customers = read('customer', 'receives');
   if (suppliers.length || customers.length) definition.sipoc = {...suppliers.length ? {suppliers} : {}, ...customers.length ? {customers} : {}};
  }
- root.LWProcessBpmnExt = {kids, documentation, extensions, first, typed, sanitize, whole, onlyAttrs, oneOf, vet, empties, sig, OPS, distOf, single, drawsOf, chanceOf, whenOf, journeyOf, trackOf, sipocOf};
+ function calendarOf(meta: X | undefined, definition: LWProcess.Definition): void {
+  if (!meta) return;
+  const minutes = whole(meta.attrs, 'minutesPerDay', 'Process'), days = whole(meta.attrs, 'daysPerWeek', 'Process');
+  if (minutes === undefined && days === undefined) return;
+  if (minutes === undefined || days === undefined) throw Error('Process: a display calendar needs both minutesPerDay and daysPerWeek.');
+  if (minutes < 1 || minutes > 1440) throw Error('Process: minutesPerDay "' + minutes + '" must be a whole number from 1 to 1440.');
+  if (days < 1 || days > 7) throw Error('Process: daysPerWeek "' + days + '" must be a whole number from 1 to 7.');
+  definition.calendar = {minutesPerDay: minutes, daysPerWeek: days};
+ }
+ root.LWProcessBpmnExt = {kids, documentation, extensions, first, typed, sanitize, whole, onlyAttrs, oneOf, vet, empties, sig, OPS, distOf, single,
+  drawsOf, chanceOf, whenOf, journeyOf, trackOf, sipocOf, calendarOf};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessBpmnExt;
 })(globalThis);
