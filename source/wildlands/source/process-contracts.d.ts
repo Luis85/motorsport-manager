@@ -329,7 +329,8 @@ declare namespace LWProcess {
   register(spec: {
    id: string; phase: 'pre' | 'simulate' | 'post'; order: number; query: readonly string[]; update: (world: EcsWorld, id: string, dt: number) => void;
   }): unknown;
-  step(world: EcsWorld, dt: number): void;
+  /** `context.entityId` runs each system on that one entity only (when it matches the system's query). */
+  step(world: EcsWorld, dt: number, context?: {entityId?: string}): void;
  }; }
 }
 declare namespace LWProcess {

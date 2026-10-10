@@ -549,6 +549,7 @@
     "source/test-process-series.cts",
     "source/test-process-slices.cts",
     "source/test-process-sweeps.cts",
+    "source/test-process-scale.cts",
     "source/test-process-bpmn-helpers.cts",
     "source/test-process-bpmn-extensions.cts",
     "source/test-process-bpmn-conformance.cts",
