@@ -5,6 +5,8 @@
 .process-studio,.lw-journey,.sipoc { --bg:#13181f; --panel:#1d242e; --line:#364150; --text:#edf2f7; --muted:#b1bdcd; --accent:#ffbb73;
  --accent-bg:#3e3329; --accent-line:#ad8059; --danger:#e07a7a; --danger-text:#ffc3bc; --surface-2:#2c3744; --control-border:#7d8da3;
  --state-queue:#91b9d5; --state-timer:#d9c58a; --state-backlog:#b79ad6;
+ /* 2D map paths and deadline marks (process-renderer-2d.ts and process-map-*.ts draw with these tokens only). */
+ --map-edge:#65778b; --map-arrow:#7b8b9f; --map-conditional:#c79871; --deadline-escalate:#e6b04a; --escalated:#ff8a5c;
  /* Shades for hover, cards, rules, outcomes, load and overlays. */
  --accent-hover:#f5c99c; --accent-bg-hover:#4a3c2e; --surface-hover:#29333f; --surface-card:#222c37; --surface-sunk:#171d25; --card-line:#4a596b; --rule:#26313e; --grid:#2a3441;
  --order:#9baabd; --axis:#6a7684; --scrollbar:#536379; --invalid:#ff9d92; --focus-halo:#fff; --goal:#8fd68a; --goal-bg:#1f3d2a; --goal-text:#b9f0bf; --lost-bg:#40222a; --heat-warm:#f59e5b; --heat-hot:#ff7a59;
@@ -131,9 +133,10 @@
 .process-outcome.goal { color:var(--goal-text); background:var(--goal-bg); border-color:var(--goal); } .process-outcome.lost { color:var(--danger-text); background:var(--lost-bg); border-color:var(--danger); }
 .pd-dialog .de-sipoc-list { margin:0 0 14px; min-width:0; }
 .process-legend { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s1) var(--s4); padding:6px var(--s4); font-size:var(--t-xs); color:var(--muted); }
-.process-legend span { display:inline-flex; align-items:center; gap:var(--s1); }
-.process-legend i { width:6px; height:6px; border-radius:50%; display:inline-block; }
-.active-dot { background:var(--accent); }.queue-dot { background:var(--state-queue); }.timer-dot { background:var(--state-timer); }.backlog-dot { background:var(--state-backlog); }.held-dot { background:var(--danger); }
+.process-legend span { display:inline-flex; align-items:center; gap:var(--s1); min-height:24px; }
+.process-legend .pm-key { flex:none; overflow:visible; }
+/* The hovered or focused card's full name and counts: one fixed row, so showing it never resizes the map. */
+.process-studio .process-map-caption { flex:1 1 14em; min-width:min(14em,100%); min-height:1.3em; color:var(--text); line-height:1.3; overflow-wrap:anywhere; }
 #camera-hint { margin-left:auto; }
 /* SIPOC and Journey lenses draw no work markers, so only the hint stays. */
 .process-legend[data-view=lens] > :not(#camera-hint):not(#marker-count) { display:none; }
@@ -193,22 +196,66 @@
 .process-adds,.process-counters { margin:6px 0; overflow-wrap:anywhere; }.process-adds { padding-left:18px; }
 .process-inspector dl.process-tracked { grid-template-columns:minmax(0,1fr); gap:2px; } .process-inspector dl.process-tracked dd { text-align:left; margin-bottom:var(--s2); }
 .process-needs { margin:0 0 var(--s2); padding-left:18px; }.process-needs small { display:block; color:var(--muted); }
-/* Map. */
-.process-map-controls { position:absolute; right:10px; bottom:10px; display:flex; gap:6px; z-index:1; }
+/* Map. Card borders and work markers take their colour from the work state (`data-status`), with the same rules as the legend samples. */
+.process-map-dock { position:absolute; right:10px; bottom:10px; z-index:1; display:flex; align-items:flex-end; gap:var(--s2); max-width:calc(100% - 20px); }
+.process-map-controls { display:flex; gap:6px; flex:none; }
 .process-map-controls button { min-width:var(--control-h); min-height:var(--control-h); }
+.process-studio .process-map-key { max-width:15em; padding:var(--s1) var(--s2); border:1px solid var(--line); border-radius:var(--r-sm); }
+.process-studio .process-map-key { background:var(--panel); color:var(--text); font-size:var(--t-xs); line-height:1.3; }
 #map svg { cursor:grab; touch-action:none; } #map svg.panning { cursor:grabbing; }
 /* The browser focus ring on an SVG group is scaled by the camera and read as a huge dark circle; use a screen-sized ring on the card instead. */
 #map svg g[role=button] { outline:none; }
-#map svg g[role=button]:focus-visible > rect:first-of-type { stroke:var(--accent); stroke-width:3px; stroke-dasharray:none; vector-effect:non-scaling-stroke; }
+#map svg g[role=button]:focus-visible > .pm-card { stroke:var(--accent); stroke-width:3px; stroke-dasharray:none; }
 /* Two-tone keyboard ring: a white outer band under the amber card border keeps at least 3:1 against the card border and the stage. */
 #map svg .pm-focus-ring { display:none; fill:none; stroke:var(--focus-halo); stroke-width:7px; vector-effect:non-scaling-stroke; stroke-linejoin:round; }
 #map svg g[role=button]:focus-visible > .pm-focus-ring { display:inline; }
-#map svg .pm-card { vector-effect:non-scaling-stroke; stroke-width:1.5px; }
-#map svg .pm-card.pm-idle { stroke:var(--line); stroke-dasharray:5 3; }
-#map svg .pm-card.pm-work { stroke-width:2.5px; }
-.map-zoom-hint { color:var(--accent); }
-#map svg .pm-edge-deadline { vector-effect:non-scaling-stroke; }
+/* Idle cards: a dashed border in --axis (3.8:1 against the stage). Busy cards: a solid border in their state colour. */
+#map svg .pm-card { fill:var(--surface-sunk); stroke:var(--axis); stroke-width:1.5px; stroke-dasharray:5 3; vector-effect:non-scaling-stroke; }
+#map svg g:not([data-status=idle]) > .pm-card { stroke-width:2.5px; stroke-dasharray:none; }
+#map svg g[data-status=active] > .pm-card { fill:var(--surface-card); stroke:var(--accent); }
+#map svg g[data-status=queued] > .pm-card { stroke:var(--state-queue); }
+#map svg g[data-status=timer] > .pm-card { stroke:var(--state-timer); }
+#map svg g[data-status=backlog] > .pm-card { stroke:var(--state-backlog); }
+#map svg g[data-status=held] > .pm-card { stroke:var(--danger); }
+#map svg .pm-current { fill:none; stroke:var(--text); stroke-width:1.5px; vector-effect:non-scaling-stroke; }
+#map svg :is(.pm-title,.pm-text,.pm-pill-text,.pm-phase-text,.pm-count-text) { fill:var(--text); }
+#map svg :is(.pm-muted,.pm-edge-label) { fill:var(--muted); }
+#map svg .pm-counts,#map svg .pm-progress { fill:var(--accent); }
+#map svg .pm-track { fill:var(--line); }
+#map svg :is(.pm-pill-box,.pm-phase-tag) { fill:var(--surface-card); }
+#map svg .pm-deadline-tag-box { fill:var(--surface-sunk); }
+#map svg .pm-glyph { fill:none; stroke-width:.09; stroke-linecap:round; stroke-linejoin:round; }
+#map svg .pm-outcome-goal { fill:var(--goal-bg); stroke:var(--goal); }
+#map svg .pm-outcome-lost { fill:var(--lost-bg); stroke:var(--danger); }
+#map svg .pm-outcome-mark { fill:none; stroke-width:.1; stroke-linecap:round; }
+#map svg [data-outcome=goal] > .pm-outcome-mark { stroke:var(--goal); }
+#map svg [data-outcome=lost] > .pm-outcome-mark { stroke:var(--danger); }
+#map svg .pm-gateway :is(path,circle) { stroke:var(--map-conditional); stroke-width:.1; }
+#map svg .pm-gateway path { fill:var(--surface-sunk); }
+#map svg .pm-gateway circle { fill:none; }
 #map svg .pm-gateway { pointer-events:none; }
+#map svg .pm-slot { fill:none; stroke:var(--axis); }
+#map svg .pm-slot-full,#map svg .pm-slot-text { fill:var(--state-backlog); }
+/* Work-state markers (map and legend): Working disc, Waiting ring, Timer hourglass, Backlog square, Blocked cross. */
+.pm-mark { stroke-linecap:round; stroke-linejoin:round; }
+.pm-mark[data-status=active] { fill:var(--accent); }
+.pm-mark[data-status=queued] { fill:none; stroke:var(--state-queue); stroke-width:.24; }
+.pm-mark[data-status=timer] { fill:var(--state-timer); }
+.pm-mark[data-status=backlog] { fill:var(--state-backlog); }
+.pm-mark[data-status=held] { fill:none; stroke:var(--danger); stroke-width:.26; }
+.pm-mark.pm-token-escalated { stroke:var(--escalated); }
+.pm-mark.pm-token-escalated:not([data-status=queued],[data-status=held]) { fill:var(--escalated); stroke:var(--focus-halo); stroke-width:.12; }
+/* Paths (map and legend): plain solid, conditional long dashes, deadline dots in the deadline tone. Screen-sized strokes. */
+.pm-edge { fill:none; stroke:var(--map-edge); stroke-width:1.25px; vector-effect:non-scaling-stroke; }
+.pm-edge.pm-edge-conditional { stroke:var(--map-conditional); stroke-width:1.5px; stroke-dasharray:7 4; }
+.pm-edge.pm-edge-deadline { stroke-width:2px; stroke-dasharray:2 4; stroke-linecap:round; }
+.pm-edge.pm-edge-interrupt { stroke:var(--danger); }
+.pm-edge.pm-edge-escalate { stroke:var(--deadline-escalate); }
+.pm-arrow { fill:var(--map-arrow); } .pm-arrow-interrupt { fill:var(--danger); } .pm-arrow-escalate { fill:var(--deadline-escalate); }
+/* "Zoom in for details / names": a real button that zooms to the readable level. */
+.process-studio button.map-zoom-hint { min-height:24px; padding:0 var(--s2); line-height:1.2; font-size:var(--t-xs); }
+.process-studio button.map-zoom-hint { border-color:var(--accent-line); background:var(--accent-bg); }
+.process-studio button.map-zoom-hint:hover { background:var(--accent-bg-hover); }
 @media(pointer:coarse) { .process-map-controls button { min-width:44px; min-height:44px; } }
 /* Desktop: the studio fits one viewport. Header and toolbar take their height, the workspace takes the rest, and each column scrolls inside itself. */
 @media(min-width:1100px) and (min-height:600px) {
@@ -219,6 +266,7 @@
  .process-nav::after,.process-inspector::after { content:""; display:block; position:sticky; bottom:0; height:28px; margin-top:-28px; background:linear-gradient(to bottom,transparent,var(--panel)); pointer-events:none; }
  .process-nav,.process-inspector { padding-bottom:var(--s5); }
  #viewport { flex:1 1 0; height:auto; min-height:320px; }
+ .process-studio .process-map-caption { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 }
 /* Tablet and narrow windows: the page scrolls, the inspector sits under the stage. */
 @media(max-width:1099px) {
@@ -273,6 +321,7 @@
  .process-metrics { padding-inline:var(--s4); gap:var(--s2) var(--s4); }
  .process-metrics strong { font-size:var(--t-md); }
  .process-map-controls button { min-width:44px; min-height:44px; }
+ .process-studio button.map-zoom-hint { min-height:44px; }
  .process-view-controls { width:100%; }
  .process-studio button.process-more { min-height:44px; }
 }

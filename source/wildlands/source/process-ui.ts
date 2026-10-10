@@ -57,7 +57,7 @@
   <canvas id="canvas" role="img" aria-label="3D process scenes. Use the scene list for keyboard selection." aria-describedby="camera-hint"
    tabindex="0"></canvas>
   <div id="map" hidden></div><div id="lens" hidden></div></div>
- <div class="process-legend"><span><i class="active-dot"></i>Working</span><span><i class="queue-dot"></i>Waiting</span><span><i class="timer-dot"></i>Timer</span><span><i class="backlog-dot"></i>Backlog</span><span><i class="held-dot"></i>Blocked</span><span id="marker-count"></span><span id="camera-hint">Drag to orbit · Scroll to zoom</span></div>
+ <div class="process-legend">${root.LWProcess2D.legend()}<span id="marker-count"></span><span id="camera-hint">Drag to orbit · Scroll to zoom</span></div>
  <div id="metrics" class="process-metrics" role="group" aria-label="Run metrics"></div><p id="latest" class="process-latest"></p>
  <details id="io-panel" class="process-io"><summary>Inputs &amp; outputs</summary>
   <section id="process-data" aria-label="Process inputs and outputs"></section></details></section>
@@ -337,9 +337,9 @@
    before = {mode: view.mode, flat, selected: view.selected}; command(() => app.mode('2d'));
    status(paused ? 'Presenting slides. The run is paused while you present.' : 'Presenting slides.'); return {view, paused, draft: draft.changed()};
   },
-  show: step => {command(() => app.select(step)); svg.frame();},
+  show: step => {command(() => app.select(step)); svg.frame({neighbours: true});},
   leave: paused => {
-   const b = before; command(() => {if (b.mode === 'lens') app.mode(b.flat); app.mode(b.mode); app.select(b.selected);}); if (view.mode === '2d') svg.frame();
+   const b = before; command(() => {if (b.mode === 'lens') app.mode(b.flat); app.mode(b.mode); app.select(b.selected);}); svg.frame();
    status(paused ? 'Presentation closed. The run stays paused; choose Run simulation to continue.' : 'Presentation closed.');
   },
  });

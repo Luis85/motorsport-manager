@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import {waitForReady, openArtifact, nextFrames} from './browser-harness';
 import {query, OUT, runSuite} from './process-browser-fixture';
-import {timerFixture, automationFixture, roomsFixture, claimsDesk} from './process-browser-models';
+import {timerFixture, automationFixture, roomsFixture, claimsDesk, blockedLine} from './process-browser-models';
+import {encoding, STATE, waitingAt} from './process-map-probe';
 runSuite('process renderers browser harness', 'process-renderers-browser-results.json', async studio => {
  const {page, file, fixtureUrls, check, checkLifecycle, freshStudio, showIo, switchTo, applyDraft, importClaims, importJson, COUNT} = studio;
  await check('Actor joints animate only during playback, respect reduced motion, and do not tick the process', async () => {
@@ -136,11 +137,36 @@ runSuite('process renderers browser harness', 'process-renderers-browser-results
   const zoomed = await titles(); assert(zoomed.px >= 10.9 && zoomed.secondary && !zoomed.hint, 'secondary lines appear and the hint goes once zoomed');
   await page.locator('button[aria-label="Reset map view"]').click(); await page.waitForFunction(() => ![...document.querySelectorAll('#map svg .pm-secondary')].some(n => getComputedStyle(n).display !== 'none'));
   assert.equal((await titles()).hint, true);
+  // The hint is a real button: Enter zooms to the level where secondary text is readable, and focus moves on to the map.
+  assert.equal(await page.locator('#map-zoom-hint').evaluate(b => b.tagName), 'BUTTON');
+  await page.locator('#map-zoom-hint').focus(); await page.keyboard.press('Enter');
+  const read = await titles(); assert(read.secondary && !read.hint, 'Zoom in for details zooms to readable secondary text');
+  const onMap = await page.evaluate(() => document.activeElement === document.querySelector('#map svg'));
+  assert.equal(onMap, true, 'focus moves from the hidden button to the map');
+  await page.locator('button[aria-label="Reset map view"]').click(); assert.equal((await titles()).hint, true);
   await page.locator('button[aria-label="Zoom in"]').click(); await page.locator('button[aria-label="Zoom in"]').click(); assert.equal((await titles()).secondary, false, 'two small steps are still below the 9px secondary size');
-  const long = await page.evaluate(() => { const d = (globalThis as any).LWProcessStudio.query().definition.steps.reduce((a: any, s: any) => s.name.length > a.name.length ? s : a); const g = document.getElementById('process-map-' + d.id)!; return {full: d.name, tip: g.querySelector('title')!.textContent, shown: g.querySelector('.pm-title')!.textContent!}; });
-  assert.equal(long.tip, long.full); assert(long.full.length > 20 && long.shown.length < long.full.length && long.shown.includes('…'), 'long names are truncated with an ellipsis and keep the full name in the title');
-  const idle = await page.evaluate(() => { const card = document.querySelector('#map svg .pm-card.pm-idle') as SVGRectElement; return {stroke: getComputedStyle(card).stroke, dash: getComputedStyle(card).strokeDasharray}; });
-  assert.equal(idle.stroke, 'rgb(54, 65, 80)'); assert.notEqual(idle.dash, 'none');
+  const long = await page.evaluate(() => {
+   const d = (globalThis as any).LWProcessStudio.query().definition.steps.reduce((a: any, s: any) => s.name.length > a.name.length ? s : a);
+   const g = document.getElementById('process-map-' + d.id)!, lines = [...g.querySelectorAll('.pm-title tspan')].map(t => t.textContent!);
+   const shown = lines.reduce((a, l) => a.endsWith('-') ? a.slice(0, -1) + l : a ? a + ' ' + l : l, '');
+   return {full: d.name, tip: g.querySelector('title')!.textContent, caption: g.dataset.caption, shown};
+  });
+  const kept = long.shown.replace(/…$/, '');
+  const whole = kept === long.full || long.shown.endsWith('…') && long.full[kept.length] === ' ';
+  assert.equal(long.tip, long.full);
+  assert(long.full.length > 20 && long.full.startsWith(kept) && whole, 'a long name ends in an ellipsis only after a whole word: ' + long.shown);
+  assert(long.caption!.startsWith(long.full + ' · '), 'the card caption carries the full name');
+  // Idle cards: a dashed border in --axis, at least 3:1 against the stage.
+  const idle = await page.evaluate(() => {
+   const card = document.querySelector('#map svg g[data-status=idle] > .pm-card') as SVGRectElement, weights = [.2126, .7152, .0722];
+   const linear = (v: number) => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4;
+   const lum = (c: string) => c.match(/\d+/g)!.slice(0, 3).map(v => linear(Number(v) / 255)).reduce((a, v, i) => a + v * weights[i]!, 0);
+   const stroke = getComputedStyle(card).stroke, bg = getComputedStyle(document.body).backgroundColor;
+   const [hi, lo] = [lum(stroke), lum(bg)].sort((a, b) => b - a) as [number, number];
+   return {stroke, dash: getComputedStyle(card).strokeDasharray, contrast: (hi + .05) / (lo + .05)};
+  });
+  assert.equal(idle.stroke, 'rgb(106, 118, 132)'); assert.notEqual(idle.dash, 'none');
+  assert(idle.contrast >= 3, `idle card border contrast is ${idle.contrast}`);
   assert.equal(await page.locator('#map svg').getAttribute('aria-describedby'), 'camera-hint'); assert.equal(await page.locator('#camera-hint').count(), 1);
   await page.locator('[id^="process-map-"]').first().focus(); await page.keyboard.press('Shift+Tab'); await page.keyboard.press('Tab');
   const ring = await page.evaluate(() => { const g = document.activeElement as SVGGElement, outer = getComputedStyle(g.querySelector('.pm-focus-ring')!), card = getComputedStyle(g.querySelector('rect')!); return {display: outer.display, outer: outer.stroke, width: outer.strokeWidth, inner: card.stroke}; });
@@ -210,13 +236,23 @@ runSuite('process renderers browser harness', 'process-renderers-browser-results
   const live = (await query(page)).snapshot; assert.ok(live.tokens.some(t => t.escalated) && live.tokens.some(t => t.item !== undefined && t.items === 3 || t.deadlineAt !== undefined), 'the seeded run holds escalated, item and deadline tokens'); assert.equal(live.minute, 60);
   const map = await page.evaluate(() => {
    const q = (s: string) => [...document.querySelectorAll<SVGElement>('#map svg ' + s)];
-   return {deadline: q('.pm-edge-deadline').map(e => [e.dataset.flow, e.getAttribute('stroke'), e.getAttribute('stroke-dasharray'), e.getAttribute('class')]), plain: q('.pm-edge:not(.pm-edge-deadline):not(.pm-edge-conditional)').map(e => e.getAttribute('stroke')), tags: q('.pm-deadline-tag text').map(t => t.textContent),
-    conditional: q('.pm-edge-conditional').map(e => [e.dataset.flow, e.getAttribute('class')?.includes('pm-edge-inclusive'), e.getAttribute('stroke')]), gateways: q('.pm-gateway-inclusive').length, instances: q('.pm-instances').map(p => p.textContent), clocks: q('.pm-deadline-badge').length,
-    escalated: q('.pm-token-escalated').map(c => c.getAttribute('fill')), label: document.getElementById('process-map-route')!.getAttribute('aria-label')};
+   const css = (e: Element) => getComputedStyle(e), paint = (e: Element) => css(e).fill === 'none' ? css(e).stroke : css(e).fill;
+   return {deadline: q('.pm-edge-deadline').map(e => [e.dataset.flow, css(e).stroke, css(e).strokeDasharray, e.getAttribute('class')]),
+    plain: q('.pm-edge:not(.pm-edge-deadline):not(.pm-edge-conditional)').map(e => css(e).stroke), tags: q('.pm-deadline-tag text').map(t => t.textContent),
+    conditional: q('.pm-edge-conditional').map(e => [e.dataset.flow, e.classList.contains('pm-edge-inclusive'), css(e).stroke, css(e).strokeDasharray]),
+    gateways: q('.pm-gateway-inclusive').length, instances: q('.pm-instances').map(p => p.textContent), clocks: q('.pm-deadline-badge').length,
+    escalated: q('.pm-token-escalated').map(paint), label: document.getElementById('process-map-route')!.getAttribute('aria-label')};
   });
-  assert.deepEqual(map.deadline.map(d => d[0]).sort(), ['approve-late', 'intake-late']); assert.ok(map.deadline.every(d => d[2] && d[1] !== map.plain[0]), 'deadline flows are dashed in their own colour'); assert.deepEqual(map.deadline.map(d => d[3]).sort(), ['pm-edge pm-edge-deadline pm-edge-escalate', 'pm-edge pm-edge-deadline pm-edge-interrupt']);
-  assert.deepEqual(map.tags.sort(), ['deadline · escalate', 'deadline · interrupt']); assert.deepEqual(map.conditional.map(c => c[0]).sort(), ['to-gift', 'to-insure']); assert.ok(map.conditional.every(c => c[1] === true && c[2] === '#c79871'), 'inclusive fork flows read like decision flows');
-  assert.equal(map.gateways, 1); assert.match(map.label ?? '', /inclusive fork/); assert.equal(map.instances.length, 1); assert.match(map.instances[0] ?? '', /^× (3|per case \(lines\))/); assert.equal(map.clocks, 2); assert.ok(map.escalated.length >= 1 && map.escalated.every(f => f === '#ff8a5c'), 'escalated tokens use their own marker colour');
+  assert.deepEqual(map.deadline.map(d => d[0]).sort(), ['approve-late', 'intake-late']);
+  assert.ok(map.deadline.every(d => d[2] !== 'none' && d[1] !== map.plain[0]), 'deadline flows are dashed in their own colour');
+  assert.deepEqual(map.deadline.map(d => d[3]).sort(), ['pm-edge pm-edge-deadline pm-edge-escalate', 'pm-edge pm-edge-deadline pm-edge-interrupt']);
+  assert.deepEqual(map.tags.sort(), ['deadline · escalate', 'deadline · interrupt']);
+  assert.deepEqual(map.conditional.map(c => c[0]).sort(), ['to-gift', 'to-insure']);
+  const decision = (c: (string | boolean | undefined)[]) => c[1] === true && c[2] === 'rgb(199, 152, 113)' && c[3] !== 'none' && c[3] !== map.deadline[0]![2];
+  assert.ok(map.conditional.every(decision), 'inclusive fork flows read like decision flows: dashed, unlike deadline dots');
+  assert.equal(map.gateways, 1); assert.match(map.label ?? '', /inclusive fork/);
+  assert.equal(map.instances.length, 1); assert.match(map.instances[0] ?? '', /^× (3|per case \(lines\))/); assert.equal(map.clocks, 2);
+  assert.ok(map.escalated.length >= 1 && map.escalated.every(f => f === 'rgb(255, 138, 92)'), 'escalated tokens use their own marker colour');
   await page.locator('[data-step="inspect"]').click(); const inspectPill = await page.locator('#map svg .pm-instances').textContent(); assert.match(inspectPill ?? '', /^× (3|per case \(lines\)) · \d+ started · \d+ done$/); assert.match(await page.locator('#map svg g[role=button]').getAttribute('aria-label') ?? '', /instances parallel, \d+ items started, \d+ finished/);
   await page.locator('[data-step="approve"]').click(); assert.match(await page.locator('#map svg .pm-deadline-badge').textContent() ?? '', /\d+ escalated · 0 interrupted/); assert.match(await page.locator('#map svg .pm-deadline-due').textContent() ?? '', /deadline at minute \d+/);
   // The data view reads the same facts.
@@ -342,6 +378,70 @@ runSuite('process renderers browser harness', 'process-renderers-browser-results
    await page.emulateMedia({reducedMotion: 'reduce'}); assert.equal(await probe('reduced'), 1);
   } finally { await page.emulateMedia({reducedMotion: 'no-preference'}); await probe('dispose'); }
   assert.equal((await facts()).renderers, 1, 'a surface on its own canvas releases its renderer');
+ });
+ await check('2D card borders, work markers and the legend share one shape-coded state encoding, and zoomed-out cards count waiting work', async () => {
+  await page.setViewportSize({width: 1440, height: 1060}); await freshStudio(); await page.locator('#mode-2d').click();
+  for (let i = 0; i < 2; i++) await page.locator('#advance').click();
+  const q = (await query(page)).snapshot, f = await encoding(page);
+  assert.deepEqual(Object.keys(STATE).map(s => f.key[s]?.label), Object.values(STATE));
+  assert.equal(new Set(Object.keys(STATE).map(s => f.key[s]!.d)).size, 5, 'each state has its own shape');
+  assert.deepEqual([f.key.conditional?.label, f.key.deadline?.label], ['Conditional path', 'Deadline path']);
+  assert(f.hint && f.cards.every(c => !/^\d+$/.test(c.title!)), 'the default framing shows names with details folded away');
+  const busy = f.cards.filter(c => c.status !== 'idle');
+  assert(busy.some(c => c.status === 'active') && busy.some(c => c.status === 'queued'), JSON.stringify(busy.map(c => c.status)));
+  for (const c of busy) assert.equal(c.stroke, f.key[c.status]!.paint, `${c.id} border is the legend ${c.status} colour`);
+  for (const c of f.cards) for (const m of c.marks) {
+   assert.deepEqual([m.d, m.paint], [f.key[m.status]!.d, f.key[m.status]!.paint], `${c.id} marker matches the legend ${m.status} sample`);
+   assert(m.px >= 7.9, `${c.id} marker is ${m.px}px`); assert.equal(m.onTitle, false, `${c.id} marker covers its title`);
+  }
+  // Every card with waiting work shows that count at the default framing, as readable text.
+  const waiting = q.steps.filter(m => waitingAt(q, m.id) > 0); assert(waiting.length > 0);
+  for (const m of waiting) {
+   const chip = f.cards.find(c => c.id === m.id)!.counts.find(c => c.status === 'queued');
+   assert.equal(chip?.text, String(waitingAt(q, m.id)), `${m.id} counts its waiting work`); assert(chip!.px >= 9, `${m.id} count is ${chip!.px}px`);
+  }
+  const sample = f.key.conditional!, dashed = f.conditional.every(e => e.dash === sample.dash && e.stroke === sample.stroke && e.dash !== 'none');
+  assert(f.conditional.length > 0 && dashed, 'conditional paths are dashed like their legend sample');
+  // Blocked work: a full backlog downstream holds finished work, which the card shows with the Blocked border, cross markers and words.
+  await applyDraft(blockedLine); await page.locator('#mode-2d').click();
+  for (let i = 0; i < 20 && !(await query(page)).snapshot.tokens.some(t => t.status === 'held'); i++) await page.locator('#step').click();
+  const held = (await query(page)).snapshot.tokens.filter(t => t.status === 'held' && t.stepId === 'make').length; assert(held > 0, 'work is held');
+  const blocked = await encoding(page), g = blocked.cards.find(c => c.id === 'make')!;
+  assert.deepEqual([g.status, g.stroke], ['held', blocked.key.held!.paint]); assert.match(g.label, new RegExp(`\\(${held} blocked\\)`));
+  assert(g.marks.some(m => m.status === 'held' && m.d === f.key.held!.d), 'held work uses the cross marker');
+  await page.locator('#process-map-make').focus();
+  assert.match(await page.locator('#map-caption').innerText(), new RegExp(`^Make the part · task · .*${held} blocked`));
+ });
+ await check('Present frames a step slide with its direct neighbours and keeps the card-number key beside a numbered map', async () => {
+  await page.setViewportSize({width: 1440, height: 1060}); await freshStudio();
+  const d = (await query(page)).definition, near = new Set(['design-ready']);
+  for (const f of d.flows) { if (f.from === 'design-ready') near.add(f.to); if (f.to === 'design-ready') near.add(f.from); }
+  await page.locator('#mode-2d').click(); await page.locator('#steps [data-step="design-ready"]').click();
+  assert.equal(await page.locator('#map svg g[role=button]').count(), 1, 'the studio keeps its single-step scene');
+  await page.locator('#mode-present').click(); await page.locator('#present[open]').waitFor();
+  const framed = await page.evaluate(() => {
+   const stage = document.getElementById('present-stage')!.getBoundingClientRect();
+   return [...document.querySelectorAll<SVGGElement>('#present-stage g[role=button]')].map(g => {
+    const r = g.querySelector('.pm-card')!.getBoundingClientRect();
+    const inside = r.left >= stage.left - 1 && r.right <= stage.right + 1 && r.top >= stage.top - 1 && r.bottom <= stage.bottom + 1;
+    return {id: g.id.slice('process-map-'.length), inside, current: g.getAttribute('aria-current')};
+   });
+  });
+  assert.deepEqual(framed.map(f => f.id).sort(), [...near].sort(), 'the step slide shows the step and its direct neighbours');
+  assert(framed.every(f => f.inside), JSON.stringify(framed)); assert.deepEqual(framed.filter(f => f.current === 'true').map(f => f.id), ['design-ready']);
+  await page.locator('#present-stage #process-map-implementation').click();
+  assert.equal((await query(page)).presenting!.id, 'step-implementation', 'a neighbour opens its own slide');
+  await page.keyboard.press('Escape'); await page.locator('#present').waitFor({state: 'hidden'});
+  assert.equal(await page.locator('#map svg g[role=button]').count(), 1, 'after Present the studio shows its single-step scene again');
+  // A numbered whole-process map keeps its key inside the map that moved into Present.
+  await switchTo(4); await page.locator('#mode-2d').click(); await page.locator('#overview').click();
+  await page.locator('#mode-present').click(); await page.locator('#present[open]').waitFor();
+  const key = await page.evaluate(() => {
+   const k = document.querySelector<HTMLElement>('#present-stage .process-map-key')!;
+   return {visible: !k.hidden && k.getClientRects().length > 0, text: k.textContent, first: document.querySelector('#present-stage .pm-title')!.textContent};
+  });
+  assert.deepEqual(key, {visible: true, text: 'Card numbers match the step list', first: '01'});
+  await page.keyboard.press('Escape'); await page.locator('#present').waitFor({state: 'hidden'});
  });
  await checkLifecycle('Process renderers browser lifecycle emits no runtime errors or network requests');
 });

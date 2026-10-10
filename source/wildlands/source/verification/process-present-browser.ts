@@ -133,7 +133,9 @@ runSuite('process present browser harness', 'process-present-browser-results.jso
  await check('Present opens on the selected step slide or slide 1, and a step chosen on the map moves the deck to its slide', async () => {
   await freshStudio(); const deck = await expectedDeck(), index = deck.slides.findIndex(s => s.id === 'step-design-ready');
   assert.equal(index, 10); await page.locator('#steps [data-step="design-ready"]').click(); await openPresent();
-  await at(deck, index, 'opens on the selected step'); assert.equal((await query(page)).selected, 'design-ready'); assert.deepEqual(await mapSteps(), ['design-ready'], 'the map shows that step');
+  await at(deck, index, 'opens on the selected step'); assert.equal((await query(page)).selected, 'design-ready');
+  const near = ['architecture', 'design-ready', 'implementation', 'product-design'];
+  assert.deepEqual((await mapSteps()).sort(), near, 'the map shows that step with its direct neighbours');
   await escapeOut(); assert.equal((await query(page)).selected, 'design-ready');
   await page.locator('#overview').click(); await openPresent(); await at(deck, 0, 'the overview opens on slide 1'); assert.equal((await query(page)).selected, null);
   const all = (await query(page)).definition.steps.map(s => s.id); assert.deepEqual((await mapSteps()).sort(), [...all].sort(), 'slide 1 shows the whole map');
