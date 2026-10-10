@@ -43,13 +43,15 @@ declare namespace LWProcessStepSections {
  const KIND_HELP: Record<string, string> = {task: 'Work done by people over time.', touchpoint: 'A moment where a customer or user meets your business, such as a web page, a phone call or a delivery.', machine: 'Work done automatically by physical equipment over time. No people are needed.', system: 'Work done automatically by software over time. No people are needed.',
   timer: 'Holds work without using people or equipment.', decision: 'Chooses one path for each case.', join: 'Waits for parallel paths to arrive.', fork: 'Starts parallel paths.', start: 'Where cases enter.', end: 'Where cases leave.'};
  const KIND_LABEL: Record<string, string> = {task: 'Task', touchpoint: 'Touchpoint', machine: 'Machine step', system: 'System step'};
+ /** A min or max attribute. Bounds may come from the draft (a pool's capacity), so only a finite number is written. */
+ const bound = (name: string, n: unknown) => typeof n === 'number' && Number.isFinite(n) ? ` ${name}="${n}"` : '';
  const err = (key: string) => `<div class="se-errs" data-errs="${key}" id="se-err-${slug(key)}"></div>`;
  type Opt = LWProcessStepSections.Opt;
  function field(bind: string, label: string, value: string, o: Opt = {}): string {
   const id = idOf(bind), desc = [o.help ? id + '-help' : '', o.counter ?? '', o.desc ?? ''].filter(Boolean).join(' '), ph = o.placeholder ? ` placeholder="${esc(o.placeholder)}"` : '';
   const attrs = `id="${id}" data-bind="${bind}"${desc ? ` aria-describedby="${desc}"` : ''}${ph}${o.autofocus ? ' autofocus' : ''}${o.list ? ` list="${o.list}" autocomplete="off"` : ''}`;
   const control = o.long ? `<textarea ${attrs} rows="${o.maxlength === undefined ? 3 : 2}" maxlength="${o.maxlength ?? 2000}">${esc(value)}</textarea>`
-   : o.type === 'number' ? `<input ${attrs} type="number" inputmode="numeric" step="${o.step ?? '1'}"${o.min === undefined ? '' : ` min="${o.min}"`}${o.max === undefined ? '' : ` max="${o.max}"`} value="${esc(value)}">`
+   : o.type === 'number' ? `<input ${attrs} type="number" inputmode="numeric" step="${o.step ?? '1'}"${bound('min', o.min)}${bound('max', o.max)} value="${esc(value)}">`
    : `<input ${attrs} type="text" maxlength="${o.maxlength ?? 256}" value="${esc(value)}">`;
   return `<div class="se-field"><label for="${id}">${esc(label)}${o.badge ? ` <span class="se-badge">${esc(o.badge)}</span>` : ''}</label>${control}${o.help ? `<p class="se-help" id="${id}-help">${esc(o.help)}</p>` : ''}${o.counter ? `<p class="se-help se-count" id="${o.counter}"></p>` : ''}</div>`;
  }

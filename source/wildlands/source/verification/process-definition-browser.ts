@@ -351,5 +351,22 @@ runSuite('process definition editor browser harness', 'process-definition-browse
   await arr('gap-k').fill('40'); assert.match(await page.locator('#tune-arr-0-gap-k-err').innerText(), /from 1 to 32/); await arr('gap-k').fill('4'); assert.equal(await page.locator('#tune-arr-0-gap-k-err').innerText(), '');
   assert.equal(await arr('gap-dist').getAttribute('aria-invalid'), null); await applyDef(); const applied = await query(page); assert.deepEqual(applied.definition.arrivals[0]!.gap, {dist: 'erlang', k: 4, mean: applied.definition.arrivals[0]!.gap!.mean});
  });
+ await check('A poisoned draft opened in Tune values or the step editor creates no element and runs no handler', async () => {
+  await page.setViewportSize({width: 1440, height: 1060}); await freshStudio(); await openDef();
+  // The draft is only shape-checked JSON, so a number field can hold any text a person pastes.
+  const payload = '"><img src=x onerror="globalThis.__pwned = (globalThis.__pwned || 0) + 1">';
+  const poisoned = await defOf() as unknown as Record<string, any>;
+  poisoned.resources[0].capacity = payload; poisoned.arrivals[0].at = payload; poisoned.seed = payload;
+  await pasteDraft(JSON.stringify(poisoned, null, 2)); await inSync();
+  const dialogImages = () => page.locator('dialog.pd-dialog img').count(), pwned = () => page.evaluate(() => (globalThis as any).__pwned);
+  assert.equal(await dialogImages(), 0); assert.equal(await pwned(), undefined);
+  for (const id of ['tune-res-0-cap', 'tune-arr-0-at', 'tune-seed']) assert.equal(await page.locator('#' + id).inputValue(), '', id + ' shows no value');
+  assert.equal(await page.locator('#tune-res-0-cap').getAttribute('max'), '1000');
+  assert.match(await page.locator('#diagnostics').innerText(), /Expected integer/);
+  await closeDef(); await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-name').waitFor();
+  assert.equal(await dialogImages(), 0); assert.equal(await page.locator('#se-pools-0-count').getAttribute('max'), null, 'a capacity that is not a number is not written as a bound');
+  assert.match(await page.locator('#se-pools-0-count-help').innerText(), /<img src=x/); await nextFrames(page); assert.equal(await pwned(), undefined);
+  await page.locator('#se-close').click(); await openDef(); await restoreDef(); await closeDef();
+ });
  await checkLifecycle('Process definition editor browser lifecycle emits no runtime errors or network requests');
 });

@@ -50,7 +50,8 @@ declare namespace LWProcessStepEditor {
   dialog.body.insertAdjacentHTML('beforeend', '<div id="se-apply-errors" class="se-apply-errors" tabindex="-1" role="alert" hidden></div><div id="se-sections"></div>');
   const q = <T extends HTMLElement = HTMLElement>(id: string) => dialog.el.querySelector<T>('#' + id)!;
   const candidate = () => api.write(base, stepId, model);
-  const control = (key: string) => key ? dialog.body.querySelector<HTMLElement>(`[data-bind="${key}"]`) ?? dialog.body.querySelector<HTMLElement>(`[data-bind^="${key}."]`) : null;
+  // Keys come from diagnostic paths, which may name keys a person typed into the JSON: escape them for the selector.
+  const control = (key: string) => key ? dialog.body.querySelector<HTMLElement>(`[data-bind="${CSS.escape(key)}"]`) ?? dialog.body.querySelector<HTMLElement>(`[data-bind^="${CSS.escape(key + '.')}"]`) : null;
   const label = (key: string) => { for (const [re, name] of LABELS) { const m = re.exec(key); if (m) return name(Number(m[1]) + 1); } return JOURNEY[key] ?? (key === 'technology' ? 'Technology' : key.startsWith('timing') ? 'Random timing' : ''); };
   function check(): {items: Item[]; elsewhere: {where: string; message: string}[]} {
    let diagnostics: LWProcess.Diagnostic[] = []; const next = candidate();
