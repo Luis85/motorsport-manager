@@ -3,7 +3,7 @@
 The full requested parity target remains **incomplete**. This is a provisional
 requirements and evidence inventory, not a claim that a reduced proving ground
 matches the complete reference. Initial baseline audit is against `749a9f6296f3beb665eedf1eda57ae8cbfd00b39`.
-The implementation update records source checkpoint `b2b10fbeabfcfb8460fad014fb3a2350c24fcf4b`
+The implementation update records published corrected checkpoint `187dd821316cb334f13947780bb5e135878bda2c`
 and scoped reports; integrated changes require source-bound evidence before rows can close. See [current status](current-state.md)
 and the [dated reference register, situations and budget proposals](../_archive/armored-platoon-2026-10-10-reference.md).
 
@@ -165,11 +165,11 @@ must pass in the same shipping gameplay route used for performance measurement.
 | T08 | Renderer fallback | Feature matrix; controlled fallback resource reconstruction | Pinned Three.js | World | Force optional backend failure while simulation continues | No WebGPU parity assumed | open |
 | Q01 | Performance | Named primary/compatibility targets and disclosed reductions | Shipping route/instrumentation | Verification | 12 vehicles/40 infantry/6 plumes plus max parity content | Real baseline GPUs unavailable | open |
 | Q02 | Loading/memory | Separate cold/warm reports and class budgets | Asset manifest/profiler | Verification | Declared bandwidth/device then M1 budget freeze | Proposed caps unmeasured | open |
-| Q03 | Long sessions | 30-minute combat and repeated mission cycles stabilize resources | Lifecycle counters | Verification | Hidden/pause/resume/control switching during streaming | Soak and disposal evidence | open |
+| Q03 | Long sessions | 30-minute combat and repeated mission cycles stabilize resources | Lifecycle counters | Verification | Hidden/pause/resume/control switching during streaming | 30-minute bounded software observation passed; hardware/full stress/context loss and disposal evidence remain | partial |
 | Q04 | Visual regression | Own approved captures separate from reference assessment | Deterministic fixtures | Verification | Fixed seed/time/camera/weather/assets and independent review | No capture proves parity by itself | partial |
 | Q05 | Network quality | Independent clients with latency/jitter/loss/interruption | Impairment harness | Network/Verification | Reconnect and no duplicate shots/rewards or private state | Real authoritative online service | open |
 | Q06 | Replay claim | Exact tested version/content/init order only | Recorded command stream | Runtime/Verification | Re-run declared scope; compare canonical checkpoints | Cross-browser lockstep unverified | partial |
-| Q07 | Repository regression | Complete registered gates and regenerated CLI/demos | Integrator serialized build queue | Build/Verification | All relevant gates, old games, native boundaries | New source acceptance pending | partial |
+| Q07 | Repository regression | Complete registered gates and regenerated CLI/demos | Integrator serialized build queue | Build/Verification | All relevant gates, old games, native boundaries | Current implementation registered CI gates and generated outputs passed; broader parity/hardware acceptance remains open | partial |
 | Q08 | Handoff | Source identity/artifacts/gaps/reproduction; draft PR, no merge | Delivery evidence | Integrator | Reproduce built game from clean checkout | Final M0–M5 exits not achieved | partial |
 
 ## Integrated foundation and measured scope
@@ -200,7 +200,7 @@ All complete-scope gates remain open until their own acceptance evidence exists.
 ## Verification checkpoint and mission progression defect
 
 As of this ledger update, the authoritative integration branch is
-`codex/armored-platoon`, source checkpoint `b2b10fbeabfcfb8460fad014fb3a2350c24fcf4b`,
+`codex/armored-platoon`, published source checkpoint `187dd821316cb334f13947780bb5e135878bda2c`,
 on base `749a9f6296f3beb665eedf1eda57ae8cbfd00b39`. Per-run source/content hashes
 and complete-gate results belong
 in the [integration record](../_archive/armored-platoon-2026-10-10-integration.md).
@@ -208,7 +208,8 @@ Old logs with failed type checks or formatting are retained evidence of their
 own run; neither later source edits nor earlier green checks supersede them
 without a corresponding rerun. Draft [PR #49](https://github.com/Luis85/motorsport-manager/pull/49)
 is open on `claude/model-forge`, with published checkpoint HEAD
-`3679ff945d4e8975e56458c5bd6fcf8baeeefbf1`; it is not merged. The integration
+`187dd821316cb334f13947780bb5e135878bda2c`; the completed CI observation below
+retains its earlier `f6d7c48d` identity. The PR is not merged. The integration
 record maps earlier unpublished commit identities to public equivalents with
 identical source trees after GitHub private-email protection required metadata-only
 rebuilding. Native records under local `022da2a4` describe the same tree as public
@@ -222,10 +223,117 @@ rebuilding. Native records under local `022da2a4` describe the same tree as publ
 | Browser captures | Chase/gunner, 1024/1440 and phone observation from Chromium 151 software SwiftShader | Actual application visual evidence, not hardware performance, Safari coverage, approved regression baselines or reference fidelity. |
 | Real motion capture | 5.6066 m movement, 0.325 rad traverse, ammo 15 → 14, tick 0 → 127 across 15.196 seconds wall time / 21 captured frames | Actual application motion; sparse software capture is not a rendered-FPS benchmark or reference motion comparison. |
 | Model Forge complete gate | 176 unit + 4 end-to-end tests passed after formatting correction | Tool gate evidence; no production-art or other-project gate acceptance inferred. |
-| Scene Forge and generated-output checks | Existing inline-HTML e2e mode passed 15/15 after file-URL policy blocked the initial run; all four current CLI and all seven demo checks pass, including both Forge check:cli | `FORGE_TEST_INLINE_HTML=1` disclosed; Character final handoff passed eight variants with all four CLI hashes unchanged. Complete Wildlands/native gate success is not inferred. |
-| Native baseline | VIEWS failed at untouched `749a9f6296f3beb665eedf1eda57ae8cbfd00b39` with Godot 4.6.3; the same targeted test passed on CI-SHA-verified Godot 4.7.2: 1 test, 73.962 seconds | Targeted environment mismatch resolved; full native 103-check run is underway at `3e2bca33faef0d74aa3e400321b7e610a8365c3b` with pinned 4.7.2 and user Xvfb; no full pass claimed. |
-| Wildlands complete gate | CLI/demo generation and current-output checks passed; final complete-gate result pending | Focused tests cannot substitute for the registered complete gate. |
+| Scene Forge and generated-output checks | Existing inline-HTML e2e mode passed 15/15 after file-URL policy blocked the initial run; all four CLI and all seven demo checks passed at the earlier checkpoint, including both Forge check:cli | `FORGE_TEST_INLINE_HTML=1` disclosed; Character final handoff passed eight variants with all four CLI hashes unchanged. Complete Wildlands/native gate success is not inferred. |
+| Native baseline | VIEWS failed at untouched `749a9f6296f3beb665eedf1eda57ae8cbfd00b39` with Godot 4.6.3; the same targeted test passed on CI-SHA-verified Godot 4.7.2: 1 test, 73.962 seconds | Targeted environment mismatch resolved; local full run on public-equivalent tree `3e2bca33faef0d74aa3e400321b7e610a8365c3b` was interrupted to free CPU; separate remote native gate passed 103 suites / 21,346 checks at `f6d7c48d`. |
+| Wildlands complete gate | Current `187dd821` CI attempt 2 succeeded: 120 suites / 2,154 checks in 1,870.39 seconds; additional Storytelling 24/24 and Godot export passed. Original local run remains failed: 115/120 suites in 2,545.07 seconds | Engine-source SHA-256 `6f000038fcbdf3b3702cdb15af81c117c479492c25089dc049964e66ad10b541`. Local 2,084/2,084 excludes 70 expected checks from failing suites; successful CI has its own complete 2,154/2,154 evidence. Earlier interrupted/failed runs remain separate. |
 | Forge authoring | Two distinct original studies and guarded Model Forge → Scene Forge → runtime handoff are present | Scalar-PBR development geometry with semantic pivots/volumes; not production-textured M1 assets. Damage still uses its approximation rather than authored semantic-volume collision. |
+
+Earlier published head `f6d7c48d03f5bf85da5af63ee008933f45b831e6` has passing Model
+Forge, Scene Forge, Character Studio, source, advisory, standalone and
+content/export CI workflows. Native run 38085245903 passed all six shards and
+aggregation: **103 suites / 21,346 checks**, source SHA-256
+`c942e05697e6f3e0f5a0ec2269481560026b9536db3cb0cc787f9ffa821ef356`;
+runtime-confidence run 38085245908 passed on Linux and Windows. The local Python
+suite completed with exit 0: **346 tests in 1,558.848 seconds, 345 passed and one
+expected Windows-only skip**, on the exact SHA-verified Godot 4.7.2. The skipped
+Job Object regression was
+`test_windows_engine_cannot_spawn_descendants_before_job_assignment`.
+The Windows CI pass remains separate from that unexecuted Linux test. Exact
+run links, the Wildlands evidence-file failure and concrete continuation commands
+are in the [integration record](../_archive/armored-platoon-2026-10-10-integration.md#published-head-ci-and-local-evidence-report-correction).
+These statuses belong to that head and do not verify the later Wildlands fixes.
+The native-input diff (`scripts`, `tests`, `config`, `project.godot`) from that
+head to `187dd821` is empty; the archived native result keeps its original identity.
+
+The published corrected CSS checkpoint is `187dd821316cb334f13947780bb5e135878bda2c`,
+following reporter fix `49ad1d477877cf759ba27b93b7930b3650af80a8`. The confirmed
+regression was unscoped `armored.css` selectors changing shared-showcase controls.
+Every selector is now scoped to the Armored host, with a compiled-CSS
+computed-property isolation regression. The focused gate passed **10/10 in
+90.62 seconds**. The corrected Wildlands CLI and all seven demo output checks
+passed (`css-isolation-output-checks.log`). The complete **120-suite/2,154-expected-check**
+gate **failed** in 2,545.07 seconds: **115 suites passed, five failed**. All 82 Node
+suites, Armored **10/10**, and Storytelling **24/24** passed. The aggregate
+**2,084/2,084** includes only passing suites, excluding 70 expected checks
+from the failing suites. It must not be presented as full acceptance.
+
+Scene Editor failed during seven-second `trialBegin` setup (**0/1**), Process
+Present failed title vertical fit at 390 px (**9/10**), and Engine Export
+failed desktop startup at 22,986 ms (**11/12**). Serial unchanged-budget reruns
+passed Scene Editor **33/33 in 95.788 seconds** and Engine Export **12/12 in
+91.094 seconds**. Process Present remained **9/10 in 74.777 seconds**. A clean
+exact-base `749a9f62` control reproduced that same slide-one failure at
+**390×844**, **9/10 in 122.451 seconds**, under Chromium 151. Base/current
+results are byte-identical, SHA-256
+`6c889e2b556e7d74279530a1a0344f324735f70987d664c903a7d817b1407a5b`.
+This establishes baseline reproduction, not a font/browser causal diagnosis. Artifact play (**0/4**)
+and Game demos (**1/11**) encountered 14 managed-Chromium `file://` navigation
+blocks, `ERR_BLOCKED_BY_ADMINISTRATOR`; no policy bypass or retry is underway.
+Installing pinned Chromium 153 failed with HTTP 403 / Domain forbidden at
+`cdn.playwright.dev`. Local 151 differs from CI 153, but this is not a proven
+cause of the first three failures. The archive retains complete-gate JSON/log,
+`css-isolation-full-*-results.json` and `pinned-browser-install.log`. Independent
+CI run **38088144186 attempt 1 failed after 58 attempted suites** on
+renderers-browser **13/14**, with a five-second Office click-actionability
+failure; local renderers passed **14/14**. Remote Scene Editor **33/33**, Process
+Present **10/10**, Engine Export **12/12** and Game demos **11/11** passed;
+artifact play was not attempted. `serial-*`, `base-process-present-*` and
+`ci-attempt-1-*` reports preserve each identity. Attempt 2, after one failed-job
+retry, completed **SUCCESS**, verify job **114325176853**: **2,154/2,154 checks
+across 120 suites in 1,870.39 seconds, jobs 3**. Additional observer-independent
+Storytelling **24/24** and Godot export passed. Armored admission **4/4**, runtime
+**11/11**, combat **17/17**, browser **10/10**, and Artifact play **4/4** passed.
+`ci-attempt-2-verification.log` and `ci-attempt-2-provenance.json` retain successful
+identities. Neither later success rewrites the original failed local run or CI
+attempt 1. All current implementation CI workflows have passed; no verification,
+native or software stability observation remains active.
+
+The receipt is derived from the exact workflow log/status, not a raw gate JSON.
+The diagnostic artifact reached File Service, but its signed URL returned HTTP
+403 when fetched into the workspace; the raw second-attempt gate and additional
+Storytelling receipt remain in CI artifacts. Artifact IDs/digests and the source
+identity guard provenance are retained explicitly.
+
+At current published `187dd821`, eight other workflows passed: source project,
+Scene Forge, Model Forge, advisory, standalone tools, Character Studio,
+content/export and runtime confidence. Exact-head native run **38088144152**
+passed all six shards and aggregate, **103 suites / 21,346 checks**, at `187dd821`,
+source SHA-256 `8d07fd8e647e275bd4920b7b9e50b93cd3fb9867af87dec9e60aed918838e32d`.
+The archived `native-remote-current.json` is separate from the earlier `f6d7c48d`
+pass and the interrupted local run.
+Run links are in the integration record. The earlier `ff1d5c…` full run
+was interrupted, preserving storytelling's 720-second timeout and scene-editor
+30/33 click-timeout evidence in `wildlands-pre-css-*` reports. Later source edits
+do not convert those failures into passes.
+
+The corrected compiled artifact is 1,809,185 bytes, SHA-256
+`4e7a24b09f490c2c87dcae6a04c9635198f465a612e0eed40991e374d91c0a6f`;
+the demo is 1,809,495 bytes, SHA-256
+`8587053e9591e505313a86936b8b0036a1088f4cb2d270d27ffba3210742e93b`.
+`css-isolation-artifact-identity.json` records CLI/hash/engine identities and all
+22 inline scripts matching the earlier demo. CSS differs; previous Pine/motion
+captures retain their earlier artifact identities and are not new-byte execution.
+
+Current runnable `187dd821` has passed focused/output checks and complete
+registered CI acceptance. That does not establish full reference parity or M1. The
+selected base `749a9f62` passed complete CI run 38068118648; that result does
+not validate this implementation. Preserve tested implementation SHA `187dd821`
+if a documentation-only follow-up changes HEAD.
+
+A completed software stability observation of the unchanged `187dd821` demo
+ran **1,800.002 wall seconds**, **121 samples**, on Chromium 151 / SwiftShader
+at **960×600**, using native RAF. It completed **371 accepted commands**, **seven
+exact paused checkpoint restores**, and **seven UI mission switches**, with
+zero command rejections, page/console errors or workload failures. Eight
+warnings repeat one Three.js shadow-map deprecation. Canvas count stayed one,
+DOM elements 178; CDP DOM nodes are a different metric (389 first, 496 final,
+389–698 range). JS heap used was **27,340,736 first / 37,664,388 final bytes**,
+range **12,895,360–57,610,472**, without forced GC. Eight separate mission/tick
+intervals ran slower than wall time and must not be summed across resets.
+`stability-summary.json`, `stability-observations.json`, `stability-identity.json`
+and selected captures preserve the record. **Q03 remains partial**: this does
+not prove leak freedom, hardware performance, production-hardware soak,
+worst-case crowding, GPU disposal/resource residency or device/context loss.
 
 Portable captures, motion and the Pine browser route are indexed in the
 [evidence archive](../_archive/armored-platoon-2026-10-10-evidence/README.md).
@@ -325,10 +433,19 @@ executed/failed/skipped checks and report paths. The immediate executable work i
 2. Retain the intermediate 9/9 browser report and motion capture; revalidate
    changed shipping artifacts and remaining focus/mobile/persistence edges
    without weakening assertions or inventing performance from sparse frames.
-3. Finish the root-owned Wildlands complete gate and running native 103-check
-   suite. Retain all four CLI/all seven demo passes and final eight-variant
-   Character handoff evidence; repeat changed-source checks when warranted.
-   Record exact tree identity and separate unavailable hardware from failures.
+3. Preserve the CSS-corrected local Wildlands 115/120 failure, interrupted
+   pre-CSS run, CI attempt 1 renderer failure and successful complete CI attempt 2
+   as separate evidence. Retain unchanged-budget serial reruns, exact-base
+   Process Present reproduction and concrete file-policy/download blocks.
+   Preserve tested implementation `187dd821` separately from later documentation HEAD.
+   Retain exact-head native success and the completed 30-minute software
+   observation separately from full hardware/stress-soak acceptance.
+   Preserve the passed remote native aggregate; local native was interrupted,
+   not passed. Retain the
+   completed local Python report (345 passed, one expected platform skip).
+   Runtime-confidence CI already passed Linux/Windows.
+   Retain existing CLI/demo/Character passes only
+   for their recorded source identity; distinguish unavailable hardware from failures.
 4. Obtain installed reference build/roster evidence and ordinary-gameplay motion
    for all twelve situations. Continue production texture/rig/physics work and
    measured baseline-hardware review toward M1; the current models do not pass it.

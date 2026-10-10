@@ -1,0 +1,34 @@
+{
+  "kind": "exact-selected-base-control",
+  "suite": "process-present-browser",
+  "gitHead": "749a9f6296f3beb665eedf1eda57ae8cbfd00b39",
+  "sourceSha256": "b01c40daad1d0e48f443dd39a592fa5b01196671653a2a910ef970df5531e9e8",
+  "command": [
+    "timeout",
+    "--kill-after=10s",
+    "240s",
+    "node",
+    "/workspace/work/armored-base/source/wildlands/.generated/verification/process-present-browser.js"
+  ],
+  "timeoutSeconds": 240,
+  "browserExecutable": "/usr/bin/chromium",
+  "browserVersion": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
+  "entrySha256": "f49dffda9d6c4a1d12bc9b065a86b808a1475bbdb58e422860d2f1fa79ee83dd",
+  "packageSha256": "12df262d734f294bb5bfb7c434772215dc5adbb2329a8b78ffe10068a78c5082",
+  "lockSha256": "44f222ed006441c10a1833f3535add3b38b9440980f528aebbe8d8a63b9c3d75",
+  "dependencies": "Read-only shared node_modules; package and lock byte-identical to current worktree. No installs.",
+  "startedAt": "2026-10-10T22:12:15Z",
+  "playedArtifact": {
+    "name": "process.html",
+    "bytes": 1805779,
+    "sha256": "4c578c4707bfa8a18258cc075a3a1806aacbbe75546c3a6417e94dd7b1c97bb1",
+    "capture": "Read from the suite-owned temporary HTML while the unchanged suite was executing; raw HTML not retained."
+  },
+  "exitCode": 1,
+  "passed": 9,
+  "total": 10,
+  "reportSha256": "6c889e2b556e7d74279530a1a0344f324735f70987d664c903a7d817b1407a5b",
+  "seconds": 122.451,
+  "finishedAt": "2026-10-10T22:14:18Z",
+  "trackedStatusAfter": ""
+}

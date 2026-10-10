@@ -1,0 +1,31 @@
+{
+  "status": "passed_with_platform_skip",
+  "exit_code": 0,
+  "tests": 346,
+  "executed": 345,
+  "skipped": 1,
+  "seconds": 1558.848,
+  "skip_lines": [
+    "test_windows_engine_cannot_spawn_descendants_before_job_assignment (test_toolbox_client.ToolboxClientTests.test_windows_engine_cannot_spawn_descendants_before_job_assignment) ... skipped 'Windows Job Object gate regression'"
+  ],
+  "source_commit": "022da2a41bf1be7dc09681b041c04e2229608b72",
+  "source_tree": "2ad9dcc2037704238c30ab32835a231de43c9f10",
+  "tracked_changes": "",
+  "native_paths_identical_to": "f6d7c48d03f5bf85da5af63ee008933f45b831e6",
+  "native_path_diff": "",
+  "engine": "/workspace/work/armored-platoon/work/godot4.7.2/Godot_v4.7.2-stable_linux.x86_64",
+  "engine_version": "4.7.2.stable.official.ed1daf0bf",
+  "engine_sha256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+  "log": "/workspace/work/armored-platoon/work/python-pinned-regression.log",
+  "log_sha256": "afc1c6c092ed5331a137049bed547fccd3e334e3d627065561ad8a7f27d8b403",
+  "command": "python3 -m unittest discover -v -s tests -p test_*.py",
+  "environment": {
+    "VERIFICATION_TEST_GODOT": "/workspace/work/armored-platoon/work/godot4.7.2/Godot_v4.7.2-stable_linux.x86_64",
+    "GODOT_BINARY": "/workspace/work/armored-platoon/work/godot4.7.2/Godot_v4.7.2-stable_linux.x86_64",
+    "LP_NUM_THREADS": "2",
+    "PATH_prefix": [
+      "/workspace/work/armored-platoon/work/native-tools/pinned-bin",
+      "/workspace/work/armored-platoon/work/native-tools/root/usr/bin"
+    ]
+  }
+}

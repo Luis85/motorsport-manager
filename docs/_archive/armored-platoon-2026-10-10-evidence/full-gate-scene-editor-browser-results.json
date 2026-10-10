@@ -1,0 +1,150 @@
+{
+  "passed": 30,
+  "total": 33,
+  "results": [
+    {
+      "name": "Editor opens the separate pack draft with navigable worlds and scenes at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Delayed real pack import preserves a newer scene draft and history at 1440px",
+      "passed": true
+    },
+    {
+      "name": "World terrain and resource generation have visual controls at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Direct grid placement and keyboard tile focus mutate only the draft at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Canonical inventory inspector retains supported items and history at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Visual connection, entry requirement and event rows author typed metadata at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Decorative props use canonical asset/model choices and direct placement at 1440px",
+      "passed": false,
+      "error": "TimeoutError: locator.click: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.scene-editor-cell[data-x=\"2\"][data-y=\"1\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button data-x=\"2\" data-y=\"1\" type=\"button\" tabindex=\"-1\" aria-pressed=\"false\" data-scene-editor=\"tile\" title=\"Tile 2, 1: empty\" class=\"scene-editor-cell   \" aria-label=\"Tile 2, 1: empty\"></button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - performing click action\u001b[22m\n"
+    },
+    {
+      "name": "Bound child scene creation uses source authority and stable floor IDs at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Canonical rectangular floors and explicitly authored holes project correct placement cells at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Invalid import is atomic and presents recovery guidance at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Full pack export includes the bound child and canonical item edit at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Review cancellation preserves draft revision and active story at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Closing and reopening retains the draft; another pack requires explicit replacement at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Deletion confirmation initially focuses Cancel at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Authored pack launches only after review and instantiates its actual 3D prop asset",
+      "passed": true
+    },
+    {
+      "name": "Cross-world connection review cancellation preserves native state and camera",
+      "passed": true
+    },
+    {
+      "name": "Cross-world committed travel and return restore the native checkpoint and camera",
+      "passed": false,
+      "error": "TimeoutError: locator.click: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-scenario=\"enter\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button data-id=\"\" type=\"button\" class=\"btn primary\" data-scenario=\"enter\">Enter scene</button>\u001b[22m\n\u001b[2m  - attempting click action (trial run)\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - performing click action\u001b[22m\n"
+    },
+    {
+      "name": "Bound interior travel and portable restore open the canonical floor and preserve source state",
+      "passed": false,
+      "error": "TimeoutError: locator.click: Timeout 7000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-scenario=\"transition\"][data-id=\"to-home\"]')\u001b[22m\n"
+    },
+    {
+      "name": "Editor opens the separate pack draft with navigable worlds and scenes at 390px",
+      "passed": true
+    },
+    {
+      "name": "Delayed real pack import preserves a newer scene draft and history at 390px",
+      "passed": true
+    },
+    {
+      "name": "World terrain and resource generation have visual controls at 390px",
+      "passed": true
+    },
+    {
+      "name": "Direct grid placement and keyboard tile focus mutate only the draft at 390px",
+      "passed": true
+    },
+    {
+      "name": "Canonical inventory inspector retains supported items and history at 390px",
+      "passed": true
+    },
+    {
+      "name": "Visual connection, entry requirement and event rows author typed metadata at 390px",
+      "passed": true
+    },
+    {
+      "name": "Decorative props use canonical asset/model choices and direct placement at 390px",
+      "passed": true
+    },
+    {
+      "name": "Bound child scene creation uses source authority and stable floor IDs at 390px",
+      "passed": true
+    },
+    {
+      "name": "Canonical rectangular floors and explicitly authored holes project correct placement cells at 390px",
+      "passed": true
+    },
+    {
+      "name": "Invalid import is atomic and presents recovery guidance at 390px",
+      "passed": true
+    },
+    {
+      "name": "Full pack export includes the bound child and canonical item edit at 390px",
+      "passed": true
+    },
+    {
+      "name": "Review cancellation preserves draft revision and active story at 390px",
+      "passed": true
+    },
+    {
+      "name": "Closing and reopening retains the draft; another pack requires explicit replacement at 390px",
+      "passed": true
+    },
+    {
+      "name": "Deletion confirmation initially focuses Cancel at 390px",
+      "passed": true
+    },
+    {
+      "name": "Editor browser execution has no page errors, console warnings or external requests",
+      "passed": true
+    }
+  ],
+  "diagnostics": {
+    "errors": [],
+    "consoleProblems": [],
+    "requests": [],
+    "fixtureRequests": [
+      "https://localhost/wildlands-artifact.html",
+      "https://localhost/wildlands-artifact.html"
+    ]
+  }
+}

@@ -1,0 +1,250 @@
+
+> wildlands@15.0.0 verify
+> node --import tsx source/verification/verify.ts --jobs 3 --browser-jobs 2 --keep-going
+
+RUN wildlands-browser
+RUN storytelling-browser
+RUN developer-toolbox
+PASS developer-toolbox 32/32
+RUN office-scenario
+PASS office-scenario 11/11
+RUN wildlands-cli
+PASS wildlands-browser 17/17
+RUN scene-editor-browser
+FAIL scene-editor-browser
+RUN storytelling-player-browser
+PASS wildlands-cli 26/26
+RUN engine-export
+PASS storytelling-browser 24/24
+RUN creature-editor-browser
+PASS engine-export 17/17
+RUN scene-navigation
+PASS storytelling-player-browser 8/8
+RUN renderer-storytelling
+PASS scene-navigation 12/12
+RUN creature-editor
+PASS creature-editor 18/18
+RUN wildlands-runtime
+PASS wildlands-runtime 20/20
+RUN scenario-domain
+PASS creature-editor-browser 20/20
+RUN runtime-optionality-browser
+PASS scenario-domain 83/83
+RUN scene-journeys
+PASS renderer-storytelling 17/17
+RUN process-definition-browser
+PASS scene-journeys 5/5
+RUN architecture-policy
+PASS architecture-policy 53/53
+RUN cli-contracts
+PASS process-definition-browser 11/11
+RUN process-renderers-browser
+PASS runtime-optionality-browser 10/10
+RUN external-editors-browser
+PASS cli-contracts 26/26
+RUN external-editor-cli
+PASS external-editor-cli 9/9
+RUN storytelling
+PASS storytelling 24/24
+RUN growth-stress
+PASS external-editors-browser 11/11
+RUN process-step-editor-browser
+PASS process-renderers-browser 13/13
+RUN process-present-browser
+PASS growth-stress 3/3
+RUN creature-interactions
+PASS creature-interactions 27/27
+RUN scene-editor
+PASS scene-editor 15/15
+RUN wildlands-project
+PASS process-step-editor-browser 12/12
+RUN browser-contracts
+PASS wildlands-project 17/17
+RUN external-canvas
+FAIL process-present-browser
+RUN process-readability-browser
+PASS external-canvas 21/21
+RUN balancing
+PASS balancing 14/14
+RUN external-editors
+PASS browser-contracts 24/24
+RUN process-lenses-browser
+PASS external-editors 24/24
+RUN wildlands-acceptance
+PASS wildlands-acceptance 7/7
+RUN generate
+PASS process-readability-browser 9/9
+RUN external-canvas-browser
+PASS process-lenses-browser 8/8
+RUN engine-export-browser
+PASS generate 13/13
+RUN engine-export-cli
+PASS engine-export-cli 5/5
+RUN balancing-cli
+PASS balancing-cli 5/5
+RUN release
+PASS external-canvas-browser 7/7
+RUN game-demos-browser
+FAIL engine-export-browser
+RUN business-process-browser
+FAIL game-demos-browser
+RUN process-layout-browser
+PASS release 28/28
+RUN typescript-architecture
+PASS typescript-architecture 21/21
+RUN simulation-profile-integration
+PASS simulation-profile-integration 17/17
+RUN building-interiors
+PASS building-interiors 15/15
+RUN architecture-extensions
+PASS architecture-extensions 10/10
+RUN game-folders
+PASS game-folders 16/16
+RUN earned-progression
+PASS process-layout-browser 8/8
+RUN renderer-libraries
+PASS earned-progression 8/8
+RUN skill-trees
+PASS skill-trees 15/15
+RUN scenario-schema-cli
+PASS business-process-browser 19/19
+RUN process-bpmn-import-browser
+PASS scenario-schema-cli 61/61
+RUN rts-runtime
+PASS rts-runtime 16/16
+RUN terraform
+PASS terraform 13/13
+RUN cartography
+PASS cartography 71/71
+RUN construction
+PASS construction 12/12
+RUN content-provider
+PASS content-provider 7/7
+RUN business-process
+PASS process-bpmn-import-browser 9/9
+RUN browser
+PASS renderer-libraries 14/14
+RUN balancing-defaults-browser
+PASS business-process 79/79
+RUN cold-balancing
+PASS cold-balancing 23/23
+RUN domain
+PASS domain 86/86
+RUN game-settings
+PASS game-settings 13/13
+RUN creatures
+PASS creatures 24/24
+RUN content-boundary
+PASS content-boundary 23/23
+RUN business-process-bpmn
+PASS business-process-bpmn 28/28
+RUN gate-integrity
+PASS gate-integrity 31/31
+RUN engine-composition
+PASS engine-composition 30/30
+RUN pet-runtime
+PASS pet-runtime 11/11
+RUN definition-source
+PASS definition-source 12/12
+RUN runtime-optionality
+PASS runtime-optionality 13/13
+RUN ecs-integration
+PASS ecs-integration 7/7
+RUN rts-mission-editor
+PASS rts-mission-editor 19/19
+RUN presentation
+PASS presentation 49/49
+RUN armored-admission
+PASS armored-admission 4/4
+RUN armored-runtime
+PASS armored-runtime 11/11
+RUN armored-combat
+PASS armored-combat 17/17
+RUN assets
+PASS browser 90/90
+RUN balancing-browser
+PASS assets 25/25
+RUN ecs-world-integration
+PASS balancing-defaults-browser 4/4
+RUN pet-browser
+PASS ecs-world-integration 6/6
+RUN ecs-economy-integration
+PASS ecs-economy-integration 9/9
+RUN canvas-renderer
+PASS canvas-renderer 29/29
+RUN pause-policy
+PASS pause-policy 53/53
+RUN rts-tools
+PASS rts-tools 10/10
+RUN rts-catalog
+PASS rts-catalog 7/7
+RUN rts-application
+PASS rts-application 6/6
+RUN renderers
+PASS renderers 16/16
+RUN simulation-profile
+PASS simulation-profile 19/19
+RUN rts-economy
+PASS rts-economy 4/4
+RUN renderer-scene-2d
+PASS renderer-scene-2d 10/10
+RUN pet-wardrobe
+PASS pet-wardrobe 7/7
+RUN rts-production
+PASS rts-production 4/4
+RUN pet-catalog
+PASS pet-catalog 4/4
+RUN pet-application
+PASS pet-application 4/4
+RUN animations
+PASS animations 6/6
+RUN storage-clock
+PASS storage-clock 15/15
+RUN behavior-tree
+PASS behavior-tree 7/7
+RUN ecs-core
+PASS ecs-core 19/19
+RUN scene-environment
+PASS scene-environment 6/6
+RUN game-settings-ui
+PASS game-settings-ui 12/12
+RUN interaction-ui
+PASS interaction-ui 12/12
+RUN ecs-activity
+PASS ecs-activity 9/9
+RUN ecs-world
+PASS ecs-world 24/24
+RUN ecs-economy
+PASS ecs-economy 15/15
+PASS balancing-browser 9/9
+RUN renderers-browser
+PASS pet-browser 10/10
+RUN rts-browser
+PASS renderers-browser 14/14
+RUN building-interiors-browser
+PASS rts-browser 8/8
+RUN interactions-browser
+PASS interactions-browser 8/8
+RUN skill-tree-browser
+PASS building-interiors-browser 9/9
+RUN rts-mission-editor-browser
+PASS skill-tree-browser 13/13
+RUN terraform-browser
+PASS rts-mission-editor-browser 11/11
+RUN construction-editor-browser
+PASS terraform-browser 9/9
+RUN office-browser
+PASS construction-editor-browser 13/13
+RUN armored-browser
+PASS office-browser 9/9
+RUN artifact-play-browser
+FAIL artifact-play-browser
+RUN game-settings-browser
+PASS armored-browser 10/10
+PASS game-settings-browser 11/11
+FAILED scene-editor-browser failed; see scene-editor-browser.log
+process-present-browser failed; see process-present-browser.log
+engine-export-browser failed; see engine-export-browser.log
+game-demos-browser failed; see game-demos-browser.log
+artifact-play-browser failed; see artifact-play-browser.log
+failed 2084/2084 (120 suites, 2545.07s, jobs 3)

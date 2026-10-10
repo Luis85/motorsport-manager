@@ -1,0 +1,32 @@
+{
+  "suite": "process-present-browser",
+  "sourceSha256": "6f000038fcbdf3b3702cdb15af81c117c479492c25089dc049964e66ad10b541",
+  "gitHead": "187dd821316cb334f13947780bb5e135878bda2c",
+  "command": [
+    "timeout",
+    "--kill-after=10s",
+    "240s",
+    "node",
+    "/workspace/work/armored-platoon/source/wildlands/.generated/verification/process-present-browser.js"
+  ],
+  "timeoutSeconds": 240,
+  "browserExecutable": "/usr/bin/chromium",
+  "browserVersion": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
+  "entrySha256": "f49dffda9d6c4a1d12bc9b065a86b808a1475bbdb58e422860d2f1fa79ee83dd",
+  "fullGateSha256Before": "0b3eeb02d6edd5aea90e4f65a82e298535eece57f378c81f2f3fdd0636fa29e5",
+  "environment": {
+    "PLAYWRIGHT_NODEJS_PATH": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium"
+  },
+  "startedAt": "2026-10-10T22:07:55Z",
+  "studioArtifactSha256": "c08e2d76c1bcdb03a8f7f6d06e9be9dbf6fc292107603f371ef980b2f5881f21",
+  "showcaseArtifactSha256": "eb36a53bcbedcc37e30a5eaf71f75502a0a3b944a927bdf53b166b36b86b00f3",
+  "exitCode": 1,
+  "passed": 9,
+  "total": 10,
+  "reportSha256": "6c889e2b556e7d74279530a1a0344f324735f70987d664c903a7d817b1407a5b",
+  "seconds": 74.777,
+  "finishedAt": "2026-10-10T22:09:10Z",
+  "fullGateSha256After": "0b3eeb02d6edd5aea90e4f65a82e298535eece57f378c81f2f3fdd0636fa29e5",
+  "fullGateUnchanged": true
+}

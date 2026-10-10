@@ -1,0 +1,63 @@
+{
+  "scope": "Regenerated artifacts after host-scoping every Armored CSS selector. Earlier mission captures retain their earlier artifact identities.",
+  "engineIdentity": "2338f02d9691a4629f35ddfa0b6d3c803832b3f9cc67ca468c54e42b01ccfe53",
+  "files": {
+    "bin/wildlands": {
+      "bytes": 13697583,
+      "sha256": "efdc491b1238c75cb2b8c1bb05d67b395cec5a0ecae4d447adf43fc64446d652"
+    },
+    "bin/model-forge": {
+      "bytes": 2361542,
+      "sha256": "02df4736e7973534682ef3a98152a64136087a24c2131d177bd71bc532d8ff03"
+    },
+    "bin/scene-forge": {
+      "bytes": 2510012,
+      "sha256": "05f9f8208eab917211e66a4f5cfa0d7906aeaa74b96791fb38950e0ce97fba3f"
+    },
+    "bin/character-studio": {
+      "bytes": 1644019,
+      "sha256": "854cb4324b844ebaff1207862dd837830dc489fda02af96f9c346ee11e78b548"
+    },
+    "demos/armored-platoon.html": {
+      "bytes": 1809495,
+      "sha256": "8587053e9591e505313a86936b8b0036a1088f4cb2d270d27ffba3210742e93b"
+    },
+    "source/wildlands/.generated/artifacts/armored-play.html": {
+      "bytes": 1809185,
+      "sha256": "4e7a24b09f490c2c87dcae6a04c9635198f465a612e0eed40991e374d91c0a6f"
+    }
+  },
+  "demoGzipBytes": 332592,
+  "priorPublishedCommit": "3679ff945d4e8975e56458c5bd6fcf8baeeefbf1",
+  "priorPublishedDemoSha256": "4708ad9b3cd9343ee69b1de248eaeef344b767d83e39bf2ad250271b6737c22d",
+  "inlineScriptComparison": {
+    "priorCount": 22,
+    "currentCount": 22,
+    "allByteIdentical": true,
+    "sha256": [
+      "82c3987230ac443f02ebebda0a91c210174a1451020925ae9f9f360dc2d18d90",
+      "48f1ab9605dfee3c24342df5f88634e377e2d494347903651b46fd4d126263e2",
+      "30f00870ffc483e61ba27deb5c65b5b0e0e8d10d0fe8f5d15c3272d6d8616029",
+      "31f3dd62f582ab4cf5b3cad783ffb602c3fc8cf61130781f7654c4da170fa48c",
+      "2c7859f3b6be472f5300cb61f950226ef6b3bff5ebbb729c023271114078980d",
+      "b7b321ff5c3de832b82a1cd648c5646cfc73a25fe50d846726ac963d532b7470",
+      "08451d6422f760464d16f420a61fee90d575add76fc1deb175978c3831c3d297",
+      "9317a152e6c0bfa52b7eb19691d987d1cde90eb887f5988aab5546fd1f672158",
+      "773015eb53c89d33c88a670c3a4f2956fff1d7a93782a95ff06447a1309a9fec",
+      "2e1b5e4884f8ff4affc7dffd49f6503f7c248a680a363f33e0d845152e882695",
+      "686f6e25360b09b55cddcb08df724c79f2b5a8b5dd83e8e18358d9c94a4808cb",
+      "94654882708b4459d13492321db38c3b1b6ff660473974cc4258f42926fef429",
+      "7ceb4e72e42321b1af3709b4e4b8459c80d4ad56348ea1a66e96207fd2c1977e",
+      "d552bbb3ef7a664a1f1acb7941ccf3b450d87447f05ff91328aae8d34e455546",
+      "cf38d90f1ea890bbf92b7b71466407c0576d3242527626bc164b607eac11da59",
+      "3cf5a593ad44eaa798ea0fc3fddeee445a94e689a61ef02164e609b1dc12e423",
+      "07c17696b100d212cf9c06eae993f4d7cbc2e01f61176bbb5760bf98a60a7816",
+      "3e8a4c08f65083542782b82b2c80b4ccccf222aa57bb827fb58298fb79c8e28e",
+      "546f81e4570e0794c826c729b5607030cb269db361eec5c8cb2f99805c0d39df",
+      "f378bfb6d83b5ff8a9333d814540dab1c9aa76ed177cbb1e337411aac63691e0",
+      "016b233c7664f7a699b71097487f430cb934a52f21b7c9099ce70bf31b6dce0f",
+      "d0ef0c3bcd1d2560bc88ea3330a53985e90266e94d27f3e5d5f4115943958055"
+    ]
+  },
+  "cssByteIdentical": false
+}

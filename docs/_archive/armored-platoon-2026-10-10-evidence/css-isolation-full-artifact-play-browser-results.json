@@ -1,0 +1,26 @@
+{
+  "passed": 0,
+  "total": 4,
+  "results": [
+    {
+      "name": "RTS play artifact boots standalone, advances its match and offers a resume after exit",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/source/wildlands/.generated/artifacts/rts-play.html\nCall log:\n\u001b[2m  - navigating to \"file:///workspace/work/armored-platoon/source/wildlands/.generated/artifacts/rts-play.html\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "name": "Pet play artifact boots standalone and renders the WebGL room",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/source/wildlands/.generated/artifacts/pet-play.html\nCall log:\n\u001b[2m  - navigating to \"file:///workspace/work/armored-platoon/source/wildlands/.generated/artifacts/pet-play.html\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "name": "Colony play artifact boots the colony and starts a story",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/source/wildlands/.generated/artifacts/colony-play.html\nCall log:\n\u001b[2m  - navigating to \"file:///workspace/work/armored-platoon/source/wildlands/.generated/artifacts/colony-play.html\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "name": "Studio artifact boots the colony with editors and export tools",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/source/wildlands/.generated/artifacts/studio.html\nCall log:\n\u001b[2m  - navigating to \"file:///workspace/work/armored-platoon/source/wildlands/.generated/artifacts/studio.html\", waiting until \"load\"\u001b[22m\n"
+    }
+  ]
+}
