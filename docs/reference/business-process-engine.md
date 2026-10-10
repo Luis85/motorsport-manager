@@ -5,13 +5,41 @@ the current checkout (introduced by PR #40 and extended since). The JSON documen
 case tokens execute that graph in the shared Wildlands ECS. Navigation and both
 renderers observe detached snapshots and never execute business work.
 
+## Terms in the studio, the docs and the CLI
+
+The same idea can carry a different word on screen, in these pages and in the JSON or CLI.
+None of the words is wrong; this table maps them.
+
+| Studio (what you see) | Docs | CLI and JSON |
+|---|---|---|
+| **Process** selector, process name | process, process definition | a `wildlands-process` definition; `content.definitions` in `game.json` |
+| A card on the map, an entry in the step list, **Step scenes** | step, step scene | `steps[]`, each with a `scene` |
+| A path in the step editor ("Path 1 of 1 · to …") | flow | `flows[]` (`from`, `to`, `when`, `on`) |
+| **Shared resources** (People, Machine, System) | resource pool | `resources[]` with `kind` `people`, `machine` or `system` |
+| Cases, customers or users | case | `cases`, `tokens` in the snapshot |
+| **Edit process…**, Definition editor (**Tune values**, **Raw JSON**) | Definition editor | process-setting recipe operations such as `setDescription` and `setSeed` |
+| **Edit step…**, step editor | step editor | `putStep` recipe operation |
+| "Unapplied draft · …" chip, **Save to draft** | unapplied draft | no CLI equivalent (`--draft` instead permits graph diagnostics) |
+| **Apply draft and reset run**, **Apply and reset run** | applied (active) definition | `revision` and `fingerprint` |
+| **Present**, **Present slides** (phone menu) | Present mode, slide deck | `process slides`; `format: wildlands-process-slides` |
+| working (people) or running (machines and systems) / waiting; slides: "Now in progress", "now waiting" | in progress, queued | `active`, `queued` per step |
+| "min", the clock, "minute M" in Present | business minute | `duration`, `minute`, `--minutes` |
+| **Seed** | seed | `seed`, `--seed` |
+| **Run until** | run length | `horizon` (`Runtime.create` option) |
+| **Process type** | genre | `genre` (`process`, `customer-journey`, `user-journey`) |
+| **Tracked measures** | tracked fields | `track` |
+| **Random timing**, **Random outcomes (draws)** | random timing, draws | `timing`, `draws` |
+| **Feeling** | emotion | `emotion` (-3 to 3) |
+| **SIPOC**, **Journey map** | lens | `sipoc`; the lens follows `genre` |
+
 ## Definition and units
 
 `format: wildlands-process`, `schemaVersion: 1`, stable `id`, `name`, integer
 `revision`, `start`, `resources`, `steps`, `flows`, and `arrivals` are required.
 Each step has a unique scene with a stable `id`, a two-dimensional map `position`
 in metres (X/Z in 3D), a color, and an optional Scene Forge `asset` definition. Steps have
-`start`, `task`, `touchpoint`, `timer`, `decision`, `fork`, `join`, or `end` kinds. Tasks declare whole
+`start`, `task`, `machine`, `system`, `touchpoint`, `timer`, `decision`, `fork`, `join`, or
+`end` kinds (machine and system steps are described under Resource kinds and automated steps). Tasks declare whole
 business-minute `duration`, optional `cost`, and simultaneous resource demands.
 Tasks and timers may also declare `set` effects and `add` counters (execution rules 10 and 11).
 Resource pools declare integer `capacity` and `costPerMinute`; costs are simulated

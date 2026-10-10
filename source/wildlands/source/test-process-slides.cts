@@ -51,6 +51,16 @@ test('Slides cover every demo step on exactly one step slide in contiguous, non-
  }
 });
 
+test('No bundled agency deck shows the "No description authored." placeholder on any slide or in its Markdown', () => {
+ const placeholder = 'No description authored.';
+ for (const [file, d] of demos) {
+  assert.deepEqual(d.steps.filter(s => !s.description?.trim()).map(s => s.id), [], file + ': every step has a description');
+  const deck = slides.build(d), missing = deck.slides.filter(s => JSON.stringify(s).includes(placeholder)).map(s => s.id);
+  assert.deepEqual(missing, [], file + ': slides with the placeholder lead');
+  assert(!slides.markdown(deck).includes(placeholder), file + ': Markdown export has no placeholder');
+ }
+});
+
 const PINNED: Record<string, [number, string[], string[]]> = {
  'agency.process.json': [22, ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'variants', 'summary'], ['Agency delivery lab', 'Overview', 'Resources', 'Discover', 'Project intake', 'Discovery', 'Design', 'Plan together', 'Product design', 'Technical design', 'Ready to build', 'Build', 'Implementation', 'Quality review', 'Review', 'Accepted?', 'Handover', 'Client handover', 'Delivered', 'Variants and other paths', 'Resolve findings', 'Summary']],
  'agile-vendor.process.json': [36, ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'phase-6', 'variants', 'summary'], ['Agile vendor project', 'Overview', 'Resources', 'Initiate', 'Engagement won', 'Contractual kickoff date (not before)', 'Milestone 1 · Kickoff', 'Discovery with the customer', 'Plan', 'Plan together', 'Product design', 'Architecture runway', 'Product backlog ready', 'Milestone 2 · Roadmap agreed', 'Iterate', 'Iteration planning', 'Iteration', 'CI build and tests', 'Customer review window', 'Iteration retrospective', 'More iterations in this release?', 'Accept', 'Automated regression suite', 'Release acceptance testing (UAT)', 'UAT result', 'Release', 'Milestone · Release go-live', 'Automated deployment', 'Hypercare window', 'More releases?', 'Close', 'Final acceptance and handover', 'Project closed', 'Variants and other paths', 'Fix acceptance findings', 'Summary']],

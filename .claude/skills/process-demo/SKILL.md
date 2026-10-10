@@ -92,7 +92,18 @@ is written. This one validates strictly (no `--draft` needed).
 4. Process counts in prose are manual: `docs/reference/current-state.md` (agency lab paragraph),
    `docs/concepts/README.md` (agency bullet), `source/wildlands/README.md` ("Business process scenes").
    The browser suites derive the count from `game.json` (`process-browser-fixture.ts` `COUNT`), and the
-   BPMN conformance check exports every `content/*.process.json` automatically.
+   BPMN conformance check exports every `content/*.process.json` automatically. Two checks pin each
+   deck instead, so a new process, or an edit that adds, removes, renames or re-phases steps, must
+   update them (take the numbers from `bin/wildlands process slides --input F`, which prints `slides`):
+   - `PINNED` in `source/wildlands/source/verification/process-present-browser.ts`: one slide count
+     per process in `content.definitions` order (append the new deck's count);
+     `process-present-browser` asserts `COUNT === PINNED.length` and every deck's length.
+   - `PINNED` in `source/wildlands/source/test-process-slides.cts`: per file name, the slide count,
+     section ids and ordered slide titles (the Node `business-process` suite); that file's demo
+     checks also expect the number of bundled demos and that no deck shows "No description
+     authored.", and its SIPOC byte-identity check hashes the SIPOC models of every demo (a new
+     demo, or a change to phases, the main route or the SIPOC, changes that hash: re-pin it and
+     say why in the handoff).
 5. `bin/wildlands validate-game --game docs/concepts/agency-delivery` (exit 0, `errors: []`).
 
 ## 3. Pin a Node check
@@ -149,10 +160,11 @@ Screenshots (Playwright Chromium; never `waitForTimeout`):
 ```sh
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/opt/pw-browsers/chromium \
   npm --prefix source/wildlands run process:shots -- \
-  --game docs/concepts/agency-delivery --process 8 --minute 2400 --out /tmp/pd/shots
+  --game docs/concepts/agency-delivery --process N --minute 2400 --out /tmp/pd/shots
 ```
 
-`--process` is the 1-based position in `content.definitions`. The tool builds the game with
+`--process` is the 1-based position in `content.definitions`: the lab holds 7 processes, so an
+existing demo is 1 to 7 and a new eighth one is 8. The tool builds the game with
 `--cli FILE`, else `source/wildlands/.generated/tools/wildlands-cli.cjs` when present (run
 `npm run build` first so it matches the source), else `bin/wildlands`; `shots.json` names the one used
 (`cli`). It runs to the minute through **Run until**/speed 30/**Run** and writes `desktop-2d`,

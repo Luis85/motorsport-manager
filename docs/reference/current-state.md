@@ -116,7 +116,9 @@ conversion and tracked measures. The studio shows one detached run in 2D, Three.
 3D and a SIPOC or journey lens, with an Activity modal, a Definition editor, a step
 editor, a **Present** mode (the slide deck of the active definition beside the studio's
 own 2D map, on a phone from the **⋯** menu) and offline HTML downloads; it has a dark
-theme only. Navigation, dialogs, lenses and Present mode never tick the clock; entering
+theme only. The studio tunes an existing definition: it cannot create a new process, and its
+forms do not add or remove steps (the Definition editor's Raw JSON pane and guarded CLI
+recipes do). Navigation, dialogs, lenses and Present mode never tick the clock; entering
 Present pauses a running simulation with a command.
 
 The [agency delivery lab](../concepts/agency-delivery/README.md) holds seven
@@ -158,8 +160,10 @@ approximation, compensation, nested gateways inside a fork region, process
 checkpoints or saved-run restoration, light theme and Godot process export. A
 mapped BPMN model, a seeded run and the passing process suites are automated
 scenario evidence, not a validated process model, forecast or human usability
-review. See the [contract](business-process-engine.md) and
-[authoring workflow](../how-to/business-process-authoring.md).
+review. See the [contract](business-process-engine.md), the
+[authoring workflow](../how-to/business-process-authoring.md),
+[Present a process to stakeholders](../how-to/present-a-process.md) and the
+[first business process tutorial](../tutorials/first-business-process.md).
 
 ## Interface selection and retained specialist tools
 

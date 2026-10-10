@@ -4,6 +4,17 @@ Use the checked-in `bin/wildlands` and `bin/scene-forge` with Node.js 22+.
 No build or dependencies are needed to run these tools. The
 [process contract](../reference/business-process-engine.md) defines the supported
 semantics and limits. This workflow starts with definitions and then builds scenes.
+New to the tools? [Model your first business process](../tutorials/first-business-process.md)
+walks through one small process from `process create` to Present and export.
+
+## What the studio can and cannot edit
+
+> The studio tunes an existing process. **Edit process…** (the Definition editor) changes
+> process settings, resources and arrivals, and **Edit step…** (the step editor) changes one
+> step's fields and its outgoing paths. The studio cannot create a new process, and its forms
+> cannot add or remove steps: start a process with `process create` and a guarded recipe (or
+> import a JSON or BPMN file), and add or remove steps with a recipe (`putStep`, `removeStep`)
+> or in the Definition editor's **Raw JSON** pane.
 
 ## Create a process incrementally
 
@@ -496,16 +507,56 @@ Open the HTML directly. Use **Run simulation**, **Pause**, **Step 1 min**,
 **Advance 30 min**, and **Reset run**. **2D** and **3D** show one simulation;
 a third button shows the process-type lens over the same simulation: **SIPOC** for a
 business process, **Journey map** for a customer or user journey (the lens never offers
-the other one), and **Present** opens the slide deck over the 2D map (see
-[Present a process](#present-a-process)). A journey opens on its map; switching to another process keeps the lens
+the other one), and **Present** opens the slide deck beside the 2D map (see
+[Present a process to stakeholders](present-a-process.md)). A journey opens on its map; switching to another process keeps the lens
 for a process of the same kind and otherwise returns to your last 2D or 3D choice.
 Selecting a card or stage selects its step, and Escape clears it. Journeys also say
 customers or users instead of cases, show Finished, Goals, Lost and Conversion, and up
 to two tracked averages next to the run numbers.
 **Step scenes** and **Whole process** change the view without advancing time.
 **Edit process…** in the header opens the **Definition editor** (validation before **Apply draft and reset run**, see below); a chip beside it names an unapplied draft.
-To change one step, select it and choose **Edit step…** beside **Frame view**. The step editor opens as a dialog whose sections follow the kind of step: basics, timing and cost, people and capacity (tasks), equipment (machine steps) or systems (system steps), completion values and counters, declared outputs, needs from earlier steps, backlog and outgoing flows (conditions on decisions, with a short summary of the order the paths are checked). Work steps and duration timers also offer **Random timing** (the planning duration stays the average shown in estimates while each visit draws its own time) and **Random outcomes (draws)** for chance, weighted-choice and whole-number fields; a decision path can take a random share of cases instead of testing a field. Inconsistent numbers are reported next to the field. Machine and system steps add an **Automation** section for the optional technology label and list only pools of their own kind; if the process has no machine or system pool yet, the dialog says so and points to the Definition editor. Problems the engine finds for the step appear beside the fields as you type, and the problem list at the top links to each field. **Save to draft** keeps your edits in the draft without starting anything and the draft summary reads, for example, "Unapplied draft: 1 step changed". **Apply and reset run** applies the whole draft (including other unapplied edits, which a banner announces); when a run is already in progress it first asks you to confirm that the run will be discarded, so export the run report beforehand if you need it. **Cancel**, Escape, **Close** and a click outside the dialog all ask before throwing edits away. The run pauses while the dialog is open. Touchpoints (customer or user interactions) have a **Journey** section for phase, channel, feeling, pain point and opportunity and list backstage teams and systems of any kind as optional; every other step has collapsed **Journey notes**, and end steps choose an **Outcome** (None, Goal reached or Customer or user lost). Adding or removing flows and steps is still done in the raw JSON draft. Forks add **Branching** (parallel, or inclusive with conditions on its paths), work steps add **Multiple instances** and a **Deadline** with its interrupt or escalate path, and any condition can be combined with **All of these**, **Any of these** or **Not**; **Random timing** and the arrival gap also offer Normal and Erlang distributions. The step editor never adds a flow: for a deadline it lets you choose among the step's existing flows and explains where to add the flow in the JSON when there is none.
-The Definition editor is a dialog with two panes: **Tune values** (process name,
+
+**Edit one step.** Select the step and choose **Edit step…** beside **Frame view**. The step
+editor is a dialog; the run pauses while it is open. The
+[step editor reference](../reference/business-process-engine.md#presentation-limits) describes
+every field and its range.
+
+1. **Edit the sections that apply.** Sections follow the kind of step: basics, timing and
+   cost, people and capacity (tasks), equipment (machine steps) or systems (system steps),
+   completion values and counters, declared outputs, needs from earlier steps, backlog and
+   outgoing flows (conditions on decisions, with a short summary of the order the paths are
+   checked).
+   - Work steps and duration timers also offer **Random timing** (the planning duration stays
+     the average shown in estimates while each visit draws its own time) and **Random
+     outcomes (draws)** for chance, weighted-choice and whole-number fields. **Random timing**
+     and the arrival gap also offer Normal and Erlang distributions.
+   - A decision path can take a random share of cases instead of testing a field, and any
+     condition can be combined with **All of these**, **Any of these** or **Not**.
+   - Machine and system steps add an **Automation** section for the optional technology
+     label and list only pools of their own kind; if the process has no machine or system
+     pool yet, the dialog says so and points to the Definition editor.
+   - Touchpoints (customer or user interactions) have a **Journey** section for phase,
+     channel, feeling, pain point and opportunity and list backstage teams and systems of any
+     kind as optional; every other step has collapsed **Journey notes**, and end steps choose
+     an **Outcome** (None, Goal reached or Customer or user lost).
+   - Forks add **Branching** (parallel, or inclusive with conditions on its paths), and work
+     steps add **Multiple instances** and a **Deadline** with its interrupt or escalate path.
+2. **Fix what it reports.** Inconsistent numbers are reported next to the field. Problems
+   the engine finds for the step appear beside the fields as you type, and the problem list
+   at the top links to each field.
+3. **Save or apply.** **Save to draft** keeps your edits in the draft without starting
+   anything, and the draft summary reads, for example, "Unapplied draft: 1 step changed".
+   **Apply and reset run** applies the whole draft (including other unapplied edits, which a
+   banner announces); when a run is already in progress it first asks you to confirm that the
+   run will be discarded, so export the run report beforehand if you need it.
+4. **Or leave.** **Cancel**, Escape, **Close** and a click outside the dialog all ask before
+   throwing edits away.
+
+Adding or removing flows and steps is still done in the raw JSON draft (or with a guarded
+recipe). The step editor never adds a flow: for a deadline it lets you choose among the
+step's existing flows and explains where to add the flow in the JSON when there is none.
+
+**Edit the whole process.** The Definition editor is a dialog with two panes: **Tune values** (process name,
 description, **Process type** (business process, customer journey or user journey) and **Seed**, up to six **Tracked measures** that the simulation averages to draw the measured curve, shared resources with their kind People, Machine or System,
 and each arrival's end rule, first arrival, planning interval, optional random gap,
 case data and random case fields) and **Raw JSON** (the draft with line numbers, the
@@ -583,34 +634,11 @@ The build has no external scripts, fonts, asset requests or account dependency.
 
 ## Present a process
 
-To walk an audience (or a reviewer) through a process step by step, use the slide deck.
-
-**In the studio.** Choose **Present** beside the view buttons (on a phone: **⋯**, then
-**Present slides**). The window shows one slide at a time beside the process map: an
-introduction (title, overview, resources), the main route phase by phase, every other path
-and a summary. Use **Next** and **Previous**, the arrow keys, Page Up and Page Down, or Home
-and End; **Contents** lists every slide by section. A step slide shows that step on the map,
-and selecting a step on the map jumps to its slide. If a step is selected when you start,
-the deck opens on its slide. Past minute 0 the slides add facts from the current run, named
-by its minute and seed. Presenting pauses a running simulation and never advances it; **Exit**
-or Escape returns to the view and selection you had, and the run stays paused until you choose
-**Run simulation**. The deck explains the applied definition, not an unapplied draft.
-
-**From the command line.** Review the same deck as text, optionally with facts from one bounded
-run, and keep the file beside a change for review:
-
-```sh
-bin/wildlands process slides --input /tmp/process-work/review.json --format md --output /tmp/process-work/slides.md
-bin/wildlands process slides --input /tmp/process-work/review.json --format md --minutes 2400 --seed 7
-```
-
-Read it as a learner: every step should say what happens, who does it, how long it takes,
-what it needs and delivers and where the work goes next. "No description authored." marks a
-step without a `description`; add one with `putStep`. The deck only restates the definition
-and one run; it is not a forecast. For screenshots of the studio and Present mode at a chosen
-minute (desktop, phone and a wider fallback font, with overflow and console-error reports),
-run `npm run process:shots` in `source/wildlands` (see
-[Verification suites](../reference/business-process-engine.md#verification-suites)).
+To walk an audience or a reviewer through a process step by step, choose **Present** beside
+the view buttons (on a phone: **⋯**, then **Present slides**) or export the same deck with
+`bin/wildlands process slides --format md`. The steps, keys, live facts and the Markdown
+review are in [Present a process to stakeholders](present-a-process.md). "No description
+authored." on a slide marks a step without a `description`; add one with `putStep`.
 
 ## Agent completion checklist
 
