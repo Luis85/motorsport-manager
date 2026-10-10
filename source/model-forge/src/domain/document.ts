@@ -48,10 +48,11 @@ export const kernelOperations = [
 /** Scene-wide operations that have no meaning inside a single model document. */
 export const sceneOnlyOperations: Record<string, string> = {
   setParameter:
-    'Models declare parameters with putParameter {id, default, min?, max?, integer?, description?}.',
-  setCamera: 'Cameras belong to scenes. Use review --views/--turntable or a review plan instead.',
+    'Scene parameters belong to Scene Forge scenes; models declare parameters with putParameter {id, default, min?, max?, integer?, description?}.',
+  setCamera:
+    'Cameras belong to Scene Forge scenes; review a model with review --views/--turntable or a review plan.',
   setEnvironment:
-    'Environments belong to scenes. Use review --background for a capture background.',
+    'Environments belong to Scene Forge scenes; use review --background for a capture background.',
 };
 export const modelOperations = [
   'putParameter',

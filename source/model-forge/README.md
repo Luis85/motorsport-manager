@@ -50,7 +50,7 @@ bin/model-forge -d lamp.model.json export --format glb --validate --out lamp.glb
 - Each written edit holds `<document>.lock` from read through write, stores the replaced
   file byte-for-byte as `<document>.history/<revision>.json`, increments `revision` and
   replaces the document atomically. Reads never lock. `history` lists revisions and
-  `restore <revision>` writes a stored one as a new revision.
+  `restore <revision> --expected-revision <current>` writes a stored one as a new revision.
 - `create`, `import` and `example create` never overwrite a document.
 
 ## Commands

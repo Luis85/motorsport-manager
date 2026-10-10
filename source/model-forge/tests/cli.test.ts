@@ -192,7 +192,11 @@ test('guards from flags and batches must agree, and dry runs write nothing', () 
     assert.match(stale.hint!, /inspect/);
     const restored = await ok([...doc, 'restore', '0', '--expected-revision', '1'], { cwd });
     assert.equal(restored.revision, 2);
-    assert.equal((await failure([...doc, 'restore', '7'], { cwd })).code, 'HISTORY_NOT_FOUND');
+    assert.equal((await failure([...doc, 'restore', '0'], { cwd })).code, 'GUARD_REQUIRED');
+    assert.equal(
+      (await failure([...doc, 'restore', '7', '--expected-revision', '2'], { cwd })).code,
+      'HISTORY_NOT_FOUND',
+    );
     assert.equal(
       (await failure(['-d', 'nope.model.json', 'inspect'], { cwd })).code,
       'DOCUMENT_NOT_FOUND',

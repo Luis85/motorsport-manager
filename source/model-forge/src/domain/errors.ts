@@ -28,6 +28,7 @@ export const errorRemedies: Record<string, string> = {
     'The document changed since you read it. Run inspect again and rebase the edit; do not drop the guard blindly.',
   STATE_CONFLICT:
     'The model or its dependencies changed since you read them. Run inspect again and regenerate the batch.',
+  GUARD_REQUIRED: 'Run history or inspect and pass the current revision as --expected-revision.',
   GUARD_MISMATCH: 'Use the same guard on the command line and in the batch, or only one of them.',
   NOT_FOUND: 'Run node list or inspect to see the IDs that exist.',
   REFERENCE_MISSING:

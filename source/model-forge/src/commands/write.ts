@@ -150,8 +150,15 @@ export function registerWriteCommands(c: CommandContext) {
   editOptions(
     program
       .command('restore <revision>')
-      .description('Restore a stored revision as a new revision (identical content is a no-op)'),
-  ).action(async (revision: string, opts) =>
-    output(await restoreRevision(c.documentPath(), integer(revision), opts)),
-  );
+      .description(
+        'Restore a stored revision as a new revision; requires --expected-revision (identical content is a no-op)',
+      ),
+  ).action(async (revision: string, opts) => {
+    if (opts.expectedRevision === undefined)
+      fail(
+        'GUARD_REQUIRED',
+        'restore replaces the current document; pass --expected-revision <current revision>.',
+      );
+    output(await restoreRevision(c.documentPath(), integer(revision), opts));
+  });
 }

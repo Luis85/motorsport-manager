@@ -26,7 +26,7 @@ Model Forge edits exactly one model per document. Use the repository executable
 
 `put` operations replace whole definitions; `patchNode`/`patchNodes` merge. Dependencies in
 a bundle are frozen: change one in its own document and `putDependency` with
-`replace: true`. Restore earlier work with `history` and `restore <revision>`.
+`replace: true`. Restore earlier work with `history` and `restore <revision> --expected-revision <current>`.
 
 ## Code changes
 
