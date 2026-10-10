@@ -26,10 +26,16 @@ declare namespace LWProcessTuningArrivals {
  const F = root.LWProcessTuningFields, {html} = root.LWProcessHtml, MINUTES = 100000;
  type Safe = LWProcessHtml.Safe;
  type Result = LWProcessTuningArrivals.Result;
- const NAME = /^[a-z][a-zA-Z0-9_]{0,63}$/, SAFE = /^[A-Za-z0-9_]+$/, NAME_HINT = 'Start with a lowercase letter, then letters, digits or underscores (up to 64).';
- const DISTS: [string, string][] = [['none', 'None (exact spacing)'], ['uniform', 'Uniform (min to max)'], ['triangular', 'Triangular (min, most likely, max)'], ['exponential', 'Exponential (average, optional cap)'], ['normal', 'Normal (average and spread, optional bounds)'], ['erlang', 'Erlang (phases and average)']];
+ const NAME = /^[a-z][a-zA-Z0-9_]{0,63}$/, SAFE = /^[A-Za-z0-9_]+$/;
+ const NAME_HINT = 'Start with a lowercase letter, then letters, digits or underscores (up to 64).';
+ const DISTS: [string, string][] = [
+  ['none', 'None (exact spacing)'], ['uniform', 'Uniform (min to max)'], ['triangular', 'Triangular (min, most likely, max)'],
+  ['exponential', 'Exponential (average, optional cap)'], ['normal', 'Normal (average and spread, optional bounds)'],
+  ['erlang', 'Erlang (phases and average)'],
+ ];
  const KINDS: [string, string][] = [['chance', 'Chance (happens or not)'], ['choice', 'Weighted choice'], ['int', 'Whole number in a range']];
- const mins = (id: string, label: string, path: string, value: number | undefined, extra: {optional?: boolean; help?: string} = {}) => F.int(id, label, path, value, {min: 1, max: MINUTES, unit: 'minutes', ...extra});
+ const mins = (id: string, label: string, path: string, value: number | undefined, extra: {optional?: boolean; help?: string} = {}) =>
+  F.int(id, label, path, value, {min: 1, max: MINUTES, unit: 'minutes', ...extra});
  const ERLANG_HELP = 'Whole number from 1 to 32. More phases make the gaps more regular; one phase is exponential.';
  const GAP_HELP = 'With a random gap, the planning interval above is the average spacing and each gap is drawn from this distribution.';
  function gap(a: LWProcess.Arrival, p: string, id: string): Safe {
@@ -124,53 +130,105 @@ declare namespace LWProcessTuningArrivals {
   const errors = html`<div class="de-errs" id="${id}-err" data-errs="${p}"></div>`;
   return html`<fieldset class="de-card" id="${id}" data-arrival="${i}"><legend>Arrival ${i + 1}</legend>${errors}${body}</fieldset>`;
  }
- const unique = (taken: Iterable<string>, base: string) => { const set = new Set(taken); let n = 1; while (set.has(base + n)) n++; return base + n; };
+ function unique(taken: Iterable<string>, base: string): string {
+  const set = new Set(taken);
+  let n = 1;
+  while (set.has(base + n)) n++;
+  return base + n;
+ }
  const DEFAULTS: Record<string, () => LWProcess.Draw> = {
   chance: () => ({field: '', kind: 'chance', percent: 50, whenTrue: true, whenFalse: false}),
   choice: () => ({field: '', kind: 'choice', values: [{value: 'a', weight: 1}, {value: 'b', weight: 1}]}),
   int: () => ({field: '', kind: 'int', min: 1, max: 10}),
  };
  const newArrival = (): LWProcess.Arrival => ({at: 0, count: 5, interval: 10, data: {}});
+ /** The first random gap of a chosen distribution, sized from the planning interval. */
+ function startingGap(dist: string, interval: number): LWProcess.Dist {
+  if (dist === 'uniform') return {dist: 'uniform', min: 1, max: Math.max(interval * 2, 2)};
+  if (dist === 'triangular') return {dist: 'triangular', min: 1, mode: Math.max(interval, 1), max: Math.max(interval * 2, 2)};
+  if (dist === 'normal') return {dist: 'normal', mean: Math.max(interval, 1), sd: Math.max(1, Math.round(interval / 4))};
+  if (dist === 'erlang') return {dist: 'erlang', k: 3, mean: Math.max(interval, 1)};
+  return {dist: 'exponential', mean: Math.max(interval, 1)};
+ }
  function special(def: LWProcess.Definition, el: HTMLElement): Result | null {
   const path = el.dataset.path ?? '', kind = el.dataset.kind, parts = path.split('.'), a = def.arrivals?.[Number(parts[1])];
   if (parts[0] !== 'arrivals' || !a) return null;
   const id = `tune-arr-${parts[1]}`;
   if (kind === 'end') {
    const v = (el as HTMLInputElement).value, after = Math.max(a.at + Math.max(a.interval, 1) * 10, a.at + 1);
-   const keep = {at: a.at, interval: a.interval, gap: a.gap, draws: a.draws, data: a.data}; for (const k of Object.keys(a)) delete (a as unknown as Record<string, unknown>)[k];
-   Object.assign(a, {at: keep.at}, v === 'count' ? {count: 5} : v === 'until' ? {until: Math.min(after, MINUTES)} : {open: true}, {interval: keep.interval}, keep.gap ? {gap: keep.gap} : {}, keep.draws ? {draws: keep.draws} : {}, {data: keep.data});
+   const keep = {at: a.at, interval: a.interval, gap: a.gap, draws: a.draws, data: a.data};
+   for (const k of Object.keys(a)) delete (a as unknown as Record<string, unknown>)[k];
+   const end = v === 'count' ? {count: 5} : v === 'until' ? {until: Math.min(after, MINUTES)} : {open: true};
+   Object.assign(a, {at: keep.at}, end, {interval: keep.interval}, keep.gap ? {gap: keep.gap} : {}, keep.draws ? {draws: keep.draws} : {},
+    {data: keep.data});
    return {write: true, rerender: true, focus: `#${id}-end-${v}`};
   }
   if (kind === 'choice' && parts[2] === 'gap') {
    const v = (el as HTMLSelectElement).value;
-   if (v === 'none') delete a.gap; else a.gap = v === 'uniform' ? {dist: 'uniform', min: 1, max: Math.max(a.interval * 2, 2)} : v === 'triangular' ? {dist: 'triangular', min: 1, mode: Math.max(a.interval, 1), max: Math.max(a.interval * 2, 2)} : v === 'normal' ? {dist: 'normal', mean: Math.max(a.interval, 1), sd: Math.max(1, Math.round(a.interval / 4))} : v === 'erlang' ? {dist: 'erlang', k: 3, mean: Math.max(a.interval, 1)} : {dist: 'exponential', mean: Math.max(a.interval, 1)};
+   if (v === 'none') delete a.gap;
+   else a.gap = startingGap(v, a.interval);
    if (v !== 'none' && a.interval < 1) a.interval = Math.max(a.gap!.mean ?? a.gap!.mode ?? a.gap!.max ?? 1, 1);
    return {write: true, rerender: true, focus: `#${id}-gap-dist`};
   }
   if (kind === 'choice' && parts[2] === 'draws' && parts[4] === 'kind') {
-   const k = Number(parts[3]), d = a.draws?.[k]; if (!d) return null;
-   a.draws![k] = {...DEFAULTS[(el as HTMLSelectElement).value]!(), field: d.field}; return {write: true, rerender: true, focus: `#${id}-draw-${k}-kind`};
+   const k = Number(parts[3]), d = a.draws?.[k];
+   if (!d) return null;
+   a.draws![k] = {...DEFAULTS[(el as HTMLSelectElement).value]!(), field: d.field};
+   return {write: true, rerender: true, focus: `#${id}-draw-${k}-kind`};
   }
   if (kind === 'data-name') {
    const from = el.dataset.from!, name = (el as HTMLInputElement).value, data = a.data;
    if (name === from) return {write: false, rerender: false};
    if (!NAME.test(name)) return {write: false, rerender: false, local: [path, name ? NAME_HINT : 'Name the field, or remove this row.']};
    if (Object.hasOwn(data, name)) return {write: false, rerender: false, local: [path, `A field named ${name} already exists.`]};
-   a.data = Object.fromEntries(Object.entries(data).map(([k, v]) => [k === from ? name : k, v])); return {write: true, rerender: true, focus: `#${id}-data-${el.dataset.i}-name`};
+   a.data = Object.fromEntries(Object.entries(data).map(([k, v]) => [k === from ? name : k, v]));
+   return {write: true, rerender: true, focus: `#${id}-data-${el.dataset.i}-name`};
   }
   return null;
  }
  function act(def: LWProcess.Definition, button: HTMLElement): Result | null {
-  const what = button.dataset.act, i = Number(button.closest<HTMLElement>('[data-arrival]')?.dataset.arrival ?? button.dataset.i), a = def.arrivals?.[i], k = Number(button.dataset.k), j = Number(button.dataset.j);
-  if (what === 'arr-add') { def.arrivals.push(newArrival()); return {write: true, rerender: true, focus: `#tune-arr-${def.arrivals.length - 1}-count`}; }
+  const what = button.dataset.act, i = Number(button.closest<HTMLElement>('[data-arrival]')?.dataset.arrival ?? button.dataset.i);
+  const a = def.arrivals?.[i], k = Number(button.dataset.k), j = Number(button.dataset.j);
+  const done = (focus: string): Result => ({write: true, rerender: true, focus});
+  if (what === 'arr-add') {
+   def.arrivals.push(newArrival());
+   return done(`#tune-arr-${def.arrivals.length - 1}-count`);
+  }
   if (!a) return null;
-  if (what === 'arr-remove') { def.arrivals.splice(i, 1); return {write: true, rerender: true, focus: '#tune-arr-add'}; }
-  if (what === 'data-add') { const name = unique(Object.keys(a.data), 'field'); a.data[name] = ''; return {write: true, rerender: true, focus: `#tune-arr-${i}-data-${Object.keys(a.data).length - 1}-name`}; }
-  if (what === 'data-remove') { delete a.data[button.dataset.name!]; return {write: true, rerender: true, focus: `#tune-arr-${i}-data-h`}; }
-  if (what === 'draw-add') { (a.draws ??= []).push({...DEFAULTS.chance!(), field: unique((a.draws ?? []).map(d => d.field).concat(Object.keys(a.data)), 'random')}); return {write: true, rerender: true, focus: `#tune-arr-${i}-draw-${a.draws.length - 1}-field`}; }
-  if (what === 'draw-remove') { a.draws?.splice(k, 1); if (!a.draws?.length) delete a.draws; return {write: true, rerender: true, focus: `#tune-arr-${i}-draws-h`}; }
-  if (what === 'value-add') { const d = a.draws?.[k]; if (!d) return null; (d.values ??= []).push({value: unique(d.values.map(v => String(v.value)), 'choice'), weight: 1}); return {write: true, rerender: true, focus: `#tune-arr-${i}-draw-${k}-v${d.values.length - 1}-type`}; }
-  if (what === 'value-remove') { a.draws?.[k]?.values?.splice(j, 1); return {write: true, rerender: true, focus: `#tune-arr-${i}-draw-${k}-kind`}; }
+  if (what === 'arr-remove') {
+   def.arrivals.splice(i, 1);
+   return done('#tune-arr-add');
+  }
+  if (what === 'data-add') {
+   const name = unique(Object.keys(a.data), 'field');
+   a.data[name] = '';
+   return done(`#tune-arr-${i}-data-${Object.keys(a.data).length - 1}-name`);
+  }
+  if (what === 'data-remove') {
+   delete a.data[button.dataset.name!];
+   return done(`#tune-arr-${i}-data-h`);
+  }
+  if (what === 'draw-add') {
+   const list = a.draws ??= [];
+   list.push({...DEFAULTS.chance!(), field: unique(list.map(d => d.field).concat(Object.keys(a.data)), 'random')});
+   return done(`#tune-arr-${i}-draw-${list.length - 1}-field`);
+  }
+  if (what === 'draw-remove') {
+   a.draws?.splice(k, 1);
+   if (!a.draws?.length) delete a.draws;
+   return done(`#tune-arr-${i}-draws-h`);
+  }
+  if (what === 'value-add') {
+   const d = a.draws?.[k];
+   if (!d) return null;
+   const values = d.values ??= [];
+   values.push({value: unique(values.map(v => String(v.value)), 'choice'), weight: 1});
+   return done(`#tune-arr-${i}-draw-${k}-v${values.length - 1}-type`);
+  }
+  if (what === 'value-remove') {
+   a.draws?.[k]?.values?.splice(j, 1);
+   return done(`#tune-arr-${i}-draw-${k}-kind`);
+  }
   return null;
  }
  root.LWProcessTuningArrivals = {markup, special, act, newArrival};

@@ -11,12 +11,12 @@
  * Durations (step durations, waits, mean cycle and mean age) are worded by `LWProcessTime.span` with the definition's display
  * calendar, so they read '240 min (≈ 4 h)' or, with a calendar, '2,400 min (5 business days)'; clock points ('Until minute
  * 200', 'next due minute 45') stay minutes. The random timing, deadline and arrival sentences of LWProcessRandomView get the
- * same calendar, so their planned durations, deadline times and arrival gaps read the same way. The read model's analytics are shown where they answer a question, kept short
- * (the Dashboard view holds the full analytics): per work step the mean wait per start ('—' before the first start) and the
- * work cost split into fixed cost and pool-minute cost; per pool the work cost against the capacity cost and the idle cost
- * (capacity cost − work cost); in the overview the throughput per business hour ('—' at minute 0) and, when
- * `LWProcessAdvice.advise` reports any, a short Notes list. A step with random timing adds its whole-minute rounding note
- * (`LWProcessRandomView.roundingNote`) beside Random timing.
+ * same calendar, so their planned durations, deadline times and arrival gaps read the same way. The read model's analytics are
+ * shown where they answer a question, kept short (the Dashboard view holds the full analytics): per work step the mean wait
+ * per start ('—' before the first start) and the work cost split into fixed cost and pool-minute cost; per pool the work cost
+ * against the capacity cost and the idle cost (capacity cost − work cost); in the overview the throughput per business hour
+ * ('—' at minute 0) and, when `LWProcessAdvice.advise` reports any, a short Notes list. A step with random timing adds its
+ * whole-minute rounding note (`LWProcessRandomView.roundingNote`) beside Random timing.
  */
 declare namespace LWProcessInspector {
  interface Api {

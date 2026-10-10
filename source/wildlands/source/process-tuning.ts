@@ -8,8 +8,8 @@
 /// <reference path="./process-html.ts" />
 /**
  * The "Tune values" form of the Definition editor: process name, description, process type, seed and display-only working
- * calendar (process-tuning-calendar.ts), shared resources (name, kind,
- * capacity, cost), case arrivals, tracked measures and the SIPOC suppliers and customers. It edits the unapplied draft TEXT through the `write` callback; applying still goes through
+ * calendar (process-tuning-calendar.ts), shared resources (name, kind, capacity, cost), case arrivals, tracked measures and the
+ * SIPOC suppliers and customers. It edits the unapplied draft TEXT through the `write` callback; applying still goes through
  * catalog admission and resets the run. The catalog's diagnostics are handed in with `setDiagnostics` and shown beside the field
  * they name, with `aria-invalid` on the control; the form never decides what is valid. Per-step values belong to the step editor.
  * All markup is built with LWProcessHtml's `html` template, so every draft value (names, descriptions, field names, arrival data)
@@ -73,8 +73,9 @@ declare namespace LWProcessTuning {
   const streams = html`<p class="de-help">When new cases enter the process.</p>${arrivals}${addArrival}`;
   const poolHead = html`<h4 id="tune-h-res" tabindex="-1">Shared resources</h4><div class="de-errs" id="tune-res-err" data-errs="resources"></div>`;
   const arrivalHead = html`<h4 id="tune-h-arr" tabindex="-1">Case arrivals</h4><div class="de-errs" id="tune-arr-err" data-errs="arrivals"></div>`;
+  const processHead = html`<h4 id="tune-h-process" tabindex="-1">Process</h4><div class="de-errs" id="tune-err" data-errs=""></div>`;
   return html`<div id="tune-summary" class="de-summary"></div>
-   <section class="de-sec" aria-labelledby="tune-h-process"><h4 id="tune-h-process" tabindex="-1">Process</h4><div class="de-errs" id="tune-err" data-errs=""></div>
+   <section class="de-sec" aria-labelledby="tune-h-process">${processHead}
     ${F.text('tune-name', 'Name', 'name', d.name)}${F.text('tune-desc', 'Description', 'description', d.description, {max: 4000, long: true})}
     ${T.genreMarkup(d)}${F.int('tune-seed', 'Seed', 'seed', d.seed, {min: 0, max: SEED, optional: true, help: SEED_HELP})}
     ${C.markup(d)}</section>
@@ -85,31 +86,79 @@ declare namespace LWProcessTuning {
    <p class="de-help">Steps and flows are edited with Edit step… or in Raw JSON.</p>`;
  }
  function setPath(target: unknown, path: string, value: unknown): void {
-  const keys = path.split('.'); let at = target as Record<string, unknown>;
-  for (const key of keys.slice(0, -1)) { if (typeof at[key] !== 'object' || at[key] === null) return; at = at[key] as Record<string, unknown>; }
-  const last = keys.at(-1)!; if (value === undefined) delete at[last]; else at[last] = value;
+  const keys = path.split('.');
+  let at = target as Record<string, unknown>;
+  for (const key of keys.slice(0, -1)) {
+   if (typeof at[key] !== 'object' || at[key] === null) return;
+   at = at[key] as Record<string, unknown>;
+  }
+  const last = keys.at(-1)!;
+  if (value === undefined) delete at[last];
+  else at[last] = value;
  }
- const getPath = (target: unknown, path: string) => path.split('.').reduce<unknown>((at, key) => (at && typeof at === 'object' ? (at as Record<string, unknown>)[key] : undefined), target);
+ const getPath = (target: unknown, path: string) => path.split('.')
+  .reduce<unknown>((at, key) => (at && typeof at === 'object' ? (at as Record<string, unknown>)[key] : undefined), target);
+ /** The draft as a definition the form can show (resources, steps and arrivals are arrays), else undefined. */
+ function formable(d: LWProcess.Definition): LWProcess.Definition | undefined {
+  return d && Array.isArray(d.resources) && Array.isArray(d.steps) && (d.arrivals === undefined || Array.isArray(d.arrivals)) ? d : undefined;
+ }
  const WAIT_FOR_CHANGE = new Set(['choice', 'end', 'scalar-type', 'data-name']);
  function create(host: HTMLElement, read: () => string, write: LWProcessTuning.Write, confirm?: LWProcessTuning.Confirm): LWProcessTuning.Surface {
-  let shown = '', diagnostics: LWProcess.Diagnostic[] = [], other = 0; const local = new Map<string, string>();
+  let shown = '', diagnostics: LWProcess.Diagnostic[] = [], other = 0;
+  const local = new Map<string, string>();
   const form = () => host.querySelector<HTMLFieldSetElement>('fieldset.de-form');
-  const parse = (): LWProcess.Definition | undefined => { try { const d = JSON.parse(read()) as LWProcess.Definition; return d && Array.isArray(d.resources) && Array.isArray(d.steps) && (d.arrivals === undefined || Array.isArray(d.arrivals)) ? d : undefined; } catch { return undefined; } };
-  const controlOf = (slot: Element) => (slot.closest('.de-field, .de-radios, .de-card, .de-sec') ?? host).querySelector<HTMLElement>('input, select, textarea, button');
+  const parse = (): LWProcess.Definition | undefined => {
+   try {
+    return formable(JSON.parse(read()) as LWProcess.Definition);
+   } catch {
+    return undefined;
+   }
+  };
+  const controlOf = (slot: Element) => (slot.closest('.de-field, .de-radios, .de-card, .de-sec') ?? host)
+   .querySelector<HTMLElement>('input, select, textarea, button');
+  /** The error slot for a diagnostic key: the slot with the longest key that is the diagnostic's key or a prefix of it. */
+  function slotFor(slots: HTMLElement[], key: string): HTMLElement | undefined {
+   let best: HTMLElement | undefined;
+   for (const s of slots) {
+    const k = s.dataset.errs!;
+    const matches = k === '' ? false : k === key || key.startsWith(k + '.');
+    if (matches && (!best || k.length > best.dataset.errs!.length)) best = s;
+   }
+   return best;
+  }
   function show(): void {
-   const slots = [...host.querySelectorAll<HTMLElement>('[data-errs]')], placed = new Map<HTMLElement, string[]>(), links: {slot: HTMLElement; key: string; text: string}[] = [];
-   let outside = 0; const def = parse();
-   // A step that demands a pool of the wrong kind, or more than its capacity, is a problem with that pool: show it beside the pool's kind or capacity.
+   const slots = [...host.querySelectorAll<HTMLElement>('[data-errs]')], placed = new Map<HTMLElement, string[]>();
+   const links: {slot: HTMLElement; key: string; text: string}[] = [];
+   let outside = 0;
+   const def = parse();
+   // A step that demands a pool of the wrong kind, or more than its capacity, is a problem with that pool: show it beside the
+   // pool's kind or capacity.
    const poolKey = (d: LWProcess.Diagnostic) => {
     const m = /^\/steps\/\d+\/resources\/([^/]+)$/.exec(d.path), at = m ? def?.resources.findIndex(r => r.id === m[1]) ?? -1 : -1;
     return at >= 0 ? `resources.${at}.${/exceeds/.test(d.message) ? 'capacity' : 'kind'}` : F.keyOf(d);
    };
-   const seen = new Set<string>(), entries = [...diagnostics.map(d => ({key: poolKey(d), message: d.message, path: d.path})), ...[...local].map(([key, message]) => ({key, message, path: '/' + key.replaceAll('.', '/')}))].filter(e => { const id = e.key + '|' + e.message; if (seen.has(id)) return false; seen.add(id); return true; });
+   const seen = new Set<string>();
+   const entries = [
+    ...diagnostics.map(d => ({key: poolKey(d), message: d.message, path: d.path})),
+    ...[...local].map(([key, message]) => ({key, message, path: '/' + key.replaceAll('.', '/')})),
+   ].filter(e => {
+    const id = e.key + '|' + e.message;
+    if (seen.has(id)) return false;
+    seen.add(id);
+    return true;
+   });
    for (const e of entries) {
-    let best: HTMLElement | undefined;
-    for (const s of slots) { const k = s.dataset.errs!; if (k === '' ? false : k === e.key || e.key.startsWith(k + '.')) { if (!best || k.length > best.dataset.errs!.length) best = s; } }
-    if (!best) { if (['steps', 'flows', ''].includes(e.key.split('.')[0]!)) { outside++; continue; } best = host.querySelector<HTMLElement>('#tune-err') ?? undefined; if (!best) continue; }
-    const message = F.plain(e.message, host.querySelector(`[data-path="${CSS.escape(e.key)}"]`)); placed.set(best, [...placed.get(best) ?? [], message]);
+    let best = slotFor(slots, e.key);
+    if (!best) {
+     if (['steps', 'flows', ''].includes(e.key.split('.')[0]!)) {
+      outside++;
+      continue;
+     }
+     best = host.querySelector<HTMLElement>('#tune-err') ?? undefined;
+     if (!best) continue;
+    }
+    const message = F.plain(e.message, host.querySelector(`[data-path="${CSS.escape(e.key)}"]`));
+    placed.set(best, [...placed.get(best) ?? [], message]);
     links.push({slot: best, key: e.key, text: `${root.LWProcessJsonPath.label(def, e.path)}: ${message}`});
    }
    for (const s of slots) {
@@ -130,18 +179,33 @@ declare namespace LWProcessTuning {
     const elsewhere = outside ? html`<p>${more} ${json}</p>` : '';
     const markup = String(html`${here}${elsewhere}`);
     if ((summary.dataset.html ?? '') !== markup) { summary.dataset.html = markup; summary.innerHTML = markup; }
-    summary.querySelectorAll<HTMLAnchorElement>('a[data-goto]').forEach(a => { a.onclick = ev => { ev.preventDefault(); const l = links[Number(a.dataset.goto)]; const c = l ? controlOf(l.slot) : null; c?.scrollIntoView({block: 'center'}); c?.focus(); }; });
+    summary.querySelectorAll<HTMLAnchorElement>('a[data-goto]').forEach(a => {
+     a.onclick = ev => {
+      ev.preventDefault();
+      const l = links[Number(a.dataset.goto)];
+      const c = l ? controlOf(l.slot) : null;
+      c?.scrollIntoView({block: 'center'});
+      c?.focus();
+     };
+    });
    }
   }
   function render(focus?: string): boolean {
    const def = parse(); if (!def) return false;
    let form: string; try { form = String(html`<fieldset class="de-form">${markup(def)}</fieldset>`); } catch { return false; }
    if (form !== shown || !host.childElementCount) {
-    const active = document.activeElement as HTMLElement | null, keep = active && host.contains(active) ? active.id : '', pane = host.closest<HTMLElement>('.de-pane'), top = pane?.scrollTop ?? 0;
+    const active = document.activeElement as HTMLElement | null, keep = active && host.contains(active) ? active.id : '';
+    const pane = host.closest<HTMLElement>('.de-pane'), top = pane?.scrollTop ?? 0;
     const caret = active instanceof HTMLInputElement && active.type === 'text' ? [active.selectionStart, active.selectionEnd] as const : null;
-    shown = form; host.innerHTML = form; local.clear(); if (pane) pane.scrollTop = top;
+    shown = form;
+    host.innerHTML = form;
+    local.clear();
+    if (pane) pane.scrollTop = top;
     const target = focus ? host.querySelector<HTMLElement>(focus) : keep ? document.getElementById(keep) : null;
-    if (target && host.contains(target)) { target.focus({preventScroll: true}); if (caret && target instanceof HTMLInputElement && !focus) target.setSelectionRange(caret[0], caret[1]); }
+    if (target && host.contains(target)) {
+     target.focus({preventScroll: true});
+     if (caret && target instanceof HTMLInputElement && !focus) target.setSelectionRange(caret[0], caret[1]);
+    }
    }
    show(); return true;
   }
@@ -155,19 +219,50 @@ declare namespace LWProcessTuning {
    if (WAIT_FOR_CHANGE.has(kind) !== (e.type === 'change')) return;
    const def = parse(); if (!def) { render(); return; }
    const special = T.special(def, el) ?? C.special(def, el) ?? A.special(def, el);
-   if (special) { if (special.local) { local.set(...special.local); show(); } else { local.delete(path); if (special.write) commit(def, special.focus, special.rerender); else show(); } return; }
+   if (special) {
+    if (special.local) {
+     local.set(...special.local);
+     show();
+    } else {
+     local.delete(path);
+     if (special.write) commit(def, special.focus, special.rerender);
+     else show();
+    }
+    return;
+   }
    let value: unknown;
    if (kind === 'int') {
     const raw = el.value.trim();
-    if (raw === '') { if (el.dataset.optional) value = undefined; else { local.set(path, el.validity?.badInput ? 'Enter a whole number.' : 'Enter a whole number; this field cannot be empty.'); show(); return; } }
-    else if (!Number.isInteger(Number(raw))) { local.set(path, 'Enter a whole number.'); show(); return; }
-    else value = Number(raw);
+    if (raw === '') {
+     if (el.dataset.optional) value = undefined;
+     else {
+      local.set(path, el.validity?.badInput ? 'Enter a whole number.' : 'Enter a whole number; this field cannot be empty.');
+      show();
+      return;
+     }
+    } else if (!Number.isInteger(Number(raw))) {
+     local.set(path, 'Enter a whole number.');
+     show();
+     return;
+    } else value = Number(raw);
    } else if (kind === 'choice') value = el.value === 'people' && path.endsWith('.kind') ? undefined : el.value;
-   else if (kind === 'scalar-type') { value = F.coerce(el.value, getPath(def, path) as LWProcess.Scalar | undefined, ''); local.delete(path); setPath(def, path, value); commit(def, '#' + el.id, true); return; }
-   else if (kind === 'scalar') {
+   else if (kind === 'scalar-type') {
+    value = F.coerce(el.value, getPath(def, path) as LWProcess.Scalar | undefined, '');
+    local.delete(path);
+    setPath(def, path, value);
+    commit(def, '#' + el.id, true);
+    return;
+   } else if (kind === 'scalar') {
     const current = getPath(def, path);
-    value = typeof current === 'boolean' ? el.value === 'true' : typeof current === 'number' ? (el.value.trim() !== '' && Number.isInteger(Number(el.value)) ? Number(el.value) : current) : el.value;
-    if (typeof current === 'number' && !(el.value.trim() !== '' && Number.isInteger(Number(el.value)))) { local.set(path, 'Enter a whole number.'); show(); return; }
+    const whole = el.value.trim() !== '' && Number.isInteger(Number(el.value));
+    if (typeof current === 'boolean') value = el.value === 'true';
+    else if (typeof current === 'number') value = whole ? Number(el.value) : current;
+    else value = el.value;
+    if (typeof current === 'number' && !whole) {
+     local.set(path, 'Enter a whole number.');
+     show();
+     return;
+    }
    } else value = el.value === '' && (path === 'description' || /^track\.\d+\.label$/.test(path) || P.isDetail(path)) ? undefined : el.value;
    local.delete(path); setPath(def, path, value); commit(def);
   }
@@ -176,8 +271,12 @@ declare namespace LWProcessTuning {
    const what = b.dataset.act!; if (what === 'show-json') return;
    const def = parse(); if (!def) return;
    if (what === 'res-add') {
-    let n = def.resources.length + 1; const ids = new Set(def.resources.map(r => r.id)); while (ids.has('resource-' + n)) n++;
-    def.resources.push({id: 'resource-' + n, name: 'New resource', capacity: 1, costPerMinute: 0}); commit(def, `#tune-res-${def.resources.length - 1}-name`, true); return;
+    let n = def.resources.length + 1;
+    const ids = new Set(def.resources.map(r => r.id));
+    while (ids.has('resource-' + n)) n++;
+    def.resources.push({id: 'resource-' + n, name: 'New resource', capacity: 1, costPerMinute: 0});
+    commit(def, `#tune-res-${def.resources.length - 1}-name`, true);
+    return;
    }
    if (what === 'res-remove') { void removePool(def, Number(b.dataset.i)); return; }
    // A removed row is named after its button ('Remove arrival 2' becomes 'Removed arrival 2') so it can be undone by name.
@@ -208,8 +307,17 @@ declare namespace LWProcessTuning {
    refresh: () => render(),
    setDiagnostics(list) { diagnostics = list; show(); return other; },
    setDisabled(disabled, reason) { const f = form(); if (f) f.disabled = disabled; host.dataset.disabled = disabled ? (reason ?? 'disabled') : ''; },
-   focusField(path) { const c = path ? host.querySelector<HTMLElement>(`[data-path="${CSS.escape(path)}"]`) : host.querySelector<HTMLElement>('#tune-name'); (c ?? host.querySelector<HTMLElement>('#tune-name'))?.focus(); return !!c; },
-   dispose() { host.removeEventListener('input', edit); host.removeEventListener('change', edit); host.removeEventListener('click', click); host.replaceChildren(); },
+   focusField(path) {
+    const c = path ? host.querySelector<HTMLElement>(`[data-path="${CSS.escape(path)}"]`) : host.querySelector<HTMLElement>('#tune-name');
+    (c ?? host.querySelector<HTMLElement>('#tune-name'))?.focus();
+    return !!c;
+   },
+   dispose() {
+    host.removeEventListener('input', edit);
+    host.removeEventListener('change', edit);
+    host.removeEventListener('click', click);
+    host.replaceChildren();
+   },
   };
  }
  root.LWProcessTuning = {create};
