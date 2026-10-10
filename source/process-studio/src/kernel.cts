@@ -1,6 +1,7 @@
 /// <reference path="../../wildlands/source/process-contracts.d.ts" />
 /// <reference path="../../wildlands/source/process-bpmn.ts" />
 /// <reference path="../../wildlands/source/process-bpmn-conformance.ts" />
+/// <reference path="../../wildlands/source/process-time.ts" />
 /**
  * The bridge: the only Process Studio module that imports code from `../wildlands`.
  *
