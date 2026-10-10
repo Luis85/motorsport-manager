@@ -1,5 +1,6 @@
 import { gltfScene } from '../application/gltf-scene.js';
 import { rigClips } from '../application/rigging.js';
+import { installTextureExport } from './export-textures.js';
 import { installBlobReader } from './blob-reader.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
@@ -81,7 +82,7 @@ export async function exportScene(
     if (format === 'glb' || format === 'gltf') {
       installBlobReader();
       const portable = gltfScene(built.scene);
-      const result = await new GLTFExporter().parseAsync(portable, {
+      const result = await installTextureExport(new GLTFExporter()).parseAsync(portable, {
         binary: format === 'glb',
         onlyVisible: true,
         trs: false,

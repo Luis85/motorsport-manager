@@ -16,6 +16,12 @@ Its smooth character compiler, physical materials and reproducible multi-view
 reviews share authored data with both tools. The [complete agent workflow](../how-to/character-agent-workflow.md)
 now uses guarded CLI commands for engine creature installation, companion edits
 and Scene Forge visual updates into new immutable project versions.
+Revision-3 character shapes soften facial proportions and preserve earlier
+Studio export imports. Deterministic fur, cloth and leather surface maps and
+authored mesh UVs travel through browser rendering, Scene Forge GLB and native
+engine export. Scene Forge adds a bounded organic shape primitive, and engine
+creature inspection can return compact material/geometry facts for agents.
+Surface detail does not replace silhouette authoring or visual review.
 The engine's `storyboard` CLI composes supplied artifact facts, explicit intent
 and captured images into deterministic, self-contained HTML. Grid, sequence and
 comparison layouts preserve authored order; review images retain verified hashes.
@@ -78,7 +84,9 @@ clone without `npm ci` or `node_modules`:
   game folders (`docs/concepts/<id>/`) into self-contained HTML files, and
   creates, validates, inspects, plays, edits and compiles portable projects,
   which embed their game, into Godot desktop projects. Running a compiled or
-  exported Godot project requires Godot.
+  exported Godot project requires Godot. Native story saving uses the runtime's
+  `story.export` JSON string verbatim, preserving authored floating point values
+  and their validated fingerprints across save/load.
 - [`bin/scene-forge`](scene-forge-cli.md) authors, validates and exports
   declarative 3D projects from `source/scene-forge/`. Its `screenshot` and
   `review` capture commands additionally need Playwright and Chromium; `doctor`

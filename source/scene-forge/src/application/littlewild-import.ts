@@ -29,6 +29,14 @@ function bake(geometry: THREE.BufferGeometry) {
     type: 'mesh',
     positions: triples(position.array as ArrayLike<number>, 1e-5),
     indices,
+    ...(indexed.getAttribute('uv')
+      ? {
+          uvs: Array.from({ length: position.count }, (_, i) => [
+            indexed.getAttribute('uv').getX(i),
+            indexed.getAttribute('uv').getY(i),
+          ]),
+        }
+      : {}),
     ...(normal ? { normals: triples(normal.array as ArrayLike<number>, 1e-4) } : {}),
   };
 }
@@ -39,6 +47,10 @@ function forgeId(value: string, fallback: string) {
 const camel = (value: string) =>
   value.replace(/[-_]+([a-z0-9])/g, (_, c: string) => c.toUpperCase()).replace(/[^A-Za-z0-9]/g, '');
 export function littlewildModels(asset: Plain, prefix?: string) {
+  return littlewildImportPlan(asset, prefix).models;
+}
+/** The variant-to-model mapping is produced by the same pass that allocates IDs. */
+export function littlewildImportPlan(asset: Plain, prefix?: string) {
   if (asset.format !== 'littlewild-3d-asset' || asset.schemaVersion !== 1 || !plain(asset.models))
     fail('LITTLEWILD_IMPORT', 'Expected a littlewild-3d-asset visual definition.');
   const base = forgeId(prefix ?? camel(String(asset.id)), 'littlewild'),
@@ -47,6 +59,7 @@ export function littlewildModels(asset: Plain, prefix?: string) {
     rig = asset.category === 'pet' && plain(asset.rig) ? asset.rig : {};
   const roles = new Set<string>(littlewildPetRoles);
   const models: Record<string, Plain> = {};
+  const variantModels: [string, string][] = [];
   for (const [variant, model] of Object.entries(asset.models)) {
     if (!plain(model) || !Array.isArray(model.nodes))
       fail('LITTLEWILD_IMPORT', `Variant ${variant} has no nodes.`);
@@ -57,6 +70,7 @@ export function littlewildModels(asset: Plain, prefix?: string) {
         'LITTLEWILD_IMPORT',
         `Variants collide at model ID ${id}. Choose distinct variant names or a shorter prefix.`,
       );
+    variantModels.push([variant, id]);
     const geometries: Plain = { box: { type: 'box', size: [1, 1, 1] } },
       usedMaterials: Plain = {},
       nodes: Plain[] = [],
@@ -109,12 +123,33 @@ export function littlewildModels(asset: Plain, prefix?: string) {
             if (!plain(data) || !Array.isArray(data.positions))
               fail('LITTLEWILD_IMPORT', `Missing mesh ${String(input.mesh)}.`);
             const positions = data.positions as number[];
+            if (
+              data.uvs !== undefined &&
+              (!Array.isArray(data.uvs) ||
+                data.uvs.length !== (positions.length / 3) * 2 ||
+                data.uvs.some(
+                  (value) =>
+                    typeof value !== 'number' || !Number.isFinite(value) || Math.abs(value) > 1e4,
+                ))
+            )
+              fail(
+                'LITTLEWILD_IMPORT',
+                `Mesh ${String(input.mesh)} needs one finite UV pair per position, bounded to ±10000.`,
+              );
             geometries[geometryId] = {
               type: 'mesh',
               positions: triples(positions, 1e-5),
               indices: Array.isArray(data.indices)
                 ? data.indices
                 : Array.from({ length: positions.length / 3 }, (_, i) => i),
+              ...(Array.isArray(data.uvs)
+                ? {
+                    uvs: Array.from({ length: positions.length / 3 }, (_, i) => [
+                      (data.uvs as number[])[i * 2],
+                      (data.uvs as number[])[i * 2 + 1],
+                    ]),
+                  }
+                : {}),
               ...(Array.isArray(data.normals)
                 ? { normals: triples(data.normals as number[], 1e-4) }
                 : {}),
@@ -144,5 +179,5 @@ export function littlewildModels(asset: Plain, prefix?: string) {
       nodes,
     };
   }
-  return models;
+  return { models, variantModels: Object.fromEntries(variantModels) };
 }

@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { unchangedNative } from './littlewild-native.js';
+import type { SurfaceSpec } from '../domain/schema.js';
 import { fail } from '../domain/errors.js';
 
 /**
@@ -11,6 +13,7 @@ export interface LittlewildMaterial {
   roughness: number;
   metalness: number;
   flatShading: boolean;
+  surface?: SurfaceSpec;
   sheen?: number;
   sheenColor?: string;
   sheenRoughness?: number;
@@ -25,6 +28,7 @@ export interface LittlewildMaterial {
 }
 export interface LittlewildMesh {
   positions: number[];
+  uvs?: number[];
   normals?: number[];
   indices?: number[];
 }
@@ -116,22 +120,13 @@ export function primitiveGeometry(kind: string): THREE.BufferGeometry {
       return fail('LITTLEWILD_IMPORT', `Unsupported Littlewild primitive ${kind}.`);
   }
 }
-const nativeCounts = new Map<string, number>();
 /** An unchanged `lw-<primitive>` geometry exports as the engine's own primitive. */
 function nativePrimitive(object: THREE.Mesh) {
   const kind = /^lw-(ball|soft|tiny|cone|cylinder|ring|roof|ground)$/.exec(
     String(object.userData.geometry ?? ''),
   )?.[1];
   if (!kind) return null;
-  if (!nativeCounts.has(kind)) {
-    const g = primitiveGeometry(kind);
-    nativeCounts.set(kind, g.getAttribute('position').count);
-    g.dispose();
-  }
-  return (object.geometry as THREE.BufferGeometry).getAttribute('position').count ===
-    nativeCounts.get(kind)
-    ? kind
-    : null;
+  return unchangedNative(kind, object.geometry, () => primitiveGeometry(kind)) ? kind : null;
 }
 /** Roles that name a set of nodes; other roles bind one node. */
 const pairedRoles = new Set(['eyes', 'ears', 'cheeks', 'arms', 'feet']);
@@ -164,6 +159,7 @@ function materialData(material: THREE.Material): LittlewildMaterial {
     metalness: round(m.metalness ?? 0, 1e-3),
     flatShading: !!m.flatShading,
   };
+  if (material.userData.surface) result.surface = structuredClone(material.userData.surface);
   if (material instanceof THREE.MeshPhysicalMaterial) {
     result.sheen = round(material.sheen, 1e-3);
     result.sheenColor = `#${material.sheenColor.getHexString()}`;
@@ -204,6 +200,11 @@ function meshData(geometry: THREE.BufferGeometry, label: string): LittlewildMesh
       normals.push(...vector([normal.getX(i), normal.getY(i), normal.getZ(i)], 1e-3));
     result.normals = normals;
   }
+  const uv = geometry.getAttribute('uv');
+  if (uv && uv.count === vertices) {
+    result.uvs = [];
+    for (let i = 0; i < vertices; i++) result.uvs.push(...vector([uv.getX(i), uv.getY(i)], 1e-5));
+  }
   if (geometry.index) result.indices = Array.from(geometry.index.array as ArrayLike<number>);
   return result;
 }
@@ -223,7 +224,7 @@ function boxSize(geometry: THREE.BufferGeometry): number[] | null {
 }
 export function littlewildModel(root: THREE.Object3D, options: { rig: boolean }): LittlewildModel {
   const materials: Record<string, LittlewildMaterial> = {},
-    materialRoles = new Map<THREE.Material, string>(),
+    materialRoles = new Map<string, string>(),
     meshes: Record<string, LittlewildMesh> = {},
     meshIds = new Map<THREE.BufferGeometry, string>(),
     ids = new Set<string>(),
@@ -231,16 +232,17 @@ export function littlewildModel(root: THREE.Object3D, options: { rig: boolean })
     warnings = new Set<string>(),
     stats = { nodes: 0, meshes: 0, primitives: 0, vertices: 0, triangles: 0 };
   const roles = new Set<string>(littlewildPetRoles);
-  function role(material: THREE.Material) {
+  function role(material: THREE.Material, authoredRole?: string) {
     if (Array.isArray(material))
       fail('LITTLEWILD_EXPORT', 'Multi-material meshes are unsupported.');
-    const known = materialRoles.get(material);
+    const data = materialData(material);
+    const key = JSON.stringify([authoredRole ?? material.name, data]);
+    const known = materialRoles.get(key);
     if (known) return known;
     if (material.type === 'MeshBasicMaterial')
       warnings.add('Unlit materials are exported as standard Littlewild materials.');
-    const data = materialData(material),
-      // Scene Forge material IDs already satisfy Littlewild's case-preserving role grammar.
-      base = (material.name.split('/').pop() || 'material').slice(0, 72);
+    // Pooling identical GPU materials must not collapse distinct authored palette roles.
+    const base = (authoredRole ?? material.name.split('/').pop() ?? 'material').slice(0, 72);
     let name = base;
     for (
       let n = 2;
@@ -249,7 +251,7 @@ export function littlewildModel(root: THREE.Object3D, options: { rig: boolean })
     )
       name = `${base}-${n}`;
     materials[name] = data;
-    materialRoles.set(material, name);
+    materialRoles.set(key, name);
     return name;
   }
   function nodeId(object: THREE.Object3D, parentId: string) {
@@ -283,8 +285,8 @@ export function littlewildModel(root: THREE.Object3D, options: { rig: boolean })
     if (!object.visible) node.visible = false;
     if (object instanceof THREE.Mesh) {
       const geometry = object.geometry as THREE.BufferGeometry,
-        size = boxSize(geometry);
-      node.material = role(object.material as THREE.Material);
+        size = object.userData.geometryType === 'box' ? boxSize(geometry) : null;
+      node.material = role(object.material as THREE.Material, object.userData.material);
       const native = nativePrimitive(object);
       if (native) {
         node.primitive = native;

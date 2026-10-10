@@ -130,7 +130,7 @@
           if (FORBIDDEN.has(k)) throw new ContentError([diagnostic('UNSAFE_KEY', childPath, 'Reserved object property is not allowed.')]);
           if (!descriptor || !descriptor.enumerable || descriptor.get || descriptor.set)
             invalid(childPath, 'Accessors and hidden properties are not JSON content.');
-          const nextScope:MeshScope=asset&&k==='meshes'?'meshes':meshScope==='meshes'?'mesh':meshScope==='mesh'&&['positions','normals','indices'].includes(k)?'array':undefined;
+          const nextScope:MeshScope=asset&&k==='meshes'?'meshes':meshScope==='meshes'?'mesh':meshScope==='mesh'&&['positions','normals','indices','uvs'].includes(k)?'array':undefined;
           const child=walk(descriptor!.value, childPath, depth + 1,nextScope);
           if(detach)result[k]=child;
         }

@@ -24,6 +24,10 @@ export function verifyLifecycle({cli,repository,workspace,id,project,packageFile
   const sourcePackage=JSON.parse(readFileSync(packageFile,'utf8'));
   assert.deepEqual(before.package.gameplayDefinition,sourcePackage.gameplayDefinition);
   assert.deepEqual(before.package.appearanceManifest,sourcePackage.appearanceManifest);
+  const visualFacts=cli(engine,['creature','inspect','--project',installed,'--archetype',id,'--summary']);
+  assert.equal(visualFacts.fingerprint,before.fingerprint);
+  assert.equal(visualFacts.package,undefined);
+  assert(visualFacts.visual.models.every(value=>value.surfaces.some(node=>node.surface.kind==='fur')));
   for (const asset of sourcePackage.assetReferences) assert.deepEqual(before.package.assetReferences.find(value=>value.id===asset.id&&value.category===asset.category),asset);
 
   // Export the full definition before refining a single variant, keeping behaviors and rig bindings.
@@ -47,6 +51,8 @@ export function verifyLifecycle({cli,repository,workspace,id,project,packageFile
   cli(forge,['-p',forgeProject,'littlewild','export','--model',model,'--family','creatures','--variant',variant,'--out',definition]);
   const revisedDefinition=JSON.parse(readFileSync(definition,'utf8'));
   assert.deepEqual(revisedDefinition.visual.rig,sourceDefinition.visual.rig);
+  assert(Object.values(revisedDefinition.visual.materials).some(value=>value.surface?.kind==='fur'));
+  assert(Object.values(revisedDefinition.visual.meshes).some(value=>value.uvs?.length===value.positions.length/3*2));
   assert.ok(sourceDefinition.creature,'The source definition must contain native creature gameplay.');
   assert.deepEqual(revisedDefinition.creature,sourceDefinition.creature);
   const revised=path.join(workspace,'refined.project.json');

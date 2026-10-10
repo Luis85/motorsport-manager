@@ -77,6 +77,7 @@
     "source/test-developer-toolbox.cts",
     "source/tools/developer-example.cts",
     "source/asset-catalog.ts",
+    "source/asset-surface.ts",
     "source/interaction-contracts.d.ts",
     "source/interaction-catalog.ts",
     "source/interaction-state.ts",

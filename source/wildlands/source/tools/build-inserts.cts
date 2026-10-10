@@ -174,6 +174,7 @@ export const INSERTS: readonly Insert[] = [
   ["WORLD", "world.js", "script", "colony-shell"],
   ["THREE", "../vendor/three.js", "script", "renderer-3d"],
   ["DEVELOPER_TOOLBOX", "developer-toolbox.js", "script", "developer"],
+  ["ASSET_SURFACE", "asset-surface.js", "script", "engine-kernel"],
   ["ASSET_RENDERER", "asset-renderer.js", "script", "renderer-3d"],
   ["SOFTWARE_3D", "software-3d.js", "script", "colony-shell"],
   ["WORLD_INPUT", "world-input.js", "script", "colony-shell"],

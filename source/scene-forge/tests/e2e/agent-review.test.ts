@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { loadOfflinePage } from './offline-page.js';
 import { chromium } from 'playwright';
 import { validateBytes } from 'gltf-validator';
 
@@ -255,7 +255,7 @@ test('procedural transforms survive a browser edit and model import dry-run leav
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
-    await page.goto(pathToFileURL(html).href);
+    await loadOfflinePage(page, html);
     await page.waitForFunction(() => window.forgeReady || window.forgeError);
     assert.equal(await page.evaluate(() => window.forgeError), undefined);
     await page.evaluate(() => window.forgeViewer.select('body'));

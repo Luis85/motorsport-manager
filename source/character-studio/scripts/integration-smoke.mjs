@@ -72,9 +72,19 @@ try {
         return gltf.materials[gltf.meshes[node.mesh].primitives[0].material];
       };
       const nose = surface('nose');
-      assert.equal(nose.pbrMetallicRoughness.roughnessFactor, 0.25, `${model}: nose roughness`);
-      assert.equal(nose.extensions.KHR_materials_clearcoat.clearcoatFactor, 0.6, `${model}: nose clearcoat`);
-      assert.equal(nose.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor, 0.2, `${model}: nose clearcoat roughness`);
+      assert.equal(nose.pbrMetallicRoughness.roughnessFactor, 0.45, `${model}: satin nose roughness`);
+      assert.equal(nose.extensions.KHR_materials_clearcoat.clearcoatFactor, 0.15, `${model}: restrained nose clearcoat`);
+      assert.equal(nose.extensions.KHR_materials_clearcoat.clearcoatRoughnessFactor, 0.4, `${model}: soft nose clearcoat roughness`);
+      const coat = surface('head-shell');
+      assert.ok(Number.isInteger(coat.pbrMetallicRoughness.baseColorTexture?.index), `${model}: coat color texture`);
+      assert.ok(Number.isInteger(coat.normalTexture?.index), `${model}: coat normal texture`);
+      for (const index of [coat.pbrMetallicRoughness.baseColorTexture.index, coat.normalTexture.index]) {
+        const image = gltf.images[gltf.textures[index].source];
+        assert.equal(image.mimeType, 'image/png', `${model}: embedded coat PNG`);
+        assert.ok(Number.isInteger(image.bufferView), `${model}: texture lives inside GLB`);
+      }
+      const head = gltf.nodes.find(entry => entry.name?.split('/').at(-1) === 'head-shell');
+      assert.ok(Number.isInteger(gltf.meshes[head.mesh].primitives[0].attributes.TEXCOORD_0), `${model}: coat UVs`);
       const shadow = surface('shadow');
       assert.equal(shadow.alphaMode, 'BLEND', `${model}: shadow alpha blending`);
       assert.equal(shadow.pbrMetallicRoughness.baseColorFactor[3], 0.16, `${model}: shadow opacity`);

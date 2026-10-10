@@ -13,7 +13,7 @@
   readonly meshes?:Readonly<Record<string,Readonly<MeshData>>>;
  }
  /** Baked indexed triangles, e.g. compiled from a Scene Forge recipe. Coordinates are model-local meters. */
- interface MeshData {readonly positions:readonly number[];readonly normals?:readonly number[];readonly indices?:readonly number[];}
+ interface MeshData {readonly positions:readonly number[];readonly normals?:readonly number[];readonly indices?:readonly number[];readonly uvs?:readonly number[];}
  interface Api {
   readonly revision:number;
   readonly defaults:readonly Definition[];
@@ -78,19 +78,24 @@
   return out;
  }
  function materialProps(input:unknown,path:string,requiredColor=false):void{
-  const value=fields(input,['color','emissive','emissiveIntensity','opacity','transparent','depthWrite','roughness','metalness','flatShading','doubleSided','sheen','sheenRoughness','sheenColor','clearcoat','clearcoatRoughness'],path);
+  const value=fields(input,['color','emissive','emissiveIntensity','opacity','transparent','depthWrite','roughness','metalness','flatShading','doubleSided','sheen','sheenRoughness','sheenColor','clearcoat','clearcoatRoughness','surface'],path);
   if(requiredColor&&!color(value.color))fail(path+' invalid color');
   for(const key of ['color','emissive','sheenColor'])if(value[key]!==undefined&&!color(value[key]))fail(path+' invalid '+key);
   for(const key of ['transparent','depthWrite','flatShading','doubleSided'])if(value[key]!==undefined&&typeof value[key]!=='boolean')fail(path+' invalid '+key);
   for(const key of ['opacity','roughness','metalness','sheen','sheenRoughness','clearcoat','clearcoatRoughness']){const amount=value[key];if(amount!==undefined&&(!finite(amount)||amount<0||amount>1))fail(path+' invalid '+key);}
+  if(value.surface!==undefined){
+   const surface=fields(value.surface,['kind','seed','scale','strength'],path+' surface');
+   if(typeof surface.kind!=='string'||!['fur','cloth','leather'].includes(surface.kind)||!Number.isInteger(surface.seed)||!finite(surface.seed)||surface.seed<0||surface.seed>65535||!finite(surface.scale)||surface.scale<1||surface.scale>16||!finite(surface.strength)||surface.strength<0||surface.strength>1)fail(path+' invalid bounded surface');
+  }
   const emissive=value.emissiveIntensity;
   if(emissive!==undefined&&(!finite(emissive)||emissive<0))fail(path+' invalid emissive intensity');
  }
  function meshData(input:unknown,path:string):number{
-  const mesh=fields(input,['positions','normals','indices'],path),positions=list(mesh.positions,path+' positions');
+  const mesh=fields(input,['positions','normals','indices','uvs'],path),positions=list(mesh.positions,path+' positions');
   const vertices=positions.length/3;
   if(!Number.isInteger(vertices)||vertices<3||vertices>MESH_VERTICES||!positions.every(value=>finite(value)&&Math.abs(value)<=1e4))fail(path+' invalid positions');
   if(mesh.normals!==undefined){const normals=list(mesh.normals,path+' normals');if(normals.length!==positions.length||!normals.every(value=>finite(value)&&Math.abs(value)<=1.001))fail(path+' invalid normals');}
+  if(mesh.uvs!==undefined){const uvs=list(mesh.uvs,path+' uvs');if(uvs.length!==vertices*2||!uvs.every(value=>finite(value)&&Math.abs(value)<=1e4))fail(path+' invalid uvs');}
   const triangles=(mesh.indices===undefined?vertices:list(mesh.indices,path+' indices').length)/3;
   if(!Number.isInteger(triangles)||triangles<1||triangles>MESH_TRIANGLES)fail(path+' invalid triangle count');
   if(mesh.indices!==undefined&&!(mesh.indices as unknown[]).every(value=>Number.isInteger(value)&&(value as number)>=0&&(value as number)<vertices))fail(path+' invalid indices');

@@ -5,13 +5,14 @@ import {readJsonFile, writeJsonFile, emit} from './cli-io.cjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import {randomUUID} from 'node:crypto';
+import {visualSummary} from './creature-visual-summary.cjs';
 
 const selection = ['--scene', '--archetype', '--instance'];
 const project = ['--project', '--game'];
 const mutation = ['--expected-fingerprint', '--output', '--dry-run'];
 export const options: Record<string, readonly string[]> = {
  'creature-list': project,
- 'creature-inspect': [...project, ...selection],
+ 'creature-inspect': [...project, ...selection, '--summary'],
  'creature-export': [...project, ...selection, '--output'],
  'creature-import': [...project, ...selection, ...mutation, '--file', '--replace'],
  'creature-edit': [...project, ...selection, ...mutation, '--recipe'],
@@ -19,7 +20,7 @@ export const options: Record<string, readonly string[]> = {
 };
 const descriptions: Record<string, string> = {
  list: 'List archetypes, scenes and companion selections without advancing time.',
- inspect: 'Inspect a complete creature package, editable fields and project fingerprint.',
+ inspect: 'Inspect a complete creature package, editable fields and project fingerprint. --summary returns compact visual/material facts without mesh buffers.',
  export: 'Export the selected creature package, including companion state only with --instance.',
  import: 'Validate and install a creature package into a new portable project; --replace authorizes changed existing resources.',
  edit: 'Apply a bounded native creature-editor recipe atomically into a new portable project.',
@@ -28,7 +29,7 @@ const descriptions: Record<string, string> = {
 export function discover(): Record<string, unknown> {
  return {commands: Object.entries(options).map(([key, flags]) => ({
   command: key.replace('-', ' '), description: descriptions[key.slice(9)],
-  flags: flags.map(flag => ({flag, type: ['--dry-run', '--replace'].includes(flag) ? 'boolean' : 'string'})),
+  flags: flags.map(flag => ({flag, type: ['--dry-run', '--replace', '--summary'].includes(flag) ? 'boolean' : 'string'})),
   required: ['--project', ...key === 'creature-import' ? ['--file', '--expected-fingerprint'] : key === 'creature-attach-visual' ? ['--file', '--archetype', '--expected-fingerprint'] : key === 'creature-edit' ? ['--recipe', '--archetype', '--expected-fingerprint'] : key === 'creature-list' ? [] : ['--archetype'], ...key === 'creature-export' ? ['--output'] : []],
  })), packageFormat: 'littlewild-creature-package', schemaVersion: 1,
   selection: {scene: 'Defaults to the project scene.', archetype: 'Required except list and import; import can select an existing seed automatically.', instance: 'Optional existing companion ID in the selected scene; never creates a live companion.'},
@@ -103,7 +104,12 @@ export function run(command: string, values: Map<string,string>, loaded: Wildlan
  const archetypeId = values.get('--archetype') ?? (command === 'creature-import' ? String(definitions[0]?.id ?? '') : required(values, '--archetype'));
  const instanceId = values.get('--instance');
  const session = api.create(loaded.pack, {sceneId, archetypeId, ...(instanceId ? {instanceId} : {})});
- if (command === 'creature-inspect') {emit({...summary, selection: session.selection, package: session.exportPackage(), fields: session.fields()}); return;}
+ if (command === 'creature-inspect') {
+  const packaged = session.exportPackage();
+  emit({...summary, selection: session.selection, ...(values.has('--summary')
+   ? {visual: visualSummary(packaged.appearanceManifest), next: 'Use creature inspect without --summary for the complete editable package and fields; use creature export --output NEW.json to save it.'}
+   : {package: packaged, fields: session.fields()})}); return;
+ }
  if (command === 'creature-export') {
   const output = publish(required(values, '--output'), session.exportPackage());
   emit({...summary, output, selection: session.selection, format: 'littlewild-creature-package'}); return;

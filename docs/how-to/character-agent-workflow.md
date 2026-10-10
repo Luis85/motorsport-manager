@@ -56,6 +56,12 @@ material response and outfit placement. Keep the recipe as the source of Studio
 edits, and keep captured view settings when comparing versions. New filenames
 preserve earlier output evidence.
 
+Fix likeness in this order: silhouette and proportions, eye/muzzle placement,
+expression, then surface detail and lighting. A valid mesh or green export check
+does not establish a friendly expression or a match to the artboard. Use a front
+view for facial balance and side/three-quarter views for protruding eyes, detached
+patches and outfit intersections. Keep all starting looks in the review batch.
+
 After an edit, repeat `review` with `--plan
 work/character-workflow/review-v1/replay-plan.json` and a new `--out` directory.
 The manifest binds each frame to the recipe, compiled visual, camera and lighting.
@@ -92,7 +98,8 @@ bin/scene-forge -p work/character-workflow/models littlewild import --definition
 bin/scene-forge -p work/character-workflow/models littlewild import --definition work/character-workflow/moss.package.json --expected-revision R --expected-state HASH
 ```
 
-Replace `R` and `HASH` with the fresh inspection values. Use the returned variant model IDs. `model export ID --out NEW.json` creates an
+Replace `R` and `HASH` with the fresh inspection values. Use the returned `variantModels` mapping to select a source variant, for example
+`variantModels["world-round"]`; the existing `variants` list also remains available. `model export ID --out NEW.json` creates an
 editable dependency bundle. Adjust its declared material or geometry fields,
 then `model import --file FILE --replace` with the latest scene revision and
 state hash, first dry-run and then commit. Model changes can change `stateHash`
@@ -103,6 +110,27 @@ Use `schema --kind material --raw` to discover physical material fields, includi
 sheen and clearcoat. Use `review --model ID --out NEW_DIRECTORY` and inspect the
 contact sheet; replay its `replay-plan.json` to compare the same cameras after
 refinement. `export --model ID --validate --out NEW.glb` checks the portable mesh.
+
+For new organic parts, discover `schema --kind geometry --raw`. An `organic`
+geometry supplies smooth rounded forms with dimensions, roundness, taper and
+bend instead of requiring agents to hand-author vertex arrays. For example:
+
+```json
+{"type":"organic","size":[0.46,0.56,0.4],"roundness":1,"taper":0.22,"bend":0.06,"segments":32}
+```
+
+Positive taper narrows the top; bend curves the form along local X. These are
+local modeling controls, not skeletal poses. Use stable geometry/node IDs and
+the same guarded `putGeometry`/`putNode` batch workflow as other primitives.
+
+Materials accept deterministic `surface` descriptors, for example
+`{"kind":"fur","seed":17,"scale":4,"strength":0.45}`. Use `cloth` for woven
+garments and `leather` for a satchel or boots. Keep eye surfaces smooth and use
+restrained clearcoat; coat texture cannot correct eye proportions. The CLI
+catalog exposes examples and exact ranges. These surface maps survive Littlewild
+exchange and bake into GLB without needing Chromium. Authored UVs preserve
+placement; spherical fallback supports older meshes. For repeated comparisons,
+keep seed, view plan and light fixed and change one authored concern at a time.
 
 Export the Studio **definition** into a scratch path ending in
 `creatures/moss/definition.json` first. Then call Scene Forge `littlewild export`
@@ -118,6 +146,12 @@ the latest `--expected-fingerprint`. Dry-run, then publish to
 `--output work/character-workflow/moss-v2.project.json`. Validate the result and
 use `creature export` to archive the maintained package. This handoff changes
 appearance while retaining gameplay and companion state.
+
+Use `wildlands creature inspect --project FILE --archetype moss --summary` to
+verify the resulting material descriptors, per-variant surface usage, UV coverage
+and mesh counts without printing the full mesh payload. It returns the same
+project fingerprint used for edits, plus a visual SHA-256. Save the complete
+package through `creature export` when archival data is needed.
 
 ## Publish a reviewable storyboard
 
@@ -179,3 +213,6 @@ installation, Scene Forge refinement, rig/gameplay preservation, validated GLB
 exports and engine re-export. Browser visual review remains a separate required
 step when judging fidelity. Reference: [Character Studio](../reference/character-studio-cli.md),
 [Scene Forge](../reference/scene-forge-cli.md), [Wildlands](../reference/wildlands-cli.md).
+
+See the [historical fidelity comparison](../_archive/verification/character-fidelity-2026-10-10/README.md)
+for the supplied concept and actual Studio, Forge and native captures.

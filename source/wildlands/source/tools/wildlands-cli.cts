@@ -24,7 +24,7 @@ const allowed:Record<string,readonly string[]>={...creatureCLI.options,discover:
  upgrade:[...project,'--output'],compile:[...project,'--output','--with-engine-sources'],export:[...project,'--output','--with-engine-sources'],
  'validate-game':['--game'],'inspect-game':['--game'],'build-game':['--game','--output','--check','--profile']};
 /** Value-less opt-in flags; every other option takes exactly one value. */
-const switches=new Set(['--with-engine-sources','--dry-run','--replace']);
+const switches=new Set(['--with-engine-sources','--dry-run','--replace','--summary']);
 /** wildlands-project maxBytes, needed before the engine (and its project module) may load. */
 const PROJECT_MAX_BYTES=10*1024*1024;
 /** Largest HTML artifact `build-game --check` reads (game.json budgets are at most 64 MiB). */

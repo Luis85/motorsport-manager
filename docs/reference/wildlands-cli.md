@@ -74,7 +74,7 @@ advance simulation time or edit a live save.
 |---|---|
 | `creature discover` | No inputs; commands, flags, recipe operations and persistence contract |
 | `creature list` | `--project FILE`; archetypes, scenes, companion IDs and project fingerprint |
-| `creature inspect` | `--project FILE --archetype ID`; full package, editable fields and fingerprint |
+| `creature inspect` | `--project FILE --archetype ID`; full package, editable fields and fingerprint. Add `--summary` for compact visual facts without mesh buffers |
 | `creature export` | Inspection selection plus `--output NEW_FILE`; portable creature package |
 | `creature import` | `--project FILE --file PACKAGE --expected-fingerprint HEX`; validated package installation |
 | `creature edit` | `--project FILE --archetype ID --recipe FILE --expected-fingerprint HEX`; native authoring transaction |
@@ -168,7 +168,7 @@ and over-budget failures `bytes` and `budgetBytes`:
 ```
 
 Options take exactly one value each (`--flag value`); a value cannot start with
-`--`. `--with-engine-sources`, creature `--dry-run` and creature `--replace` are value-less flags. Options may appear in
+`--`. `--with-engine-sources`, creature `--dry-run`, `--summary` and `--replace` are value-less flags. Options may appear in
 any order after the command. Unknown, duplicate and missing required options
 fail with exit 2. Relative paths resolve against the current directory; `output`
 fields in results are absolute paths.
@@ -362,6 +362,12 @@ operation with `description`, `arguments` and an `example` argv), `commands`
 recipe operation tables and an example of each). `recipes.toolbox` names the
 typed SDK and JSON-lines runtime of a source build (paths under
 `source/wildlands/.generated/`); those are not part of `bin/wildlands`.
+
+In that persistent runtime, `story.export` returns engine-serialized story JSON
+as a string. Save it verbatim and pass the original text to `session.openStory`.
+Use `story` for object inspection. Native Save story preserves the same text:
+parsing and reserializing in another runtime can alter floating point values
+and invalidate content fingerprints. See the [terminal protocol](../../source/wildlands/WILDLANDS.md#persistent-terminal-protocol).
 
 Discovery is the source of truth for supported commands and operations. Prefer
 it over this page when they differ.
@@ -907,6 +913,29 @@ The `process` template builds data-only definitions into offline 2D/3D simulatio
 
 ## Portable physical surfaces
 
+`creature inspect --project FILE --archetype ID --summary` reports a canonical
+visual SHA-256, named material properties, effective per-node surface descriptors,
+mesh vertex/triangle counts and authored versus generated UV coverage for every
+variant. It retains the project fingerprint for subsequent guarded edits and
+omits the large package/field payload. Triangle totals cover baked meshes only;
+this factual report is not a visual quality score. Review captures before judging
+expression, silhouette or likeness to a reference.
+
+Materials and node `materialProps` can declare
+`surface: {"kind":"fur","seed":17,"scale":4,"strength":0.45}`. All four fields
+are required: `kind` is `fur`, `cloth` or `leather`; integer `seed` is 0–65535,
+`scale` is 1–16 repeats, and `strength` is 0–1. The deterministic generator
+produces bounded 128×128 color and tangent-space normal maps. These are ordinary
+material textures, so Scene Forge can bake them into GLB and the engine into
+Godot assets. Fur detail is short surface texture; authored geometry still owns
+the silhouette. Strength zero gives neutral detail. Keep seeds fixed when
+comparing shape or lighting edits.
+
+Baked meshes accept optional `uvs`, exactly two finite values per vertex.
+Author seam-aware UVs for detailed coat patterns; existing meshes use a spherical
+fallback. Primitive geometry retains its normal UV mapping. Surface maps modulate
+the named base color, so palette edits preserve the authored texture.
+
 The `littlewild-3d-asset` schema supports optional material properties `sheen`,
 `sheenRoughness`, `clearcoat` and `clearcoatRoughness` (finite numbers from 0 to 1),
 and `sheenColor` (`#RRGGBB`). They apply to named materials and node
@@ -920,7 +949,8 @@ clearcoat, including the creature editor, detached scene previews, world, pets,
 process scenes and standalone HTML exports. Smooth baked mesh normals remain
 portable through Scene Forge. This is real rendered geometry and lighting, not
 an image substituted for the model. The software compatibility projection retains
-geometry and base color but does not reproduce physical lighting.
+geometry and base color but does not reproduce physical lighting or texture maps.
+Use the WebGL preflight and actual captures when reviewing surface fidelity.
 
 Godot maps clearcoat to `StandardMaterial3D`. Cloth sheen uses an approximate rim;
 its color and roughness remain available in `authored_surface` material metadata
@@ -932,7 +962,7 @@ geometry without invalidating another renderer's cache.
 
 
 Geometry admission keeps the usual 60,000 general JSON values, depth 24, and each
-operation's byte limit. Numeric `positions`, `normals` and `indices` inside declared
+operation's byte limit. Numeric `positions`, `normals`, `uvs` and `indices` inside declared
 version-1 `littlewild-3d-asset` meshes have a separate **400,000-value aggregate
 budget per document**, including repeated occurrences. This allows detailed
 imported characters to survive project editing, copies and fingerprints without

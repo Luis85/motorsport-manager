@@ -107,6 +107,7 @@ test('creature package import is a guarded visual-only transaction', async (t) =
   assert.equal(dry.json.data.sourceFormat, input.format);
   assert.match(dry.json.data.warnings[0], /Gameplay/);
   assert.deepEqual(dry.json.data.variants, ['brooklingRound']);
+  assert.deepEqual(dry.json.data.variantModels, { round: 'brooklingRound' });
   assert.equal((await invoke(['-p', 'project', 'inspect'])).json.data.stateHash, before.stateHash);
   assert.equal((await invoke([...args, '--expected-state', before.stateHash])).status, 0);
   const modelFile = path.join(cwd, 'project/models/brooklingRound.model.json');
@@ -192,4 +193,36 @@ test('long creature identities retain distinct variant suffixes and normalized c
   assert.equal(collision.json.error.code, 'LITTLEWILD_IMPORT');
   assert.match(collision.json.error.message, /collide/);
   assert.equal((await invoke(['-p', 'project', 'inspect'])).json.data.stateHash, before);
+});
+
+test('variant mapping identifies actual model IDs for hyphenated variants and truncated prefixes', async (t) => {
+  const { cwd, invoke } = await workspace();
+  t.after(() => fs.rm(cwd, { recursive: true, force: true }));
+  const file = path.join(cwd, 'variants.json');
+  const variants = ['world-round', 'world-pointed', 'portrait-round', 'portrait-pointed'];
+  await fs.writeFile(
+    file,
+    JSON.stringify({
+      ...appearance,
+      models: Object.fromEntries(variants.map((variant) => [variant, appearance.models.round])),
+    }),
+  );
+  const prefix = 'a'.repeat(64);
+  const args = ['-p', 'project', 'littlewild', 'import', '--definition', file, '--prefix', prefix];
+  const dry = await invoke([...args, '--dry-run']);
+  assert.equal(dry.status, 0);
+  assert.deepEqual(Object.keys(dry.json.data.variantModels), variants);
+  const applied = await invoke(args);
+  assert.equal(applied.status, 0);
+  assert.deepEqual(applied.json.data.variantModels, dry.json.data.variantModels);
+  assert.deepEqual(Object.values(applied.json.data.variantModels), applied.json.data.variants);
+  for (const id of Object.values(applied.json.data.variantModels) as string[]) {
+    assert.ok(id.length <= 64);
+    const model = await invoke(['-p', 'project', 'model', 'inspect', id]);
+    assert.equal(model.status, 0);
+  }
+  const description = (await invoke(['describe', 'littlewild', 'import'])).json.data;
+  assert.match(description.description, /variantModels/);
+  const catalog = (await invoke(['catalog'])).json.data;
+  assert.match(catalog.littlewild.importOutputs.variantModels, /source variant/);
 });

@@ -9,6 +9,9 @@ export declare function importLittlewildDefinition(project: string, file: string
     sourceFormat: unknown;
     importedFacet: string;
     variants: string[];
+    variantModels: {
+        [k: string]: string;
+    };
     id: string;
     dryRun: boolean;
     models: string[];
@@ -20,6 +23,13 @@ export declare function importLittlewildDefinition(project: string, file: string
             type: "sphere";
             radius: import("../index.js").ScalarValue;
             segments?: number | undefined;
+        } | {
+            type: "organic";
+            size: [import("../index.js").ScalarValue, import("../index.js").ScalarValue, import("../index.js").ScalarValue];
+            roundness: import("../index.js").ScalarValue;
+            taper: import("../index.js").ScalarValue;
+            bend: import("../index.js").ScalarValue;
+            segments: number;
         } | {
             type: "cylinder";
             radiusTop: import("../index.js").ScalarValue;
@@ -93,6 +103,12 @@ export declare function importLittlewildDefinition(project: string, file: string
             opacity: number;
             doubleSided: boolean;
             flatShading: boolean;
+            surface?: {
+                kind: "fur" | "cloth" | "leather";
+                seed: number;
+                scale: number;
+                strength: number;
+            } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;
             sheenRoughness?: number | undefined;
@@ -293,6 +309,9 @@ export declare function importLittlewildDefinition(project: string, file: string
     sourceFormat: unknown;
     importedFacet: string;
     variants: string[];
+    variantModels: {
+        [k: string]: string;
+    };
     id: string;
     path: string;
     parameters: Record<string, {

@@ -39,6 +39,31 @@ export const materialTool: EditorTool = {
         input(surface, label, 'number', '0', { min: '0', max: '1', step: '.05' }),
       ]),
     );
+    const detail = select(surface, 'Surface detail', [
+      ['none', 'Smooth'],
+      ['fur', 'Short fur'],
+      ['cloth', 'Woven cloth'],
+      ['leather', 'Soft leather'],
+    ]);
+    const detailSeed = input(surface, 'Detail seed', 'number', '7', {
+      min: '0',
+      max: '65535',
+      step: '1',
+    });
+    const detailScale = input(surface, 'Detail repeat', 'number', '3', {
+      min: '1',
+      max: '16',
+      step: '.5',
+    });
+    const detailStrength = input(surface, 'Detail strength', 'number', '.4', {
+      min: '0',
+      max: '1',
+      step: '.05',
+    });
+    note(
+      surface,
+      'Deterministic surface detail travels with Littlewild and GLB. It shades the form without changing its silhouette.',
+    );
     const sheenColor = input(surface, 'Sheen color', 'color', '#ffffff');
     const updateShading = () => {
       surface.disabled = shading.value === 'unlit';
@@ -58,6 +83,10 @@ export const materialTool: EditorTool = {
         control.value = String(
           material[key as keyof MaterialSpec] ?? (key === 'sheenRoughness' ? 1 : 0),
         );
+      detail.value = material.surface?.kind ?? 'none';
+      detailSeed.value = String(material.surface?.seed ?? 7);
+      detailScale.value = String(material.surface?.scale ?? 3);
+      detailStrength.value = String(material.surface?.strength ?? 0.4);
       sheenColor.value = material.sheenColor ?? '#ffffff';
       updateShading();
     };
@@ -68,8 +97,35 @@ export const materialTool: EditorTool = {
       () => {
         const selected = context.selected();
         if (!selected) return;
+        const { surface: previousSurface, ...baseMaterial } = definitions[slot.value];
+        const hasDetail = detail.value !== 'none' && shading.value === 'standard';
+        if (
+          hasDetail &&
+          (!Number.isInteger(detailSeed.valueAsNumber) ||
+            detailSeed.valueAsNumber < 0 ||
+            detailSeed.valueAsNumber > 65535 ||
+            !Number.isFinite(detailScale.valueAsNumber) ||
+            detailScale.valueAsNumber < 1 ||
+            detailScale.valueAsNumber > 16 ||
+            !Number.isFinite(detailStrength.valueAsNumber) ||
+            detailStrength.valueAsNumber < 0 ||
+            detailStrength.valueAsNumber > 1)
+        ) {
+          context.notify('Detail needs an integer seed 0–65535, repeat 1–16 and strength 0–1.');
+          return;
+        }
         const material = {
-          ...definitions[slot.value],
+          ...baseMaterial,
+          ...(hasDetail
+            ? {
+                surface: {
+                  kind: detail.value as 'fur' | 'cloth' | 'leather',
+                  seed: detailSeed.valueAsNumber,
+                  scale: detailScale.valueAsNumber,
+                  strength: detailStrength.valueAsNumber,
+                },
+              }
+            : {}),
           color: color.value,
           shading: shading.value as 'standard' | 'unlit',
           metalness: metalness.valueAsNumber,

@@ -7,7 +7,7 @@ export interface BakedMesh {
 type Profile = (y: number) => number;
 const round = (value: number) => Math.round(value * 1e6) / 1e6;
 /** Closed surface of revolution. Poles are shared and every triangle has area. */
-function surface(
+export function surface(
   profile: Profile, segments = 24, rings = 16,
   shape: (x: number, y: number, z: number) => number[] = (x, y, z) => [x, y, z],
 ): BakedMesh {

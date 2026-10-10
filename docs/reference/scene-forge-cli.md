@@ -291,6 +291,70 @@ scene-forge schema --kind batch --raw > batch.schema.json
 scene-forge schema --kind composition --compact
 ```
 
+Littlewild import returns `variants` (the existing model-ID array) and
+`variantModels` (original source variant name → actual imported model ID).
+Use `variantModels["world-round"]` when choosing a model for preview or export;
+do not infer normalized suffixes. Dry-run and apply return the same mapping,
+including custom prefixes and long IDs.
+
+### Plush forms and portable surface detail
+
+`catalog` exposes `organicForms` and `surfaceDetails`, including complete JSON
+batch operations, parameter ranges, export behavior and visual review workflow.
+Use `schema --kind geometry --raw` and `schema --kind material --raw` for the
+installed contracts. Apply both through the existing guarded `apply` transaction.
+
+The `organic` geometry makes closed, smoothly rounded forms with seam-aware UVs:
+
+```json
+{
+  "op": "putGeometry",
+  "id": "plushBody",
+  "geometry": {
+    "type": "organic", "size": [0.9, 1.1, 0.72], "roundness": 0.9,
+    "taper": 0.22, "bend": 0, "segments": 32
+  }
+}
+```
+
+`size` is the untapered diameter in meters. `roundness` is 0.65–1.5 (default 1;
+lower values fill out the form), `taper` is −0.65–0.65 (positive narrows the top),
+`bend` is −0.75–0.75 (positive offsets both ends along X), and `segments` is
+12–96 (default 32). Inspect actual bounds because taper and bend can extend them.
+The default has 561 vertices; the maximum has 4,753. Organic forms export as
+baked Littlewild meshes and ordinary GLB meshes.
+
+Standard PBR materials accept a versioned deterministic surface recipe:
+
+```json
+{
+  "op": "putMaterial", "id": "plushFur",
+  "material": {
+    "color": "#c89059", "roughness": 0.9, "sheen": 0.65,
+    "surface": { "kind": "fur", "seed": 7, "scale": 3, "strength": 0.4 }
+  }
+}
+```
+
+All four surface fields are required. Kinds are `fur`, `cloth`, `leather`; seed
+is an integer 0–65535, scale is UV repeat 1–16, and strength is 0–1. The
+`littlewild-surface-v1` algorithm creates 128×128 color and tangent normal maps.
+GLB/glTF embeds PNGs, mesh tangents, UV transforms and recipe metadata without
+requiring Chromium. Littlewild retains the recipe, per-node effective material
+roles and mesh UVs. Unlit surfaces reject this detail instead of silently ignoring
+it; OBJ/STL continue to omit materials. Legacy meshes without UVs get a local
+spherical projection; authored seam-aware UVs give precise placement.
+
+These maps shade short fur and fabric detail. Silhouette volume, tufts, eyelids,
+clothing thickness and facial proportions still require geometry. Use a complete
+batch with revision/state guards, inspect the dry run, apply the same batch, and
+compare `review --plan previous/replay-plan.json` captures. The material inspector
+edits the same fields and downloads guarded recipe changes.
+
+Surface maps are shared across colors with the same kind/seed/scale/strength. A
+scene allows at most 256 distinct surface recipes; exceeding it fails with
+`SCENE_BUDGET` before publication. Reuse seeds and scales when changing only color.
+
 ### Projects and scenes
 
 | Command | Options |
@@ -837,7 +901,8 @@ History and other scenes are not included; use Git for full project history.
 
 Limits: 20,000 expanded objects, 2,000,000 triangles, 256 pattern copies, model
 depth 16, 32 authored lights, 16 MiB per JSON input. Not supported: inverse
-kinematics, weight painting, sculpting, image textures and UV unwrapping, physics,
+kinematics, weight painting, sculpting, external image texture import and automatic
+UV unwrapping, physics,
 mesh import, native `.blend`/`.tscn` output, arbitrary scripts or GLSL.
 
 ## Rebuild and verify the executable

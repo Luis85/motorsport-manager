@@ -175,6 +175,15 @@ export function validateDocument(
     if ('size' in g) g.size.forEach((v) => positive(v, 'size'));
     for (const k of ['radius', 'height', 'tube', 'depth'] as const)
       if (k in g) positive((g as unknown as Record<string, unknown>)[k], k);
+    if (g.type === 'organic') {
+      for (const [field, min, max] of [
+        ['roundness', 0.65, 1.5],
+        ['taper', -0.65, 0.65],
+        ['bend', -0.75, 0.75],
+      ] as const)
+        if (g[field] < min || g[field] > max)
+          fail('INVALID_GEOMETRY', `${id}.${field} must be between ${min} and ${max}.`);
+    }
     if (g.type === 'tube') {
       if (g.closed && g.points.length < 3)
         fail('INVALID_GEOMETRY', `Closed tube ${id} needs at least three points.`);

@@ -1,3 +1,5 @@
+import { companionOutfitMaterial, refineCompanionOutfit } from "./companion-outfits.js";
+import { sculptCompanionModel } from "./companion-model.js";
 import { sculptPlushModel } from "./plush-model.js";
 import {
   baseDefinition,
@@ -34,7 +36,7 @@ function multiply(node: Data, factors: number[]): void {
     (v: number, i: number) => v * factors[i],
   );
 }
-function bakeOutfits(visual: Data, character: Character): void {
+function bakeOutfits(visual: Data, character: Character, revision: number): void {
   for (const slot of slots) {
     const item = equipmentDefinitions.find(
       (item) => item.id === character.outfits[slot],
@@ -42,12 +44,14 @@ function bakeOutfits(visual: Data, character: Character): void {
     if (!item) continue;
     const prefix = `outfit-${slot}-`;
     for (const [id, material] of Object.entries(item.visual.materials))
-      visual.materials[prefix + id] = clone(material);
+      visual.materials[prefix + id] = revision >= 3
+        ? companionOutfitMaterial(item.id, id, clone(material)) : clone(material);
     const sockets = [visual.behaviors.sockets[slot]].flat();
     for (const model of Object.values(visual.models) as Data[]) {
       walk(model.nodes, (node) => {
         if (!sockets.includes(node.id)) return;
         const children: Data[] = clone(item.visual.models.equipped.nodes);
+        if (revision >= 3) refineCompanionOutfit(item.id, children);
         walk(children, (child) => {
           if (child.id) child.id = `${prefix}${node.id}-${child.id}`;
           if (child.material) child.material = prefix + child.material;
@@ -63,10 +67,10 @@ function bakeOutfits(visual: Data, character: Character): void {
 }
 /** Compile the canonical rig with authored transforms and cosmetic socket attachments. */
 export function compileVisual(input: Character): Data {
-  return compileVisualRevision(input, 2);
+  return compileVisualRevision(input, 3);
 }
-/** Revision 1 is retained solely to verify unchanged exports made by the original compiler. */
-function compileVisualRevision(input: Character, revision: 1 | 2): Data {
+/** Earlier revisions remain exact to verify unchanged exports before recovering their recipe. */
+function compileVisualRevision(input: Character, revision: 1 | 2 | 3): Data {
   const character = assertCharacter(input),
     look = character.appearance;
   const visual: Data = clone(baseDefinition.visual);
@@ -121,12 +125,13 @@ function compileVisualRevision(input: Character, revision: 1 | 2): Data {
     };
   }
   if (revision === 2) sculptPlushModel(visual);
-  bakeOutfits(visual, character);
+  if (revision === 3) sculptCompanionModel(visual);
+  bakeOutfits(visual, character, revision);
   visual.metadata.characterStudio = {
     recipe: clone(character),
     outfits: "cosmetic-only",
     identity: "presentation-only",
-    ...(revision === 2 ? { compilerRevision: 2 } : {}),
+    ...(revision >= 2 ? { compilerRevision: revision } : {}),
   };
   validateAsset(visual);
   return visual;
@@ -207,7 +212,7 @@ export function importCharacter(input: unknown): Character {
     validateAsset(visual);
     const character = assertCharacter(visual.metadata.characterStudio.recipe);
     const revision = visual.metadata.characterStudio.compilerRevision ?? 1;
-    if (revision !== 1 && revision !== 2)
+    if (revision !== 1 && revision !== 2 && revision !== 3)
       throw new Error("This export uses an unsupported Character Studio compiler revision.");
     const expectedVisual = compileVisualRevision(character, revision);
     if (canonical(expectedVisual) !== canonical(visual))

@@ -1,9 +1,11 @@
 import * as THREE from 'three';
+import '../infra/engine-renderer.cjs';
 
 /** The exact primitive tessellation used by the Wildlands world renderer. */
 export function createRenderKit() {
   const geometries = new Map<string, THREE.BufferGeometry>();
   const materials = new Set<THREE.Material>();
+  let disposed = false;
   function geometry(kind: string): THREE.BufferGeometry {
     const previous = geometries.get(kind);
     if (previous) return previous;
@@ -34,9 +36,10 @@ export function createRenderKit() {
     return value;
   }
   function mat(color: string, extra: Record<string, unknown> = {}) {
-    const physical = ['sheen', 'sheenRoughness', 'sheenColor', 'clearcoat', 'clearcoatRoughness'].some(key => key in extra);
-    const Material = physical ? THREE.MeshPhysicalMaterial : THREE.MeshStandardMaterial;
-    const material = new Material({color, roughness: .98, flatShading: true, ...extra});
+    const engine = (globalThis as unknown as {LWAssetRenderer: {
+      createMaterial(T: typeof THREE, color: string, extra: Record<string, unknown>): THREE.MeshStandardMaterial;
+    }}).LWAssetRenderer;
+    const material = engine.createMaterial(THREE, color, extra);
     materials.add(material);
     return material;
   }
@@ -56,6 +59,8 @@ export function createRenderKit() {
   return {
     kit,
     dispose(root: THREE.Object3D) {
+      if (disposed) return;
+      disposed = true;
       // Baked mesh geometries are allocated by the engine renderer, outside our primitive cache.
       root.traverse(object => {
         if (object instanceof THREE.Mesh) geometries.set(object.geometry.uuid, object.geometry);

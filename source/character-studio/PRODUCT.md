@@ -55,11 +55,16 @@ Keep identity, character changes and camera presentation independent.
 
 ## Visual fidelity and maintenance
 
-Compiler revision 2 shares smooth, bounded meshes and authored sheen/clearcoat
-materials across the editor, engine and Scene Forge. Preset, ear, collection and
+Compiler revision 3 shares smooth, bounded meshes, explicit UVs and deterministic
+fur, cloth and leather surface recipes across the editor, engine and Scene Forge.
+Shallow cream eyes retain a warm iris ring, a small pupil and one catchlight;
+the lower forehead, integrated muzzle and soft limbs avoid the earlier glossy toy
+proportions. Rounded cap, open vest and boot details remain socket attachments. Preset, ear, collection and
 review portraits are generated from actual recipes. A deterministic garden stage
 provides context without becoming gameplay data. Legacy Studio exports remain
-recoverable through the original compiler contract.
+recoverable through exact revision 1 and 2 compiler contracts. Surface textures
+suggest short fibres; they do not create strand geometry or reproduce the
+illustrated concept at cinematic fidelity.
 
 Agents can preflight rendering with `doctor --capture`, produce multi-view
 `review` artifacts and repeat a saved view plan. Image, recipe and compiled-visual

@@ -1,5 +1,5 @@
 import { fail } from '../domain/errors.js';
-import { littlewildModels } from '../application/littlewild-import.js';
+import { littlewildImportPlan } from '../application/littlewild-import.js';
 import { importModel } from './project.js';
 import type { EditOptions } from './project.js';
 import { readJson } from './files.js';
@@ -25,7 +25,10 @@ export async function importLittlewildDefinition(
       : record;
   if (!visual || typeof visual !== 'object' || Array.isArray(visual))
     fail('LITTLEWILD_IMPORT', `${file} has no visual facet to import.`);
-  const models = littlewildModels(visual as Record<string, unknown>, options.prefix);
+  const { models, variantModels } = littlewildImportPlan(
+    visual as Record<string, unknown>,
+    options.prefix,
+  );
   const entry = Object.keys(models)[0];
   const result = await importModel(
     project,
@@ -39,6 +42,7 @@ export async function importLittlewildDefinition(
     sourceFormat: record.format,
     importedFacet: 'visual',
     variants: Object.keys(models),
+    variantModels,
     ...(isPackage
       ? {
           warnings: [

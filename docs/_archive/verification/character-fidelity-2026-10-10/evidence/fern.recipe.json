@@ -1,0 +1,36 @@
+{
+  "format": "littlewild-character",
+  "schemaVersion": 1,
+  "id": "fern",
+  "identity": {
+    "name": "Fern",
+    "pronouns": "they/them",
+    "gender": "",
+    "voice": "Soft"
+  },
+  "appearance": {
+    "preset": "fern",
+    "body": "slender",
+    "ears": "long",
+    "coat": "#a4ba99",
+    "belly": "#e3e7c5",
+    "inner": "#bfab99",
+    "tail": "long",
+    "headSize": 1,
+    "earSize": 1,
+    "eyeSize": 1,
+    "eyeColor": "#805039"
+  },
+  "personality": "curious",
+  "skills": {},
+  "outfits": {
+    "head": null,
+    "body": null,
+    "back": null,
+    "feet": null,
+    "tool": null,
+    "charm": null
+  },
+  "locks": [],
+  "status": "draft"
+}

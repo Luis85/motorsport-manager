@@ -9,6 +9,7 @@ var began := Time.get_ticks_msec()
 var actor_id := ""
 var observed: Dictionary = {}
 var saved_story: Dictionary = {}
+var saved_story_text := ""
 var away_batches := 0
 var world_zoom_before_room := 0.0
 var world_yaw_before_room := 0.0
@@ -24,8 +25,9 @@ func _initialize() -> void:
 
 
 func _process(_delta: float) -> bool:
-	if Time.get_ticks_msec() - began > 20000:
-		_fail("Native runtime verification timed out.")
+	# Full authored catalogs plus exact text restoration take about 27s locally.
+	if Time.get_ticks_msec() - began > 40000:
+		_fail("Native runtime verification timed out at stage %d." % stage)
 	return false
 
 
@@ -65,7 +67,7 @@ func _on_response(method: String, result: Variant) -> void:
 	match stage:
 		0, 1, 2, 3, 4:
 			await _bootstrap_response(method, result)
-		5, 50, 51:
+		5, 50, 51, 52:
 			await _restore_response(method, result)
 		6, 7:
 			await _appearance_response(method, result)
@@ -117,12 +119,11 @@ func _bootstrap_response(method: String, result: Variant) -> void:
 			if not _check(result.ok, "Native command was rejected: " + JSON.stringify(result)):
 				return
 			stage = 3
-			shell.bridge.request("story")
-		["story", 3]:
-			saved_story = result
-			stage = 4
-			if not _story_file(VALID_STORY_PATH, JSON.stringify(saved_story, "", true, true)):
+			shell.bridge.request("story.export")
+		["story.export", 3]:
+			if not _save_story_text(result):
 				return
+			stage = 4
 			shell.file_action = "load"
 			shell._file_selected(VALID_STORY_PATH)
 		["session.openStory", 4]:
@@ -133,6 +134,20 @@ func _bootstrap_response(method: String, result: Variant) -> void:
 				return
 			stage = 5
 			shell.bridge.request("story")
+
+
+func _save_story_text(result: Variant) -> bool:
+	if not _check(result is String, "Story export must return engine-owned JSON text."):
+		return false
+	saved_story_text = result
+	saved_story = JSON.parse_string(saved_story_text)
+	shell.story_to_save = saved_story_text
+	shell.file_action = "save"
+	shell._file_selected(VALID_STORY_PATH)
+	return _check(
+		FileAccess.get_file_as_string(VALID_STORY_PATH) == saved_story_text,
+		"Native Save story changed the engine's exact JSON text."
+	)
 
 
 func _restore_response(method: String, result: Variant) -> void:
@@ -158,9 +173,18 @@ func _restore_response(method: String, result: Variant) -> void:
 			):
 				return
 			if not duplicate_import_checked:
-				_prepare_duplicate_import()
+				stage = 52
+				shell.bridge.request("story.export")
 				return
 			_restore_timeline()
+		["story.export", 52]:
+			if not _check(
+				result == saved_story_text,
+				"Native save/load changed exact authored numbers or their fingerprints."
+			):
+				return
+			observed.exactStoryTextRestore = true
+			_prepare_duplicate_import()
 
 
 func _restore_timeline() -> void:
@@ -209,7 +233,7 @@ func _prepare_duplicate_import() -> void:
 		saved_story.has("version"), "Native story fixture lacks its authoritative version."
 	):
 		return
-	var text := JSON.stringify(saved_story, "", true, true)
+	var text := saved_story_text
 	if not _story_file(DUPLICATE_STORY_PATH, '{"version":999,' + text.substr(1)):
 		return
 	stage = 50

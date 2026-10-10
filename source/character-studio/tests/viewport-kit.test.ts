@@ -83,3 +83,30 @@ test('garden decoration batches draw calls and retains explicit lighting and res
   stage.dispose();
   assert.equal(disposed, geometries.size);
 });
+
+
+test('portable surfaces reach preview materials and release shared maps only after the last owner', () => {
+  const first = createRenderKit(), second = createRenderKit();
+  const surface = {kind:'fur',seed:7,scale:6,strength:.24};
+  const coat = first.kit.mat('#caa273', {surface,sheen:.7,flatShading:false});
+  const belly = second.kit.mat('#eed8b4', {surface,flatShading:false});
+  assert.ok(coat.map instanceof THREE.DataTexture);
+  assert.ok(coat.normalMap instanceof THREE.DataTexture);
+  assert.equal(coat.map, belly.map);
+  assert.equal(coat.normalMap, belly.normalMap);
+  assert.deepEqual(coat.map.repeat.toArray(), [6,6]);
+  assert.deepEqual(coat.userData.surface, surface);
+  assert.equal(coat.userData.surfaceAlgorithm, 'littlewild-surface-v1');
+  assert.ok(new Set(coat.map.image.data).size > 2, 'Fur must contain generated detail');
+  assert.equal(coat.color.getHexString(), 'caa273');
+  let mapDisposals = 0, normalDisposals = 0;
+  coat.map.addEventListener('dispose', () => mapDisposals++);
+  coat.normalMap.addEventListener('dispose', () => normalDisposals++);
+  first.dispose(new THREE.Group());
+  first.dispose(new THREE.Group());
+  assert.equal(mapDisposals, 0, 'The second renderer still owns these textures');
+  second.dispose(new THREE.Group());
+  second.dispose(new THREE.Group());
+  assert.equal(mapDisposals, 1);
+  assert.equal(normalDisposals, 1);
+});

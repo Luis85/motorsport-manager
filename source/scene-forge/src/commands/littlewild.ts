@@ -81,7 +81,9 @@ export function registerLittlewildCommands(c: CommandContext) {
       output(await writeLittlewildAsset(asset, s.models, out, { dryRun: opts.dryRun }));
     });
   editOptions(group.command('import'))
-    .description('Import Littlewild definition or creature package visuals as editable models')
+    .description(
+      'Import visuals as editable models; returns variants (model IDs) and variantModels (source variant → model ID)',
+    )
     .requiredOption(
       '--definition <path>',
       'Littlewild definition, creature package or 3D asset JSON',

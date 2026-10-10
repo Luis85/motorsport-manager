@@ -124,9 +124,10 @@ write back to disk without the local server.
 
 ## Visual verification for agents
 
-Compiler revision 2 produces smooth portable meshes, expressive eyes and physical
-coat surfaces. The same rigged geometry travels through the engine and Scene
-Forge; render lighting is presentation. Original revision-1 Studio exports remain
+Compiler revision 3 produces smooth portable meshes, warm readable irises,
+shallow facial features and deterministic short coat, cloth and leather detail.
+The same rigged geometry and surface descriptors travel through the engine and Scene
+Forge; render lighting is presentation. Original revision-1 and revision-2 Studio exports remain
 importable. Unknown future compiler revisions and externally modified exports
 are rejected with explicit guidance. Native Godot exports approximate sheen with
 rim lighting and report that limitation; WebGL and GLB retain the physical fields.

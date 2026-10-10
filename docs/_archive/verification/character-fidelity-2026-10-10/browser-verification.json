@@ -1,0 +1,243 @@
+{
+  "kind": "historical-storyboard-browser-check",
+  "desktop": {
+    "width": 1440,
+    "scrollWidth": 1440,
+    "scripts": 0,
+    "images": [
+      {
+        "loaded": true,
+        "width": 1800,
+        "height": 1273
+      },
+      {
+        "loaded": true,
+        "width": 1440,
+        "height": 1059
+      },
+      {
+        "loaded": true,
+        "width": 1440,
+        "height": 1059
+      },
+      {
+        "loaded": true,
+        "width": 390,
+        "height": 2232
+      },
+      {
+        "loaded": true,
+        "width": 384,
+        "height": 432
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 384,
+        "height": 432
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 384,
+        "height": 432
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 1152,
+        "height": 864
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 960,
+        "height": 512
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 960,
+        "height": 1100
+      }
+    ],
+    "headings": [
+      "Littlewild · From concept to companion",
+      "1. The direction and the change",
+      "2. A coherent family",
+      "3. Inspect the same authored companion across tools",
+      "4. The agent authoring loop"
+    ]
+  },
+  "mobile": {
+    "width": 390,
+    "scrollWidth": 390,
+    "scripts": 0,
+    "images": [
+      {
+        "loaded": true,
+        "width": 1800,
+        "height": 1273
+      },
+      {
+        "loaded": true,
+        "width": 1440,
+        "height": 1059
+      },
+      {
+        "loaded": true,
+        "width": 1440,
+        "height": 1059
+      },
+      {
+        "loaded": true,
+        "width": 390,
+        "height": 2232
+      },
+      {
+        "loaded": true,
+        "width": 384,
+        "height": 432
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 384,
+        "height": 432
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 384,
+        "height": 432
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 1152,
+        "height": 864
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 960,
+        "height": 512
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 768,
+        "height": 768
+      },
+      {
+        "loaded": true,
+        "width": 960,
+        "height": 1100
+      }
+    ],
+    "headings": [
+      "Littlewild · From concept to companion",
+      "1. The direction and the change",
+      "2. A coherent family",
+      "3. Inspect the same authored companion across tools",
+      "4. The agent authoring loop"
+    ]
+  },
+  "errors": [],
+  "externalRequests": []
+}

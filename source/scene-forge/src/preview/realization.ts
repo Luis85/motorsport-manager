@@ -1,17 +1,20 @@
 import * as THREE from 'three';
 import type { SceneDocument, RigSpec } from '../domain/schema.js';
+import { ensureSurfaceTangents, createSurfacePool } from '../application/surfaces.js';
 import { createMaterial } from '../application/materials.js';
 import { orientLight } from '../application/lights.js';
 import { bindRig } from '../application/rigging.js';
 
 /** Owns transient resources. Geometry prototypes and authored data remain immutable. */
 export function createRealization(source: SceneDocument) {
+  const surfaces = createSurfacePool();
   let materials: THREE.Material[] = [],
     rigs: ReturnType<typeof bindRig>[] = [];
   let mixer: THREE.AnimationMixer | undefined;
   const dispose = () => {
     mixer?.stopAllAction();
     mixer = undefined;
+    surfaces.dispose();
     materials.forEach((m) => m.dispose());
     rigs.forEach((r) => r.dispose());
     materials = [];
@@ -19,10 +22,7 @@ export function createRealization(source: SceneDocument) {
   };
   function apply(content: THREE.Object3D) {
     dispose();
-    const map = new Map(
-      Object.entries(source.materials).map(([id, spec]) => [id, createMaterial(spec)]),
-    );
-    materials = [...map.values()];
+    const map = new Map<string, THREE.Material>();
     let lights = 0,
       shadows = 0;
     const pending: THREE.Object3D[] = [];
@@ -49,7 +49,17 @@ export function createRealization(source: SceneDocument) {
           for (const [slot, material] of Object.entries(node.materialOverrides))
             if (slots.includes(`${source.id}/${node.id}/${slot}`)) id = material;
       }
-      if (id && map.has(id)) object.material = map.get(id)!;
+      if (id && source.materials[id]) {
+        if (!map.has(id)) {
+          const created = createMaterial(source.materials[id], surfaces);
+          map.set(id, created);
+          materials.push(created);
+        }
+        object.material = map.get(id)!;
+      }
+      const material = object.material;
+      if (material instanceof THREE.MeshStandardMaterial && material.normalMap)
+        ensureSurfaceTangents(object.geometry);
     });
     if (pending.length > 32) throw new Error('A scene supports at most 32 rig instances.');
     // Child rigs bind before ancestors so overlapping rigs fail explicitly.

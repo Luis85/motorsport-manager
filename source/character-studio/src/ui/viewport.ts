@@ -6,7 +6,6 @@ import {createRenderKit} from './viewport-kit.ts';
 import {createStage} from './viewport-stage.ts';
 import {createPortraits} from './portraits.ts';
 import {validatePreviewConfiguration} from './preview-configuration.ts';
-import {RoomEnvironment} from 'three/addons/environments/RoomEnvironment.js';
 
 type Mode = 'studio' | 'world' | 'portrait';
 type Light = 'studio' | 'daylight' | 'night';
@@ -25,11 +24,18 @@ export function createViewport(canvas: HTMLCanvasElement) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = .9;
-  const environment = new RoomEnvironment();
+  // One broad softbox gives glossy eyes a coherent highlight instead of a room's
+  // many bright reflections. This is lighting only; no image replaces the model.
+  const environment = new THREE.Scene();
+  environment.background = new THREE.Color('#40413a');
+  const softboxGeometry = new THREE.PlaneGeometry(4, 3);
+  const softboxMaterial = new THREE.MeshBasicMaterial({color: new THREE.Color(4, 3.7, 3.2), side: THREE.DoubleSide});
+  const softbox = new THREE.Mesh(softboxGeometry, softboxMaterial);
+  softbox.position.set(-3, 4, 5); softbox.lookAt(0, 1, 0); environment.add(softbox);
   const generator = new THREE.PMREMGenerator(renderer);
   const reflection = generator.fromScene(environment, .06);
   scene.environment = reflection.texture; scene.environmentIntensity = .25;
-  environment.dispose(); generator.dispose();
+  softboxGeometry.dispose(); softboxMaterial.dispose(); generator.dispose();
   const portrait = createPortraits(renderer, reflection.texture, () => {
     if (batching) portraitPending = true; else draw();
   });
@@ -39,13 +45,13 @@ export function createViewport(canvas: HTMLCanvasElement) {
   scene.add(stage.root);
   const sky = new THREE.HemisphereLight('#fff3dd', '#8d9479', 1.6);
   const sun = new THREE.DirectionalLight('#ffe3b0', 2.7);
-  sun.position.set(-3, 5, 3);
+  sun.position.set(-3, 5, 5);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(1024, 1024);
+  sun.shadow.mapSize.set(2048, 2048);
   sun.shadow.radius = 4;
   Object.assign(sun.shadow.camera, {left: -3, right: 3, top: 3, bottom: -3, near: .1, far: 15});
   sun.shadow.bias = -.0003;
-  sun.shadow.normalBias = .008;
+  sun.shadow.normalBias = .003;
   const rim = new THREE.DirectionalLight('#ffe1a3', .8);
   rim.position.set(2, 3, -3);
   scene.add(sky, sun, sun.target, rim);
@@ -66,17 +72,17 @@ export function createViewport(canvas: HTMLCanvasElement) {
   function setLight(value: Light) {
     light = value;
     const night = value === 'night', daylight = value === 'daylight';
-    const background = night ? '#263d42' : daylight ? '#c9d7bc' : '#d7d8bb';
+    const background = night ? '#263d42' : daylight ? '#d9dfc8' : '#e0deca';
     scene.background = new THREE.Color(background);
-    scene.fog = new THREE.Fog(background, 5, 10);
+    scene.fog = new THREE.Fog(background, 6.5, 13);
     stage.setLight(night);
-    rim.intensity = night ? .35 : .8;
-    scene.environmentIntensity = night ? .12 : .25;
+    rim.intensity = night ? .35 : .65;
+    scene.environmentIntensity = night ? .18 : .42;
     sky.color.set(night ? '#8dadd4' : '#fff2d4');
-    sky.groundColor.set(night ? '#46585b' : '#75968a');
-    sky.intensity = night ? .45 : .65;
+    sky.groundColor.set(night ? '#46585b' : '#a3a385');
+    sky.intensity = night ? .45 : .95;
     sun.color.set(night ? '#bed6f6' : daylight ? '#fff4dc' : '#ffe3b0');
-    sun.intensity = night ? .85 : daylight ? 2 : 1.85;
+    sun.intensity = night ? .85 : daylight ? 1.8 : 1.6;
     draw();
   }
   function projectCamera() {

@@ -21,6 +21,13 @@ export declare function authoringTarget(scene: SceneDocument, models: ModelLibra
         radius: import("../domain/schema.js").ScalarValue;
         segments?: number | undefined;
     } | {
+        type: "organic";
+        size: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        roundness: import("../domain/schema.js").ScalarValue;
+        taper: import("../domain/schema.js").ScalarValue;
+        bend: import("../domain/schema.js").ScalarValue;
+        segments: number;
+    } | {
         type: "cylinder";
         radiusTop: import("../domain/schema.js").ScalarValue;
         radiusBottom: import("../domain/schema.js").ScalarValue;
@@ -93,6 +100,12 @@ export declare function authoringTarget(scene: SceneDocument, models: ModelLibra
         opacity: number;
         doubleSided: boolean;
         flatShading: boolean;
+        surface?: {
+            kind: "fur" | "cloth" | "leather";
+            seed: number;
+            scale: number;
+            strength: number;
+        } | undefined;
         sheen?: number | undefined;
         sheenColor?: string | undefined;
         sheenRoughness?: number | undefined;

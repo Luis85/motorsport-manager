@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import {visualSummary} from '../tools/creature-visual-summary.cjs';
 type Result = {status:number|null;out:Record<string,unknown>};
 type Run = (args:string[]) => Result;
 type Test = (name:string, work:()=>void) => void;
@@ -9,6 +10,29 @@ export function creatureChecks(test:Test, run:Run, directory:string, project:str
  const json=(name:string,value:unknown):string=>{const target=file(name);fs.writeFileSync(target,JSON.stringify(value));return target;};
  const source=fs.readFileSync(project);
  let imported='';
+ test('Creature visual summaries expose deterministic material and UV facts without mesh payloads or mutation',()=>{
+  const args=['creature','inspect','--project',project,'--archetype','sproutling','--summary'];
+  const summary=run(args);assert.equal(summary.status,0,JSON.stringify(summary));
+  assert.equal(summary.out.package,undefined);assert.equal(summary.out.fields,undefined);
+  assert.deepEqual(run(args).out,summary.out);assert.deepEqual(fs.readFileSync(project),source);
+  const full=run(args.slice(0,-1));assert.equal(full.out.fingerprint,summary.out.fingerprint);
+  const fixture={id:'plush',category:'actor',materials:{coat:{color:'#bb9966',surface:{kind:'fur',seed:1,scale:4,strength:0.4}}},
+   meshes:{face:{positions:[0,0,0,1,0,0,0,1,0],normals:[0,0,1,0,0,1,0,0,1],indices:[0,1,2],uvs:[0,0,1,0,0,1]}},
+   models:{world:{nodes:[{id:'root',primitive:'group',children:[{id:'cheek',primitive:'mesh',mesh:'face',material:'coat',materialProps:{surface:{kind:'cloth',seed:2,scale:3,strength:0.2}}}]}]}}};
+  const report=visualSummary(fixture);
+  assert.deepEqual(report.totals,{uniqueMeshes:1,storedVertices:3,storedTriangles:1});
+  assert.equal((report.meshes as {uv:string}[])[0]!.uv,'authored');
+  const model=(report.models as {nodes:number;bakedTriangles:number;surfaces:{surface:{kind:string}}[]}[])[0]!;
+  assert.equal(model.nodes,2);assert.equal(model.bakedTriangles,1);assert.equal(model.surfaces[0]!.surface.kind,'cloth');
+  assert.equal(JSON.stringify(report).includes('positions'),false);
+  const unindexed=structuredClone(fixture) as typeof fixture & {meshes:{face:{indices?:number[]}}};
+  Reflect.deleteProperty(unindexed.meshes.face,'indices');
+  assert.deepEqual(visualSummary(unindexed).totals,report.totals);
+  assert.equal((visualSummary(unindexed).models as {bakedTriangles:number}[])[0]!.bakedTriangles,1);
+  assert.equal(visualSummary({...fixture,materials:{coat:{surface:fixture.materials.coat.surface,color:'#bb9966'}}}).sha256,report.sha256);
+  assert.equal(run([...args,'true']).status,2);
+  assert.equal(run(['creature','list','--project',project,'--summary']).status,2);
+ });
  test('Creature CLI lifecycle discovers, authors, imports and refines visuals without ticking or losing gameplay',()=>{
   const discovery=run(['creature','discover']);assert.equal(discovery.status,0);assert.equal((discovery.out.commands as unknown[]).length,6);
   const list=run(['creature','list','--project',project]);assert.equal(list.status,0,JSON.stringify(list));

@@ -1,4 +1,7 @@
+import { createSurfacePool } from './surfaces.js';
 import { createMaterial } from './materials.js';
+import { sphereUVs } from './surface-pattern.js';
+import { organicGeometry } from './organic.js';
 import { tubeGeometry } from './tube.js';
 import * as THREE from 'three';
 import { Brush, Evaluator, ADDITION, SUBTRACTION, INTERSECTION } from 'three-bvh-csg/src/index.js';
@@ -14,6 +17,7 @@ import { transform, triangles, uuid } from './transforms.js';
 
 /** Owns every GPU resource allocated during one compilation, including failed builds. */
 export function createResourcePool(warnings: Set<string>) {
+  const surfaces = createSurfacePool();
   const geometries = new Set<THREE.BufferGeometry>();
   const materials = new Set<THREE.Material>();
   const geometryPool = new Map<string, THREE.BufferGeometry>();
@@ -38,7 +42,7 @@ export function createResourcePool(warnings: Set<string>) {
         materialCache.set(id, materialPool.get(key)!);
         return materialPool.get(key)!;
       }
-      const result = createMaterial(m);
+      const result = createMaterial(m, surfaces);
       result.name = `${path}/${id}`;
       Object.defineProperty(result, 'uuid', { value: uuid(`material/${key}`), writable: true });
       materialPool.set(key, result);
@@ -64,6 +68,9 @@ export function createResourcePool(warnings: Set<string>) {
       switch (g.type) {
         case 'box':
           result = new THREE.BoxGeometry(...(g.size as [number, number, number]));
+          break;
+        case 'organic':
+          result = organicGeometry(g);
           break;
         case 'sphere':
           result = new THREE.SphereGeometry(
@@ -131,7 +138,7 @@ export function createResourcePool(warnings: Set<string>) {
           if (g.uvs) result.setAttribute('uv', new THREE.Float32BufferAttribute(g.uvs.flat(), 2));
           else
             warnings.add(
-              'Custom meshes without UVs cannot carry texture coordinates into exports. Supply one uv pair per position when needed.',
+              'Custom mesh uses local spherical UV fallback; author seam-aware uvs for precise surface placement.',
             );
           break;
         }
@@ -177,6 +184,10 @@ export function createResourcePool(warnings: Set<string>) {
         }
         default:
           return fail('UNKNOWN_GEOMETRY', `Unsupported geometry type.`);
+      }
+      if (!result.getAttribute('uv')) {
+        const positions = Array.from(result.getAttribute('position').array);
+        result.setAttribute('uv', new THREE.Float32BufferAttribute(sphereUVs(positions), 2));
       }
       geometries.add(result);
       result.name = `${path}/${id}`;
@@ -248,6 +259,7 @@ export function createResourcePool(warnings: Set<string>) {
       return materials.size;
     },
     dispose() {
+      surfaces.dispose();
       geometries.forEach((geometry) => geometry.dispose());
       materials.forEach((material) => material.dispose());
       geometries.clear();

@@ -154,6 +154,55 @@
                   "properties": {
                     "type": {
                       "type": "string",
+                      "const": "organic"
+                    },
+                    "size": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "$ref": "#/$defs/__schema0"
+                        },
+                        {
+                          "$ref": "#/$defs/__schema0"
+                        },
+                        {
+                          "$ref": "#/$defs/__schema0"
+                        }
+                      ],
+                      "items": false,
+                      "minItems": 3,
+                      "maxItems": 3
+                    },
+                    "roundness": {
+                      "default": 1,
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    "taper": {
+                      "default": 0,
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    "bend": {
+                      "default": 0,
+                      "$ref": "#/$defs/__schema0"
+                    },
+                    "segments": {
+                      "default": 32,
+                      "type": "integer",
+                      "minimum": 12,
+                      "maximum": 96
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "size"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
                       "const": "cylinder"
                     },
                     "radiusTop": {
@@ -716,6 +765,41 @@
                   "type": "number",
                   "minimum": 0,
                   "maximum": 1
+                },
+                "surface": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "fur",
+                        "cloth",
+                        "leather"
+                      ]
+                    },
+                    "seed": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 65535
+                    },
+                    "scale": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 16
+                    },
+                    "strength": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "seed",
+                    "scale",
+                    "strength"
+                  ],
+                  "additionalProperties": false
                 },
                 "sheen": {
                   "type": "number",

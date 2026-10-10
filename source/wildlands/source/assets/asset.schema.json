@@ -246,6 +246,17 @@
             },
             "minItems": 3,
             "maxItems": 49152
+          },
+          "uvs": {
+            "type": "array",
+            "minItems": 6,
+            "maxItems": 16384,
+            "description": "Two finite UV coordinates per position, authored seams preferred; legacy meshes use a spherical projection.",
+            "items": {
+              "type": "number",
+              "minimum": -10000,
+              "maximum": 10000
+            }
           }
         }
       }
@@ -318,6 +329,9 @@
         "emissiveIntensity": {
           "type": "number",
           "minimum": 0
+        },
+        "surface": {
+          "$ref": "#/$defs/surface"
         }
       }
     },
@@ -344,6 +358,41 @@
           "items": {
             "$ref": "#/$defs/node"
           }
+        }
+      }
+    },
+    "surface": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "seed",
+        "scale",
+        "strength"
+      ],
+      "description": "Portable deterministic 128 x 128 color and tangent normal maps. Fur is short surface detail; silhouette hair must be authored as geometry. UV scale repeats 1 to 16 times.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "fur",
+            "cloth",
+            "leather"
+          ]
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 16
+        },
+        "strength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
         }
       }
     }

@@ -32,6 +32,7 @@ export function registerDiscoveryCommands(c: CommandContext) {
         geometryTypes: [
           'box',
           'sphere',
+          'organic',
           'cylinder',
           'cone',
           'torus',
@@ -43,6 +44,67 @@ export function registerDiscoveryCommands(c: CommandContext) {
           'boolean',
           'tube',
         ],
+        organicForms: {
+          type: 'organic',
+          units:
+            'size is the untapered diameter on X/Y/Z in meters; taper and bend can extend X/Z bounds',
+          parameters: {
+            roundness: [0.65, 1.5],
+            taper: [-0.65, 0.65],
+            bend: [-0.75, 0.75],
+            segments: [12, 96],
+          },
+          meaning:
+            'roundness 1 is ellipsoidal, below 1 is fuller; positive taper narrows the top; bend offsets both ends along +X',
+          example: {
+            op: 'putGeometry',
+            id: 'plushBody',
+            geometry: {
+              type: 'organic',
+              size: [0.9, 1.1, 0.72],
+              roundness: 0.9,
+              taper: 0.22,
+              bend: 0,
+              segments: 32,
+            },
+          },
+          export:
+            'Closed smooth mesh with seam-aware UVs. Littlewild receives baked mesh; GLB retains mesh and UVs.',
+          workflow:
+            'inspect --source, apply --dry-run with revision/state guards, apply same batch with guards, review --plan previous/replay-plan.json',
+        },
+        surfaceDetails: {
+          algorithm: 'littlewild-surface-v1',
+          uniqueRecipesPerScene: 256,
+          pooling:
+            'Identical kind/seed/scale/strength share maps across material colors; each compilation owns and disposes its pool.',
+          fields: {
+            kind: ['fur', 'cloth', 'leather'],
+            seed: [0, 65535],
+            scale: [1, 16],
+            strength: [0, 1],
+          },
+          required: ['kind', 'seed', 'scale', 'strength'],
+          example: {
+            op: 'putMaterial',
+            id: 'plushFur',
+            material: {
+              color: '#c89059',
+              roughness: 0.9,
+              sheen: 0.65,
+              sheenColor: '#ffe4bd',
+              surface: { kind: 'fur', seed: 7, scale: 3, strength: 0.4 },
+            },
+          },
+          outputs:
+            'Deterministic 128×128 color and tangent normal maps; no image files, browser, shader scripts or network needed for GLB export',
+          compatibility:
+            'Standard PBR only. Littlewild preserves recipe and UVs; GLB embeds PNGs with KHR_texture_transform repeat and recipe in material extras.',
+          limits:
+            'Surface detail shades existing geometry; use organic forms or authored meshes for a fluffy silhouette. Not strand fur or cloth simulation.',
+          uvFallback:
+            'Legacy baked meshes without UVs receive local spherical projection; supply seam-aware UVs for precise placement.',
+        },
         composition: [
           'model capture',
           'model bundle import/export',
@@ -71,6 +133,12 @@ export function registerDiscoveryCommands(c: CommandContext) {
           importScope:
             'Visual models only; creature gameplay and companion state stay in the source package',
           importGuards: ['--expected-revision', '--expected-state'],
+          importOutputs: {
+            variants: 'Array of imported model IDs (retained compatibility field)',
+            variantModels:
+              'Map of original source variant names to model IDs; use this instead of inferring capitalization or suffixes',
+            example: { 'world-round': 'pipTrailWorldRound' },
+          },
           families: Object.keys(littlewildFamilies),
           output: '<target>/<family>/<id>/definition.json visual facet; other facets are preserved',
           geometry:
@@ -151,7 +219,7 @@ export function registerDiscoveryCommands(c: CommandContext) {
           'inverse kinematics and weight painting',
           'arbitrary GLSL shaders',
           'sculpting',
-          'texture images and automatic UV unwrapping',
+          'external texture image import and automatic UV unwrapping',
           'physics',
           'native .blend authoring',
           'native .tscn authoring',

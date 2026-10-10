@@ -25,14 +25,15 @@ export function createStage() {
     mesh.scale.set(...scale as [number, number, number]); mesh.rotation.y = rotation;
     mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh;
   }
-  const ground = piece(root, 'cylinder', '#738057', [0, -.14, 0], [7, .24, 7]);
+  const ground = piece(root, 'box', '#738057', [0, -6.02, 0], [200, 12, 200]);
   ground.castShadow = false;
-  // Slightly irregular pavers remain low enough for the authored model's feet.
-  for (let row = -4; row <= 4; row++) {
-    for (let col = -1; col <= 1; col++) {
+  // World-only worn stones keep the studio silhouette clear and the path organic.
+  for (let row = -12; row <= 5; row++) {
+    for (let col = -2; col <= 2; col++) {
       const wobble = Math.sin(row * 13 + col * 7);
-      const stone = piece(root, 'stone', ['#afa185', '#c0b394', '#93947c'][(row + col + 6) % 3],
-        [col * .43 + wobble * .035, -.035, row * .38], [.25, .06, .225], wobble * .3);
+      const stone = piece(woodland, 'stone', ['#a89c80', '#b9ac8e', '#c4b79a'][(row + col + 18) % 3],
+        [col * .23 + (row % 2) * .045 + wobble * .012, -.015, row * .205],
+        [.116 + wobble * .006, .022, .102 + wobble * .005], wobble * .24);
       stone.castShadow = false;
     }
   }
@@ -42,7 +43,7 @@ export function createStage() {
       const angle = i * 2.399 + seed;
       const leaf = piece(base, 'sphere', i % 2 ? '#71884b' : '#87985a',
         [Math.sin(angle) * size * .31, size * .46, Math.cos(angle) * size * .31],
-        [size * .12, size * .52, size * .055]);
+        [size * .105, size * .42, size * .04]);
       leaf.rotation.z = Math.cos(angle) * .72; leaf.rotation.x = Math.sin(angle) * .72;
     }
   }
@@ -55,12 +56,12 @@ export function createStage() {
     }
     piece(root, 'sphere', '#b77d32', [x, size, z + .012], [.013, .013, .012]);
   }
-  for (let i = 0; i < 26; i++) {
-    const side = i % 2 ? 1 : -1, z = -2.2 + i * .17;
-    const x = side * (.78 + (Math.sin(i * 9) + 1) * .33);
-    fern(x, z, .16 + (i % 4) * .055, i);
+  for (let i = 0; i < 22; i++) {
+    const side = i % 2 ? 1 : -1, z = -2.8 + i * .19;
+    const x = side * (.81 + (Math.sin(i * 9) + 1) * .28);
+    fern(x, z, .12 + (i % 4) * .035, i);
     if (i % 3 === 0) flower(x + .1, z + .08, .17 + i % 4 * .025, i);
-    if (i % 4 === 0) piece(root, 'stone', '#999d80', [x + side * .15, .055, z], [.21, .11, .17], i);
+    if (i % 4 === 0) piece(root, 'stone', '#999d80', [x + side * .15, .055, z], [.15, .065, .12], i);
   }
   // Layered foliage gives the silhouette a quiet, warm woodland surround.
   for (let i = 0; i < 10; i++) {
@@ -72,12 +73,19 @@ export function createStage() {
       [x + Math.sin(i + j) * .38, height + j * .14, z + Math.cos(i + j) * .3], [.77, .6, .66]);
     fern(x * .68, z * .65, .43, i, woodland);
   }
-  // A distant canopy remains in studio mode, while world mode adds complete trees.
-  for (let i = 0; i < 8; i++) {
-    const x = (i - 3.5) * .8;
-    piece(root, 'sphere', ['#748264', '#8d986f', '#a8ac7a'][i % 3],
-      [x, 1.1 + (i % 3) * .5, -3.8 - (i % 2) * .4], [1.1, 1.25, .7]);
-    if (i % 2) piece(root, 'cylinder', '#8a7957', [x, 1.15, -3.4], [.09, 2.5, .09]);
+  // Small leaf clusters frame open air behind the face, never a wall of giant spheres.
+  for (let side = -1; side <= 1; side += 2) {
+    for (let i = 0; i < 5; i++) {
+      const x = side * (1.3 + i * .3), z = -2.9 - i * .24;
+      const height = 1.5 + (i % 3) * .34;
+      piece(root, 'cylinder', '#8a7957', [x, height * .48, z], [.034, height, .034]);
+      for (let j = 0; j < 4; j++) {
+        const angle = i * 2.4 + j * 1.7;
+        piece(root, 'sphere', ['#879569', '#a3ac7b', '#b5b78a'][j % 3],
+          [x + Math.sin(angle) * .24, height + Math.cos(angle) * .25, z + Math.cos(angle) * .14],
+          [.25 + (j % 2) * .09, .22, .16]);
+      }
+    }
   }
   const lantern = new THREE.Group(); root.add(lantern); lantern.position.set(1.2, 0, -.6);
   piece(lantern, 'cylinder', '#77634a', [0, .04, 0], [.14, .08, .14]);
@@ -115,7 +123,9 @@ export function createStage() {
       merged.push(geometry);
       group.meshes.forEach(mesh => mesh.removeFromParent());
       const mesh = new THREE.Mesh(geometry, material);
-      mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh);
+      // The character supplies the readable contact shadow; distant decoration
+      // must not project sharp canopy stripes or self-shadow the ground plane.
+      mesh.castShadow = false; mesh.receiveShadow = true; parent.add(mesh);
     }
   }
   batch(root); batch(woodland);

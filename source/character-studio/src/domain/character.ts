@@ -288,7 +288,7 @@ export function createCharacter(
       headSize: 1,
       earSize: 1,
       eyeSize: 1,
-      eyeColor: "#303f37",
+      eyeColor: "#805039",
     },
     personality: "curious",
     skills: {},
@@ -316,7 +316,7 @@ export function stagePreset(input: Character, preset: string): Character {
     headSize: 1,
     earSize: 1,
     eyeSize: 1,
-    eyeColor: "#303f37",
+    eyeColor: "#805039",
   };
   const previous =
     value.appearance && typeof value.appearance === "object"

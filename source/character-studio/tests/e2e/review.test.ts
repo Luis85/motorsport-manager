@@ -43,7 +43,7 @@ test('CLI review produces replayable bound images and keeps existing outputs unc
     const manifest=JSON.parse(await readFile(join(first,'manifest.json'),'utf8'));
     assert.equal(manifest.recipeHash,character.stateHash);
     assert.equal(manifest.frames.length,2);
-    assert.equal(manifest.compilerRevision,2);
+    assert.equal(manifest.compilerRevision,3);
     assert.match(manifest.visualHash,/^[a-f0-9]{64}$/);
     for(const frame of manifest.frames){
       const png=await readFile(join(first,frame.file));

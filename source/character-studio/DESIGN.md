@@ -228,7 +228,12 @@ editing.
 
 ## Authored preview surfaces
 
-Compiler revision 2 uses smooth portable meshes, coat sheen and clear-coated eyes.
+Compiler revision 3 uses smooth portable meshes with explicit UVs and deterministic
+fur, cloth and leather surface recipes. Eye whites remain visible around a warm
+iris, the small pupil carries one restrained catchlight, and the face uses a
+shallow muzzle patch with a compact smile. Soft cap, open vest and rounded boots
+retain the engine socket contract. Revision 1 and 2 exports keep exact import
+verification. Surface detail is an authored material effect, not hair geometry.
 Preset and ear choices show cached renders of actual recipes instead of colored
 placeholders. Collection, review and import use the same portrait renderer. The
 cache holds at most 24 images and releases temporary GPU geometry and materials.

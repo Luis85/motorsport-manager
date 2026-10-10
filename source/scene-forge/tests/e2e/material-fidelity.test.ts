@@ -1,5 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
+import { initProject, loadProject } from '../../src/infra/project.js';
 import { createServer } from 'node:http';
 import { chromium } from 'playwright';
 import { parse, SceneSchema } from '../../src/domain/schema.js';
@@ -12,10 +18,18 @@ test(
     const scene = parse(SceneSchema, {
       schemaVersion: 1,
       kind: 'scene',
-      id: 'portrait',
+      id: 'main',
       name: 'Portrait material study',
       materials: { coat: { color: '#bc8151', roughness: 0.8 } },
-      geometries: { body: { type: 'sphere', radius: 0.65, segments: 32 } },
+      geometries: {
+        body: {
+          type: 'organic',
+          size: [0.9, 1.1, 0.72],
+          roundness: 0.9,
+          taper: 0.22,
+          segments: 32,
+        },
+      },
       nodes: [
         {
           type: 'mesh',
@@ -26,7 +40,11 @@ test(
         },
       ],
     });
-    const html = await createPreview(scene, {}, { stateHash: 'fidelity-source' });
+    const root = await mkdtemp(path.join(tmpdir(), 'forge-surface-browser-'));
+    await initProject(root);
+    await writeFile(path.join(root, 'scenes/main.scene.json'), JSON.stringify(scene));
+    const initial = await loadProject(root);
+    const html = await createPreview(scene, {}, { stateHash: initial.stateHash });
     const server = createServer((_request, response) => {
       response.writeHead(200, { 'Content-Type': 'text/html' });
       response.end(html);
@@ -49,12 +67,29 @@ test(
       await page.getByLabel('Sheen amount', { exact: true }).fill('0.75');
       await page.getByLabel('Sheen color', { exact: true }).fill('#ffe3bc');
       await page.getByLabel('Clearcoat amount', { exact: true }).fill('0.2');
+      await page.getByLabel('Surface detail', { exact: true }).selectOption('fur');
+      await page.getByLabel('Detail seed', { exact: true }).fill('7');
+      await page.getByLabel('Detail repeat', { exact: true }).fill('3');
+      await page.getByLabel('Detail strength', { exact: true }).fill('0.4');
       await page.getByRole('button', { name: 'Apply material', exact: true }).click();
       const painted = await page.evaluate(() => window.forgeViewer.getSource());
       const node = painted.nodes[0];
       assert.ok(node.type === 'mesh');
       assert.equal(painted.materials[node.material].sheen, 0.75);
       assert.equal(painted.materials[node.material].clearcoat, 0.2);
+      assert.deepEqual(painted.materials[node.material].surface, {
+        kind: 'fur',
+        seed: 7,
+        scale: 3,
+        strength: 0.4,
+      });
+      await page.evaluate(() => window.forgeViewer.undo());
+      const undoSource = await page.evaluate(() => window.forgeViewer.getSource());
+      const undoNode = undoSource.nodes[0];
+      assert.ok(undoNode.type === 'mesh');
+      assert.equal(undoSource.materials[undoNode.material].surface, undefined);
+      await page.evaluate(() => window.forgeViewer.redo());
+      assert.deepEqual(await page.evaluate(() => window.forgeViewer.getSource()), painted);
       await page.locator('[data-tool="environment"] summary').click();
       await page.getByRole('button', { name: 'Use portrait studio', exact: true }).click();
       const portrait = await page.evaluate(() => window.forgeViewer.getSource());
@@ -90,12 +125,35 @@ test(
       };
       assert.ok(edits.operations.some((operation) => operation.op === 'putMaterial'));
       assert.ok(edits.operations.some((operation) => operation.op === 'setEnvironment'));
+      const batch = path.join(root, 'surface-edits.json');
+      await writeFile(batch, JSON.stringify(edits));
+      const cli = fileURLToPath(new URL('../../../../bin/scene-forge', import.meta.url));
+      const invoke = (...args: string[]) =>
+        JSON.parse(
+          execFileSync(process.execPath, [cli, '-p', root, ...args], { encoding: 'utf8' }),
+        );
+      const dry = invoke('apply', '--file', batch, '--dry-run');
+      assert.equal(dry.ok, true);
+      assert.equal((await loadProject(root)).stateHash, initial.stateHash);
+      const applied = invoke('apply', '--file', batch);
+      assert.equal(applied.ok, true);
+      assert.equal(applied.data.stateHash, dry.data.proposedStateHash);
+      const saved = (await loadProject(root)).scene;
+      const savedNode = saved.nodes[0];
+      assert.ok(savedNode.type === 'mesh');
+      assert.deepEqual(saved.materials[savedNode.material].surface, {
+        kind: 'fur',
+        seed: 7,
+        scale: 3,
+        strength: 0.4,
+      });
       assert.deepEqual(errors, []);
     } finally {
       await browser.close();
       await new Promise<void>((resolve, reject) =>
         server.close((error) => (error ? reject(error) : resolve())),
       );
+      await rm(root, { recursive: true, force: true });
     }
   },
 );
