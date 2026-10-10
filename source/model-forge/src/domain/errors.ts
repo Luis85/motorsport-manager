@@ -53,9 +53,13 @@ export const errorRemedies: Record<string, string> = {
   PATTERN_PATH: 'Separate successive XZ positions for yaw orientation, or use orient: none.',
   PATTERN_COUNT: 'Resolve pattern counts to positive integers; their product must not exceed 256.',
   PROCEDURAL_BUDGET:
-    'Procedural output is bounded (2,000 placements, 20,000 candidate points, 10,000 document nodes, 256 x 256 terrain vertices). Increase spacing, shrink the area or lower counts; read details.limit.',
+    "Procedural output is bounded (2,000 placements, 20,000 candidate points, 10,000 document nodes, 256 x 256 terrain vertices, and each generator's limits.maxTriangles). Increase spacing, shrink the area or lower counts, detail or resolution; read details.limit.",
   SCATTER_EMPTY:
     'Nothing was placed. Read details.rejected (outside, exclusion, slope, budget) and widen the area, lower the spacing or relax exclusions and maxSlope.',
+  GENERATOR_NOT_FOUND:
+    'Run generate list for the generator IDs (details.available), then generate show <generator> for its parameters and presets.',
+  VARIANT_RANGE:
+    'Each --vary range must lie inside the parameter declared min..max (details.declared) with min <= max, and include a whole number for integer parameters. Narrow the range.',
   TERRAIN_TRANSFORM:
     'Grounding follows only translation, yaw and positive uniform scale. Remove tilt, nonuniform scale or patterns from the terrain node, the scatter parent and their ancestors.',
   RIG_INVALID:

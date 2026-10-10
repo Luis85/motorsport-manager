@@ -35,8 +35,8 @@ file layouts and maintainer commands.
 
 | Capability | Commands | Needs |
 |---|---|---|
-| Discovery, document lifecycle, inspection, editing, history, audit, preview, export | everything except `review` | Node.js 22 or newer |
-| Image review | `review` | Node.js 22+, the `playwright` package and a Chromium build Playwright can launch |
+| Discovery, document lifecycle, inspection, editing, history, audit, preview, export, procedural generation | everything except reviews | Node.js 22 or newer |
+| Image review | `review`, `generate --review`, `variants --review` | Node.js 22+, the `playwright` package and a Chromium build Playwright can launch |
 | Installation report | `doctor` | Node.js 22+; reports Playwright and Chromium status without failing when they are absent |
 
 Playwright is not bundled. The executable loads it on demand from its own module
@@ -230,9 +230,9 @@ choices of a command subtree as JSON for the installed build, and
 
 | Command | Purpose |
 |---|---|
-| `discover` (alias `catalog`) | Workflow steps, commands, document kinds, operations (and scene-only operations with their model equivalents), schemas, geometry types, patterns, lights, expressions, rigging, review views, imports, exports, Littlewild families, conventions, limits and error codes with remedies |
+| `discover` (alias `catalog`) | Workflow steps, commands, document kinds, operations (and scene-only operations with their model equivalents), schemas, geometry types, patterns, lights, expressions, rigging, review views, imports, the `procedural` section (generators, presets, commands, outputs, limits and one-command examples), exports, Littlewild families, conventions, limits and error codes with remedies |
 | `describe [path...]` | Arguments, flags, defaults and choices of a command subtree |
-| `schema [--kind <kind>] [--raw]` | JSON Schema for `batch` (default), `model`, `model-bundle`, `operation`, `node`, `node-patch`, `geometry`, `material`, `parameter`, `rig`, `pattern`, `selector`, `scalar`, `review`, `camera`, `camera-snapshot`, `quality-policy` or `littlewild-asset` |
+| `schema [--kind <kind>] [--raw]` | JSON Schema for `batch` (default), `model`, `model-bundle`, `operation`, `node`, `node-patch`, `geometry`, `material`, `parameter`, `rig`, `pattern`, `selector`, `scalar`, `review`, `camera`, `camera-snapshot`, `quality-policy`, `littlewild-asset`, `scatter`, `generator-recipe` or `model-variants` |
 | `doctor` | Node, Playwright and Chromium availability (`reviewReady`) |
 | `example list` | Bundled examples with kind, file name and dependencies |
 | `example show <id> [--raw]` | One example document; `--raw` prints the bare document for saving or piping |
@@ -441,6 +441,140 @@ Scene-wide Littlewild synchronization from a manifest (`littlewild sync`) and th
 Pocket Pet assets stay in Scene Forge; see
 [Author Littlewild assets in Scene Forge](../how-to/scene-forge-littlewild-assets.md).
 
+## Procedural generation
+
+Model Forge can start a document from a **generator** instead of an empty
+model, write seeded **variants** of any document, and **scatter** copies or
+instances over an area of a document. Everything is deterministic: the forge
+keyed PRNG v1 (the same algorithm as the Wildlands generators) is the only source
+of randomness, no command reads the clock, and every number a generator writes is
+rounded to 1e-4. The same generator version, seed and parameters give the same
+document bytes on every run (`tests/generate.test.ts` pins one golden SHA-256 per
+generator). Outputs are bounded and guarded like every other write: nothing is
+replaced, `--dry-run` writes nothing, documents inside a Scene Forge project are
+refused (`PROJECT_MODEL_READONLY`), and results carry `seed`, `recipeHash`,
+`documents` (path, ID, `stateHash`, statistics) and `nextCommands`.
+
+### Generators
+
+A generated document is an ordinary `kind: "model"` document. Its main
+dimensions are **model parameters** (`$param`), so it stays editable with every
+other command, `inspect --parameters` and `variants`, and Scene Forge can set
+them per instance. Bold presets are the defaults.
+
+| Generator | Presets | Builds | Model parameters |
+|---|---|---|---|
+| `rock` | `pebble`, **`stone`**, `boulder` | A seeded displaced icosphere mesh with flat chiseled faces and a flat base on y = 0 | `size`, `height`, `stretch` |
+| `tree` | **`deciduous`**, `conifer`, `palm`, `dead` | A low-poly tree rooted at the origin: clumped crown, stacked cones, curved trunk with drooping fronds, or bare branches | `height`, `canopy` (not `dead`) |
+| `bush` | **`round`**, `hedge`, `flowering` | Overlapping foliage clumps on y = 0; a hedge wears them around a block; blossoms optional | `size`, `height`, `length` |
+| `crate` | **`wooden`**, `military`, `small` | Inset panels with plank grooves, twelve edge beams, optional grips | `width`, `height`, `depth`, `frame` |
+| `barrel` | **`wooden`**, `oil`, `rusty` | A lathe-turned body with a recessed lid, a rim, hoops or drum ribs and a filler cap | `radius`, `height`, `bulge` |
+| `fence` | **`picket`**, `ranch`, `palisade` | A straight run along X, centered: posts as a linear pattern, rails, pickets | `posts` (integer), `spacing`, `height` |
+| `building` | **`cottage`**, `townhouse`, `warehouse` | Windows as storey-by-bay grid patterns on all four walls, a door, plinth and eave band, and a gable roof extruded from its profile (or a flat roof) | `floors`, `bays` (integers), `floorHeight`, `bayWidth`, `depth`, `roofHeight` |
+| `terrain` | `plains`, **`hills`**, `mountains`, `island`, `dunes` | A heightfield tile from the kernel terrain presets, vertex-colored by height; the seed shapes the noise | `width`, `depth`, `amplitude` |
+
+Generator parameters (the inputs, listed by `generate show`) and model
+parameters (in the output) are different things: generator parameters such as
+`kind`, `detail`, `tiers` or the colors decide the structure, and model
+parameters keep the dimensions adjustable afterwards. Each generator has a
+triangle budget (`limits.maxTriangles`); output above it fails with
+`PROCEDURAL_BUDGET`.
+
+### Procedural commands
+
+| Command | Options and behavior |
+|---|---|
+| `generate list` (or `generate`) | Every generator with its presets, limits and a one-command example |
+| `generate show <generator>` | `parameterSchema` (JSON Schema of the generator parameters), `defaults`, `presets` with their complete values, `limits`, the seed range and example commands. An unknown name fails with `GENERATOR_NOT_FOUND` (`details.available`) |
+| `generate <generator> --out <new.model.json>` | `--preset <name>`, `--seed <0..4294967295>` (default 1), `--set <name=value>` (repeatable; a value is read as JSON when it parses, else as text), `--file`/`--data` (a generator recipe), `--id` and `--name` (defaults: the `--out` name and `<Preset> <generator>`), `--count <1-64>` (then `--out` is a new directory of `<id>-01.model.json`, ... with seeds seed, seed + 1, ...), `--review <new directory>` and `--dry-run`. Values layer as defaults, then the preset, then the recipe, then `--set`; an unknown name fails with `UNKNOWN_PARAMETER`, a value out of range with `SCHEMA_INVALID` |
+| `-d <doc> variants` | `--count <1-64>` (required), `--seed` (default 1), `--vary <parameter=min..max>` (repeatable), `--materials <material=#rrggbb,#rrggbb>` (repeatable), `--out <new directory>` (required), `--review`, `--dry-run`. Writes `<id>-01`, ... documents of the source's kind (a bundle keeps its frozen dependencies) and `variants.json` |
+| `-d <doc> scatter` | A scatter recipe from `--file`/`--data` (`schema --kind scatter`), or flags: `--node <ids>` (template nodes of the document to copy) or `--model <ids>` (dependency models to instance), each `id` or `id:weight`; one of `--spacing <m>` (Poisson), `--grid <m>` (with `--jitter`) or `--count <n>` (uniform); `--area rect:x0,z0,x1,z1 \| circle:x,z,r \| polygon:x,z;x,z;...` (default: the model's XZ footprint), `--exclude <area>` (repeatable), `--avoid <ids> --margin <m>`, `--on <terrain node>` with `--sink` and `--max-slope`, `--scale`, `--yaw` and `--tilt` as `min..max`, `--max <n>`, `--seed`, `--group <id>` (default `scatter`), `--parent <id>`. `--dependency <file>` (repeatable) adds the models of a model or model-bundle file as frozen dependencies in the same edit; `--replace` replaces an existing group; `--allow-empty` accepts a scatter that places nothing. A recipe and placement flags together fail with `INVALID_OPTION` |
+
+`generate` writes a **generator recipe** beside every document,
+`<id>.generate.json` (`kind: "generator-recipe"`, `schema --kind
+generator-recipe`), with the generator version, seed, preset, ID, name and
+every parameter resolved. `generate <generator> --file <id>.generate.json --out
+<new document>` rebuilds the same bytes; a recipe written by another generator
+version still runs and reports a warning. Every path (documents, recipes and
+the review directory) is checked before anything is written: an existing
+document fails with `DOCUMENT_EXISTS`, an existing recipe file or a non-empty
+`--out`/`--review` directory with `ALREADY_EXISTS`.
+
+`variants` samples each `--vary` parameter uniformly inside the given range,
+which must lie inside the parameter's declared `min`..`max` with min <= max;
+integer parameters take whole numbers, and a range without one fails like a
+widened range with `VARIANT_RANGE` (`details.declared`). Each `--materials`
+entry picks one color per variant. Variant *i* draws from its own keyed stream,
+so the first variants of a larger run are the same documents. `variants.json`
+(`kind: "model-variants"`) records the source `stateHash`, seed, ranges, colors
+and every variant's values and `stateHash`.
+
+`--review` renders every document in **one** headless Chromium session: a
+lineup scene with one fixed-camera frame per document (at most 36), all framed
+at one common size so that size differences show, plus `contact-sheet.png`,
+`review.json` and `replay-plan.json`. A single generated document gets `iso`,
+`front`, `right` and `top` views instead. `generate` writes the review to the
+`--review` directory; `variants` writes it to `<out>/review`.
+
+`scatter` runs the kernel planner on the document's model with its frozen
+dependencies (plus `--dependency` models) as the model library, and commits the
+plan as one guarded edit exactly like `apply`: `--dry-run`, `--expected-revision`,
+`--expected-state`, a history snapshot and an atomic write. The plan is made from
+the document read under its lock. The result adds `placement` (`seed`,
+`recipeHash`, `group`, `placed`, `candidates` and `rejected` counts by
+`outside`, `exclusion`, `slope` and `budget`) and the normalized `recipe`, which
+replays the same plan with `--file`. The group node is tagged `scatter` and
+`scatter:<first 8 recipeHash digits>`; placements are `<group>-1`, `<group>-2`,
+... Template copies are made visible, so a hidden template stays a template.
+Instancing models needs a `model-bundle` document: convert a model once with
+`import --from <doc> --out <id>.model-bundle.json`. A taken group fails with
+`DUPLICATE_ID` (pass `--replace`), and nothing placed with `SCATTER_EMPTY`
+(`details.rejected`). Grounding follows the terrain's translation, yaw and
+uniform scale only (`TERRAIN_TRANSFORM`); placements and candidates are bounded
+(`PROCEDURAL_BUDGET`).
+
+Generate, replay and review:
+
+```sh
+bin/model-forge generate list
+bin/model-forge generate show tree
+bin/model-forge generate tree --preset palm --seed 3 --out "$OUT/palm.model.json" --review "$OUT/palm-review"
+bin/model-forge generate tree --file "$OUT/palm.generate.json" --out "$OUT/replay/palm.model.json"
+cmp "$OUT/palm.model.json" "$OUT/replay/palm.model.json"
+bin/model-forge generate rock --preset boulder --count 4 --seed 10 --out "$OUT/boulders" --review "$OUT/boulders-review"
+bin/model-forge generate building --preset townhouse --set floors=4 --set roofColor=#2f3a44 --out "$OUT/townhouse.model.json" --dry-run
+bin/model-forge -d "$OUT/palm.model.json" variants --count 6 --seed 2 --vary height=5..9 --materials frond=#5f9a3c,#7aa04a --out "$OUT/palms" --review
+bin/scene-forge -p "$OUT/garage" model import --file "$OUT/palm.model.json" --dry-run
+```
+
+Scatter trees and stones over a generated terrain, first with flags, then with a
+recipe file:
+
+```sh
+bin/model-forge generate terrain --preset hills --seed 4 --set width=40 --set depth=40 --set amplitude=4 --out "$OUT/meadow.model.json"
+bin/model-forge generate tree --seed 5 --out "$OUT/oak.model.json"
+bin/model-forge generate rock --seed 6 --out "$OUT/stone.model.json"
+bin/model-forge import --from "$OUT/meadow.model.json" --out "$OUT/glade.model-bundle.json"
+bin/model-forge -d "$OUT/glade.model-bundle.json" scatter --group trees --model oak --dependency "$OUT/oak.model.json" --spacing 7 --on terrain --scale 0.7..1.2 --dry-run
+bin/model-forge -d "$OUT/glade.model-bundle.json" scatter --group trees --model oak --dependency "$OUT/oak.model.json" --spacing 7 --on terrain --scale 0.7..1.2 --expected-revision 0
+bin/model-forge -d "$OUT/glade.model-bundle.json" scatter --file source/model-forge/examples/recipes/stones.scatter.json --dependency "$OUT/stone.model.json" --expected-revision 1
+bin/model-forge -d "$OUT/glade.model-bundle.json" review --out "$OUT/glade-review" --views iso,top
+bin/model-forge -d "$OUT/glade.model-bundle.json" export --format glb --validate --out "$OUT/glade.glb"
+```
+
+The recipe, `source/model-forge/examples/recipes/stones.scatter.json`, keeps a
+clearing free and grounds slightly tilted, varied stones on the terrain:
+
+```text
+{"schemaVersion": 1, "kind": "scatter", "seed": 2, "group": "stones",
+ "area": {"type": "rect", "min": [-18, -18], "max": [18, 18]},
+ "exclude": [{"type": "circle", "center": [0, 0], "radius": 4}],
+ "distribution": {"type": "poisson", "minDistance": 2.5},
+ "items": [{"model": "stone", "vary": {"size": [0.3, 0.8]}}],
+ "rotation": {"tilt": [-8, 8]},
+ "ground": {"mode": "terrain", "node": "terrain", "sink": 0.05}}
+```
+
 ## Error codes
 
 Read `error.code`, then `error.hint` (the remedy) and `error.details`.
@@ -482,13 +616,19 @@ Read `error.code`, then `error.hint` (the remedy) and `error.details`.
 | | `QUALITY_GATE_FAILED` | `audit` findings; repair the listed geometry or budgets |
 | | `ALREADY_EXISTS` | An `export` or `preview` output file exists, or a `review` directory is not empty; choose a new path or pass `--overwrite` deliberately |
 | | `INVALID_CAMERA` | Use a named view, an orbit or a fixed camera from a replay plan |
+| Procedural | `GENERATOR_NOT_FOUND` | No generator has that name; use one of `details.available` (`generate list`) |
+| | `VARIANT_RANGE` | A `--vary` range lies outside the parameter's declared `min`..`max` (`details.declared`), has min > max, or holds no whole number for an integer parameter; narrow it |
+| | `PROCEDURAL_BUDGET` | A generator exceeded its triangle budget, or a scatter exceeded 2,000 placements, 20,000 candidates or 10,000 document nodes (`details.limit`); lower detail, resolution or counts, or increase spacing |
+| | `SCATTER_EMPTY` | Nothing was placed; read `details.rejected` and widen the area, lower the spacing or relax exclusions and `maxSlope` (or pass `--allow-empty`) |
+| | `TERRAIN_TRANSFORM` | The terrain or scatter parent chain has tilt, nonuniform scale or a pattern; grounding follows translation, yaw and uniform scale only |
 | Runtime | `BROWSER_UNAVAILABLE`, `PLAYWRIGHT_UNAVAILABLE`, `RENDER_FAILED` | Review cannot launch Chromium, cannot resolve Playwright (`details.remedies`), or rendering failed; run `doctor` |
 | | `BUILD_REQUIRED` | A source run is missing built assets; run `npm run build` in `source/model-forge` or use `bin/model-forge` |
 | | `INTERNAL_ERROR` | An unexpected failure; report the message, since retrying the same input fails the same way |
 
 ## Limits
 
-`discover` reports the limits of the installed build: 16 MiB per JSON input,
+`discover` reports the limits of the installed build (procedural ones under
+`procedural.limits`): 16 MiB per JSON input,
 10,000 authored nodes per model, 10,000 operations per batch, 20,000 expanded
 objects, 2,000,000 triangles, 256 pattern copies, model nesting depth 16 and 64
 rig joints, plus the Littlewild per-mesh, per-definition and engine JSON

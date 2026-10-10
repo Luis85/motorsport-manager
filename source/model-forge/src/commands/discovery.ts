@@ -12,6 +12,7 @@ import { jsonSchema, schemaKinds } from '../domain/schemas.js';
 import { VERSION } from '../version.js';
 import { createFromExample, exampleDocument, listExamples } from '../infra/examples.js';
 import { serializeDocument } from '../application/document.js';
+import { proceduralCatalog } from '../application/generate.js';
 import { playwrightSetup } from '../infra/preview.js';
 import type { CommandContext } from './context.js';
 
@@ -70,7 +71,9 @@ export function registerDiscoveryCommands(c: CommandContext) {
     .command('discover')
     .alias('catalog')
     .description('Agent protocol: workflow, document kinds, operations, limits, exports, errors')
-    .action(() => output(discoverCatalog(program.name(), VERSION, commandPaths(program))));
+    .action(() =>
+      output(discoverCatalog(program.name(), VERSION, commandPaths(program), proceduralCatalog())),
+    );
   program
     .command('describe [path...]')
     .description('Machine-readable command arguments, flags, defaults and choices')

@@ -14,6 +14,8 @@ import { registerNodeCommands } from './nodes.js';
 import { registerModelCommands } from './model.js';
 import { registerRigCommands } from './rigging.js';
 import { registerOutputCommands } from './outputs.js';
+import { registerGenerateCommands } from './generate.js';
+import { registerScatterCommands } from './scatter.js';
 
 export interface CliIdentity {
   name: string;
@@ -80,6 +82,8 @@ export function createCli(
   registerModelCommands(context);
   registerRigCommands(context);
   registerOutputCommands(context);
+  registerGenerateCommands(context);
+  registerScatterCommands(context);
 
   return {
     program,

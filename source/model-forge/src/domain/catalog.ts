@@ -49,6 +49,13 @@ export const workflow = [
     purpose: 'Load the exact JSON Schema of batches, operations, geometry and materials.',
   },
   {
+    step: 'generate',
+    command:
+      'generate list; generate <generator> --out <new.model.json> [--preset] [--seed] [--review <dir>]',
+    purpose:
+      'Or start from a procedural model (rock, tree, bush, crate, barrel, fence, building, terrain); see procedural.',
+  },
+  {
     step: 'create',
     command: 'create <path> --id <id> --name <name> | import --from <file> --out <path>',
     purpose: 'Start a new document; neither command overwrites an existing file.',
@@ -117,7 +124,12 @@ export const exportConsumers = [
 ];
 
 /** The complete machine-readable discovery document. */
-export function discoverCatalog(tool: string, version: string, commands: string[]) {
+export function discoverCatalog(
+  tool: string,
+  version: string,
+  commands: string[],
+  procedural: unknown,
+) {
   return {
     tool,
     version,
@@ -196,6 +208,7 @@ export function discoverCatalog(tool: string, version: string, commands: string[
         'littlewild-3d-asset (--variant selects one; variantModels maps all)',
       ],
     },
+    procedural,
     exports: exportConsumers,
     exportFormats: [...exportFormats, 'model', 'model-bundle', 'littlewild'],
     littlewildFamilies: Object.keys(littlewildFamilies),

@@ -9,7 +9,10 @@ Model Forge edits exactly one model per document. Use the repository executable
 
 1. Run `discover` once. Use `describe <command path>` for flags and `schema --kind batch --raw`
    (plus `geometry`, `material`, `node`, `parameter` or `rig`) for exact JSON contracts.
-2. Start a document with `create <path> --id --name` or `import --from <file> --out <path>`.
+2. Start a document with `create <path> --id --name` or `import --from <file> --out <path>`,
+   or from a generator: `generate list`, `generate show <generator>`, then
+   `generate <generator> --out <new.model.json> [--preset --seed --set name=value]
+[--review <new directory>]`; keep the written `<id>.generate.json` to replay it.
    Use `<id>.model.json`, or `<id>.model-bundle.json` when the model nests other models.
    Neither command overwrites; choose a new path on `DOCUMENT_EXISTS`. Revision 0 is
    written as no field.
@@ -24,7 +27,13 @@ Model Forge edits exactly one model per document. Use the repository executable
    verifying that no writer runs. Read `error.hint`: it is the remedy for that failure.
 6. Use `node list --details` to check bounds, `validate`, then `audit --file <policy>`. Use
    `review --out <new directory>`; reuse its `replay-plan.json` to hold cameras fixed.
-7. Export for the consumer: `model-bundle` for Scene Forge, `littlewild` for Wildlands
+7. For many similar assets use `generate --count <n> --out <new directory>` (consecutive
+   seeds) or `-d <doc> variants --count <n> --vary name=min..max --out <new directory>`
+   (ranges must narrow the declared min..max), and judge them with `--review`. Place
+   copies with `-d <doc> scatter` (a recipe or flags; `--dry-run`, then the guards);
+   instancing models needs a model-bundle (`import --from <doc> --out <id>.model-bundle.json`
+   and `--dependency <model file>`).
+8. Export for the consumer: `model-bundle` for Scene Forge, `littlewild` for Wildlands
    games, `glb --validate` for engines. Outputs never replace an existing file unless you
    pass `--overwrite` (Littlewild exports merge losslessly instead: unchanged content keeps
    the definition's own bytes, the same contract as Scene Forge's `littlewild export` and
@@ -56,6 +65,13 @@ a bundle are frozen: change one in its own document and `putDependency` with
   goes through `src/infra/paths.ts` (`checkOutput`, `refuseProjectDocument`).
 - Budgets: at most 400 code lines per source file and 450 per test file. Extract cohesive
   responsibilities instead of compressing code.
+- Generators live in `src/application/generators/` (one `GeneratorDefinition` per file, a zod
+  parameter schema with defaults, ranges and descriptions, presets and a triangle budget)
+  and are registered in `generators/index.ts`. They are pure and deterministic: randomness
+  only from the `random` stream they receive (fork one stream per concern), never
+  `Math.random` or `Date` (the architecture check enforces it), every number rounded by the
+  kit. Any change to a generator's output bytes needs a version bump and an updated golden
+  hash in `tests/generate.test.ts`; check the look with `generate <id> --count 3 --review`.
 - Examples are data in `examples/` (`index.json` plus documents); they are embedded into the
   executable.
 - Never hand-edit `bin/model-forge`: run `npm run build:cli`, verify with

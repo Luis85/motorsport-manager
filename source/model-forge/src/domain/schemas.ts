@@ -16,8 +16,10 @@ import {
   PatternSchema,
   RigSchema,
   LittlewildAssetSchema,
+  ScatterRecipeSchema,
 } from '../kernel/index.js';
 import { ModelBatchSchema, ModelOperationSchema, ParameterSpecSchema } from './document.js';
+import { GeneratorRecipeSchema, ModelVariantsSchema } from './generate.js';
 
 /** The machine-readable contracts `schema --kind` publishes. */
 export const schemas = {
@@ -39,6 +41,9 @@ export const schemas = {
   'camera-snapshot': CameraSnapshotSchema,
   'quality-policy': QualityPolicySchema,
   'littlewild-asset': LittlewildAssetSchema,
+  scatter: ScatterRecipeSchema,
+  'generator-recipe': GeneratorRecipeSchema,
+  'model-variants': ModelVariantsSchema,
 } satisfies Record<string, z.ZodType>;
 export const schemaKinds = Object.keys(schemas) as (keyof typeof schemas)[];
 

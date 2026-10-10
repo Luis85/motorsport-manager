@@ -67,13 +67,14 @@ bin/model-forge -d lamp.model.json export --format glb --validate --out lamp.glb
 
 ## Commands
 
-| Group     | Commands                                                                                                                                                                                                          |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Discovery | `discover` (`catalog`), `describe`, `schema`, `doctor`, `example list\|show\|create`                                                                                                                              |
-| Lifecycle | `create`, `import`                                                                                                                                                                                                |
-| Read      | `inspect`, `validate`, `node list`, `history`, `rig inspect`                                                                                                                                                      |
-| Write     | `apply`, `put`, `remove`, `add`, `node transform\|patch\|edit\|duplicate\|group\|reparent\|ground\|place`, `parameter put\|remove`, `metadata set`, `dependency put\|remove`, `rig bind\|pose\|remove`, `restore` |
-| Output    | `review`, `preview`, `audit`, `export`                                                                                                                                                                            |
+| Group      | Commands                                                                                                                                                                                                          |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Discovery  | `discover` (`catalog`), `describe`, `schema`, `doctor`, `example list\|show\|create`                                                                                                                              |
+| Lifecycle  | `create`, `import`                                                                                                                                                                                                |
+| Read       | `inspect`, `validate`, `node list`, `history`, `rig inspect`                                                                                                                                                      |
+| Write      | `apply`, `put`, `remove`, `add`, `node transform\|patch\|edit\|duplicate\|group\|reparent\|ground\|place`, `parameter put\|remove`, `metadata set`, `dependency put\|remove`, `rig bind\|pose\|remove`, `restore` |
+| Output     | `review`, `preview`, `audit`, `export`                                                                                                                                                                            |
+| Procedural | `generate list\|show\|<generator>`, `variants`, `scatter`                                                                                                                                                         |
 
 Batch operations: `putNode`, `patchNode`, `patchNodes`, `removeNode`, `duplicateNode`,
 `reparentNode`, `groupNodes`, `groundNode`, `placeNode`, `putGeometry`, `removeGeometry`,
@@ -81,6 +82,33 @@ Batch operations: `putNode`, `patchNode`, `patchNodes`, `removeNode`, `duplicate
 `putDependency` and `removeDependency` (bundles only). Scene operations (`setCamera`,
 `setEnvironment`, `setParameter`) fail with `UNKNOWN_OPERATION` and name the model
 equivalent. Rigs bind to nested model-instance nodes, the kernel's rig scope.
+
+## Procedural generation
+
+`generate <generator> --out <new.model.json>` builds an ordinary, editable model document
+from a seeded generator: `rock`, `tree`, `bush`, `crate`, `barrel`, `fence`, `building` and
+`terrain`, each with presets (`generate list`, `generate show <generator>`). Main dimensions
+stay model parameters (`$param`). Every document gets a replayable
+`<id>.generate.json` recipe (`generate <generator> --file <recipe> --out <new>` rebuilds the
+same bytes); `--count <n>` writes numbered documents with consecutive seeds and `--review
+<new directory>` renders them all in one capture session. `-d <doc> variants` samples
+declared parameter ranges (`--vary name=min..max`, narrowed only: `VARIANT_RANGE`) and
+material colors into new documents plus `variants.json`. `-d <doc> scatter` places template
+nodes or dependency-model instances with the kernel's scatter planner as one guarded edit
+(`--dry-run`, `--expected-revision`, `--expected-state`), grounded on a heightfield with
+`--on <terrain node>`. Generators are pure and deterministic (forge keyed PRNG v1, numbers
+rounded to 1e-4), bounded by triangle budgets (`PROCEDURAL_BUDGET`) and never overwrite.
+
+```sh
+bin/model-forge generate tree --preset palm --seed 3 --out palm.model.json --review palm-review
+bin/model-forge generate rock --preset boulder --count 6 --out boulders --review boulders-review
+bin/model-forge -d palm.model.json variants --count 6 --vary height=5..9 --out palms --review
+bin/model-forge generate tree --file source/model-forge/examples/recipes/palm.generate.json --out beach-palm.model.json
+bin/model-forge -d glade.model-bundle.json scatter --file source/model-forge/examples/recipes/stones.scatter.json --dependency stone.model.json --dry-run
+```
+
+`examples/recipes/` holds a generator recipe and a scatter recipe (`schema --kind
+generator-recipe`, `schema --kind scatter`).
 
 ## Imports and exports
 

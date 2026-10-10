@@ -27,7 +27,18 @@ test('discover publishes the ordered protocol, operations, exports and error rem
   const catalog = await ok(['discover']);
   assert.deepEqual(
     catalog.workflow.map((s: { step: string }) => s.step),
-    ['discover', 'schema', 'create', 'inspect', 'dry-run', 'apply', 'verify', 'review', 'export'],
+    [
+      'discover',
+      'schema',
+      'generate',
+      'create',
+      'inspect',
+      'dry-run',
+      'apply',
+      'verify',
+      'review',
+      'export',
+    ],
   );
   assert.deepEqual(await ok(['catalog']), catalog, 'catalog is an alias');
   const operations = catalog.operations.map((o: { op: string }) => o.op);

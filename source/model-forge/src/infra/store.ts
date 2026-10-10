@@ -141,12 +141,22 @@ export async function createDocument(file: string, document: EditorDocument) {
   });
 }
 
-/** Apply one guarded batch. Unchanged results write nothing and keep the revision. */
-export async function commitEdit(file: string, operations: ModelOperation[], options: EditOptions) {
+/**
+ * Apply one guarded batch. Unchanged results write nothing and keep the revision. A planner
+ * function derives the batch from the document read under the lock (procedural edits).
+ */
+export async function commitEdit(
+  file: string,
+  operations: ModelOperation[] | ((document: EditorDocument) => ModelOperation[]),
+  options: EditOptions,
+) {
   await refuseProjectDocument(file, 'edit');
   return withFileLock(file, async () => {
     const current = await readDocument(file);
-    const { next, result } = prepareModelEdit(current.document, operations, options);
+    // Guards are checked before planning, so a stale writer fails as REVISION_CONFLICT.
+    checkGuards(current.document, options);
+    const batch = typeof operations === 'function' ? operations(current.document) : operations;
+    const { next, result } = prepareModelEdit(current.document, batch, options);
     if (result.changed && !options.dryRun) await persist(file, current, next);
     return { path: file, ...result };
   });
