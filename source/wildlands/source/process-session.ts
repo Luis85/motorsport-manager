@@ -70,8 +70,10 @@
    // Arrival streams are lazy cursors: each next minute is computed on demand, so open streams never expand a list.
    streams: definition.arrivals.map((def, index) => ({def, index, k: 0, at: def.at})), seed, active, retained, finished: [], visits: new Map(),
    tokenList: null, poolList: null, seen: new Map(), finishAgg: new Map(), entryAgg: new Map(), ledger, sink};
-  // Scheduler owns timed ECS value updates; graph/structural changes happen after it releases its lock.
+  // Scheduler owns timed ECS value updates; graph/structural changes happen after it releases its lock. Its one system runs on the
+  // clock entity, so each minute's step names that entity instead of querying every case and token for it.
   scheduler.register({id: 'process-work', phase: 'simulate', order: 1, query: ['process-clock'], update: () => root.LWProcessSystems.work(state)});
+  const tick = {entityId: 'process-clock'};
   root.LWProcessSystems.admit(state);
   root.LWProcessSystems.settle(state);
   if (series) root.LWProcessSeries.observe(series, state);
@@ -155,7 +157,7 @@
      if (systems.nextArrival(state) === null && !systems.progress(state).tokens) break;
      // Quiet minutes (no arrival, completion or timer due) are applied in bulk with identical totals instead of being stepped one by one.
      systems.fastForward(state, target);
-     scheduler.step(world, .1);
+     scheduler.step(world, .1, tick);
      systems.admit(state);
      systems.settle(state);
      if (series) root.LWProcessSeries.observe(series, state);
