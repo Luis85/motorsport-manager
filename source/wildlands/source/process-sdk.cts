@@ -31,6 +31,7 @@ require('./process-bpmn-import.js');
 require('./process-bpmn-conformance-values.js');
 require('./process-bpmn-conformance-model.js');
 require('./process-bpmn-conformance-bpsim.js');
+require('./process-bpmn-conformance-schema.js');
 require('./process-bpmn-conformance.js');
 require('./process-ledger-cases.js');
 require('./process-ledger.js');
