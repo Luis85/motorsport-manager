@@ -9,6 +9,8 @@
  * The scene is assembled from: LWProcess3DKit (pieces, merging, signs, moods), LWProcess3DStations (rooms, captions, flows),
  * LWProcess3DMarkers (work markers and actors), LWProcess3DCamera (orbit, framing, picking) and LWProcess3DCaptions (wording,
  * readable size and the caption canvas counters). The three.js types come from the facade in process-three.d.ts.
+ * Colours: each scene resolves the studio palette once from its canvas (LWProcessPalette.read) and hands it to the kit; the lights
+ * and the clear colour are palette roles too.
  */
 declare namespace LWProcess3D {
  interface Surface {draw(view: LWProcessApp.View, delta: number): void; frame(): void; dispose(): void;}
@@ -29,7 +31,7 @@ declare namespace LWProcess3D {
  'use strict';
  const root = inputRoot as {THREE: LWThree.Module; LWProcess3DKit: LWProcess3DKit.Api; LWProcess3DStations: LWProcess3DStations.Api;
   LWProcess3DMarkers: LWProcess3DMarkers.Api; LWProcess3DCamera: LWProcess3DCamera.Api; LWProcess3DCaptions: LWProcess3DCaptions.Api;
-  LWProcess3D?: LWProcess3D.Api};
+  LWProcessPalette: LWProcessPalette.Api; LWProcess3D?: LWProcess3D.Api};
  /** While playing, animated frames are drawn at most this often (seconds). */
  const FRAME = 1 / 30;
  const renderers = new Set<LWThree.WebGLRenderer>(), stages = new WeakMap<LWProcess3D.Stage, LWThree.WebGLRenderer>();
@@ -72,34 +74,36 @@ declare namespace LWProcess3D {
    throw e;
   }
  }
- function lights(T: LWThree.Module, scene: LWThree.Scene): LWThree.DirectionalLight {
-  scene.add(new T.HemisphereLight('#d9e8ff', '#38434e', 1.6));
-  const light = new T.DirectionalLight('#fff1df', 1.8);
+ function lights(T: LWThree.Module, scene: LWThree.Scene, colours: LWProcessPalette.Resolved): LWThree.DirectionalLight {
+  scene.add(new T.HemisphereLight(colours['light-sky'], colours['light-ground'], 1.6));
+  const light = new T.DirectionalLight(colours['light-key'], 1.8);
   light.position.set(10, 40, 20);
   light.castShadow = true;
   light.shadow.mapSize.set(2048, 2048);
   light.shadow.bias = -.0004;
   light.shadow.normalBias = .04;
   scene.add(light, light.target);
-  const fill = new T.DirectionalLight('#a9cddd', 1.2);
-  fill.position.set(-20, 15, -25); scene.add(fill);
+  const fill = new T.DirectionalLight(colours['light-fill'], 1.2);
+  fill.position.set(-20, 15, -25);
+  scene.add(fill);
   return light;
  }
  function build(renderer: LWThree.WebGLRenderer, canvas: HTMLCanvasElement, definition: LWProcess.Definition, select: Select,
   done: () => void): LWProcess3D.Surface {
-  const T = root.THREE;
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setClearColor('#13181f');
+  const T = root.THREE, colours = root.LWProcessPalette.read(canvas);
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  renderer.setClearColor(colours.stage);
   // PCFSoftShadowMap is deprecated in this three.js and falls back to PCFShadowMap with a warning; asking for it directly draws the same.
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFShadowMap;
   renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.2;
-  const scene = new T.Scene(), camera = new T.PerspectiveCamera(38, 1, .1, 3000), light = lights(T, scene);
+  const scene = new T.Scene(), camera = new T.PerspectiveCamera(38, 1, .1, 3000), light = lights(T, scene, colours);
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)'), steps = new Map(definition.steps.map(s => [s.id, s]));
   let needsRender = true, animating = false, actors = false, sinceRender = 0, phase = 0, previous: LWProcessApp.View | undefined;
   let selected: string | null | undefined, viewportWidth = 0, viewportHeight = 0;
   const motionChanged = () => {needsRender = true;};
   reducedMotion.addEventListener('change', motionChanged);
-  const kit = root.LWProcess3DKit.create(T, scene), stations = root.LWProcess3DStations.build(T, scene, kit, definition);
-  const markers = root.LWProcess3DMarkers.create(T, scene, kit, canvas);
+  const kit = root.LWProcess3DKit.create(T, scene, colours), stations = root.LWProcess3DStations.build(T, scene, kit, definition);
+  const markers = root.LWProcess3DMarkers.create(T, scene, kit);
   const view3d = root.LWProcess3DCamera.create(T, {canvas, camera, steps: definition.steps, hits: stations.hits, select,
    selected: () => selected ? steps.get(selected) ?? null : null, changed: () => {needsRender = true;},
    framed(target, span) {

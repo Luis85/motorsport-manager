@@ -11,6 +11,9 @@
  *    per class inside that container, so the container's own visibility and transform still apply.
  *  - Shadows follow `LWProcess3DBake.caster`: large pieces above the floor cast, floors and small props only receive.
  *  - Checks read `userData.pieces` and `userData.shape` (piece count and fingerprint) from merged meshes and station groups.
+ *  - `colours` are the studio palette's roles resolved once for this scene (LWProcessPalette.read of the canvas, or the
+ *    palette's constants); the kit's own sign plates, mood faces and vertex-colour base, the rooms, stations and markers draw
+ *    with them.
  */
 declare namespace LWProcess3DKit {
  interface Kit extends LWProcessRooms.Kit {
@@ -27,16 +30,22 @@ declare namespace LWProcess3DKit {
   /** Free every geometry, material, texture and canvas of the scene. */
   dispose(): void;
  }
- interface Api {create(T: LWThree.Module, scene: LWThree.Scene): Kit;}
+ interface Api {
+  /** `colours` defaults to the palette read from the studio root (its constants outside a page). */
+  create(T: LWThree.Module, scene: LWThree.Scene, colours?: LWProcessPalette.Resolved): Kit;
+ }
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcess3DBake: LWProcess3DBake.Api; LWProcessRooms: LWProcessRooms.Api; LWProcess3DKit?: LWProcess3DKit.Api};
+ const root = inputRoot as {
+  LWProcess3DBake: LWProcess3DBake.Api; LWProcessRooms: LWProcessRooms.Api; LWProcessPalette: LWProcessPalette.Api;
+  LWProcess3DKit?: LWProcess3DKit.Api;
+ };
  type Piece = LWProcess3DBake.Piece;
  type Options = LWThree.MaterialOptions;
  /** A recorded fixed piece; `at` is the station offset that places it in the scene (zero inside other containers). */
  interface Entry {piece: Piece; key: string; at: readonly [number, number, number]}
- function create(T: LWThree.Module, scene: LWThree.Scene): LWProcess3DKit.Kit {
+ function create(T: LWThree.Module, scene: LWThree.Scene, colours = root.LWProcessPalette.read()): LWProcess3DKit.Kit {
   const bake = root.LWProcess3DBake, shapes = new Map<string, LWThree.BufferGeometry>(), materials = new Map<string, LWThree.Material>();
   const textures: LWThree.Texture[] = [], canvases: HTMLCanvasElement[] = [], moods: LWThree.Sprite[] = [];
   const stations = new Map<string, LWThree.Group>(), stationOf = new Map<LWThree.Object3D, string>();
@@ -62,7 +71,7 @@ declare namespace LWProcess3DKit {
   }
   /** The white, vertex-coloured material of one merged class (its options are the JSON after the caster flag). */
   function classMaterial(key: string): LWThree.Material {
-   return mat('#ffffff', {...JSON.parse(key.slice(2)) as Options, vertexColors: true});
+   return mat(colours['vertex-white'], {...JSON.parse(key.slice(2)) as Options, vertexColors: true});
   }
   function group(parent: LWThree.Object3D): LWThree.Group {
    const g = new T.Group();
@@ -175,7 +184,7 @@ declare namespace LWProcess3DKit {
   function sign(parent: LWThree.Object3D, text: string, x: number, y: number, z: number, width: number, height: number,
    accent: string): LWThree.Mesh {
    const c = canvas(512, Math.max(64, Math.round(512 * height / width))), ctx = c.getContext('2d')!;
-   ctx.fillStyle = '#10161f';
+   ctx.fillStyle = colours['sign-plate'];
    ctx.fillRect(0, 0, c.width, c.height);
    ctx.strokeStyle = accent;
    ctx.lineWidth = 10;
@@ -186,7 +195,7 @@ declare namespace LWProcess3DKit {
     size -= 2;
     ctx.font = `700 ${size}px system-ui`;
    }
-   ctx.fillStyle = '#f4f7fb';
+   ctx.fillStyle = colours['sign-ink'];
    ctx.textAlign = 'center';
    ctx.textBaseline = 'middle';
    ctx.fillText(text, c.width / 2, c.height / 2 + 2, c.width - 44);
@@ -196,7 +205,7 @@ declare namespace LWProcess3DKit {
    mesh.position.set(x, y, z + .08);
    mesh.userData.signText = text;
    parent.add(mesh);
-   fixed(parent, 'box', x, y, z, width + .12, height + .12, .1, '#0a0e14');
+   fixed(parent, 'box', x, y, z, width + .12, height + .12, .1, colours['sign-frame']);
    return mesh;
   }
   /** Floating mood face for an authored `emotion`: one shared canvas texture per level, from the room module's seven-level table. */
@@ -208,14 +217,14 @@ declare namespace LWProcess3DKit {
    const c = canvas(128, 128), ctx = c.getContext('2d')!;
    ctx.scale(1.28, 1.28);
    ctx.fillStyle = mood.color;
-   ctx.strokeStyle = '#13181f';
+   ctx.strokeStyle = colours['face-ink'];
    ctx.lineCap = 'round';
    ctx.lineWidth = 5;
    ctx.beginPath();
    ctx.arc(50, 50, 46, 0, Math.PI * 2);
    ctx.fill();
    ctx.stroke();
-   ctx.fillStyle = '#13181f';
+   ctx.fillStyle = colours['face-ink'];
    for (const x of [35, 65]) {
     ctx.beginPath();
     ctx.arc(x, 40, 5.5, 0, Math.PI * 2);
@@ -261,7 +270,7 @@ declare namespace LWProcess3DKit {
    textures.length = 0;
    canvases.length = 0;
   }
-  return {T, mat, group, piece, fixed, sign, mood, station, shape, seal, show, moods, dispose};
+  return {T, colours, mat, group, piece, fixed, sign, mood, station, shape, seal, show, moods, dispose};
  }
  root.LWProcess3DKit = Object.freeze({create});
 })(globalThis);

@@ -4,10 +4,11 @@
  * Work markers of the Process Studio 3D view (LWProcess3DMarkers): up to 120 tokens per frame, active work first, as articulated
  * desk actors (at most three per room and 32 in the view, working tokens of people's steps that are not escalated) or as compact
  * markers. Presentation only: it reads the detached snapshot it is given and never ticks.
- *  - Compact markers use the 2D map's state encoding (LWProcessMapMarks.STATES): Working a filled disc, Waiting a ring, Timer an
- *    hourglass, Backlog a square and Blocked a cross, in the stage legend's colours (the process.css state tokens read from the
- *    canvas). Each shape is one low-poly geometry shared by every marker of that state (`geometry.userData.shape` names it, and
- *    each marker carries `userData.status`); escalated tokens keep their shape in the escalated colour.
+ *  - Compact markers use the 2D map's state encoding (LWProcessMapMarks.STATES, states from LWProcessWorkState.statusOf): Working
+ *    a filled disc, Waiting a ring, Timer an hourglass, Backlog a square and Blocked a cross, in the stage legend's colours (the
+ *    palette's state roles as the kit resolved them from the canvas, `Kit.colours`). Each shape is one low-poly geometry shared by
+ *    every marker of that state (`geometry.userData.shape` names it, and each marker carries `userData.status`); escalated tokens
+ *    keep their shape in the escalated colour.
  *  - Actors are presentation of active work, not staff or capacity. Their desk, legs and screen are baked once per scene, so an
  *    actor costs six draws; hands, head and posture animate only while the run plays (`animate`).
  */
@@ -23,29 +24,34 @@ declare namespace LWProcess3DMarkers {
  interface Api {
   /** The marker shape of each work state, in legend order. */
   readonly SHAPES: Readonly<Record<LWProcessMapMarks.Status, Shape>>;
-  create(T: LWThree.Module, scene: LWThree.Scene, kit: LWProcessRooms.Kit, canvas: HTMLCanvasElement): Markers;
+  create(T: LWThree.Module, scene: LWThree.Scene, kit: LWProcessRooms.Kit): Markers;
  }
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcess3DBake: LWProcess3DBake.Api; LWProcessMapMarks: LWProcessMapMarks.Api; LWProcess3DMarkers?: LWProcess3DMarkers.Api};
+ const root = inputRoot as {
+  LWProcess3DBake: LWProcess3DBake.Api; LWProcessMapMarks: LWProcessMapMarks.Api; LWProcessWorkState: LWProcessWorkState.Api;
+  LWProcessPalette: LWProcessPalette.Api; LWProcess3DMarkers?: LWProcess3DMarkers.Api;
+ };
  type Status = LWProcessMapMarks.Status;
  type Piece = LWProcess3DBake.Piece;
  const AUTOMATED = new Set(['touchpoint', 'machine', 'system']), LIMIT = 120, ACTORS = 32, PER_ROOM = 3;
  const SHAPES: Record<Status, LWProcess3DMarkers.Shape> = {active: 'disc', queued: 'ring', timer: 'hourglass', backlog: 'square', held: 'cross'};
- /** State colours: the process.css tokens of the legend, with the same values as fallbacks for a canvas outside the studio. */
- const TOKENS: Record<Status | 'escalated', [string, string]> = {
-  active: ['--accent', '#ffbb73'], queued: ['--state-queue', '#91b9d5'], timer: ['--state-timer', '#d9c58a'],
-  backlog: ['--state-backlog', '#b79ad6'], held: ['--danger', '#e07a7a'], escalated: ['--escalated', '#ff8a5c'],
+ /** State colours: the palette's legend roles of each work state, and the escalated colour. */
+ const ROLES: Record<Status | 'escalated', LWProcessPalette.Role> = {
+  active: 'state-active', queued: 'state-queued', timer: 'state-timer', backlog: 'state-backlog', held: 'state-held',
+  escalated: 'state-escalated',
  };
  const p = (kind: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, turn?: LWThree.Turn): Piece =>
   turn ? {kind, x, y, z, sx, sy, sz, color, turn} : {kind, x, y, z, sx, sy, sz, color};
+ /** Marker pieces are white; the state material tints them. */
+ const WHITE = root.LWProcessPalette.value('vertex-white');
  /** Compact marker shapes centred on their marker position, about 0.36 units across. */
  const SHAPE_PIECES: Record<Exclude<LWProcess3DMarkers.Shape, 'ring'>, Piece[]> = {
-  disc: [p('cylinder', 0, 0, 0, .18, .1, .18, '#ffffff')],
-  hourglass: [p('cone', 0, -.1, 0, .16, .2, .16, '#ffffff', [Math.PI, 0, 0]), p('cone', 0, .1, 0, .16, .2, .16, '#ffffff')],
-  square: [p('box', 0, 0, 0, .32, .1, .32, '#ffffff')],
-  cross: [p('box', 0, 0, 0, .42, .08, .1, '#ffffff', [0, Math.PI / 4, 0]), p('box', 0, 0, 0, .42, .08, .1, '#ffffff', [0, -Math.PI / 4, 0])],
+  disc: [p('cylinder', 0, 0, 0, .18, .1, .18, WHITE)],
+  hourglass: [p('cone', 0, -.1, 0, .16, .2, .16, WHITE, [Math.PI, 0, 0]), p('cone', 0, .1, 0, .16, .2, .16, WHITE)],
+  square: [p('box', 0, 0, 0, .32, .1, .32, WHITE)],
+  cross: [p('box', 0, 0, 0, .42, .08, .1, WHITE, [0, Math.PI / 4, 0]), p('box', 0, 0, 0, .42, .08, .1, WHITE, [0, -Math.PI / 4, 0])],
  };
  /** Actor parts in their own group's coordinates: the static desk set, the torso, the head and one hand. */
  const DESK: Piece[] = [
@@ -59,7 +65,7 @@ declare namespace LWProcess3DMarkers {
  const HAND = [p('box', 0, -.12, -.15, .16, .2, .45, '#c79062'), p('ball', 0, -.14, -.39, .1, .09, .1, '#d5ac88')];
  interface Actor {group: LWThree.Group; body: LWThree.Group; head: LWThree.Group; hands: LWThree.Group[]; phase: number}
  interface Marker {object: LWThree.Object3D; actor: Actor | null}
- function create(T: LWThree.Module, scene: LWThree.Scene, kit: LWProcessRooms.Kit, canvas: HTMLCanvasElement): LWProcess3DMarkers.Markers {
+ function create(T: LWThree.Module, scene: LWThree.Scene, kit: LWProcessRooms.Kit): LWProcess3DMarkers.Markers {
   const bake = root.LWProcess3DBake, owned: LWThree.BufferGeometry[] = [], base = new Map<string, LWThree.BufferGeometry>();
   const unit = (kind: string) => {
    let g = base.get(kind);
@@ -83,12 +89,10 @@ declare namespace LWProcess3DMarkers {
    g.userData.shape = name;
    shapes.set(status, g);
   }
-  const style = getComputedStyle(canvas);
-  const colour = (key: Status | 'escalated') => style.getPropertyValue(TOKENS[key][0]).trim() || TOKENS[key][1];
   const tints = new Map<Status | 'escalated', LWThree.Material>();
-  for (const key of Object.keys(TOKENS) as (Status | 'escalated')[]) tints.set(key, kit.mat(colour(key)));
+  for (const key of Object.keys(ROLES) as (Status | 'escalated')[]) tints.set(key, kit.mat(kit.colours[ROLES[key]]));
   let parts: Record<'desk' | 'torso' | 'head' | 'hand', LWThree.BufferGeometry> | null = null;
-  const tinted = kit.mat('#ffffff', {vertexColors: true}), screen = kit.mat('#83b9c8', {emissive: '#326578', emissiveIntensity: .35});
+  const tinted = kit.mat(kit.colours['vertex-white'], {vertexColors: true}), screen = kit.mat('#83b9c8', {emissive: '#326578', emissiveIntensity: .35});
   function mesh(parent: LWThree.Object3D, geometry: LWThree.BufferGeometry, material: LWThree.Material): LWThree.Mesh {
    const m = new T.Mesh(geometry, material);
    m.castShadow = true;
@@ -158,7 +162,7 @@ declare namespace LWProcess3DMarkers {
     if (marker.actor) marker.actor.phase = phase;
     Object.assign(o.userData, {phase, escalated: !!token.escalated, item: token.item ?? null});
     if (!marker.actor) {
-     const status = root.LWProcessMapMarks.statusOf(token), m = o as LWThree.Mesh;
+     const status = root.LWProcessWorkState.statusOf(token), m = o as LWThree.Mesh;
      m.geometry = shapes.get(status)!;
      m.material = tints.get(token.escalated ? 'escalated' : status)!;
      Object.assign(o.userData, {token: token.id, status, shape: SHAPES[status]});

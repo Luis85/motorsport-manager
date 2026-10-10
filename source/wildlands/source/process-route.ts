@@ -29,7 +29,10 @@ declare namespace LWProcessRoute {
   mainRoute(definition: LWProcess.Definition, options?: RouteOptions): LWProcess.Step[];
   /** The flow the main route follows out of a step: the first non-deadline flow without `when`, else the first non-deadline flow. */
   next(definition: LWProcess.Definition, stepId: string): LWProcess.Flow | undefined;
-  /** Groups steps by `phase` in order of first appearance; an unphased step joins the phase before it (leading ones the first phase). Null when no step has a phase. */
+  /**
+   * Groups steps by `phase` in order of first appearance; an unphased step joins the phase before it (leading ones the first phase).
+   * Null when no step has a phase.
+   */
   phases(steps: readonly LWProcess.Step[]): Group[] | null;
  }
 }
