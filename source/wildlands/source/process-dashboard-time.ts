@@ -108,7 +108,8 @@
    : `${name} has ${U.number(queued(top.id))} waiting now; no started work has waited yet.`;
   return {...base, notes, caption,
    chart: {kind: 'rows', title: 'Steps ranked by waiting', rows},
-   table: U.table('Waiting by step', ['Step', 'Share of waiting', 'Mean wait per start', 'Waiting now', 'Work starts', 'Busiest pool'], table)};
+   table: U.table('Waiting by step', ['Step', 'Share of waiting', 'Mean wait per start', 'Waiting now', 'Work starts', 'Busiest pool'], table,
+    [false, true, true, true, true, false])};
  }
  function capacity(input: Input): Panel {
   const {definition: d, snapshot: q} = input.view, t = root.LWProcessTerms.of(d), U = u(), T = q.minute;
@@ -141,7 +142,7 @@
   return {...base, caption, notes: ['The shaded band from 85% to 100% marks where queues grow quickly near full use; it is a reading aid, not a target.'],
    chart: {kind: 'bullets', title: 'Average utilisation per pool, with busy units now as a tick', rows},
    table: U.table('Pool utilisation', ['Pool', 'Kind', 'Capacity', w ? `Average utilisation ${over}` : 'Average utilisation', 'Busy now',
-    w ? `Busy minutes ${over}` : 'Busy minutes', 'Used by'], table)};
+    w ? `Busy minutes ${over}` : 'Busy minutes', 'Used by'], table, [false, false, true, true, true, true, false])};
  }
  function queues(input: Input): Panel {
   const {definition: d} = input.view, U = u(), s = input.series && input.series.minutes.length > 1 ? input.series : null;

@@ -211,7 +211,10 @@ test('Dashboard model is pure: the same view gives the same model and the input 
 test('Dashboard flow panels read the sampled series: cumulative lines, interval means, throughput and Little over a window', () => {
  const m = full(200);
  const arrivals = panel(m, 'arrivals'), lines = arrivals.chart as Extract<LWProcessDashboardModel.Chart, {kind: 'lines'}>;
- assert.deepEqual(lines.series.map(s => [s.label, s.values]), [['Arrived', [0, 6, 10, 15]], ['Finished (completed and failed)', [0, 2, 4, 6]]]);
+ assert.deepEqual(lines.series.map(s => [s.label, s.values.slice(0, 4)]), [['Arrived', [0, 6, 10, 15]], ['Finished (completed and failed)', [0, 2, 4, 6]]]);
+ // The view's minute 200 lies after the last sample (180): the lines end there with the snapshot's own counts.
+ const now = enriched(200).snapshot.metrics;
+ assert.deepEqual([lines.xs, ...lines.series.map(s => s.values.at(-1))], [[0, 60, 120, 180, 200], now.arrived, now.completed + now.failed]);
  assert.equal(arrivals.table!.tail, true);
  assert.match(arrivals.caption, /Open work has grown at every sample since minute 0\.$/);
  const wip = panel(m, 'wip');

@@ -6,7 +6,9 @@
  * process, the CSV download, What-if replications (complete, cancelled, never touching the live run), layout at three viewport
  * sizes in two fonts, forced colours, a 24 px root font and a clean page lifecycle; the real-run checks (every panel drawn from the
  * wired read model, the measuring window and lead-time target, What-if warm-up, folding sections on a phone) live in
- * `process-dashboard-wire-checks.ts`. It runs in its own browser on the shared fixture.
+ * `process-dashboard-wire-checks.ts`, and the phone checks against the sticky run bar (focus stops and headings never under it) in
+ * `process-dashboard-phone-checks.ts`, and the layout checks from the visual review (wide tables, recent cases, section spacing) in
+ * `process-dashboard-layout-checks.ts`. It runs in its own browser on the shared fixture.
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -15,6 +17,8 @@ import type {Page} from 'playwright';
 import {nextFrames} from './browser-harness';
 import {query, runSuite} from './process-browser-fixture';
 import {wireChecks} from './process-dashboard-wire-checks';
+import {phoneChecks} from './process-dashboard-phone-checks';
+import {layoutChecks} from './process-dashboard-layout-checks';
 const DEJAVU = '*{font-family:"DejaVu Sans",sans-serif !important}';
 /** The live run as JSON: equal before and after means nothing ticked and nothing changed it. */
 const live = async (page: Page) => JSON.stringify((await query(page)).snapshot);
@@ -243,5 +247,7 @@ runSuite('process dashboard browser harness', 'process-dashboard-browser-results
   assert.deepEqual(await layout(page), {page: true, dashboard: true, wide: 0});
  });
  await wireChecks(studio, {live, openDashboard, headings, layout});
+ await phoneChecks(studio, {live, openDashboard, headings, layout});
+ await layoutChecks(studio, {live, openDashboard, headings, layout});
  await checkLifecycle('Process dashboard browser lifecycle emits no runtime errors or network requests');
 });

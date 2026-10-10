@@ -65,7 +65,10 @@ test("Dashboard on real runs: Little's law, the flow charts and the series agree
    assert.deepEqual([s.run.arrived[e], s.run.completed[e], s.run.wipArea[e], s.run.cost[e]], [m.arrived, m.completed, m.wipArea, m.cost]);
   }
   const arrivals = chart(model, 'arrivals', 'lines');
-  assert.deepEqual(arrivals.series[0]!.values, s.run.arrived, id + ': arrived line');
+  assert.deepEqual(arrivals.series[0]!.values.slice(0, s.minutes.length), s.run.arrived, id + ': arrived line');
+  // A run past its last sample ends the cumulative lines at its own minute with the snapshot's exact counts.
+  const tail = s.minutes[e] === T ? [] : [m.arrived];
+  assert.deepEqual([arrivals.xs.slice(s.minutes.length), arrivals.series[0]!.values.slice(s.minutes.length)], [tail.length ? [T] : [], tail]);
   const wip = chart(model, 'wip', 'lines'), spans = diff(s.minutes);
   const area = Math.round(sum(wip.series[0]!.values.map((v, i) => v! * spans[i]!)));
   assert.equal(area, s.run.wipArea[e]! - s.run.wipArea[0]!, id + ': interval means × spans = area');
