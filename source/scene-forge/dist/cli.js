@@ -3373,6 +3373,21 @@ function forgeId(value, fallback) {
   const id = value.replace(/[^A-Za-z0-9_-]/g, "-").slice(0, 64);
   return /^[A-Za-z]/.test(id) ? id : `n${id}`.slice(0, 64) || fallback;
 }
+function importedNodeIds(roots) {
+  const result = /* @__PURE__ */ new Map(), ids = /* @__PURE__ */ new Set();
+  let counter = 0;
+  const visit = (input) => {
+    if (!plain2(input)) return;
+    const lwId = typeof input.id === "string" ? input.id : void 0;
+    let nodeId = forgeId(lwId ?? `${String(input.primitive)}${++counter}`, `node${++counter}`);
+    while (ids.has(nodeId)) nodeId = `${nodeId.slice(0, 58)}${++counter}`;
+    ids.add(nodeId);
+    result.set(input, nodeId);
+    for (const child of Array.isArray(input.children) ? input.children : []) visit(child);
+  };
+  for (const node of roots) visit(node);
+  return result;
+}
 var camel = (value) => value.replace(/[-_]+([a-z0-9])/g, (_, c) => c.toUpperCase()).replace(/[^A-Za-z0-9]/g, "");
 function littlewildImportPlan(asset, prefix) {
   if (asset.format !== "littlewild-3d-asset" || asset.schemaVersion !== 1 || !plain2(asset.models))
@@ -3392,19 +3407,17 @@ function littlewildImportPlan(asset, prefix) {
         `Variants collide at model ID ${id}. Choose distinct variant names or a shorter prefix.`
       );
     variantModels.push([variant, id]);
-    const geometries = { box: { type: "box", size: [1, 1, 1] } }, usedMaterials = {}, nodes2 = [], ids = /* @__PURE__ */ new Set(), tags = /* @__PURE__ */ new Map();
+    const geometries = { box: { type: "box", size: [1, 1, 1] } }, usedMaterials = {}, nodes2 = [], tags = /* @__PURE__ */ new Map();
     for (const [role, refs] of Object.entries(plain2(rig[variant]) ? rig[variant] : {}))
       if (roles.has(role))
         for (const ref of Array.isArray(refs) ? refs : [refs])
           tags.set(String(ref), [...tags.get(String(ref)) ?? [], `rig:${role}`]);
     const resolveMaterial = importedMaterials(materials, usedMaterials);
-    let counter = 0;
+    const nodeIds = importedNodeIds(model.nodes);
     const visit = (input, parent) => {
       if (!plain2(input)) return;
       const primitive = String(input.primitive), lwId = typeof input.id === "string" ? input.id : void 0;
-      let nodeId = forgeId(lwId ?? `${primitive}${++counter}`, `node${++counter}`);
-      while (ids.has(nodeId)) nodeId = `${nodeId.slice(0, 58)}${++counter}`;
-      ids.add(nodeId);
+      const nodeId = nodeIds.get(input);
       const vec = (key) => Array.isArray(input[key]) ? input[key] : void 0;
       const position = vec("position"), rotation2 = vec("rotation"), scale = vec("scale");
       const node = {
@@ -3782,7 +3795,12 @@ function poissonDisk(bounds, minDistance, random) {
   const width = bounds.max[0] - bounds.min[0], depth = bounds.max[1] - bounds.min[1], r = minDistance, r2 = r * r;
   budget(0.6 * (width * depth) / r2, "Poisson sampling");
   const cell = r / Math.SQRT2, columns = Math.floor(width / cell) + 1, rows = Math.floor(depth / cell) + 1;
-  const grid = new Int32Array(columns * rows).fill(-1);
+  if (!(columns * rows <= Number.MAX_SAFE_INTEGER))
+    fail("PROCEDURAL_BUDGET", "Poisson sampling bounds are too large for the spacing.", {
+      limit: PROCEDURAL_MAX_CANDIDATES,
+      hint: "Increase the spacing (minDistance) or shrink the area."
+    });
+  const grid = /* @__PURE__ */ new Map();
   const points = [], active = [];
   const cellOf = (p) => [
     Math.min(columns - 1, Math.floor((p[0] - bounds.min[0]) / cell)),
@@ -3792,8 +3810,8 @@ function poissonDisk(bounds, minDistance, random) {
     const [cx, cz] = cellOf(p);
     for (let z13 = Math.max(0, cz - 2); z13 <= Math.min(rows - 1, cz + 2); z13++)
       for (let x = Math.max(0, cx - 2); x <= Math.min(columns - 1, cx + 2); x++) {
-        const index = grid[z13 * columns + x];
-        if (index < 0) continue;
+        const index = grid.get(z13 * columns + x);
+        if (index === void 0) continue;
         const dx = points[index][0] - p[0], dz = points[index][1] - p[1];
         if (dx * dx + dz * dz < r2) return false;
       }
@@ -3802,7 +3820,7 @@ function poissonDisk(bounds, minDistance, random) {
   const add = (p) => {
     budget(points.length + 1, "Poisson sampling");
     const [cx, cz] = cellOf(p);
-    grid[cz * columns + cx] = points.length;
+    grid.set(cz * columns + cx, points.length);
     active.push(points.length);
     points.push(p);
   };
@@ -3842,6 +3860,16 @@ function gridLayout(bounds, step, jitter, random) {
     }
   return points;
 }
+function gridArea(columns, rows, step, center = [0, 0]) {
+  const half = (count) => Math.floor(((count - 1) * step / 2 + step * 0.4999) * 1e4 + 1e-6);
+  const [cx, cz] = center.map((v) => Math.round(v * 1e4));
+  const at2 = (units) => units / 1e4 + 0;
+  return {
+    type: "rect",
+    min: [at2(cx - half(columns)), at2(cz - half(rows))],
+    max: [at2(cx + half(columns)), at2(cz + half(rows))]
+  };
+}
 function pathLayout(points, spacing) {
   const segments2 = [];
   let total = 0;
@@ -3873,7 +3901,8 @@ function uniformRandom(area, count, random) {
   const bounds = areaBounds(area), width = bounds.max[0] - bounds.min[0], depth = bounds.max[1] - bounds.min[1];
   const points = [];
   let inside2 = 0;
-  for (let attempt = 0; attempt < count * 64 && inside2 < count; attempt++) {
+  const attempts = Math.min(count * 64, PROCEDURAL_MAX_CANDIDATES);
+  for (let attempt = 0; attempt < attempts && inside2 < count; attempt++) {
     const p = point(bounds.min[0] + random.next() * width, bounds.min[1] + random.next() * depth);
     points.push(p);
     if (insideArea(area, p)) inside2++;
@@ -4053,12 +4082,18 @@ function planScatter(scene, models, input, options = {}) {
   const recipe = parse(ScatterRecipeSchema, input);
   const recipeHash = sha256Hex(canonical(recipe));
   const tag = `scatter:${recipeHash.slice(0, 8)}`;
-  const existing = scene.nodes.some((n) => n.id === recipe.group);
-  if (existing && !options.replace)
-    fail("DUPLICATE_ID", `Node ${recipe.group} already exists.`, {
-      id: recipe.group,
-      hint: "Choose another group ID, or replace the existing scatter group (replace: true / --replace) with the write guards."
-    });
+  const current = scene.nodes.find((n) => n.id === recipe.group);
+  const existing = !!current;
+  if (current && (!options.replace || !current.tags?.includes("scatter")))
+    fail(
+      "DUPLICATE_ID",
+      options.replace ? `Node ${recipe.group} exists but is not a scatter group, so it cannot be replaced.` : `Node ${recipe.group} already exists.`,
+      {
+        id: recipe.group,
+        ...options.replace ? { type: current.type, tags: current.tags ?? [] } : {},
+        hint: options.replace ? "Choose another group ID (--group); replace only removes a group tagged scatter that an earlier scatter or layout created." : "Choose another group ID, or replace the existing scatter group (replace: true / --replace) with the write guards."
+      }
+    );
   const removed = existing ? subtreeIds(scene, recipe.group) : /* @__PURE__ */ new Set();
   const working = { ...scene, nodes: scene.nodes.filter((n) => !removed.has(n.id)) };
   if (recipe.parent && !working.nodes.some((n) => n.id === recipe.parent))
@@ -4488,13 +4523,18 @@ function sameMesh(source, exported) {
   return canonical(expected) === canonical(exported);
 }
 function preserveVariantNodes(exported, source, tables, kept) {
+  const imported = importedNodeIds(source);
   const merge = (nodes2, previous) => {
-    const byId = /* @__PURE__ */ new Map();
+    const byId = /* @__PURE__ */ new Map(), bySynthetic = /* @__PURE__ */ new Map();
     for (const node of previous)
       if (plain4(node) && typeof node.id === "string" && !byId.has(node.id)) byId.set(node.id, node);
-    return nodes2.map((node, index) => {
-      const positional = previous[index];
-      const match = byId.get(node.id) ?? (plain4(positional) && positional.id === void 0 ? positional : void 0);
+    for (const node of previous)
+      if (plain4(node) && node.id === void 0 && imported.has(node)) {
+        const id = littlewildId(imported.get(node));
+        if (!byId.has(id) && !bySynthetic.has(id)) bySynthetic.set(id, node);
+      }
+    return nodes2.map((node) => {
+      const match = byId.get(node.id) ?? bySynthetic.get(node.id);
       return match && match.primitive === node.primitive ? mergeNode(node, match) : track(node);
     });
   };
@@ -4759,6 +4799,14 @@ function littlewildVisual(asset, models, existing) {
   };
   const result = existing ? preserveTables(visual, previous) : visual;
   assertLittlewildComplexity(result);
+  const referenced = referencedResources(result.models).meshes;
+  const unused = Object.keys(plain5(result.meshes) ? result.meshes : {}).filter(
+    (id) => !referenced.has(id)
+  );
+  if (unused.length)
+    warnings.add(
+      `Kept ${unused.length} source mesh${unused.length === 1 ? "" : "es"} that no variant references: ${unused.join(", ")}. Delete them from the definition by hand if nothing else needs them.`
+    );
   return { visual: result, report, warnings: [...warnings] };
 }
 async function readDefinition(file) {
@@ -5941,7 +5989,7 @@ function proceduralCatalog(name) {
       ids: "<group>-1..<group>-N under one group node",
       tags: ["scatter (group)", "scatter:<recipeHash8> (group and every instance)"],
       result: "normal edit result + recipe + placement{seed, recipeHash, group, placed, candidates, rejected{outside, exclusion, slope, budget}} + nextCommands",
-      regenerate: "--replace removes the group subtree first; rerunning the same recipe with --replace leaves the revision unchanged"
+      regenerate: "--replace removes an existing group tagged scatter and its subtree first (any other node of that ID fails DUPLICATE_ID); rerunning the same recipe with --replace leaves the revision unchanged"
     },
     terrain: {
       presets: Object.fromEntries(
@@ -5965,7 +6013,7 @@ function proceduralCatalog(name) {
       samplePoints: 256
     },
     errors: {
-      DUPLICATE_ID: "group exists: --replace with guards, or another --group",
+      DUPLICATE_ID: "group exists: --replace with guards (scatter groups only), or another --group",
       SCATTER_EMPTY: "nothing placed: read details.rejected, loosen spacing/area or --allow-empty",
       PROCEDURAL_BUDGET: "too many candidates or placements: raise spacing, shrink area, --max",
       TERRAIN_TRANSFORM: "tilted or non-uniformly scaled terrain/parent chain"
@@ -7223,6 +7271,9 @@ function registerLittlewildCommands(c) {
 import { Option as Option6 } from "commander";
 
 // src/domain/procedural.ts
+function required(message, hint) {
+  throw Object.assign(new ForgeError("INPUT_REQUIRED", message), { hint });
+}
 var invalid = (flag, expected, value) => fail("INVALID_OPTION", `${flag} expects ${expected}, got ${JSON.stringify(value)}.`, {
   flag,
   value
@@ -7292,19 +7343,25 @@ var recipeFlags = [
   "maxSlope",
   "scale",
   "yaw",
+  "tilt",
   "max",
   "exclude",
   "avoid",
   "margin"
 ];
 function common(flags, defaultGroup, defaultYaw) {
-  if (!flags.model) fail("INPUT_REQUIRED", "Pass --model <id[,id:weight...]> or a recipe --file.");
+  if (!flags.model)
+    required(
+      "Pass --model <id[,id:weight...]> or a recipe --file.",
+      "Run model list for the registered model IDs; weight them as id:weight."
+    );
   const items = parseItems(flags.model);
   if ((flags.sink !== void 0 || flags.maxSlope !== void 0) && !flags.on)
     fail("INVALID_OPTION", "--sink and --max-slope apply only with --on <terrain node>.");
   if (flags.margin !== void 0 && !flags.avoid)
     fail("INVALID_OPTION", "--margin applies only with --avoid <ids>.");
   const yaw = flags.yaw ? parseRange(flags.yaw, "--yaw") : defaultYaw;
+  const tilt = flags.tilt ? parseRange(flags.tilt, "--tilt") : void 0;
   return {
     schemaVersion: 1,
     kind: "scatter",
@@ -7321,7 +7378,7 @@ function common(flags, defaultGroup, defaultYaw) {
     ...flags.max !== void 0 ? { maxCount: flags.max } : {},
     items,
     ...flags.scale ? { scale: parseRange(flags.scale, "--scale") } : {},
-    ...yaw ? { rotation: { yaw } } : {},
+    ...yaw || tilt ? { rotation: { ...yaw ? { yaw } : {}, ...tilt ? { tilt } : {} } } : {},
     ...flags.on ? {
       ground: {
         mode: "terrain",
@@ -7349,17 +7406,18 @@ function terrainFootprint(scene, node) {
 }
 function scatterRecipe(flags, scene) {
   if (flags.spacing === void 0 === (flags.count === void 0))
-    fail(
-      "INPUT_REQUIRED",
-      "Pass exactly one of --spacing <meters> (even blue noise) or --count <n>."
+    required(
+      "Pass exactly one of --spacing <meters> (even blue noise) or --count <n>.",
+      "Use --spacing for an even natural spread; use layout for paths and grids."
     );
   let area;
   if (flags.area) area = parseArea(flags.area);
   else if (flags.on && !flags.parent) area = terrainFootprint(scene, flags.on);
   else
-    return fail("INPUT_REQUIRED", "Pass --area rect:x0,z0,x1,z1|circle:x,z,r|polygon:x,z;...", {
-      hint: "--area may be omitted only with --on <terrain> and no --parent: it then covers the terrain."
-    });
+    return required(
+      "Pass --area rect:x0,z0,x1,z1|circle:x,z,r|polygon:x,z;...",
+      "--area may be omitted only with --on <terrain> and no --parent: it then covers the terrain."
+    );
   return {
     ...common(flags, "scatter"),
     area,
@@ -7368,9 +7426,16 @@ function scatterRecipe(flags, scene) {
 }
 function layoutRecipe(flags) {
   if (!!flags.path === !!flags.grid)
-    fail("INPUT_REQUIRED", 'Pass exactly one of --path "x,z;x,z;..." or --grid COLUMNSxROWS.');
+    required(
+      'Pass exactly one of --path "x,z;x,z;..." or --grid COLUMNSxROWS.',
+      "A path places along a polyline with --spacing; a grid places COLUMNSxROWS with --step."
+    );
   if (flags.path) {
-    if (flags.spacing === void 0) fail("INPUT_REQUIRED", "--path needs --spacing <meters>.");
+    if (flags.spacing === void 0)
+      required(
+        "--path needs --spacing <meters>.",
+        "Pass --spacing: the distance between placements."
+      );
     if (flags.step || flags.jitter !== void 0 || flags.center)
       fail("INVALID_OPTION", "--step, --jitter and --center apply only to --grid.");
     return {
@@ -7385,24 +7450,25 @@ function layoutRecipe(flags) {
   }
   if (flags.spacing !== void 0 || flags.orient)
     fail("INVALID_OPTION", "--spacing and --orient apply only to --path; use --step for --grid.");
-  if (!flags.step) return fail("INPUT_REQUIRED", "--grid needs --step <meters>.");
+  if (!flags.step)
+    return required(
+      "--grid needs --step <meters>.",
+      "Pass --step s: COLUMNSxROWS placements spaced s apart on both axes."
+    );
   const steps = numbersOf(flags.step, "--step", "one spacing s, or s,s", void 0);
   if (steps.length > 2 || steps.some((s) => !(s > 0)) || steps[0] !== steps.at(-1))
-    fail("INVALID_OPTION", "Grid layouts use one positive step on both axes.", {
-      step: flags.step,
-      hint: "Pass --step s. For different row spacing, lay out each row with --path."
-    });
+    throw Object.assign(
+      new ForgeError("INVALID_OPTION", "Grid layouts use one positive step on both axes.", {
+        step: flags.step
+      }),
+      { hint: "Pass --step s. For different row spacing, lay out each row with --path." }
+    );
   const [columns, rows] = parseGrid(flags.grid);
   const step = steps[0];
   const [cx, cz] = flags.center ? numbersOf(flags.center, "--center", "x,z", 2) : [0, 0];
-  const half = (count) => (count - 1) * step / 2 + step * 0.4999;
   return {
     ...common(flags, "layout", [0, 0]),
-    area: {
-      type: "rect",
-      min: [cx - half(columns), cz - half(rows)],
-      max: [cx + half(columns), cz + half(rows)]
-    },
+    area: gridArea(columns, rows, step, [cx, cz]),
     distribution: {
       type: "grid",
       step,
@@ -7424,11 +7490,15 @@ var placementHints = {
   SCATTER_EMPTY: "Nothing was placed; read details.rejected. Lower --spacing, widen --area, relax --max-slope, --exclude or --avoid/--margin, or pass --allow-empty.",
   PROCEDURAL_BUDGET: "Raise --spacing or --step, shrink --area or the path, or lower --max/--count. Limits: catalog procedural.limits."
 };
+var replaceHints = {
+  ...placementHints,
+  DUPLICATE_ID: "Choose another --group. --replace regenerates only a group tagged scatter (made by scatter or layout), never other content of that ID, and its <group>-<n> IDs must be free."
+};
 var placementOptions = (cmd) => cmd.option(
   "--seed <n>",
   "Seed 0..4294967295; the same seed replays identically (default 1)",
   integer
-).option("--group <id>", "Group node owning the placements <group>-<n>").option("--parent <id>", "Existing parent node; x,z coordinates are in its frame").option("--on <node>", "Ground every placement on this heightfield terrain node").option("--sink <meters>", "With --on: sink origins below the surface", numeric).option("--max-slope <degrees>", "With --on: reject steeper ground (0-90)", numeric).option("--scale <min..max>", "Uniform scale range, or one value").option("--yaw <min..max>", "Yaw range in degrees, or one value").option("--max <n>", "Keep at most n placements (keyed subset)", integer).option("--exclude <area>", "Keep-out area (repeatable), same syntax as --area", collect2).option("--avoid <ids>", "Keep clear of these nodes' XZ bounds").option("--margin <meters>", "With --avoid: extra clearance", numeric).option("--replace", "Regenerate: remove an existing group of the same ID first").option("--allow-empty", "Write an empty group instead of failing with SCATTER_EMPTY");
+).option("--group <id>", "Group node owning the placements <group>-<n>").option("--parent <id>", "Existing parent node; x,z coordinates are in its frame").option("--on <node>", "Ground every placement on this heightfield terrain node").option("--sink <meters>", "With --on: sink origins below the surface", numeric).option("--max-slope <degrees>", "With --on: reject steeper ground (0-90)", numeric).option("--scale <min..max>", "Uniform scale range, or one value").option("--yaw <min..max>", "Yaw range in degrees, or one value").option("--tilt <min..max>", "Tilt range about X and Z in degrees, or one value (default 0)").option("--max <n>", "Keep at most n placements (keyed subset)", integer).option("--exclude <area>", "Keep-out area (repeatable), same syntax as --area", collect2).option("--avoid <ids>", "Keep clear of these nodes' XZ bounds").option("--margin <meters>", "With --avoid: extra clearance", numeric).option("--replace", "Regenerate: remove an existing scatter group of the same ID first").option("--allow-empty", "Write an empty group instead of failing with SCATTER_EMPTY");
 function registerProceduralCommands(c) {
   const { program, global, output, input, sourceOptions: sourceOptions2, editOptions: editOptions2, snapshot } = c;
   const name = program.name();
@@ -7448,7 +7518,7 @@ function registerProceduralCommands(c) {
             report: { recipe: plan.recipe, placement: plan.placement }
           };
         } catch (error) {
-          throw withHint(error, placementHints);
+          throw withHint(error, opts.replace ? replaceHints : placementHints);
         }
       },
       opts
@@ -7477,13 +7547,13 @@ function registerProceduralCommands(c) {
   async function recipeInput(opts) {
     const used = recipeFlags.filter((flag) => opts[flag] !== void 0);
     if (used.length)
-      fail(
-        "INVALID_OPTION",
-        "A recipe file already defines the placement; drop the recipe flags.",
-        {
-          flags: used,
-          hint: "With --file/--data only --seed and --group override the recipe."
-        }
+      throw withHint(
+        new ForgeError(
+          "INVALID_OPTION",
+          "A recipe file already defines the placement; drop the recipe flags.",
+          { flags: used }
+        ),
+        { INVALID_OPTION: "With --file/--data only --seed and --group override the recipe." }
       );
     const recipe = await input(opts);
     if (!recipe || typeof recipe !== "object" || Array.isArray(recipe)) return recipe;

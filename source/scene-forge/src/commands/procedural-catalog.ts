@@ -32,7 +32,7 @@ export function proceduralCatalog(name: string) {
       result:
         'normal edit result + recipe + placement{seed, recipeHash, group, placed, candidates, rejected{outside, exclusion, slope, budget}} + nextCommands',
       regenerate:
-        '--replace removes the group subtree first; rerunning the same recipe with --replace leaves the revision unchanged',
+        '--replace removes an existing group tagged scatter and its subtree first (any other node of that ID fails DUPLICATE_ID); rerunning the same recipe with --replace leaves the revision unchanged',
     },
     terrain: {
       presets: Object.fromEntries(
@@ -58,7 +58,7 @@ export function proceduralCatalog(name: string) {
       samplePoints: 256,
     },
     errors: {
-      DUPLICATE_ID: 'group exists: --replace with guards, or another --group',
+      DUPLICATE_ID: 'group exists: --replace with guards (scatter groups only), or another --group',
       SCATTER_EMPTY: 'nothing placed: read details.rejected, loosen spacing/area or --allow-empty',
       PROCEDURAL_BUDGET: 'too many candidates or placements: raise spacing, shrink area, --max',
       TERRAIN_TRANSFORM: 'tilted or non-uniformly scaled terrain/parent chain',

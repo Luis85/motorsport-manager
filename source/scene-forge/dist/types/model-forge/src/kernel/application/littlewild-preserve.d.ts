@@ -1,4 +1,4 @@
-import type { LittlewildNode } from './littlewild.js';
+import { type LittlewildNode } from './littlewild.js';
 /**
  * Source-preserving Littlewild maintenance, the one contract of every writer (Model Forge's
  * `export --format littlewild`, Scene Forge's `littlewild export` and `littlewild sync`) when

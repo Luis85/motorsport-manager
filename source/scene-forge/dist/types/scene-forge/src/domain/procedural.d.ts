@@ -32,6 +32,7 @@ export interface PlacementFlags {
     maxSlope?: number;
     scale?: string;
     yaw?: string;
+    tilt?: string;
     max?: number;
     exclude?: string[];
     avoid?: string;
@@ -52,7 +53,7 @@ export interface LayoutFlags extends PlacementFlags {
     center?: string;
 }
 /** Recipe flags that conflict with a complete `--file`/`--data` recipe. */
-export declare const recipeFlags: readonly ["model", "area", "spacing", "count", "parent", "on", "sink", "maxSlope", "scale", "yaw", "max", "exclude", "avoid", "margin"];
+export declare const recipeFlags: readonly ["model", "area", "spacing", "count", "parent", "on", "sink", "maxSlope", "scale", "yaw", "tilt", "max", "exclude", "avoid", "margin"];
 /** The world-space XZ footprint of a terrain node: a rect, or a polygon when it is turned. */
 export declare function terrainFootprint(scene: SceneDocument, node: string): Area;
 /**

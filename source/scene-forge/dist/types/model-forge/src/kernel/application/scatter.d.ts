@@ -2,7 +2,7 @@ import { type ModelLibrary, type Operation, type SceneDocument, type ScatterReci
 export interface ScatterOptions {
     /** Return a plan with only the group node when nothing could be placed. */
     allowEmpty?: boolean;
-    /** Remove an existing group of the same ID (and its subtree) first. */
+    /** Remove an existing scatter group (tagged `scatter`) of the same ID and its subtree first. */
     replace?: boolean;
 }
 export interface ScatterPlacement {

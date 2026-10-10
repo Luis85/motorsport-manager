@@ -1,5 +1,7 @@
 import {
   fail,
+  ForgeError,
+  gridArea,
   nodeFrame,
   terrainSpec,
   applySimilarity,
@@ -15,6 +17,10 @@ import {
  */
 export type Pair = [number, number];
 
+/** A missing input, with its remedy as the error's top-level hint (like every other code). */
+function required(message: string, hint: string): never {
+  throw Object.assign(new ForgeError('INPUT_REQUIRED', message), { hint });
+}
 const invalid = (flag: string, expected: string, value: string): never =>
   fail('INVALID_OPTION', `${flag} expects ${expected}, got ${JSON.stringify(value)}.`, {
     flag,
@@ -97,6 +103,7 @@ export interface PlacementFlags {
   maxSlope?: number;
   scale?: string;
   yaw?: string;
+  tilt?: string;
   max?: number;
   exclude?: string[];
   avoid?: string;
@@ -129,6 +136,7 @@ export const recipeFlags = [
   'maxSlope',
   'scale',
   'yaw',
+  'tilt',
   'max',
   'exclude',
   'avoid',
@@ -136,13 +144,18 @@ export const recipeFlags = [
 ] as const;
 
 function common(flags: PlacementFlags, defaultGroup: string, defaultYaw?: Pair) {
-  if (!flags.model) fail('INPUT_REQUIRED', 'Pass --model <id[,id:weight...]> or a recipe --file.');
+  if (!flags.model)
+    required(
+      'Pass --model <id[,id:weight...]> or a recipe --file.',
+      'Run model list for the registered model IDs; weight them as id:weight.',
+    );
   const items = parseItems(flags.model);
   if ((flags.sink !== undefined || flags.maxSlope !== undefined) && !flags.on)
     fail('INVALID_OPTION', '--sink and --max-slope apply only with --on <terrain node>.');
   if (flags.margin !== undefined && !flags.avoid)
     fail('INVALID_OPTION', '--margin applies only with --avoid <ids>.');
   const yaw = flags.yaw ? parseRange(flags.yaw, '--yaw') : defaultYaw;
+  const tilt = flags.tilt ? parseRange(flags.tilt, '--tilt') : undefined;
   return {
     schemaVersion: 1 as const,
     kind: 'scatter' as const,
@@ -163,7 +176,7 @@ function common(flags: PlacementFlags, defaultGroup: string, defaultYaw?: Pair) 
     ...(flags.max !== undefined ? { maxCount: flags.max } : {}),
     items,
     ...(flags.scale ? { scale: parseRange(flags.scale, '--scale') } : {}),
-    ...(yaw ? { rotation: { yaw } } : {}),
+    ...(yaw || tilt ? { rotation: { ...(yaw ? { yaw } : {}), ...(tilt ? { tilt } : {}) } } : {}),
     ...(flags.on
       ? {
           ground: {
@@ -200,17 +213,18 @@ export function terrainFootprint(scene: SceneDocument, node: string): Area {
  */
 export function scatterRecipe(flags: ScatterFlags, scene: SceneDocument): ScatterRecipeInput {
   if ((flags.spacing === undefined) === (flags.count === undefined))
-    fail(
-      'INPUT_REQUIRED',
+    required(
       'Pass exactly one of --spacing <meters> (even blue noise) or --count <n>.',
+      'Use --spacing for an even natural spread; use layout for paths and grids.',
     );
   let area: Area;
   if (flags.area) area = parseArea(flags.area);
   else if (flags.on && !flags.parent) area = terrainFootprint(scene, flags.on);
   else
-    return fail('INPUT_REQUIRED', 'Pass --area rect:x0,z0,x1,z1|circle:x,z,r|polygon:x,z;...', {
-      hint: '--area may be omitted only with --on <terrain> and no --parent: it then covers the terrain.',
-    });
+    return required(
+      'Pass --area rect:x0,z0,x1,z1|circle:x,z,r|polygon:x,z;...',
+      '--area may be omitted only with --on <terrain> and no --parent: it then covers the terrain.',
+    );
   return {
     ...common(flags, 'scatter'),
     area,
@@ -224,9 +238,16 @@ export function scatterRecipe(flags: ScatterFlags, scene: SceneDocument): Scatte
 /** `layout` flags: evenly spaced along --path, or a COLUMNSxROWS --grid; yaw defaults to 0. */
 export function layoutRecipe(flags: LayoutFlags): ScatterRecipeInput {
   if (!!flags.path === !!flags.grid)
-    fail('INPUT_REQUIRED', 'Pass exactly one of --path "x,z;x,z;..." or --grid COLUMNSxROWS.');
+    required(
+      'Pass exactly one of --path "x,z;x,z;..." or --grid COLUMNSxROWS.',
+      'A path places along a polyline with --spacing; a grid places COLUMNSxROWS with --step.',
+    );
   if (flags.path) {
-    if (flags.spacing === undefined) fail('INPUT_REQUIRED', '--path needs --spacing <meters>.');
+    if (flags.spacing === undefined)
+      required(
+        '--path needs --spacing <meters>.',
+        'Pass --spacing: the distance between placements.',
+      );
     if (flags.step || flags.jitter !== undefined || flags.center)
       fail('INVALID_OPTION', '--step, --jitter and --center apply only to --grid.');
     return {
@@ -241,26 +262,27 @@ export function layoutRecipe(flags: LayoutFlags): ScatterRecipeInput {
   }
   if (flags.spacing !== undefined || flags.orient)
     fail('INVALID_OPTION', '--spacing and --orient apply only to --path; use --step for --grid.');
-  if (!flags.step) return fail('INPUT_REQUIRED', '--grid needs --step <meters>.');
+  if (!flags.step)
+    return required(
+      '--grid needs --step <meters>.',
+      'Pass --step s: COLUMNSxROWS placements spaced s apart on both axes.',
+    );
   const steps = numbersOf(flags.step, '--step', 'one spacing s, or s,s', undefined);
   if (steps.length > 2 || steps.some((s) => !(s > 0)) || steps[0] !== steps.at(-1))
-    fail('INVALID_OPTION', 'Grid layouts use one positive step on both axes.', {
-      step: flags.step,
-      hint: 'Pass --step s. For different row spacing, lay out each row with --path.',
-    });
+    throw Object.assign(
+      new ForgeError('INVALID_OPTION', 'Grid layouts use one positive step on both axes.', {
+        step: flags.step,
+      }),
+      { hint: 'Pass --step s. For different row spacing, lay out each row with --path.' },
+    );
   const [columns, rows] = parseGrid(flags.grid!);
   const step = steps[0];
   const [cx, cz] = flags.center ? numbersOf(flags.center, '--center', 'x,z', 2) : [0, 0];
-  // The kernel's grid fills its area's bounds from the center out; a margin just under half
-  // a step keeps exactly COLUMNS x ROWS points while jittered points stay inside.
-  const half = (count: number) => ((count - 1) * step) / 2 + step * 0.4999;
+  // The kernel's grid fills its area's bounds from the center out; gridArea's margin just
+  // under half a step keeps exactly COLUMNS x ROWS points with 1e-4 bounds (no float noise).
   return {
     ...common(flags, 'layout', [0, 0]),
-    area: {
-      type: 'rect',
-      min: [cx - half(columns), cz - half(rows)],
-      max: [cx + half(columns), cz + half(rows)],
-    },
+    area: gridArea(columns, rows, step, [cx, cz]),
     distribution: {
       type: 'grid',
       step,
