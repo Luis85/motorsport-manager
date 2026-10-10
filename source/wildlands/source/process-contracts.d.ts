@@ -123,8 +123,21 @@ declare namespace LWProcess {
   deadlines?: {interrupted: number; escalated: number};
   /** Only on steps that declare `instances`: cumulative items started and finished (`queued` and `active` count items there). */
   items?: {started: number; finished: number};
+  /**
+   * Read model (LWProcessLedger, exact under pruning): `starts` counts work starts (every multi-instance item), the visits whose wait
+   * is summed in `waitMinutes`; `meanWaitMinutes` is `waitMinutes / starts` rounded to 3 decimals, `null` before the first start.
+   * `fixedCost` is the step's fixed `cost` charged at its starts; `workCost` adds the per-minute cost of the pool units occupied by
+   * work at this step. The steps' `workCost` sums to `metrics.cost`.
+   */
+  starts: number; meanWaitMinutes: number | null; fixedCost: number; workCost: number;
  }
- interface PoolMetric { id: string; kind: ResourceKind; capacity: number; busy: number; busyMinutes: number; utilization: number; }
+ /**
+  * `workCost` (read model) is `busyMinutes × costPerMinute`, the pool's share of `metrics.cost` (the pools' `workCost` plus the steps'
+  * `fixedCost` sum to `metrics.cost`); `capacityCost` is `capacity × costPerMinute × minute`, the pool's share of `metrics.capacityCost`.
+  */
+ interface PoolMetric {
+  id: string; kind: ResourceKind; capacity: number; busy: number; busyMinutes: number; utilization: number; workCost: number; capacityCost: number;
+ }
  interface Event { minute: number; kind: string; caseId: string; stepId: string; detail: string; }
  interface Receipt {
   id: string; caseId: string; stepId: string; started: number; finished: number;
@@ -137,7 +150,14 @@ declare namespace LWProcess {
  interface Snapshot {
   minute: number; status: 'ready' | 'running' | 'completed' | 'blocked' | 'limit';
   cases: Case[]; tokens: Token[]; receipts: Receipt[]; receiptsDropped: number; steps: StepMetric[]; resources: PoolMetric[]; events: Event[];
-  metrics: { arrived: number; completed: number; failed: number; dropped: number; active: number; cost: number; meanCycleMinutes: number; throughputPerHour: number;
+  metrics: { arrived: number; completed: number; failed: number; dropped: number; active: number; cost: number; meanCycleMinutes: number;
+   /** Read model: completed cases per 60 business minutes since minute 0 (`completed × 60 / minute`, unrounded); `null` at minute 0. */
+   throughputPerHour: number | null;
+   /**
+    * Read model (exact under pruning and chunking): completed cases by cycle minutes. `edges` are the fixed lower bin edges 0, 1, 2, 5,
+    * 10, ... 100,000; `counts[i]` counts cycles `c` with `edges[i] <= c < edges[i + 1]` (the last bin is open) and sums to `completed`.
+    */
+   cycleHistogram: {edges: number[]; counts: number[]};
    /** Read model: every pool unit charged for every minute so far, busy or idle (Σ capacity × costPerMinute × minute); `cost` stays the work cost. */
    capacityCost: number;
    /**
@@ -155,8 +175,12 @@ declare namespace LWProcess {
  /** `horizon` is the total run length in minutes; `null` means no clock limit (the run still ends when no work remains or can advance). */
  interface Session { query(): Snapshot; advance(minutes: number): Snapshot; horizon(): number | null; setHorizon(value: number | null): void; dispose(): void; }
  interface Limits { readonly cases: number; readonly minutes: number; readonly transitions: number; readonly events: number; readonly receipts: number; readonly active: number; readonly retained: number; }
- /** `seed` overrides the definition's seed; `active` (1..limits.active) and `retained` (1..10,000) override the case caps. */
- interface RunOptions { horizon?: number | null; seed?: number; active?: number; retained?: number; }
+ /**
+  * `seed` overrides the definition's seed; `active` (1..limits.active) and `retained` (1..10,000) override the case caps.
+  * `onEvent` receives every engine event in order (also those before the first advance and beyond the retained history) as a
+  * detached copy; it must not call the session, and a sink that throws stops the session (later calls throw).
+  */
+ interface RunOptions { horizon?: number | null; seed?: number; active?: number; retained?: number; onEvent?: (event: Event) => void; }
  interface Runtime { create(input: unknown, options?: RunOptions): Session; limits: Limits; }
  interface Recipe {
   expectedRevision: number; expectedFingerprint: string;
@@ -193,6 +217,13 @@ declare namespace LWProcess {
  interface Stream { def: Arrival; index: number; k: number; at: number | null; }
  /** Exact running sum/count/extremes of a tracked value; kept outside the case store so pruning never changes it. */
  interface Aggregate { n: number; sum: number; min: number; max: number; }
+ /** Read-model start and cost totals of one step (LWProcessLedger). */
+ interface StepCosts { starts: number; fixedCost: number; workCost: number; }
+ /**
+  * Read-model running aggregates (LWProcessLedger): pool cost per minute of one unit of each step's work (`unit`), of the work running
+  * at each step now (`rate`), per-step totals and the cycle histogram counts. Never read by the engine.
+  */
+ interface Ledger { unit: Map<string, number>; rate: Map<string, number>; steps: Map<string, StepCosts>; cycles: number[]; }
  interface Pool extends Record<string, unknown> { id: string; capacity: number; busy: number; busyMinutes: number; costPerMinute: number; }
  interface Station extends Record<string, unknown> { id: string; visits: number; completed: number; waitMinutes: number; reached: number; deadlines?: {interrupted: number; escalated: number}; items?: {started: number; finished: number}; }
  /** One multi-instance visit: items finished so far, the first item's start and input, and the visit number that keys its draws. */
@@ -209,6 +240,8 @@ declare namespace LWProcess {
   deadlines: Map<string, Flow>; groups: Map<string, Group>; spawns: {caseId: string; flow: string}[]; outcomes: Map<string, 'goal' | 'lost'>;
   /** Journey bookkeeping: steps each active case has entered (dropped when it finishes), finish aggregates by field, entry aggregates by `stepId|field`. */
   seen: Map<string, Set<string>>; finishAgg: Map<string, Aggregate>; entryAgg: Map<string, Aggregate>;
+  /** Read-model aggregates and the streaming event sink; sessions always set `ledger`, hand-built test states may omit both. */
+  ledger?: Ledger; sink?: ((event: Event) => void) | null;
  }
  interface Systems { settle(s: State): void; work(s: State): void; admit(s: State): void; nextArrival(s: State): number | null; progress(s: State): {tokens: number; running: boolean}; fastForward(s: State, target: number): void; }
 }

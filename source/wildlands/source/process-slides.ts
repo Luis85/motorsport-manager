@@ -22,7 +22,8 @@
  const SYNTHETIC = /\b(synthetic|illustrative)\b/i;
  const EMPTY_SNAPSHOT: LWProcess.Snapshot = {minute: 0, status: 'ready', cases: [], tokens: [], receipts: [], receiptsDropped: 0, steps: [], resources: [], events: [],
   metrics: {arrived: 0, completed: 0, failed: 0, dropped: 0, active: 0, cost: 0, capacityCost: 0, meanCycleMinutes: 0, meanAgeMinutes: null,
-   throughputPerHour: 0, goals: 0, lost: 0, conversion: null, tracked: {}}, seed: 0, retention: {finishedDropped: 0}};
+   throughputPerHour: null, cycleHistogram: {edges: [], counts: []}, goals: 0, lost: 0, conversion: null, tracked: {}},
+  seed: 0, retention: {finishedDropped: 0}};
  const detach = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
  const quote = (text: string) => `“${text}”`;
  const plural = (n: number, one: string, many = one + 's') => `${root.LWProcessSlidesText.number(n)} ${n === 1 ? one : many}`;
