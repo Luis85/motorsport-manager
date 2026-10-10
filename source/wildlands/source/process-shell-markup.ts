@@ -5,7 +5,7 @@
  * legend, the metrics, Inputs & outputs and the inspector. Pure strings with fixed ids and wording; no DOM access, session or
  * storage. Every id here is a contract with the browser suites and the shell modules (LWProcessDom.must names a missing one).
  *
- * The Export/⋯ menu holds, in order: Import JSON or BPMN… and Present slides (phone only), Export JSON, Export draft JSON (while a
+ * The Export/⋯ menu holds, in order: Import JSON or BPMN…, Present slides and Dashboard (phone only), Export JSON, Export draft JSON (while a
  * draft exists), Export BPMN, Export BPMN with BPSim, Show export notes… (after a BPMN export with notes), Export run report,
  * Download HTML, New process… and Import as a new process….
  */
@@ -27,6 +27,8 @@ declare namespace LWProcessShellMarkup {
   const items = [
    item('import-item', 'Import JSON or BPMN…', ' class="menu-phone"'),
    item('present-item', 'Present slides', ' class="menu-phone" aria-haspopup="dialog"'),
+   // Dashboard view (Package DB-UI): the phone entry of the stage's Dashboard button, which phones hide.
+   item('dashboard-item', 'Dashboard', ' class="menu-phone"'),
    item('json', 'Export JSON'), item('draft-json', 'Export draft JSON', ' hidden'), item('bpmn', 'Export BPMN'),
    item('bpmn-bpsim', 'Export BPMN with BPSim'), item('export-notes', 'Show export notes…', ' aria-haspopup="dialog" hidden'),
    item('report', 'Export run report'), item('html', 'Download HTML'),
@@ -62,12 +64,13 @@ declare namespace LWProcessShellMarkup {
    <button id="back-overview" class="scene-back" hidden><span aria-hidden="true">← </span>Whole process</button>
    <button id="mode-2d" aria-pressed="false">2D</button><button id="mode-3d" aria-pressed="true">3D</button>
    <button id="mode-lens" aria-pressed="false">SIPOC</button>
+   <button id="mode-dashboard" aria-pressed="false" title="Dashboard: the metrics and charts of this process">Dashboard</button>
    <button id="mode-present" aria-haspopup="dialog">Present</button><button id="frame">Fit to view</button>
    <button id="edit-step" aria-haspopup="dialog" hidden>Edit step…</button></div></div>
  <div id="viewport">
   <canvas id="canvas" role="img" aria-label="3D process scenes. Use the scene list for keyboard selection." aria-describedby="camera-hint"
    tabindex="0"></canvas>
-  <div id="map" hidden></div><div id="lens" hidden></div></div>
+  <div id="map" hidden></div><div id="lens" hidden></div><div id="dashboard" hidden></div></div>
  <div class="process-legend">${legend}<span id="marker-count"></span><span id="camera-hint">Drag to orbit · Scroll to zoom</span></div>
  <div id="metrics" class="process-metrics" role="group" aria-label="Run metrics"></div><p id="latest" class="process-latest"></p>
  <details id="io-panel" class="process-io"><summary>Inputs &amp; outputs</summary>

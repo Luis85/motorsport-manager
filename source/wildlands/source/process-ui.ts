@@ -6,7 +6,8 @@
  *  - LWProcessSlots: the Process selector, switching (each process keeps its own paused run) and adding processes;
  *  - LWProcessIO: file import and export; LWProcessGuard: the questions outside editors and the page lifecycle;
  *  - LWProcessRecovery: the opt-in recovery copy of unapplied drafts in browser storage (the studio's only storage use);
- *  - the editors binding below (step editor and Definition editor over the shared LWProcessDraft) and the Present binding.
+ *  - the editors binding below (step editor and Definition editor over the shared LWProcessDraft), the Present binding and the
+ *    Dashboard binding (LWProcessDashboard, the stage's 'dashboard' view mode).
  * UI code emits commands through `command()` and renders detached values; only the animation loop's pulse and explicit clock
  * commands move time.
  */
@@ -19,7 +20,7 @@
   LWProcessLens: LWProcessLens.Api; LWProcessPresent: LWProcessPresent.Api; LWProcessRunBar: LWProcessRunBar.Api; LWProcessIO: LWProcessIO.Api;
   LWProcessGuard: LWProcessGuard.Api; LWProcessStepList: LWProcessStepList.Api; LWProcessDom: LWProcessDom.Api; LWProcessSlots: LWProcessSlots.Api;
   LWProcessRecovery: LWProcessRecovery.Api; LWProcessShellMarkup: LWProcessShellMarkup.Api; LWProcessSlidesText: LWProcessSlidesText.Api;
-  LWProcessStudio?: unknown; __wildlandsReady?: boolean};
+  LWProcessDashboard: LWProcessDashboard.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
  const host = root.LWProcessDom.maybe('process-shell'); if (!host) return;
  const pristine = '<!doctype html>\n' + document.documentElement.outerHTML;
  const num = (n: number) => Number(n.toFixed(1)).toLocaleString();
@@ -91,7 +92,7 @@
   chip.title = text ? 'Open the Definition editor to review, apply or restore this draft. Export JSON and Download HTML use the running definition.' : '';
  }
  function rebuild(): void {
-  three?.dispose(); three = null; unavailable = ''; dataView.reset(); activity.reset(); lens.reset();
+  three?.dispose(); three = null; unavailable = ''; dataView.reset(); activity.reset(); lens.reset(); dashboard.reset();
   // One WebGL renderer and canvas serve the page's lifetime; a rebuild replaces only the 3D scene.
   try {
    stage ??= root.LWProcess3D.stage(get<HTMLCanvasElement>('canvas'));
@@ -158,19 +159,21 @@
   setHtml('pools', root.LWProcessInspector.pools(view));
   setHtml('metrics', root.LWProcessInspector.kpis(view));
   activity.ingest(view); get('latest').textContent = activity.latest();
-  if (view.mode !== 'lens' && !present.isOpen()) flat = view.mode;
+  if ((view.mode === '2d' || view.mode === '3d') && !present.isOpen()) flat = view.mode;
   get('canvas').hidden = view.mode !== '3d'; get('map').hidden = view.mode !== '2d'; get('lens').hidden = view.mode !== 'lens';
-  for (const mode of ['2d', '3d', 'lens'] as const) get('mode-' + mode).setAttribute('aria-pressed', String(view.mode === mode));
+  get('dashboard').hidden = view.mode !== 'dashboard';
+  for (const mode of ['2d', '3d', 'lens', 'dashboard'] as const) get('mode-' + mode).setAttribute('aria-pressed', String(view.mode === mode));
   const lensButton = get('mode-lens'); if (lensButton.textContent !== terms.lensLabel) lensButton.textContent = terms.lensLabel;
   lensButton.title = terms.lensTitle; lensButton.setAttribute('aria-label', terms.lensTitle);
   get<HTMLButtonElement>('mode-3d').disabled = !!unavailable;
   const lensFit = `Scroll the ${terms.lensLabel} back to the start`;
-  get('frame').title = view.mode === 'lens' ? lensFit : view.mode === '2d' ? 'Fit the map to the view (0)' : 'Reset camera (F)';
+  const frameTitle = view.mode === 'dashboard' ? 'Scroll the dashboard back to its top' : view.mode === '2d' ? 'Fit the map to the view (0)' : 'Reset camera (F)';
+  get('frame').title = view.mode === 'lens' ? lensFit : frameTitle;
   hints(selected);
   const visibleTokens = q.tokens.filter(t => !selected || t.stepId === selected).length;
   get('marker-count').textContent = view.mode === '3d' && visibleTokens > 120 ? `Showing 120 of ${visibleTokens} work markers` : '';
   if (io.open) dataView.draw(view);
-  if (view.mode === '2d') svg.draw(view); else if (view.mode === 'lens') lens.draw(view);
+  if (view.mode === '2d') svg.draw(view); else if (view.mode === 'lens') lens.draw(view); else if (view.mode === 'dashboard') dashboard.draw(view);
   if (focusedStep) get('steps').querySelector<HTMLButtonElement>(`[data-step="${focusedStep}"]`)?.focus({preventScroll: true});
   if (focusedNext) {
    const next = get('inspector').querySelector<HTMLButtonElement>(`[data-next="${focusedNext}"]`);
@@ -229,7 +232,19 @@
   e.preventDefault(); command(() => app.select(null));
  });
  // Fit to view: the 2D map fits the whole process, the lens scrolls back to its start and the 3D camera returns to its frame.
- on('frame', () => {if (view.mode === '2d') svg.frame(); else if (view.mode === 'lens') lens.frame(); else three?.frame();});
+ on('frame', () => {if (view.mode === '2d') svg.frame(); else if (view.mode === 'lens') lens.frame(); else if (view.mode === 'dashboard') dashboard.frame(); else three?.frame();});
+ // ---- Dashboard binding (Package DB-UI): the per-process Dashboard view. It draws detached views only, holds no session, never
+ // ticks; choosing a step is the same select command as on the map. The read-model reads (series, distributions, recent) are wired
+ // here once the session offers them. ----
+ const dashboard = root.LWProcessDashboard.create(get('dashboard'), {
+  onSelect: id => {command(() => app.select(id));}, save: (name, data, type) => download(name, data, type), status: message => status(message),
+  draft: () => ({text: draft.read(), changed: draft.changed() && !draft.same()}),
+  validate: text => {try {const r = root.LWProcessCatalog.validate(JSON.parse(text)); return r.ok ? r.definition ?? null : null;} catch {return null;}},
+  showLens: () => {command(() => app.mode('lens'));},
+ });
+ on('mode-dashboard', () => app.mode('dashboard'));
+ get('dashboard-item').onclick = () => {menu.close(false); if (command(() => app.mode('dashboard'))) dashboard.focus();};
+ // ---- end Dashboard binding ----
  // ---- Editors binding: the step editor and the Definition editor over the shared draft; Apply goes through `applyDraft`. ----
  /** The catalog's strict verdict for the draft text; the Definition editor lists every diagnostic itself. */
  function checkDraft(): LWProcess.Definition | undefined {
@@ -297,7 +312,7 @@
   },
   show: step => {command(() => app.select(step)); svg.frame({neighbours: true});},
   leave: paused => {
-   const b = before; command(() => {if (b.mode === 'lens') app.mode(b.flat); app.mode(b.mode); app.select(b.selected);}); svg.frame();
+   const b = before; command(() => {if (b.mode === 'lens' || b.mode === 'dashboard') app.mode(b.flat); app.mode(b.mode); app.select(b.selected);}); svg.frame();
    status(paused ? 'Presentation closed. The run stays paused; choose Run simulation to continue.' : 'Presentation closed.');
   },
  });
@@ -319,7 +334,7 @@
  function dispose(): void {
   if (disposed) return; disposed = true; cancelAnimationFrame(frameId); fit.disconnect(); document.removeEventListener('close', dialogClosed, true);
   recovery.dispose();
-  for (const surface of [present, three, stage, svg, lens, definitionEditor, stepEditor, files, slots, activity, menu, app]) surface?.dispose();
+  for (const surface of [present, three, stage, svg, lens, dashboard, definitionEditor, stepEditor, files, slots, activity, menu, app]) surface?.dispose();
  }
  // Business processes open on the readable 2D map on a phone; 3D stays one press away. A journey keeps its Journey map.
  if (matchMedia('(max-width:650px)').matches && app.query().mode === '3d') app.mode('2d');

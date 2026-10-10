@@ -498,6 +498,18 @@
         "process-terms.ts",
         "process-slides-text.ts",
         "process-slides.ts",
+        "process-chart.ts",
+        "process-dashboard-model.ts",
+        "process-dashboard-flow.ts",
+        "process-dashboard-time.ts",
+        "process-dashboard-quality.ts",
+        "process-dashboard-panels.ts",
+        "process-dashboard-journey.ts",
+        "process-dashboard-focus.ts",
+        "process-dashboard-html.ts",
+        "process-dashboard-whatif.ts",
+        "process-dashboard-whatif-view.ts",
+        "process-dashboard.ts",
         "process-data-view.ts",
         "process-sdk.cts"
       ]

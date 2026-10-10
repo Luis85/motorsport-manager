@@ -10,9 +10,13 @@
  * Clock commands: `advance` (1-100,000 whole minutes), `pulse` (the playing run's tick) and `runToEnd` (one command that advances in
  * bounded chunks until the run stops or reaches its run length, at most `LWProcessRuntime.limits.minutes` minutes per command).
  * Nothing else moves the clock: queries, selection, view modes, switching and adding a process never tick.
+ *
+ * View modes: '2d' and '3d' (the remembered flat choice), 'lens' (the type's second 2D lens) and 'dashboard' (the per-process
+ * Dashboard of metrics and charts, LWProcessDashboard). The dashboard is not a flat choice and is kept across process switches, so
+ * dashboards of several processes can be compared; it renders the same detached view and never ticks.
  */
 declare namespace LWProcessApp {
- type ViewMode = '2d' | '3d' | 'lens';
+ type ViewMode = '2d' | '3d' | 'lens' | 'dashboard';
  type Lens = 'sipoc' | 'journey';
  interface View {
   definition: LWProcess.Definition; snapshot: LWProcess.Snapshot; selected: string | null; mode: ViewMode; playing: boolean; horizon: number | null;
@@ -47,7 +51,7 @@ declare namespace LWProcessApp {
    * Switches the active process. The run left behind is paused and kept as it is (minute, snapshot, run seed, selection and run
    * length); switching back restores it exactly. A process opened for the first time starts a fresh paused run at minute 0 with
    * nothing selected, using the current run length. Never ticks. A journey opens on its Journey map; leaving a journey while its map
-   * is shown returns to the last 2D or 3D choice.
+   * is shown returns to the last 2D or 3D choice. While the dashboard is shown, it stays shown for the next process.
    */
   use(index: number): void;
   /**
@@ -81,9 +85,11 @@ declare namespace LWProcessApp {
   let mode: LWProcessApp.ViewMode = lensOf(definition) === 'journey' ? 'lens' : '3d', flat: '2d' | '3d' = '3d';
   /**
    * Switching process re-evaluates the view: entering a journey shows its map; leaving a journey from its map returns to the remembered
-   * 2D or 3D choice. Otherwise the choice stays. Replacing the active definition keeps the mode: the lens always follows the new type.
+   * 2D or 3D choice. Otherwise the choice stays, and the dashboard always stays. Replacing the active definition keeps the mode: the
+   * lens always follows the new type.
    */
   const reconsider = (before: LWProcessApp.Lens, after: LWProcess.Definition) => {
+   if (mode === 'dashboard') return;
    if (before !== 'journey' && lensOf(after) === 'journey') mode = 'lens';
    else if (before === 'journey' && lensOf(after) === 'sipoc' && mode === 'lens') mode = flat;
   };
@@ -132,7 +138,7 @@ declare namespace LWProcessApp {
     playing, horizon, processes: slots.map(d => ({id: d.id, name: d.name})), active,
    }),
    select(id) { if (id !== null && !definition.steps.some(s => s.id === id)) throw Error('Unknown step: ' + id); selected = id; },
-   mode(value) { if (!['2d', '3d', 'lens'].includes(value)) throw Error('Unknown view mode.'); mode = value; if (value !== 'lens') flat = value; },
+   mode(value) { if (!['2d', '3d', 'lens', 'dashboard'].includes(value)) throw Error('Unknown view mode.'); mode = value; if (value === '2d' || value === '3d') flat = value; },
    play(value) { playing = value && !terminal(); }, advance, runToEnd,
    horizon(value) { alive(); session.setHorizon(value); horizon = value; if (terminal()) playing = false; },
    pulse(minutes) { if (playing) advance(horizon === null ? minutes : Math.min(minutes, horizon - session.query().minute)); },
