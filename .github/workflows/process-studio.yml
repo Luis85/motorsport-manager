@@ -1,0 +1,63 @@
+name: Process Studio verification
+on:
+  pull_request:
+    paths:
+      - 'source/process-studio/**'
+      - 'bin/process-studio'
+      # The embedded engine kit comes from bin/wildlands, and the bridge bundles these Wildlands files.
+      - 'bin/wildlands'
+      - 'source/wildlands/package-lock.json'
+      - 'source/wildlands/source/process-*.ts'
+      - 'source/wildlands/source/process-*.cts'
+      - 'source/wildlands/source/process-*.d.ts'
+      - 'source/wildlands/source/ecs.ts'
+      - 'source/wildlands/source/asset-catalog.ts'
+      - 'source/wildlands/source/tools/cli-io.cts'
+      - 'source/wildlands/source/tools/process-*.cts'
+      - 'source/wildlands/source/tools/build-inserts.cts'
+      - 'source/wildlands/source/tools/artifact-profiles.cts'
+      - 'source/wildlands/source/tools/artifact-placement.cts'
+      - 'source/wildlands/source/tools/game-manifest.cts'
+      - 'source/wildlands/examples/bpmn/**'
+      - 'docs/concepts/agency-delivery/**'
+      - 'demos/manifest.json'
+      - '.github/workflows/process-studio.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: process-studio-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: source/process-studio/package-lock.json
+      - name: Smoke-test bin/process-studio from the repository root before installing anything
+        shell: bash
+        run: |
+          set -euo pipefail
+          bin/process-studio --version
+          bin/process-studio --compact discover > /dev/null
+          bin/process-studio doctor > /dev/null
+      - name: Install TypeScript toolchain
+        working-directory: source/process-studio
+        run: npm ci --no-audit --no-fund
+      - name: Type-check
+        working-directory: source/process-studio
+        run: npm run typecheck
+      - name: Verify architecture boundaries
+        working-directory: source/process-studio
+        run: npm run architecture
+      - name: Run contract, parity, build and bundle tests
+        working-directory: source/process-studio
+        run: npm test
+      - name: Verify checked-in bin/process-studio matches source and bin/wildlands
+        working-directory: source/process-studio
+        run: npm run check:cli

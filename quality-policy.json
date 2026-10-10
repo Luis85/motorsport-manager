@@ -6,7 +6,8 @@
     "source/wildlands/source/test-*.cts",
     "source/wildlands/source/test-support/**",
     "source/wildlands/source/verification/**",
-    "source/scene-forge/tests/**"
+    "source/scene-forge/tests/**",
+    "source/process-studio/tests/**"
   ],
   "excluded_directories": [".git", ".godot", ".venv", "venv", "__pycache__", "reports", "vendor", "third_party", "node_modules", ".generated", "dist", "bin", "demos"],
   "long_lines": {"limit": 160, "extensions": [".ts", ".cts", ".mts"]},
