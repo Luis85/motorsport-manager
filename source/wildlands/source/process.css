@@ -135,6 +135,10 @@
 .process-legend { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s1) var(--s4); padding:6px var(--s4); font-size:var(--t-xs); color:var(--muted); }
 .process-legend span { display:inline-flex; align-items:center; gap:var(--s1); min-height:24px; }
 .process-legend .pm-key { flex:none; overflow:visible; }
+/* The key (process-map-legend.ts) flows inline in the row; its Legend button and the camera-hint copy show only in the compact form. */
+.process-legend { position:relative; container:legend / inline-size; }
+.legend-key { display:contents; }
+.process-studio button.legend-toggle,.legend-help { display:none; }
 /* The hovered or focused card's full name and counts: one fixed row, so showing it never resizes the map. */
 .process-studio .process-map-caption { flex:1 1 14em; min-width:min(14em,100%); min-height:1.3em; color:var(--text); line-height:1.3; overflow-wrap:anywhere; }
 #camera-hint { margin-left:auto; }
@@ -203,6 +207,9 @@
 .process-studio .process-map-key { max-width:15em; padding:var(--s1) var(--s2); border:1px solid var(--line); border-radius:var(--r-sm); }
 .process-studio .process-map-key { background:var(--panel); color:var(--text); font-size:var(--t-xs); line-height:1.3; }
 #map svg { cursor:grab; touch-action:none; } #map svg.panning { cursor:grabbing; }
+/* A map created with a move callback: cards can be dragged; the dragged card follows the pointer, slightly translucent. */
+#map svg.movable g[role=button] { cursor:move; } #map svg.dragging,#map svg.dragging g[role=button] { cursor:grabbing; }
+#map svg g.pm-dragging { opacity:.85; }
 /* The browser focus ring on an SVG group is scaled by the camera and read as a huge dark circle; use a screen-sized ring on the card instead. */
 #map svg g[role=button] { outline:none; }
 #map svg g[role=button]:focus-visible > .pm-card { stroke:var(--accent); stroke-width:3px; stroke-dasharray:none; }
@@ -265,9 +272,25 @@
  .process-nav,.process-inspector,.process-stage { min-height:0; overflow:auto; overscroll-behavior:contain; }
  .process-nav::after,.process-inspector::after { content:""; display:block; position:sticky; bottom:0; height:28px; margin-top:-28px; background:linear-gradient(to bottom,transparent,var(--panel)); pointer-events:none; }
  .process-nav,.process-inspector { padding-bottom:var(--s5); }
- #viewport { flex:1 1 0; height:auto; min-height:320px; }
+ /* The map's minimum height follows the text size (17rem is 408px at a 24px root font), so large text keeps room for names; the
+    stage column scrolls instead. At the default size the 320px floor applies. */
+ #viewport { flex:1 1 0; height:auto; min-height:max(320px,17rem); }
  /* The caption takes a row of its own so a long step name and its counts fit on one fixed line (also in wider fallback fonts). */
  .process-studio .process-map-caption { flex-basis:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+ /* Large text on a desktop (a legend row under 38rem): the key and the camera hint fold behind a Legend button into a popover above
+    the row, so the row keeps one line and the map keeps its height. The lens views keep only their hint. */
+ @container legend (max-width:38rem) {
+  .process-studio button.legend-toggle { display:inline-flex; align-items:center; gap:var(--s1); min-height:24px; padding:0 var(--s2);
+   line-height:1.2; font-size:var(--t-xs); }
+  .process-studio button.legend-toggle::after { content:"\25B4" / ""; color:var(--muted); }
+  .process-studio button.legend-toggle[aria-expanded=false]::after { content:"\25BE" / ""; }
+  .legend-key { display:none; }
+  .legend-toggle[aria-expanded=true] + .legend-key { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s1) var(--s4);
+   position:absolute; left:var(--s4); right:var(--s4); bottom:calc(100% + var(--s1)); z-index:3; padding:var(--s2) var(--s3);
+   border:1px solid var(--control-border); border-radius:var(--r-md); background:var(--panel); box-shadow:0 12px 32px var(--shadow); }
+  .legend-help { display:block; flex-basis:100%; margin:0; }
+  .process-legend:not([data-view=lens]) > #camera-hint { display:none; }
+ }
 }
 /* Tablet and narrow windows: the page scrolls, the inspector sits under the stage. */
 @media(max-width:1099px) {
