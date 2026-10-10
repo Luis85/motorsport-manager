@@ -5,12 +5,12 @@ import {
   exportScene,
   validateExport,
   writeLittlewildAsset,
-  readDefinition,
-  littlewildFamilies,
+  littlewildExportIdentity,
   modelDependencies,
   exportFormats,
   LittlewildAssetSchema,
   type ExportFormat,
+  type LittlewildFamily,
 } from '../kernel/index.js';
 import {
   type EditorDocument,
@@ -30,7 +30,6 @@ export const documentExportFormats = [
 ] as const;
 export type DocumentExportFormat = (typeof documentExportFormats)[number];
 
-type LittlewildFamily = keyof typeof littlewildFamilies;
 export interface LittlewildOptions {
   /** Defaults to the `<family>` directory of `<family>/<id>/definition.json`, else items. */
   family?: LittlewildFamily;
@@ -99,24 +98,13 @@ export async function exportDocument(loaded: LoadedDocument, request: ExportRequ
   }
   if (request.format === 'littlewild') {
     const options = request.littlewild!;
-    const directory = path.basename(path.dirname(path.dirname(out)));
-    const family =
-      options.family ??
-      (Object.hasOwn(littlewildFamilies, directory) ? (directory as LittlewildFamily) : 'items');
-    // An existing definition keeps its display name unless --name replaces it.
-    const existing = await readDefinition(out);
-    const previousName =
-      existing?.visual && typeof existing.visual === 'object' && 'name' in existing.visual
-        ? existing.visual.name
-        : undefined;
+    const identity = await littlewildExportIdentity(out, {
+      family: options.family,
+      name: options.name,
+      fallbackName: document.model.name,
+    });
     const asset = parse(LittlewildAssetSchema, {
-      id: path.basename(path.dirname(out)),
-      family,
-      name:
-        options.name ??
-        (typeof previousName === 'string' && existing?.family === family
-          ? previousName
-          : document.model.name),
+      ...identity,
       models: {
         [options.variant]: {
           model: document.model.id,
@@ -128,7 +116,6 @@ export async function exportDocument(loaded: LoadedDocument, request: ExportRequ
     const result = await writeLittlewildAsset(asset, libraryOf(document), out, {
       dryRun: options.dryRun,
       check: options.check,
-      preserve: true,
     });
     if (options.check && result.changed)
       fail('LITTLEWILD_STALE', `${out} differs from model ${document.model.id}.`, result);

@@ -288,11 +288,23 @@ actual model IDs, alongside the retained `variants` array. Select
 `variantModels["world-round"]` for a creature world model instead of guessing
 capitalization, separators or truncation. The dry-run mapping matches apply.
 
+`littlewild export` and `littlewild sync` share Model Forge's lossless contract. A
+new definition is written in canonical form. Merging into an existing definition
+keeps its own representation wherever exported content is unchanged (key order,
+explicit zero transforms, empty `children`, string material references,
+`materialProps`, mesh names, unreferenced palette entries and meshes, engine-only
+node fields such as `castShadow`, and the file layout); only edited fields are
+normalized. An unedited import therefore exports back byte-identically, and both
+tools write identical bytes for the same model. `littlewild export` takes
+`--family` from the `<family>` directory of `--out` and keeps an existing
+definition's display name unless `--name` is given.
+
 ### Maintaining shared Littlewild meshes
 
 A material-only refinement preserves the exact authored mesh buffers, including
 positions, normals, UVs and indices. Export reuses equal buffers across retained
-variants and removes unreferenced mesh resources. Equality includes all buffers:
+variants and removes mesh resources that only the replaced variant referenced;
+resources no variant referenced stay. Equality includes all buffers:
 small shape changes or different UV placement remain distinct. Mesh names are
 collision-safe; an existing ID never silently replaces a different retained mesh.
 Keep the original definition wrapper when replacing one variant so gameplay,

@@ -89,7 +89,7 @@ forge3d -p my-project littlewild import --definition ../../docs/concepts/littlew
 
 From the repository root, the checked-in executable runs the same freshness check: `bin/scene-forge -p source/scene-forge/examples/pocket-pet littlewild sync --file source/scene-forge/examples/pocket-pet/littlewild.export.json --check`.
 
-Boxes and unchanged imported engine primitives stay native; other geometry is baked into bounded meshes. Nodes tagged `rig:<role>` become pet animation roles, inline variant materials produce species colors from one recipe, and other definition facets are preserved. `--check` reports stale definitions; `import` turns existing Littlewild assets into editable models. The `examples/pocket-pet` project contains the egg, four life stages, ten props and six socketed accessories of the Pocket Pet demo. See the [workflow guide](../../docs/how-to/scene-forge-littlewild-assets.md).
+Boxes and unchanged imported engine primitives stay native; other geometry is baked into bounded meshes. Nodes tagged `rig:<role>` become pet animation roles, inline variant materials produce species colors from one recipe, and other definition facets are preserved. Export and sync share Model Forge's lossless contract: merging into an existing definition keeps its own representation wherever content is unchanged, so an unedited import exports back byte-identically and both tools write identical bytes. `--check` reports stale definitions; `import` turns existing Littlewild assets into editable models. The `examples/pocket-pet` project contains the egg, four life stages, ten props and six socketed accessories of the Pocket Pet demo. See the [workflow guide](../../docs/how-to/scene-forge-littlewild-assets.md).
 
 ## Authoring and editor improvements in v0.6
 

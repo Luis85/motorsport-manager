@@ -157,7 +157,8 @@ test('existing resource IDs with different buffers cannot overwrite retained var
   const meshes = merged.visual.meshes as Record<string, typeof mesh>,
     variants = merged.visual.models as Record<string, { nodes: { mesh: string }[] }>;
   assert.deepEqual(meshes[generatedId], different);
-  assert.equal(meshes.unused, undefined);
+  // No source variant referenced `unused`; like an unused palette entry, merging keeps it.
+  assert.deepEqual(meshes.unused, mesh);
   assert.notEqual(variants.world.nodes[0].mesh, generatedId);
   assert.equal(variants.winter.nodes[0].mesh, generatedId);
   assertLittlewildComplexity({ values: Array(399998).fill(0) });

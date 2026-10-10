@@ -3592,7 +3592,7 @@ function collect(nodes2, key, into) {
   }
   return into;
 }
-function littlewildVisual(asset, models, existing, options = {}) {
+function littlewildVisual(asset, models, existing) {
   const category = littlewildFamilies[asset.family], previous = plain5(existing?.visual) ? existing.visual : {}, previousModels = plain5(previous.models) ? previous.models : {}, previousMaterials = plain5(previous.materials) ? previous.materials : {}, previousMeshes = plain5(previous.meshes) ? previous.meshes : {};
   const materials = {}, meshes = {}, exported = {}, rig = {}, report = [], warnings = /* @__PURE__ */ new Set();
   for (const [variant, spec] of Object.entries(asset.models)) {
@@ -3647,7 +3647,7 @@ function littlewildVisual(asset, models, existing, options = {}) {
       built.dispose();
     }
   }
-  if (options.preserve) preserveExported(previous, exported, materials, meshes);
+  if (existing) preserveExported(previous, exported, materials, meshes);
   const finalModels = structuredClone({ ...previousModels, ...exported });
   for (const [name, model] of Object.entries(previousModels)) {
     if (Object.hasOwn(exported, name) || !plain5(model) || !Array.isArray(model.nodes)) continue;
@@ -3693,7 +3693,7 @@ function littlewildVisual(asset, models, existing, options = {}) {
     ...finalRig === void 0 || plain5(finalRig) && !Object.keys(finalRig).length ? {} : { rig: finalRig },
     ...Object.keys(finalMeshes).length ? { meshes: finalMeshes } : {}
   };
-  const result = options.preserve && existing ? preserveTables(visual, previous) : visual;
+  const result = existing ? preserveTables(visual, previous) : visual;
   assertLittlewildComplexity(result);
   return { visual: result, report, warnings: [...warnings] };
 }
@@ -3707,6 +3707,14 @@ async function readDefinition(file) {
   const value = await readJson(file);
   if (!plain5(value)) fail("LITTLEWILD_EXPORT", `${file} is not a Littlewild definition.`);
   return value;
+}
+async function littlewildExportIdentity(file, options) {
+  const directory = path2.basename(path2.dirname(path2.dirname(file)));
+  const family = options.family ?? (Object.hasOwn(littlewildFamilies, directory) ? directory : "items");
+  const existing = await readDefinition(file);
+  const previousName = plain5(existing?.visual) ? existing.visual.name : void 0;
+  const name = options.name ?? (typeof previousName === "string" && existing?.family === family ? previousName : options.fallbackName);
+  return { id: path2.basename(path2.dirname(file)), family, name };
 }
 async function writeLittlewildAsset(asset, models, file, options = {}) {
   const existing = await readDefinition(file);
@@ -3726,9 +3734,7 @@ async function writeLittlewildAsset(asset, models, file, options = {}) {
       "LITTLEWILD_EXPORT",
       `Littlewild expects ${asset.family}/${asset.id}/definition.json; got ${file}.`
     );
-  const { visual, report, warnings } = littlewildVisual(asset, models, existing, {
-    preserve: options.preserve
-  });
+  const { visual, report, warnings } = littlewildVisual(asset, models, existing);
   const definition = existing ? Object.fromEntries(
     Object.entries({ ...existing, visual }).map(([k]) => [
       k,
@@ -3741,7 +3747,7 @@ async function writeLittlewildAsset(asset, models, file, options = {}) {
     id: asset.id,
     visual
   };
-  const layout = options.preserve && existing && sourceLayouts.find((format) => format(existing) === previousText) || definitionText;
+  const layout = existing && sourceLayouts.find((format) => format(existing) === previousText) || definitionText;
   const text = layout(definition);
   const changed = previousText !== text;
   if (changed && !options.dryRun && !options.check) await atomicWrite(file, text);
@@ -6006,14 +6012,23 @@ function registerLittlewildCommands(c) {
     output({ target, assets: results, stale });
   });
   group.command("export").description("Export one model as a Littlewild definition model variant").requiredOption("--model <id>", "Scene Forge model to export").requiredOption("--out <path>", "Littlewild <family>/<id>/definition.json to create or update").addOption(
-    new Option5("--family <family>").choices(["items", "buildings", "creatures", "pets"]).default("items")
-  ).option("--variant <name>", "Littlewild model variant", "world").option("--name <name>", "Display name; defaults to the model name").option("--parameters <json>", "Model parameter overrides").option("--materials <json>", "Inline material replacements keyed by model material ID").option("--dry-run", "Compile and compare without writing").action(async (opts) => {
+    new Option5(
+      "--family <family>",
+      "Littlewild family; defaults to the <family> directory of --out, else items"
+    ).choices(["items", "buildings", "creatures", "pets"])
+  ).option("--variant <name>", "Littlewild model variant", "world").option(
+    "--name <name>",
+    "Display name; defaults to an existing definition's name, else the model name"
+  ).option("--parameters <json>", "Model parameter overrides").option("--materials <json>", "Inline material replacements keyed by model material ID").option("--dry-run", "Compile and compare without writing").action(async (opts) => {
     const s = await snapshot(), out = resolvePath(opts.out), model = s.models[opts.model];
     if (!model) fail("NOT_FOUND", `Model ${opts.model} does not exist.`);
-    const asset = parse(LittlewildAssetSchema, {
-      id: path11.basename(path11.dirname(out)),
+    const identity = await littlewildExportIdentity(out, {
       family: opts.family,
-      name: opts.name ?? model.name,
+      name: opts.name,
+      fallbackName: model.name
+    });
+    const asset = parse(LittlewildAssetSchema, {
+      ...identity,
       models: {
         [opts.variant]: {
           model: opts.model,

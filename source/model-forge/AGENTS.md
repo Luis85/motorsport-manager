@@ -26,7 +26,9 @@ Model Forge edits exactly one model per document. Use the repository executable
    `review --out <new directory>`; reuse its `replay-plan.json` to hold cameras fixed.
 7. Export for the consumer: `model-bundle` for Scene Forge, `littlewild` for Wildlands
    games, `glb --validate` for engines. Outputs never replace an existing file unless you
-   pass `--overwrite` (Littlewild exports merge instead). Export to a Scene Forge project
+   pass `--overwrite` (Littlewild exports merge losslessly instead: unchanged content keeps
+   the definition's own bytes, the same contract as Scene Forge's `littlewild export` and
+   `sync`, so a diff shows exactly your edit). Export to a Scene Forge project
    only through `scene-forge model import` (with its guards); Model Forge refuses to write
    inside a project (`PROJECT_MODEL_READONLY`).
 

@@ -26,6 +26,7 @@ import { preserveExported, preserveTables } from '../application/littlewild-pres
 import { atomicWrite, readJson } from './files.js';
 
 type Plain = Record<string, unknown>;
+export type LittlewildFamily = keyof typeof littlewildFamilies;
 const plain = (value: unknown): value is Plain =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 /** Indented JSON whose numeric vectors and mesh buffers stay on one line for reviewable diffs. */
@@ -63,13 +64,12 @@ function collect(nodes: readonly unknown[], key: 'material' | 'mesh', into: Set<
   }
   return into;
 }
-/** Compiles every requested variant and merges it into the existing definition wrapper. */
-export function littlewildVisual(
-  asset: LittlewildAsset,
-  models: ModelLibrary,
-  existing?: Plain,
-  options: { preserve?: boolean } = {},
-) {
+/**
+ * Compiles every requested variant and merges it into the existing definition wrapper.
+ * A new definition is written in canonical form; merging into an existing one keeps that
+ * definition's own representation wherever content is unchanged (littlewild-preserve.ts).
+ */
+export function littlewildVisual(asset: LittlewildAsset, models: ModelLibrary, existing?: Plain) {
   const category = littlewildFamilies[asset.family],
     previous = plain(existing?.visual) ? existing.visual : {},
     previousModels = plain(previous.models) ? previous.models : {},
@@ -139,7 +139,7 @@ export function littlewildVisual(
       built.dispose();
     }
   }
-  if (options.preserve) preserveExported(previous, exported, materials as Plain, meshes as Plain);
+  if (existing) preserveExported(previous, exported, materials as Plain, meshes as Plain);
   const finalModels: Plain = structuredClone({ ...previousModels, ...exported });
   // Retained variants keep their own material and mesh references.
   for (const [name, model] of Object.entries(previousModels)) {
@@ -197,7 +197,7 @@ export function littlewildVisual(
       : { rig: finalRig }),
     ...(Object.keys(finalMeshes).length ? { meshes: finalMeshes } : {}),
   };
-  const result = options.preserve && existing ? preserveTables(visual, previous) : visual;
+  const result = existing ? preserveTables(visual, previous) : visual;
   assertLittlewildComplexity(result);
   return { visual: result, report, warnings: [...warnings] };
 }
@@ -212,12 +212,35 @@ export async function readDefinition(file: string) {
   if (!plain(value)) fail('LITTLEWILD_EXPORT', `${file} is not a Littlewild definition.`);
   return value;
 }
+/**
+ * The family and display name a one-model export to `<family>/<id>/definition.json` writes,
+ * shared by Model Forge and Scene Forge: an omitted family comes from the path (else
+ * `items`), and an existing definition of that family keeps its display name unless a name
+ * is given; a new definition takes `fallbackName` (the model name).
+ */
+export async function littlewildExportIdentity(
+  file: string,
+  options: { family?: LittlewildFamily; name?: string; fallbackName: string },
+) {
+  const directory = path.basename(path.dirname(path.dirname(file)));
+  const family =
+    options.family ??
+    (Object.hasOwn(littlewildFamilies, directory) ? (directory as LittlewildFamily) : 'items');
+  const existing = await readDefinition(file);
+  const previousName = plain(existing?.visual) ? existing.visual.name : undefined;
+  const name =
+    options.name ??
+    (typeof previousName === 'string' && existing?.family === family
+      ? previousName
+      : options.fallbackName);
+  return { id: path.basename(path.dirname(file)), family, name };
+}
 /** Writes one definition wrapper; non-visual gameplay facets are preserved byte-for-byte in value. */
 export async function writeLittlewildAsset(
   asset: LittlewildAsset,
   models: ModelLibrary,
   file: string,
-  options: { dryRun?: boolean; check?: boolean; preserve?: boolean } = {},
+  options: { dryRun?: boolean; check?: boolean } = {},
 ) {
   const existing = await readDefinition(file);
   let previousText: string | undefined;
@@ -244,9 +267,7 @@ export async function writeLittlewildAsset(
       'LITTLEWILD_EXPORT',
       `Littlewild expects ${asset.family}/${asset.id}/definition.json; got ${file}.`,
     );
-  const { visual, report, warnings } = littlewildVisual(asset, models, existing, {
-    preserve: options.preserve,
-  });
+  const { visual, report, warnings } = littlewildVisual(asset, models, existing);
   const definition: Plain = existing
     ? Object.fromEntries(
         Object.entries({ ...existing, visual }).map(([k]) => [
@@ -261,11 +282,9 @@ export async function writeLittlewildAsset(
         id: asset.id,
         visual,
       };
-  // A preserving write keeps the source file's layout when it is one of the known ones.
+  // An existing definition keeps its file layout when it is one of the known ones.
   const layout =
-    (options.preserve &&
-      existing &&
-      sourceLayouts.find((format) => format(existing) === previousText)) ||
+    (existing && sourceLayouts.find((format) => format(existing) === previousText)) ||
     definitionText;
   const text = layout(definition);
   const changed = previousText !== text;

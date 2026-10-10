@@ -305,6 +305,8 @@ test('import turns Littlewild variants into editable models that export back los
   ]);
   assert.equal(exported.status, 0, JSON.stringify(exported.json));
   const result = JSON.parse(await fs.readFile(source, 'utf8')).visual;
+  // One lossless contract with Model Forge: an unedited variant keeps the source's own value.
+  assert.deepEqual({ ...result }, visual, 'an unedited import exports back to the same visual');
   assert.equal(result.meshes, undefined, 'engine primitives return as native primitives');
   const [body] = result.models.world.nodes;
   assert.deepEqual(
@@ -316,7 +318,8 @@ test('import turns Littlewild variants into editable models that export back los
     [
       ['head', 'soft', 'fur'],
       ['brow', 'box', 'eyeWhite'],
-      ['ear', 'cone', 'c806040'],
+      // The inline color reference stays inline instead of becoming a named palette role.
+      ['ear', 'cone', '#806040'],
     ],
   );
   assert.ok(Math.abs(body.children[1].rotation[2] - 0.04) < 1e-6);

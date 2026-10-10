@@ -626,7 +626,8 @@ inheritance is not rewritten automatically.
 Littlewild mesh `castShadow` and `receiveShadow` flags currently use Scene Forge’s
 mesh defaults after import. A native shadow decal may therefore cast an additional
 contact shadow in lit previews; GLB does not carry engine-specific shadow flags.
-Material opacity and depth-write behavior are retained.
+Exporting back into the source definition keeps those flags on every node that
+still matches it. Material opacity and depth-write behavior are retained.
 Native shadow decals preserve `depthWrite: false` together with alpha blending
 and opacity below 1. GLB represents these with `alphaMode: BLEND`; Scene Forge
 recipes, previews and Littlewild output retain the explicit depth setting.
@@ -709,7 +710,7 @@ covers rig roles, mesh budgets and manifests.
 | Command | Options |
 |---|---|
 | `littlewild sync` | `--file <path>` (required `littlewild-export` manifest), `--asset <id>`, `--dry-run`, `--check` (fail with `LITTLEWILD_STALE`, never write) |
-| `littlewild export` | `--model <id>` and `--out <family>/<id>/definition.json` (required), `--family items\|buildings\|creatures\|pets`, `--variant <name>`, `--name <name>`, `--parameters <json>`, `--materials <json>`, `--dry-run` |
+| `littlewild export` | `--model <id>` and `--out <family>/<id>/definition.json` (required), `--family items\|buildings\|creatures\|pets` (default: the `<family>` directory of `--out`, else `items`), `--variant <name>`, `--name <name>` (default: an existing definition's name, else the model name), `--parameters <json>`, `--materials <json>`, `--dry-run` |
 | `littlewild import` | `--definition <path>` (required), `--prefix <id>`, `--dry-run`, `--replace`, `--expected-revision <n>`, `--expected-state <hash>` |
 
 `littlewild import` accepts a `littlewild-definition`, a raw `littlewild-3d-asset`,
@@ -723,6 +724,20 @@ definition to retain its gameplay and actor rig. Read `inspect` for the revision
 and state hash, then pass both guards when
 replacing existing models to reject intervening edits. Dry runs validate the same
 model dependency closure without writing.
+
+`littlewild export` and `littlewild sync` share one lossless contract with Model
+Forge's `export --format littlewild` (the same kernel writer). A new definition is
+written in canonical form. Merging into an existing definition replaces only the
+exported variants of the `visual` facet and keeps that definition's own
+representation wherever content is unchanged: node key order, explicit zero
+transforms and empty `children`, shared string material references and per-node
+`materialProps`, mesh resource names, engine-only node fields a recipe cannot
+express (for example `castShadow: false`), palette entries and meshes no variant
+references, and the file's layout. Only edited fields take the exporter's
+normalized form, so an unedited `littlewild import` exports back byte-identically
+and both tools write identical bytes for the same model. A changed material is
+written in full and shared by every variant that names it; the result's
+`warnings` lists retained variants that now use it.
 
 A manifest's `target` is relative to the manifest file; `--file` and
 `--definition` are relative to the working directory. From the repository root,
@@ -999,7 +1014,8 @@ and notice texts of every bundled package. For development without rebuilding,
 
 A material-only refinement preserves the exact authored mesh buffers, including
 positions, normals, UVs and indices. Export reuses equal buffers across retained
-variants and removes unreferenced mesh resources. Equality includes all buffers:
+variants and removes mesh resources that only the replaced variant referenced;
+resources no variant referenced stay. Equality includes all buffers:
 small shape changes or different UV placement remain distinct. Mesh names are
 collision-safe; an existing ID never silently replaces a different retained mesh.
 Keep the original definition wrapper when replacing one variant so gameplay,

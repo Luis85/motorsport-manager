@@ -4,8 +4,9 @@ import { sphereUVs } from './surface-pattern.js';
 import type { LittlewildNode } from './littlewild.js';
 
 /**
- * Source-preserving Littlewild maintenance (opt-in; Model Forge uses it, Scene Forge's
- * byte contract does not). A re-exported variant keeps the existing definition's own
+ * Source-preserving Littlewild maintenance, the one contract of every writer (Model Forge's
+ * `export --format littlewild`, Scene Forge's `littlewild export` and `littlewild sync`) when
+ * it merges into an existing definition. A re-exported variant keeps that definition's own
  * representation wherever it is semantically unchanged: node key order, explicit zero
  * transforms, empty children, shared string material references, per-node `materialProps`,
  * mesh resource names and engine-only node fields the recipe cannot express (for example

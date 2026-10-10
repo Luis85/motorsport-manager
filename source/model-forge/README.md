@@ -103,11 +103,12 @@ leaves out dependencies no node instantiates (`inspect` lists them as `unusedDep
 GLB, model-bundle and new Littlewild definitions are byte-identical to Scene Forge's
 `export --model`, `model export` and `littlewild export` for the same model;
 `tests/agent.test.ts` checks this against `bin/scene-forge`. Into an existing
-definition, Model Forge additionally keeps the source representation of everything
-unchanged (layout, key order, string material references, mesh names, engine-only
-fields such as `castShadow`), so an unedited Littlewild import re-exports
-byte-identically; `tests/littlewild-roundtrip.test.ts` checks every variant under
-`docs/concepts`.
+definition, both tools keep the source representation of everything unchanged
+(layout, key order, string material references, mesh names, engine-only fields such
+as `castShadow`): one lossless contract, so an unedited Littlewild import re-exports
+byte-identically and merged definitions are byte-identical to Scene Forge's too;
+`tests/littlewild-roundtrip.test.ts` checks every variant under `docs/concepts` and
+the edited-definition parity with `bin/scene-forge`.
 
 `review --out <new directory>` renders named views or a `--turntable` in one headless
 Chromium session and writes PNGs, `contact-sheet.png`, `review.json` (`review-result`,

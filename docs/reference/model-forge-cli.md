@@ -419,21 +419,23 @@ file, so it passes only once the definition is current. The display name stays
 the existing definition's unless `--name` replaces it (a new definition takes the
 model name, which a Littlewild import sets to `<name> (<variant>)`).
 
-Model Forge's Littlewild export is **lossless for unchanged content**. Where a
+Littlewild export is **lossless for unchanged content**, in Model Forge and in
+Scene Forge's `littlewild export` and `littlewild sync` alike. Where a
 re-exported node, material or mesh is semantically unchanged, the definition
 keeps its own representation: node key order, explicit zero transforms and empty
 `children`, shared string material references and per-node `materialProps`,
 mesh resource names, engine-only node fields the recipe cannot express (for
-example `castShadow: false` or `receiveShadow: false`), palette entries no
-variant references, and the file's layout (indented arrays, or plain or
+example `castShadow: false` or `receiveShadow: false`), palette entries and
+meshes no variant references, and the file's layout (indented arrays, or plain or
 ASCII-escaped `JSON.stringify` output). Only edited fields take the exporter's
 normalized form: in the example above the definition gains exactly the two ear
 `scale` arrays. A changed material is written in full and shared by every
 variant that names it (the result's `warnings` lists retained variants that now
 use it). Every variant of every `definition.json` under `docs/concepts` round-trips
-unedited (`tests/littlewild-roundtrip.test.ts`). Scene Forge's `littlewild export`
-and `sync` keep their normalizing output; for a new definition both tools write
-identical bytes.
+unedited through both tools (`tests/littlewild-roundtrip.test.ts` in each project).
+A new definition is written in canonical form. Both tools share the writer, its
+`--family`/`--name` defaults and this contract, so they write identical bytes for
+the same model, whether the definition is new or merged.
 
 Scene-wide Littlewild synchronization from a manifest (`littlewild sync`) and the
 Pocket Pet assets stay in Scene Forge; see

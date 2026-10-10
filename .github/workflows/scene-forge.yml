@@ -9,6 +9,9 @@ on:
       - 'bin/scene-forge'
       - 'docs/reference/scene-forge-cli.md'
       - '.github/workflows/scene-forge.yml'
+      # The Littlewild tests read the concept corpus (lossless round trips) and the
+      # definitions the example manifests publish (sync --check).
+      - 'docs/concepts/**'
   workflow_dispatch:
 permissions:
   contents: read
