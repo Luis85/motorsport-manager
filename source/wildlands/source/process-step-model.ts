@@ -43,6 +43,12 @@ declare namespace LWProcessStepModel {
   phase: string; emotion: string; channel: string; pain: string; opportunity: string; outcome: string;
   /** Phases already used by steps in the draft, in order of first use, for suggestions. Not written back. */
   phases: string[];
+  /** Every step of the draft (id, name, kind) in draft order, for choosing where a path goes. Not written back. */
+  others: {id: string; name: string; kind: LWProcess.Kind}[];
+  /** Every flow id in the draft when the step was read, so a new path never reuses one. Not written back. */
+  flowIds: string[];
+  /** Case field names for suggestions: delivered before this step, available to its outgoing conditions, and every known one. Not written back. */
+  fieldNames: {earlier: string[]; after: string[]; all: string[]};
  }
  /** A message for a field in the model (`key` is the model path, e.g. `set.1.value`) that cannot be written faithfully. */
  interface Problem {key: string; message: string}
@@ -129,8 +135,28 @@ declare namespace LWProcessStepModel {
    needs: (step.needs ?? []).map(n => ({field: n.field, op: n.op ?? '', value: readValue(n.value), label: n.label ?? ''})),
    phase: step.phase ?? '', emotion: step.emotion === undefined ? '' : String(step.emotion), channel: step.channel ?? '', pain: step.pain ?? '', opportunity: step.opportunity ?? '', outcome: step.outcome ?? '',
    phases: [...new Set(def.steps.flatMap(o => o.phase ? [o.phase] : []))],
+   others: def.steps.map(o => ({id: o.id, name: o.name, kind: o.kind})), flowIds: def.flows.map(f => f.id), fieldNames: suggest(def, stepId),
    backlog: isWork(step.kind) || step.kind === 'join' ? {on: !!b, capacity: String(b?.capacity ?? 8), order: b?.order ?? 'fifo', priority: b?.priority ?? 'priority', pull: b?.pull === undefined ? '' : String(b.pull)} : null, flows,
    branching: step.kind === 'fork' ? (step.mode === 'inclusive' ? 'inclusive' : 'parallel') : null, instances: isWork(step.kind) ? L.readInstances(step) : null, deadline: isWork(step.kind) ? L.readDeadline(step) : null};
+ }
+/** The case fields one step writes when it completes. */
+ const writes = (s: LWProcess.Step) => [...Object.keys(s.set ?? {}), ...Object.keys(s.add ?? {}), ...(s.draws ?? []).map(d => d.field)];
+ /** Field-name suggestions: arrival fields and the writes of steps upstream of `stepId` (earlier), plus its own writes (after), and all. */
+ function fieldNames(def: LWProcess.Definition, stepId: string): LWProcessStepModel.Model['fieldNames'] {
+  const upstream = new Set<string>(), queue = [stepId];
+  while (queue.length) {
+   const at = queue.shift();
+   for (const f of def.flows) if (f.to === at && !upstream.has(f.from)) { upstream.add(f.from); queue.push(f.from); }
+  }
+  const arrivals = (def.arrivals ?? []).flatMap(a => [...Object.keys(a.data ?? {}), ...(a.draws ?? []).map(d => d.field)]);
+  const own = def.steps.find(s => s.id === stepId), sorted = (names: string[]) => [...new Set(names.filter(n => typeof n === 'string' && n))].sort();
+  const earlier = sorted([...arrivals, ...def.steps.filter(s => upstream.has(s.id)).flatMap(writes)]);
+  const all = sorted([...arrivals, ...def.steps.flatMap(writes), ...(def.track ?? []).map(t => t.field)]);
+  return {earlier, after: sorted([...earlier, ...own ? writes(own) : []]), all};
+ }
+ /** Suggestions are a convenience: a draft too malformed to scan simply offers none. */
+ function suggest(def: LWProcess.Definition, stepId: string): LWProcessStepModel.Model['fieldNames'] {
+  try { return fieldNames(def, stepId); } catch { return {earlier: [], after: [], all: []}; }
  }
  function writeStep(step: LWProcess.Step, m: LWProcessStepModel.Model): void {
   const work = isWork(step.kind), effects = work || step.kind === 'timer', trimmed = (text: string) => text.trim() === '' ? undefined : text.trim();
@@ -166,15 +192,20 @@ declare namespace LWProcessStepModel {
   const next = clone(def), step = next.steps.find(s => s.id === stepId); if (!step) return next;
   writeStep(step, m);
   const slots = next.flows.flatMap((f, i) => f.from === stepId ? [i] : []), byId = new Map(next.flows.map(f => [f.id, f]));
-  m.flows.forEach((row, k) => {
-   const flow = byId.get(row.id); if (!flow || slots[k] === undefined) return;
+  // Each row is an existing flow of this step (updated in place) or a path added in the editor; removed paths are dropped.
+  const rows = m.flows.map(row => {
+   const known = byId.get(row.id), flow: LWProcess.Flow = known && known.from === stepId ? known : {id: row.id, from: stepId, to: row.to};
+   flow.to = row.to;
    put(flow, 'label', row.label.trim() === '' ? undefined : row.label);
    const deadlineFlow = isWork(step.kind) && m.deadline !== null && L.isDeadlineFlow(m, row.id);
    if (isWork(step.kind)) put(flow, 'on', deadlineFlow ? 'deadline' : undefined);
    if (deadlineFlow) put(flow, 'when', undefined);
    else if (step.kind === 'decision' || step.kind === 'fork' || row.cond.on) put(flow, 'when', !row.cond.on || step.kind === 'fork' && m.branching !== 'inclusive' ? undefined : L.writeCond(row.cond));
-   next.flows[slots[k]!] = flow;
+   return flow;
   });
+  // Same number of paths: keep each in its slot of the flow list. Otherwise the step's paths move together to where its first one was.
+  if (rows.length === slots.length) rows.forEach((flow, k) => { next.flows[slots[k]!] = flow; });
+  else { const at = slots[0] ?? next.flows.length; next.flows = next.flows.filter(f => f.from !== stepId); next.flows.splice(at, 0, ...rows); }
   return next;
  }
  function problems(m: LWProcessStepModel.Model): LWProcessStepModel.Problem[] {
@@ -192,7 +223,10 @@ declare namespace LWProcessStepModel {
   if (m.phase.trim().length > LIMITS.phase) out.push({key: 'phase', message: `Phase must be ${LIMITS.phase} characters or fewer.`});
   (['pain', 'opportunity'] as const).forEach(k => { if (m[k].trim().length > LIMITS.note) out.push({key: k, message: `${k === 'pain' ? 'Pain point' : 'Opportunity'} must be ${LIMITS.note} characters or fewer.`}); });
   m.add.forEach((r, i) => { if (whole(r.delta) === undefined) out.push({key: `add.${i}.delta`, message: 'Enter a whole number.'}); });
-  m.needs.forEach((n, i) => { if (n.op) value(`needs.${i}.value`, n.value); });
+  m.needs.forEach((n, i) => {
+   if (n.field.trim() === '') out.push({key: `needs.${i}.field`, message: 'Name the field earlier steps must deliver, or remove this row.'});
+   if (n.op) value(`needs.${i}.value`, n.value);
+  });
   m.flows.forEach((f, i) => {
    if (f.cond.on && !L.isDeadlineFlow(m, f.id)) L.condProblems(f.cond, `flows.${i}.cond`, out);
   });
@@ -249,6 +283,8 @@ declare namespace LWProcessStepModel {
   if ((key === 'pain' || key === 'opportunity') && shape) return `${key === 'pain' ? 'Pain point' : 'Opportunity'} must be 1 to ${LIMITS.note} characters`;
   if (key === 'channel' && /only on touchpoint/.test(d.message)) return 'A channel can be set only on touchpoint steps';
   if (key === 'outcome' && /only on end/.test(d.message)) return 'An outcome can be set only on end steps';
+  // The editor calls outgoing flows paths.
+  if (key === '' && /outgoing flow/.test(d.message)) return d.message.replace(/(outgoing|deadline) flows?/g, x => x.replace('flow', 'path'));
   if (key === 'backlog' && shape && parts[3] === 'capacity') return `Backlog capacity must be a whole number from 1 to ${group(limits?.cases ?? 200)}`;
   if (key === 'backlog' && shape && parts[3] === 'pull') return `Pull limit must be a whole number from 1 to ${group(limits?.cases ?? 200)}`;
   if (key.startsWith('pools.') || key === 'pools') {
@@ -257,7 +293,21 @@ declare namespace LWProcessStepModel {
    if (pool && /may demand only/.test(d.message)) return `${pool.name} is a ${pool.kind ?? 'people'} pool, but ${(KIND_NAME[step.kind]?.[1] ?? 'Steps').toLowerCase()} may use only ${poolKind(step.kind)} pools. Set it to 0`;
    if (/must demand at least one/.test(d.message)) return `Choose at least one ${step.kind} pool and ask for 1 or more`;
   }
-  return d.message;
+  return generic(d, parts) ?? d.message;
+ }
+ const NAME_HINT = 'Use a case field name that starts with a lowercase letter, then letters, digits or underscores (up to 64 characters)';
+ /** Plain words for the catalog's terse structural messages, naming the field from the end of the diagnostic path. */
+ function generic(d: LWProcess.Diagnostic, parts: string[]): string | undefined {
+  if (d.code !== 'shape') return undefined;
+  const last = parts[parts.length - 1] ?? '', what = FIELD[last] ?? (/^\d+$/.test(last) ? 'entry' : last || 'value');
+  if (d.message === 'String has invalid length or format.') {
+   const fieldName = ['field', 'valueField', 'priority'].includes(last) || (parts[2] === 'set' || parts[2] === 'add') && parts.length === 4;
+   if (fieldName) return NAME_HINT;
+   return last === 'label' ? 'The label must be 1 to 120 characters' : `The ${what} is empty, too long or not in the allowed format`;
+  }
+  if (d.message === 'Number is out of range.') return `The ${what} is outside the allowed range`;
+  if (/^Expected (integer|number)/.test(d.message)) return `The ${what} must be a number`;
+  return undefined;
  }
  function scope(def: LWProcess.Definition, stepId: string, diagnostics: LWProcess.Diagnostic[]): LWProcessStepModel.Scoped[] {
   const index = def.steps.findIndex(s => s.id === stepId), step = def.steps[index], own = def.flows.map((f, i) => f.from === stepId ? i : -1).filter(i => i >= 0), out: LWProcessStepModel.Scoped[] = [];
@@ -268,7 +318,7 @@ declare namespace LWProcessStepModel {
     let key = seg === undefined ? '' : seg === 'needs' && parts[3] !== undefined ? `needs.${parts[3]}` : seg === 'outputs' && parts[3] !== undefined ? `outputs.${parts[3]}` : seg === 'timing' || seg === 'draws' || seg === 'instances' || seg === 'deadline' ? parts.slice(2).join('.') : SEGMENTS[seg] ?? '';
     if (seg === 'resources' && parts[3] !== undefined) { const at = def.resources.findIndex(r => r.id === parts[3]); if (at >= 0) key = `pools.${at}`; }
     out.push({key, message: plain(def, step, key, d, parts), path: d.path});
-   } else if (parts[0] === 'flows' && own.includes(Number(parts[1]))) out.push({key: `flows.${own.indexOf(Number(parts[1]))}`, message: d.message, path: d.path});
+   } else if (parts[0] === 'flows' && own.includes(Number(parts[1]))) out.push({key: `flows.${own.indexOf(Number(parts[1]))}`, message: generic(d, parts) ?? d.message, path: d.path});
   }
   return out;
  }

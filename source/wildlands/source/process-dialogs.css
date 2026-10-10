@@ -54,6 +54,8 @@ html.pd-locked { overflow:hidden; }
 .pd-dialog .se-card { margin:0 0 10px; border:1px solid var(--line); border-radius:var(--r-md); padding:6px 12px 12px; }
 .pd-dialog .se-card legend { padding:0 6px; font-size:var(--t-sm); }
 .pd-dialog .se-actions { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.pd-dialog .se-stepnav button { max-width:100%; }
+.pd-dialog .se-stepnav { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 14px; padding-bottom:12px; border-bottom:1px solid var(--line); }
 .pd-dialog .se-err { margin:4px 0 0; font-size:var(--t-sm); color:var(--danger-text); overflow-wrap:anywhere; }
 .pd-dialog .se-err::before { content:"Problem: "; font-weight:650; }
 .pd-dialog .se-summary { margin:6px 0 0; color:var(--text); font-weight:600; }
@@ -78,9 +80,6 @@ html.pd-locked { overflow:hidden; }
 .pd-dialog .se-cond-group .se-cond-group { border-left-color:var(--control-border); }
 .pd-dialog .se-cond-group>.se-help { margin-bottom:6px; }
 .pd-dialog .se-cond>button,.pd-dialog .se-cond-group>button { margin-right:8px; }
-.pd-dialog .se-hint { margin:8px 0; padding:8px 12px; border:1px solid var(--control-border); border-radius:var(--r-md); }
-.pd-dialog .se-hint pre { margin:6px 0; padding:8px; overflow-x:auto; background:var(--bg); border-radius:var(--r-sm); font-size:var(--t-sm); }
-.pd-dialog .se-hint code { white-space:pre-wrap; overflow-wrap:anywhere; }
 .pd-dialog .se-deadline-path { border-color:var(--danger); }
 @media(max-width:650px) {
  .pd-dialog { width:100vw; max-width:100vw; height:100dvh; max-height:100dvh; margin:0; border:0; border-radius:0; }

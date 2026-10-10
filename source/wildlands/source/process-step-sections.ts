@@ -1,6 +1,7 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-step-model.ts" />
 /// <reference path="./process-step-logic-sections.ts" />
+/// <reference path="./process-step-flows.ts" />
 /**
  * Pure HTML for the step editor sections (basics, journey, outcome, timing and cost, automation, people or equipment, effects,
  * declared outputs, needs, backlog, flows and journey notes, plus branching for forks and multiple instances and a deadline for work steps). It renders a detached `LWProcessStepModel.Model` to a string and owns the stable element ids
@@ -21,7 +22,7 @@ declare namespace LWProcessStepSections {
   button(act: string, label: string, i?: number, extra?: string, aria?: string): string;
   err(key: string): string;
  }
- interface Ui {notesOpen?: boolean; deadlineHelp?: boolean; canOpenDefinition?: boolean}
+ interface Ui extends LWProcessStepFlows.Ui {notesOpen?: boolean}
  interface Api {
   /** All sections for the model's kind, in reading order. `notesOpen` keeps the collapsed Journey notes expanded across re-renders. */
   render(model: LWProcessStepModel.Model, ui?: Ui): string;
@@ -31,11 +32,13 @@ declare namespace LWProcessStepSections {
   /** Live sentences by element id (instances, deadline, branching) for the editor to refresh while typing. */
   notes(model: LWProcessStepModel.Model): Record<string, string>;
   kit: Kit;
+  /** Datalist ids of the case-field suggestions rendered with the sections. */
+  LISTS: {earlier: string; after: string; all: string};
  }
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessStepModel: LWProcessStepModel.Api; LWProcessRandomView: LWProcessRandomView.Api; LWProcessStepLogicSections: LWProcessStepLogicSections.Api; LWProcessStepLogic: LWProcessStepLogic.Api; LWProcessStepSections?: LWProcessStepSections.Api};
+ const root = inputRoot as {LWProcessStepModel: LWProcessStepModel.Api; LWProcessRandomView: LWProcessRandomView.Api; LWProcessStepLogicSections: LWProcessStepLogicSections.Api; LWProcessStepLogic: LWProcessStepLogic.Api; LWProcessStepFlows: LWProcessStepFlows.Api; LWProcessStepSections?: LWProcessStepSections.Api};
  type M = LWProcessStepModel.Model;
  const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
  const slug = (bind: string) => bind.replace(/\./g, '-'), idOf = (bind: string) => 'se-' + slug(bind);
@@ -104,8 +107,8 @@ declare namespace LWProcessStepSections {
  }
  function effects(m: M): string {
   if (m.kind !== 'timer' && !work(m)) return '';
-  const sets = m.set.map((r, i) => `<fieldset class="se-card"><legend>Value ${i + 1}</legend><div class="se-grid">${field(`set.${i}.key`, 'Field name', r.key, {desc: 'se-err-set'})}${valueEditor(`set.${i}.value`, r.value, 'se-err-set')}</div>${button('remove-set', 'Remove', i, '', `Remove value ${i + 1}${r.key ? ' ' + r.key : ''}`)}</fieldset>`).join('');
-  const adds = m.add.map((r, i) => `<fieldset class="se-card"><legend>Counter ${i + 1}</legend><div class="se-grid">${field(`add.${i}.key`, 'Counter field name', r.key, {desc: 'se-err-add'})}${field(`add.${i}.delta`, 'Change (whole number, may be negative)', r.delta, {type: 'number', desc: 'se-err-add', placeholder: '1'})}</div>${button('remove-add', 'Remove', i, '', `Remove counter ${i + 1}${r.key ? ' ' + r.key : ''}`)}</fieldset>`).join('');
+  const sets = m.set.map((r, i) => `<fieldset class="se-card"><legend>Value ${i + 1}</legend><div class="se-grid">${field(`set.${i}.key`, 'Field name', r.key, {desc: 'se-err-set', list: LISTS.all})}${valueEditor(`set.${i}.value`, r.value, 'se-err-set')}</div>${button('remove-set', 'Remove', i, '', `Remove value ${i + 1}${r.key ? ' ' + r.key : ''}`)}</fieldset>`).join('');
+  const adds = m.add.map((r, i) => `<fieldset class="se-card"><legend>Counter ${i + 1}</legend><div class="se-grid">${field(`add.${i}.key`, 'Counter field name', r.key, {desc: 'se-err-add', list: LISTS.all})}${field(`add.${i}.delta`, 'Change (whole number, may be negative)', r.delta, {type: 'number', desc: 'se-err-add', placeholder: '1'})}</div>${button('remove-add', 'Remove', i, '', `Remove counter ${i + 1}${r.key ? ' ' + r.key : ''}`)}</fieldset>`).join('');
   return section('effects', 'When this step completes', 'Each case keeps these values for later steps, conditions and the run report.',
    `<h4>Set a value</h4>${sets || '<p class="se-help">No values are set.</p>'}${err('set')}${button('add-set', 'Add value', undefined, ' id="se-add-set"')}<h4>Change a counter</h4>${adds || '<p class="se-help">No counters change.</p>'}${err('add')}${button('add-add', 'Add counter', undefined, ' id="se-add-add"')}`);
  }
@@ -134,7 +137,7 @@ declare namespace LWProcessStepSections {
  }
  function needs(m: M): string {
   if (m.kind === 'start') return '';
-  const rows = m.needs.map((n, j) => `<fieldset class="se-card"><legend>Need ${j + 1}</legend><div class="se-grid">${field(`needs.${j}.field`, 'Field earlier steps must deliver', n.field, {desc: `se-err-needs-${j}`})}${select(`needs.${j}.op`, 'Condition', [['', 'Only that it is delivered'], ...root.LWProcessStepModel.OPS], n.op, true)}
+  const rows = m.needs.map((n, j) => `<fieldset class="se-card"><legend>Need ${j + 1}</legend><div class="se-grid">${field(`needs.${j}.field`, 'Field earlier steps must deliver', n.field, {desc: `se-err-needs-${j}`, list: LISTS.earlier})}${select(`needs.${j}.op`, 'Condition', [['', 'Only that it is delivered'], ...root.LWProcessStepModel.OPS], n.op, true)}
    ${n.op ? valueEditor(`needs.${j}.value`, n.value, `se-err-needs-${j}`) : ''}${field(`needs.${j}.label`, 'Label (optional)', n.label)}</div>${err(`needs.${j}`)}${button('remove-need', 'Remove', j, '', `Remove need ${j + 1}${n.field ? ' ' + n.field : ''}`)}</fieldset>`).join('');
   return section('needs', 'Needs from earlier steps', 'This step waits until earlier steps have delivered these fields. A counter can only be required as delivered; the engine rejects a value test on a counter because its value cannot be proven.',
    (rows || '<p class="se-help">No needs.</p>') + button('add-need', 'Add need', undefined, ' id="se-add-need"'));
@@ -145,20 +148,10 @@ declare namespace LWProcessStepSections {
    ${b.order === 'priority' ? field('backlog.priority', 'Priority field (numeric case value)', b.priority) : ''}${m.kind === 'join' ? field('backlog.pull', 'Pull limit (work allowed in the next step; blank for no limit)', b.pull, {type: 'number', min: 1, max: 200, placeholder: 'No limit'}) : ''}</div>` : '';
   return section('backlog', 'Backlog', 'A bounded store of waiting work before this step.', check('backlog.on', 'Keep a backlog of waiting work', b.on) + body + err('backlog'));
  }
- function flows(m: M): string {
-  const note = 'Connections between steps are fixed here. To add or remove a flow, edit the raw JSON draft in the Definition editor.';
-  if (!m.flows.length) return section('flows', 'Where work goes next', 'This step ends the process, so it has no outgoing flows. ' + note, '');
-  const logic = root.LWProcessStepLogicSections, decision = m.kind === 'decision', inclusive = m.branching === 'inclusive', conditional = decision || inclusive, deadline = m.flows.some(f => root.LWProcessStepLogic.isDeadlineFlow(m, f.id));
-  const rows = m.flows.map((f, k) => {
-   const late = root.LWProcessStepLogic.isDeadlineFlow(m, f.id);
-   const moves = decision && m.flows.length > 1 ? `<div class="se-actions">${button('up', 'Move up', k, k === 0 ? ' disabled aria-describedby="se-first"' : '')}${button('down', 'Move down', k, k === m.flows.length - 1 ? ' disabled aria-describedby="se-last"' : '')}<span class="se-help">${k === 0 ? 'Checked first. Cannot move up.' : k === m.flows.length - 1 ? 'Checked last. Cannot move down.' : `Position ${k + 1} of ${m.flows.length}.`}</span></div>` : '';
-   const rule = late ? '<p class="se-help">This is the deadline path: it is taken when the deadline fires and takes no condition.</p>' : conditional || f.cond.on ? logic.condition(m, f, k) : '';
-   return `<fieldset class="se-card${late ? ' se-deadline-path' : ''}"><legend>Path ${k + 1} of ${m.flows.length} · to ${esc(f.toName)}${late ? ' · deadline path' : ''}</legend>${field(`flows.${k}.label`, 'Label shown on this path', f.label)}${rule}${err(`flows.${k}`)}${moves}</fieldset>`;
-  }).join('');
-  const summary = conditional ? `<ol class="se-paths" id="se-path-summary" aria-label="${decision ? 'Order in which the paths are checked' : 'Branches and the conditions that start them'}">${logic.pathSummary(m)}</ol>` : '';
-  const intro = (decision ? 'The first path whose condition matches wins, so order matters; the path without a condition is the fallback. ' : inclusive ? 'Every branch whose condition is true starts. The branch without a condition is the default: it starts only when no other branch matches. ' : '') + (deadline ? 'The deadline path is taken when the deadline fires. ' : '') + note;
-  return section('flows', 'Where work goes next', intro, summary + rows);
- }
+ /** Suggestion lists for case-field names: delivered earlier (needs), usable by this step's conditions, and every known name. */
+ const LISTS = {earlier: 'se-fields-earlier', after: 'se-fields-after', all: 'se-fields-all'} as const;
+ const fieldLists = (m: M) => (Object.keys(LISTS) as (keyof typeof LISTS)[])
+  .map(k => `<datalist id="${LISTS[k]}">${m.fieldNames[k].map(n => `<option value="${esc(n)}"></option>`).join('')}</datalist>`).join('');
  const feelings = (): [string, string][] => [['', 'Not set'], ...root.LWProcessRandomView.EMOTIONS.map(([n, words]): [string, string] => [String(n), `${words} (${n > 0 ? '+' : ''}${n})`])];
  /** The shared journey fields. `touch` adds the channel. */
  function journeyFields(m: M, touch: boolean): string {
@@ -182,7 +175,8 @@ declare namespace LWProcessStepSections {
   return section('outcome', 'Outcome', 'Whether a case that reaches this step achieved what it came for. The run counts goals and losses and reports the conversion rate.',
    `<div class="se-grid">${select('outcome', 'Outcome', [['', 'None'], ['goal', root.LWProcessRandomView.describeOutcome('goal')], ['lost', root.LWProcessRandomView.describeOutcome('lost')]], m.outcome, false, 'With None, cases ending here are finished but count as neither a goal nor a loss.')}</div>${err('outcome')}`);
  }
- const render = (m: M, ui: LWProcessStepSections.Ui = {}) => [basics, root.LWProcessStepLogicSections.branching, outcome, journey, timing, randomTiming, automation, people, root.LWProcessStepLogicSections.instances, (x: M) => root.LWProcessStepLogicSections.deadline(x, ui), effects, draws, outputs, needs, backlog, (x: M) => notes(x, !!ui.notesOpen), flows].map(f => f(m)).join('');
+ const render = (m: M, ui: LWProcessStepSections.Ui = {}) => [basics, root.LWProcessStepLogicSections.branching, outcome, journey, timing, randomTiming, automation, people, root.LWProcessStepLogicSections.instances, root.LWProcessStepLogicSections.deadline, effects, draws, outputs, needs, backlog, (x: M) => notes(x, !!ui.notesOpen),
+  (x: M) => root.LWProcessStepFlows.render(x, ui), fieldLists].map(f => f(m)).join('');
  const pathSummary = (m: M) => root.LWProcessStepLogicSections.pathSummary(m);
- root.LWProcessStepSections = {render, pathSummary, idOf, notes: m => root.LWProcessStepLogicSections.notes(m), kit: {esc, slug, idOf, field, select, check, radios, valueEditor, section, button, err}};
+ root.LWProcessStepSections = {render, pathSummary, idOf, notes: m => root.LWProcessStepLogicSections.notes(m), LISTS, kit: {esc, slug, idOf, field, select, check, radios, valueEditor, section, button, err}};
 })(globalThis);

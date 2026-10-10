@@ -144,20 +144,20 @@ declare namespace LWProcessStepLogic {
   else if (!items.length) c.items = [newLeaf()];
  }
  const leafCount = (c: Cond): number => isGroup(c) ? (c.items ?? []).reduce((n, x) => n + leafCount(x), 0) : 1;
- function condProblems(c: Cond, base: string, out: Out, level = 1, inside = false): void {
+ function condProblems(c: Cond, base: string, out: Out, level = 1): void {
   const at = (k: string, message: string) => out.push({key: k ? `${base}.${k}` : base, message});
   if (isGroup(c)) {
    const items = c.items ?? [];
    if (level > LIMITS.depth) at('', `Conditions nest at most ${LIMITS.depth} groups deep. Remove a level.`);
    if (!items.length) at('', 'Add at least one test to this group.');
    if (items.length > LIMITS.entries) at('', `A group holds at most ${LIMITS.entries} tests.`);
-   items.forEach((x, j) => condProblems(x, `${base}.items.${j}`, out, level + 1, true));
+   items.forEach((x, j) => condProblems(x, `${base}.items.${j}`, out, level + 1));
    if (level === 1 && leafCount(c) > LIMITS.leaves) at('', `A condition has at most ${LIMITS.leaves} tests in all; remove some.`);
    return;
   }
   if (c.mode === 'chance') { const n = numeric(c.chance); if (n === undefined || !Number.isInteger(n) || n < 1 || n > 99) at('chance', 'Enter a whole percent from 1 to 99.'); return; }
-  if (inside && c.field.trim() === '') at('field', 'Name the case field to test.');
-  if (c.mode === 'field') { if (inside && c.valueField.trim() === '') at('valueField', 'Name the other case field to compare with.'); }
+  if (c.field.trim() === '') at('field', 'Name the case field to test.');
+  if (c.mode === 'field') { if (c.valueField.trim() === '') at('valueField', 'Name the other case field to compare with.'); }
   else if (c.value.type === 'number' && numeric(c.value.text) === undefined) at('value', 'Enter a number.');
  }
  function leafSummary(c: Cond): string {
@@ -202,7 +202,7 @@ declare namespace LWProcessStepLogic {
   const d = m.deadline; if (!d || d.kind === 'none') return;
   if (d.kind === 'after' && !isInt(d.after, 1, MAXM())) out.push({key: 'deadline.after', message: `Enter a whole number of minutes from 1 to ${group(MAXM())}.`});
   if (d.kind === 'timing') { if (!d.timing.dist) out.push({key: 'deadline.timing.dist', message: 'Choose a distribution for the random deadline.'}); else distProblems(d.timing, 'deadline.timing', out); }
-  if (m.flows.length < 2) out.push({key: 'deadline.flow', message: 'A deadline needs a second flow leaving this step for the deadline path. Add that flow in the Definition editor.'});
+  if (m.flows.length < 2) out.push({key: 'deadline.flow', message: 'A deadline needs a second path leaving this step for the deadline to take. Add one with Add path to… under Where work goes next.'});
   else if (!m.flows.some(f => f.id === d.flow)) out.push({key: 'deadline.flow', message: 'Choose which outgoing flow is the deadline path.'});
  }
  const isDeadlineFlow = (m: LWProcessStepModel.Model, flowId: string) => !!m.deadline && m.deadline.kind !== 'none' && m.deadline.flow === flowId;
@@ -214,7 +214,7 @@ declare namespace LWProcessStepLogic {
   if (key === 'backlog' && /multi-instance step cannot declare a backlog/.test(d.message)) return 'A step with multiple instances cannot keep a backlog. Turn off the backlog or the instances.';
   if (key === 'deadline' && /exactly one of after/.test(d.message)) return 'Choose either a fixed number of minutes or a random time for the deadline.';
   if (key === 'deadline.after' && shape) return `Deadline minutes must be a whole number from 1 to ${group(MAXM())}`;
-  if (key === 'deadline.flow' && /exactly one flow/.test(d.message)) return 'Exactly one flow leaving this step must be the deadline path, next to the normal flow. Choose it here, or add a second flow in the Definition editor.';
+  if (key === 'deadline.flow' && /exactly one flow/.test(d.message)) return 'Exactly one flow leaving this step must be the deadline path, next to the normal flow. Choose it here, or add a second path with Add path to… under Where work goes next.';
   if (key.endsWith('timing.sd')) return `The spread (sd) must be a whole number of minutes from 1 to ${group(MAXM())}`;
   if (last === 'k' && /timing/.test(key)) return `Phases (k) must be a whole number from 1 to ${LIMITS.phases}`;
   return undefined;
