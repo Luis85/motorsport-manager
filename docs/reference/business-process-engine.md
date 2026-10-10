@@ -1136,7 +1136,8 @@ engine, a fingerprint or a decision.
 shows **Mean cycle** as "—" and the slides say "none yet" until then. `metrics.meanAgeMinutes`
 (read model) is the mean number of minutes since arrival of the cases still in progress, rounded
 to three decimals, or `null` when none is; it shows as **Mean age in progress**. These are means
-of one seeded run, not distributions or confidence intervals.
+of one seeded run; the distributions below describe the same run, and only replications across
+seeds (below) give confidence intervals.
 
 Each step metric adds `held` (read model): tokens at the step with status `held`, work that
 finished there and waits for room in the next step's backlog. It is a subset of `queued`; views
