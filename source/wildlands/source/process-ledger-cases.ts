@@ -15,11 +15,15 @@
  * previous minute (if any branch is being worked, the case is being worked). Flow efficiency bins `floor(10 × working / lead)`,
  * clamped to 9; a zero-length case falls in bin 9 by definition. Everything is integer arithmetic, never read by the engine, a
  * fingerprint, a random key or a decision, and independent of pruning and of how a run is chunked.
+ *
+ * Working hours: a store created with `closed` keeps a seventh lead bucket, `closed` (minutes outside working time, booked by
+ * `closed` for every live case whatever its state), and `totals` reports it in `leadTime`; without it the six buckets are reported
+ * exactly as before. Lead minutes then still sum to the cycle sum, and flow efficiency divides working by the whole lead time.
  */
 declare namespace LWProcessLedgerCases {
  interface Book { lead: number[]; cost: number; rate: number; repeats: number; }
  interface Store {
-  books: Map<string, Book>; running: Set<Book>;
+  books: Map<string, Book>; running: Set<Book>; hours: boolean;
   leadTime: number[]; flow: number[]; completedCost: number; failedCost: number; failedMinutes: number; firstPass: number; repeats: number[];
   ring: LWProcess.FinishedCase[]; head: number; capacity: number;
  }
@@ -28,13 +32,15 @@ declare namespace LWProcessLedgerCases {
   firstPass: number; repeats: {counts: number[]};
  }
  interface Api {
-  /** `retained` is the capacity of the recent ring (the session's retained finished cases). */
-  create(retained: number): Store;
+  /** `retained` is the capacity of the recent ring (the session's retained finished cases); `closed` adds the closed lead bucket. */
+  create(retained: number, closed?: boolean): Store;
   book(store: Store, caseId: string): Book;
   started(store: Store, caseId: string, fixed: number, perMinute: number): void;
   released(store: Store, caseId: string, perMinute: number): void;
   /** Charges `minutes` to each listed book's bucket and the running work's pool cost to its case. */
   charge(store: Store, books: readonly Book[], buckets: readonly number[], minutes: number): void;
+  /** Books `minutes` outside working hours to each listed book's closed lead minutes; no cost accrues. */
+  closed(store: Store, books: readonly Book[], minutes: number): void;
   repeated(store: Store, caseId: string): void;
   completed(store: Store, c: LWProcess.Case, end: string, outcome: 'goal' | 'lost' | null): void;
   failed(store: Store, c: LWProcess.Case): void;
@@ -47,13 +53,14 @@ declare namespace LWProcessLedgerCases {
  'use strict';
  type Store = LWProcessLedgerCases.Store; type Book = LWProcessLedgerCases.Book;
  const root = inputRoot as {LWProcessLedgerCases?: LWProcessLedgerCases.Api};
- const WORKING = 0, REPEAT_BINS = 6, FLOW_BINS = 10;
- const create = (retained: number): Store => ({books: new Map(), running: new Set(), leadTime: [0, 0, 0, 0, 0, 0], flow: Array(FLOW_BINS).fill(0),
+ const WORKING = 0, CLOSED = 6, REPEAT_BINS = 6, FLOW_BINS = 10;
+ const create = (retained: number, closed = false): Store => ({books: new Map(), running: new Set(), hours: closed,
+  leadTime: [0, 0, 0, 0, 0, 0, 0], flow: Array(FLOW_BINS).fill(0),
   completedCost: 0, failedCost: 0, failedMinutes: 0, firstPass: 0, repeats: Array(REPEAT_BINS).fill(0), ring: [], head: 0, capacity: retained});
  function book(store: Store, caseId: string): Book {
   let entry = store.books.get(caseId);
   if (!entry) {
-   entry = {lead: [0, 0, 0, 0, 0, 0], cost: 0, rate: 0, repeats: 0};
+   entry = {lead: [0, 0, 0, 0, 0, 0, 0], cost: 0, rate: 0, repeats: 0};
    store.books.set(caseId, entry);
   }
   return entry;
@@ -74,6 +81,9 @@ declare namespace LWProcessLedgerCases {
  function charge(store: Store, books: readonly Book[], buckets: readonly number[], minutes: number): void {
   for (let i = 0; i < books.length; i++) books[i]!.lead[buckets[i]!]! += minutes;
   for (const entry of store.running) entry.cost += entry.rate * minutes;
+ }
+ function closed(_store: Store, books: readonly Book[], minutes: number): void {
+  for (const entry of books) entry.lead[CLOSED]! += minutes;
  }
  const repeated = (store: Store, caseId: string) => { book(store, caseId).repeats++; };
  /** Flow efficiency bin of `working` minutes out of `lead`, in exact integer steps: the largest i ≤ 9 with i × lead ≤ 10 × working. */
@@ -114,12 +124,12 @@ declare namespace LWProcessLedgerCases {
   store.books.delete(caseId);
  }
  const totals = (store: Store): LWProcessLedgerCases.Totals => {
-  const [working, waiting, blocked, backlog, timer, joining] = store.leadTime as [number, number, number, number, number, number];
-  return {leadTime: {working, waiting, blocked, backlog, timer, joining}, flowEfficiency: {counts: [...store.flow]},
+  const [working, waiting, blocked, backlog, timer, joining, closed] = store.leadTime as [number, number, number, number, number, number, number];
+  return {leadTime: {working, waiting, blocked, backlog, timer, joining, ...store.hours ? {closed} : {}}, flowEfficiency: {counts: [...store.flow]},
    costOf: {completed: store.completedCost, failed: store.failedCost}, failedMinutes: store.failedMinutes, firstPass: store.firstPass,
    repeats: {counts: [...store.repeats]}};
  };
  const recent = (store: Store) => [...store.ring.slice(store.head), ...store.ring.slice(0, store.head)].map(entry => ({...entry}));
- root.LWProcessLedgerCases = {create, book, started, released, charge, repeated, completed, failed, retired, totals, recent};
+ root.LWProcessLedgerCases = {create, book, started, released, charge, closed, repeated, completed, failed, retired, totals, recent};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessLedgerCases;
 })(globalThis);

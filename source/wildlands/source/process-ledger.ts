@@ -24,11 +24,18 @@
  * After a settle no `routing` or `spent` token remains, so every live case has a token in one of the six buckets.
  *
  * All costs are whole numbers (the schema admits only integer `cost` and `costPerMinute`), so every sum is exact.
+ *
+ * Working hours: a definition with `workingHours` adds a seventh state, `closed`. The clock books every minute outside working
+ * time with `closed(minutes)` instead of `charge`: no pool rate or cost, the work-in-progress area as usual, each step's tokens to
+ * that step's `closed` minutes and each live case's minutes to its `closed` lead minutes, whatever their status. `minutesBy` and
+ * `leadTime` report `closed` only for such a definition, so other snapshots keep their exact shape.
  */
 declare namespace LWProcess {
  /** Read-model extensions of the run ledger (LWProcessLedger); never read by the engine. */
  interface Ledger {
   index: Map<string, number>; stepCosts: StepCosts[]; minutesBy: number[]; failedAt: number[]; wipArea: number;
+  /** Per step: token-minutes outside working hours; null without working hours. */
+  closedBy: number[] | null;
   profile: LWProcessLedger.Profile | null; fine: LWProcessLedger.Fine; cases: LWProcessLedgerCases.Store;
  }
 }
@@ -54,6 +61,8 @@ declare namespace LWProcessLedger {
   released(ledger: LWProcess.Ledger, stepId: string, caseId: string): void;
   /** Charges `minutes` with the settled state: running rates, `wip` cases in progress, and the token profile of `tokens`. */
   charge(ledger: LWProcess.Ledger, minutes: number, tokens: readonly LWProcess.Token[], wip: number): void;
+  /** Books `minutes` outside working hours: `wip` cases in progress, and every token and live case of `tokens` as closed. */
+  closed(ledger: LWProcess.Ledger, minutes: number, tokens: readonly LWProcess.Token[], wip: number): void;
   /** The state was settled: the next charge or profile read rebuilds the token profile. */
   settled(ledger: LWProcess.Ledger): void;
   profile(ledger: LWProcess.Ledger, tokens: readonly LWProcess.Token[]): Profile;
@@ -119,7 +128,9 @@ declare namespace LWProcessLedger {
   const count = definition.steps.length;
   return {unit, rate: new Map(), steps, cycles: EDGES.map(() => 0), index: new Map(definition.steps.map((s, i) => [s.id, i])), stepCosts,
    minutesBy: Array(count * BUCKETS.length).fill(0), failedAt: Array(count).fill(0), wipArea: 0, profile: null,
-   fine: {cycle: zeros(), failed: zeros(), outcomes, steps: definition.steps.map(() => [zeros(), zeros(), zeros()])}, cases: cases.create(retained)};
+   closedBy: definition.workingHours ? Array(count).fill(0) : null,
+   fine: {cycle: zeros(), failed: zeros(), outcomes, steps: definition.steps.map(() => [zeros(), zeros(), zeros()])},
+   cases: cases.create(retained, !!definition.workingHours)};
  }
  const fine = (ledger: Ledger, stepId: string, kind: number, minutes: number) => {
   ledger.fine.steps[ledger.index.get(stepId)!]![kind]![fineBin(minutes)]!++;
@@ -165,6 +176,12 @@ declare namespace LWProcessLedger {
   for (let i = 0; i < p.counts.length; i++) if (p.counts[i]) ledger.minutesBy[i]! += p.counts[i]! * minutes;
   cases.charge(ledger.cases, p.books, p.buckets, minutes);
  }
+ function closed(ledger: Ledger, minutes: number, tokens: readonly LWProcess.Token[], wip: number): void {
+  ledger.wipArea += wip * minutes;
+  const p = profile(ledger, tokens), by = ledger.closedBy!;
+  for (let i = 0; i < p.counts.length; i++) if (p.counts[i]) by[Math.floor(i / BUCKETS.length)]! += p.counts[i]! * minutes;
+  cases.closed(ledger.cases, p.books, minutes);
+ }
  const settled = (ledger: Ledger) => { ledger.profile = null; };
  function concluded(ledger: Ledger, stepId: string, service: number | null, age: number): void {
   if (service !== null) fine(ledger, stepId, SERVICE, service);
@@ -183,9 +200,10 @@ declare namespace LWProcessLedger {
   cases.failed(ledger.cases, c);
  }
  function step(ledger: Ledger, stepId: string): {minutesBy: LWProcess.MinutesBy; failed: number} {
-  const i = ledger.index.get(stepId)! * BUCKETS.length, m = ledger.minutesBy;
-  return {minutesBy: {waiting: m[i + 1]!, working: m[i]!, blocked: m[i + 2]!, backlog: m[i + 3]!, timer: m[i + 4]!, joining: m[i + 5]!},
-   failed: ledger.failedAt[ledger.index.get(stepId)!]!};
+  const at = ledger.index.get(stepId)!, i = at * BUCKETS.length, m = ledger.minutesBy;
+  const closed = ledger.closedBy ? {closed: ledger.closedBy[at]!} : {};
+  return {minutesBy: {waiting: m[i + 1]!, working: m[i]!, blocked: m[i + 2]!, backlog: m[i + 3]!, timer: m[i + 4]!, joining: m[i + 5]!, ...closed},
+   failed: ledger.failedAt[at]!};
  }
  function distributions(ledger: Ledger, definition: LWProcess.Definition): LWProcess.Distributions {
   const f = ledger.fine, o = f.outcomes;
@@ -195,7 +213,7 @@ declare namespace LWProcessLedger {
     return [s.id, {wait: [...wait!], service: [...service!], exitAge: [...exitAge!]}];
    }))};
  }
- root.LWProcessLedger = {EDGES, FINE, BUCKETS, create, started, released, charge, settled, profile, concluded, finished, failed, bin, fineBin, step,
+ root.LWProcessLedger = {EDGES, FINE, BUCKETS, create, started, released, charge, closed, settled, profile, concluded, finished, failed, bin, fineBin, step,
   distributions,
   repeated: (ledger, caseId) => cases.repeated(ledger.cases, caseId),
   retired: (ledger, caseId) => cases.retired(ledger.cases, caseId),

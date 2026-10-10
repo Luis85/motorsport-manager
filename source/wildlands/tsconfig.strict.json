@@ -381,6 +381,7 @@
     "source/process-random.ts",
     "source/process-needs.ts",
     "source/process-graph-routes.ts",
+    "source/process-hours.ts",
     "source/process-graph.ts",
     "source/process-catalog.ts",
     "source/process-xml.ts",

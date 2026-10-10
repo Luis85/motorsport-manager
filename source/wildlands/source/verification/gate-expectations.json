@@ -3,7 +3,7 @@
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
   "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-bpmn", "business-process-analysis", "business-process-browser", "process-layout-browser", "process-step-editor-browser", "process-definition-browser", "process-renderers-browser", "process-lenses-browser", "process-bpmn-import-browser", "process-readability-browser", "process-present-browser", "process-shell-browser", "business-process-readmodel", "process-draft-browser", "process-present-brief-browser", "process-dashboard-browser", "process-hostile-browser", "process-hostile-editors-browser", "process-scale-browser"],
-  "totalChecks": 2268,
+  "totalChecks": 2281,
   "reviewedAdditions": [
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
@@ -729,7 +729,20 @@
     {"suite": "process-hostile-editors-browser", "name": "A foreign BPMN file with hostile names, an unsupported gateway and a dangling flow shows them as text and imports nothing"},
     {"suite": "process-renderers-browser", "name": "2D map framing does not depend on its history in DejaVu Sans: an untouched map matches a fresh draw after every tick and Fit to view, also with numbered cards, and a camera the reader zoomed or panned keeps its view across ticks"},
     {"suite": "business-process-readmodel", "name": "The generated 128-step process reproduces its reference run in one advance, in random chunks and through Run to end"},
-    {"suite": "business-process-readmodel", "name": "The kernel token index equals the world query in id order after creations, an out-of-order id and removals"}
+    {"suite": "business-process-readmodel", "name": "The kernel token index equals the world query in id order after creations, an out-of-order id and removals"},
+    {"suite": "business-process-analysis", "name": "Working hours are optional: without them fingerprints are unchanged and always-open hours change only the closed books"},
+    {"suite": "business-process-analysis", "name": "Working hours pause work overnight: 60 minutes started at 16:30 finish at 09:30 the next working day"},
+    {"suite": "business-process-analysis", "name": "Working hours charge pools only in working time: work cost, capacity cost and utilisation"},
+    {"suite": "business-process-analysis", "name": "Working hours skip weekends: work started on Friday at 16:30 finishes on Monday at 09:30"},
+    {"suite": "business-process-analysis", "name": "Working hours pause arrival streams: no case arrives while closed and a gap resumes at the next opening"},
+    {"suite": "business-process-analysis", "name": "Timers and deadlines count elapsed minutes across a closed period"},
+    {"suite": "business-process-analysis", "name": "Working-hours runs are deterministic and chunk-invariant: random chunkings equal one advance"},
+    {"suite": "business-process-analysis", "name": "Working hours keep the series exact: closed intervals grow only the WIP area"},
+    {"suite": "business-process-analysis", "name": "Working hours reject out-of-range values, a closing before the opening and a display calendar beside them"},
+    {"suite": "business-process-analysis", "name": "setWorkingHours recipe places the field after calendar in schema order, removes it with null and diffs by value path"},
+    {"suite": "business-process-analysis", "name": "BPMN round trip carries working hours exactly, with a BPSim calendar, and rejects bad extension values"},
+    {"suite": "business-process-analysis", "name": "Working hours wording: the hours, the run clock and Closed until"},
+    {"suite": "business-process-analysis", "name": "CLI validate, inspect and discover know working hours"}
   ],
   "renames": [
     {"suite": "wildlands-acceptance", "from": "Every discovered built-in scenario compiles complete resources with verified manifest hashes", "to": "Every discovered game folder scenario compiles complete resources with verified manifest hashes", "reason": "Phase 4A (decision D1): the engine CLI has no built-in scenarios. The check now compiles every scenario of every colony game folder (scenarios --game DIR) instead of the three former built-in packs; its assertions on complete resources and manifest hashes are unchanged."},
@@ -3022,7 +3035,20 @@
       "Dashboard on a real journey: conversion over time from the sampled goals and lost, and the empty states before two samples",
       "Dashboard window: offered at grid minutes only, windowed tiles and panels are exact differences, and choosing one never ticks",
       "Dashboard series cache follows a run incrementally and reads everything again after a restart or a new seed",
-      "What-if takes the dashboard window as each replication's warm-up and labels the windowed measures"
+      "What-if takes the dashboard window as each replication's warm-up and labels the windowed measures",
+      "Working hours are optional: without them fingerprints are unchanged and always-open hours change only the closed books",
+      "Working hours pause work overnight: 60 minutes started at 16:30 finish at 09:30 the next working day",
+      "Working hours charge pools only in working time: work cost, capacity cost and utilisation",
+      "Working hours skip weekends: work started on Friday at 16:30 finishes on Monday at 09:30",
+      "Working hours pause arrival streams: no case arrives while closed and a gap resumes at the next opening",
+      "Timers and deadlines count elapsed minutes across a closed period",
+      "Working-hours runs are deterministic and chunk-invariant: random chunkings equal one advance",
+      "Working hours keep the series exact: closed intervals grow only the WIP area",
+      "Working hours reject out-of-range values, a closing before the opening and a display calendar beside them",
+      "setWorkingHours recipe places the field after calendar in schema order, removes it with null and diffs by value path",
+      "BPMN round trip carries working hours exactly, with a BPSim calendar, and rejects bad extension values",
+      "Working hours wording: the hours, the run clock and Closed until",
+      "CLI validate, inspect and discover know working hours"
     ],
     "business-process-browser": [
       "Process artifact starts paused with one selectable scene per step and real WebGL",

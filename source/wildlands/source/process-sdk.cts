@@ -7,6 +7,7 @@
 require('./ecs.js');
 require('./asset-catalog.js');
 require('./process-schema.js');
+require('./process-hours.js');
 require('./process-random.js');
 require('./process-needs.js');
 require('./process-graph-routes.js');

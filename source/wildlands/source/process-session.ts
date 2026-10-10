@@ -14,11 +14,16 @@
  * events of minute 0 that `create` itself settles. The sink runs inside a clock command, so it may not call the session (query,
  * advance, setHorizon or dispose throw while a command runs). A sink that throws aborts the command and stops the session:
  * later calls throw, and the caller should dispose it and start a new run.
+ *
+ * Working hours (`definition.workingHours`, LWProcessHours; the clock rules are in LWProcessSystems): the minute stays elapsed time,
+ * so lead time, cycle, mean age, throughput per hour and the series count every minute. Pools are available only in working time:
+ * capacity cost charges capacity × cost per minute × working minutes so far, and utilisation is busy minutes over capacity ×
+ * working minutes. Queued work while closed is progress (it starts at the next opening), so such a run is not reported blocked.
  */
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWECS: LWProcess.Ecs; LWProcessCatalog: LWProcess.Catalog; LWProcessSystems: LWProcess.Systems; LWProcessLimits: LWProcess.Limits;
-  LWProcessLedger: LWProcessLedger.Api; LWProcessSeries: LWProcessSeries.Api; LWProcessRuntime?: LWProcess.Runtime};
+  LWProcessLedger: LWProcessLedger.Api; LWProcessSeries: LWProcessSeries.Api; LWProcessHours: LWProcessHours.Api; LWProcessRuntime?: LWProcess.Runtime};
  const limits = root.LWProcessLimits;
  const copy = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
  // Largest seed (a positive 31-bit integer) and the most finished cases a caller may ask a session to keep in detail.
@@ -85,8 +90,10 @@
   };
   const pool = (r: LWProcess.Resource) => world.get<LWProcess.Pool>('pool-' + r.id, 'process-pool')!;
   const station = (step: LWProcess.Step) => world.get<LWProcess.Station>('station-' + step.id, 'process-station')!;
-  // Read-model only: neither value feeds the engine. Capacity cost charges every pool unit for every minute, busy or idle.
-  const capacityOf = (r: LWProcess.Resource) => pool(r).capacity * r.costPerMinute * clock.minute;
+  // Read-model only: neither value feeds the engine. Capacity cost charges every pool unit for every available minute, busy or idle:
+  // every minute, or with working hours every working minute.
+  const hours = definition.workingHours, available = () => hours ? root.LWProcessHours.working(hours, clock.minute) : clock.minute;
+  const capacityOf = (r: LWProcess.Resource) => pool(r).capacity * r.costPerMinute * available();
   const capacityCost = () => definition.resources.reduce((n, r) => n + capacityOf(r), 0);
   /** Mean minutes since arrival of the cases still in progress (they are never pruned); null when none is. */
   const meanAge = (cases: LWProcess.Case[]) => {
@@ -128,13 +135,14 @@
    const cases = world.query(['process-case']).map(id => world.get<LWProcess.Case>(id, 'process-case')!).sort(ordered);
    const tokens = world.query(['process-token']).map(id => world.get<LWProcess.Token>(id, 'process-token')!);
    const live = clock.arrived - clock.completed - clock.failed;
-   const future = root.LWProcessSystems.nextArrival(state) !== null, working = tokens.some(t => t.status === 'active' || t.status === 'timer');
+   const future = root.LWProcessSystems.nextArrival(state) !== null, working = tokens.some(t => t.status === 'active' || t.status === 'timer')
+    || !!hours && !root.LWProcessHours.open(hours, clock.minute) && tokens.some(t => t.status === 'queued');
    const status = horizon !== null && clock.minute >= horizon && (future || live) ? 'limit' : !future && !live ? 'completed'
     : !future && live && !working ? 'blocked' : clock.minute === 0 ? 'ready' : 'running';
-   const resources = definition.resources.map(r => {
+   const minutes = available(), resources = definition.resources.map(r => {
     const p = pool(r);
     return {id: r.id, kind: r.kind ?? 'people', capacity: p.capacity, busy: p.busy, busyMinutes: p.busyMinutes,
-     utilization: clock.minute ? p.busyMinutes / (clock.minute * p.capacity) : 0, workCost: p.busyMinutes * r.costPerMinute, capacityCost: capacityOf(r)};
+     utilization: minutes ? p.busyMinutes / (minutes * p.capacity) : 0, workCost: p.busyMinutes * r.costPerMinute, capacityCost: capacityOf(r)};
    });
    const decided = clock.goals + clock.lost;
    const finishTracked = Object.fromEntries((definition.track ?? []).map(t => {

@@ -1,8 +1,8 @@
 /// <reference path="./process-contracts.d.ts" />
 /**
  * The JSON Schema is also the runtime structural grammar; no generated validator drift.
- * Version note: `schemaVersion` stays 1. Optional fields added after v1 (`genre`, `track`, `sipoc` and the display
- * `calendar`) are strictly additive: a definition without them is admitted, fingerprinted and run exactly as before, and
+ * Version note: `schemaVersion` stays 1. Optional fields added after v1 (`genre`, `track`, `sipoc`, the display
+ * `calendar` and the run calendar `workingHours`) are strictly additive: a definition without them is admitted, fingerprinted and run exactly as before, and
  * engines from before a field reject it as an unknown field. A node's `description` is also the plain diagnostic shown when
  * a value has the wrong type or range (process-catalog.ts), so it names the field and its range.
  */
@@ -82,12 +82,19 @@
  const calendar = object({
   minutesPerDay: {...integer(1440, 1), description: 'The display calendar needs minutesPerDay as a whole number of minutes from 1 to 1440.'},
   daysPerWeek: {...integer(7, 1), description: 'The display calendar needs daysPerWeek as a whole number of days from 1 to 7.'}});
+ // Working hours (opt-in run calendar, added after v1): unlike the display calendar the run reads them (LWProcessHours). Minutes
+ // after midnight; working days are counted from Monday. Closing after opening and the exclusion of a display calendar are
+ // semantic checks (LWProcessHours.check).
+ const workingHours = object({
+  opensAt: {...integer(1439), description: 'Working hours need opensAt as a whole number of minutes after midnight from 0 to 1439 (540 is 09:00).'},
+  closesAt: {...integer(1440, 1), description: 'Working hours need closesAt as a whole number of minutes after midnight from 1 to 1440 (1020 is 17:00).'},
+  daysPerWeek: {...integer(7, 1), description: 'Working hours need daysPerWeek as a whole number of working days from 1 to 7, counted from Monday.'}});
  const track = list(object({field: fieldName, label: {type: 'string', minLength: 1, maxLength: 40}}, ['field']), 6);
  // Property order is the schema order guarded edits place a new top-level field in (LWProcessAuthoring).
  const schema = {$schema: 'http://json-schema.org/draft-07/schema#', $id: 'wildlands-process.schema.json', definitions: {condition},
   ...object({$schema: {type: 'string', maxLength: 256}, format: {const: 'wildlands-process'}, schemaVersion: {const: 1},
    revision: integer(1000000000), seed: integer(2147483647), id, name: text, description: {type: 'string', maxLength: 4000}, start: id,
-   genre: {enum: ['process', 'customer-journey', 'user-journey']}, calendar, track, sipoc,
+   genre: {enum: ['process', 'customer-journey', 'user-journey']}, calendar, workingHours, track, sipoc,
    resources: list(resource, 32), steps: list(step, 128, 2), flows: list(flow, 256, 1), arrivals: list(arrival, 32, 1)},
    ['format', 'schemaVersion', 'revision', 'id', 'name', 'start', 'resources', 'steps', 'flows', 'arrivals'])};
  root.LWProcessLimits = limits; root.LWProcessSchema = schema;

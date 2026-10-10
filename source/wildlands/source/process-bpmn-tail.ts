@@ -240,8 +240,13 @@ declare namespace LWProcessBpmnTail {
    ctx.warn('BPSim seed ' + bpsimSeed + ' disagrees with the Wildlands seed ' + seed + '; the extension wins.');
   }
   ext.trackOf(proc, meta, definition);
-  // Only a Wildlands export carries a display calendar; foreign files never gain one.
+  // Only a Wildlands export carries a display calendar or working hours; foreign files never gain one. A BPSim calendar alone is not
+  // read: it is reported, since that work pauses and arrivals count working minutes is only in the extension.
   ext.calendarOf(meta, definition);
+  ext.hoursOf(proc, definition);
+  if (!definition.workingHours && ctx.bps?.calendars) {
+   ctx.warn('BPSim calendars and resource availability are ignored; working hours are read only from the Wildlands extension.');
+  }
   ext.sipocOf(proc, definition);
   sipocFrom(ctx, doc, proc, collab, participants, definition);
   const description = ext.documentation(proc, meta !== undefined);

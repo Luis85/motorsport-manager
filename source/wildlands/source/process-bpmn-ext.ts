@@ -1,8 +1,9 @@
 /// <reference path="./process-bpmn.ts" />
 /**
  * Readers of the Wildlands extension elements (`urn:wildlands:process:1`) shared by the BPMN importer: scalars,
- * distributions, draws, conditions, journey notes, tracked fields, SIPOC parties and the display calendar. Shape is judged
- * here; ranges stay with the engine validator, except the display calendar, whose ranges are rejected here explicitly.
+ * distributions, draws, conditions, journey notes, tracked fields, SIPOC parties, the display calendar and working hours. Shape is judged
+ * here; ranges stay with the engine validator, except the display calendar and working hours, whose ranges are rejected here
+ * explicitly.
  */
 declare namespace LWProcessBpmnExt {
  type X = LWProcessXml.Node;
@@ -30,6 +31,8 @@ declare namespace LWProcessBpmnExt {
   sipocOf(proc: X, definition: LWProcess.Definition): void;
   /** The display calendar from `<wl:process minutesPerDay daysPerWeek>`: both or neither, whole numbers in range. */
   calendarOf(meta: X | undefined, definition: LWProcess.Definition): void;
+  /** Working hours from one `<wl:workingHours opensAt closesAt daysPerWeek>`: all three whole numbers in range; at most one element. */
+  hoursOf(proc: X, definition: LWProcess.Definition): void;
  }
 }
 (function(inputRoot: unknown) {
@@ -95,6 +98,7 @@ declare namespace LWProcessBpmnExt {
    set: ['name', ...SCALAR], need: ['field', 'op', 'label', ...SCALAR], backlog: ['capacity', 'order', 'priority', 'pull'],
    scene: ['id', 'x', 'y', 'color']},
   process: {process: ['id', 'revision', 'schema', 'seed', 'genre', 'minutesPerDay', 'daysPerWeek', 'empty'], track: ['field', 'label'],
+   workingHours: ['opensAt', 'closesAt', 'daysPerWeek'],
    supplier: ['name', 'supplies'], customer: ['name', 'receives'], arrival: ['at', 'count', 'until', 'open', 'interval', 'empty']},
   flow: {flow: ['id'], when: ['combine', 'chance', 'field', 'op', 'valueField', ...SCALAR]},
   resource: {resource: ['id', 'capacity', 'costPerMinute', 'kind']}, lane: {lane: ['resource']},
@@ -291,7 +295,20 @@ declare namespace LWProcessBpmnExt {
   if (days < 1 || days > 7) throw Error('Process: daysPerWeek "' + days + '" must be a whole number from 1 to 7.');
   definition.calendar = {minutesPerDay: minutes, daysPerWeek: days};
  }
+ /** Ranges are rejected here like the display calendar's; that closing follows opening stays with the engine validator. */
+ function hoursOf(proc: X, definition: LWProcess.Definition): void {
+  const found = extensions(proc, 'workingHours');
+  if (!found.length) return;
+  if (found.length > 1) throw Error('Process: working hours may appear once; found ' + found.length + '.');
+  const a = found[0]!.attrs, read = (name: string, low: number, high: number) => {
+   const v = whole(a, name, 'Working hours');
+   if (v === undefined) throw Error('Working hours need opensAt, closesAt and daysPerWeek; ' + name + ' is missing.');
+   if (v < low || v > high) throw Error('Working hours: ' + name + ' "' + v + '" must be a whole number from ' + low + ' to ' + high + '.');
+   return v;
+  };
+  definition.workingHours = {opensAt: read('opensAt', 0, 1439), closesAt: read('closesAt', 1, 1440), daysPerWeek: read('daysPerWeek', 1, 7)};
+ }
  root.LWProcessBpmnExt = {kids, documentation, extensions, first, typed, sanitize, whole, onlyAttrs, oneOf, vet, empties, sig, OPS, distOf, single,
-  drawsOf, chanceOf, whenOf, journeyOf, trackOf, sipocOf, calendarOf};
+  drawsOf, chanceOf, whenOf, journeyOf, trackOf, sipocOf, calendarOf, hoursOf};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessBpmnExt;
 })(globalThis);

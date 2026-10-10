@@ -9,6 +9,7 @@ import type {Insert} from './build-inserts.cjs';
 
 export const PROCESS_INSERTS: readonly Insert[] = [
   ["PROCESS_SCHEMA", "process-schema.js", "script", "template-process"],
+  ["PROCESS_HOURS", "process-hours.js", "script", "template-process"],
   ["PROCESS_RANDOM", "process-random.js", "script", "template-process"],
   ["PROCESS_NEEDS", "process-needs.js", "script", "template-process"],
   ["PROCESS_GRAPH_ROUTES", "process-graph-routes.js", "script", "template-process"],

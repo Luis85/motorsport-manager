@@ -380,6 +380,7 @@
       "layer": "domain",
       "files": [
         "process-schema.ts",
+        "process-hours.ts",
         "process-random.ts",
         "process-needs.ts",
         "process-xml.ts",
@@ -621,6 +622,7 @@
     "LWProcessBpmnSchema",
     "LWProcessBpmnConformance",
     "LWProcessSchema",
+    "LWProcessHours",
     "LWProcessGraphRoutes",
     "LWProcessGraph",
     "LWProcessCatalog",

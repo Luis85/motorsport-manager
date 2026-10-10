@@ -1,7 +1,7 @@
 /// <reference path="./process-contracts.d.ts" />
 /**
  * Entry of the business-process-analysis suite: the checks added for the analytics read model, the CLI analysis commands, the
- * display calendar, rounding advisories, per-process application slots and structural editing. They share the business-process
+ * display calendar, working hours, rounding advisories, per-process application slots and structural editing. They share the business-process
  * harness (test-process-helpers.cts) but run as their own suite, so each suite stays well inside its time budget.
  */
 import fs from 'node:fs';
@@ -29,6 +29,8 @@ import './test-process-bpmn-schema.cjs';
 import './test-process-palette.cjs';
 import './test-process-work-derivation.cjs';
 import './test-process-dashboard-wire.cjs';
+import './test-process-hours.cjs';
+import './test-process-hours-io.cjs';
 const report = {suite: 'business-process-analysis', passed: results.filter(r => r.passed).length, total: results.length, results};
 fs.writeFileSync(path.join(__dirname, 'process-analysis-results.json'), JSON.stringify(report, null, 2) + '\n');
 console.log(`${report.passed}/${report.total} process analysis checks passed`);
