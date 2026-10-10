@@ -5,7 +5,7 @@ engine CLI. Open a file in a current desktop browser; it runs offline from `file
 
 | Demo | Template | Version | Size | Budget | Game digest |
 |---|---|---|---|---|---|
-| [Agency delivery lab](agency-delivery.html) | process | 1.0.0 | 2.01 MiB | 4.00 MiB | `2d1f458efce0` |
+| [Agency delivery lab](agency-delivery.html) | process | 1.0.0 | 2.01 MiB | 4.00 MiB | `1df3f6e9c1b1` |
 | [Emberworks](emberworks.html) | colony | 1.0.0 | 3.06 MiB | 4.00 MiB | `fb4c21acc3c0` |
 | [Littlewild](littlewild.html) | colony | 1.0.0 | 3.06 MiB | 4.00 MiB | `927a583f16e3` |
 | [Office](office.html) | colony | 1.0.0 | 3.30 MiB | 4.00 MiB | `640b7f7804e4` |

@@ -11,10 +11,10 @@
       "title": "Agency delivery lab",
       "description": "Explore seven synthetic processes in 2D and 3D and switch between them: an agency pipeline with shared resources and rework, an agile vendor pipeline with CI/CD, an order fulfilment line with robots and software systems, customer and user journeys through a web shop and an app onboarding, a loan application converted from BPMN 2.0 and BPSim, and a product team's weekly delivery cadence that releases an increment every week from a 0.1.0 skeleton to the 1.0.0 MVP.",
       "output": "demos/agency-delivery.html",
-      "bytes": 2111163,
-      "sha256": "292322988df4dae8ff4f83fbd2d9c4c81b4fae7819657af1ce723a645bd4e994",
+      "bytes": 2112442,
+      "sha256": "bd96ceac58fc61c4f9cea6341d5693ef2528985d88381f5a36bfc67665f5bcbb",
       "budgetBytes": 4194304,
-      "gameDigest": "2d1f458efce01499f48da71e87679034472450f2a18e66bfe046ec0cd5953649",
+      "gameDigest": "1df3f6e9c1b1afe34bf8e5a49a343e1a53043dec944bbcc1911f7984bae8e4d0",
       "engine": "c5ab657308dc403a9dc41695dfe7313f43c3f844f23516fcf174c7a86bd02dc9"
     },
     {
