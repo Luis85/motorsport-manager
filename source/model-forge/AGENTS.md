@@ -1,8 +1,9 @@
 # Working with Model Forge
 
 Model Forge edits exactly one model per document. Use the repository executable
-`bin/model-forge`, or `npm run cli -- <args>` from this directory. The handbook is
-[README.md](README.md).
+`bin/model-forge`, or `npm run cli -- <args>` from this directory. The project overview is
+[README.md](README.md); the complete command handbook is
+[docs/reference/model-forge-cli.md](../../docs/reference/model-forge-cli.md).
 
 ## Editing protocol for agents
 

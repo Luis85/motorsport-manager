@@ -8,8 +8,9 @@ describes how the game consumes it.
 
 Scene Forge synchronizes every asset of a manifest at once. To refine a single
 model or Littlewild visual on its own, use [Model Forge](../reference/model-forge-cli.md):
-it imports a `definition.json` variant into one guarded model document and
-exports it back with `export --format littlewild`, which merges only the
+it imports one `definition.json` variant into one guarded model document and
+exports it back with `export --format littlewild` to a
+`<family>/<id>/definition.json` path, replacing only that variant of the
 `visual` facet through the same writer as Scene Forge.
 
 ## Requirements

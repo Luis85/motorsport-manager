@@ -43,7 +43,7 @@ game. Each builds a self-contained command-line bundle that is checked in under
 |---|---|---|
 | [Wildlands](../source/wildlands/DOCUMENTATION.md) | `bin/wildlands` | [Wildlands CLI](reference/wildlands-cli.md) |
 | [Scene Forge](../source/scene-forge/README.md) | `bin/scene-forge` | [Scene Forge CLI](reference/scene-forge-cli.md) |
-| [Model Forge](../source/model-forge/) | `bin/model-forge` | [Model Forge CLI](reference/model-forge-cli.md) |
+| [Model Forge](../source/model-forge/README.md) | `bin/model-forge` | [Model Forge CLI](reference/model-forge-cli.md) |
 | [Character Studio](../source/character-studio/README.md) | `bin/character-studio` | [Character Studio CLI](reference/character-studio-cli.md) |
 
 The separate Wildlands documentation indexes the TypeScript engine, its

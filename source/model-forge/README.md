@@ -74,8 +74,9 @@ equivalent. Rigs bind to nested model-instance nodes, the kernel's rig scope.
 
 `import --out <new document>` accepts a model, a model-bundle (`--entry`), a Scene Forge
 project model (`--project <dir> --id <model>`, read-only) or a Littlewild definition,
-creature package or 3D asset (`--variant`, `--prefix`; the result maps every source
-variant in `variantModels`).
+creature package or 3D asset (`--prefix`). A multi-variant Littlewild source writes one
+document for `--variant` (default: the first) and maps every source variant to its model ID
+in `variantModels`. `--dry-run` plans and validates without writing.
 
 | `export --format`     | Consumer                                                                               |
 | --------------------- | -------------------------------------------------------------------------------------- |
@@ -85,9 +86,11 @@ variant in `variantModels`).
 | `glb`, `gltf`         | engines, DCC tools (`--validate` runs the Khronos validator)                           |
 | `obj`, `stl`, `three` | DCC tools, 3D printing, three.js `ObjectLoader`                                        |
 
-Portable recipes carry no editor revision. GLB, model-bundle and Littlewild exports are
-byte-identical to Scene Forge's `export --model`, `model export` and `littlewild export`
-for the same model; `tests/agent.test.ts` checks this against `bin/scene-forge`.
+Portable `model` and `model-bundle` exports carry no editor revision, and a bundle export
+leaves out dependencies no node instantiates (`inspect` lists them as `unusedDependencies`).
+GLB, model-bundle and Littlewild exports are byte-identical to Scene Forge's
+`export --model`, `model export` and `littlewild export` for the same model;
+`tests/agent.test.ts` checks this against `bin/scene-forge`.
 
 `review --out <new directory>` renders named views or a `--turntable` in one headless
 Chromium session and writes PNGs, `contact-sheet.png`, `review.json` (`review-result`,
