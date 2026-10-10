@@ -62,17 +62,41 @@ declare namespace LWProcessKernel {
  // Locale-independent code-unit order keeps replays identical across hosts.
  // Shorter ids sort first so case-10000 follows case-9999 in long streams.
  const compare = (a: string, b: string) => a.length - b.length || (a < b ? -1 : a > b ? 1 : 0);
+ /**
+  * Live tokens of a state by id, in id order (token ids are zero-padded serials, so id order is creation order). It is built once
+  * from the world (sorted like `world.query`) and then kept current by createToken and destroyToken, so rebuilding the cached list
+  * after a change is one pass over the live tokens instead of a sorted query over every entity. A token created with an id that
+  * does not sort after the last one drops the index, and the next read rebuilds it from the world in sorted order.
+  */
+ interface Index {byId: Map<string, Token>; last: string}
+ const indexes = new WeakMap<State, Index>();
+ function indexOf(s: State): Index {
+  let index = indexes.get(s);
+  if (!index) {
+   const ids = s.world.query(['process-token']);
+   index = {byId: new Map(ids.map(id => [id, s.world.get<Token>(id, 'process-token')!])), last: ids[ids.length - 1] ?? ''};
+   indexes.set(s, index);
+  }
+  return index;
+ }
  /** Tokens in creation order. The list is rebuilt only after tokens are created or destroyed; callers must not mutate it. */
- const tokens = (s: State) => s.tokenList ??= s.world.query(['process-token']).map(id => s.world.get<Token>(id, 'process-token')!);
+ const tokens = (s: State) => s.tokenList ??= [...indexOf(s).byId.values()];
  const SERIAL_LIMIT = 99999999;
  function createToken(s: State, token: Token): void {
   s.world.create(token.id);
   s.world.set<Token>(token.id, 'process-token', token);
   s.tokenList = null;
+  const index = indexes.get(s);
+  if (!index) return;
+  if (token.id > index.last) {
+   index.byId.set(token.id, token);
+   index.last = token.id;
+  } else indexes.delete(s);
  }
  function destroyToken(s: State, id: string): void {
   s.world.destroy(id);
   s.tokenList = null;
+  indexes.get(s)?.byId.delete(id);
  }
  /** Throws before a transition that needs `count` new tokens would pass the serial limit, so no case is ever left half-forked or half-admitted. */
  const reserve = (s: State, count: number) => {
