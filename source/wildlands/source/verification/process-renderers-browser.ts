@@ -7,6 +7,7 @@ import {query, OUT, runSuite} from './process-browser-fixture';
 import {timerFixture, automationFixture, roomsFixture, claimsDesk, blockedLine} from './process-browser-models';
 import {encoding, STATE, waitingAt} from './process-map-probe';
 import {mapUpdateChecks} from './process-map-update-checks';
+import {run3dChecks} from './process-renderers-3d-checks';
 runSuite('process renderers browser harness', 'process-renderers-browser-results.json', async studio => {
  const {page, file, fixtureUrls, check, checkLifecycle, freshStudio, showIo, switchTo, applyDraft, importClaims, importJson, COUNT} = studio;
  await check('Actor joints animate only during playback, respect reduced motion, and do not tick the process', async () => {
@@ -101,7 +102,9 @@ runSuite('process renderers browser harness', 'process-renderers-browser-results
   try {
    view.selected = id; view.playing = true; surface.draw(view, .01);
    let station: any; captured.traverse((o: any) => {if (o.isGroup && o.userData.stepId === id) station = o;});
-   const signs: string[] = []; let meshes = 0; station.traverse((o: any) => {if (o.userData.signText) signs.push(o.userData.signText); if (o.isMesh) meshes++;});
+   // Fixed furniture is merged: a merged mesh (or the station, for its scene-wide share) reports its piece count in userData.pieces.
+   const signs: string[] = []; let meshes = 0;
+   station.traverse((o: any) => {if (o.userData.signText) signs.push(o.userData.signText); meshes += o.userData.pieces ?? (o.isMesh ? 1 : 0);});
    const pose = () => {const out: number[] = []; const walk = (o: any) => {if (!o.visible || o.isSprite) return; out.push(o.position.x, o.position.y, o.position.z, o.rotation.x, o.rotation.y, o.rotation.z, o.scale.x, o.scale.y, o.scale.z); o.children.forEach(walk);}; walk(station); return out.map(n => Math.round(n * 1e5)).join(',');};
    const first = pose(); surface.draw(view, .1); const second = pose(); view.playing = false; surface.draw(view, .1); const paused = pose(); surface.draw(view, .1);
    return {signs, meshes, moved: first !== second, frozen: second === paused && paused === pose(), unchanged: before === JSON.stringify(w.LWProcessStudio.query().snapshot)};
@@ -199,7 +202,15 @@ runSuite('process renderers browser harness', 'process-renderers-browser-results
    for (const id of list) {
     const shown = {...view, selected: id, playing: true}; surface.draw(shown, .01); let station: any; captured.traverse((o: any) => {if (o.isGroup && o.userData.stepId === id) station = o;});
     const signs: string[] = [], moods: number[] = [], shape: string[] = []; let meshes = 0, hash = 0;
-    station.traverse((o: any) => {if (o.userData.signText) signs.push(o.userData.signText); if (o.userData.mood) moods.push(o.userData.mood.level); if (o.isMesh) {meshes++; shape.push([o.position.x, o.position.y, o.position.z, o.scale.x, o.scale.y, o.scale.z, o.material.color?.getHexString()].map(n => typeof n === 'number' ? Math.round(n * 100) : n).join(','));}});
+    const own = (o: any) => [o.position.x, o.position.y, o.position.z, o.scale.x, o.scale.y, o.scale.z, o.material.color?.getHexString()]
+     .map(n => typeof n === 'number' ? Math.round(n * 100) : n).join(',');
+    // Merged fixed furniture counts its pieces (userData.pieces) and contributes its piece fingerprint (userData.shape).
+    station.traverse((o: any) => {
+     if (o.userData.signText) signs.push(o.userData.signText);
+     if (o.userData.mood) moods.push(o.userData.mood.level);
+     if (o.userData.pieces !== undefined) {meshes += o.userData.pieces; shape.push('fixed ' + o.userData.shape);}
+     else if (o.isMesh) {meshes++; shape.push(own(o));}
+    });
     for (const ch of shape.sort().join(';')) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
     const pose = () => {const p: number[] = []; const walk = (o: any) => {if (!o.visible || o.isSprite) return; p.push(o.position.x, o.position.y, o.position.z, o.rotation.x, o.rotation.y, o.rotation.z, o.scale.x, o.scale.y, o.scale.z); o.children.forEach(walk);}; walk(station); return p.map(n => Math.round(n * 1e5)).join(',');};
     const first = pose(); surface.draw(shown, .1); const second = pose(); shown.playing = false; surface.draw(shown, .1); const paused = pose(); surface.draw(shown, .1);
@@ -455,5 +466,6 @@ runSuite('process renderers browser harness', 'process-renderers-browser-results
   await page.keyboard.press('Escape'); await page.locator('#present').waitFor({state: 'hidden'});
  });
  await mapUpdateChecks(studio);
+ await run3dChecks(studio);
  await checkLifecycle('Process renderers browser lifecycle emits no runtime errors or network requests');
 });
