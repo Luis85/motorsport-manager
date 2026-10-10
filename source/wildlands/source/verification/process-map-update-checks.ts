@@ -7,7 +7,27 @@
 import assert from 'node:assert/strict';
 import {nextFrames} from './browser-harness';
 import {query, type Studio} from './process-browser-fixture';
-import {encoding, waitingAt, badges} from './process-map-probe';
+import type {Page} from 'playwright';
+import {encoding, waitingAt, badges, renderedFamilies} from './process-map-probe';
+
+/**
+ * Draws the studio's current view into a throw-away map in a host of the live map's size and compares the markup: whether they are
+ * equal, the live card count and both viewBoxes (for the failure message).
+ */
+const freshDraw = (page: Page) => page.evaluate(() => {
+ const w = globalThis as any, live = document.querySelector('#map svg')!, box = live.getBoundingClientRect();
+ const host = document.createElement('div');
+ host.style.cssText = `position:fixed;left:0;top:0;width:${box.width}px;height:${box.height}px`;
+ document.body.append(host);
+ const surface = w.LWProcess2D.create(host, () => {});
+ try {
+  const svg = host.querySelector('svg')!;
+  svg.style.cssText = 'width:100%;height:100%;display:block';
+  surface.draw(w.LWProcessStudio.query());
+  return {equal: svg.innerHTML === live.innerHTML, cards: live.querySelectorAll('g[role=button]').length,
+   live: live.getAttribute('viewBox'), fresh: svg.getAttribute('viewBox')};
+ } finally { surface.dispose(); host.remove(); }
+});
 
 export async function mapUpdateChecks(studio: Studio): Promise<void> {
  const {page, check, freshStudio, switchTo} = studio;
@@ -49,23 +69,57 @@ export async function mapUpdateChecks(studio: Studio): Promise<void> {
   // Many more ticks, then the live map equals a map drawn fresh from the same view in a host of the same size.
   for (let i = 0; i < 3; i++) await page.locator('#advance').click();
   for (let i = 0; i < 8; i++) await page.locator('#step').click();
-  const same = await page.evaluate(() => {
-   const w = globalThis as any, live = document.querySelector('#map svg')!, box = live.getBoundingClientRect();
-   const host = document.createElement('div');
-   host.style.cssText = `position:fixed;left:0;top:0;width:${box.width}px;height:${box.height}px`;
-   document.body.append(host);
-   const surface = w.LWProcess2D.create(host, () => {});
-   try {
-    const svg = host.querySelector('svg')!;
-    svg.style.cssText = 'width:100%;height:100%;display:block';
-    surface.draw(w.LWProcessStudio.query());
-    return {equal: svg.innerHTML === live.innerHTML, cards: live.querySelectorAll('g[role=button]').length};
-   } finally { surface.dispose(); host.remove(); }
-  });
-  assert.deepEqual(same, {equal: true, cards: (await query(page)).definition.steps.length}, 'the patched map matches a fresh draw');
+  const same = await freshDraw(page);
+  assert.deepEqual({equal: same.equal, cards: same.cards}, {equal: true, cards: (await query(page)).definition.steps.length},
+   'the patched map matches a fresh draw');
   const q = (await query(page)).snapshot, f = await encoding(page);
   for (const m of q.steps.filter(s => waitingAt(q, s.id) > 0)) {
    assert.equal(f.cards.find(c => c.id === m.id)!.counts.find(c => c.status === 'queued')?.text, String(waitingAt(q, m.id)), m.id);
+  }
+ });
+ // Hosted CI has no Inter and draws in DejaVu Sans. There the run bar's guidance written during a clock command's refresh wraps the
+ // stage heading onto another line until the clock's sentence replaces it after the refresh, so the map is drawn while the svg has a
+ // passing size that is never painted. Framing for that size used to leave the map different from a fresh draw (and moved a zoomed
+ // camera); the camera now frames for the size the last rendering update reported.
+ await check('2D map framing does not depend on its history in DejaVu Sans: an untouched map matches a fresh draw after every '
+  + 'tick and Fit to view, also with numbered cards, and a camera the reader zoomed or panned keeps its view across ticks', async () => {
+  for (const index of [0, 4]) {
+   await page.setViewportSize({width: 1440, height: 1060}); await freshStudio();
+   await page.addStyleTag({content: DEJAVU}); await nextFrames(page, 2);
+   if (index) await switchTo(index);
+   await page.locator('#mode-2d').click(); await nextFrames(page, 2);
+   const fonts = await renderedFamilies(page, ['#message', '#map svg .pm-title']);
+   for (const [selector, families] of Object.entries(fonts)) {
+    assert.deepEqual(families, ['DejaVu Sans'], `${selector} renders with ${families.join(', ') || 'no font'}; DejaVu Sans must be installed`);
+   }
+   const numbered = await page.evaluate(() => !(document.querySelector('#map .process-map-key') as HTMLElement).hidden);
+   assert.equal(numbered, index === 4, `process ${index}: the number key shows exactly on the numbered map`);
+   const matches = async (when: string) => {
+    const f = await freshDraw(page);
+    assert.equal(f.equal, true, `process ${index} ${when}: the live map (viewBox ${f.live}) matches a fresh draw (viewBox ${f.fresh})`);
+   };
+   await matches('after switching to 2D');
+   const definition = JSON.stringify((await query(page)).definition);
+   let minute = (await query(page)).snapshot.minute;
+   const tick = async (control: string) => {
+    await page.locator(control).click();
+    const q = await query(page);
+    assert(q.snapshot.minute > minute, `${control} advanced the run`); minute = q.snapshot.minute;
+   };
+   for (const control of ['#step', '#step', '#advance', '#step']) { await tick(control); await matches(`after ${control}`); }
+   await page.locator('#frame').click(); await matches('after Fit to view');
+   // A camera the reader moved is never re-framed by a tick.
+   for (const keys of [['+'], ['+', 'ArrowRight']]) {
+    await page.locator('#map svg').focus();
+    for (const key of keys) await page.keyboard.press(key);
+    const kept = await page.locator('#map svg').getAttribute('viewBox');
+    for (const control of ['#step', '#advance']) {
+     await tick(control);
+     assert.equal(await page.locator('#map svg').getAttribute('viewBox'), kept, `process ${index}: ${keys.join(' ')} view kept after ${control}`);
+    }
+    await page.locator('#frame').click(); await matches(`after ${keys.join(' ')}, ticks and Fit to view`);
+   }
+   assert.equal(JSON.stringify((await query(page)).definition), definition, 'framing never changes the definition');
   }
  });
  await check('2D map step cards are one roving tab stop: arrow keys move to the nearest card, Home and End reach the ends, '
