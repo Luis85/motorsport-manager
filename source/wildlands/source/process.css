@@ -337,7 +337,7 @@
 /* Forced colours (Windows High Contrast) drop backgrounds and shadows: keep the state swatches and meter fills, and mark the pressed
    view and the current step with system colours. */
 @media(forced-colors:active) {
- .process-legend i,.pool-bar i,.process-step i { forced-color-adjust:none; }
+ .process-legend [data-legend] svg,#map .pm-mark,.pool-bar i,.process-step i { forced-color-adjust:none; }
  .pool-bar { border:1px solid CanvasText; }
  .process-studio button[aria-pressed=true],.process-studio button.selected { outline:2px solid Highlight; outline-offset:-4px; }
  .process-studio button.process-step.selected { border-left:4px solid Highlight; }

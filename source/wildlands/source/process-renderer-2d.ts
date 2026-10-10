@@ -209,6 +209,9 @@ declare namespace LWProcess2D {
    const g = (e.target as Element).closest('g[role=button]'); hoverId = g ? g.id.slice('process-map-'.length) : null; syncCaption();
   });
   svg.addEventListener('pointerleave', () => { hoverId = null; syncCaption(); });
+  // Entering anything outside the map also ends the hover, so a leave missed during a redraw under the pointer cannot pin the caption.
+  const outside = (e: PointerEvent) => { if (hoverId && !svg.contains(e.target as Node)) { hoverId = null; syncCaption(); } };
+  document.addEventListener('pointerover', outside);
   svg.addEventListener('focusin', syncCaption); svg.addEventListener('focusout', syncCaption);
   const seen = new MutationObserver(() => { syncHint(); if (!host.hidden && lastView) applyCamera(); }); seen.observe(host, {attributes: true, attributeFilter: ['hidden']});
   // Screen-sized cards make the fitted bounds depend on the map size: a resize measures them again and keeps an untouched framing.
@@ -307,7 +310,7 @@ declare namespace LWProcess2D {
    tag.append(el('title', {}, `Deadline path (${mode === 'escalate' ? 'escalates: the work keeps going' : 'interrupts: the work is cancelled'})`), body);
    return tag;
   }
-  return {draw, frame, dispose() {seen.disconnect(); resized?.disconnect(); hint.remove(); caption.remove(); svg.remove(); dock.remove();}};
+  return {draw, frame, dispose() {document.removeEventListener('pointerover', outside); seen.disconnect(); resized?.disconnect(); hint.remove(); caption.remove(); svg.remove(); dock.remove();}};
  }
  root.LWProcess2D = {create, legend: () => root.LWProcessMapMarks.legend()};
 })(globalThis);

@@ -294,8 +294,8 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   await page.locator('#mode-2d').click(); await page.locator('[data-step="discovery"]').click(); await page.locator('#step').click();
   const forced = await page.evaluate(() => {
    const style = (s: string) => getComputedStyle(document.querySelector(s)!);
-   const swatches = [...document.querySelectorAll<HTMLElement>('.process-legend i, .pool-bar i, .process-step i')];
-   return {swatches: swatches.every(i => getComputedStyle(i).forcedColorAdjust === 'none'),
+   const swatches = [...document.querySelectorAll<Element>('.process-legend [data-legend] svg, .pool-bar i, .process-step i')];
+   return {swatches: swatches.length > 0 && swatches.every(i => getComputedStyle(i).forcedColorAdjust === 'none'),
     pressed: [style('#mode-2d').outlineStyle, style('#mode-3d').outlineStyle],
     step: [style('.process-step.selected').borderLeftWidth, style('.process-step:not(.selected)').borderLeftWidth !== '4px']};
   });
@@ -316,10 +316,10 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   await page.setViewportSize({width: 390, height: 844}); await nextFrames(page);
   const phone = await snapshot(['.process-toolbar', '.process-inspector']);
   assert.match(phone, /button "Run options"/); assert.match(phone, /button "Details"/); assert.doesNotMatch(phone, /[▾▸]/);
-  await page.setViewportSize({width: 1440, height: 1060}); assert(await page.locator('.process-legend i:visible').count() > 0);
+  await page.setViewportSize({width: 1440, height: 1060}); assert(await page.locator('.process-legend [data-legend]:visible').count() > 0);
   await page.locator('#mode-lens').click();
   assert.deepEqual(await page.locator('.process-legend > :visible').evaluateAll(n => n.map(x => x.id)), ['camera-hint']);
-  await page.locator('#mode-2d').click(); assert(await page.locator('.process-legend i:visible').count() > 0);
+  await page.locator('#mode-2d').click(); assert(await page.locator('.process-legend [data-legend]:visible').count() > 0);
  });
  // Hosted CI has no Inter and falls back to DejaVu Sans, which is wider: a toolbar that fits locally can wrap there.
  // Forcing that font here makes the fit and phone geometry independent of the fonts the host happens to have.

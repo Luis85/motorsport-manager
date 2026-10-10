@@ -106,6 +106,8 @@ runSuite('process readability browser harness', 'process-readability-browser-res
   // A 24px root font (a larger browser text size) scales the map's minimum text and marker sizes with it.
   await freshStudio(); await page.addStyleTag({content: 'html{font-size:24px}'});
   await page.locator('#mode-2d').click(); await page.locator('#advance').click(); await page.locator('#frame').click(); await nextFrames(page, 2);
+  // The larger text leaves the fitted map in its numbers layout; Zoom in for names reaches the layout that draws work markers.
+  if (await page.locator('#map-zoom-hint').innerText() === 'Zoom in for names') { await page.locator('#map-zoom-hint').click(); await nextFrames(page, 2); }
   const big = await page.evaluate(() => {
    const svg = document.querySelector('#map svg') as SVGSVGElement, a = (e: Element) => (e as SVGGraphicsElement).getScreenCTM()!.a;
    const title = Math.min(...[...svg.querySelectorAll('.pm-title')].map(t => parseFloat(t.getAttribute('font-size')!) * svg.getScreenCTM()!.a));
