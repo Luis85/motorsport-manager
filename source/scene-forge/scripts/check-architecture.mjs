@@ -9,18 +9,23 @@ const files = (await readdir('src', { recursive: true }))
 const errors = [];
 const graph = new Map();
 const builtins = new Set(builtinModules.map((name) => name.replace(/^node:/, '')));
+// The model recipe kernel lives in ../model-forge/src/kernel. Scene Forge reaches it only
+// through two bridges: src/kernel.ts (Node) and src/kernel-render.ts (browser-safe subset).
+const bridges = {
+  'src/kernel.ts': '../model-forge/src/kernel/index.ts',
+  'src/kernel-render.ts': '../model-forge/src/kernel/render/index.ts',
+};
 const layers = {
-  domain: new Set(['domain']),
-  application: new Set(['domain', 'application']),
-  infra: new Set(['domain', 'application', 'infra', 'preview', 'version.ts']),
-  commands: new Set(['domain', 'application', 'infra', 'commands', 'version.ts']),
-  preview: new Set(['domain', 'application', 'preview']),
+  domain: new Set(['domain', 'kernel.ts']),
+  infra: new Set(['domain', 'infra', 'preview', 'kernel.ts', 'version.ts']),
+  commands: new Set(['domain', 'infra', 'commands', 'kernel.ts', 'version.ts']),
+  preview: new Set(['preview', 'kernel-render.ts']),
 };
 for (const file of files) {
   const text = await readFile(file, 'utf8');
   const tree = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const layer = file.split('/')[1];
-  const inner = layer === 'domain' || layer === 'application';
+  const inner = layer === 'domain';
   const browser = layer === 'preview';
   const dependencies = [];
   const report = (message) => errors.push(`${file}: ${message}`);
@@ -34,6 +39,12 @@ for (const file of files) {
     const target = path.posix
       .normalize(path.posix.join(path.posix.dirname(file), specifier))
       .replace(/\.js$/, '.ts');
+    if (bridges[file] !== undefined) {
+      if (target !== bridges[file]) report(`kernel bridge may re-export only ${bridges[file]}`);
+      return;
+    }
+    if (!target.startsWith('src/'))
+      return report(`${target} is outside Scene Forge; import the kernel through src/kernel.ts`);
     const targetLayer = target.split('/')[1];
     if (layers[layer] && !layers[layer].has(targetLayer)) report(`invalid dependency on ${target}`);
     if (
@@ -43,22 +54,8 @@ for (const file of files) {
       target !== 'src/preview/template.ts'
     )
       report('infrastructure may import preview types and HTML template, not browser runtime');
-    if (
-      browser &&
-      !typeOnly &&
-      targetLayer !== 'preview' &&
-      ![
-        'src/application/camera.ts',
-        'src/application/lights.ts',
-        'src/application/rigging.ts',
-        'src/application/gltf-scene.ts',
-        'src/application/materials.ts',
-        'src/application/surfaces.ts',
-        'src/domain/scalar.ts',
-        'src/domain/errors.ts',
-        'src/domain/identity.ts',
-      ].includes(target)
-    )
+    // The render bridge is the browser-safe kernel subset; it never loads the compiler or Zod.
+    if (browser && !typeOnly && targetLayer !== 'preview' && target !== 'src/kernel-render.ts')
       report(`browser must consume compiled scenes, not import ${target}`);
     if (!typeOnly) dependencies.push(target);
   }
@@ -112,13 +109,71 @@ function walk(file, stack = []) {
   visited.add(file);
 }
 for (const file of files) walk(file);
+// The shared kernel generates procedural content from seeds; like ../model-forge's own check,
+// refuse ambient randomness and wall-clock reads anywhere in it.
+const kernelRoot = '../model-forge/src/kernel';
+for (const file of (await readdir(kernelRoot, { recursive: true })).filter((f) =>
+  f.endsWith('.ts'),
+)) {
+  const name = `${kernelRoot}/${file.split(path.sep).join('/')}`;
+  const tree = ts.createSourceFile(
+    name,
+    await readFile(name, 'utf8'),
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  (function scan(node) {
+    const parent = node.parent;
+    if (
+      ts.isPropertyAccessExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      ((node.expression.text === 'Math' && node.name.text === 'random') ||
+        (node.expression.text === 'crypto' && node.name.text === 'getRandomValues'))
+    )
+      errors.push(`${name}: ${node.getText()} is nondeterministic; use the kernel's createRandom`);
+    if (
+      ts.isIdentifier(node) &&
+      node.text === 'Date' &&
+      !(parent && ts.isPropertyAccessExpression(parent) && parent.name === node) &&
+      !(parent && ts.isPropertyAssignment(parent) && parent.name === node)
+    )
+      errors.push(`${name}: Date reads the wall clock; the kernel takes times as input`);
+    ts.forEachChild(node, scan);
+  })(tree);
+}
 const pkg = JSON.parse(await readFile('package.json', 'utf8'));
 const version = (await readFile('src/version.ts', 'utf8')).match(/VERSION = '([^']+)'/)?.[1];
 if (pkg.version !== version) errors.push('package.json and src/version.ts disagree');
+// The kernel runs on this project's node_modules, so both projects must lock the same
+// versions of its packages (model-forge tests/kernel-lockfiles.test.ts checks the same).
+const kernelPackages = [
+  'three',
+  'three-bvh-csg',
+  'three-mesh-bvh',
+  'zod',
+  'gltf-validator',
+  'playwright',
+  'playwright-core',
+  '@types/three',
+  'typescript',
+];
+const [sceneLock, modelLock] = await Promise.all(
+  ['package-lock.json', '../model-forge/package-lock.json'].map(async (file) =>
+    JSON.parse(await readFile(file, 'utf8')),
+  ),
+);
+for (const name of kernelPackages) {
+  const scene = sceneLock.packages[`node_modules/${name}`],
+    model = modelLock.packages[`node_modules/${name}`];
+  if (!scene?.version || scene.version !== model?.version || scene.integrity !== model?.integrity)
+    errors.push(
+      `Kernel package ${name} is locked as ${scene?.version} here but ${model?.version} in ../model-forge; align both package-lock.json files.`,
+    );
+}
 if (errors.length) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else
   console.log(
-    `Architecture passed: ${files.length} modules, inward core dependencies, no runtime cycles or explicit any.`,
+    `Architecture passed: ${files.length} modules, kernel only through its bridges, inward dependencies, no runtime cycles or explicit any, kernel packages locked like ../model-forge, deterministic kernel (no Math.random or Date).`,
   );

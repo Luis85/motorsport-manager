@@ -14,6 +14,14 @@ is the same program as the `forge3d` package command in `source/scene-forge`, wi
 the program name `scene-forge`. Scene Forge is a standalone tool beside the game;
 it does not read or write Motorsport Manager content, saves or Godot scenes.
 
+Single-model authoring belongs to [Model Forge](model-forge-cli.md)
+(`bin/model-forge`), the standalone editor for exactly one model document. It
+owns the model asset contract and the shared model recipe kernel in
+`source/model-forge/src/kernel`, which Scene Forge bundles through its bridge
+modules. Scene Forge keeps projects, scenes and composition, and its `model *`
+commands remain the project's model registry: import Model Forge's
+`export --format model-bundle` output with `model import` (see [Models](#models)).
+
 Every `sh` block on this page was executed in order, as one shell session, against
 `bin/scene-forge` 0.6.0, both in place and as a lone copy in an empty directory
 without `node_modules` on its module path.
@@ -250,12 +258,17 @@ index, searched paths, quality findings). Codes are stable identifiers.
 | Schema and references | `SCHEMA_INVALID`, `ID_MISMATCH`, `DUPLICATE_ID`, `REFERENCE_MISSING`, `UNKNOWN_GEOMETRY`, `UNKNOWN_OPERATION`, `UNKNOWN_PARAMETER`, `PARAMETER_MISSING`, `PARAMETER_RANGE`, `PARAMETER_INTEGER`, `CYCLE`, `DEPTH_LIMIT` |
 | Expressions and patterns | `EXPRESSION_ARITY`, `EXPRESSION_DEPTH`, `EXPRESSION_DIV_ZERO`, `EXPRESSION_OPERATOR`, `EXPRESSION_RANGE`, `PATTERN_COUNT`, `PATTERN_PATH`, `PATTERN_HAS_CHILDREN` |
 | Geometry and budgets | `INVALID_GEOMETRY`, `EMPTY_GEOMETRY`, `INVALID_SCALE`, `TRANSFORM_RANGE`, `SHEAR_UNSUPPORTED`, `SCENE_BUDGET`, `CSG_BUDGET`, `LIGHT_BUDGET`, `PREVIEW_BUDGET` |
+| Procedural generation | `SCATTER_EMPTY` (nothing placed; `details.rejected`), `PROCEDURAL_BUDGET` (placement, candidate, node or terrain resolution bound), `TERRAIN_TRANSFORM` (grounding through a tilted or non-uniformly scaled chain) |
 | Scene editing | `INVALID_NODE_TYPE`, `HAS_CHILDREN`, `DEPENDENT_NODES`, `DIFFERENT_PARENTS`, `OVERLAPPING_SELECTION`, `EMPTY_SELECTION`, `NODE_HIDDEN`, `SCENE_MISMATCH` |
 | Concurrency | `REVISION_CONFLICT`, `STATE_CONFLICT`, `GUARD_MISMATCH`, `PROJECT_LOCKED`, `PROJECT_NOT_FOUND` |
 | Rigs | `RIG_INVALID`, `RIG_BINDING`, `RIG_MISSING`, `RIG_NESTED`, `RIG_EMPTY`, `RIG_CHILDREN`, `RIG_BUDGET` |
 | Outputs | `EXPORT_INVALID`, `QUALITY_GATE_FAILED`, `INVALID_CAMERA`, `RENDER_FAILED` |
 | Littlewild exchange | `LITTLEWILD_EXPORT`, `LITTLEWILD_IMPORT`, `LITTLEWILD_BUDGET` (baked mesh over its vertex limit), `LITTLEWILD_STALE` (`sync --check` found an out-of-date definition) |
 | Runtime | `PLAYWRIGHT_UNAVAILABLE` (Playwright not resolvable), `BROWSER_UNAVAILABLE` (Chromium did not launch), `BUILD_REQUIRED` (packaged asset missing), `INTERNAL_ERROR` |
+
+A missing input file (`--file`, `littlewild sync --file`, `littlewild import
+--definition`) fails with `NOT_FOUND` and a hint that names the flag whose path to
+check.
 
 Never delete another process's `.forge.lock` to clear `PROJECT_LOCKED`; wait and retry.
 
@@ -278,9 +291,9 @@ for the installed build, and `scene-forge help <command path>` as text.
 
 | Command | Options |
 |---|---|
-| `catalog` | none. Commands, geometry types, operations, conventions, limits, unsupported features |
+| `catalog` | none. Commands, geometry types, operations, conventions, limits, unsupported features, `modelAuthoring` (the Model Forge pointer and model-bundle handoff) and `procedural` (scatter/layout/terrain commands, presets, limits, examples) |
 | `describe [path...]` | none. Arguments, flags, defaults and choices of a command subtree |
-| `schema` | `--kind <name>` (default `scene`; one of `scene`, `model`, `project`, `batch`, `node`, `geometry`, `material`, `composition`, `model-bundle`, `scene-bundle`, `selector`, `scalar`, `review`, `camera`, `camera-snapshot`, `quality-policy`, `pattern`, `rig`, `littlewild-export`), `--raw` (bare JSON Schema) |
+| `schema` | `--kind <name>` (default `scene`; one of `scene`, `model`, `project`, `batch`, `node`, `geometry`, `material`, `composition`, `model-bundle`, `scene-bundle`, `selector`, `scalar`, `review`, `camera`, `camera-snapshot`, `quality-policy`, `pattern`, `rig`, `littlewild-export`, `scatter`), `--raw` (bare JSON Schema) |
 | `help [command]` | text help |
 
 ```sh
@@ -412,6 +425,15 @@ scene-forge -p garage scene use main
 
 ### Models
 
+These commands manage the project's model registry and place models in scenes.
+To author or refine one model on its own, use [Model Forge](model-forge-cli.md)
+and bring the result back with `model import --file <model-bundle> --dry-run`,
+then `model import` (`--replace` with `--expected-revision`/`--expected-state`
+to change an existing definition). `model import` accepts a raw Model Forge
+document too: it drops the editor-only `revision` field before registering the
+model and reports that in `warnings`, so importing a document and importing its
+portable `export --format model` produce the same project state.
+
 | Command | Options |
 |---|---|
 | `model list` | none |
@@ -542,6 +564,123 @@ scene-forge -p garage scene restore 1 --expected-revision "$((rev + 1))"
 
 The restore creates a new revision containing revision 1's scene; history is kept.
 
+### Procedural generation
+
+Seeded placement and terrain, compiled to ordinary guarded scene edits. `scatter`
+and `layout` turn flags into a `scatter` recipe (`schema --kind scatter --raw`),
+plan it in the shared kernel against the locked current scene and commit the
+resulting `putNode` operations like any batch: one revision, history, guards and
+free dry runs. The same scene, model library, recipe and seed always produce the
+same operations, scene bytes and `stateHash`; the seed is the only source of
+variation (no clock, no ambient randomness).
+
+| Command | Options |
+|---|---|
+| `scatter` | `--model <id[:weight],...>`, `--area rect:x0,z0,x1,z1\|circle:x,z,r\|polygon:x,z;x,z;x,z` (optional with `--on` and no `--parent`: the terrain's footprint), exactly one of `--spacing <meters>` (blue noise, no two placements closer) or `--count <n>` (uniform random); or `--file`/`--data` with a complete recipe (then only `--seed` and `--group` may override it). Placement options and guards below |
+| `layout` | `--model <id[:weight],...>` and either `--path "x,z;x,z;..." --spacing <meters> [--orient yaw\|none]` (default `yaw`: each instance's +Z follows the path) or `--grid <COLUMNSxROWS> --step <meters> [--jitter 0..1] [--center x,z]` (exactly that many cells, centered). Yaw is 0 unless `--yaw` is given. Placement options and guards below |
+| `terrain add <id>` | `--preset plains\|hills\|mountains\|island\|dunes` (default `hills`), `--size <w,d>`, `--resolution <n\|nx,nz>` (vertices per axis, 2–256), `--amplitude <meters>`, `--seed <n>`, `--at <x,y,z>`, `--material <id>` (existing) or `--color <#rrggbb>` (both give a solid surface without height bands), `--replace`, guards, `--dry-run`. Creates mesh node `<id>` (tag `terrain`), heightfield geometry `<id>_geo` and material `<id>_mat` (height bands through vertex colors) in one transaction |
+| `terrain sample <node>` | `--at "x,z;x,z;..."` (required, up to 256 world points). Read-only: `y`, `normal` and `inside` (false: outside the terrain, clamped to its edge) per point |
+
+Placement options for `scatter` and `layout`: `--seed <n>` (0–4294967295, default
+1), `--group <id>` (default `<first model>-scatter` or `-layout`), `--parent <id>`
+(x,z are then in the parent's frame), `--on <terrain node>` with `--sink <meters>`
+and `--max-slope <degrees>`, `--scale <min..max>` (uniform; one value fixes it),
+`--yaw <min..max>` (degrees; `scatter` defaults to 0..360), `--tilt <min..max>`
+(degrees about X and Z, default 0), `--max <n>` (keep a
+seeded subset), `--exclude <area>` (repeatable keep-out area), `--avoid <ids>`
+with `--margin <meters>` (keep clear of those nodes' XZ bounds), `--replace`
+(remove the existing scatter group's subtree first; only a group tagged `scatter`
+is replaced, any other node of that ID fails with `DUPLICATE_ID`), `--allow-empty` (write an empty group
+instead of failing), and the guards `--expected-revision`, `--expected-state`,
+`--dry-run`.
+
+Placements are model instances `<group>-1` … `<group>-N` under one group node.
+The group is tagged `scatter` and `scatter:<first 8 of recipeHash>`, and every
+instance carries the second tag. With `--on`, each instance origin sits on the
+rendered terrain surface (minus `--sink`); points outside the terrain or steeper
+than `--max-slope` are rejected. Grounding follows translation, yaw and positive
+uniform scale on the terrain node, the scatter parent and their ancestors; any
+other transform fails with `TERRAIN_TRANSFORM`. Without `--on`, origins are at
+y = 0 of the group's frame.
+
+A world of hills, a pine forest around a clearing, and crates laid out in the
+clearing and along a trail, in a fresh project. The pine model is captured from
+three scene nodes; the crate model comes from the export made above:
+
+```sh
+scene-forge init valley --name "Valley"
+scene-forge -p valley model import --file garage/exports/crate.models.json
+scene-forge -p valley apply --data '{"operations": [
+  {"op": "putMaterial", "id": "bark", "material": {"color": "#6b4a2f", "roughness": 0.9}},
+  {"op": "putMaterial", "id": "needles", "material": {"color": "#2f6b35", "roughness": 0.8}},
+  {"op": "putGeometry", "id": "trunk", "geometry": {"type": "cylinder", "radiusTop": 0.12, "radiusBottom": 0.18, "height": 1.6}},
+  {"op": "putGeometry", "id": "crown", "geometry": {"type": "cone", "radius": 0.9, "height": 2.4}},
+  {"op": "putNode", "node": {"id": "pine", "type": "group"}},
+  {"op": "putNode", "node": {"id": "pineTrunk", "type": "mesh", "parent": "pine", "geometry": "trunk", "material": "bark", "transform": {"position": [0, 0.8, 0]}}},
+  {"op": "putNode", "node": {"id": "pineCrown", "type": "mesh", "parent": "pine", "geometry": "crown", "material": "needles", "transform": {"position": [0, 2.6, 0]}}}
+]}'
+scene-forge -p valley model capture pine --nodes pine --name "Pine"
+scene-forge -p valley remove pine --cascade
+scene-forge -p valley terrain add ground --preset hills --size 48,48 --amplitude 10 --seed 7
+scene-forge -p valley terrain sample ground --at "0,0;12,-6"
+scene-forge -p valley scatter --model pine --on ground --spacing 3.2 --scale 0.8..1.3 --max-slope 35 --exclude circle:0,0,9 --seed 42 --group forest --dry-run
+scene-forge -p valley scatter --model pine --on ground --spacing 3.2 --scale 0.8..1.3 --max-slope 35 --exclude circle:0,0,9 --seed 42 --group forest
+scene-forge -p valley layout --model crate --grid 3x2 --step 1.6 --center 0,2 --on ground --group stock
+scene-forge -p valley layout --model crate --path "-8,-8;8,-8;8,8" --spacing 2 --scale 0.5 --on ground --group trail
+scene-forge -p valley node list --tag scatter --type group
+scene-forge -p valley review --out valley/exports/review --views iso,top
+```
+
+Every result is the normal edit result (`revision`, `stateHash`,
+`proposedRevision`, `proposedStateHash`, `changes`, `stats`) plus `recipe` (the
+normalized recipe with every default spelled out), `placement` (`seed`,
+`recipeHash`, `group`, `placed`, `candidates` and `rejected` counts by `outside`,
+`exclusion`, `slope` and `budget`) and `nextCommands`. A dry run's first next
+command is the exact guarded write of the same plan. Save `recipe` to replay or
+vary it; the file form also accepts what the flags cannot express, such as
+weighted node templates and per-instance model parameters (`vary`):
+
+```sh
+cat > stock.scatter.json <<'EOF'
+{
+  "schemaVersion": 1,
+  "kind": "scatter",
+  "seed": 3,
+  "group": "loose",
+  "area": { "type": "circle", "center": [0, 0], "radius": 6 },
+  "exclude": [{ "type": "rect", "min": [-2.5, 0], "max": [2.5, 4] }],
+  "distribution": { "type": "poisson", "minDistance": 2 },
+  "maxCount": 6,
+  "items": [{ "model": "crate", "vary": { "width": [0.8, 1.6], "bands": [1, 3] } }],
+  "rotation": { "yaw": [0, 360], "tilt": [-4, 4] },
+  "ground": { "mode": "terrain", "node": "ground", "sink": 0.05 }
+}
+EOF
+scene-forge -p valley scatter --file stock.scatter.json --dry-run
+state=$(scene-forge -p valley --compact inspect)
+rev=$(printf '%s' "$state" | node -p 'JSON.parse(require("fs").readFileSync(0, "utf8")).data.revision')
+hash=$(printf '%s' "$state" | node -p 'JSON.parse(require("fs").readFileSync(0, "utf8")).data.stateHash')
+scene-forge -p valley scatter --file stock.scatter.json --expected-revision "$rev" --expected-state "$hash"
+scene-forge -p valley scatter --file stock.scatter.json --seed 4 --replace --expected-revision "$((rev + 1))"
+scene-forge -p valley scatter --file stock.scatter.json --seed 4 --replace
+```
+
+The last command is idempotent: the same recipe with `--replace` plans the same
+nodes, so `changed` is false and the revision stays. Replacing a terrain
+(`terrain add <id> --replace`) does not move existing placements; its result lists
+`staleScatterGroups`, which you regenerate with `scatter … --replace`.
+
+Bounds: 2,000 placements per recipe, 20,000 candidate points, 10,000 scene nodes,
+32 items, 64 exclusions, 256 polygon/path points, 256 × 256 terrain vertices.
+Errors carry a flag-level `hint`: `DUPLICATE_ID` (the group exists: `--replace`
+with guards, or another `--group`; with `--replace`, the ID names content that is
+not a scatter group, so only another `--group` helps), `INPUT_REQUIRED` (a missing
+flag), `SCATTER_EMPTY` (`details.rejected` says why;
+lower `--spacing`, widen the area, relax filters, or `--allow-empty`),
+`PROCEDURAL_BUDGET` (raise spacing, shrink the area, lower `--max`/`--count`) and
+`TERRAIN_TRANSFORM`. `catalog` lists the same in its `procedural` block, with the
+terrain presets and one-command examples.
+
 ### Inspection and quality
 
 | Command | Options |
@@ -609,7 +748,8 @@ inheritance is not rewritten automatically.
 Littlewild mesh `castShadow` and `receiveShadow` flags currently use Scene Forge’s
 mesh defaults after import. A native shadow decal may therefore cast an additional
 contact shadow in lit previews; GLB does not carry engine-specific shadow flags.
-Material opacity and depth-write behavior are retained.
+Exporting back into the source definition keeps those flags on every node that
+still matches it. Material opacity and depth-write behavior are retained.
 Native shadow decals preserve `depthWrite: false` together with alpha blending
 and opacity below 1. GLB represents these with `alphaMode: BLEND`; Scene Forge
 recipes, previews and Littlewild output retain the explicit depth setting.
@@ -692,7 +832,7 @@ covers rig roles, mesh budgets and manifests.
 | Command | Options |
 |---|---|
 | `littlewild sync` | `--file <path>` (required `littlewild-export` manifest), `--asset <id>`, `--dry-run`, `--check` (fail with `LITTLEWILD_STALE`, never write) |
-| `littlewild export` | `--model <id>` and `--out <family>/<id>/definition.json` (required), `--family items\|buildings\|creatures\|pets`, `--variant <name>`, `--name <name>`, `--parameters <json>`, `--materials <json>`, `--dry-run` |
+| `littlewild export` | `--model <id>` and `--out <family>/<id>/definition.json` (required), `--family items\|buildings\|creatures\|pets` (default: the `<family>` directory of `--out`, else `items`), `--variant <name>`, `--name <name>` (default: an existing definition's name, else the model name), `--parameters <json>`, `--materials <json>`, `--dry-run` |
 | `littlewild import` | `--definition <path>` (required), `--prefix <id>`, `--dry-run`, `--replace`, `--expected-revision <n>`, `--expected-state <hash>` |
 
 `littlewild import` accepts a `littlewild-definition`, a raw `littlewild-3d-asset`,
@@ -706,6 +846,23 @@ definition to retain its gameplay and actor rig. Read `inspect` for the revision
 and state hash, then pass both guards when
 replacing existing models to reject intervening edits. Dry runs validate the same
 model dependency closure without writing.
+
+`littlewild export` and `littlewild sync` share one lossless contract with Model
+Forge's `export --format littlewild` (the same kernel writer). A new definition is
+written in canonical form. Merging into an existing definition replaces only the
+exported variants of the `visual` facet and keeps that definition's own
+representation wherever content is unchanged: node key order, explicit zero
+transforms and empty `children`, shared string material references and per-node
+`materialProps`, mesh resource names, engine-only node fields a recipe cannot
+express (for example `castShadow: false`), palette entries and meshes no variant
+references, and the file's layout. Only edited fields take the exporter's
+normalized form, so an unedited `littlewild import` exports back byte-identically
+and both tools write identical bytes for the same model. A changed material is
+written in full and shared by every variant that names it; the result's
+`warnings` lists retained variants that now use it and kept meshes no variant
+references. A source node without an `id` is matched only through the ID import
+gave it, never by position, so removing one never moves its engine-only fields
+onto another node.
 
 A manifest's `target` is relative to the manifest file; `--file` and
 `--definition` are relative to the working directory. From the repository root,
@@ -877,9 +1034,12 @@ Batch operations: `putNode`, `patchNode`, `patchNodes`, `removeNode`,
 `expectedRevision` and `expectedState`. Geometry types: `box`, `sphere`,
 `cylinder`, `cone`, `torus`, `capsule`, `plane`, `tube`, `lathe`, `extrude`
 (profile with optional holes and bevel), `mesh` (indexed triangles with optional
-`normals`/`uvs`) and `boolean` (`union`, `subtract`, `intersect`). Patterns:
-`linear`, `radial`, `grid` (at most 256 copies) and `path`. Materials are
-metallic/roughness PBR or unlit. `scene-forge catalog` lists the current set.
+`normals`/`uvs`), `boolean` (`union`, `subtract`, `intersect`) and `heightfield`
+(seeded noise terrain on at most 256 x 256 vertices, optional height `bands` as
+vertex colors). Patterns: `linear`, `radial`, `grid` (at most 256 copies) and
+`path`. Materials are metallic/roughness PBR or unlit; `vertexColors: true`
+multiplies the base color by vertex colors. `scene-forge catalog` lists the
+current set.
 
 ## Common workflows
 
@@ -891,14 +1051,20 @@ H` → `validate` → `audit` → `review` → `export --validate`. On
 **Start from an example.** `example list` → `example create <id> <dir>` → follow
 the returned `nextCommands`.
 
-**Reuse models across projects.** `model capture` (from scene nodes) or
-`model export` → `model import --dry-run` → `model import` in the other project →
+**Reuse models across projects.** `model capture` (from scene nodes),
+`model export`, or Model Forge's `export --format model-bundle` →
+`model import --dry-run` → `model import` in the other project →
 `model instantiate` or `scene compose`. Use `--replace` only to change an existing
 definition deliberately; every scene is revalidated first.
 
 **Freeze a deliverable.** `export --validate --out <file>.glb` for engines and
 `scene pack --out <file>.json` for an editable recipe with its model closure.
 History and other scenes are not included; use Git for full project history.
+
+**Generate a landscape.** `terrain add <id> --preset <name>` → `scatter --on <id> … --dry-run`
+→ the returned guarded next command → `layout --path`/`--grid` for paths, fences and
+rows → `review`. Change only the seed to vary; save `recipe` from a result to replay it
+with `scatter --file`, and regenerate with `--replace`.
 
 **Compare renders across edits.** `review --out before`, edit, then
 `review --file before/replay-plan.json --out after` reuses the same cameras.
@@ -949,6 +1115,11 @@ npm run build:cli    # rewrites ../../bin/scene-forge (npm run build also does t
 npm run check:cli    # rebuilds into a temporary directory; exits 1 if the checked-in file differs
 ```
 
+The bundle includes the shared model recipe kernel from
+`source/model-forge/src/kernel`, resolved against this project's `node_modules`,
+so a kernel change also requires rebuilding and committing `bin/scene-forge`
+(and `bin/model-forge`; see [its rebuild steps](model-forge-cli.md#rebuild-and-verify-the-executable)).
+
 The build is a single CommonJS file with a `#!/usr/bin/env node` line, minified,
 without source maps, timestamps or absolute paths, so the same sources and locked
 dependencies produce identical bytes. Its header comment reproduces the license
@@ -957,6 +1128,11 @@ and notice texts of every bundled package. For development without rebuilding,
 
 ## Further reading
 
+- [Generate models, scenes and game content procedurally](../how-to/procedural-generation.md):
+  Model Forge generators, terrain, scatter and layout, and Wildlands content in
+  one workflow, with the shared determinism contract.
+- [Model Forge CLI](model-forge-cli.md): the one-model editor, the model asset
+  contract and the shared kernel.
 - [Scene Forge README](../../source/scene-forge/README.md): capabilities, export
   targets, editor and release history.
 - [Agent operating guide](../../source/scene-forge/docs/AGENT_WORKFLOW.md):
@@ -974,7 +1150,8 @@ and notice texts of every bundled package. For development without rebuilding,
 
 A material-only refinement preserves the exact authored mesh buffers, including
 positions, normals, UVs and indices. Export reuses equal buffers across retained
-variants and removes unreferenced mesh resources. Equality includes all buffers:
+variants and removes mesh resources that only the replaced variant referenced;
+resources no variant referenced stay. Equality includes all buffers:
 small shape changes or different UV placement remain distinct. Mesh names are
 collision-safe; an existing ID never silently replaces a different retained mesh.
 Keep the original definition wrapper when replacing one variant so gameplay,

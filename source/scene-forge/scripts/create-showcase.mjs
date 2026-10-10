@@ -1,9 +1,8 @@
 import { animationLab } from './showcase/animation.mjs';
 import { assetStudio } from './showcase/assets.mjs';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { parse, ModelSchema, SceneSchema } from '../src/domain/schema.ts';
+import { parse, ModelSchema, SceneSchema, compileScene } from '../src/kernel.ts';
 import { loadProject } from '../src/infra/project.ts';
-import { compileScene } from '../src/application/compiler.ts';
 import { packScene } from '../src/infra/bundle.ts';
 import { courtyard } from './showcase/courtyard.mjs';
 import { plant } from './showcase/plant.mjs';

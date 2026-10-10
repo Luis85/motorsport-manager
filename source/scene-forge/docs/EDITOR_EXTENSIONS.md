@@ -22,17 +22,19 @@ The source recipe owns node placement, rig definitions, material overrides and e
 
 ## Integration seams
 
-| Responsibility              | Entry point                                     | Rules                                                                                                                |
-| --------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Tool contract and lifecycle | `src/preview/tool-host.ts`                      | Unique ID; mount once; refresh from snapshots; abort listeners and release resources on disposal.                    |
-| Built-in tool registration  | `src/preview/tools/index.ts`                    | Add an `EditorTool` to this array. No viewer changes for an inspector tool using existing capabilities.              |
-| Tool data/write ports       | `src/preview/tool-bridge.ts`                    | Clone reads. All source writes pass through `edit`. Runtime objects and renderer are not exposed.                    |
-| Undo and edit serialization | `src/preview/edit-state.ts`                     | Nodes, scene materials and environment form one transaction. Selection accompanies history but alone is not an edit. |
-| Derived scene lifecycle     | `src/preview/templates.ts`, `realization.ts`    | Clone compiled geometry; realize materials, lights and rigs; own and dispose transient resources.                    |
-| Viewport and overlays       | `src/preview/viewport.ts`, `rig-overlay.ts`     | Camera/render-only state stays out of the document. Export excludes overlays and studio lights.                      |
-| Portable export graph       | `src/application/gltf-scene.ts`                 | Clone skeletons safely, retain deterministic UUIDs, put skin meshes at glTF scene root. Never mutate the live scene. |
-| Schema and semantics        | `src/domain/schema.ts`, `validate.ts`, `rig.ts` | Strict data contracts, references, cycles, bounds and budgets. Generated JSON Schemas are build outputs.             |
-| CLI discovery               | `src/commands/discovery.ts`, command registrar  | Describe accepted data, flags, limits and actionable errors. Register a command group in `create-cli.ts`.            |
+| Responsibility              | Entry point                                                                                                             | Rules                                                                                                                |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Tool contract and lifecycle | `src/preview/tool-host.ts`                                                                                              | Unique ID; mount once; refresh from snapshots; abort listeners and release resources on disposal.                    |
+| Built-in tool registration  | `src/preview/tools/index.ts`                                                                                            | Add an `EditorTool` to this array. No viewer changes for an inspector tool using existing capabilities.              |
+| Tool data/write ports       | `src/preview/tool-bridge.ts`                                                                                            | Clone reads. All source writes pass through `edit`. Runtime objects and renderer are not exposed.                    |
+| Undo and edit serialization | `src/preview/edit-state.ts`                                                                                             | Nodes, scene materials and environment form one transaction. Selection accompanies history but alone is not an edit. |
+| Derived scene lifecycle     | `src/preview/templates.ts`, `../model-forge/src/kernel/render/realization.ts`                                           | Clone compiled geometry; realize materials, lights and rigs; own and dispose transient resources.                    |
+| Viewport and overlays       | `../model-forge/src/kernel/render/viewport.ts`, `src/preview/rig-overlay.ts`                                            | Camera/render-only state stays out of the document. Export excludes overlays and studio lights.                      |
+| Portable export graph       | `../model-forge/src/kernel/application/gltf-scene.ts`                                                                   | Clone skeletons safely, retain deterministic UUIDs, put skin meshes at glTF scene root. Never mutate the live scene. |
+| Schema and semantics        | `../model-forge/src/kernel/domain/schema*.ts`, `validate.ts`, `rig.ts`; Scene Forge contracts in `src/domain/schema.ts` | Strict data contracts, references, cycles, bounds and budgets. Generated JSON Schemas are build outputs.             |
+| CLI discovery               | `src/commands/discovery.ts`, command registrar                                                                          | Describe accepted data, flags, limits and actionable errors. Register a command group in `create-cli.ts`.            |
+
+Paths under `../model-forge/src/kernel/` belong to the shared model recipe kernel owned by Model Forge (see [ARCHITECTURE.md](ARCHITECTURE.md#model-authoring-moved-to-model-forge)). The browser reaches them only through `src/kernel-render.ts`; change them in Model Forge and rerun both projects' checks.
 
 Tools are trusted, build-time TypeScript modules. This is an internal extension API, not a sandbox for downloaded third-party code. The application does not execute plugins or scripts from recipe JSON.
 

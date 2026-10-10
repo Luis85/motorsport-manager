@@ -1,0 +1,47 @@
+[
+  {
+    "id": "barrel",
+    "name": "Supply barrel",
+    "kind": "model",
+    "file": "barrel.model.json",
+    "description": "Parametric barrel with ribs; one model, no dependencies.",
+    "source": "source/scene-forge/examples/composition",
+    "dependencies": []
+  },
+  {
+    "id": "rover",
+    "name": "Survey rover",
+    "kind": "model",
+    "file": "rover.model.json",
+    "description": "Six-wheel rover built from primitives, patterns and parameters.",
+    "source": "source/scene-forge/examples/composition",
+    "dependencies": []
+  },
+  {
+    "id": "fieldStation",
+    "name": "Complete field station",
+    "kind": "model-bundle",
+    "file": "fieldStation.model-bundle.json",
+    "description": "Assembly that instantiates frozen dependency models (model-bundle).",
+    "source": "source/scene-forge/examples/composition",
+    "dependencies": ["platform", "habitat", "landingPad", "rover", "solar", "barrel", "cargo"]
+  },
+  {
+    "id": "petEgg",
+    "name": "Pet egg",
+    "kind": "model",
+    "file": "petEgg.model.json",
+    "description": "Littlewild pet egg with rig-role tags for the pets family.",
+    "source": "source/scene-forge/examples/pocket-pet",
+    "dependencies": []
+  },
+  {
+    "id": "petAdultBloom",
+    "name": "Pet adult (bloom)",
+    "kind": "model-bundle",
+    "file": "petAdultBloom.model-bundle.json",
+    "description": "Littlewild adult pet that nests accessory models (model-bundle).",
+    "source": "source/scene-forge/examples/pocket-pet",
+    "dependencies": ["petFace", "petLeaf", "petPetal", "petFlower"]
+  }
+]

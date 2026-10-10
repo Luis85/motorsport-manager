@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "kind": "generator-recipe",
+  "generator": "tree",
+  "seed": 3,
+  "preset": "palm",
+  "parameters": { "height": 8, "fronds": 12 },
+  "id": "palm",
+  "name": "Beach palm"
+}

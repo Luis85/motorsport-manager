@@ -1,6 +1,5 @@
-import { uuid } from '../../domain/identity.js';
+import { uuid, type MaterialSpec } from '../../kernel-render.js';
 import type { EditorTool } from '../tool-host.js';
-import type { MaterialSpec } from '../../domain/schema.js';
 import { input, select, action, note } from './controls.js';
 
 export const materialTool: EditorTool = {

@@ -1,5 +1,5 @@
 import type { EditorTool } from '../tool-host.js';
-import type { RigSpec } from '../../domain/schema.js';
+import type { RigSpec } from '../../kernel-render.js';
 import { input, select, action, note } from './controls.js';
 
 /** A starter chain is deliberately small; joint positions and mesh bindings remain explicit data. */

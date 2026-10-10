@@ -6,6 +6,10 @@ Make a 3D authoring session reproducible as data. An agent should be able to cre
 
 The primary loop is **describe → validate → compile → inspect → render → revise → export**. Every edit is explicit. The project is the durable workspace; the offline browser composer edits a local snapshot and returns explicit transactions to that workspace.
 
+## Model authoring moved to Model Forge
+
+The model recipe kernel (schemas and semantic validation, operations, compilation, export, Littlewild asset writing, capture/review and browser realization) now lives in [`../model-forge/src/kernel`](../../model-forge/src/kernel/index.ts) and is owned by Model Forge, the standalone editor for exactly one model (`bin/model-forge`, see the [Model Forge CLI handbook](../../../docs/reference/model-forge-cli.md)). Scene Forge imports it only through `src/kernel.ts` and the browser-safe `src/kernel-render.ts`; bare imports from kernel files resolve to this package's `node_modules` (`scripts/kernel-deps.mjs`, `scripts/kernel-resolve.mjs`, `tsconfig.check.json`). Scene Forge keeps projects, scene composition, the model registry (`model *` commands), bundles, the offline composer and scene-wide Littlewild sync.
+
 ## Boundaries
 
 | Concern            | Owner                           | Contract                                                                |
@@ -97,7 +101,7 @@ These stages are proposed development scope, not implemented capabilities. The c
 
 ## Research-driven 0.4 decisions
 
-`./docs/RESEARCH.md` records primary-source research and the product tradeoffs. Quality checks live in `application/quality.ts`, separate from schema/reference validity: budgets depend on the destination and inspect the visible deliverable. Findings are aggregated and bounded for agent consumption. The compiler pools resolved equivalent resources per compilation using stable keys; authored nodes still retain their own IDs/transforms and material/geometry references.
+`./docs/RESEARCH.md` records primary-source research and the product tradeoffs. Quality checks live in the kernel's `../model-forge/src/kernel/application/quality.ts`, separate from schema/reference validity: budgets depend on the destination and inspect the visible deliverable. Findings are aggregated and bounded for agent consumption. The compiler pools resolved equivalent resources per compilation using stable keys; authored nodes still retain their own IDs/transforms and material/geometry references.
 
 Camera requests optionally carry a complete fixed snapshot. The same camera constructor supports interactive previews and headless replay. Review plans are reusable input artifacts; result manifests record output hashes and environment provenance. The browser downloads exact review plans rather than converting orthographic views into perspective camera operations.
 
@@ -105,11 +109,11 @@ Custom mesh schemas now include optional vertex normals and UV pairs. Export val
 
 ## Refactoring boundaries in 0.5
 
-See [CODE_QUALITY.md](CODE_QUALITY.md) for the module map, compatibility notes and regression evidence. `application/edit.ts` prepares scene transactions without I/O; `infra/project.ts` owns lock/read/write sequencing. Canonical data encoding is shared in the domain, while SHA-256 concurrency tokens remain an infrastructure concern. Three.js and CSG are explicit application dependencies; the core has no Node built-in imports.
+See [CODE_QUALITY.md](CODE_QUALITY.md) for the module map, compatibility notes and regression evidence. `../model-forge/src/kernel/application/edit.ts` prepares scene transactions without I/O; `src/infra/project.ts` owns lock/read/write sequencing. Canonical data encoding is shared in the domain, while SHA-256 concurrency tokens remain an infrastructure concern. Three.js and CSG are explicit application dependencies; the core has no Node built-in imports.
 
 The CLI is composed by `commands/create-cli.ts`. It accepts a working directory and input/output streams and returns an exit status. Command registrars share a typed context rather than owning process-global output or input state. The executable contains only argument forwarding and exit-status assignment.
 
-`infra/capture.ts` owns one browser session and one temporary workspace for both screenshots and multi-view reviews. Browser automation is isolated from plan/manifest generation. The editor consumes a typed payload and delegates history/diffs, compiled prototypes, viewport configuration and panel rendering to separate modules. It still does not compile procedural geometry in the browser.
+`../model-forge/src/kernel/io/capture.ts` owns one browser session and one temporary workspace for both screenshots and multi-view reviews. Browser automation is isolated from plan/manifest generation. The editor consumes a typed payload and delegates history/diffs, compiled prototypes, viewport configuration and panel rendering to separate modules. It still does not compile procedural geometry in the browser.
 
 Architecture checks run before compilation/tests in `npm run verify`. Public compatibility exports are retained while new code imports the module that owns the responsibility directly.
 

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { readAsset } from './assets.js';
-import { parse, Id, SceneBundleSchema, fail } from '../domain/schema.js';
+import { parse, Id, fail } from '../kernel.js';
+import { SceneBundleSchema } from '../domain/schema.js';
 import { unpackScene } from './bundle.js';
 
 const Entry = z

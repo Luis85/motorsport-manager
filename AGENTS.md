@@ -131,14 +131,23 @@ command/query boundaries; tool-only clock capabilities must not reach widgets.
 
 ## Standalone CLI projects
 
-`source/wildlands/`, `source/scene-forge/` and `source/character-studio/` are independent Node/TypeScript
-projects outside the Godot game; they do not read or write game saves,
-configuration or race/campaign state. Their CLIs, `bin/wildlands`,
-`bin/scene-forge` and `bin/character-studio`, are generated, checked-in bundles that need only Node.js 22+.
-Read `bin/README.md` and the handbook (`docs/reference/wildlands-cli.md`,
-`docs/reference/scene-forge-cli.md`, `docs/reference/character-studio-cli.md`) before using one. Never hand-edit `bin/`:
-rebuild with `npm run build:cli` in the source project, verify with
+`source/wildlands/`, `source/scene-forge/`, `source/model-forge/` and
+`source/character-studio/` are independent Node/TypeScript projects outside the
+Godot game; they do not read or write game saves, configuration or race/campaign
+state. Their CLIs, `bin/wildlands`, `bin/scene-forge`, `bin/model-forge` and
+`bin/character-studio`, are generated, checked-in bundles that need only Node.js
+22+. Read `bin/README.md` and the handbook (`docs/reference/wildlands-cli.md`,
+`docs/reference/scene-forge-cli.md`, `docs/reference/model-forge-cli.md`,
+`docs/reference/character-studio-cli.md`) before using one. Never hand-edit
+`bin/`: rebuild with `npm run build:cli` in the source project, verify with
 `npm run check:cli`, and commit the regenerated bundle with the source change.
+
+Model Forge is the standalone editor for exactly one model and owns the model
+asset contract and the shared model recipe kernel (`source/model-forge/src/kernel`).
+Scene Forge imports that kernel only through its bridge modules, so a kernel
+change rebuilds, checks and commits both `bin/model-forge` and `bin/scene-forge`.
+Author single models in Model Forge and hand them to Scene Forge through
+`export --format model-bundle` and a guarded `model import`.
 
 Wildlands games live in `docs/concepts/<id>/`: data only, never code; a folder's
 `README.md` is documentation outside its digest (`PROVENANCE.md`/`LICENSE*` are
@@ -173,7 +182,7 @@ python3 -m unittest discover -s tests -p 'test_*.py'
 python3 scripts/check_architecture.py
 python3 scripts/check_docs.py
 python3 scripts/verify.py --godot /path/to/pinned/godot
-cd source/<wildlands|scene-forge|character-studio> && npm ci && npm run check:cli  # after changing that project
+cd source/<wildlands|scene-forge|model-forge|character-studio> && npm ci && npm run check:cli  # after changing that project
 ```
 
 `quality.py` runs pinned GDScript/Python lint, check-only formatting and complexity

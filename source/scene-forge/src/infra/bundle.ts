@@ -3,15 +3,15 @@ import path from 'node:path';
 import {
   parse,
   fail,
-  SceneBundleSchema,
   type SceneDocument,
   type ModelLibrary,
-} from '../domain/schema.js';
-import { modelDependencies } from '../application/composition.js';
-import { compileScene } from '../application/compiler.js';
+  modelDependencies,
+  compileScene,
+  stateHash,
+  errorCode,
+} from '../kernel.js';
+import { SceneBundleSchema } from '../domain/schema.js';
 import { writeJson } from './files.js';
-import { stateHash } from './state-hash.js';
-import { errorCode } from '../domain/errors.js';
 
 /** Freeze editable source plus precisely the model dependency closure it needs. */
 export function packScene(scene: SceneDocument, library: ModelLibrary) {

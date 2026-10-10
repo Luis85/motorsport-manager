@@ -78,7 +78,7 @@ balance or human validation. See the [canonical RTS contract](rts-engine.md) and
 
 ## Standalone command-line tools
 
-Two separate TypeScript projects ship checked-in, self-contained command-line
+Four separate TypeScript projects ship checked-in, self-contained command-line
 bundles under `bin/`. Each needs only Node.js 22 or newer and runs from a fresh
 clone without `npm ci` or `node_modules`:
 
@@ -86,21 +86,54 @@ clone without `npm ci` or `node_modules`:
   `source/wildlands/` without any game content. It validates, inspects and builds
   game folders (`docs/concepts/<id>/`) into self-contained HTML files, and
   creates, validates, inspects, plays, edits and compiles portable projects,
-  which embed their game, into Godot desktop projects. Running a compiled or
-  exported Godot project requires Godot. Native story saving uses the runtime's
-  `story.export` JSON string verbatim, preserving authored floating point values
-  and their validated fingerprints across save/load.
+  which embed their game, into Godot desktop projects. `generate` adds
+  deterministic procedural content to a game folder (playable point-symmetric
+  RTS missions, adventure quests with loot tables) from what the game already
+  defines, through a dry run or a digest-guarded write validated by the engine
+  validators; generated content is not playtested or balance-validated.
+  Running a compiled or exported Godot project requires Godot. Native story
+  saving uses the runtime's `story.export` JSON string verbatim, preserving
+  authored floating point values and their validated fingerprints across
+  save/load.
 - [`bin/scene-forge`](scene-forge-cli.md) authors, validates and exports
-  declarative 3D projects from `source/scene-forge/`. Its `screenshot` and
-  `review` capture commands additionally need Playwright and Chromium; `doctor`
-  reports their availability.
+  declarative 3D projects, model registries and composed scenes from
+  `source/scene-forge/`. Seeded `terrain add` (heightfield presets), `scatter`
+  and `layout` place registered models deterministically as guarded scene
+  edits that echo a replayable recipe and its `recipeHash`. Its `screenshot`
+  and `review` capture commands additionally need Playwright and Chromium;
+  `doctor` reports their availability.
+- [`bin/model-forge`](model-forge-cli.md) is the agent-first, standalone editor
+  for exactly one model document (`model` or `model-bundle`) from
+  `source/model-forge/`. It owns the model asset contract and the shared model
+  recipe kernel that Scene Forge imports, applies revision-guarded edits with
+  history, and exports model bundles for Scene Forge's `model import`,
+  Littlewild definitions for `wildlands creature attach-visual` and game
+  folders, and GLB/glTF/OBJ/STL/Three.js JSON. Its `generate` command builds
+  editable, parametric models from eight seeded generators (rock, tree, bush,
+  crate, barrel, fence, building, terrain) with presets and a replayable
+  sidecar recipe; `variants` and document `scatter` derive bounded families and
+  placements. Littlewild export follows one
+  lossless contract shared with Scene Forge's `littlewild export` and `sync`: an
+  unedited import re-exports byte-identically through either tool across the
+  concept-game corpus, an edit changes only the edited fields, and both tools
+  write identical bytes for the same model. It never writes
+  inside a Scene Forge project and never replaces an existing output without
+  `--overwrite`. Its `review` needs Playwright and Chromium.
+- [`bin/character-studio`](character-studio-cli.md) edits Littlewild companions
+  through a local browser editor, JSON CLI and HTTP API from
+  `source/character-studio/`.
 
 The bundles are generated from their source projects and checked by each
-project's `npm run check:cli`.
+project's `npm run check:cli`. The three procedural generators (Model Forge
+`generate`, Scene Forge `terrain`/`scatter`/`layout` and Wildlands `generate`)
+share one keyed random algorithm, so the same seed and recipe reproduce the
+same bytes; see [Generate content procedurally](../how-to/procedural-generation.md).
+Generated content is validated structurally; it is not human-reviewed,
+playtested or balance-validated.
 
 Wildlands verification has a fast tier (`npm test`: typecheck, build and the
 quick Node suites, partial evidence) and the complete registered gate
-(`npm run verify`: 104 suites, 1,869 reviewed named checks) on a parallel
+(`npm run verify`: 116 suites, 2,111 reviewed named checks) on a parallel
 runner. `source/wildlands/source/verification/suites.json` and
 `gate-expectations.json` are the authority for suites and check names; CI runs
 the fast tier first, then the complete gate with `--jobs 3 --browser-jobs 2`.

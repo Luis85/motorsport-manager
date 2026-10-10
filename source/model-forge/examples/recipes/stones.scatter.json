@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "kind": "scatter",
+  "seed": 2,
+  "group": "stones",
+  "area": { "type": "rect", "min": [-18, -18], "max": [18, 18] },
+  "exclude": [{ "type": "circle", "center": [0, 0], "radius": 4 }],
+  "distribution": { "type": "poisson", "minDistance": 2.5 },
+  "items": [{ "model": "stone", "vary": { "size": [0.3, 0.8] } }],
+  "rotation": { "tilt": [-8, 8] },
+  "ground": { "mode": "terrain", "node": "terrain", "sink": 0.05 }
+}

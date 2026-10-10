@@ -195,6 +195,9 @@
                           "standard",
                           "unlit"
                         ]
+                      },
+                      "vertexColors": {
+                        "type": "boolean"
                       }
                     },
                     "required": [
