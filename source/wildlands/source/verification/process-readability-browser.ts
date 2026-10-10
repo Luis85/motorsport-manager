@@ -28,7 +28,8 @@ runSuite('process readability browser harness', 'process-readability-browser-res
     assert(f.names.length >= 30, 'the onboarding journey has 30+ steps');
     assert(f.px >= 10.9, `titles are ${f.px}px at ${at}`); assert.equal(f.overlaps, 0, 'no two titles overlap at ' + at); assert.deepEqual(f.spill, [], 'titles stay inside their cards at ' + at);
     assert.deepEqual(f.shown, f.order, 'zoomed out, cards show the two-digit number of the step list at ' + at); assert(f.tips.every((t, i) => t!.startsWith(f.names[i])), 'the full name stays in each card tooltip');
-    assert.equal(f.hint, 'Card numbers match the step list · zoom in for names');
+    assert.equal(f.hint, 'Zoom in for names');
+    assert.equal(await page.locator('#map .process-map-key').innerText(), 'Card numbers match the step list', 'the key sits in the map dock');
     const label = await page.locator('#map svg g[role=button]').first().getAttribute('aria-label'); assert(label!.startsWith(f.names[0]), 'the accessible name keeps the step name');
     // Zooming in brings the names back, still at least 11px and without overlaps.
     for (let i = 0; i < 8 && (await mapFacts()).shown[0] === '01'; i++) await page.locator('button[aria-label="Zoom in"]').click();
@@ -36,6 +37,82 @@ runSuite('process readability browser harness', 'process-readability-browser-res
    });
   }
   await page.setViewportSize({width: 1440, height: 1060});
+ });
+ /** Each card's step name and its shown title lines; `cut` when the title breaks off inside a word (a hyphen break joins up again). */
+ const labels = () => page.evaluate(() => {
+  const names: string[] = (globalThis as any).LWProcessStudio.query().definition.steps.map((s: any) => s.name);
+  return [...document.querySelectorAll('#map svg g[role=button]')].map((g, i) => {
+   const lines = [...g.querySelectorAll('.pm-title tspan')].map(t => t.textContent!);
+   const shown = lines.reduce((a, l) => a.endsWith('-') ? a.slice(0, -1) + l : a ? a + ' ' + l : l, '');
+   const name = names[i]!, kept = shown.replace(/…$/, ''), whole = kept === name || shown.endsWith('…') && name.startsWith(kept) && name[kept.length] === ' ';
+   return {name, shown, numbered: /^\d+$/.test(shown), complete: kept === name, cut: !whole};
+  });
+ });
+ await check('2D map titles break only between words or at a hyphen, and the hovered or focused card shows its full name and counts', async () => {
+  for (const [width, height] of [[1440, 1060], [1366, 768], [390, 844]] as const) {
+   await page.setViewportSize({width, height});
+   await withFonts(async dejavu => {
+    const at = `${width}x${height}${dejavu ? ' DejaVu' : ''}`;
+    await switchTo(6); await page.locator('#mode-2d').click(); await page.locator('#frame').click(); await nextFrames(page, 2);
+    // Where the fitted map shows numbers, the hint button zooms to the first level with names.
+    if ((await labels())[0]!.numbered) {
+     assert.equal(await page.locator('#map-zoom-hint').innerText(), 'Zoom in for names'); await page.locator('#map-zoom-hint').click();
+    }
+    const shown = await labels(), f = await mapFacts();
+    assert(shown.every(l => !l.numbered), 'names are shown at ' + at);
+    assert.deepEqual(shown.filter(l => l.cut).map(l => l.shown), [], 'no title is cut inside a word at ' + at);
+    assert.equal(f.overlaps, 0, 'no two titles overlap at ' + at); assert.deepEqual(f.spill, [], 'titles stay inside their cards at ' + at);
+    const partial = shown.filter(l => !l.complete).map(l => l.shown);
+    if (width === 1440) assert(shown.length - partial.length >= 15, `three-line titles show most names whole at ${at}: ${partial.join(' / ')}`);
+   });
+  }
+  // The caption names the hovered card, else the focused one, with its counts; it never resizes the map.
+  await page.setViewportSize({width: 1440, height: 1060}); await freshStudio(); await switchTo(6); await page.locator('#mode-2d').click();
+  const caption = page.locator('#map-caption'), viewport = async () => (await page.locator('#viewport').boundingBox())!.height, before = await viewport();
+  assert.equal(await caption.innerText(), 'Hover over or focus a card to read its full name and work counts.');
+  await page.locator('#process-map-inception').focus();
+  const full = await caption.evaluate(c => ({text: c.textContent, clipped: c.scrollWidth > c.clientWidth + 1}));
+  assert.match(full.text!, /^Inception: vision, MVP scope and first backlog · task · 1 working · 0 waiting$/); assert.equal(full.clipped, false);
+  const box = (await page.locator('#process-map-retro .pm-card').boundingBox())!; await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  assert.match(await caption.innerText(), /^Weekly retrospective · task · 0 working · 0 waiting$/, 'hover names the card under the pointer');
+  await page.mouse.move(5, 5);
+  const back = await page.waitForFunction(() => /^Inception: vision/.test(document.getElementById('map-caption')!.textContent!)).then(() => '', async () => {
+   return `${await caption.innerText()} (focus on ${await page.evaluate(() => document.activeElement?.id || document.activeElement?.tagName)})`;
+  });
+  assert.equal(back, '', 'leaving the map returns to the focused card');
+  assert.equal(await viewport(), before, 'the caption never resizes the map');
+ });
+ await check('Map zoom controls never cover a fitted card, Zoom in reaches names, and map text follows the root font size', async () => {
+  for (const [width, height] of [[390, 844], [320, 640], [1366, 768]] as const) {
+   await page.setViewportSize({width, height});
+   for (const index of [0, 6]) {
+    await freshStudio(); await switchTo(index); await page.locator('#mode-2d').click(); await page.locator('#frame').click(); await nextFrames(page, 2);
+    const covered = await page.evaluate(() => {
+     const d = document.querySelector('#map .process-map-dock')!.getBoundingClientRect();
+     const under = (g: Element) => {
+      const r = g.querySelector('.pm-card')!.getBoundingClientRect(); return r.left < d.right && d.left < r.right && r.top < d.bottom && d.top < r.bottom;
+     };
+     return [...document.querySelectorAll('#map svg [id^="process-map-"]')].filter(under).map(g => g.id);
+    });
+    assert.deepEqual(covered, [], `the map dock covers no card of process ${index + 1} at ${width}x${height}`);
+   }
+  }
+  // A numbered map: its key sits in the map dock, and Zoom in for names zooms just far enough for names.
+  await page.setViewportSize({width: 1440, height: 1060}); await freshStudio(); await switchTo(4);
+  await page.locator('#mode-2d').click(); await page.locator('#frame').click(); assert.equal((await labels())[0]!.numbered, true);
+  assert.equal(await page.locator('#map .process-map-key').innerText(), 'Card numbers match the step list');
+  await page.locator('#map-zoom-hint').click(); assert.equal((await labels()).some(l => l.numbered), false, 'Zoom in for names shows names');
+  assert.equal(await page.locator('#map .process-map-key').isHidden(), true, 'the key goes with the numbers');
+  // A 24px root font (a larger browser text size) scales the map's minimum text and marker sizes with it.
+  await freshStudio(); await page.addStyleTag({content: 'html{font-size:24px}'});
+  await page.locator('#mode-2d').click(); await page.locator('#advance').click(); await page.locator('#frame').click(); await nextFrames(page, 2);
+  const big = await page.evaluate(() => {
+   const svg = document.querySelector('#map svg') as SVGSVGElement, a = (e: Element) => (e as SVGGraphicsElement).getScreenCTM()!.a;
+   const title = Math.min(...[...svg.querySelectorAll('.pm-title')].map(t => parseFloat(t.getAttribute('font-size')!) * svg.getScreenCTM()!.a));
+   return {title, marks: [...svg.querySelectorAll('.pm-mark')].map(a)};
+  });
+  assert(big.title >= 16.4, `titles are ${big.title}px with a 24px root font`);
+  assert(big.marks.length > 0 && big.marks.every(px => px >= 11.9), `markers are ${big.marks.join(', ')}px`);
  });
  await check('2D deadline tags, pills and the inclusive-fork marker hide unreadable text but keep a 12px cue with their wording', async () => {
   await page.setViewportSize({width: 1440, height: 1060});
