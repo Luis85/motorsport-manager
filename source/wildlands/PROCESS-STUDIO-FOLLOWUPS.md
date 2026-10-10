@@ -165,6 +165,9 @@ and its browser checks in `process-dashboard-browser`.
   (for example the KPI strip wrapping to a second row when outcome tiles appear). A new check in
   `process-renderers-browser` runs in DejaVu Sans, with ticks, Fit to view, numbered cards and a
   window resize; it fails against the old camera and with the scale rule turned off.
+- **Load-order module** (`4bbbf93`): the pass's new studio modules took `build-inserts.cts`
+  to 412 code lines; the `template-process` inserts now close `INSERTS` from
+  `tools/build-inserts-process.cts` in the same order, so every artifact is unchanged.
 
 ## Deliberate expectation changes, suites and timeouts
 
@@ -209,13 +212,15 @@ and its browser checks in `process-dashboard-browser`.
 ## Verification
 
 - **Source identity:** branch `feature/process-studio-followups` (stacked on
-  `feature/process-present-mode`), head `b608752a106e7668b6a91e01ff0e5a52e4c5fb8f`. That head
-  already contains the documentation merge (`fa9724d`), both 2D framing merges and the regenerated
-  `bin/` and `demos/`. Only this Verification text was committed after it.
-- **Complete registered gate:** `npm run verify -- --jobs 3 --browser-jobs 2` on `b608752`:
-  passed 2,266/2,266 checks in 124/124 suites, 1,850 s (18:43 to 19:14 UTC on 2026-10-10), in the
+  `feature/process-present-mode`), head `effd8265dd0e1cba98891f3d92a8a2c6fef3e3b4`. That head
+  contains the documentation merge (`fa9724d`), both 2D framing merges, the load-order module and
+  the regenerated `bin/` and `demos/`. Only this record's Verification text was committed after it.
+- **Complete registered gate:** `npm run verify -- --jobs 3 --browser-jobs 2` on `effd826`:
+  passed 2,266/2,266 checks in 124/124 suites, 1,891 s (19:26 to 19:57 UTC on 2026-10-10), in the
   Linux cloud container, Node v22.22.0, Playwright 1.63.0, Chromium 141.0.7390.37 (explicit
-  override), with nothing else running. The inventory matched `gate-expectations.json`.
+  override), with nothing else running. The inventory matched `gate-expectations.json`. The same
+  gate had passed 2,266/2,266 on `b608752`, before the load-order split, in 1,850 s. Hosted CI
+  passed on `b608752` and `d38681a`.
 - **Fast checks:** on the merged head before the push, `tsc -p tsconfig.json --noEmit` and
   `tsc -p tsconfig.strict.json --noEmit` were clean and the fast tier (`--tier fast`) passed
   901/901 in 45 suites. The complete gate repeats the typecheck, architecture and fast-tier stages.
@@ -223,12 +228,14 @@ and its browser checks in `process-dashboard-browser`.
   85/85, and `process-renderers-browser` passed 25/25 again with Inter blocked through fontconfig
   to emulate hosted CI.
 - **Generated artifacts:** after `npm run build:cli` and `npm run build:demos`, `npm run check:cli`
-  reported `bin/wildlands` current (14,087,057 bytes) and `npm run check:demos` reported all six demos
-  current with engine `a6991fce…`.
+  reported `bin/wildlands` current (14,087,801 bytes) and `npm run check:demos` reported all six demos
+  current.
 - **Repository checks:** `python3 scripts/check_docs.py` passed during the documentation pass (2,939
-  local links). After the complete gate, `check_docs.py` passed again (2,939 links),
+  local links). After the complete gates, `check_docs.py` passed again (2,939 links),
   `python3 scripts/check_architecture.py` passed, and `python3 -m unittest discover -s tests -p
-  'test_*.py'` ran 355 tests: OK, 19 skipped.
+  'test_*.py'` ran 355 tests: OK, 19 skipped (on `b608752` and again on `effd826`).
+- **Size budget:** `python3 scripts/quality.py --loc-only` reports no file this pass added or
+  changed over its budget (400 code lines per source file, 450 per test file).
 - **Native visual evidence:** `npm run process:shots -- --game docs/concepts/agency-delivery
   --minute 240` for process 1 (completed at minute 217) and process 7 (run limit at minute 240):
   12 captures each, `overflowing` empty and `consoleErrors` empty in both `shots.json` files. The
