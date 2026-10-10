@@ -16,6 +16,23 @@ async function main():Promise<void>{
  const browser=await launchBrowser(),context=await browser.newContext({viewport:{width:1440,height:900}});
  const diagnostics=monitorContext(context,{fixtureUrls:[ARTIFACT_FIXTURE_URL]});
  try{
+  await check('Armored compiled styles leave other templates unchanged',async()=>{
+   const styles=Array.from(fs.readFileSync(ARTIFACT,'utf8').matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gi),match=>match[1]??'').filter(css=>css.includes('--ap-ink'));
+   assert.equal(styles.length,1,'The compiled artifact must contain its authored stylesheet');
+   const css=styles[0];assert(css);
+   const probe=await context.newPage();
+   try{
+    await probe.setViewportSize({width:390,height:500});await probe.emulateMedia({reducedMotion:'reduce'});
+    await probe.setContent('<html data-wildlands-app="colony"><head><style>html{font-family:Arial;color-scheme:light}body{margin:8px;overflow:auto;background:white;color:black}button{border-radius:5px;padding:4px}button,input,select,canvas,kbd{transition:opacity 1s}</style></head><body><button class="primary">Other game</button><input type="range"><select><option>Other world</option></select><canvas></canvas><kbd>W</kbd><div hidden>Hidden</div><div class="ap-hud">Unrelated class reuse</div></body></html>');
+    const snapshot=()=>probe.evaluate(()=>Array.from(document.querySelectorAll('html,body,button,input,select,canvas,kbd,div'),element=>{
+     const style=getComputedStyle(element);return Array.from(style,key=>[key,style.getPropertyValue(key)]);
+    }));
+    const before=await snapshot();await probe.addStyleTag({content:css});
+    assert.deepEqual(await snapshot(),before,'Armored CSS must not change any computed property in another template');
+    await probe.evaluate(()=>document.documentElement.dataset.wildlandsApp='armored');
+    assert.notDeepEqual(await snapshot(),before,'The same compiled styles must activate for the Armored host');
+   }finally{await probe.close();}
+  });
   const page=await context.newPage();page.setDefaultTimeout(15000);
   await openArtifact(page,ARTIFACT);await waitForReady(page,{host:'armored',timeout:60000});
   await check('Armored compiled artifact enters a mission through briefing and renders WebGL',async()=>{
