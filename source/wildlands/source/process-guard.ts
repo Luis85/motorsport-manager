@@ -10,7 +10,7 @@
  *    confirming choice (`ask-go`); `choose()` resolves the chosen id. Neither pauses, ticks or changes anything itself; the caller
  *    acts on the answer.
  *  - While `unsaved()` is true, `beforeunload` asks the browser to confirm leaving. This module writes nothing to storage; the
- *    opt-in recovery copy of a draft is LWProcessRecovery's storage policy (`process-recovery.ts`).
+ *    automatic recovery copy of a draft is LWProcessRecovery's storage policy (`process-recovery.ts`).
  *  - `pagehide` with `persisted` (the page enters the back/forward cache) only suspends the animation loop and `pageshow` resumes it;
  *    a page that is really unloaded is disposed for good.
  */

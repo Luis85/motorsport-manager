@@ -5,7 +5,7 @@
  * changes a diagnostic and never changes a run: it points at a value that behaves differently from how it reads. Today it
  * reports whole-minute rounding bias (LWProcessRandomView.roundingNote) for every step timing, deadline timing and arrival
  * gap whose average draw is more than 5% away from its authored mean, in definition order (steps, then arrivals).
- * `process validate` and `process inspect` print the list as `advisories`; the studio shows it in a later wave. Pure: it
+ * `process validate` and `process inspect` print the list as `advisories`; the inspector shows it as modelling notes. Pure: it
  * only reads a detached definition (one that passed the structural schema), with no DOM, session, clock or storage.
  */
 declare namespace LWProcessAdvice {

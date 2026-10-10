@@ -1,7 +1,7 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-html.ts" />
 /**
- * Shared modal dialog shell for Process Studio (step editor today; Definition and Activity editors later).
+ * Shared modal dialog shell for Process Studio (step, Definition and Activity editors and the other studio dialogs).
  * It owns every cross-cutting dialog behaviour so each editor only supplies content:
  *  - a native `<dialog>` opened with showModal, a Tab/Shift+Tab focus trap, `inert` on the studio root, body scroll lock;
  *  - ONE dirty guard: Escape, the header Close button, a `cancel` footer action and a backdrop click all call

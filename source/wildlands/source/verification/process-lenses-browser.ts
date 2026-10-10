@@ -257,7 +257,7 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
  await check('View lens follows the process type: SIPOC for processes, journey map for journeys, with the right default and selection', async () => {
   await page.setViewportSize({width: 1440, height: 1060}); await freshStudio();
   const journeyAt = (q: {definition: LWProcess.Definition}) => q.definition.genre === 'customer-journey' || q.definition.genre === 'user-journey';
-  // The switcher is [2D] [3D] [lens] [Dashboard] [Present] [Frame view]; a business process offers SIPOC only, with the stated title and pressed state.
+  // The switcher is [2D] [3D] [lens] [Dashboard] [Present] [Fit to view]; a business process offers SIPOC only, with the stated title and pressed state.
   const controls = ['mode-2d', 'mode-3d', 'mode-lens', 'mode-dashboard', 'mode-present', 'frame'];
   assert.deepEqual(await page.locator('.process-view-controls > button:not([hidden])').evaluateAll(b => b.map(x => x.id)), controls);
   const lensButton = page.locator('#mode-lens'); assert.equal(await lensButton.innerText(), 'SIPOC'); assert.equal(await lensButton.getAttribute('title'), SIPOC_TITLE); assert.equal(await lensButton.getAttribute('aria-label'), SIPOC_TITLE);
