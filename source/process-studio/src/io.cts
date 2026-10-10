@@ -37,7 +37,7 @@ export function emitJson(value: unknown, compact: boolean): void {
 }
 
 export function readJson(file: string): unknown {
- return JSON.parse(readJsonFile(file, MAX_INPUT_BYTES).replace(/^﻿/, '')) as unknown;
+ return JSON.parse(readJsonFile(file, MAX_INPUT_BYTES).replace(/^\uFEFF/, '')) as unknown;
 }
 
 export function context(command: string, values: ReadonlyMap<string, string>, compact: boolean): Context {

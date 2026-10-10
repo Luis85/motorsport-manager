@@ -21,6 +21,8 @@ on:
       - 'source/wildlands/examples/bpmn/**'
       - 'docs/concepts/agency-delivery/**'
       - 'demos/manifest.json'
+      # discover names the handbook, and the contract test requires it.
+      - 'docs/reference/process-studio-cli.md'
       - '.github/workflows/process-studio.yml'
   workflow_dispatch:
 permissions:

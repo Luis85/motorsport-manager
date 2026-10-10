@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import {candidate, execute, executeJson, temporaryDirectory} from './support.cjs';
+import {candidate, execute, executeJson, REPOSITORY, temporaryDirectory} from './support.cjs';
 
 const usage = async (args: readonly string[], message: string | RegExp): Promise<void> => {
  const {file} = await candidate(), directory = temporaryDirectory('process-studio-usage-');
@@ -40,7 +40,10 @@ test('no arguments, --help and -h print discover with the Process Studio fields'
  const {file} = await candidate(), directory = temporaryDirectory('process-studio-help-');
  const discover = executeJson(file, ['discover'], directory).json;
  for (const args of [[], ['--help'], ['-h']]) assert.deepEqual(executeJson(file, args, directory).json, discover);
- assert.equal((discover.tool as {name: string}).name, 'process-studio');
+ const tool = discover.tool as {name: string; handbook: string};
+ assert.equal(tool.name, 'process-studio');
+ assert.equal(tool.handbook, 'docs/reference/process-studio-cli.md');
+ assert.ok(fs.statSync(path.join(REPOSITORY, tool.handbook)).isFile(), `the discover handbook ${tool.handbook} exists`);
  assert.deepEqual((discover.toolOperations as {id: string}[]).map(entry => entry.id), ['version', 'doctor']);
  assert.deepEqual((discover.globalOptions as {id: string}[]).map(entry => entry.id), ['--compact']);
 });

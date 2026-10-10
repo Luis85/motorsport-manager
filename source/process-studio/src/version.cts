@@ -3,7 +3,7 @@ import {distribution} from './kit.cjs';
 import type {Context} from './io.cjs';
 
 const manifest = require('../package.json') as {name: string; version: string};
-export const TOOL = {name: manifest.name, version: manifest.version, handbook: 'source/process-studio/README.md'} as const;
+export const TOOL = {name: manifest.name, version: manifest.version, handbook: 'docs/reference/process-studio-cli.md'} as const;
 /** The definition format and version the kernel reads and writes. */
 export const KERNEL_FORMAT = {format: 'wildlands-process', schemaVersion: 1} as const;
 
