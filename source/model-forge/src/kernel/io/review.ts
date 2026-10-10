@@ -33,6 +33,11 @@ export interface ReviewOptions {
   overwrite?: boolean;
   sourceStateHash?: string;
   target?: unknown;
+  /**
+   * The reviewed subject's identity for the manifest's top-level `scene` and `revision`;
+   * defaults to the rendered scene's own. A model editor names its model and document revision.
+   */
+  identity?: { scene: string; revision: number };
 }
 
 /** Capture a review plan into a new directory with PNGs, a contact sheet and review.json. */
@@ -150,8 +155,8 @@ export async function reviewRender(
           rendererRequested: 'ANGLE SwiftShader',
           documentTransport: 'inline-html',
         },
-        scene: scene.id,
-        revision: scene.revision,
+        scene: options.identity?.scene ?? scene.id,
+        revision: options.identity?.revision ?? scene.revision,
         sourceStateHash: options.sourceStateHash ?? originalStateHash,
         renderStateHash: stateHash(scene, models),
         target: options.target ?? { scene: scene.id },

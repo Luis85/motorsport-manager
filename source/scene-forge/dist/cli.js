@@ -1268,10 +1268,10 @@ function createMaterial(m, surfaces) {
     emissiveIntensity: m.emissiveIntensity ?? 1,
     flatShading: m.flatShading
   };
-  const physical = Object.fromEntries(
+  const physical2 = Object.fromEntries(
     ["sheen", "sheenColor", "sheenRoughness", "clearcoat", "clearcoatRoughness"].filter((key) => m[key] !== void 0).map((key) => [key, m[key]])
   );
-  const result = Object.keys(physical).length ? new THREE5.MeshPhysicalMaterial({ ...standard, ...physical }) : new THREE5.MeshStandardMaterial(standard);
+  const result = Object.keys(physical2).length ? new THREE5.MeshPhysicalMaterial({ ...standard, ...physical2 }) : new THREE5.MeshStandardMaterial(standard);
   try {
     if (m.surface) applySurface(result, m.surface, surfaces);
   } catch (error) {
@@ -2924,7 +2924,7 @@ var triples = (values, step) => {
   return out;
 };
 function bake(geometry) {
-  const indexed = geometry.index ? geometry : geometry.toNonIndexed();
+  const indexed = geometry;
   const position = indexed.getAttribute("position"), normal = indexed.getAttribute("normal");
   const indices = indexed.index ? Array.from(indexed.index.array) : Array.from({ length: position.count }, (_, i) => i);
   return {
@@ -3335,13 +3335,249 @@ async function exportScene(document2, models, format, nodeId) {
 // ../model-forge/src/kernel/io/littlewild.ts
 import path2 from "node:path";
 import { promises as fs2 } from "node:fs";
+
+// ../model-forge/src/kernel/application/littlewild-preserve.ts
+import * as THREE13 from "three";
 var plain4 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+var owned = /* @__PURE__ */ new Set([
+  "primitive",
+  "id",
+  "position",
+  "rotation",
+  "scale",
+  "material",
+  "materialProps",
+  "mesh",
+  "visible",
+  "children"
+]);
+var physical = {
+  sheen: 0,
+  sheenColor: "#000000",
+  sheenRoughness: 1,
+  clearcoat: 0,
+  clearcoatRoughness: 0
+};
+var round2 = (value, step) => {
+  const result = Math.round(value / step) * step;
+  return Number((Object.is(result, -0) ? 0 : result).toFixed(Math.max(0, -Math.log10(step))));
+};
+function sameVector(previous, next, fallback) {
+  const values = (value) => Array.isArray(value) && value.length === 3 && value.every((v) => typeof v === "number") ? value.map((v) => round2(v, 1e-5)) : value === void 0 ? [fallback, fallback, fallback] : null;
+  const a = values(previous), b = values(next);
+  return !!a && !!b && a.every((v, i) => v === b[i]);
+}
+function resolvedMaterial(table, key, props, mesh) {
+  if (typeof key !== "string" || props !== void 0 && !plain4(props)) return null;
+  const base = Object.hasOwn(table, key) ? table[key] : key;
+  if (typeof base !== "string" && !plain4(base)) return null;
+  const data = {
+    roughness: 0.98,
+    metalness: 0,
+    opacity: 1,
+    flatShading: !mesh,
+    ...typeof base === "string" ? { color: base } : base,
+    ...plain4(props) ? props : {}
+  };
+  delete data.transparent;
+  if (data.depthWrite === true) delete data.depthWrite;
+  if (data.doubleSided === false) delete data.doubleSided;
+  if (data.emissive === void 0 || String(data.emissive).toLowerCase() === "#000000") {
+    delete data.emissive;
+    delete data.emissiveIntensity;
+  }
+  if (Object.keys(physical).some((field) => data[field] !== void 0))
+    for (const [field, value] of Object.entries(physical)) data[field] ??= value;
+  for (const [field, value] of Object.entries(data))
+    if (typeof value === "number") data[field] = round2(value, 1e-3);
+    else if (typeof value === "string" && value.startsWith("#")) data[field] = value.toLowerCase();
+  return canonical(data);
+}
+function derivedBuffers(positions, indices) {
+  const geometry = new THREE13.BufferGeometry();
+  try {
+    const position = new THREE13.Float32BufferAttribute(positions, 3);
+    geometry.setAttribute("position", position);
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+    const normal = geometry.getAttribute("normal");
+    return {
+      normals: Array.from(normal.array, (v) => round2(v, 1e-3)),
+      uvs: new THREE13.Float32BufferAttribute(sphereUVs(Array.from(position.array)), 2).array
+    };
+  } finally {
+    geometry.dispose();
+  }
+}
+function sameMesh(source, exported) {
+  if (!plain4(source) || !plain4(exported) || !Array.isArray(source.positions)) return false;
+  const positions = source.positions;
+  const indices = Array.isArray(source.indices) ? source.indices : Array.from({ length: positions.length / 3 }, (_, i) => i);
+  const derived = source.normals === void 0 || source.uvs === void 0 ? derivedBuffers(positions, indices) : void 0;
+  const uvs = source.uvs === void 0 ? Array.from(derived.uvs, (v) => round2(v, 1e-5)) : source.uvs;
+  const expected = {
+    ...source,
+    indices,
+    normals: source.normals ?? derived.normals,
+    uvs
+  };
+  return canonical(expected) === canonical(exported);
+}
+function preserveVariantNodes(exported, source, tables, kept) {
+  const merge = (nodes2, previous) => {
+    const byId = /* @__PURE__ */ new Map();
+    for (const node of previous)
+      if (plain4(node) && typeof node.id === "string" && !byId.has(node.id)) byId.set(node.id, node);
+    return nodes2.map((node, index) => {
+      const positional = previous[index];
+      const match = byId.get(node.id) ?? (plain4(positional) && positional.id === void 0 ? positional : void 0);
+      return match && match.primitive === node.primitive ? mergeNode(node, match) : track(node);
+    });
+  };
+  const track = (node) => {
+    if (node.material) kept.exportedMaterialNodes.push(node);
+    if (node.children) node.children = merge(node.children, []);
+    return node;
+  };
+  const mergeNode = (node, source2) => {
+    const result = {};
+    const take = (field, fromSource) => {
+      const value = fromSource ? source2[field] : node[field];
+      if (value !== void 0) result[field] = value;
+    };
+    take("primitive", false);
+    take("id", !Object.hasOwn(source2, "id") ? true : source2.id === node.id);
+    for (const [field, fallback] of [
+      ["position", 0],
+      ["rotation", 0],
+      ["scale", 1]
+    ])
+      take(field, sameVector(source2[field], node[field], fallback));
+    take("visible", source2.visible === false === (node.visible === false));
+    let exportedMaterial = false;
+    if (node.primitive !== "group") {
+      const mesh = node.primitive === "mesh";
+      const before = resolvedMaterial(tables.previous, source2.material, source2.materialProps, mesh);
+      if (before !== null && before === resolvedMaterial(tables.materials, node.material, void 0, mesh)) {
+        take("material", true);
+        take("materialProps", true);
+        if (Object.hasOwn(tables.previous, String(source2.material)))
+          kept.materials.add(String(source2.material));
+      } else {
+        take("material", false);
+        exportedMaterial = true;
+      }
+    }
+    if (node.primitive === "mesh") {
+      const same2 = sameMesh(
+        tables.previousMeshes[String(source2.mesh)],
+        tables.meshes[String(node.mesh)]
+      );
+      take("mesh", same2);
+      if (same2) kept.meshes.add(String(source2.mesh));
+    }
+    const children = merge(
+      node.children ?? [],
+      Array.isArray(source2.children) ? source2.children : []
+    );
+    if (children.length || Array.isArray(source2.children)) result.children = children;
+    for (const [field, value] of Object.entries(source2))
+      if (!owned.has(field)) result[field] = value;
+    const ordered = {};
+    for (const field of [...Object.keys(source2), ...Object.keys(result)])
+      if (Object.hasOwn(result, field) && !Object.hasOwn(ordered, field))
+        ordered[field] = result[field];
+    if (exportedMaterial) kept.exportedMaterialNodes.push(ordered);
+    return ordered;
+  };
+  return merge(exported, source);
+}
+function referencedResources(models) {
+  const materials = /* @__PURE__ */ new Set(), meshes = /* @__PURE__ */ new Set();
+  const walk = (nodes2) => {
+    if (!Array.isArray(nodes2)) return;
+    for (const node of nodes2)
+      if (plain4(node)) {
+        if (typeof node.material === "string") materials.add(node.material);
+        if (typeof node.mesh === "string") meshes.add(node.mesh);
+        walk(node.children);
+      }
+  };
+  if (plain4(models)) {
+    for (const model of Object.values(models)) if (plain4(model)) walk(model.nodes);
+  }
+  return { materials, meshes };
+}
+function inSourceOrder(value, source) {
+  if (!plain4(source)) return value;
+  const ordered = {};
+  for (const key of [...Object.keys(source), ...Object.keys(value)])
+    if (Object.hasOwn(value, key) && !Object.hasOwn(ordered, key)) ordered[key] = value[key];
+  return ordered;
+}
+function preserveExported(previous, exported, materials, meshes) {
+  const sourceModels = plain4(previous.models) ? previous.models : {}, previousMaterials = plain4(previous.materials) ? previous.materials : {}, previousMeshes = plain4(previous.meshes) ? previous.meshes : {};
+  const kept = {
+    materials: /* @__PURE__ */ new Set(),
+    meshes: /* @__PURE__ */ new Set(),
+    exportedMaterialNodes: []
+  };
+  const exportedMaterials = { ...materials };
+  for (const [variant, model] of Object.entries(exported)) {
+    const source = sourceModels[variant];
+    model.nodes = preserveVariantNodes(
+      model.nodes,
+      plain4(source) && Array.isArray(source.nodes) ? source.nodes : [],
+      { previous: previousMaterials, previousMeshes, materials: exportedMaterials, meshes },
+      kept
+    );
+  }
+  const table = {};
+  for (const key of kept.materials) table[key] = previousMaterials[key];
+  const names = /* @__PURE__ */ new Map();
+  for (const node of kept.exportedMaterialNodes) {
+    const role = node.material, mesh = node.primitive === "mesh";
+    const meaning = resolvedMaterial(exportedMaterials, role, void 0, mesh);
+    let name = names.get(role) ?? role;
+    for (let n = 2; Object.hasOwn(table, name) && canonical(table[name]) !== canonical(exportedMaterials[role]) && resolvedMaterial(table, name, void 0, mesh) !== meaning; n++)
+      name = `${role.slice(0, 76)}-${n}`;
+    names.set(role, name);
+    table[name] ??= exportedMaterials[role];
+    node.material = name;
+  }
+  for (const key of Object.keys(materials)) delete materials[key];
+  Object.assign(materials, table);
+  for (const id of kept.meshes) meshes[id] = previousMeshes[id];
+}
+function preserveTables(visual, previous) {
+  const used = referencedResources(previous.models);
+  const extras = (field, references) => {
+    const source = plain4(previous[field]) ? previous[field] : {}, current = plain4(visual[field]) ? { ...visual[field] } : {};
+    for (const [key, value] of Object.entries(source))
+      if (!references.has(key) && !Object.hasOwn(current, key)) current[key] = value;
+    return Object.keys(current).length ? inSourceOrder(current, source) : void 0;
+  };
+  const materials = extras("materials", used.materials), meshes = extras("meshes", used.meshes);
+  return inSourceOrder(
+    { ...visual, materials: materials ?? {}, ...meshes ? { meshes } : {} },
+    previous
+  );
+}
+
+// ../model-forge/src/kernel/io/littlewild.ts
+var plain5 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
 function definitionText(value) {
   return JSON.stringify(value, null, 2).replace(
     /\[\s+(-?[\d.e+-]+(?:,\s+-?[\d.e+-]+)*)\s+\]/g,
     (_, body) => `[${String(body).replace(/,\s+/g, ", ")}]`
   ) + "\n";
 }
+var plainText = (value) => JSON.stringify(value, null, 2) + "\n";
+var asciiText = (value) => plainText(value).replace(
+  /[\u0080-\uffff]/g,
+  (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`
+);
+var sourceLayouts = [definitionText, plainText, asciiText];
 function renameMaterials(nodes2, names, field = "material") {
   for (const node of nodes2) {
     if (node[field] && names.has(node[field])) node[field] = names.get(node[field]);
@@ -3350,14 +3586,14 @@ function renameMaterials(nodes2, names, field = "material") {
 }
 function collect(nodes2, key, into) {
   for (const node of nodes2) {
-    if (!plain4(node)) continue;
+    if (!plain5(node)) continue;
     if (typeof node[key] === "string") into.add(node[key]);
     if (Array.isArray(node.children)) collect(node.children, key, into);
   }
   return into;
 }
-function littlewildVisual(asset, models, existing) {
-  const category = littlewildFamilies[asset.family], previous = plain4(existing?.visual) ? existing.visual : {}, previousModels = plain4(previous.models) ? previous.models : {}, previousMaterials = plain4(previous.materials) ? previous.materials : {}, previousMeshes = plain4(previous.meshes) ? previous.meshes : {};
+function littlewildVisual(asset, models, existing, options = {}) {
+  const category = littlewildFamilies[asset.family], previous = plain5(existing?.visual) ? existing.visual : {}, previousModels = plain5(previous.models) ? previous.models : {}, previousMaterials = plain5(previous.materials) ? previous.materials : {}, previousMeshes = plain5(previous.meshes) ? previous.meshes : {};
   const materials = {}, meshes = {}, exported = {}, rig = {}, report = [], warnings = /* @__PURE__ */ new Set();
   for (const [variant, spec] of Object.entries(asset.models)) {
     const model = models[spec.model];
@@ -3384,36 +3620,37 @@ function littlewildVisual(asset, models, existing) {
     const built = compileScene(scene, models, { bindRigs: false });
     try {
       const root = built.content.children[0];
-      const result = littlewildModel(root, { rig: asset.family === "pets" });
+      const result2 = littlewildModel(root, { rig: asset.family === "pets" });
       const names = /* @__PURE__ */ new Map();
-      for (const [role, data] of Object.entries(result.materials)) {
+      for (const [role, data] of Object.entries(result2.materials)) {
         let name = role;
         if (materials[name] && JSON.stringify(materials[name]) !== JSON.stringify(data))
           name = `${role}-${variant}`.slice(0, 80);
         materials[name] = data;
         if (name !== role) names.set(role, name);
       }
-      renameMaterials(result.nodes, names);
+      renameMaterials(result2.nodes, names);
       const meshNames = /* @__PURE__ */ new Map();
-      for (const [id, data] of Object.entries(result.meshes)) {
+      for (const [id, data] of Object.entries(result2.meshes)) {
         let name = id, suffix = 1;
         while (Object.hasOwn(meshes, name) && canonical(meshes[name]) !== canonical(data) || Object.hasOwn(previousMeshes, name) && canonical(previousMeshes[name]) !== canonical(data))
           name = `${id.slice(0, 64)}-${suffix++}`;
         meshes[name] = data;
         if (name !== id) meshNames.set(id, name);
       }
-      renameMaterials(result.nodes, meshNames, "mesh");
-      exported[variant] = { nodes: result.nodes };
-      if (Object.keys(result.rig).length) rig[variant] = result.rig;
-      result.warnings.forEach((w) => warnings.add(w));
-      report.push({ variant, model: spec.model, ...result.stats });
+      renameMaterials(result2.nodes, meshNames, "mesh");
+      exported[variant] = { nodes: result2.nodes };
+      if (Object.keys(result2.rig).length) rig[variant] = result2.rig;
+      result2.warnings.forEach((w) => warnings.add(w));
+      report.push({ variant, model: spec.model, ...result2.stats });
     } finally {
       built.dispose();
     }
   }
+  if (options.preserve) preserveExported(previous, exported, materials, meshes);
   const finalModels = structuredClone({ ...previousModels, ...exported });
   for (const [name, model] of Object.entries(previousModels)) {
-    if (Object.hasOwn(exported, name) || !plain4(model) || !Array.isArray(model.nodes)) continue;
+    if (Object.hasOwn(exported, name) || !plain5(model) || !Array.isArray(model.nodes)) continue;
     for (const role of collect(model.nodes, "material", /* @__PURE__ */ new Set()))
       if (Object.hasOwn(previousMaterials, role)) {
         if (materials[role] && JSON.stringify(materials[role]) !== JSON.stringify(previousMaterials[role]))
@@ -3425,7 +3662,7 @@ function littlewildVisual(asset, models, existing) {
   }
   const finalMeshes = reuseLittlewildMeshes(finalModels, meshes, Object.keys(previousMeshes));
   const vertices = Object.values(finalMeshes).reduce(
-    (sum, mesh) => sum + (plain4(mesh) && Array.isArray(mesh.positions) ? mesh.positions.length / 3 : 0),
+    (sum, mesh) => sum + (plain5(mesh) && Array.isArray(mesh.positions) ? mesh.positions.length / 3 : 0),
     0
   );
   if (vertices > littlewildLimits.definitionVertices)
@@ -3433,14 +3670,14 @@ function littlewildVisual(asset, models, existing) {
       "LITTLEWILD_BUDGET",
       `${asset.id} bakes ${vertices} vertices; Littlewild allows ${littlewildLimits.definitionVertices}.`
     );
-  const previousRig = asset.family === "pets" && plain4(previous.rig) ? previous.rig : {};
+  const previousRig = asset.family === "pets" && plain5(previous.rig) ? previous.rig : {};
   const finalRig = asset.family === "pets" ? Object.fromEntries(
     Object.entries({ ...previousRig, ...rig }).filter(
       ([name]) => Object.hasOwn(finalModels, name) && (Object.hasOwn(rig, name) || !Object.hasOwn(exported, name))
     )
   ) : previous.rig;
   const metadata = {
-    ...plain4(previous.metadata) ? previous.metadata : {},
+    ...plain5(previous.metadata) ? previous.metadata : {},
     ...asset.metadata
   };
   const visual = {
@@ -3453,11 +3690,12 @@ function littlewildVisual(asset, models, existing) {
     models: finalModels,
     metadata,
     ...previous.behaviors === void 0 ? {} : { behaviors: previous.behaviors },
-    ...finalRig === void 0 || plain4(finalRig) && !Object.keys(finalRig).length ? {} : { rig: finalRig },
+    ...finalRig === void 0 || plain5(finalRig) && !Object.keys(finalRig).length ? {} : { rig: finalRig },
     ...Object.keys(finalMeshes).length ? { meshes: finalMeshes } : {}
   };
-  assertLittlewildComplexity(visual);
-  return { visual, report, warnings: [...warnings] };
+  const result = options.preserve && existing ? preserveTables(visual, previous) : visual;
+  assertLittlewildComplexity(result);
+  return { visual: result, report, warnings: [...warnings] };
 }
 async function readDefinition(file) {
   try {
@@ -3467,11 +3705,17 @@ async function readDefinition(file) {
     throw error;
   }
   const value = await readJson(file);
-  if (!plain4(value)) fail("LITTLEWILD_EXPORT", `${file} is not a Littlewild definition.`);
+  if (!plain5(value)) fail("LITTLEWILD_EXPORT", `${file} is not a Littlewild definition.`);
   return value;
 }
 async function writeLittlewildAsset(asset, models, file, options = {}) {
   const existing = await readDefinition(file);
+  let previousText;
+  try {
+    previousText = await fs2.readFile(file, "utf8");
+  } catch {
+    previousText = void 0;
+  }
   if (existing && (existing.format !== "littlewild-definition" || existing.family !== asset.family || existing.id !== asset.id))
     fail(
       "LITTLEWILD_EXPORT",
@@ -3482,7 +3726,9 @@ async function writeLittlewildAsset(asset, models, file, options = {}) {
       "LITTLEWILD_EXPORT",
       `Littlewild expects ${asset.family}/${asset.id}/definition.json; got ${file}.`
     );
-  const { visual, report, warnings } = littlewildVisual(asset, models, existing);
+  const { visual, report, warnings } = littlewildVisual(asset, models, existing, {
+    preserve: options.preserve
+  });
   const definition = existing ? Object.fromEntries(
     Object.entries({ ...existing, visual }).map(([k]) => [
       k,
@@ -3495,13 +3741,8 @@ async function writeLittlewildAsset(asset, models, file, options = {}) {
     id: asset.id,
     visual
   };
-  const text = definitionText(definition);
-  let previousText;
-  try {
-    previousText = await fs2.readFile(file, "utf8");
-  } catch {
-    previousText = void 0;
-  }
+  const layout = options.preserve && existing && sourceLayouts.find((format) => format(existing) === previousText) || definitionText;
+  const text = layout(definition);
   const changed = previousText !== text;
   if (changed && !options.dryRun && !options.check) await atomicWrite(file, text);
   return {
@@ -3781,8 +4022,8 @@ async function reviewRender(scene, models, output, input, renderer, options = {}
           rendererRequested: "ANGLE SwiftShader",
           documentTransport: "inline-html"
         },
-        scene: scene.id,
-        revision: scene.revision,
+        scene: options.identity?.scene ?? scene.id,
+        revision: options.identity?.revision ?? scene.revision,
         sourceStateHash: options.sourceStateHash ?? originalStateHash,
         renderStateHash: stateHash(scene, models),
         target: options.target ?? { scene: scene.id },
@@ -4089,11 +4330,28 @@ async function importModel(start, input, replace = false, options = {}) {
   })();
   if (!Object.hasOwn(data.models, data.entry))
     fail("REFERENCE_MISSING", "Bundle entry model is missing.");
+  const warnings = [];
+  for (const [id, model] of Object.entries(data.models))
+    if (model.revision !== void 0) {
+      warnings.push(
+        `Dropped the editor-only revision ${model.revision} of model ${id}; projects store portable recipes.`
+      );
+      const { revision: _revision, ...portable } = model;
+      data.models[id] = portable;
+    }
   const root = await findProject(start);
   return withLock(root, async () => {
     const snapshot = await loadUnlocked(root);
     checkGuards(snapshot, options);
-    return registerModels(root, data.models, data.entry, replace, snapshot, options.dryRun);
+    const result = await registerModels(
+      root,
+      data.models,
+      data.entry,
+      replace,
+      snapshot,
+      options.dryRun
+    );
+    return warnings.length ? { ...result, warnings } : result;
   });
 }
 async function registerModels(root, incoming, entry, replace, snapshot, dryRun = false) {

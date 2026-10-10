@@ -25,7 +25,8 @@ const triples = (values: ArrayLike<number>, step?: number) => {
   return out;
 };
 function bake(geometry: THREE.BufferGeometry) {
-  const indexed = geometry.index ? geometry : geometry.toNonIndexed();
+  // A non-indexed primitive is baked with sequential indices (toNonIndexed would only warn).
+  const indexed = geometry;
   const position = indexed.getAttribute('position'),
     normal = indexed.getAttribute('normal');
   const indices = indexed.index

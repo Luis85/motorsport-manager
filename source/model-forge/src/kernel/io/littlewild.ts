@@ -22,6 +22,7 @@ import {
   type LittlewildMaterial,
   type LittlewildMesh,
 } from '../application/littlewild.js';
+import { preserveExported, preserveTables } from '../application/littlewild-preserve.js';
 import { atomicWrite, readJson } from './files.js';
 
 type Plain = Record<string, unknown>;
@@ -36,6 +37,14 @@ export function definitionText(value: unknown) {
     ) + '\n'
   );
 }
+const plainText = (value: unknown) => JSON.stringify(value, null, 2) + '\n';
+/** Plain JSON with non-ASCII characters escaped, as Python's json.dump writes it. */
+const asciiText = (value: unknown) =>
+  plainText(value).replace(
+    /[\u0080-\uffff]/g,
+    (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`,
+  );
+const sourceLayouts = [definitionText, plainText, asciiText];
 function renameMaterials(
   nodes: LittlewildNode[],
   names: Map<string, string>,
@@ -55,7 +64,12 @@ function collect(nodes: readonly unknown[], key: 'material' | 'mesh', into: Set<
   return into;
 }
 /** Compiles every requested variant and merges it into the existing definition wrapper. */
-export function littlewildVisual(asset: LittlewildAsset, models: ModelLibrary, existing?: Plain) {
+export function littlewildVisual(
+  asset: LittlewildAsset,
+  models: ModelLibrary,
+  existing?: Plain,
+  options: { preserve?: boolean } = {},
+) {
   const category = littlewildFamilies[asset.family],
     previous = plain(existing?.visual) ? existing.visual : {},
     previousModels = plain(previous.models) ? previous.models : {},
@@ -125,6 +139,7 @@ export function littlewildVisual(asset: LittlewildAsset, models: ModelLibrary, e
       built.dispose();
     }
   }
+  if (options.preserve) preserveExported(previous, exported, materials as Plain, meshes as Plain);
   const finalModels: Plain = structuredClone({ ...previousModels, ...exported });
   // Retained variants keep their own material and mesh references.
   for (const [name, model] of Object.entries(previousModels)) {
@@ -182,8 +197,9 @@ export function littlewildVisual(asset: LittlewildAsset, models: ModelLibrary, e
       : { rig: finalRig }),
     ...(Object.keys(finalMeshes).length ? { meshes: finalMeshes } : {}),
   };
-  assertLittlewildComplexity(visual);
-  return { visual, report, warnings: [...warnings] };
+  const result = options.preserve && existing ? preserveTables(visual, previous) : visual;
+  assertLittlewildComplexity(result);
+  return { visual: result, report, warnings: [...warnings] };
 }
 export async function readDefinition(file: string) {
   try {
@@ -201,9 +217,15 @@ export async function writeLittlewildAsset(
   asset: LittlewildAsset,
   models: ModelLibrary,
   file: string,
-  options: { dryRun?: boolean; check?: boolean } = {},
+  options: { dryRun?: boolean; check?: boolean; preserve?: boolean } = {},
 ) {
   const existing = await readDefinition(file);
+  let previousText: string | undefined;
+  try {
+    previousText = await fs.readFile(file, 'utf8');
+  } catch {
+    previousText = undefined;
+  }
   if (
     existing &&
     (existing.format !== 'littlewild-definition' ||
@@ -222,7 +244,9 @@ export async function writeLittlewildAsset(
       'LITTLEWILD_EXPORT',
       `Littlewild expects ${asset.family}/${asset.id}/definition.json; got ${file}.`,
     );
-  const { visual, report, warnings } = littlewildVisual(asset, models, existing);
+  const { visual, report, warnings } = littlewildVisual(asset, models, existing, {
+    preserve: options.preserve,
+  });
   const definition: Plain = existing
     ? Object.fromEntries(
         Object.entries({ ...existing, visual }).map(([k]) => [
@@ -237,13 +261,13 @@ export async function writeLittlewildAsset(
         id: asset.id,
         visual,
       };
-  const text = definitionText(definition);
-  let previousText: string | undefined;
-  try {
-    previousText = await fs.readFile(file, 'utf8');
-  } catch {
-    previousText = undefined;
-  }
+  // A preserving write keeps the source file's layout when it is one of the known ones.
+  const layout =
+    (options.preserve &&
+      existing &&
+      sourceLayouts.find((format) => format(existing) === previousText)) ||
+    definitionText;
+  const text = layout(definition);
   const changed = previousText !== text;
   if (changed && !options.dryRun && !options.check) await atomicWrite(file, text);
   return {

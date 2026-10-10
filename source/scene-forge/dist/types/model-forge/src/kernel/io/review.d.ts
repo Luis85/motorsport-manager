@@ -14,6 +14,14 @@ export interface ReviewOptions {
     overwrite?: boolean;
     sourceStateHash?: string;
     target?: unknown;
+    /**
+     * The reviewed subject's identity for the manifest's top-level `scene` and `revision`;
+     * defaults to the rendered scene's own. A model editor names its model and document revision.
+     */
+    identity?: {
+        scene: string;
+        revision: number;
+    };
 }
 /** Capture a review plan into a new directory with PNGs, a contact sheet and review.json. */
 export declare function reviewRender(scene: SceneDocument, models: ModelLibrary, output: string, input: ReviewPlan, renderer: ReviewRenderer, options?: ReviewOptions): Promise<{
