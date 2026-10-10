@@ -1,0 +1,140 @@
+/* Process Dashboard (LWProcessDashboard, process-dashboard*.ts): the stage's 'dashboard' view. Chrome uses the Process Studio tokens of
+   process.css; the chart marks use the --viz-* role tokens below. Type sizes are rem; text never wears a data colour.
+   Data colours: the dark steps of the documented categorical palette, ordered by role and validated with the dataviz validator on
+   both studio surfaces (--bg #13181f and --panel #1d242e): the six work states in stack order (working, waiting, blocked, backlog,
+   timer, joining) pass every check (worst adjacent CVD ΔE 8.4, normal-vision 19.8, all marks >= 3:1). Arrived, finished and dropped
+   lines are a WARN pair (aqua and red, CVD ΔE 6.5), so those charts carry direct end labels, a legend and the table; goal and lost
+   pass. Every state also has its map glyph (legend and segments), so colour never carries meaning alone. */
+.process-studio { --viz-work:#d95926; --viz-wait:#3987e5; --viz-blocked:#e66767; --viz-backlog:#9085e9; --viz-timer:#c98500; --viz-join:#199e70;
+ --viz-goal:#008300; }
+#dashboard { width:100%; height:100%; position:absolute; inset:0; overflow:auto; overscroll-behavior:contain; background:var(--bg); }
+/* The dashboard's own tiles repeat the run metrics strip and the latest event, so the stage gives that room to the dashboard. */
+.process-stage:has(#dashboard:not([hidden])) > :is(#metrics,#latest) { display:none; }
+/* The dashboard draws no work markers: the legend row keeps only its hint, as for the lenses. */
+.process-legend[data-view=dashboard] > :not(#camera-hint):not(#marker-count) { display:none; }
+.process-dashboard { position:relative; display:grid; gap:var(--s4); min-width:0; padding:var(--s3) var(--s4) var(--s5); color:var(--text);
+ font-size:var(--t-sm); }
+.process-dashboard:focus { outline:none; }
+.process-dashboard:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+.process-dashboard p { overflow-wrap:anywhere; }
+.process-dashboard [data-tone=work] { --tone:var(--viz-work); } .process-dashboard [data-tone=wait] { --tone:var(--viz-wait); }
+.process-dashboard [data-tone=blocked] { --tone:var(--viz-blocked); } .process-dashboard [data-tone=backlog] { --tone:var(--viz-backlog); }
+.process-dashboard [data-tone=timer] { --tone:var(--viz-timer); } .process-dashboard [data-tone=join] { --tone:var(--viz-join); }
+.process-dashboard [data-tone=goal] { --tone:var(--viz-goal); } .process-dashboard [data-tone=idle] { --tone:var(--axis); }
+/* Strip and tiles. */
+.db-strip { display:grid; gap:var(--s1); padding:var(--s3) var(--s4); border:1px solid var(--line); border-radius:var(--r-lg); background:var(--panel); }
+.process-studio .db-identity { color:var(--text); font-weight:600; }
+.process-studio .db-notice { color:var(--text); }
+.db-notes { margin:0; padding-left:1.1rem; color:var(--muted); }
+.db-window { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); color:var(--muted); }
+.db-tiles { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,10rem),1fr)); gap:var(--s2); }
+.db-tile { display:flex; flex-direction:column; gap:2px; min-width:0; padding:var(--s2) var(--s3); border:1px solid var(--line); border-radius:var(--r-lg);
+ background:var(--panel); overflow-wrap:anywhere; }
+.db-tile.problem { border-color:var(--danger); }
+.db-tile-label,.db-tile-line { color:var(--muted); font-size:var(--t-xs); }
+.db-tile-value { font-size:var(--t-lg); font-weight:600; line-height:1.3; }
+.db-tile.problem .db-tile-line { color:var(--danger-text); }
+/* Sections and panels: cards on a grid that reflows from several columns to one. */
+.db-section { display:grid; gap:var(--s3); min-width:0; }
+.db-section-head { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:var(--s2); }
+.process-studio .db-section h2 { font-size:var(--t-base); }
+.db-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr)); gap:var(--s3); }
+.db-slot { min-width:0; }
+.db-panel,.db-whatif,.db-data { min-width:0; padding:var(--s3) var(--s4); border:1px solid var(--line); border-radius:var(--r-lg); background:var(--panel); }
+.process-studio .db-panel h3 { margin:0 0 var(--s1); font-size:var(--t-md); }
+.process-studio .db-question { font-size:var(--t-xs); margin-bottom:var(--s2); }
+.process-studio .db-empty { color:var(--text); padding:var(--s2) 0; }
+.process-studio .db-note,.process-studio .db-caption,.process-studio .db-plan,.process-studio .db-why { font-size:var(--t-xs); margin-top:var(--s1); }
+.process-studio .db-why:empty,.db-status:empty { display:none; }
+.db-figure { margin:0; display:grid; gap:var(--s2); min-width:0; }
+.db-figure figcaption { color:var(--muted); font-size:var(--t-xs); }
+.db-plot { min-width:0; overflow:hidden; }
+.db-chart,.db-spark,.db-meter,.db-key { display:block; max-width:100%; overflow:visible; }
+.db-key { display:inline-block; flex:none; }
+/* Marks: thin, rounded data ends; surface gaps and rings come from the geometry and the panel stroke. */
+.db-fill { fill:var(--tone); }
+.db-line { fill:none; stroke:var(--tone); stroke-width:2px; stroke-linejoin:round; stroke-linecap:round; }
+.db-dot { fill:var(--tone); stroke:var(--panel); stroke-width:2px; }
+.db-glyph { fill:var(--tone); }
+.db-glyph.line { fill:none; stroke:var(--tone); stroke-width:.22; }
+.db-glyph.on-mark { fill:var(--bg); } .db-glyph.on-mark.line { fill:none; stroke:var(--bg); }
+.db-glyph.point { stroke:var(--panel); stroke-width:.16; } .db-glyph.point.line { stroke:var(--tone); stroke-width:.24; }
+.db-gridline { fill:none; stroke:var(--grid); stroke-width:1px; }
+.db-axis,.db-rule { fill:none; stroke:var(--axis); stroke-width:1px; }
+.db-rule.zero { stroke:var(--text); }
+.db-tick { stroke:var(--text); stroke-width:2px; }
+.db-track { fill:var(--surface-2); }
+.db-band { fill:var(--accent-bg); }
+.db-bracket { fill:var(--surface-2); opacity:.7; }
+.db-whisker { fill:none; stroke:var(--tone); stroke-width:4px; stroke-linecap:round; }
+.db-whisker.thin { stroke:var(--muted); stroke-width:1.5px; }
+.db-tick-label,.db-axis-title,.db-bracket-label { fill:var(--muted); font-size:var(--t-xs); font-variant-numeric:tabular-nums; }
+.db-bracket-label { fill:var(--text); paint-order:stroke; stroke:var(--panel); stroke-width:3px; stroke-linejoin:round; }
+.process-dashboard svg [tabindex]:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+/* HTML bar rows, stacks, bullets and lists. */
+.db-rows,.db-stacks,.db-bullets,.db-sparks,.db-lines,.db-intervals,.db-legend { list-style:none; margin:0; padding:0; display:grid; gap:var(--s2);
+ min-width:0; }
+.db-legend { display:flex; flex-wrap:wrap; gap:var(--s1) var(--s3); font-size:var(--t-xs); color:var(--muted); }
+.db-legend li { display:inline-flex; align-items:center; gap:var(--s1); }
+.process-studio button.db-row { display:grid; gap:var(--s1); width:100%; text-align:left; padding:var(--s1) var(--s2); background:transparent;
+ border-color:transparent; }
+.process-studio button.db-row:hover { background:var(--surface-hover); }
+div.db-row { display:grid; gap:var(--s1); padding:var(--s1) var(--s2); }
+.db-row-label { display:flex; flex-wrap:wrap; gap:0 var(--s2); min-width:0; overflow-wrap:anywhere; }
+.db-row-label strong { font-weight:600; }
+.db-row-label span,.db-row-extra,.db-spark-row,.db-sparks span { color:var(--muted); font-size:var(--t-xs); }
+.db-row-extra,.db-spark-row { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); }
+.db-stacks li,.db-bullets li,.db-sparks li,.db-intervals li { display:grid; gap:var(--s1); min-width:0; }
+.process-studio button.db-link { min-height:auto; padding:0; border:0; background:none; color:var(--text); text-align:left; text-decoration:underline;
+ text-underline-offset:3px; }
+.db-lines { padding-left:1.1rem; list-style:disc; gap:var(--s1); }
+.process-studio button.db-more { justify-self:start; margin-top:var(--s2); font-size:var(--t-xs); }
+/* Data tables: a disclosure under the chart; wide tables scroll in their own labelled region. */
+.db-table summary { cursor:pointer; color:var(--muted); font-size:var(--t-xs); padding:var(--s1) 0; }
+.db-scroll { overflow-x:auto; max-width:100%; }
+.db-scroll:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.db-scroll table { border-collapse:collapse; min-width:100%; font-size:var(--t-xs); }
+.db-scroll caption { text-align:left; color:var(--muted); padding-bottom:var(--s1); }
+.db-scroll th,.db-scroll td { padding:var(--s1) var(--s2); border-bottom:1px solid var(--rule); text-align:left; vertical-align:top; overflow-wrap:break-word; }
+.db-scroll tbody th { min-width:8rem; font-weight:600; }
+.db-scroll .num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.db-scroll thead th { color:var(--muted); font-weight:600; }
+/* What-if. */
+.db-whatif fieldset { margin:0 0 var(--s2); padding:0; border:0; display:flex; flex-wrap:wrap; gap:var(--s1) var(--s4); }
+.db-whatif legend { padding:0; margin-bottom:var(--s1); color:var(--muted); font-size:var(--t-xs); }
+.db-whatif fieldset label,.db-fields label { display:inline-flex; align-items:center; gap:var(--s2); }
+.db-whatif fieldset p { flex-basis:100%; }
+.db-fields { display:flex; flex-wrap:wrap; gap:var(--s2) var(--s4); }
+.db-fields input { width:calc(10ch + 2 * var(--s2)); }
+.db-actions { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); margin-top:var(--s2); }
+.db-actions progress { flex:1 1 8rem; height:6px; accent-color:var(--accent); }
+.process-studio .db-status { color:var(--text); margin-top:var(--s2); }
+#db-results.stale .db-figure { opacity:.6; }
+.db-data button { margin-top:var(--s2); }
+/* The shared tooltip: a mark's value on hover and keyboard focus (every value is also in the table). */
+.db-tip { position:absolute; z-index:5; max-width:min(22rem,90%); padding:var(--s1) var(--s2); border:1px solid var(--control-border);
+ border-radius:var(--r-sm); background:var(--surface-card); color:var(--text); font-size:var(--t-xs); pointer-events:none;
+ box-shadow:0 6px 18px var(--shadow); }
+/* Narrow windows and short desktops: the dashboard grows with the page instead of scrolling inside the stage. */
+@media(max-width:1099px),(max-height:599px) {
+ #viewport:has(> #dashboard:not([hidden])) { height:auto; min-height:0; }
+ #dashboard { position:static; height:auto; overflow:visible; }
+}
+@media(max-width:650px) {
+ #mode-dashboard { display:none; }
+ .process-dashboard { padding-inline:var(--s3); }
+ .db-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .db-grid { grid-template-columns:minmax(0,1fr); }
+ .process-studio button.db-row,.process-studio button.db-more,.process-studio .db-table summary { min-height:44px; }
+}
+/* Forced colours drop the role colours: marks get system ink and a border, the outline glyphs stay, and the tooltip keeps a frame. */
+@media(forced-colors:active) {
+ .process-dashboard .db-fill { fill:CanvasText; stroke:Canvas; stroke-width:1px; }
+ .process-dashboard :is(.db-fill[data-tone=idle],.db-track,.db-band,.db-bracket) { fill:Canvas; stroke:CanvasText; stroke-width:1px; }
+ .process-dashboard :is(.db-line,.db-whisker,.db-glyph.line,.db-tick,.db-axis) { stroke:CanvasText; }
+ .process-dashboard .db-dot,.process-dashboard .db-glyph { fill:CanvasText; }
+ .process-dashboard .db-glyph.on-mark { fill:Canvas; } .process-dashboard .db-glyph.on-mark.line { stroke:Canvas; fill:none; }
+ .process-dashboard .db-tick-label,.process-dashboard .db-axis-title,.process-dashboard .db-bracket-label { fill:CanvasText; }
+ .db-tile,.db-panel,.db-strip,.db-tip { border:1px solid CanvasText; }
+}
+@media(prefers-reduced-motion:reduce) { .process-dashboard * { transition:none!important; } }

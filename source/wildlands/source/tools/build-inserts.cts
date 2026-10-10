@@ -356,6 +356,18 @@ export const INSERTS: readonly Insert[] = [
   ["PROCESS_TERMS", "process-terms.js", "script", "template-process"],
   ["PROCESS_SLIDES_TEXT", "process-slides-text.js", "script", "template-process"],
   ["PROCESS_SLIDES", "process-slides.js", "script", "template-process"],
+  ["PROCESS_CHART", "process-chart.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD_MODEL", "process-dashboard-model.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD_FLOW", "process-dashboard-flow.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD_TIME", "process-dashboard-time.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD_QUALITY", "process-dashboard-quality.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD_PANELS", "process-dashboard-panels.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD_JOURNEY", "process-dashboard-journey.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD_FOCUS", "process-dashboard-focus.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD_HTML", "process-dashboard-html.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD_WHATIF", "process-dashboard-whatif.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD_WHATIF_VIEW", "process-dashboard-whatif-view.js", "script", "template-process"],
+  ["PROCESS_DASHBOARD", "process-dashboard.js", "script", "template-process"],
   ["PROCESS_DATA_VIEW", "process-data-view.js", "script", "template-process"],
   ["PROCESS_JSON_PATH", "process-json-path.js", "script", "template-process"],
   ["PROCESS_TUNING_FIELDS", "process-tuning-fields.js", "script", "template-process"],
@@ -401,5 +413,6 @@ export const INSERTS: readonly Insert[] = [
   ["PROCESS_DIALOGS_CSS", "process-dialogs.css", "style", "template-process"],
   ["PROCESS_LENSES_CSS", "process-lenses.css", "style", "template-process"],
   ["PROCESS_BPMN_DIALOG_CSS", "process-bpmn-dialog.css", "style", "template-process"],
-  ["PROCESS_PRESENT_CSS", "process-present.css", "style", "template-process"]
+  ["PROCESS_PRESENT_CSS", "process-present.css", "style", "template-process"],
+  ["PROCESS_DASHBOARD_CSS", "process-dashboard.css", "style", "template-process"]
 ];
