@@ -1,4 +1,5 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-html.ts" />
 /**
  * Shared modal dialog shell for Process Studio (step editor today; Definition and Activity editors later).
  * It owns every cross-cutting dialog behaviour so each editor only supplies content:
@@ -22,7 +23,7 @@
  * Element ids derive from the dialog id: `${id}-title`, `-subtitle`, `-chip`, `-meta`, `-close`, `-banner`, `-body`,
  * `-status`, `-footnote`, `-reason`, `-confirm`, `-confirm-title`, `-confirm-check` (the optional confirm checkbox), `-buttons`,
  * one `-${actionId}` per footer action and one `-${choiceId}` per confirm choice. All HTML strings passed to
- * setBanner/setStatus/setNote must already be escaped (`escape`).
+ * setBanner/setStatus/setNote must already be escaped (`escape`, which is LWProcessHtml's `esc`).
  * The dialog never touches simulation, draft or storage; it only reports intent through callbacks.
  */
 declare namespace LWProcessDialog {
@@ -105,6 +106,7 @@ declare namespace LWProcessDialog {
   create(host: HTMLElement, options: Options): Surface;
   /** The open dialog, if any. */
   active(): Surface | null;
+  /** LWProcessHtml's `esc`, kept here for the views that escape through the dialog module. */
   escape(value: unknown): string;
   /**
    * The one "apply over a run in progress" question of every editor: resolves true at once for a run at minute 0, otherwise shows the
@@ -117,8 +119,8 @@ declare namespace LWProcessDialog {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessDialog?: LWProcessDialog.Api};
- const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
+ const root = inputRoot as {LWProcessHtml: LWProcessHtml.Api; LWProcessDialog?: LWProcessDialog.Api};
+ const {esc} = root.LWProcessHtml;
  const FOCUSABLE = 'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], summary, '
   + '[tabindex]:not([tabindex="-1"])';
  const visible = (n: HTMLElement | null): n is HTMLElement =>

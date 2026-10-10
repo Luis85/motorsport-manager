@@ -1,4 +1,5 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-html.ts" />
 /// <reference path="./process-draft.ts" />
 /// <reference path="./process-dialog.ts" />
 /// <reference path="./process-tuning.ts" />
@@ -61,10 +62,11 @@ declare namespace LWProcessDefinitionEditor {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessDialog: LWProcessDialog.Api; LWProcessTuning: LWProcessTuning.Api; LWProcessDefinitionJson: LWProcessDefinitionJson.Api;
+ const root = inputRoot as {LWProcessHtml: LWProcessHtml.Api;
+  LWProcessDialog: LWProcessDialog.Api; LWProcessTuning: LWProcessTuning.Api; LWProcessDefinitionJson: LWProcessDefinitionJson.Api;
   LWProcessCatalog: LWProcess.Catalog; LWProcessJsonPath: LWProcessJsonPath.Api; LWProcessDefinitionStructure: LWProcessDefinitionStructure.Api;
   LWProcessDefinitionEditor?: LWProcessDefinitionEditor.Api};
- const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
+ const {esc} = root.LWProcessHtml;
  const VALID = 'Valid definition. Applying starts a fresh paused run.', DEBOUNCE = 250;
  function create(host: HTMLElement, env: LWProcessDefinitionEditor.Env): LWProcessDefinitionEditor.Surface {
   const draft = env.draft, dialog = root.LWProcessDialog.create(host.ownerDocument.body, {

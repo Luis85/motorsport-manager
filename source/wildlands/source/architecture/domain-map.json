@@ -472,6 +472,7 @@
         "process-step-checks.ts",
         "process-step-history.ts",
         "process-step-problems.ts",
+        "process-step-kit.ts",
         "process-step-logic-sections.ts",
         "process-step-flows.ts",
         "process-step-sections.ts",

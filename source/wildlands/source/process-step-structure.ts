@@ -1,4 +1,5 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-html.ts" />
 /// <reference path="./process-step-model.ts" />
 /// <reference path="./process-structure.ts" />
 /// <reference path="./process-dialog.ts" />
@@ -46,10 +47,10 @@ declare namespace LWProcessStepStructure {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessStructure: LWProcessStructure.Api; LWProcessDialog: LWProcessDialog.Api;
+ const root = inputRoot as {LWProcessHtml: LWProcessHtml.Api; LWProcessStructure: LWProcessStructure.Api;
   LWProcessStepStructure?: LWProcessStepStructure.Api};
  type Kind = LWProcessStructure.AddKind;
- const esc = (v: unknown) => root.LWProcessDialog.escape(v);
+ const {esc} = root.LWProcessHtml;
  const A_KIND: Record<string, string> = {task: 'a task', touchpoint: 'a touchpoint', machine: 'a machine step', system: 'a system step', timer: 'a timer',
   decision: 'a decision', fork: 'a fork', join: 'a join', end: 'an end step'};
  const START_WHY = 'The start step cannot be duplicated, deleted or changed: every process needs exactly one.';
