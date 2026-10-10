@@ -6,6 +6,7 @@ import {waitForReady, openArtifact, nextFrames} from './browser-harness';
 import {query, OUT, runSuite} from './process-browser-fixture';
 import {timerFixture, automationFixture, roomsFixture, claimsDesk, blockedLine} from './process-browser-models';
 import {encoding, STATE, waitingAt} from './process-map-probe';
+import {run3dChecks} from './process-renderers-3d-checks';
 runSuite('process renderers browser harness', 'process-renderers-browser-results.json', async studio => {
  const {page, file, fixtureUrls, check, checkLifecycle, freshStudio, showIo, switchTo, applyDraft, importClaims, importJson, COUNT} = studio;
  await check('Actor joints animate only during playback, respect reduced motion, and do not tick the process', async () => {
@@ -453,5 +454,6 @@ runSuite('process renderers browser harness', 'process-renderers-browser-results
   assert.deepEqual(key, {visible: true, text: 'Card numbers match the step list', first: '01'});
   await page.keyboard.press('Escape'); await page.locator('#present').waitFor({state: 'hidden'});
  });
+ await run3dChecks(studio);
  await checkLifecycle('Process renderers browser lifecycle emits no runtime errors or network requests');
 });
