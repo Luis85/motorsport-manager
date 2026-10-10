@@ -1,19 +1,30 @@
 /**
  * The studio's colour roles (LWProcessPalette): the single list of the colours Process Studio presentation code draws with, and
- * their values. Presentation only: no session, clock or storage, and nothing here changes a document.
+ * their values in both studio themes. Presentation only: no session, clock or storage, and nothing here changes a document.
  *  - A role with a `token` is a process.css custom property of the token block at the top of process.css (`.process-studio`, and
- *    the lens roots that carry the same tokens). Its `value` is the same colour as a constant, for Node, tests and canvases drawn
- *    before layout. The business-process-analysis suite parses that token block and checks that every such constant equals its
- *    declaration, so the stylesheet and the scripts cannot drift apart. Several roles may share one token (Blocked work, the
- *    interrupting deadline and a lost outcome are all `--danger`).
- *  - Styled SVG and HTML draw with `css(role)` (`var(--token)`), so the stylesheet stays the source; canvases and three.js
- *    materials cannot read `var()`, so they take `read(element)`: each token as the element's computed style declares it (the
- *    studio root by default), else the constant. SVG presentation attributes that hold a literal colour (the journey map's mood
- *    faces) take `value(role)`.
- *  - A role without a token is drawn only by scripts (the 3D scene's lights, caption pills, sign plates, room shell and lamps), so
- *    no stylesheet declares it; its constant is its only definition.
- *  - `ROOMS` holds the room themes' floor, wall and accent colours by theme id (LWProcessRooms owns the themes' names and choice),
- *    `MOODS` the feeling faces from -3 to +3 (cool to warm) and `PHASES` the journey map's categorical phase colours.
+ *    the lens roots that carry the same tokens). Its `value` is the dark (default) colour as a constant and `LIGHT_TOKENS` holds the
+ *    token's light value, for Node, tests and canvases drawn before layout. The business-process-analysis suite parses both token
+ *    blocks (dark, and light under `:root[data-theme="light"]`) and checks that every such constant equals its declaration, so the
+ *    stylesheet and the scripts cannot drift apart. Several roles may share one token (Blocked work, the interrupting deadline and
+ *    a lost outcome are all `--danger`).
+ *  - The theme belongs to the page: LWProcessTheme writes `data-theme` on the document element and `scheme()` reads it ('dark'
+ *    outside a page). Styled SVG and HTML draw with `css(role)` (`var(--token)`), so the stylesheet stays the source and a theme
+ *    change needs no redraw; canvases and three.js materials cannot read `var()`, so they take `read(element)`: each token as the
+ *    element's computed style declares it (the studio root by default), else the active scheme's constant. `value(role)` is the
+ *    active scheme's constant and `resolve(scheme)` every role in one scheme.
+ *  - A role without a token is drawn only by scripts (the 3D scene's lights, caption pills, sign plates, room shell and lamps, and
+ *    the ink of the feeling faces), so no stylesheet declares it; its constant is its definition in both themes.
+ *  - The 3D rooms are a lit diorama on their own dark floors: LWProcess3D builds them, their markers and their dark caption pills
+ *    from `resolve('dark')` in both themes and takes only its clear colour from the active theme (its `restyle`), so every state
+ *    keeps the step chosen for the room floors it sits on. (Light pills were tried: their thin dark ink washes out when the caption
+ *    textures are minified, so the captions stay part of the diorama.)
+ *  - `ROOMS` holds the room themes' floor, wall and accent colours by theme id (LWProcessRooms owns the themes' names and choice);
+ *    `accent(id)` is a room accent for the 2D map in the active scheme (`LIGHT_ACCENTS` keeps each hue at 4.5:1 on the light cards).
+ *    `MOODS` are the feeling faces from -3 to +3 (cool to warm): self-contained icons with their own dark ink in both themes.
+ *    `PHASES` (dark) and `LIGHT_PHASES` are the journey map's categorical phase colours, the tokens `--phase-1` to `--phase-7`
+ *    that `phase(i)` names.
+ *  - `contrast(a, b)` is the WCAG 2.2 contrast ratio of two opaque colours (`#rgb`, `#rrggbb`, `rgb()`, or `rgba()` with alpha 1):
+ *    the maths that the token check and the theme browser checks share.
  * Not roles: colours authored in a definition (a step's `scene.color`, attached scene assets) and the prop materials of the room and
  * actor models (furniture, paper, screens, skin and clothing in process-rooms-*.ts and process-3d-markers.ts), which are authored
  * with their geometry like scene assets and mean nothing beyond their prop.
@@ -38,30 +49,49 @@ declare namespace LWProcessPalette {
  interface Spec {
   /** The process.css custom property that declares this role, or null for a script-only role. */
   readonly token: string | null;
+  /** The dark (default) theme's colour. */
   readonly value: string;
  }
  interface Theme {readonly floor: string; readonly wall: string; readonly accent: string}
  type Resolved = Readonly<Record<Role, string>>;
+ /** The studio themes; dark is the default. */
+ type Scheme = 'dark' | 'light';
  interface Api {
   readonly ROLES: Readonly<Record<Role, Spec>>;
+  /** The light value of every token that a role names, by token. */
+  readonly LIGHT_TOKENS: Readonly<Record<string, string>>;
   readonly ROOMS: Readonly<Record<string, Theme>>;
-  /** Feeling face colours for the levels -3 to +3, in that order. */
+  /** Room accents stepped for the light map cards, by room theme id. */
+  readonly LIGHT_ACCENTS: Readonly<Record<string, string>>;
+  /** Feeling face colours for the levels -3 to +3, in that order (both themes). */
   readonly MOODS: readonly string[];
   readonly PHASES: readonly string[];
-  /** The role's constant. */
-  value(role: Role): string;
-  /** A CSS colour for SVG and HTML: `var(--token)` for a token role, else the constant. */
+  readonly LIGHT_PHASES: readonly string[];
+  /** The page's theme: `data-theme="light"` on the document element, else dark (also outside a page). */
+  scheme(): Scheme;
+  /** The role's constant in `scheme` (default: the active scheme). */
+  value(role: Role, scheme?: Scheme): string;
+  /** A CSS colour for SVG and HTML: `var(--token)` for a token role, else the active scheme's constant. */
   css(role: Role): string;
   /** Every role resolved for a canvas or material: tokens from `element`'s computed style (default: the studio root), else constants. */
   read(element?: Element | null): Resolved;
-  /** The theme colours of a room theme id. */
+  /** Every role as the constants of one scheme. */
+  resolve(scheme: Scheme): Resolved;
+  /** The theme colours of a room theme id (the 3D diorama's, the same in both themes). */
   room(id: string): Theme;
+  /** A room theme's accent for the 2D map in `scheme` (default: the active scheme). */
+  accent(id: string, scheme?: Scheme): string;
+  /** The journey phase colour of a zero-based phase index (cycling every seven) as a CSS colour, `var(--phase-n)`. */
+  phase(index: number): string;
+  /** The WCAG 2.2 contrast ratio of two opaque CSS colours. */
+  contrast(a: string, b: string): number;
  }
 }
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessPalette?: LWProcessPalette.Api};
  type Role = LWProcessPalette.Role;
+ type Scheme = LWProcessPalette.Scheme;
  const token = (name: string, value: string): LWProcessPalette.Spec => Object.freeze({token: name, value});
  const own = (value: string): LWProcessPalette.Spec => Object.freeze({token: null, value});
  const ROLES: Record<Role, LWProcessPalette.Spec> = {
@@ -97,7 +127,7 @@ declare namespace LWProcessPalette {
   'viz-fill': token('--viz-fill', '#ffcf9a'),
   'heat-warm': token('--heat-warm', '#f59e5b'),
   'heat-hot': token('--heat-hot', '#ff7a59'),
-  'face-ink': token('--bg', '#13181f'),
+  'face-ink': own('#13181f'),
   'light-sky': own('#d9e8ff'),
   'light-ground': own('#38434e'),
   'light-key': own('#fff1df'),
@@ -125,6 +155,15 @@ declare namespace LWProcessPalette {
   'board-slot': own('#394356'),
   'board-first': own('#ffd27a'),
   'vertex-white': own('#ffffff'),
+ };
+ /** The light theme's value of every token a role names (process.css declares the same values under `[data-theme="light"]`). */
+ const LIGHT_TOKENS: Record<string, string> = {
+  '--bg': '#f3f5f8', '--panel': '#ffffff', '--line': '#d3d9e1', '--text': '#17202b', '--muted': '#4f5b6a', '--accent': '#8a5000',
+  '--axis': '#727d8a', '--danger': '#c84455', '--state-queue': '#3584b0', '--state-timer': '#a48800', '--state-backlog': '#8046c0',
+  '--escalated': '#cf5a26', '--map-edge': '#7a8796', '--map-arrow': '#66727f', '--map-conditional': '#a0682f',
+  '--deadline-escalate': '#946800', '--goal': '#2f7d32', '--goal-bg': '#e2f2e2', '--goal-text': '#1d6224', '--lost-bg': '#fbe5e6',
+  '--danger-text': '#a3262f', '--viz-measured': '#1f7f73', '--viz-feel': '#f7f9fb', '--viz-track': '#e8ecf1', '--viz-fill': '#b8722b',
+  '--heat-warm': '#b35f00', '--heat-hot': '#c8401f',
  };
  const theme = (floor: string, wall: string, accent: string): LWProcessPalette.Theme => Object.freeze({floor, wall, accent});
  /** Room themes by id: task themes, step-kind themes, the backlog room, touchpoint channels and the generic touchpoint kiosk. */
@@ -155,20 +194,40 @@ declare namespace LWProcessPalette {
   document: theme('#434034', '#5a5645', '#d9c58a'),
   journey: theme('#2f4a47', '#3b5f5a', '#7fd0c4'),
  };
+ /** Each room accent's hue stepped to at least 4.5:1 on the light cards and stage (the map draws subtitles in it). */
+ const LIGHT_ACCENTS: Record<string, string> = {
+  office: '#537285', studio: '#7f639b', lab: '#257b71', workshop: '#9a620f', review: '#557832', archive: '#965f6d', reception: '#4c728c',
+  dispatch: '#427a56', council: '#8c6902', junction: '#916540', machine: '#b84f10', system: '#1076a3', clock: '#806d34', backlog: '#586bb0',
+  web: '#41739d', mobile: '#7163b3', store: '#9a620f', phone: '#257b71', chat: '#127897', email: '#586bb0', social: '#a5508c', ads: '#98630a',
+  delivery: '#377c35', document: '#806d34', journey: '#257b71',
+ };
  const MOODS = ['#5b86ff', '#62b0f0', '#7fd6cf', '#d9e4a8', '#f5d86a', '#ffb865', '#ff8a50'];
  const PHASES = ['#7fb3e0', '#ffbb73', '#8fd68a', '#e58ac8', '#a79bf0', '#6fc7e8', '#d9c58a'];
- const value = (role: Role) => ROLES[role].value;
+ const LIGHT_PHASES = ['#4088c8', '#864c03', '#599939', '#87366b', '#6e53cb', '#3a93b8', '#967f05'];
+ function scheme(): Scheme {
+  return typeof document !== 'undefined' && document.documentElement?.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+ }
+ function value(role: Role, wanted: Scheme = scheme()): string {
+  const spec = ROLES[role];
+  if (wanted === 'dark') return spec.value;
+  return (spec.token ? LIGHT_TOKENS[spec.token] : undefined) ?? spec.value;
+ }
  function css(role: Role): string {
   const spec = ROLES[role];
-  return spec.token ? `var(${spec.token})` : spec.value;
+  return spec.token ? `var(${spec.token})` : value(role);
+ }
+ function resolve(wanted: Scheme): LWProcessPalette.Resolved {
+  const out = {} as Record<Role, string>;
+  for (const role of Object.keys(ROLES) as Role[]) out[role] = value(role, wanted);
+  return Object.freeze(out);
  }
  function read(element?: Element | null): LWProcessPalette.Resolved {
   const host = element ?? (typeof document === 'undefined' ? null : document.querySelector('.process-studio'));
   const style = host && typeof getComputedStyle === 'function' ? getComputedStyle(host) : null;
-  const out = {} as Record<Role, string>;
+  const active = scheme(), out = {} as Record<Role, string>;
   for (const role of Object.keys(ROLES) as Role[]) {
    const spec = ROLES[role];
-   out[role] = spec.token && style ? style.getPropertyValue(spec.token).trim() || spec.value : spec.value;
+   out[role] = spec.token && style ? style.getPropertyValue(spec.token).trim() || value(role, active) : value(role, active);
   }
   return Object.freeze(out);
  }
@@ -177,9 +236,32 @@ declare namespace LWProcessPalette {
   if (!found) throw Error('Unknown room theme ' + id);
   return found;
  }
+ const accent = (id: string, wanted: Scheme = scheme()) => wanted === 'light' ? LIGHT_ACCENTS[id] ?? room(id).accent : room(id).accent;
+ const phase = (index: number) => `var(--phase-${(Math.max(0, Math.floor(index)) % PHASES.length) + 1})`;
+ /** sRGB channels 0-1 of an opaque colour; anything else (named colours, translucency, other spaces) is refused. */
+ function channels(colour: string): [number, number, number] {
+  const c = colour.trim().toLowerCase(), hex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/.exec(c);
+  if (hex) {
+   const h = hex[1]!.length === 3 ? [...hex[1]!].map(x => x + x).join('') : hex[1]!;
+   return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16) / 255) as [number, number, number];
+  }
+  const rgb = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)\s*(?:[,/]\s*([\d.]+%?)\s*)?\)$/.exec(c);
+  const alpha = rgb?.[4] === undefined ? 1 : rgb[4].endsWith('%') ? parseFloat(rgb[4]) / 100 : parseFloat(rgb[4]);
+  if (!rgb || alpha !== 1) throw Error('Contrast needs an opaque colour, not ' + colour);
+  return [rgb[1], rgb[2], rgb[3]].map(v => Number(v) / 255) as [number, number, number];
+ }
+ function luminance(colour: string): number {
+  const [r, g, b] = channels(colour).map(c => c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4) as [number, number, number];
+  return .2126 * r + .7152 * g + .0722 * b;
+ }
+ function contrast(a: string, b: string): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
+  return (hi + .05) / (lo + .05);
+ }
  root.LWProcessPalette = Object.freeze({
-  ROLES: Object.freeze(ROLES), ROOMS: Object.freeze(ROOMS), MOODS: Object.freeze(MOODS), PHASES: Object.freeze(PHASES),
-  value, css, read, room,
+  ROLES: Object.freeze(ROLES), LIGHT_TOKENS: Object.freeze(LIGHT_TOKENS), ROOMS: Object.freeze(ROOMS),
+  LIGHT_ACCENTS: Object.freeze(LIGHT_ACCENTS), MOODS: Object.freeze(MOODS), PHASES: Object.freeze(PHASES), LIGHT_PHASES: Object.freeze(LIGHT_PHASES),
+  scheme, value, css, read, resolve, room, accent, phase, contrast,
  });
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessPalette;
 })(globalThis);

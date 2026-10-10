@@ -539,6 +539,7 @@
     "source/test-process-route.cts",
     "source/test-process-work-state.cts",
     "source/test-process-palette.cts",
+    "source/test-process-theme.cts",
     "source/test-process-work-derivation.cts",
     "source/test-process-slides-brief.cts",
     "source/test-process-calendar.cts",

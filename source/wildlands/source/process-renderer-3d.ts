@@ -9,11 +9,17 @@
  * The scene is assembled from: LWProcess3DKit (pieces, merging, signs, moods), LWProcess3DStations (rooms, captions, flows),
  * LWProcess3DMarkers (work markers and actors), LWProcess3DCamera (orbit, framing, picking) and LWProcess3DCaptions (wording,
  * readable size and the caption canvas counters). The three.js types come from the facade in process-three.d.ts.
- * Colours: each scene resolves the studio palette once from its canvas (LWProcessPalette.read) and hands it to the kit; the lights
- * and the clear colour are palette roles too.
+ * Colours: the rooms are a lit diorama on their own dark floors, so each scene hands the kit the palette's dark constants
+ * (LWProcessPalette.resolve('dark')) in either studio theme: rooms, markers, lights and the dark caption pills stay as they are.
+ * Only the clear colour (the stage token read from the canvas) follows the page's theme: `restyle` sets it once after a theme
+ * change (LWProcessTheme) and asks for one frame; it rebuilds nothing and keeps the camera, the selection and the scene.
  */
 declare namespace LWProcess3D {
- interface Surface {draw(view: LWProcessApp.View, delta: number): void; frame(): void; dispose(): void;}
+ interface Surface {
+  draw(view: LWProcessApp.View, delta: number): void; frame(): void; dispose(): void;
+  /** Take the clear colour of the page's current theme; the next draw renders one frame. */
+  restyle(): void;
+ }
  /** One WebGL renderer on one canvas for the page's lifetime; `dispose` releases the renderer and its GL context for good. */
  interface Stage {readonly canvas: HTMLCanvasElement; dispose(): void;}
  /**
@@ -90,9 +96,9 @@ declare namespace LWProcess3D {
  }
  function build(renderer: LWThree.WebGLRenderer, canvas: HTMLCanvasElement, definition: LWProcess.Definition, select: Select,
   done: () => void): LWProcess3D.Surface {
-  const T = root.THREE, colours = root.LWProcessPalette.read(canvas);
+  const T = root.THREE, palette = root.LWProcessPalette, colours = palette.resolve('dark');
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
-  renderer.setClearColor(colours.stage);
+  renderer.setClearColor(palette.read(canvas).stage);
   // PCFSoftShadowMap is deprecated in this three.js and falls back to PCFShadowMap with a warning; asking for it directly draws the same.
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFShadowMap;
   renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.2;
@@ -147,7 +153,11 @@ declare namespace LWProcess3D {
    view3d.apply(width, height);
    renderer.render(scene, camera);
   }
-  return {draw, frame: () => view3d.fit(true), dispose() {
+  function restyle(): void {
+   renderer.setClearColor(palette.read(canvas).stage);
+   needsRender = true;
+  }
+  return {draw, frame: () => view3d.fit(true), restyle, dispose() {
    reducedMotion.removeEventListener('change', motionChanged);
    view3d.dispose();
    stations.dispose();

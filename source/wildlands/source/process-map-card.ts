@@ -3,7 +3,7 @@
  * One step card of the 2D process map (LWProcessMapCard): its size for a layout, and its SVG group with title, state border,
  * work markers or counts, pills and badges. Presentation only: the card reads a detached view; the map delegates its events.
  *  - The border shows the card's work state only (Blocked, Working, Waiting, Timer, Backlog or idle), with the legend's colours
- *    (`data-status` on the group, styled by process.css). The room theme colours only the glyph and the progress bar.
+ *    (`data-status` on the group, styled by process.css). The room accent (in the page's theme) colours only the glyph and the progress bar.
  *  - Zoomed out ('names'), the title keeps its screen size and a row under it shows one marker and count per work state, so queues
  *    and blocked work read at the default framing. Zoomed in ('full') and in a step scene, each work item has its own marker. Markers
  *    never sit on the title and are at least `px.mark` on screen.
@@ -95,9 +95,14 @@ declare namespace LWProcessMapCard {
    n.backlog ? `${n.backlog} in backlog` : '', timers.waiting ? `${timers.waiting} on timer` : ''];
   return {label: parts.filter(Boolean).join(', '), caption: [step.name, step.kind, ...shown].filter(Boolean).join(' · ')};
  }
+ /** The step's room theme with its accent stepped for the page's theme (LWProcessPalette.accent), so a redraw after a theme change re-colours it. */
+ const themeOf = (step: LWProcess.Step): LWProcessRooms.Theme => {
+  const th = root.LWProcessRooms.theme(step);
+  return {...th, accent: root.LWProcessPalette.accent(th.id)};
+ };
  function draw(card: LWProcessMapCard.Card, L: LWProcessMapCard.Layout): SVGGElement {
   const {step, metric, work, x, y} = card, {lines, w, h} = card.size, px = L.px, top = y - h / 2, bottom = y + h / 2, left = x - w / 2;
-  const th = root.LWProcessRooms.theme(step), n = W.counts(work), working = metric.active > 0, {label, caption} = speech(card, n);
+  const th = themeOf(step), n = W.counts(work), working = metric.active > 0, {label, caption} = speech(card, n);
   // Non-text cues keep at least the cue size on screen.
   const cue = (world: number) => Math.max(1, px.cue / (world * L.ppu));
   const group = el('g', {
