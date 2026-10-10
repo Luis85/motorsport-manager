@@ -1,7 +1,7 @@
 /// <reference path="../process-contracts.d.ts" />
 /** Noninteractive process agent tools. All outputs are guarded and atomic via shared CLI I/O. */
 import {createHash} from 'node:crypto';
-import {catalog, runtime, authoring, bpmn, conformance} from '../process-sdk.cjs';
+import {catalog, runtime, authoring, bpmn, conformance, slides, diff} from '../process-sdk.cjs';
 import {emit, readJsonFile, writeJsonFile, writeTextFile} from './cli-io.cjs';
 import {assembleGame} from './game-build.cjs';
 import {writeForgeProject} from './process-forge.cjs';
@@ -10,30 +10,36 @@ const commands: Record<string, readonly string[]> = {
  edit: ['--input', '--recipe', '--output', '--dry-run', '--draft'], run: ['--input', '--minutes', '--output', '--seed'],
  build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output', '--bpsim'], 'validate-bpmn': ['--input'],
  'import-bpmn': ['--input', '--output', '--draft', '--default-duration', '--process', '--lanes', '--default-capacity', '--no-auto-system-pool', '--system-capacity', '--minutes-per-day', '--minutes-per-hour', '--unsupported', '--no-bpsim', '--scenario', '--report'],
- attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint', '--output', '--dry-run']
+ attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint', '--output', '--dry-run'],
+ slides: ['--input', '--format', '--minutes', '--seed', '--output'], diff: ['--input', '--against']
 };
 const flags = new Set(['--draft', '--dry-run', '--bpsim', '--no-auto-system-pool', '--no-bpsim']);
 /** Options every invocation of a command must carry; checked before any file is read or work is done. */
 const requiredOptions: Record<string, readonly string[]> = {create: ['--id', '--output'], validate: ['--input'], inspect: ['--input'], edit: ['--input', '--recipe'],
  run: ['--input', '--minutes', '--output'], build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output'], 'import-bpmn': ['--input', '--output'], 'validate-bpmn': ['--input'],
- attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint']};
+ attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint'], slides: ['--input'], diff: ['--input', '--against']};
 const descriptions: Record<string, string> = {discover: 'Discover commands, limits and guarded edit operations.', schema: 'Get the authoritative process JSON Schema.',
  create: 'Create a runnable starter definition.', validate: 'Validate shape, references and graph semantics; --draft permits graph diagnostics.', inspect: 'Read identity, scene graph and starting snapshot without advancing time.',
  edit: 'Apply a revision/fingerprint guarded transaction; --draft allows intermediate graph diagnostics.', run: 'Run a fresh deterministic session for a bounded number of business minutes; --seed N replaces the definition seed.',
  build: 'Build one self-contained offline HTML file.',
  'validate-bpmn': 'Check a BPMN 2.0 XML file (and its BPSim 1.0 data) against the built-in conformance rules (no schema files); prints the report (errors with line, path, code and message; elements not covered; unchecked extension content); exit 0 when it conforms, 2 when not.',
  'export-bpmn': 'Export a BPMN 2.0 XML file (with Wildlands extension values and diagram layout); --bpsim adds a BPSim scenario (processing times, probabilities, arrivals, pool quantities and costs).',
- 'import-bpmn': 'Import a BPMN 2.0 XML file into a simulatable definition (lanes, sub-processes, call activities, gateways, loops, boundary timers, expressions and BPSim parameters are mapped); prints the structured report (warnings, mapping counts, rejections); unsupported elements are rejected (exit 2) or, with --unsupported drop, dropped with warnings.', forge: 'Create an editable Scene Forge project with one scene per step.', attach: 'Attach a Scene Forge Wildlands asset to a step using edit guards.'};
+ 'import-bpmn': 'Import a BPMN 2.0 XML file into a simulatable definition (lanes, sub-processes, call activities, gateways, loops, boundary timers, expressions and BPSim parameters are mapped); prints the structured report (warnings, mapping counts, rejections); unsupported elements are rejected (exit 2) or, with --unsupported drop, dropped with warnings.', forge: 'Create an editable Scene Forge project with one scene per step.', attach: 'Attach a Scene Forge Wildlands asset to a step using edit guards.',
+ slides: 'Explain the process as a slide deck (title, overview, resources, main route by phase, variants, summary); --format json (default) or md (Markdown printed as plain text without --output); --minutes N [--seed S] adds read-only facts from one fresh bounded run.',
+ diff: 'Report what changed from --against (the reference) to --input: counts of changed steps, flows, resources, arrival rules and process settings, the changed steps and settings, and both revisions and fingerprints.'};
 function recipeSchema(): Record<string, unknown> {
  const properties = catalog.schema.properties as Record<string, Record<string, unknown>>;
  const operation = (op: string, key: string, value: unknown) => ({type: 'object', additionalProperties: false, required: ['op', key], properties: {op: {const: op}, [key]: value}});
- return {$schema: 'http://json-schema.org/draft-07/schema#', type: 'object', additionalProperties: false,
+ // Flow conditions refer to #/definitions/condition, so the recipe schema carries the definition schema's shared definitions.
+ return {$schema: 'http://json-schema.org/draft-07/schema#', definitions: catalog.schema.definitions, type: 'object', additionalProperties: false,
   required: ['expectedRevision', 'expectedFingerprint', 'operations'], properties: {
    expectedRevision: properties.revision, expectedFingerprint: {type: 'string', pattern: '^[0-9a-f]{16}$'},
    operations: {type: 'array', minItems: 1, maxItems: 256, items: {oneOf: [
     ...['Step', 'Flow', 'Resource'].map((name, i) => operation('put' + name, 'value', properties[['steps', 'flows', 'resources'][i]!]!.items)),
     ...['Step', 'Flow', 'Resource'].map(name => operation('remove' + name, 'id', properties.id)),
-    operation('setArrivals', 'value', properties.arrivals), operation('setStart', 'value', properties.start), operation('rename', 'value', properties.name)
+    operation('setArrivals', 'value', properties.arrivals), operation('setStart', 'value', properties.start), operation('rename', 'value', properties.name),
+    ...([['setDescription', 'description'], ['setSeed', 'seed'], ['setSipoc', 'sipoc'], ['setTrack', 'track']] as const).map(([op, key]) => operation(op, 'value', {oneOf: [properties[key], {type: 'null'}]})),
+    operation('setGenre', 'value', properties.genre)
    ]}}}};
 }
 /** Every guarded edit operation id, taken from the recipe schema so discovery cannot drift from it. */
@@ -68,6 +74,8 @@ export function run(args: readonly string[]): void {
   for (const key of ['--minutes', '--expected-revision', '--default-duration', '--seed', '--default-capacity', '--system-capacity', '--minutes-per-day', '--minutes-per-hour']) if (values.has(key) && !/^\d+$/.test(values.get(key)!)) throw Error(key + ' must be a whole number.');
   if (values.has('--seed') && Number(values.get('--seed')) > 2147483647) throw Error('--seed must be from 0 to 2147483647.');
   if (values.has('--kind') && !['definition', 'recipe'].includes(values.get('--kind')!)) throw Error('--kind must be definition or recipe.');
+  if (values.has('--format') && !['json', 'md'].includes(values.get('--format')!)) throw Error('--format must be json or md.');
+  if (command === 'slides' && values.has('--seed') && !values.has('--minutes')) throw Error('--seed needs --minutes (live facts come from one bounded run).');
   const required = (key: string) => {const value = values.get(key); if (!value) throw Error('Missing ' + key); return value;};
   const read = (file: string) => JSON.parse(readJsonFile(file, 8 * 1024 * 1024).replace(/^\uFEFF/, '')) as unknown;
   const output = (value: unknown, inputs: string[]) => writeJsonFile(required('--output'), value, inputs);
@@ -76,9 +84,9 @@ export function run(args: readonly string[]): void {
    success({format: 'wildlands-process', schemaVersion: 1, handbook: 'docs/reference/business-process-engine.md', limits: runtime.limits,
     operations: Object.entries(commands).map(([id, options]) => ({id, options, description: descriptions[id]})),
     editOperations: editOperations(),
-    workflow: ['create', 'inspect', 'edit --dry-run', 'edit', 'validate', 'forge', 'attach', 'run', 'build'], interchange: {bpmn: 'BPMN 2.0 XML via export-bpmn and import-bpmn; validate-bpmn checks a file against the BPMN 2.0 and BPSim 1.0 conformance rules'},
+    workflow: ['create', 'inspect', 'edit --dry-run', 'edit', 'validate', 'diff', 'slides', 'forge', 'attach', 'run', 'build'], interchange: {bpmn: 'BPMN 2.0 XML via export-bpmn and import-bpmn; validate-bpmn checks a file against the BPMN 2.0 and BPSim 1.0 conformance rules'},
     recipe: {expectedRevision: 0, expectedFingerprint: '<inspect.fingerprint>', operations: [{op: 'rename', value: 'My process'}]},
-    notes: ['put operations replace full definitions', 'dry runs write nothing', 'draft graph diagnostics must be resolved before run or build', 'fingerprint is a change guard, not a cryptographic signature']}); return;
+    notes: ['put operations replace full definitions', 'dry runs write nothing', 'setDescription, setSeed, setSipoc and setTrack remove the field with value null; setGenre with process removes genre', 'draft graph diagnostics must be resolved before run or build', 'fingerprint is a change guard, not a cryptographic signature']}); return;
   }
   if (command === 'schema') {
    const kind = values.get('--kind') ?? 'definition';
@@ -114,6 +122,18 @@ export function run(args: readonly string[]): void {
    if (!report.conforms) process.exitCode = 2; return;
   }
   const file = required('--input'), input = read(file);
+  if (command === 'diff') {
+   const reference = required('--against'), other = read(reference), admit = (value: unknown, name: string) => {
+    const checked = catalog.validate(value, true); if (!checked.acceptable) throw Error(name + ': ' + checked.diagnostics.map(e => e.path + ': ' + e.message).join('\n')); return checked.definition!;
+   };
+   // Compare key-sorted copies, like the fingerprint, so key order is never reported as a change.
+   const canonical = (v: unknown): unknown => Array.isArray(v) ? v.map(canonical) : v !== null && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map(k => [k, canonical((v as Record<string, unknown>)[k])])) : v;
+   const after = admit(input, file), before = admit(other, reference), a = canonical(before) as LWProcess.Definition, b = canonical(after) as LWProcess.Definition, changes = diff.compare(a, b), identity = (d: LWProcess.Definition, at: string) => ({file: at, id: d.id, revision: d.revision, fingerprint: catalog.fingerprint(d)});
+   const identical = catalog.fingerprint(after) === catalog.fingerprint(before), counted = changes.steps + changes.flows + changes.resources + changes.arrivals + changes.meta > 0, revisionChanged = after.revision !== before.revision;
+   const summary = counted ? diff.describe(changes, 'Changes') : revisionChanged ? `Changes: revision only (${before.revision} to ${after.revision})` : 'Changes: none';
+   success({input: identity(after, file), against: identity(before, reference), identical, revisionChanged, summary,
+    changes: {steps: changes.steps, flows: changes.flows, resources: changes.resources, arrivals: changes.arrivals, settings: changes.meta}, changedSteps: changes.changedSteps, changedSettings: diff.settings(a, b)}); return;
+  }
   if (command === 'export-bpmn') {
    const target = required('--output'); if (!/\.(bpmn|xml)$/.test(target)) throw Error('BPMN output must end in .bpmn or .xml.');
    success({output: writeTextFile(target, bpmn.export(input, values.has('--bpsim') ? {bpsim: true} : {}), [file]), bpsim: values.has('--bpsim')}); return;
@@ -150,6 +170,21 @@ export function run(args: readonly string[]): void {
   if (command === 'build') {
    const target = required('--output'); if (!target.endsWith('.html')) throw Error('Build output must end in .html.');
    const result = build(definition); success({output: writeTextFile(target, result.html, [file]), bytes: result.bytes, sha256: result.sha256}); return;
+  }
+  if (command === 'slides') {
+   let snapshot: LWProcess.Snapshot | null = null;
+   if (values.has('--minutes')) {
+    // Same bounded, fresh and seeded run as `process run`; the deck only reads the resulting detached snapshot.
+    const live = runtime.create(definition, values.has('--seed') ? {seed: Number(values.get('--seed'))} : {});
+    try {snapshot = live.advance(Number(values.get('--minutes')));} finally {live.dispose();}
+   }
+   const deck = slides.build(definition, snapshot), format = values.get('--format') ?? 'json', text = format === 'md' ? slides.markdown(deck) : null;
+   if (values.has('--output')) {
+    const target = text === null ? writeJsonFile(required('--output'), deck, [file]) : writeTextFile(required('--output'), text, [file]);
+    success({output: target, format, slides: deck.slides.length, sections: deck.sections.length, live: deck.live}); return;
+   }
+   if (text !== null) {process.stdout.write(text); return;}
+   success({format, deck}); return;
   }
   const session = runtime.create(definition, values.has('--seed') ? {seed: Number(values.get('--seed'))} : {});
   try {

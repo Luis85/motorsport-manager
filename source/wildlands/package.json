@@ -11,6 +11,7 @@
     "check:cli": "node --import tsx source/build.ts && node --import tsx source/tools/cli-bundle.cts --check ../../bin/wildlands",
     "build:demos": "node --import tsx source/build.ts && node --import tsx source/tools/demos.cts --output ../../demos",
     "check:demos": "node --import tsx source/build.ts && node --import tsx source/tools/demos.cts --check ../../demos",
+    "process:shots": "node --import tsx source/verification/process-shots.ts",
     "report:artifacts": "node --import tsx source/tools/artifact-report.cts",
     "test": "node --import tsx source/verification/verify.ts --tier fast",
     "verify": "node --import tsx source/verification/verify.ts",

@@ -536,7 +536,7 @@ the rest automatically: inputs from arrival data and undelivered needs, process 
 from the step phases or the main route, outputs from declared step outputs and final
 deliveries, and measures from the snapshot. Do not repeat derived content in `sipoc`.
 
-How the SIPOC view derives its columns (`process-renderer-sipoc.ts`, pure `model()`):
+How the SIPOC view derives its columns (pure `model()` in `process-sipoc-model.ts`, drawn by `process-renderer-sipoc.ts`; the main-route walk and phase grouping are the shared `process-route.ts`, also used by the slide deck):
 suppliers and customers come only from `sipoc`, otherwise one muted "Add suppliers/customers
 in Edit process" card; inputs are the fields in arrival `data` and `draws` plus `needs` that
 no step delivers through `set`, `add` or `draws` (label from the need, else the declared
@@ -1051,13 +1051,78 @@ events by overlapping each new 128-event window with the previous one; the badge
 gains `seed(value | null)`: a fresh paused run with that seed (Reset keeps it; replace and
 process switch drop it). Neither the modal nor the menu ticks, pauses or retains the simulation.
 
+**Present mode.** **Present** (`#mode-present`, after the lens button; hidden at 650 px and
+below) or, on a phone, **⋯** then **Present slides** (`#present-item`, after the import item)
+opens `LWProcessPresent` (`process-present.ts`, `process-present.css`): a full-window native
+`<dialog id="present">` (`showModal`, studio root `inert`) that shows the [slide deck](#slide-deck)
+of the **active** definition, never the unapplied draft. The header names the process and
+"Slide n of N" (`#present-count`), adds "Live facts come from one simulated run at minute M (seed
+S)." when the run is past minute 0 and "The run is paused while you present." when entering
+paused it, and holds **Contents** (`#present-toc`, the slide list grouped by section; the
+current slide is marked) and **Exit** (`#present-exit`); **Previous** and **Next**
+(`#present-prev`, `#present-next`) sit in the footer. The studio's single 2D map host (`#map`)
+moves into the map pane and back to its exact place on exit, so there is never a second
+renderer: a step slide selects and frames its step through the studio's selection command, a
+section slide its first step, the other slides the whole process, and choosing a step on the
+map moves the deck to that step's slide. Present opens on the selected step's slide, else slide
+1, and refuses to open while another studio dialog is open ("Close the open window first.").
+Keys: Right or Page Down next, Left or Page Up previous, Home first, End last (arrow keys inside
+the map pan it instead); Escape closes Contents when it is open, otherwise exits. It never
+ticks: entering pauses a playing run with a command and switches to 2D, and exit never resumes
+the run ("Presentation closed. The run stays paused; choose Run simulation to continue."); exit
+restores the previous view mode (including the 2D or 3D choice behind a lens) and selection and
+returns focus to the invoker, else to **Present** or **⋯**. On a desktop the slide column and
+the map sit side by side, each scrolling inside the window; below 900 px wide or 560 px tall the
+dialog scrolls as one page (the slide, then the map at about a third of the window height) with
+Previous and Next in a footer kept at the bottom, and at phone width the footer buttons share
+the width. `LWProcessStudio.query()` adds `presenting: {index, count, id} | null` (0-based index
+and the slide id). Slide text is the deck's plain text, escaped when rendered.
+
+## Slide deck
+
+`LWProcessSlides` (`process-slides.ts`, wording in `process-slides-text.ts`, types in
+`process-slides-contracts.d.ts`) is a pure model: `build(definition, snapshot?)` turns one
+definition, and optionally one snapshot, into a detached, deterministic deck
+(`format: "wildlands-process-slides"`, `schemaVersion: 1`) with no DOM, session, clock, storage
+or randomness; its inputs are copied first and the deck shares no object with them.
+`markdown(deck)` renders it for agents. `process slides` (CLI) and Present mode (studio) use it.
+
+- **Order.** Sections `intro` (slides `title`, `overview`, `resources`), one `phase-<n>` section
+  per main-route phase in route order (or one `route` section when no step has a `phase`), a
+  `variants` section for every step off the main route (when there is one) and `summary`. A
+  phase or route section opens with a section slide (`section-<id>`) that lists its steps and the
+  flows leaving the main route. No section is empty.
+- **Every step once.** Each step appears on exactly one step slide (`step-<stepId>`): main-route
+  steps in their phase, every other step in variants, breadth-first from the main route and
+  labelled by how it is first reached (decision alternative, parallel or inclusive branch,
+  deadline path, other end, other step).
+- **Main route.** The route and phase grouping are `LWProcessRoute` (`process-route.ts`), the
+  same rule as the SIPOC view: from `start`, follow the first outgoing non-deadline flow without
+  `when`, else the first non-deadline flow, stop at a visited step, and walk a fork with all its
+  branches up to its join; an unphased step joins the phase before it.
+- **Content.** The overview is the SIPOC of a business process (from `LWProcessSipocModel`) or
+  the phases and touchpoints of a journey, plus how cases arrive; resources list each pool's
+  kind, capacity, cost and users. A step slide says what happens (the step description, else
+  "No description authored."), who or what does it, how long it takes, what it needs and
+  delivers and where the case goes next, with one short concept explainer per construct the step
+  uses (touchpoint, machine or system step, timer, decision, chance route, counter loop,
+  parallel fork, inclusive gateway, join, multi-instance, deadline, backlog). All text is plain
+  text derived from the definition; the model never invents data. When the description calls
+  its values synthetic or illustrative, the title slide repeats that they are assumptions.
+- **Live facts.** Only when a snapshot is passed: step slides and the summary add a block whose
+  heading names one simulated run, its minute and seed, and the deck carries
+  `live: {minute, seed, status}`. The studio passes its detached snapshot only past minute 0;
+  `process slides --minutes N [--seed S]` runs one fresh bounded run, the same as `process run`.
+  These facts describe that one run, not a forecast.
+
 ## Verification suites
 
 The process checks are registered Wildlands suites (see
 [`source/wildlands/VERIFICATION.md`](../../source/wildlands/VERIFICATION.md) for the gate):
 
 - `business-process` (Node): entry `source/test-process.cts`, which runs the check modules
-  `test-process-engine`, `-authoring`, `-steps`, `-random`, `-journeys` and `-semantics` (`.cts`)
+  `test-process-engine`, `-authoring`, `-steps`, `-random`, `-journeys`, `-semantics`, `-slides`
+  (the slide model) and `-slides-cli` (`process slides`, process-setting edits, `process diff`) (`.cts`)
   with shared helpers in `test-process-helpers.cts`.
 - `business-process-bpmn` (Node): entry `source/test-process-bpmn.cts` (foreign BPMN mapping,
   BPSim, standard export and the pinned numbers of the example files), after the extension round
@@ -1072,8 +1137,19 @@ The process checks are registered Wildlands suites (see
   fallback font), `process-step-editor-browser`,
   `process-definition-browser`, `process-renderers-browser`,
   `process-lenses-browser`, `process-bpmn-import-browser` (the import dialog and
-  BPSim export) and `process-readability-browser` (large maps, small cues, captions,
-  phone lenses and short-window dialogs, also in DejaVu Sans).
+  BPSim export), `process-readability-browser` (large maps, small cues, captions,
+  phone lenses and short-window dialogs, also in DejaVu Sans) and `process-present-browser`
+  (Present mode: entry and exit, slide navigation, contents, map reuse, keyboard, focus, phone
+  and short windows).
 
-Passing suites are automated evidence of the stated behaviour, not human usability,
+Not a suite: `npm run process:shots -- --game DIR --process N --minute M --out DIR [--cli FILE]`
+(`source/verification/process-shots.ts`) is a review tool. It builds the game with the checkout's
+compiled CLI (`.generated/tools/wildlands-cli.cjs` after `npm run build`, else `bin/wildlands`, or
+`--cli`), runs process N to minute M through the studio's own **Run until**, speed and **Run**
+controls, and writes desktop 2D, 3D and lens, desktop and phone (390x844) Present (first and a
+step slide), the phone studio and DejaVu Sans Present captures plus `shots.json` with each
+capture's horizontal overflow and the page's console errors.
+
+Passing suites are automated evidence of the stated behaviour, and screenshots of a synthetic run
+are review material; neither is human usability,
 accessibility or visual-quality validation, and not validation of any imported model.

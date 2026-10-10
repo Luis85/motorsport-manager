@@ -35,7 +35,9 @@ Write `/tmp/process-work/edit.json`, using the fingerprint you just read:
       "duration": 12, "resources": {"analyst": 1},
       "scene": {"id": "scene-work", "position": [12, 0], "color": "#ffbb73"}
     }},
-    {"op": "setArrivals", "value": [{"at": 0, "count": 3, "interval": 4, "data": {}}]}
+    {"op": "setArrivals", "value": [{"at": 0, "count": 3, "interval": 4, "data": {}}]},
+    {"op": "setDescription", "value": "Reviews incoming requests. All values are synthetic."},
+    {"op": "setSeed", "value": 7}
   ]
 }
 ```
@@ -63,7 +65,29 @@ and `snapshot: null`. Resolve every diagnostic before `run` or `build`; `forge` 
 Use `--dry-run --draft` to preview an intermediate edit without writing.
 On a stale guard, inspect again and reconcile the intended change; do not retry
 with a guessed revision. `removeStep`, `removeFlow`, `removeResource`, `setStart`
-and `rename` complete the supported edit vocabulary.
+and `rename` complete the entity edit vocabulary. Process settings have their own
+operations, so nothing needs to be hand-edited into the JSON: `setDescription`
+(`value` text or `null`), `setSeed` (a whole number or `null`), `setGenre`
+(`process`, `customer-journey` or `user-journey`; `process` removes the field and
+`null` is rejected),
+`setSipoc` (`{suppliers, customers}` or `null`) and `setTrack` (a tracked-field list
+or `null`). `null` removes the field; a new field is written in schema order. They
+are recipe operations only: the definition schema is unchanged and admission still
+validates every value.
+
+To review a change, compare two definitions and explain the result:
+
+```sh
+bin/wildlands process diff --input /tmp/process-work/review.json --against /tmp/process-work/process.json
+bin/wildlands process slides --input /tmp/process-work/review.json --format md
+```
+
+`diff` reports changed steps (with names), flows, resources, arrival rules and
+process settings plus both revisions and fingerprints. `slides` explains the
+process as a slide deck: an overview (SIPOC for business processes, phases and
+touchpoints for journeys), the resource pools, every main-route step phase by
+phase, every other path and a summary. Add `--minutes N [--seed S]` for read-only
+facts from one fresh bounded run.
 
 ## Add branching and parallel work
 
@@ -472,7 +496,8 @@ Open the HTML directly. Use **Run simulation**, **Pause**, **Step 1 min**,
 **Advance 30 min**, and **Reset run**. **2D** and **3D** show one simulation;
 a third button shows the process-type lens over the same simulation: **SIPOC** for a
 business process, **Journey map** for a customer or user journey (the lens never offers
-the other one). A journey opens on its map; switching to another process keeps the lens
+the other one), and **Present** opens the slide deck over the 2D map (see
+[Present a process](#present-a-process)). A journey opens on its map; switching to another process keeps the lens
 for a process of the same kind and otherwise returns to your last 2D or 3D choice.
 Selecting a card or stage selects its step, and Escape clears it. Journeys also say
 customers or users instead of cases, show Finished, Goals, Lost and Conversion, and up
@@ -556,15 +581,48 @@ the process JSON (or `content.definitions` at 1-8 process JSON files, never both
 to let the studio switch between them). Set matching storage/output IDs. Keep the folder data-only.
 The build has no external scripts, fonts, asset requests or account dependency.
 
+## Present a process
+
+To walk an audience (or a reviewer) through a process step by step, use the slide deck.
+
+**In the studio.** Choose **Present** beside the view buttons (on a phone: **⋯**, then
+**Present slides**). The window shows one slide at a time beside the process map: an
+introduction (title, overview, resources), the main route phase by phase, every other path
+and a summary. Use **Next** and **Previous**, the arrow keys, Page Up and Page Down, or Home
+and End; **Contents** lists every slide by section. A step slide shows that step on the map,
+and selecting a step on the map jumps to its slide. If a step is selected when you start,
+the deck opens on its slide. Past minute 0 the slides add facts from the current run, named
+by its minute and seed. Presenting pauses a running simulation and never advances it; **Exit**
+or Escape returns to the view and selection you had, and the run stays paused until you choose
+**Run simulation**. The deck explains the applied definition, not an unapplied draft.
+
+**From the command line.** Review the same deck as text, optionally with facts from one bounded
+run, and keep the file beside a change for review:
+
+```sh
+bin/wildlands process slides --input /tmp/process-work/review.json --format md --output /tmp/process-work/slides.md
+bin/wildlands process slides --input /tmp/process-work/review.json --format md --minutes 2400 --seed 7
+```
+
+Read it as a learner: every step should say what happens, who does it, how long it takes,
+what it needs and delivers and where the work goes next. "No description authored." marks a
+step without a `description`; add one with `putStep`. The deck only restates the definition
+and one run; it is not a forecast. For screenshots of the studio and Present mode at a chosen
+minute (desktop, phone and a wider fallback font, with overflow and console-error reports),
+run `npm run process:shots` in `source/wildlands` (see
+[Verification suites](../reference/business-process-engine.md#verification-suites)).
+
 ## Agent completion checklist
 
 1. Inspect and retain exact edit guards.
-2. Dry-run complete transactions; review diagnostics and changed definitions.
+2. Dry-run complete transactions (entity and process-setting operations alike; never hand-edit
+   the JSON); review diagnostics and `process diff` against the previous file.
 3. Validate the complete graph and scene assets.
 4. Run bounded cases covering each decision outcome, contention and rework.
 5. Review actual Scene Forge views and both process projections where a browser
    is available; a headless simulation result does not certify visual quality.
-6. Build the HTML and reopen it offline, then export/reimport JSON and HTML.
+6. Build the HTML and reopen it offline, then export/reimport JSON and HTML. Review
+   `process slides --format md` and, where a browser is available, Present mode.
 7. Report the source identity, executed tests, assumptions and unsupported rules. For engine
    or studio changes, the registered process suites are listed under
    [Verification suites](../reference/business-process-engine.md#verification-suites); a bounded

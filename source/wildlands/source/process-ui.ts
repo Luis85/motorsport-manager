@@ -3,7 +3,7 @@
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWContentProvider: LWContentProvider.Api; LWProcessApplication: LWProcessApp.Api; LWProcessCatalog: LWProcess.Catalog;
-  LWProcessData: LWProcessData.Api; LWProcess2D: LWProcess2D.Api; LWProcess3D: LWProcess3D.Api; LWProcessStepEditor: LWProcessStepEditor.Api; LWProcessDefinitionEditor: LWProcessDefinitionEditor.Api; LWProcessDialog: LWProcessDialog.Api; LWProcessDraft: LWProcessDraft.Api; LWProcessBpmn: LWProcessBpmn.Api; LWProcessBpmnDialog: LWProcessBpmnDialog.Api; LWProcessActivity: LWProcessActivity.Api; LWProcessInspector: LWProcessInspector.Api; LWProcessMenu: LWProcessMenu.Api; LWProcessTerms: LWProcessTerms.Api; LWProcessLens: LWProcessLens.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
+  LWProcessData: LWProcessData.Api; LWProcess2D: LWProcess2D.Api; LWProcess3D: LWProcess3D.Api; LWProcessStepEditor: LWProcessStepEditor.Api; LWProcessDefinitionEditor: LWProcessDefinitionEditor.Api; LWProcessDialog: LWProcessDialog.Api; LWProcessDraft: LWProcessDraft.Api; LWProcessBpmn: LWProcessBpmn.Api; LWProcessBpmnDialog: LWProcessBpmnDialog.Api; LWProcessActivity: LWProcessActivity.Api; LWProcessInspector: LWProcessInspector.Api; LWProcessMenu: LWProcessMenu.Api; LWProcessTerms: LWProcessTerms.Api; LWProcessLens: LWProcessLens.Api; LWProcessPresent: LWProcessPresent.Api; LWProcessStudio?: unknown; __wildlandsReady?: boolean};
  const host = document.getElementById('process-shell'); if (!host) return;
  const pristine = '<!doctype html>\n' + document.documentElement.outerHTML;
  const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
@@ -15,8 +15,8 @@
  <div class="process-file-actions"><label id="process-switch-label" class="process-switch" hidden>Process <select id="process-switch" aria-describedby="process-subtitle"></select></label>
  <button id="open-definition" aria-haspopup="dialog" title="Edit process…">Edit<span class="long"> process…</span></button><button id="draft-chip" class="process-draft-chip" aria-haspopup="dialog" hidden></button><button id="import" title="Import a process from a JSON or BPMN file">Import…</button>
  <div class="process-menu"><button id="export-menu" class="menu-long" aria-haspopup="menu" aria-expanded="false" aria-controls="export-items">Export ▾</button><button id="more-menu" class="menu-short" aria-haspopup="menu" aria-expanded="false" aria-controls="export-items" aria-label="More actions">⋯</button>
-  <div id="export-popup" class="process-menu-popup" hidden><p id="export-hint" class="menu-hint"></p><div id="export-items" role="menu" aria-label="Import and export">
-  <button id="import-item" class="menu-phone" role="menuitem" tabindex="-1">Import JSON or BPMN…</button><button id="json" role="menuitem" tabindex="-1">Export JSON</button><button id="bpmn" role="menuitem" tabindex="-1">Export BPMN</button><button id="bpmn-bpsim" role="menuitem" tabindex="-1">Export BPMN with BPSim</button><button id="report" role="menuitem" tabindex="-1">Export run report</button><button id="html" role="menuitem" tabindex="-1">Download HTML</button></div></div></div>
+  <div id="export-popup" class="process-menu-popup" hidden><p id="export-hint" class="menu-hint"></p><div id="export-items" role="menu" aria-label="Import, present and export">
+  <button id="import-item" class="menu-phone" role="menuitem" tabindex="-1">Import JSON or BPMN…</button><button id="present-item" class="menu-phone" role="menuitem" tabindex="-1" aria-haspopup="dialog">Present slides</button><button id="json" role="menuitem" tabindex="-1">Export JSON</button><button id="bpmn" role="menuitem" tabindex="-1">Export BPMN</button><button id="bpmn-bpsim" role="menuitem" tabindex="-1">Export BPMN with BPSim</button><button id="report" role="menuitem" tabindex="-1">Export run report</button><button id="html" role="menuitem" tabindex="-1">Download HTML</button></div></div></div>
  <input type="file" id="file" accept=".json,.bpmn,.xml,application/json,application/xml,text/xml" hidden></div></header>
  <div class="process-toolbar" role="group" aria-label="Simulation controls"><div class="run-actions" role="group" aria-label="Run"><button id="play" class="primary">Run simulation</button><button id="step">Step 1 min</button><button id="advance">Advance 30 min</button><button id="reset" class="ghost">Reset run</button></div>
  <button id="run-options-toggle" class="options-toggle" aria-expanded="false" aria-controls="run-config">Run options ▾</button>
@@ -28,7 +28,7 @@
  <div class="process-workspace">
  <nav class="process-nav" aria-label="Process steps"><div class="process-sticky"><div class="process-panel-heading"><h2 id="steps-heading">Step scenes</h2><span id="step-count"></span></div><button id="overview">Whole process</button></div><ol id="steps" class="process-steps"></ol><p class="process-note">Choose a step to enter its scene. Navigation keeps the run at the same minute.</p></nav>
  <section class="process-stage" aria-label="Simulation viewport"><div class="process-stagebar"><div class="process-stagetitle"><h2 id="scene-title">Process overview</h2><p id="scene-subtitle"></p><p id="message" class="process-message" role="status" aria-live="polite"></p></div>
- <div class="process-view-controls"><button id="mode-2d" aria-pressed="false">2D</button><button id="mode-3d" aria-pressed="true">3D</button><button id="mode-lens" aria-pressed="false">SIPOC</button><button id="frame">Frame view</button><button id="edit-step" aria-haspopup="dialog" hidden>Edit step…</button></div></div>
+ <div class="process-view-controls"><button id="mode-2d" aria-pressed="false">2D</button><button id="mode-3d" aria-pressed="true">3D</button><button id="mode-lens" aria-pressed="false">SIPOC</button><button id="mode-present" aria-haspopup="dialog">Present</button><button id="frame">Frame view</button><button id="edit-step" aria-haspopup="dialog" hidden>Edit step…</button></div></div>
  <div id="viewport"><canvas id="canvas" aria-label="3D process scenes. Use the scene list for keyboard selection." aria-describedby="camera-hint" tabindex="0"></canvas><div id="map" hidden></div><div id="lens" hidden></div></div>
  <div class="process-legend"><span><i class="active-dot"></i>Working</span><span><i class="queue-dot"></i>Waiting</span><span><i class="timer-dot"></i>Timer</span><span><i class="backlog-dot"></i>Backlog</span><span><i class="held-dot"></i>Blocked</span><span id="marker-count"></span><span id="camera-hint">Drag to orbit · Scroll to zoom</span></div>
  <div id="metrics" class="process-metrics" aria-label="Run metrics"></div><p id="latest" class="process-latest"></p>
@@ -137,6 +137,7 @@
   setHtml('metrics', root.LWProcessInspector.kpis(view) + `<small class="metric-seed">Seed ${q.seed}</small>`);
   const seedField = get<HTMLInputElement>('seed'); if (document.activeElement !== seedField && seedField.value !== String(q.seed)) seedField.value = String(q.seed);
   activity.ingest(view); get('latest').textContent = activity.latest();
+  if (view.mode !== 'lens' && !present.isOpen()) flat = view.mode;
   get('canvas').hidden = view.mode !== '3d'; get('map').hidden = view.mode !== '2d'; get('lens').hidden = view.mode !== 'lens';
   for (const mode of ['2d', '3d', 'lens'] as const) get('mode-' + mode).setAttribute('aria-pressed', String(view.mode === mode));
   const lensButton = get('mode-lens'); if (lensButton.textContent !== terms.lensLabel) lensButton.textContent = terms.lensLabel;
@@ -154,6 +155,7 @@
    const target = get('inspector').querySelector<HTMLButtonElement>(`[data-next="${focusedNext}"]`) ?? get('steps').querySelector<HTMLButtonElement>(`[data-step="${view.selected}"]`);
    target?.focus({preventScroll: true});
   }
+  present.follow(view.selected);
  }
  /** The process description is clamped to three lines; the More button appears only when something is hidden. */
  function fitDescription(): void {
@@ -267,6 +269,23 @@
  });
  const openDefinition = (button: HTMLElement) => {if (definitionEditor.open({invoker: button, focus: 'auto'})) status('Editing the definition. The run is paused while the editor is open.');};
  get('open-definition').onclick = () => openDefinition(get('open-definition')); get('draft-chip').onclick = () => openDefinition(get('draft-chip'));
+ /** Present mode: the slide deck of the active definition over the studio's own 2D map. Entering pauses a playing run (a command, never a tick); leaving restores the view mode and selection and never resumes. */
+ let flat: LWProcessApp.ViewMode = '3d', before: {mode: LWProcessApp.ViewMode; flat: LWProcessApp.ViewMode; selected: string | null} = {mode: flat, flat, selected: null};
+ const present = root.LWProcessPresent.create(document.body, {
+  inertRoot: host, map: get('map'),
+  enter: () => {
+   const paused = view.playing; if (paused) command(() => app.play(false));
+   before = {mode: view.mode, flat, selected: view.selected}; command(() => app.mode('2d'));
+   status(paused ? 'Presenting slides. The run is paused while you present.' : 'Presenting slides.'); return {view, paused};
+  },
+  show: step => {command(() => app.select(step)); svg.frame();},
+  leave: paused => {
+   const b = before; command(() => {if (b.mode === 'lens') app.mode(b.flat); app.mode(b.mode); app.select(b.selected);}); if (view.mode === '2d') svg.frame();
+   status(paused ? 'Presentation closed. The run stays paused; choose Run simulation to continue.' : 'Presentation closed.');
+  },
+ });
+ const startPresent = (invoker: HTMLElement) => {if (!present.open(invoker, () => [get('mode-present'), get('more-menu')].find(shown) ?? null)) status('Close the open window first.', true);};
+ get('mode-present').onclick = () => startPresent(get('mode-present')); get('present-item').onclick = () => {menu.close(false); startPresent(get('more-menu'));};
  function animate(time: number): void {
   if (disposed) return; const delta = Math.min(.1, (time - last) / 1000 || 0); last = time;
   if (view.playing) {elapsed += delta; if (elapsed >= .35) {elapsed = 0; command(() => app.pulse(Number(get<HTMLSelectElement>('speed').value)));}} else elapsed = 0;
@@ -274,9 +293,9 @@
   frameId = requestAnimationFrame(animate);
  }
  rebuild(); refresh(); status(unavailable || 'Ready. Run the simulation, or choose a scene to inspect its work.', !!unavailable);
- root.LWProcessStudio = Object.freeze({query: () => app.query(), definition: () => app.query().definition, definitions: () => app.definitions()});
+ root.LWProcessStudio = Object.freeze({query: () => ({...app.query(), presenting: present.state()}), definition: () => app.query().definition, definitions: () => app.definitions()});
  root.__wildlandsReady = true;
  document.documentElement.dataset.wildlandsReady = 'process'; dispatchEvent(new CustomEvent('wildlands:ready', {detail: {host: 'process'}}));
  frameId = requestAnimationFrame(animate);
- window.addEventListener('pagehide', () => {disposed = true; cancelAnimationFrame(frameId); three?.dispose(); svg.dispose(); lens.dispose(); definitionEditor.dispose(); stepEditor.dispose(); bpmnImport.dispose(); activity.dispose(); menu.dispose(); app.dispose();}, {once: true});
+ window.addEventListener('pagehide', () => {disposed = true; cancelAnimationFrame(frameId); present.dispose(); three?.dispose(); svg.dispose(); lens.dispose(); definitionEditor.dispose(); stepEditor.dispose(); bpmnImport.dispose(); activity.dispose(); menu.dispose(); app.dispose();}, {once: true});
 })(globalThis);
