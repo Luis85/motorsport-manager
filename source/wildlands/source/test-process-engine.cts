@@ -167,12 +167,12 @@ test('Escalation routes cannot race the normal route on case fields and needs an
  const data = (fields: LWProcess.Fields): LWProcess.Arrival[] => [{at: 0, count: 1, interval: 0, data: fields}];
  const why = (d: LWProcess.Definition) => catalog.validate(d).diagnostics.map(x => x.path + ' ' + x.message);
  // The escalation path reads x, which the normal route rewrites at any moment: x may be 1 or 2 there (the run used to fail the case).
- assert.deepEqual(why(build(steps({check: {needs: [{field: 'x', op: 'eq', value: 1}]}}), flows, data({x: 1}))), ['/steps/5/needs/0 Needs x = 1, but Delivered only on some routes; possible values: 1, 2.']);
+ assert.deepEqual(why(build(steps({check: {needs: [{field: 'x', op: 'eq', value: 1}]}}), flows, data({x: 1}))), ['/steps/5/needs/0 Needs x = 1, but it is delivered only on some routes; possible values: 1, 2.']);
  assert.deepEqual(why(build(steps({check: {needs: [{field: 'x'}]}}), flows, data({x: 1}))), []);
  // Both sides writing one field is a race whatever reads it.
  assert.deepEqual(why(build(steps({check: {set: {x: 99}}}), flows, data({x: 1}))), ['/steps/1/deadline The escalation path and the work that continues beside it both write x; the result would depend on timing. Give each side its own fields.']);
  // The normal route sees the escalation path's writes too.
- assert.deepEqual(why(build(steps({check: {set: {y: 1}}, setx: {needs: [{field: 'y', op: 'eq', value: 0}]}}), flows, data({x: 1, y: 0}))), ['/steps/2/needs/0 Needs y = 0, but Delivered only on some routes; possible values: 0, 1.']);
+ assert.deepEqual(why(build(steps({check: {set: {y: 1}}, setx: {needs: [{field: 'y', op: 'eq', value: 0}]}}), flows, data({x: 1, y: 0}))), ['/steps/2/needs/0 Needs y = 0, but it is delivered only on some routes; possible values: 0, 1.']);
  // Separate fields stay admitted and run as before.
  const fine = build(steps({check: {set: {alerted: true}, needs: [{field: 'x'}]}}), flows, data({x: 1}));
  assert.deepEqual(why(fine), []); const q = run(fine, 100); assert.deepEqual([q.metrics.completed, q.metrics.failed, q.steps.find(x => x.id === 'slow')!.deadlines], [1, 0, {interrupted: 0, escalated: 1}]);

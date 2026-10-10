@@ -177,7 +177,7 @@ test('Random definitions are rejected explicitly when malformed', () => {
  for (const options of [{seed: -1}, {seed: 2 ** 31}, {seed: 1.5}, {active: 0}, {active: 501}, {retained: 0}, {retained: 10001}]) assert.throws(() => runtime.create(randomized(), options), /must be a whole number/);
  // Drawn fields are delivered with an unknown value: bare needs pass; value tests, like counters, are rejected; parallel branches cannot both draw one field.
  const needing = (need: LWProcess.Need) => (d: LWProcess.Definition) => { d.steps.splice(3, 0, {id: 'gate', name: 'Gate', kind: 'task', duration: 1, needs: [need], scene: {id: 'scene-gate', position: [24, 10], color: '#ffffff'}}); d.flows[3] = {id: 'f4', from: 'check', to: 'gate'}; d.flows.push({id: 'f6', from: 'gate', to: 'end'}); };
- assert.match(bad(needing({field: 'defect', op: 'eq', value: true})), /Needs defect = true, but Delivered only on some routes|Needs defect = true.*a counter or drawn value/);
+ assert.match(bad(needing({field: 'defect', op: 'eq', value: true})), /Needs defect = true, but it is delivered only on some routes|Needs defect = true.*a counter or drawn value/);
  assert.match(bad(needing({field: 'size', op: 'gte', value: 1})), /Needs size ≥ 1.*a counter or drawn value/);
  const ok = copy(randomized()); needing({field: 'defect'})(ok); assert.equal(catalog.validate(ok).ok, true, JSON.stringify(catalog.validate(ok).diagnostics));
  const forks = (d: LWProcess.Definition) => {
