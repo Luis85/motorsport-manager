@@ -448,6 +448,7 @@
         "process-bpmn-dialog.ts",
         "process-present.ts",
         "process-ui.ts",
+        "process-time.ts",
         "process-random-view.ts",
         "process-terms.ts",
         "process-slides-text.ts",

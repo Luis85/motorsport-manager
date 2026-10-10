@@ -109,6 +109,19 @@ test('Random timing, draws and chance routes follow their distributions and reco
  assert(Math.abs(done(pick, 'r0') - .25 * N) < 100, String(done(pick, 'r0')));
  assert.deepEqual([uniform, triangular, exponential].map(x => Math.round(x * 1000)), [4010, 5345, 10040]); // exact values for seed 1; the bounds above document the distributions
  assert.deepEqual(hits, [965, 1022, 1013]); assert.equal(done(flag, 'r0'), 602); assert.equal(done(pick, 'r0'), 754);
+ // The inspector's 'draws average about' value is the sampler's own mean, whole-minute rounding and clamping included.
+ type Sampler = {sample(seed: number, key: string, d: LWProcess.Dist): number};
+ const g = globalThis as unknown as {LWProcessRandom: Sampler; LWProcessRandomView: LWProcessRandomView.Api};
+ const dists = [{dist: 'triangular', min: 240, mode: 720, max: 1800}, {dist: 'uniform', min: 1, max: 3}, {dist: 'exponential', mean: 1},
+  {dist: 'exponential', mean: 4, max: 12}, {dist: 'normal', mean: 6, sd: 1}, {dist: 'normal', mean: 3, sd: 3},
+  {dist: 'erlang', k: 2, mean: 3}] as LWProcess.Dist[];
+ for (const dist of dists) {
+  let sum = 0; for (let i = 0; i < 20000; i++) sum += g.LWProcessRandom.sample(9, 'mean-check|' + i, dist);
+  const want = g.LWProcessRandomView.meanOf(dist)!, got = sum / 20000;
+  assert(Math.abs(got - want) / want < .02, `${JSON.stringify(dist)}: sampled ${got}, stated ${want}`);
+ }
+ assert.equal(g.LWProcessRandomView.describeTiming({duration: 720, timing: {dist: 'triangular', min: 240, mode: 720, max: 1800}}),
+  'Planned 720 min; draws average about 920 min; each visit draws its own time: Random between 240 and 1800 min, most often 720');
 });
 test('Finished-case retention prunes detail but keeps run metrics exact', () => {
  const N = 3000, ready = (retained: number, d: LWProcess.Definition, minutes = 3010) => { const s = runtime.create(d, {retained}); try { return s.advance(minutes); } finally { s.dispose(); } };

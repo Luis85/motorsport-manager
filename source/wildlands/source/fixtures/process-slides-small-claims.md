@@ -18,12 +18,13 @@ A small claims desk used to check the slide model. All values are synthetic.
 
 - The overview and resources come first, then the main route phase by phase, then every step off the main route, then a summary.
 - Each step slide says what happens, who or what does it, how long it takes, what it needs and delivers, and where the case goes next.
+- Times are simulated business minutes (min), the working time the model counts, not wall-clock time; long times also show hours (h).
 
 ### Slide 2: Overview
 
 _SIPOC: suppliers, inputs, process, outputs and customers_
 
-Business process with 10 steps, 8 of them on the main route. Cases start at “Claim received” and the main route ends at “Claim settled”.
+Business process with 10 steps; the main route has 8 of them, start and end included. Cases start at “Claim received” and the main route ends at “Claim settled”.
 
 **Suppliers**
 
@@ -35,9 +36,9 @@ Business process with 10 steps, 8 of them on the main route. Cases start at “C
 
 **Process**
 
-- Intake: 1 step
-- Decide: 2 steps, with alternative paths
-- Payout: 4 steps, in parallel
+- Intake: 1 step on the main route
+- Decide: 1 step on the main route and 1 step off it, with alternative paths
+- Payout: 4 steps on the main route, in parallel
 
 **Outputs**
 
@@ -56,7 +57,7 @@ Business process with 10 steps, 8 of them on the main route. Cases start at “C
 
 _1 resource pool_
 
-Pools are capacity slots: work starts when its pools have free units, otherwise the case waits in a queue. Costs are simulated units, not money.
+Pools are capacity slots: work starts when its pools have free units, otherwise the case waits in a queue. Costs are simulated units, not money: work cost charges pools only for the minutes they work (plus fixed step costs), while capacity cost charges every pool unit for every minute, busy or idle.
 
 **People**
 
@@ -68,7 +69,7 @@ Pools are capacity slots: work starts when its pools have free units, otherwise 
 
 _Phase 1 of 3_
 
-2 steps on the main route, from “Claim received” to “Check the claim”.
+1 step on the main route: “Check the claim”, after the start “Claim received”.
 
 **In this part**
 
@@ -165,7 +166,7 @@ No description authored.
 
 _Phase 3 of 3_
 
-5 steps on the main route, from “Pay and wait” to “Claim settled”.
+4 steps on the main route, from “Pay and wait” to “Paid and closed”, then the end “Claim settled”.
 
 **In this part**
 
@@ -329,7 +330,7 @@ _Small claims_
 
 **Structure**
 
-- Main route: 8 steps.
+- Main route: 8 steps, start and end included.
 - Off the main route: 2 steps.
 - Arrival rules: 1.
 - Seed: 3.
@@ -341,4 +342,7 @@ _Small claims_
 - Change a pool's capacity in Edit process and compare waiting time, cost and cycle time.
 - Change a decision's condition or chance and watch how many cases take each route.
 - Change the seed to see another run; the same seed always repeats the same run.
-- From the command line: wildlands process run for a bounded run, or process slides --minutes N for these slides with live facts.
+
+---
+
+_Reproduce with the command line: `bin/wildlands process slides --input FILE --minutes N` adds live facts from one bounded run, and `bin/wildlands process run --input FILE --minutes N` runs it without slides._

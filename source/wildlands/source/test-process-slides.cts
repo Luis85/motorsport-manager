@@ -14,6 +14,8 @@ const route = (globalThis as unknown as {LWProcessRoute: LWProcessRoute.Api}).LW
 const CONTENT = path.resolve(__dirname, '../../../docs/concepts/agency-delivery/content');
 export const demos = fs.readdirSync(CONTENT).filter(f => f.endsWith('.process.json')).sort().map(f => [f, JSON.parse(fs.readFileSync(path.join(CONTENT, f), 'utf8')) as LWProcess.Definition] as const);
 const sha = (text: string) => createHash('sha256').update(text).digest('hex');
+/** Pinned LWProcessSipoc.model JSON of the seven demos (see the SIPOC check). */
+const SIPOC_LENGTH = 41578, SIPOC_SHA = '6c1f38b83644cf1107b871161050ab2d0d4479a2b744e7ecff72cfc8ba1c743e';
 const seeded = (d: LWProcess.Definition, minutes: number, seed: number) => { const s = runtime.create(d, {seed}); try { return s.advance(minutes); } finally { s.dispose(); } };
 const deepFreeze = <T,>(v: T): T => { if (v && typeof v === 'object') { for (const x of Object.values(v)) deepFreeze(x); Object.freeze(v); } return v; };
 /** A small claims desk: an interrupting deadline, a decision with a chance route, a parallel fork with a timer branch and three phases. */
@@ -81,6 +83,17 @@ test('Slides pin the deck length, sections and ordered titles of every demo', ()
  assert.deepEqual(at('step-feedback').concepts.map(c => c.id), ['decision', 'chance-route']); assert.deepEqual(at('step-release-prep').concepts.map(c => c.id), ['inclusive-gateway']);
  assert.deepEqual(['step-impediment', 'step-reprioritise', 'step-impediment-handled'].map(id => at(id).subtitle), ['Task · Deadline path from “Implement the committed items”', 'Task · Decision alternative from “Stakeholder feedback”', 'End · Other end from “Raise the impediment and swarm”']);
  assert(at('title').blocks.some(b => b.heading === 'About the values'), 'the description says the values are synthetic');
+ // The 259-word description is clamped to whole sentences of at most 60 words on the title slide and follows in full below.
+ const description = demos.find(([file]) => file === 'delivery-release.process.json')![1].description!, lead = at('title').lead;
+ assert(lead.split(/\s+/).length <= 60 && description.startsWith(lead) && /[.!?]$/.test(lead), lead);
+ assert.deepEqual(at('title').blocks.find(b => b.heading === 'Process description')!.items, [description]);
+ assert.equal(slides.build(demos[0]![1]).slides[0]!.lead, demos[0]![1].description, 'a short description is the whole lead, with no extra block');
+ assert(!slides.build(demos[0]![1]).slides[0]!.blocks.some(b => b.heading === 'Process description'));
+ assert(at('title').blocks.find(b => b.heading === 'How to read this deck')!.items.some(item => item.startsWith('Times are simulated business minutes (min)')));
+ // Section slides count steps between the start and the end, as the overview's SIPOC stages do.
+ const overview = train.slides[1]!.blocks.find(b => b.heading === 'Process')!.items;
+ assert.equal(overview[0], 'Inception (0.1.0): 3 steps on the main route');
+ assert.match(at('section-phase-1').lead, /^3 steps on the main route, from .* after the start “Product idea approved”\.$/);
  assert(!slides.build({...copy(demos[0]![1]), description: 'Plain words.'}).slides[0]!.blocks.some(b => b.heading === 'About the values'));
  const shop = slides.build(demos.find(([file]) => file === 'customer-journey-webshop.process.json')![1]);
  assert.equal(shop.slides[1]!.subtitle, 'Journey map: phases and touchpoints'); assert.equal(shop.slides.find(s => s.id === 'step-ad')!.blocks.at(-1)!.heading, 'Customer experience');
@@ -90,7 +103,7 @@ test('Slides explain a small fixture with a chance route, fork, deadline and tim
  const d = claims(); assert.equal(catalog.validate(d).ok, true, JSON.stringify(catalog.validate(d).diagnostics));
  const deck = slides.build(d), text = slides.markdown(deck), golden = fs.readFileSync(path.join(__dirname, 'fixtures/process-slides-small-claims.md'), 'utf8');
  assert.equal(text, golden); assert(text.endsWith('\n') && !text.endsWith('\n\n'));
- assert.equal(sha(JSON.stringify(deck)), '0942952b46f16aed254cb1b4ff5a9166df75e993f22722bf9ab5c6f7c06dd5aa');
+ assert.equal(sha(JSON.stringify(deck)), '97f58a20f8158e623e2e3968153fcfb222a3a7463c927811ae873db2ac31ed2c');
  assert.deepEqual(deck.sections.map(s => [s.id, s.kind, s.title, s.first, s.count]), [['intro', 'intro', 'Introduction', 0, 3], ['phase-1', 'phase', 'Intake', 3, 3], ['phase-2', 'phase', 'Decide', 6, 2], ['phase-3', 'phase', 'Payout', 8, 6], ['variants', 'variants', 'Variants and other paths', 14, 3], ['summary', 'summary', 'Summary', 17, 1]]);
  assert.deepEqual(deck.slides.map(s => s.step), [null, null, null, 'start', 'start', 'check', 'decide', 'decide', 'split', 'split', 'pay', 'cooling', 'joined', 'end', null, 'supervisor', 'rejected', null]);
  assert.deepEqual(deck.slides.find(s => s.id === 'step-decide')!.blocks.at(-1), {heading: 'Where it goes next', items: ['20% of cases take this path → “Claim rejected” (“Not covered”)', 'Otherwise (no condition) → “Pay and wait”, main route']});
@@ -101,8 +114,31 @@ test('Slides are deterministic, detached from frozen inputs and carry live facts
  const a = slides.build(d, q), b = slides.build(d, q);
  assert.equal(JSON.stringify(a), JSON.stringify(b)); assert.equal(slides.markdown(a), slides.markdown(b)); assert.equal(JSON.stringify([d, q]), before);
  assert.deepEqual(a.live, {minute: q.minute, seed: 4, status: q.status});
- assert.deepEqual(a.slides.find(s => s.id === 'step-joined')!.live, {heading: `One simulated run · minute ${q.minute} · seed 4`, items: ['Entered 6 times by 3 cases', 'Completed 3 times', 'Now in progress: 0; now waiting: 0', 'Waiting time so far: 0 min in total']});
- assert(a.slides.filter(s => s.kind === 'step' || s.kind === 'summary').every(s => s.live !== null) && a.slides.filter(s => s.kind !== 'step' && s.kind !== 'summary').every(s => s.live === null));
+ // The run completed, so the waiting time is a total, not 'so far'; the heading names the unit.
+ assert.equal(q.status, 'completed');
+ assert.deepEqual(a.slides.find(s => s.id === 'step-joined')!.live, {heading: `One simulated run · business minute ${q.minute} · seed 4`,
+  items: ['Entered 6 times by 3 cases', 'Completed 3 times', 'Now in progress: 0; now waiting: 0', 'Waiting time: 0 min in total']});
+ const withLive = new Set(['title', 'resources', 'step', 'summary']);
+ assert(a.slides.filter(s => withLive.has(s.kind)).every(s => s.live !== null) && a.slides.filter(s => !withLive.has(s.kind)).every(s => s.live === null));
+ // Title 'Key results', the resources slide's pool utilisation and the summary name the most utilised pool and both costs.
+ const pct = Math.round(q.resources[0]!.utilization * 100), at = (id: string) => a.slides.find(s => s.id === id)!.live!;
+ assert.equal(at('title').heading, `Key results · One simulated run · business minute ${q.minute} · seed 4`);
+ const busiest = `Most utilised pool: Claims clerks, ${pct}% on average since minute 0`;
+ const cycle = `Mean cycle time: ${Math.round(q.metrics.meanCycleMinutes * 10) / 10} min`;
+ assert.deepEqual(at('title').items, ['Run status: completed', 'Cases arrived: 3; completed: 3', cycle, `Work cost: ${q.metrics.cost} units`, busiest]);
+ const busy = q.resources[0]!.busyMinutes;
+ const pool = `Claims clerks: ${pct}% average utilisation since minute 0, busy ${busy} min in total; 0 of 2 busy now; 0 waiting at its steps`;
+ assert.deepEqual(at('resources').items, [pool]);
+ assert.deepEqual(at('summary').items.slice(-3), [`Work cost: ${q.metrics.cost} units`, `Capacity cost: ${2 * 1 * q.minute} units`, busiest]);
+ assert.equal(q.metrics.capacityCost, 2 * 1 * q.minute, 'capacity cost charges both clerks for every minute');
+ // A run with nothing finished says so instead of a 0 min mean cycle, and gives the mean age of the cases in progress.
+ const early = seeded(claims(), 5, 4), first = slides.build(d, early).slides.find(s => s.id === 'summary')!.live!.items;
+ assert.equal(early.metrics.completed, 0); assert(first.includes('Mean cycle time: none yet, no case has finished'), first.join('|'));
+ assert(first.includes(`Mean age of the cases in progress: ${early.metrics.meanAgeMinutes} min`), first.join('|'));
+ assert(first.includes('Run status: still running'));
+ // The command-line tip is for Markdown readers only: the deck model never carries it, the Markdown ends with it.
+ assert(!JSON.stringify(a).includes('process slides'));
+ assert.match(slides.markdown(a), /_Reproduce with the command line: `bin\/wildlands process slides --input FILE --minutes N`[^\n]*_\n$/);
  assert(a.slides.find(s => s.id === 'step-check')!.live!.items.includes('Deadlines fired: 0 interrupted, 0 escalated'));
  // Mutating the deck never reaches the inputs or a later deck, and nothing in the deck is shared with them.
  const seen = new Set<unknown>(); const walk = (v: unknown) => { if (v && typeof v === 'object') { seen.add(v); Object.values(v).forEach(walk); } }; walk(d); walk(q);
@@ -112,10 +148,36 @@ test('Slides are deterministic, detached from frozen inputs and carry live facts
  assert.equal(plain.live, null); assert.equal(strip(plain), strip(live)); assert.equal(slides.build(d, null).live, null);
 });
 
-test('SIPOC model stays byte-identical after the main route moved into the shared LWProcessRoute', () => {
- // Pinned before the extraction: LWProcessSipoc.model for the 7 demos at minute 0 and after 1,440 minutes with seed 7.
- const models = Object.fromEntries(demos.map(([file, d]) => { const s = runtime.create(d, {seed: 7}); try { const q0 = s.query(), q1 = s.advance(1440); return [file, [sipoc.model(d, q0), sipoc.model(d, q1)]]; } finally { s.dispose(); } }));
- const text = JSON.stringify(models); assert.equal(text.length, 40242); assert.equal(sha(text), '08d7db73fa7bffc2380e869ec2373707d9bd24c50e1e118796f064d42f82850d');
+test('SIPOC model is pinned for every demo, counts cases per stage and shares the LWProcessRoute main route with the slides', () => {
+ // LWProcessSipoc.model for the 7 demos at minute 0 and after 1,440 minutes with seed 7. First pinned when the main route moved into
+ // LWProcessRoute; re-pinned when stages began to count cases that left them, inputs dropped internal counters and need-condition labels,
+ // and the measures gained '—' before a case finishes, the mean age in progress, work cost and capacity cost.
+ const runs = demos.map(([file, d]) => {
+  const s = runtime.create(d, {seed: 7});
+  try { const q0 = s.query(), q1 = s.advance(1440); return [file, d, q1, sipoc.model(d, q0), sipoc.model(d, q1)] as const; } finally { s.dispose(); }
+ });
+ const text = JSON.stringify(Object.fromEntries(runs.map(([file, , , m0, m1]) => [file, [m0, m1]])));
+ assert.equal(text.length, SIPOC_LENGTH); assert.equal(sha(text), SIPOC_SHA);
+ const of = (file: string) => runs.find(r => r[0] === file)!, model = (file: string) => of(file)[4] as LWProcessSipoc.Model;
+ for (const [file, , q, , m] of runs) {
+  const stages = (m as LWProcessSipoc.Model).stages;
+  assert(stages.every(s => s.completed <= q.metrics.arrived), file + ': a stage never counts more cases than arrived');
+ }
+ // Order fulfilment: the stage after 1,440 minutes counted cases (step completions summed to far more than the orders that arrived).
+ const order = of('order-fulfilment.process.json'), prepare = model('order-fulfilment.process.json').stages.find(s => s.name === 'Prepare')!;
+ assert.equal(prepare.completed, order[2].steps.find(s => s.id === 'pack')!.reached, 'Prepare is left by the orders that reached Pack');
+ const fields = model('order-fulfilment.process.json').inputs.map(i => i.field);
+ assert.deepEqual(fields, ['priority', 'defect'], 'counters seeded at 0 and added to are internal state');
+ // Agency: a need that tests 'needsRework eq false' does not name the field, and the example lists every arrival value.
+ const rework = model('agency.process.json').inputs.find(i => i.field === 'needsRework')!;
+ assert.deepEqual([rework.label, rework.example], ['needsRework', 'false, true']);
+ assert(model('delivery-release.process.json').inputs.some(i => i.field === 'mvpIncrements'), 'a drawn field stays an input although a step adds to it');
+ // Delivery release has not finished a case after 1,440 minutes: mean cycle is '—' and the mean age of the one case in progress is shown.
+ const measures = Object.fromEntries(model('delivery-release.process.json').measures.map(x => [x.id, x.value]));
+ const trainCost = String(of('delivery-release.process.json')[2].metrics.cost);
+ assert.deepEqual([measures.cycle, measures.age, measures.cost, measures['capacity-cost']], ['—', '1,440 min (≈ 24 h)', trainCost, '27360']);
+ // Loan: the SLA escalation path ends at its own end while the application carries on, so it is not a second way out of the stage.
+ const loan = of('loan-application.process.json'); assert.equal(model('loan-application.process.json').stages.at(-1)!.completed, loan[2].metrics.completed);
  for (const [file, d] of demos) {
   const walk = route.walk(d), deck = slides.build(d);
   assert.deepEqual(walk.units.flat().map(s => s.id), walk.path.filter(s => s.kind !== 'start' && s.kind !== 'end').map(s => s.id), file + ': units and path agree');
