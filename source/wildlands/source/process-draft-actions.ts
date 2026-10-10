@@ -56,9 +56,10 @@ declare namespace LWProcessDraftActions {
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessDraftActions?: LWProcessDraftActions.Api; LWProcessDom: LWProcessDom.Api; LWProcessDialog: LWProcessDialog.Api;
-  LWProcessDraft: LWProcessDraft.Api; LWProcessStructure: LWProcessStructure.Api; LWProcessLayout: LWProcessLayout.Api};
+  LWProcessDraft: LWProcessDraft.Api; LWProcessStructure: LWProcessStructure.Api; LWProcessLayout: LWProcessLayout.Api;
+  LWProcessHtml: LWProcessHtml.Api};
  const get = <T extends HTMLElement = HTMLElement>(id: string) => root.LWProcessDom.must<T>(id);
- const esc = (v: unknown) => root.LWProcessDialog.escape(v);
+ const esc = (v: unknown) => root.LWProcessHtml.esc(v);
  const INVALID = 'The draft is not valid JSON. Fix it in Edit process… first.';
  const KEEP = 'Apply the draft to keep it.';
  const TITLES: Record<string, string> = {'add-step': 'Add a step to the draft', 'add-step-item': 'Add a step to the draft',
