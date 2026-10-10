@@ -313,6 +313,11 @@ merged plus the coordinator's integration fix), before the documentation-only me
 - **Repository checks:** `python3 scripts/check_docs.py` passed (2,922 local links),
   `python3 scripts/check_architecture.py` reported no violations, and
   `python3 -m unittest discover -s tests -p 'test_*.py'` passed (19 skipped).
+- **Hosted CI follow-up:** the first hosted run of the integrated branch (Chromium 153; no Inter, so text
+  falls back to DejaVu Sans) failed one readability assertion. The focused card's full-name caption was
+  clipped because it shared its row with the long camera hint. On desktop the caption now takes a fixed
+  row of its own, still without resizing the map. The six layout-sensitive process suites were re-run
+  (76/76), and in DejaVu Sans the caption measures 927 px with no clipping.
 - **Native visual evidence:** `npm run process:shots` for processes 1 and 7 at minute 240 wrote 24
   captures: desktop 2D, 3D and lens, Present, the phone studio and Present, and DejaVu Sans variants.
   None had horizontal overflow, and the console logged no errors.

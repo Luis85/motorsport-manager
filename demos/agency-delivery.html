@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#f6f5ee"><meta name="description" content="Explore seven synthetic processes in 2D and 3D and switch between them: an agency pipeline with shared resources and rework, an agile vendor pipeline with CI/CD, an order fulfilment line with robots and software systems, customer and user journeys through a web shop and an app onboarding, a loan application converted from BPMN 2.0 and BPSim, and a product team's weekly delivery cadence that releases an increment every week from a 0.1.0 skeleton to the 1.0.0 MVP.">
-<meta name="wildlands-engine" content="5fb4ca14cb669593fa6acc8eae107fc86d388d8b22cc297e0894fcad20c87bed"><meta name="wildlands-game-digest" content="2d1f458efce01499f48da71e87679034472450f2a18e66bfe046ec0cd5953649">
+<meta name="wildlands-engine" content="e9da790fd9737dc212322f0330624af8fdecd56c5986945aa8998d0883edf81a"><meta name="wildlands-game-digest" content="2d1f458efce01499f48da71e87679034472450f2a18e66bfe046ec0cd5953649">
 <title>Agency delivery lab</title>
 <style>
 /* Process Studio extends Scene Forge's neutral stage, amber intent, and 5px control language. Tokens first: every colour, space, radius and
@@ -275,7 +275,8 @@
  .process-nav::after,.process-inspector::after { content:""; display:block; position:sticky; bottom:0; height:28px; margin-top:-28px; background:linear-gradient(to bottom,transparent,var(--panel)); pointer-events:none; }
  .process-nav,.process-inspector { padding-bottom:var(--s5); }
  #viewport { flex:1 1 0; height:auto; min-height:320px; }
- .process-studio .process-map-caption { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+ /* The caption takes a row of its own so a long step name and its counts fit on one fixed line (also in wider fallback fonts). */
+ .process-studio .process-map-caption { flex-basis:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 }
 /* Tablet and narrow windows: the page scrolls, the inspector sits under the stage. */
 @media(max-width:1099px) {

@@ -266,7 +266,8 @@
  .process-nav::after,.process-inspector::after { content:""; display:block; position:sticky; bottom:0; height:28px; margin-top:-28px; background:linear-gradient(to bottom,transparent,var(--panel)); pointer-events:none; }
  .process-nav,.process-inspector { padding-bottom:var(--s5); }
  #viewport { flex:1 1 0; height:auto; min-height:320px; }
- .process-studio .process-map-caption { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+ /* The caption takes a row of its own so a long step name and its counts fit on one fixed line (also in wider fallback fonts). */
+ .process-studio .process-map-caption { flex-basis:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 }
 /* Tablet and narrow windows: the page scrolls, the inspector sits under the stage. */
 @media(max-width:1099px) {
