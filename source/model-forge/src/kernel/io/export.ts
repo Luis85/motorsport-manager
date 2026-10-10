@@ -1,3 +1,4 @@
+/// <reference path="./gltf-validator.d.ts" />
 import { gltfScene } from '../application/gltf-scene.js';
 import { rigClips } from '../application/rigging.js';
 import { installTextureExport } from './export-textures.js';

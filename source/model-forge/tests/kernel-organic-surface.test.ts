@@ -1,8 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFile, mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
+import { readFile } from 'node:fs/promises';
 import vm from 'node:vm';
 import ts from 'typescript';
 import * as THREE from 'three';
@@ -10,22 +8,19 @@ import {
   SceneSchema,
   ModelSchema,
   MaterialSchema,
-  OperationSchema,
   parse,
   type SurfaceSpec,
-} from '../src/domain/schema.js';
-import { compileScene } from '../src/application/compiler.js';
-import {
+  compileScene,
   generateSurface,
   sphereUVs,
   surfaceAlgorithm,
   resolveSurfaceAlgorithm,
-} from '../src/application/surface-pattern.js';
-import { littlewildModel } from '../src/application/littlewild.js';
-import { littlewildModels } from '../src/application/littlewild-import.js';
-import { createMaterial } from '../src/application/materials.js';
-import { exportScene, validateExport } from '../src/infra/export.js';
-import { initProject, loadProject, commitOperations } from '../src/infra/project.js';
+  littlewildModel,
+  littlewildModels,
+  createMaterial,
+  exportScene,
+  validateExport,
+} from '../src/kernel/index.js';
 
 const surface: SurfaceSpec = { kind: 'fur', seed: 7, scale: 3, strength: 0.4 };
 const body = {
@@ -173,46 +168,6 @@ test('surface schema rejects unsupported or unbounded data and textures dispose 
   material.dispose();
   material.dispose();
   assert.equal(disposed, 2);
-});
-
-test('organic and surface authoring is atomic, guarded, idempotent and dry-run reviewable', async () => {
-  const root = await mkdtemp(path.join(tmpdir(), 'forge-plush-'));
-  try {
-    await initProject(root);
-    const before = await loadProject(root);
-    const operations = [
-      { op: 'putGeometry', id: 'body', geometry: body },
-      { op: 'putMaterial', id: 'coat', material: coat },
-      { op: 'putNode', node: { id: 'body', type: 'mesh', geometry: 'body', material: 'coat' } },
-    ].map((operation) => parse(OperationSchema, operation));
-    const guard = { expectedRevision: before.scene.revision, expectedState: before.stateHash };
-    const preview = await commitOperations(root, undefined, operations, { ...guard, dryRun: true });
-    assert.equal((await loadProject(root)).stateHash, before.stateHash);
-    const result = await commitOperations(root, undefined, operations, guard);
-    assert.equal(result.stateHash, preview.proposedStateHash);
-    await assert.rejects(() => commitOperations(root, undefined, operations, guard), {
-      code: 'REVISION_CONFLICT',
-    });
-    const current = await loadProject(root);
-    const repeated = await commitOperations(root, undefined, operations, {
-      expectedState: current.stateHash,
-    });
-    assert.equal(repeated.changed, false);
-    await assert.rejects(
-      () =>
-        commitOperations(root, undefined, [
-          parse(OperationSchema, {
-            op: 'putGeometry',
-            id: 'body',
-            geometry: { ...body, taper: 2 },
-          }),
-        ]),
-      { code: 'INVALID_GEOMETRY' },
-    );
-    assert.equal((await loadProject(root)).stateHash, current.stateHash);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
 });
 
 test('Littlewild roundtrip retains organic silhouette, UVs and role-scoped surface overrides', () => {

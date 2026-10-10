@@ -3,25 +3,27 @@ import path from 'node:path';
 import os from 'node:os';
 import type { Browser, Page } from 'playwright';
 import { fail, errorMessage, ForgeError } from '../domain/errors.js';
-import { loadPlaywright } from './playwright.js';
-import type { CameraRequest } from '../domain/schema.js';
+import { loadPlaywright, type PlaywrightEnvironment } from './playwright.js';
+import type { CameraRequest, CameraSnapshot } from '../domain/schema.js';
+import type { RenderPageWindow } from '../render/page.js';
 
 export type CaptureBrowser = Pick<Browser, 'newPage' | 'close' | 'version'>;
 export interface CaptureDependencies {
   createTemp(): Promise<string>;
   launch(): Promise<CaptureBrowser>;
 }
-const dependencies: CaptureDependencies = {
+/** Default capture ports; `environment` selects where Playwright is resolved. */
+export const captureDependencies = (environment?: PlaywrightEnvironment): CaptureDependencies => ({
   createTemp: () => fs.mkdtemp(path.join(os.tmpdir(), 'forge-capture-')),
   async launch() {
-    const { chromium } = (await loadPlaywright()).module;
+    const { chromium } = (await loadPlaywright(environment)).module;
     return chromium.launch({
       headless: true,
       executablePath: process.env.FORGE_CHROMIUM_PATH,
       args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader'],
     });
   },
-};
+});
 export interface CaptureSession {
   temp: string;
   browser: CaptureBrowser;
@@ -32,7 +34,7 @@ export interface CaptureSession {
     wireframe?: boolean,
   ): Promise<{
     bytes: Buffer;
-    camera: import('../domain/schema.js').CameraSnapshot;
+    camera: CameraSnapshot;
   }>;
 }
 /** A capture owns exactly one browser and workspace. Cleanup also runs on partial initialization. */
@@ -40,7 +42,7 @@ export async function withCaptureSession<T>(
   html: string,
   options: { width: number; height: number; ui?: boolean },
   action: (session: CaptureSession) => Promise<T>,
-  ports: CaptureDependencies = dependencies,
+  ports: CaptureDependencies = captureDependencies(),
 ): Promise<T> {
   const temp = await ports.createTemp();
   let browser: CaptureBrowser | undefined;
@@ -63,7 +65,7 @@ export async function withCaptureSession<T>(
     const pageErrors: string[] = [];
     page.on('pageerror', (error) => pageErrors.push(error.message));
     const assertRendered = async () => {
-      const error = await page.evaluate(() => window.forgeError);
+      const error = await page.evaluate(() => (window as unknown as RenderPageWindow).forgeError);
       if (error || pageErrors.length)
         fail('RENDER_FAILED', 'Scene preview failed to render.', { error, pageErrors });
     };
@@ -75,7 +77,10 @@ export async function withCaptureSession<T>(
       !options.ui,
     );
     await page.waitForFunction(
-      () => window.forgeReady || window.forgeError,
+      () => {
+        const rendered = window as unknown as RenderPageWindow;
+        return rendered.forgeReady || rendered.forgeError;
+      },
       {},
       { timeout: 30000 },
     );
@@ -87,7 +92,7 @@ export async function withCaptureSession<T>(
       async capture(request, grid, wireframe = false) {
         const camera = await page.evaluate(
           async ({ request, grid, wireframe }) => {
-            const viewer = window.forgeViewer;
+            const viewer = (window as unknown as RenderPageWindow).forgeViewer;
             viewer.clearSelection();
             viewer.configureCapture(request, wireframe);
             viewer.setGrid(grid);

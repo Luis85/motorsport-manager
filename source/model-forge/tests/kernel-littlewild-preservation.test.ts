@@ -4,12 +4,17 @@ import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import * as THREE from 'three';
-import { ModelSchema, SceneSchema, LittlewildAssetSchema, parse } from '../src/domain/schema.js';
-import { littlewildModels } from '../src/application/littlewild-import.js';
-import { littlewildModel } from '../src/application/littlewild.js';
-import { littlewildVisual, writeLittlewildAsset } from '../src/infra/littlewild.js';
-import { compileScene } from '../src/application/compiler.js';
-import { assertLittlewildComplexity } from '../src/application/littlewild-resources.js';
+import {
+  ModelSchema,
+  SceneSchema,
+  LittlewildAssetSchema,
+  parse,
+} from '../src/kernel/domain/schema.js';
+import { littlewildModels } from '../src/kernel/application/littlewild-import.js';
+import { littlewildModel } from '../src/kernel/application/littlewild.js';
+import { littlewildVisual, writeLittlewildAsset } from '../src/kernel/io/littlewild.js';
+import { compileScene } from '../src/kernel/application/compiler.js';
+import { assertLittlewildComplexity } from '../src/kernel/application/littlewild-resources.js';
 
 const mesh = {
   positions: [0.123456789, 0, 0, 1, 0, 0, 0, 1, 0],

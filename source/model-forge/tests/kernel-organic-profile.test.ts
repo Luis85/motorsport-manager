@@ -4,14 +4,18 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import * as THREE from 'three';
-import { SceneSchema, ModelSchema, OperationSchema, parse } from '../src/domain/schema.js';
-import { createSurfacePool } from '../src/application/surfaces.js';
-import { generateSurface } from '../src/application/surface-pattern.js';
-import { compileScene } from '../src/application/compiler.js';
-import { littlewildModel } from '../src/application/littlewild.js';
-import { littlewildModels } from '../src/application/littlewild-import.js';
-import { initProject, loadProject, commitOperations } from '../src/infra/project.js';
-import { exportScene, validateExport } from '../src/infra/export.js';
+import {
+  SceneSchema,
+  ModelSchema,
+  parse,
+  createSurfacePool,
+  generateSurface,
+  compileScene,
+  littlewildModel,
+  littlewildModels,
+  exportScene,
+  validateExport,
+} from '../src/kernel/index.js';
 
 const profile = [
   { at: -1, width: 1, depth: 1, offset: [0, 0] },
@@ -85,86 +89,6 @@ test('profile stations produce deterministic closed UV meshes with exact authore
   } finally {
     compiled.dispose();
     repeated.dispose();
-  }
-});
-
-test('profiles resolve parameters and reject unsafe shapes without changing a guarded project', async () => {
-  const root = await mkdtemp(path.join(tmpdir(), 'forge-profile-'));
-  try {
-    await initProject(root);
-    const before = await loadProject(root);
-    const operations = [
-      { op: 'putGeometry', id: 'body', geometry: body },
-      { op: 'putMaterial', id: 'cloth', material: { color: '#76865b', surface } },
-      { op: 'putNode', node: { id: 'torso', type: 'mesh', geometry: 'body', material: 'cloth' } },
-    ].map((value) => parse(OperationSchema, value));
-    const guards = { expectedRevision: before.scene.revision, expectedState: before.stateHash };
-    const dry = await commitOperations(root, undefined, operations, { ...guards, dryRun: true });
-    assert.equal((await loadProject(root)).stateHash, before.stateHash);
-    const applied = await commitOperations(root, undefined, operations, guards);
-    assert.equal(applied.stateHash, dry.proposedStateHash);
-    await assert.rejects(() => commitOperations(root, undefined, operations, guards), {
-      code: 'REVISION_CONFLICT',
-    });
-    for (const edit of [
-      (p: typeof profile) => {
-        p[0].at = -0.9;
-      },
-      (p: typeof profile) => {
-        p[2].at = p[1].at;
-      },
-      (p: typeof profile) => {
-        p[2].at = p[1].at + 0.01;
-      },
-      (p: typeof profile) => {
-        p[1].width = 0;
-      },
-      (p: typeof profile) => {
-        p[1].depth = 2.1;
-      },
-      (p: typeof profile) => {
-        p[1].offset[0] = 0.8;
-      },
-    ]) {
-      const changed = structuredClone(profile);
-      edit(changed);
-      await assert.rejects(
-        () =>
-          commitOperations(root, undefined, [
-            parse(OperationSchema, {
-              op: 'putGeometry',
-              id: 'body',
-              geometry: { ...body, profile: changed },
-            }),
-          ]),
-        { code: 'INVALID_GEOMETRY' },
-      );
-      assert.equal((await loadProject(root)).stateHash, applied.stateHash);
-    }
-    const parametric = parse(ModelSchema, {
-      schemaVersion: 1,
-      kind: 'model',
-      id: 'sculpted',
-      name: 'Sculpted body',
-      materials: scene().materials,
-      nodes: scene().nodes,
-      parameters: { waist: { default: 0.75, min: 0.1, max: 2 } },
-      geometries: {
-        body: {
-          ...body,
-          profile: profile.map((p, i) => (i === 2 ? { ...p, width: { $param: 'waist' } } : p)),
-        },
-      },
-    });
-    const doc = scene();
-    doc.nodes = parse(SceneSchema, {
-      ...doc,
-      nodes: [{ id: 'actor', type: 'model', model: parametric.id, parameters: { waist: 0.6 } }],
-    }).nodes;
-    const compiled = compileScene(doc, { [parametric.id]: parametric });
-    compiled.dispose();
-  } finally {
-    await rm(root, { recursive: true, force: true });
   }
 });
 

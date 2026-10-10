@@ -18,7 +18,13 @@ export interface PlaywrightEnvironment {
   entry?: string;
   execPath: string;
   platform: NodeJS.Platform;
+  /**
+   * Repository-relative package directory searched beside a repository-level executable.
+   * Defaults to `source/scene-forge`, whose lockfile installs Playwright.
+   */
+  packageDirectory?: string;
 }
+const defaultPackageDirectory = 'source/scene-forge';
 
 const notFound = (error: unknown) =>
   ['MODULE_NOT_FOUND', 'ERR_MODULE_NOT_FOUND'].includes(errorCode(error) ?? '');
@@ -33,8 +39,9 @@ function realDirectory(file: string | undefined) {
 }
 
 /**
- * Fallback directories, in order: the working directory, the Scene Forge package beside
- * a repository-level `bin/scene-forge`, and the global npm module root of this Node.
+ * Fallback directories, in order: the working directory, the tool package beside a
+ * repository-level executable (default: Scene Forge beside `bin/scene-forge`), and the
+ * global npm module root of this Node.
  * NODE_PATH is honored by every lookup.
  */
 export function playwrightSearchRoots(environment: PlaywrightEnvironment): string[] {
@@ -42,7 +49,9 @@ export function playwrightSearchRoots(environment: PlaywrightEnvironment): strin
   const prefix = path.dirname(environment.execPath);
   const roots = [
     environment.cwd,
-    ...(entry ? [path.join(entry, '..', 'source', 'scene-forge')] : []),
+    ...(entry
+      ? [path.join(entry, '..', environment.packageDirectory ?? defaultPackageDirectory)]
+      : []),
     environment.platform === 'win32' ? prefix : path.join(prefix, '..', 'lib'),
   ];
   return [...new Set(roots.map((root) => path.resolve(root)))];
@@ -54,16 +63,18 @@ export const playwrightRemedies = [
   'Then provide Chromium: npx playwright install chromium (Linux: --with-deps), or set FORGE_CHROMIUM_PATH.',
 ];
 
-const defaultEnvironment = (): PlaywrightEnvironment => ({
+/** The running process's environment, optionally naming the tool's package directory. */
+export const playwrightEnvironment = (packageDirectory?: string): PlaywrightEnvironment => ({
   cwd: process.cwd(),
   entry: process.argv[1],
   execPath: process.execPath,
   platform: process.platform,
+  ...(packageDirectory ? { packageDirectory } : {}),
 });
 
 /** Resolve Playwright or fail with PLAYWRIGHT_UNAVAILABLE and the searched locations. */
 export async function loadPlaywright(
-  environment: PlaywrightEnvironment = defaultEnvironment(),
+  environment: PlaywrightEnvironment = playwrightEnvironment(),
   importDefault: () => Promise<PlaywrightModule> = () => import('playwright'),
 ): Promise<PlaywrightLocation> {
   const reasons: string[] = [];

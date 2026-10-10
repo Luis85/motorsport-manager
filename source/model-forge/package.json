@@ -1,0 +1,37 @@
+{
+  "name": "model-forge-cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent-first standalone editor for exactly one 3D model recipe, and owner of the shared model recipe kernel.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "model-forge": "dist/cli.js"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "format": "prettier --write src tests scripts *.json",
+    "format:check": "prettier --check src tests scripts *.json",
+    "architecture:check": "node scripts/check-architecture.mjs"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "playwright": "^1.55.0",
+    "three": "0.186.1",
+    "three-bvh-csg": "^0.0.18",
+    "three-mesh-bvh": "0.9.7",
+    "zod": "^4.0.0",
+    "gltf-validator": "^2.0.0-dev.3.10"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/three": "^0.183.0",
+    "esbuild": "^0.25.0",
+    "prettier": "3.6.2",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

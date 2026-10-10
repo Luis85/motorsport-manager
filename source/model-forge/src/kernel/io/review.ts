@@ -11,19 +11,38 @@ import {
   type SceneDocument,
   type ModelLibrary,
 } from '../domain/schema.js';
-import { createPreview } from './preview.js';
 import { atomicWrite, writeJson } from './files.js';
 import { stateHash } from './state-hash.js';
-import { withCaptureSession } from './capture.js';
-import { VERSION } from '../version.js';
+import { withCaptureSession, type CaptureDependencies } from './capture.js';
 import { errorCode } from '../domain/errors.js';
+import type { RenderPageWindow } from '../render/page.js';
 
-export async function reviewScene(
+/** The product that renders a review: its render-only page and provenance identity. */
+export interface ReviewRenderer {
+  tool: string;
+  version: string;
+  /** Build a self-contained, render-only page that publishes the RenderPageWindow contract. */
+  buildHtml(
+    scene: SceneDocument,
+    models: ModelLibrary,
+    options: { stateHash?: string },
+  ): Promise<string>;
+  capture?: CaptureDependencies;
+}
+export interface ReviewOptions {
+  overwrite?: boolean;
+  sourceStateHash?: string;
+  target?: unknown;
+}
+
+/** Capture a review plan into a new directory with PNGs, a contact sheet and review.json. */
+export async function reviewRender(
   scene: SceneDocument,
   models: ModelLibrary,
   output: string,
   input: ReviewPlan,
-  options: { overwrite?: boolean; sourceStateHash?: string; target?: unknown } = {},
+  renderer: ReviewRenderer,
+  options: ReviewOptions = {},
 ) {
   scene = parse(SceneSchema, scene);
   const originalStateHash = stateHash(scene, models);
@@ -46,117 +65,127 @@ export async function reviewScene(
       'Review directory is not empty. Choose a new directory or pass --overwrite.',
     );
   const started = Date.now();
-  const html = await createPreview(scene, models, {
-    editable: false,
-    includeLibrary: false,
-    stateHash: options.sourceStateHash,
-  });
-  return withCaptureSession(html, plan, async ({ temp, browser, page, capture }) => {
-    const stats = await page.evaluate(() => window.forgeViewer.stats);
-    const frames = [];
-    for (const frame of plan.frames) {
-      const { bytes, camera } = await capture(frame.camera, plan.grid, plan.wireframe);
-      await fs.writeFile(path.join(temp, `${frame.id}.png`), bytes);
-      frames.push({
-        id: frame.id,
-        file: `${frame.id}.png`,
-        width: plan.width,
-        height: plan.height,
-        camera,
-        sha256: createHash('sha256').update(bytes).digest('hex'),
-        bytes: bytes.length,
-      });
-    }
-    let contactSheet: { file: string; width: number; height: number } | undefined;
-    if (plan.contactSheet) {
-      const images = await Promise.all(
-        frames.map(async (f) => ({
-          id: f.id,
-          url:
-            'data:image/png;base64,' +
-            (await fs.readFile(path.join(temp, f.file))).toString('base64'),
-        })),
+  const html = await renderer.buildHtml(scene, models, { stateHash: options.sourceStateHash });
+  return withCaptureSession(
+    html,
+    plan,
+    async ({ temp, browser, page, capture }) => {
+      const stats = await page.evaluate(
+        () => (window as unknown as RenderPageWindow).forgeViewer.stats,
       );
-      const result = await page.evaluate(
-        async ({ images, width, height }) => {
-          const scale = Math.min(1, 640 / width, 480 / height),
-            cellWidth = Math.max(1, Math.round(width * scale)),
-            cellHeight = Math.max(1, Math.round(height * scale)),
-            columns = Math.min(3, Math.ceil(Math.sqrt(images.length))),
-            rows = Math.ceil(images.length / columns),
-            label = 32;
-          const canvas = document.createElement('canvas');
-          canvas.width = columns * cellWidth;
-          canvas.height = rows * (cellHeight + label);
-          const ctx = canvas.getContext('2d')!;
-          ctx.fillStyle = '#171d25';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          for (const [i, frame] of images.entries()) {
-            const image = new Image();
-            image.src = frame.url;
-            await image.decode();
-            const x = (i % columns) * cellWidth,
-              y = Math.floor(i / columns) * (cellHeight + label);
-            ctx.drawImage(image, x, y + label, cellWidth, cellHeight);
-            ctx.fillStyle = '#edf2f7';
-            ctx.font = '14px sans-serif';
-            ctx.fillText(frame.id, x + 12, y + 22, Math.max(1, cellWidth - 24));
-          }
-          return { url: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height };
+      const frames = [];
+      for (const frame of plan.frames) {
+        const { bytes, camera } = await capture(frame.camera, plan.grid, plan.wireframe);
+        await fs.writeFile(path.join(temp, `${frame.id}.png`), bytes);
+        frames.push({
+          id: frame.id,
+          file: `${frame.id}.png`,
+          width: plan.width,
+          height: plan.height,
+          camera,
+          sha256: createHash('sha256').update(bytes).digest('hex'),
+          bytes: bytes.length,
+        });
+      }
+      let contactSheet: { file: string; width: number; height: number } | undefined;
+      if (plan.contactSheet) {
+        const images = await Promise.all(
+          frames.map(async (f) => ({
+            id: f.id,
+            url:
+              'data:image/png;base64,' +
+              (await fs.readFile(path.join(temp, f.file))).toString('base64'),
+          })),
+        );
+        const result = await page.evaluate(
+          async ({ images, width, height }) => {
+            const scale = Math.min(1, 640 / width, 480 / height),
+              cellWidth = Math.max(1, Math.round(width * scale)),
+              cellHeight = Math.max(1, Math.round(height * scale)),
+              columns = Math.min(3, Math.ceil(Math.sqrt(images.length))),
+              rows = Math.ceil(images.length / columns),
+              label = 32;
+            const canvas = document.createElement('canvas');
+            canvas.width = columns * cellWidth;
+            canvas.height = rows * (cellHeight + label);
+            const ctx = canvas.getContext('2d')!;
+            ctx.fillStyle = '#171d25';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            for (const [i, frame] of images.entries()) {
+              const image = new Image();
+              image.src = frame.url;
+              await image.decode();
+              const x = (i % columns) * cellWidth,
+                y = Math.floor(i / columns) * (cellHeight + label);
+              ctx.drawImage(image, x, y + label, cellWidth, cellHeight);
+              ctx.fillStyle = '#edf2f7';
+              ctx.font = '14px sans-serif';
+              ctx.fillText(frame.id, x + 12, y + 22, Math.max(1, cellWidth - 24));
+            }
+            return {
+              url: canvas.toDataURL('image/png'),
+              width: canvas.width,
+              height: canvas.height,
+            };
+          },
+          { images, width: plan.width, height: plan.height },
+        );
+        await fs.writeFile(
+          path.join(temp, 'contact-sheet.png'),
+          Buffer.from(result.url.split(',')[1], 'base64'),
+        );
+        contactSheet = { file: 'contact-sheet.png', width: result.width, height: result.height };
+      }
+      const manifest = {
+        schemaVersion: 1,
+        kind: 'review-result',
+        provenance: {
+          tool: renderer.tool,
+          version: renderer.version,
+          three: REVISION,
+          node: process.version,
+          platform: process.platform,
+          arch: process.arch,
+          chromium: browser.version(),
+          rendererRequested: 'ANGLE SwiftShader',
+          documentTransport: 'inline-html',
         },
-        { images, width: plan.width, height: plan.height },
-      );
-      await fs.writeFile(
-        path.join(temp, 'contact-sheet.png'),
-        Buffer.from(result.url.split(',')[1], 'base64'),
-      );
-      contactSheet = { file: 'contact-sheet.png', width: result.width, height: result.height };
-    }
-    const manifest = {
-      schemaVersion: 1,
-      kind: 'review-result',
-      provenance: {
-        tool: 'scene-forge',
-        version: VERSION,
-        three: REVISION,
-        node: process.version,
-        platform: process.platform,
-        arch: process.arch,
-        chromium: browser.version(),
-        rendererRequested: 'ANGLE SwiftShader',
-        documentTransport: 'inline-html',
-      },
-      scene: scene.id,
-      revision: scene.revision,
-      sourceStateHash: options.sourceStateHash ?? originalStateHash,
-      renderStateHash: stateHash(scene, models),
-      target: options.target ?? { scene: scene.id },
-      plan,
-      stats,
-      frames,
-      contactSheet,
-      replayPlan: 'replay-plan.json',
-      durationMs: Date.now() - started,
-    };
-    const replay = parse(ReviewPlanSchema, {
-      ...plan,
-      background: scene.environment.background,
-      frames: frames.map((f) => ({ id: f.id, camera: { fixed: f.camera } })),
-    });
-    await fs.mkdir(destination, { recursive: true });
-    for (const name of [...frames.map((f) => f.file), ...(contactSheet ? [contactSheet.file] : [])])
-      await atomicWrite(path.join(destination, name), await fs.readFile(path.join(temp, name)));
-    await writeJson(path.join(destination, 'replay-plan.json'), replay);
-    await writeJson(path.join(destination, 'review.json'), manifest);
-    return {
-      directory: destination,
-      manifest: path.join(destination, 'review.json'),
-      replayPlan: path.join(destination, 'replay-plan.json'),
-      contactSheet: contactSheet ? path.join(destination, contactSheet.file) : undefined,
-      frames: frames.map((f) => ({ ...f, path: path.join(destination, f.file) })),
-      stats,
-      durationMs: manifest.durationMs,
-      sourceStateHash: manifest.sourceStateHash,
-    };
-  });
+        scene: scene.id,
+        revision: scene.revision,
+        sourceStateHash: options.sourceStateHash ?? originalStateHash,
+        renderStateHash: stateHash(scene, models),
+        target: options.target ?? { scene: scene.id },
+        plan,
+        stats,
+        frames,
+        contactSheet,
+        replayPlan: 'replay-plan.json',
+        durationMs: Date.now() - started,
+      };
+      const replay = parse(ReviewPlanSchema, {
+        ...plan,
+        background: scene.environment.background,
+        frames: frames.map((f) => ({ id: f.id, camera: { fixed: f.camera } })),
+      });
+      await fs.mkdir(destination, { recursive: true });
+      for (const name of [
+        ...frames.map((f) => f.file),
+        ...(contactSheet ? [contactSheet.file] : []),
+      ])
+        await atomicWrite(path.join(destination, name), await fs.readFile(path.join(temp, name)));
+      await writeJson(path.join(destination, 'replay-plan.json'), replay);
+      await writeJson(path.join(destination, 'review.json'), manifest);
+      return {
+        directory: destination,
+        manifest: path.join(destination, 'review.json'),
+        replayPlan: path.join(destination, 'replay-plan.json'),
+        contactSheet: contactSheet ? path.join(destination, contactSheet.file) : undefined,
+        frames: frames.map((f) => ({ ...f, path: path.join(destination, f.file) })),
+        stats,
+        durationMs: manifest.durationMs,
+        sourceStateHash: manifest.sourceStateHash,
+      };
+    },
+    renderer.capture,
+  );
 }

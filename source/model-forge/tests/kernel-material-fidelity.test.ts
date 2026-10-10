@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { MeshPhysicalMaterial, MeshStandardMaterial } from 'three';
-import { MaterialSchema, ModelSchema, SceneSchema, parse } from '../src/domain/schema.js';
-import { createMaterial } from '../src/application/materials.js';
-import { compileScene } from '../src/application/compiler.js';
-import { littlewildModel } from '../src/application/littlewild.js';
-import { littlewildModels } from '../src/application/littlewild-import.js';
-import { exportScene, validateExport } from '../src/infra/export.js';
+import { MaterialSchema, ModelSchema, SceneSchema, parse } from '../src/kernel/domain/schema.js';
+import { createMaterial } from '../src/kernel/application/materials.js';
+import { compileScene } from '../src/kernel/application/compiler.js';
+import { littlewildModel } from '../src/kernel/application/littlewild.js';
+import { littlewildModels } from '../src/kernel/application/littlewild-import.js';
+import { exportScene, validateExport } from '../src/kernel/io/export.js';
 
 const coat = {
   color: '#bc8151',

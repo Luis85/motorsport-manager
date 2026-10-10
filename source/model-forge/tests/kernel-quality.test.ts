@@ -10,12 +10,14 @@ import {
   ModelSchema,
   CameraRequestSchema,
   CameraSnapshotSchema,
-} from '../src/domain/schema.js';
-import { compileScene } from '../src/application/compiler.js';
-import { auditScene } from '../src/application/quality.js';
-import { fitCamera, cameraData } from '../src/application/camera.js';
-import { exportScene, validateExport } from '../src/infra/export.js';
-import { readJson } from '../src/infra/project.js';
+  compileScene,
+  auditScene,
+  fitCamera,
+  cameraData,
+  exportScene,
+  validateExport,
+} from '../src/kernel/index.js';
+import { readJson } from '../src/kernel/index.js';
 
 const fixture = (extra: Record<string, unknown> = {}) =>
   parse(SceneSchema, {
