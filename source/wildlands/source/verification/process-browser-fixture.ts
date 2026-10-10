@@ -49,15 +49,24 @@ function studioHelpers(page: Page, context: BrowserContext, file: string, count:
  const applyDef = async () => { await page.locator('#de-apply').click(); const reset = page.locator('#de-apply-reset'); if (await reset.isVisible()) await reset.click(); await defOpen.waitFor({state: 'hidden'}); };
  // Exports live in the header's Export menu; Inputs & outputs is a collapsible panel that is closed below 1600px wide until opened.
  const exportVia = async (id: string) => { await page.locator('#export-menu').click(); await page.locator(id).click(); };
- const showIo = async () => { if (!(await page.locator('#io-panel').evaluate((d: HTMLDetailsElement) => d.open))) await page.locator('#io-panel > summary').click(); };
+ // The panel draws on its toggle event, a task after the click, so wait for its content.
+ const showIo = async () => {
+  if (!(await page.locator('#io-panel').evaluate((d: HTMLDetailsElement) => d.open))) await page.locator('#io-panel > summary').click();
+  await page.locator('#process-data > *').first().waitFor();
+ };
  const draftText = () => page.evaluate(() => (document.getElementById('draft') as HTMLTextAreaElement).value);
  const defOf = async () => JSON.parse(await draftText()) as LWProcess.Definition;
  const inSync = () => page.waitForFunction(() => document.getElementById('de-sync')!.textContent === 'Form in sync');
  const dialogOpen = () => page.locator('dialog.pd-dialog[open]').count();
  const activeId = () => page.evaluate(() => document.activeElement?.id ?? '');
+ // Switching or importing over a run past minute 0 (or an unapplied draft) asks first; these helpers answer with the confirming choice.
+ const asked = page.locator('dialog.ask-dialog[open]');
+ const confirmIfAsked = async () => { if (await asked.count()) { await page.locator('#ask-go').click(); await asked.waitFor({state: 'hidden'}); } };
  const switchTo = async (index: number) => {
   const select = page.locator('#process-switch'); await select.focus(); await select.selectOption(String(index));
-  await page.waitForFunction(i => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === i, index);
+  const active = (i: number) => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === i;
+  await page.waitForFunction(i => (globalThis as any).LWProcessStudio.query().active === i || !!document.querySelector('dialog.ask-dialog[open]'), index);
+  await confirmIfAsked(); await page.waitForFunction(active, index);
  };
  const nameOf = (i: number) => page.evaluate(n => (globalThis as unknown as {LWProcessStudio: {definitions(): {name: string}[]}}).LWProcessStudio.definitions()[n]!.name, i);
  const allNames = async () => { const names: string[] = []; for (let i = 0; i < count; i++) names.push(await nameOf(i)); return names; };
@@ -67,7 +76,10 @@ function studioHelpers(page: Page, context: BrowserContext, file: string, count:
  };
  const importJson = async (name: string, definition: object) => {
   await page.locator('#file').setInputFiles({name, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(definition))});
-  await page.waitForFunction(n => document.getElementById('message')!.textContent!.includes('Imported ' + n), name);
+  const settled = (n: string) => document.getElementById('message')!.textContent!.includes('Imported ' + n)
+   || !!document.querySelector('dialog.ask-dialog[open]');
+  await page.waitForFunction(settled, name);
+  await confirmIfAsked(); await page.waitForFunction(n => document.getElementById('message')!.textContent!.includes('Imported ' + n), name);
  };
  const importFeed = async (extra: object = {}) => { await freshStudio(); await importJson('feed-line.json', feedFixture(extra)); };
  const importRandom = async () => {
