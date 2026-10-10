@@ -21,6 +21,8 @@ Use `model capture` to extract an assembly, `model export`/`model import` to tra
 
 The offline composer downloads guarded JSON batches through Save edits. Apply the file through the CLI, then regenerate the preview. New model imports require a regenerated palette.
 
+For procedural content use `terrain add` (presets), `scatter` (poisson `--spacing` or `--count` over `--area`/`--on <terrain>`) and `layout` (`--path` or `--grid`). They plan inside the project lock and commit ordinary `putNode` batches: dry-run first, then follow the returned guarded `nextCommands`. Change only `--seed` to vary a result; save the echoed `recipe` and replay it with `scatter --file`. Regenerate a group with `--replace` (never hand-delete `<group>-<n>` nodes), and rerun grounded scatters after `terrain add --replace` (its `staleScatterGroups`). Review the result; structural success does not prove placements look right.
+
 Use filtered `node edit` or `patchNodes` for intentional bulk changes. Dry-run results include exact added/updated/removed IDs, `proposedRevision` and `proposedStateHash`; `stateHash` remains the current state on a dry run. Operation failures identify their zero-based batch index when available.
 
 All `put` operations replace the full definition. `patchNode` merges only supplied properties, transform components and named overrides. Preserve fields you intend to retain. Scene history does not version model definitions; use Git for full-project history. Never remove another running process's `.forge.lock`.

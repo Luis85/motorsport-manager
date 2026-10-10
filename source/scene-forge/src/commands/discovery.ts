@@ -10,6 +10,7 @@ import {
 } from '../kernel.js';
 import { VERSION } from '../version.js';
 import type { CommandContext } from './context.js';
+import { proceduralCatalog } from './procedural-catalog.js';
 export function registerDiscoveryCommands(c: CommandContext) {
   const { program, output, writeOut } = c;
   program
@@ -188,6 +189,7 @@ export function registerDiscoveryCommands(c: CommandContext) {
           limits: littlewildLimits,
           check: 'littlewild sync --check fails when a definition is stale',
         },
+        procedural: proceduralCatalog(program.name()),
         lights: ['point', 'spot', 'directional'],
         materialShading: ['standard', 'unlit'],
         materialDepthWrite:

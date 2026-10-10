@@ -77,6 +77,19 @@ forge3d -p my-assets scene pack --out my-assets/exports/scene.recipe.json
 
 The [agent operating guide](./docs/AGENT_WORKFLOW.md) covers the complete loop, procedural expressions, selectors, review plans and portable source bundles. The new `examples/procedural` project shows rack dimensions, shelf counts and nested cargo dimensions derived from parameters.
 
+## Procedural generation
+
+Seeded terrain, scatter and layout compile to ordinary guarded scene edits through the shared kernel's planner, so the same seed always gives the same scene bytes and `stateHash`:
+
+```text
+forge3d -p my-project terrain add ground --preset hills --size 48,48 --seed 7
+forge3d -p my-project scatter --model pine,rock:2 --on ground --spacing 3 --seed 42 --group forest --dry-run
+forge3d -p my-project layout --model post --path "-8,-8;8,-8;8,8" --spacing 2 --on ground --group fence
+forge3d -p my-project terrain sample ground --at "0,0;12,-6"
+```
+
+Each result echoes the normalized `scatter` recipe and its `recipeHash` for replay with `scatter --file` (`schema --kind scatter`), and `catalog` lists presets, limits and examples under `procedural`. See [Procedural generation](../../docs/reference/scene-forge-cli.md#procedural-generation) in the handbook.
+
 ## Littlewild / Wildlands exchange
 
 Scene Forge is the modeling tool for the Wildlands engine in `../wildlands/`. A `littlewild-export` manifest maps models and variants to Littlewild definitions:

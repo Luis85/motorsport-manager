@@ -713,6 +713,47 @@ export declare function commitOperations(start: string, sceneId: string | undefi
     operations: number;
     stats: import("../kernel.js").SceneStats;
 }>;
+/**
+ * Plan operations from the locked snapshot once its guards pass (procedural commands read
+ * the current scene to place content), then commit them exactly like commitOperations.
+ */
+export declare function commitPlanned<T extends object>(start: string, sceneId: string | undefined, plan: (snapshot: Snapshot) => {
+    operations: Operation[];
+    report: T;
+}, options?: EditOptions): Promise<{
+    scene: string;
+    revision: number;
+    stateHash: string;
+    proposedStateHash: string;
+    proposedRevision: number;
+    changes: {
+        nodes: {
+            added: string[];
+            updated: string[];
+            removed: string[];
+        };
+        geometries: {
+            added: string[];
+            updated: string[];
+            removed: string[];
+        };
+        materials: {
+            added: string[];
+            updated: string[];
+            removed: string[];
+        };
+        parameters: {
+            added: string[];
+            updated: string[];
+            removed: string[];
+        };
+        settings: ("name" | "camera" | "environment")[];
+    };
+    changed: boolean;
+    dryRun: boolean;
+    operations: number;
+    stats: import("../kernel.js").SceneStats;
+} & T>;
 export declare function importModel(start: string, input: unknown, replace?: boolean, options?: EditOptions): Promise<{
     id: string;
     dryRun: boolean;

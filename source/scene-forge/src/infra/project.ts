@@ -162,12 +162,32 @@ export async function commitOperations(
   return withLock(root, async () => {
     const snapshot = await loadUnlocked(root, sceneId);
     const { next, result } = prepareSceneEdit(snapshot, ops, options, stateHash);
-    if (result.changed && !options.dryRun) {
-      const { scene, manifest } = snapshot;
-      await writeJson(await inside(root, `history/${scene.id}/${scene.revision}.json`), scene);
-      await writeJson(await inside(root, manifest.scenes[scene.id]), next);
-    }
+    if (result.changed && !options.dryRun) await persistScene(root, snapshot, next);
     return result;
+  });
+}
+async function persistScene(root: string, { scene, manifest }: Snapshot, next: SceneDocument) {
+  await writeJson(await inside(root, `history/${scene.id}/${scene.revision}.json`), scene);
+  await writeJson(await inside(root, manifest.scenes[scene.id]), next);
+}
+/**
+ * Plan operations from the locked snapshot once its guards pass (procedural commands read
+ * the current scene to place content), then commit them exactly like commitOperations.
+ */
+export async function commitPlanned<T extends object>(
+  start: string,
+  sceneId: string | undefined,
+  plan: (snapshot: Snapshot) => { operations: Operation[]; report: T },
+  options: EditOptions = {},
+) {
+  const root = await findProject(start);
+  return withLock(root, async () => {
+    const snapshot = await loadUnlocked(root, sceneId);
+    checkGuards(snapshot, options);
+    const { operations, report } = plan(snapshot);
+    const { next, result } = prepareSceneEdit(snapshot, operations, options, stateHash);
+    if (result.changed && !options.dryRun) await persistScene(root, snapshot, next);
+    return { ...result, ...report };
   });
 }
 

@@ -20,6 +20,7 @@ import {
   PatternSchema,
   RigSchema,
   LittlewildAssetSchema,
+  ScatterRecipeSchema,
 } from '../kernel.js';
 
 /** Scene Forge project, composition and bundle contracts built on the model recipe kernel. */
@@ -96,6 +97,7 @@ export const schemas = {
   pattern: PatternSchema,
   rig: RigSchema,
   'littlewild-export': LittlewildExportSchema,
+  scatter: ScatterRecipeSchema,
 } satisfies Record<string, z.ZodType>;
 
 export const schemaKinds = Object.keys(schemas) as (keyof typeof schemas)[];

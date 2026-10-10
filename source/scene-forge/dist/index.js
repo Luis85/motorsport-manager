@@ -1552,7 +1552,7 @@ function createMaterial(m, surfaces) {
       "MATERIAL_DEPTH_WRITE",
       "Disabling depth writes requires opacity below 1 for portable alpha blending."
     );
-  const common = {
+  const common2 = {
     color: m.color,
     opacity: m.opacity,
     transparent: m.opacity < 1,
@@ -1566,9 +1566,9 @@ function createMaterial(m, surfaces) {
       "INVALID_MATERIAL",
       "Surface detail requires standard PBR shading; remove surface or use standard shading."
     );
-  if (m.shading === "unlit") return new THREE5.MeshBasicMaterial(common);
+  if (m.shading === "unlit") return new THREE5.MeshBasicMaterial(common2);
   const standard = {
-    ...common,
+    ...common2,
     metalness: m.metalness,
     roughness: m.roughness,
     emissive: m.emissive ?? "#000000",
@@ -2908,7 +2908,7 @@ function auditScene(scene, models = {}, input = {}) {
         bounds.union(g.boundingBox.clone().applyMatrix4(object.matrixWorld));
       }
       if (!degenerate.has(g)) {
-        let invalid2 = 0;
+        let invalid3 = 0;
         for (let i = 0; i < count * 3; i += 3) {
           const at2 = (offset) => g.index ? g.index.getX(i + offset) : i + offset;
           a.fromBufferAttribute(position, at2(0));
@@ -2917,19 +2917,19 @@ function auditScene(scene, models = {}, input = {}) {
           ab.subVectors(b, a);
           ac.subVectors(c, a);
           const edge = Math.max(ab.lengthSq(), ac.lengthSq(), b.distanceToSquared(c));
-          if (ab.cross(ac).lengthSq() <= edge * edge * 1e-24) invalid2++;
+          if (ab.cross(ac).lengthSq() <= edge * edge * 1e-24) invalid3++;
         }
-        degenerate.set(g, invalid2);
+        degenerate.set(g, invalid3);
       }
-      const invalid = degenerate.get(g);
-      if (invalid)
+      const invalid2 = degenerate.get(g);
+      if (invalid2)
         add(
           "DEGENERATE_TRIANGLES",
           "error",
           "Visible geometry contains zero-area or nearly collinear triangles.",
           "Repair mesh indices/positions or revise boolean operands; inspect the listed paths.",
           object.name,
-          invalid
+          invalid2
         );
       if (policy.requireUVs && !g.hasAttribute("uv"))
         add(
@@ -5273,7 +5273,8 @@ var schemas = {
   "quality-policy": QualityPolicySchema,
   pattern: PatternSchema,
   rig: RigSchema,
-  "littlewild-export": LittlewildExportSchema
+  "littlewild-export": LittlewildExportSchema,
+  scatter: ScatterRecipeSchema
 };
 var schemaKinds = Object.keys(schemas);
 function jsonSchema(kind) {
@@ -5612,12 +5613,23 @@ async function commitOperations(start, sceneId, ops, options = {}) {
   return withLock(root, async () => {
     const snapshot = await loadUnlocked(root, sceneId);
     const { next, result } = prepareSceneEdit(snapshot, ops, options, stateHash);
-    if (result.changed && !options.dryRun) {
-      const { scene, manifest } = snapshot;
-      await writeJson(await inside(root, `history/${scene.id}/${scene.revision}.json`), scene);
-      await writeJson(await inside(root, manifest.scenes[scene.id]), next);
-    }
+    if (result.changed && !options.dryRun) await persistScene(root, snapshot, next);
     return result;
+  });
+}
+async function persistScene(root, { scene, manifest }, next) {
+  await writeJson(await inside(root, `history/${scene.id}/${scene.revision}.json`), scene);
+  await writeJson(await inside(root, manifest.scenes[scene.id]), next);
+}
+async function commitPlanned(start, sceneId, plan, options = {}) {
+  const root = await findProject(start);
+  return withLock(root, async () => {
+    const snapshot = await loadUnlocked(root, sceneId);
+    checkGuards(snapshot, options);
+    const { operations, report } = plan(snapshot);
+    const { next, result } = prepareSceneEdit(snapshot, operations, options, stateHash);
+    if (result.changed && !options.dryRun) await persistScene(root, snapshot, next);
+    return { ...result, ...report };
   });
 }
 async function importModel(start, input, replace = false, options = {}) {
@@ -6003,11 +6015,17 @@ function registerExampleCommands(c) {
 }
 
 // src/commands/create-cli.ts
-import { Command as Command2, CommanderError as CommanderError2 } from "commander";
+import { Command as Command3, CommanderError as CommanderError2 } from "commander";
 import path12 from "node:path";
 
 // src/commands/errors.ts
 import { CommanderError } from "commander";
+function withHint(error, hints) {
+  if (error instanceof ForgeError && Object.hasOwn(hints, error.code))
+    return Object.assign(error, { hint: hints[error.code] });
+  return error;
+}
+var ownHint = (error) => "hint" in error && typeof error.hint === "string" ? error.hint : void 0;
 function formatCliError(error) {
   const forge = error instanceof ForgeError ? error : new ForgeError(
     error instanceof CommanderError ? "CLI_USAGE" : "INTERNAL_ERROR",
@@ -6019,7 +6037,7 @@ function formatCliError(error) {
       error: {
         code: forge.code,
         message: forge.message,
-        hint: {
+        hint: ownHint(forge) ?? {
           SCHEMA_INVALID: "Run schema --kind <kind> --raw and repair the reported field paths.",
           CLI_USAGE: "Run describe <command path> to discover accepted arguments and flags.",
           REFERENCE_MISSING: "Inspect registered models and node IDs before retrying.",
@@ -6099,6 +6117,68 @@ var parseParameters = (value) => parse(z12.record(Id, NumberValue), parseJson(va
 
 // src/commands/discovery.ts
 import { Option } from "commander";
+
+// src/commands/procedural-catalog.ts
+function proceduralCatalog(name) {
+  const cli = `${name} -p <project>`;
+  return {
+    commands: ["scatter", "layout", "terrain add", "terrain sample"],
+    recipe: "scatter (schema --kind scatter --raw). Flags compile to this recipe; every result echoes the normalized recipe and recipeHash, and --file/--data replays it.",
+    determinism: "Same scene, model library, recipe and seed give the same operations, scene bytes and stateHash. Keyed PRNG (cyrb128 seed|stream -> sfc32); each candidate draws from its own stream, so exclusions never reshuffle survivors.",
+    distributions: {
+      poisson: "scatter --spacing <meters>: even blue noise, no two closer than spacing",
+      random: "scatter --count <n>: uniform random points",
+      path: 'layout --path "x,z;x,z" --spacing <meters> [--orient yaw|none]',
+      grid: "layout --grid CxR --step <meters> [--jitter 0..1] [--center x,z]"
+    },
+    areas: ["rect:x0,z0,x1,z1", "circle:x,z,radius", "polygon:x,z;x,z;x,z[;...]"],
+    defaultArea: "scatter --on <terrain> without --area or --parent covers the terrain footprint",
+    grounding: "--on <heightfield node> sets each origin on the rendered surface (--sink, --max-slope). Terrain and parent chains may only translate, yaw and scale uniformly (TERRAIN_TRANSFORM). Without --on, origins sit at y 0 of the frame.",
+    output: {
+      ids: "<group>-1..<group>-N under one group node",
+      tags: ["scatter (group)", "scatter:<recipeHash8> (group and every instance)"],
+      result: "normal edit result + recipe + placement{seed, recipeHash, group, placed, candidates, rejected{outside, exclusion, slope, budget}} + nextCommands",
+      regenerate: "--replace removes the group subtree first; rerunning the same recipe with --replace leaves the revision unchanged"
+    },
+    terrain: {
+      presets: Object.fromEntries(
+        terrainPresetNames.map((p) => [p, terrainPresets[p].description])
+      ),
+      defaultPreset: defaultTerrainPreset,
+      creates: "mesh node <id> (tag terrain), geometry <id>_geo (heightfield), material <id>_mat",
+      coloring: "Presets color by height bands through vertex colors; --color or --material makes a solid surface without bands",
+      geometry: "heightfield (schema --kind geometry --raw)",
+      replace: "--replace regenerates the terrain; placements keep their heights, so rerun the result.staleScatterGroups with scatter --replace"
+    },
+    guards: ["--dry-run", "--expected-revision", "--expected-state"],
+    limits: {
+      placements: PROCEDURAL_MAX_PLACEMENTS,
+      candidates: PROCEDURAL_MAX_CANDIDATES,
+      sceneNodes: 1e4,
+      items: 32,
+      exclusions: 64,
+      areaPoints: 256,
+      terrainResolution: HEIGHTFIELD_MAX_RESOLUTION,
+      samplePoints: 256
+    },
+    errors: {
+      DUPLICATE_ID: "group exists: --replace with guards, or another --group",
+      SCATTER_EMPTY: "nothing placed: read details.rejected, loosen spacing/area or --allow-empty",
+      PROCEDURAL_BUDGET: "too many candidates or placements: raise spacing, shrink area, --max",
+      TERRAIN_TRANSFORM: "tilted or non-uniformly scaled terrain/parent chain"
+    },
+    examples: [
+      `${cli} terrain add ground --preset hills --size 48,48 --seed 7`,
+      `${cli} terrain sample ground --at "0,0;10,-4"`,
+      `${cli} scatter --model tree,rock:2 --on ground --spacing 3 --scale 0.8..1.3 --seed 42 --group forest --dry-run`,
+      `${cli} layout --model post --path "-20,-20;20,-20;20,20" --spacing 2 --on ground --group fence`,
+      `${cli} layout --model crate --grid 4x3 --step 1.5 --center 0,5 --group stock`,
+      `${cli} scatter --file forest.scatter.json --replace --expected-revision <n> --expected-state <hash>`
+    ]
+  };
+}
+
+// src/commands/discovery.ts
 function registerDiscoveryCommands(c) {
   const { program, output, writeOut } = c;
   program.command("catalog").description("Discover commands, geometry types, conventions and limits").action(
@@ -6259,6 +6339,7 @@ function registerDiscoveryCommands(c) {
         limits: littlewildLimits,
         check: "littlewild sync --check fails when a definition is stale"
       },
+      procedural: proceduralCatalog(program.name()),
       lights: ["point", "spot", "directional"],
       materialShading: ["standard", "unlit"],
       materialDepthWrite: "Optional boolean. Use false for alpha-blended shadow decals (opacity < 1); GLB uses alphaMode BLEND.",
@@ -7203,6 +7284,418 @@ function registerLittlewildCommands(c) {
   });
 }
 
+// src/commands/procedural.ts
+import { Option as Option6 } from "commander";
+
+// src/domain/procedural.ts
+var invalid = (flag, expected, value) => fail("INVALID_OPTION", `${flag} expects ${expected}, got ${JSON.stringify(value)}.`, {
+  flag,
+  value
+});
+function numbersOf(text, flag, expected, count) {
+  const parts = text.split(",");
+  const values = parts.map(Number);
+  if (parts.some((part) => !part.trim()) || values.some((n) => !Number.isFinite(n)) || count !== void 0 && values.length !== count)
+    invalid(flag, expected, text);
+  return values;
+}
+function parsePoints(text, flag, minimum = 1) {
+  const points = text.split(";").map((part) => numbersOf(part, flag, "semicolon-separated x,z points", 2));
+  if (points.length < minimum) invalid(flag, `at least ${minimum} x,z points`, text);
+  return points;
+}
+function parseRange(text, flag) {
+  const parts = text.split("..");
+  const [low, high] = parts.map((part) => part.trim() ? Number(part) : NaN);
+  const range2 = [low, parts.length === 1 ? low : high];
+  if (parts.length > 2 || range2.some((v) => !Number.isFinite(v)) || range2[0] > range2[1])
+    invalid(flag, "a range min..max (or one value)", text);
+  return range2;
+}
+function parseArea(text, flag = "--area") {
+  const [type, body = ""] = text.split(/:(.*)/s);
+  if (type === "rect") {
+    const [x0, z0, x1, z1] = numbersOf(body, flag, "rect:x0,z0,x1,z1", 4);
+    return {
+      type: "rect",
+      min: [Math.min(x0, x1), Math.min(z0, z1)],
+      max: [Math.max(x0, x1), Math.max(z0, z1)]
+    };
+  }
+  if (type === "circle") {
+    const [x, z13, radius] = numbersOf(body, flag, "circle:x,z,radius", 3);
+    return { type: "circle", center: [x, z13], radius };
+  }
+  if (type === "polygon") return { type: "polygon", points: parsePoints(body, flag, 3) };
+  return invalid(flag, "rect:x0,z0,x1,z1, circle:x,z,r or polygon:x,z;x,z;x,z", text);
+}
+function parseItems(text) {
+  return text.split(",").map((entry) => {
+    const [model, weight] = entry.trim().split(":");
+    if (!model) invalid("--model", "model IDs, optionally weighted as id:weight", text);
+    if (weight === void 0) return { model };
+    const value = Number(weight);
+    if (!weight.trim() || !(value > 0)) invalid("--model", "a positive weight after id:", text);
+    return { model, weight: value };
+  });
+}
+function parseGrid(text) {
+  const match = /^(\d+)x(\d+)$/i.exec(text.trim());
+  const counts = match ? [Number(match[1]), Number(match[2])] : void 0;
+  if (!counts || counts.some((n) => n < 1))
+    return invalid("--grid", "COLUMNSxROWS such as 4x3", text);
+  return counts;
+}
+var recipeFlags = [
+  "model",
+  "area",
+  "spacing",
+  "count",
+  "parent",
+  "on",
+  "sink",
+  "maxSlope",
+  "scale",
+  "yaw",
+  "max",
+  "exclude",
+  "avoid",
+  "margin"
+];
+function common(flags, defaultGroup, defaultYaw) {
+  if (!flags.model) fail("INPUT_REQUIRED", "Pass --model <id[,id:weight...]> or a recipe --file.");
+  const items = parseItems(flags.model);
+  if ((flags.sink !== void 0 || flags.maxSlope !== void 0) && !flags.on)
+    fail("INVALID_OPTION", "--sink and --max-slope apply only with --on <terrain node>.");
+  if (flags.margin !== void 0 && !flags.avoid)
+    fail("INVALID_OPTION", "--margin applies only with --avoid <ids>.");
+  const yaw = flags.yaw ? parseRange(flags.yaw, "--yaw") : defaultYaw;
+  return {
+    schemaVersion: 1,
+    kind: "scatter",
+    ...flags.seed !== void 0 ? { seed: flags.seed } : {},
+    group: flags.group ?? `${items[0].model.slice(0, 48)}-${defaultGroup}`,
+    ...flags.parent ? { parent: flags.parent } : {},
+    ...flags.exclude?.length ? { exclude: flags.exclude.map((a) => parseArea(a, "--exclude")) } : {},
+    ...flags.avoid ? {
+      avoidNodes: {
+        ids: flags.avoid.split(",").map((id) => id.trim()),
+        ...flags.margin !== void 0 ? { margin: flags.margin } : {}
+      }
+    } : {},
+    ...flags.max !== void 0 ? { maxCount: flags.max } : {},
+    items,
+    ...flags.scale ? { scale: parseRange(flags.scale, "--scale") } : {},
+    ...yaw ? { rotation: { yaw } } : {},
+    ...flags.on ? {
+      ground: {
+        mode: "terrain",
+        node: flags.on,
+        ...flags.sink !== void 0 ? { sink: flags.sink } : {},
+        ...flags.maxSlope !== void 0 ? { maxSlope: flags.maxSlope } : {}
+      }
+    } : {}
+  };
+}
+function terrainFootprint(scene, node) {
+  const [sx, sz] = terrainSpec(scene, node).size;
+  const frame = nodeFrame(scene, node, "terrain");
+  const corners = [
+    [-sx / 2, -sz / 2],
+    [sx / 2, -sz / 2],
+    [sx / 2, sz / 2],
+    [-sx / 2, sz / 2]
+  ].map(([x, z13]) => {
+    const p = applySimilarity(frame, [x, 0, z13]);
+    return [p[0], p[2]];
+  });
+  if (Math.abs(frame.yaw % (2 * Math.PI)) > 1e-12) return { type: "polygon", points: corners };
+  return { type: "rect", min: corners[0], max: corners[2] };
+}
+function scatterRecipe(flags, scene) {
+  if (flags.spacing === void 0 === (flags.count === void 0))
+    fail(
+      "INPUT_REQUIRED",
+      "Pass exactly one of --spacing <meters> (even blue noise) or --count <n>."
+    );
+  let area;
+  if (flags.area) area = parseArea(flags.area);
+  else if (flags.on && !flags.parent) area = terrainFootprint(scene, flags.on);
+  else
+    return fail("INPUT_REQUIRED", "Pass --area rect:x0,z0,x1,z1|circle:x,z,r|polygon:x,z;...", {
+      hint: "--area may be omitted only with --on <terrain> and no --parent: it then covers the terrain."
+    });
+  return {
+    ...common(flags, "scatter"),
+    area,
+    distribution: flags.spacing !== void 0 ? { type: "poisson", minDistance: flags.spacing } : { type: "random", count: flags.count }
+  };
+}
+function layoutRecipe(flags) {
+  if (!!flags.path === !!flags.grid)
+    fail("INPUT_REQUIRED", 'Pass exactly one of --path "x,z;x,z;..." or --grid COLUMNSxROWS.');
+  if (flags.path) {
+    if (flags.spacing === void 0) fail("INPUT_REQUIRED", "--path needs --spacing <meters>.");
+    if (flags.step || flags.jitter !== void 0 || flags.center)
+      fail("INVALID_OPTION", "--step, --jitter and --center apply only to --grid.");
+    return {
+      ...common(flags, "layout", [0, 0]),
+      distribution: {
+        type: "path",
+        points: parsePoints(flags.path, "--path", 2),
+        spacing: flags.spacing,
+        orient: flags.orient ?? "yaw"
+      }
+    };
+  }
+  if (flags.spacing !== void 0 || flags.orient)
+    fail("INVALID_OPTION", "--spacing and --orient apply only to --path; use --step for --grid.");
+  if (!flags.step) return fail("INPUT_REQUIRED", "--grid needs --step <meters>.");
+  const steps = numbersOf(flags.step, "--step", "one spacing s, or s,s", void 0);
+  if (steps.length > 2 || steps.some((s) => !(s > 0)) || steps[0] !== steps.at(-1))
+    fail("INVALID_OPTION", "Grid layouts use one positive step on both axes.", {
+      step: flags.step,
+      hint: "Pass --step s. For different row spacing, lay out each row with --path."
+    });
+  const [columns, rows] = parseGrid(flags.grid);
+  const step = steps[0];
+  const [cx, cz] = flags.center ? numbersOf(flags.center, "--center", "x,z", 2) : [0, 0];
+  const half = (count) => (count - 1) * step / 2 + step * 0.4999;
+  return {
+    ...common(flags, "layout", [0, 0]),
+    area: {
+      type: "rect",
+      min: [cx - half(columns), cz - half(rows)],
+      max: [cx + half(columns), cz + half(rows)]
+    },
+    distribution: {
+      type: "grid",
+      step,
+      ...flags.jitter !== void 0 ? { jitter: flags.jitter } : {}
+    }
+  };
+}
+
+// src/commands/procedural.ts
+var numeric = (value) => {
+  const n = Number(value);
+  if (!value.trim() || !Number.isFinite(n))
+    fail("INVALID_OPTION", `Expected a number, got ${JSON.stringify(value)}.`);
+  return n;
+};
+var collect2 = (value, previous = []) => [...previous, value];
+var placementHints = {
+  DUPLICATE_ID: "The group (or one of its <group>-<n> IDs) exists. Pass --replace with --expected-revision/--expected-state to regenerate the group, or choose another --group.",
+  SCATTER_EMPTY: "Nothing was placed; read details.rejected. Lower --spacing, widen --area, relax --max-slope, --exclude or --avoid/--margin, or pass --allow-empty.",
+  PROCEDURAL_BUDGET: "Raise --spacing or --step, shrink --area or the path, or lower --max/--count. Limits: catalog procedural.limits."
+};
+var placementOptions = (cmd) => cmd.option(
+  "--seed <n>",
+  "Seed 0..4294967295; the same seed replays identically (default 1)",
+  integer
+).option("--group <id>", "Group node owning the placements <group>-<n>").option("--parent <id>", "Existing parent node; x,z coordinates are in its frame").option("--on <node>", "Ground every placement on this heightfield terrain node").option("--sink <meters>", "With --on: sink origins below the surface", numeric).option("--max-slope <degrees>", "With --on: reject steeper ground (0-90)", numeric).option("--scale <min..max>", "Uniform scale range, or one value").option("--yaw <min..max>", "Yaw range in degrees, or one value").option("--max <n>", "Keep at most n placements (keyed subset)", integer).option("--exclude <area>", "Keep-out area (repeatable), same syntax as --area", collect2).option("--avoid <ids>", "Keep clear of these nodes' XZ bounds").option("--margin <meters>", "With --avoid: extra clearance", numeric).option("--replace", "Regenerate: remove an existing group of the same ID first").option("--allow-empty", "Write an empty group instead of failing with SCATTER_EMPTY");
+function registerProceduralCommands(c) {
+  const { program, global, output, input, sourceOptions: sourceOptions2, editOptions: editOptions2, snapshot } = c;
+  const name = program.name();
+  async function place(opts, recipeOf) {
+    const { project, scene } = global();
+    const result = await commitPlanned(
+      project,
+      scene,
+      (s) => {
+        try {
+          const plan = planScatter(s.scene, s.models, recipeOf(s.scene), {
+            replace: !!opts.replace,
+            allowEmpty: !!opts.allowEmpty
+          });
+          return {
+            operations: plan.operations,
+            report: { recipe: plan.recipe, placement: plan.placement }
+          };
+        } catch (error) {
+          throw withHint(error, placementHints);
+        }
+      },
+      opts
+    );
+    const cli = [name, "-p", project, ...scene ? ["-s", scene] : []];
+    const tag = `scatter:${result.placement.recipeHash.slice(0, 8)}`;
+    const nextCommands = result.dryRun ? [
+      [
+        ...cli,
+        "scatter",
+        "--data",
+        JSON.stringify(result.recipe),
+        ...opts.replace ? ["--replace"] : [],
+        ...opts.allowEmpty ? ["--allow-empty"] : [],
+        "--expected-revision",
+        String(result.revision),
+        "--expected-state",
+        result.stateHash
+      ]
+    ] : [
+      [...cli, "node", "list", "--tag", tag, "--details", "--limit", "5"],
+      [...cli, "review", "--out", `${project}/exports/review-r${result.revision}`]
+    ];
+    return { ...result, nextCommands };
+  }
+  async function recipeInput(opts) {
+    const used = recipeFlags.filter((flag) => opts[flag] !== void 0);
+    if (used.length)
+      fail(
+        "INVALID_OPTION",
+        "A recipe file already defines the placement; drop the recipe flags.",
+        {
+          flags: used,
+          hint: "With --file/--data only --seed and --group override the recipe."
+        }
+      );
+    const recipe = await input(opts);
+    if (!recipe || typeof recipe !== "object" || Array.isArray(recipe)) return recipe;
+    return {
+      ...recipe,
+      ...opts.seed !== void 0 ? { seed: opts.seed } : {},
+      ...opts.group !== void 0 ? { group: opts.group } : {}
+    };
+  }
+  editOptions2(
+    placementOptions(
+      sourceOptions2(
+        program.command("scatter").description(
+          "Scatter registered models over an area or terrain, deterministically from a seed"
+        )
+      ).option("--model <ids>", "Registered models, optionally weighted: rock,tree:3").option(
+        "--area <area>",
+        "rect:x0,z0,x1,z1 | circle:x,z,r | polygon:x,z;x,z;x,z (default with --on: the terrain)"
+      ).option("--spacing <meters>", "Minimum distance between placements (blue noise)", numeric).option("--count <n>", "Uniform random placements instead of --spacing", integer)
+    )
+  ).action(async (opts) => {
+    const fromRecipe = opts.file !== void 0 || opts.data !== void 0;
+    const recipe = fromRecipe ? await recipeInput(opts) : void 0;
+    output(await place(opts, (scene) => fromRecipe ? recipe : scatterRecipe(opts, scene)));
+  });
+  editOptions2(
+    placementOptions(
+      program.command("layout").description("Place models evenly along a path or on a grid (yaw 0 unless --yaw)").option("--model <ids>", "Registered models, optionally weighted: post,lamp:0.2").option("--path <points>", 'Polyline "x,z;x,z;..."; instances face along it').option("--spacing <meters>", "With --path: distance between placements", numeric).addOption(
+        new Option6("--orient <mode>", "With --path: yaw follows the path").choices([
+          "yaw",
+          "none"
+        ])
+      ).option("--grid <CxR>", "Grid of COLUMNSxROWS placements, e.g. 4x3").option("--step <meters>", "With --grid: spacing on both axes").option("--jitter <0..1>", "With --grid: random offset up to jitter * step / 2", numeric).option("--center <x,z>", "With --grid: grid center (default 0,0)")
+    )
+  ).action(async (opts) => output(await place(opts, () => layoutRecipe(opts))));
+  const terrain = program.command("terrain").description("Heightfield terrain: create from presets, then sample heights and normals");
+  editOptions2(
+    terrain.command("add <id>").description(
+      "Create a heightfield mesh node <id> with geometry <id>_geo and material <id>_mat"
+    ).addOption(
+      new Option6("--preset <name>", "Terrain preset").choices(terrainPresetNames).default(defaultTerrainPreset)
+    ).option("--size <w,d>", "Width (X) and depth (Z) in meters").option("--resolution <n|nx,nz>", "Vertices per axis (2-256)").option("--amplitude <meters>", "Height range", numeric).option("--seed <n>", "Noise seed 0..4294967295 (default 1)", integer).option("--at <x,y,z>", "Node position").option("--material <id>", "Use an existing material (solid; drops the height bands)").option("--color <hex>", "Solid #rrggbb material instead of the height bands").option("--replace", "Replace an existing node, geometry or material of these IDs")
+  ).action(async (id, opts) => {
+    parse(Id, id);
+    if (opts.material && opts.color)
+      fail("INVALID_OPTION", "Pass --material or --color, not both.");
+    const pair = (text, flag) => {
+      const values = text.split(",").map((v) => v.trim() ? Number(v) : NaN);
+      if (values.length === 1) values.push(values[0]);
+      if (values.length !== 2 || values.some((v) => !Number.isFinite(v)))
+        fail("INVALID_OPTION", `${flag} expects one number or two comma-separated numbers.`);
+      return values;
+    };
+    const { geometry, material: material2 } = terrainPreset(opts.preset, {
+      size: opts.size ? pair(opts.size, "--size") : void 0,
+      resolution: opts.resolution ? pair(opts.resolution, "--resolution") : void 0,
+      amplitude: opts.amplitude,
+      seed: opts.seed
+    });
+    const solid = opts.material || opts.color;
+    if (solid) delete geometry.bands;
+    const ids = { node: id, geometry: `${id}_geo`, material: opts.material ?? `${id}_mat` };
+    const { project, scene } = global();
+    const result = await commitPlanned(
+      project,
+      scene,
+      (s) => {
+        const taken = [
+          s.scene.nodes.some((n) => n.id === ids.node) && `node ${ids.node}`,
+          Object.hasOwn(s.scene.geometries, ids.geometry) && `geometry ${ids.geometry}`,
+          !opts.material && Object.hasOwn(s.scene.materials, ids.material) && `material ${ids.material}`
+        ].filter(Boolean);
+        if (taken.length && !opts.replace)
+          throw withHint(
+            new ForgeError("DUPLICATE_ID", `Terrain ${id} would overwrite ${taken.join(", ")}.`, {
+              taken
+            }),
+            {
+              DUPLICATE_ID: "Pass --replace (with the guards) to regenerate this terrain, then rerun its scatters with --replace; or choose another ID."
+            }
+          );
+        if (opts.material && !Object.hasOwn(s.scene.materials, opts.material))
+          fail("REFERENCE_MISSING", `Material ${opts.material} does not exist.`);
+        const operations = [
+          ...opts.material ? [] : [
+            {
+              op: "putMaterial",
+              id: ids.material,
+              material: opts.color ? parse(MaterialSchema, { color: opts.color, roughness: 0.95 }) : material2
+            }
+          ],
+          { op: "putGeometry", id: ids.geometry, geometry },
+          {
+            op: "putNode",
+            node: {
+              id,
+              type: "mesh",
+              geometry: ids.geometry,
+              material: ids.material,
+              tags: ["terrain"],
+              ...opts.at ? { transform: { position: c.at(opts.at) } } : {}
+            }
+          }
+        ];
+        return {
+          operations,
+          report: {
+            terrain: { ...ids, preset: opts.preset, bands: !solid, geometry },
+            // Placements keep the heights they were planned on; regenerate them on new ground.
+            ...taken.length ? {
+              staleScatterGroups: s.scene.nodes.filter((n) => n.type === "group" && n.tags.includes("scatter")).map((n) => n.id)
+            } : {}
+          }
+        };
+      },
+      opts
+    );
+    const cli = [name, "-p", project, ...scene ? ["-s", scene] : []];
+    output({
+      ...result,
+      nextCommands: [
+        [...cli, "terrain", "sample", id, "--at", "0,0"],
+        [...cli, "scatter", "--model", "<model>", "--on", id, "--spacing", "4", "--dry-run"],
+        [...cli, "review", "--out", `${project}/exports/review-r${result.revision}`]
+      ]
+    });
+  });
+  terrain.command("sample <node>").description("Read-only world-space terrain heights and normals at x,z points").requiredOption("--at <points>", 'World x,z points: "x,z;x,z;..." (at most 256)').action(async (node, opts) => {
+    const points = parsePoints(opts.at, "--at");
+    if (points.length > 256) fail("INVALID_OPTION", "--at accepts at most 256 points.");
+    const s = await snapshot();
+    output({
+      scene: s.scene.id,
+      revision: s.scene.revision,
+      stateHash: s.stateHash,
+      terrain: node,
+      samples: sampleTerrainNode(s.scene, node, points).map((p) => ({
+        x: p.x,
+        z: p.z,
+        y: round4(p.y),
+        normal: p.normal.map(round4),
+        inside: p.inside
+      }))
+    });
+  });
+}
+
 // src/commands/create-cli.ts
 function createCli(overrides = {}, identity2 = { name: "forge3d" }) {
   const runtime = {
@@ -7216,7 +7709,7 @@ function createCli(overrides = {}, identity2 = { name: "forge3d" }) {
     },
     ...overrides
   };
-  const program = new Command2().name(identity2.name).description("Data-driven 3D modeling for agents. JSON in, reproducible geometry out.").version(VERSION).option(
+  const program = new Command3().name(identity2.name).description("Data-driven 3D modeling for agents. JSON in, reproducible geometry out.").version(VERSION).option(
     "-p, --project <directory>",
     "Project directory; otherwise find the nearest project",
     runtime.cwd
@@ -7255,6 +7748,7 @@ function createCli(overrides = {}, identity2 = { name: "forge3d" }) {
   registerExampleCommands(context);
   registerRigCommands(context);
   registerLittlewildCommands(context);
+  registerProceduralCommands(context);
   return {
     program,
     /** One invocation per factory instance, with a returned status rather than process.exit. */
@@ -7335,6 +7829,7 @@ export {
   checkSeed,
   cloneScene,
   commitOperations,
+  commitPlanned,
   compileScene,
   createCli,
   createExample,

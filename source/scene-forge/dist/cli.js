@@ -522,6 +522,7 @@ var LittlewildAssetSchema = z8.object({
 // ../model-forge/src/kernel/domain/schema-procedural.ts
 import { z as z9 } from "zod";
 var PROCEDURAL_MAX_PLACEMENTS = 2e3;
+var PROCEDURAL_MAX_CANDIDATES = 2e4;
 var Point = z9.tuple([NumberValue, NumberValue]);
 var positive = z9.number().finite().positive().max(1e6);
 var range = (min, max) => z9.tuple([z9.number().min(min).max(max), z9.number().min(min).max(max)]).refine(([low, high]) => low <= high, "Range minimum must not exceed its maximum.");
@@ -992,6 +993,68 @@ function validateDocument(document2, models = {}, stack = []) {
   Object.keys(d.geometries).forEach(checkGeometry);
 }
 
+// ../model-forge/src/kernel/domain/random.ts
+var SEED_MAX = 4294967295;
+var DEFAULT_SEED = 1;
+function cyrb128(text) {
+  let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
+  for (let i = 0; i < text.length; i++) {
+    const k = text.charCodeAt(i);
+    h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+    h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+    h3 = h4 ^ Math.imul(h3 ^ k, 951274213);
+    h4 = h1 ^ Math.imul(h4 ^ k, 2716044179);
+  }
+  h1 = Math.imul(h3 ^ h1 >>> 18, 597399067);
+  h2 = Math.imul(h4 ^ h2 >>> 22, 2869860233);
+  h3 = Math.imul(h1 ^ h3 >>> 17, 951274213);
+  h4 = Math.imul(h2 ^ h4 >>> 19, 2716044179);
+  return [(h1 ^ h2 ^ h3 ^ h4) >>> 0, (h2 ^ h1) >>> 0, (h3 ^ h1) >>> 0, (h4 ^ h1) >>> 0];
+}
+function checkSeed(seed) {
+  if (!Number.isSafeInteger(seed) || seed < 0 || seed > SEED_MAX)
+    fail("INVALID_OPTION", `Seed must be a whole number from 0 to ${SEED_MAX}.`, { seed });
+  return seed;
+}
+function createRandom(seed = DEFAULT_SEED, stream = "default") {
+  checkSeed(seed);
+  let [a, b, c, d] = cyrb128(seed + "|" + stream);
+  const round3 = () => {
+    const t = (a + b | 0) + d | 0;
+    d = d + 1 | 0;
+    a = b ^ b >>> 9;
+    b = c + (c << 3) | 0;
+    c = c << 21 | c >>> 11;
+    c = c + t | 0;
+    return t >>> 0;
+  };
+  for (let warm = 0; warm < 12; warm++) round3();
+  const next = () => round3() / 4294967296;
+  const random = {
+    seed,
+    stream,
+    next,
+    range: (min, max) => min + next() * (max - min),
+    int: (min, max) => min + Math.floor(next() * (max - min + 1)),
+    pick: (items, weights) => {
+      if (!items.length) fail("INVALID_OPTION", "Cannot pick from an empty list.");
+      if (!weights) return items[Math.floor(next() * items.length)];
+      if (weights.length !== items.length || weights.some((w) => !Number.isFinite(w) || w < 0) || !weights.some((w) => w > 0))
+        fail("INVALID_OPTION", "Pick weights must be nonnegative, one per item, not all zero.");
+      const total = weights.reduce((sum, w) => sum + w, 0), r = next() * total;
+      let upto = 0, last = 0;
+      for (let i = 0; i < items.length; i++) {
+        if (weights[i] > 0) last = i;
+        upto += weights[i];
+        if (r < upto) return items[i];
+      }
+      return items[last];
+    },
+    fork: (key) => createRandom(seed, stream + "/" + key)
+  };
+  return random;
+}
+
 // ../model-forge/src/kernel/domain/digest.ts
 var K = new Uint32Array([
   1116352408,
@@ -1059,6 +1122,52 @@ var K = new Uint32Array([
   3204031479,
   3329325298
 ]);
+var rotr = (x, n) => x >>> n | x << 32 - n;
+function sha256Hex(text) {
+  const bytes = new TextEncoder().encode(text);
+  const length = Math.ceil((bytes.length + 9) / 64) * 64;
+  const data = new Uint8Array(length);
+  data.set(bytes);
+  data[bytes.length] = 128;
+  const view = new DataView(data.buffer);
+  view.setUint32(length - 8, Math.floor(bytes.length / 536870912));
+  view.setUint32(length - 4, bytes.length * 8 >>> 0);
+  const h = new Uint32Array([
+    1779033703,
+    3144134277,
+    1013904242,
+    2773480762,
+    1359893119,
+    2600822924,
+    528734635,
+    1541459225
+  ]);
+  const w = new Uint32Array(64);
+  for (let offset = 0; offset < length; offset += 64) {
+    for (let i = 0; i < 16; i++) w[i] = view.getUint32(offset + i * 4);
+    for (let i = 16; i < 64; i++) {
+      const s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ w[i - 15] >>> 3;
+      const s1 = rotr(w[i - 2], 17) ^ rotr(w[i - 2], 19) ^ w[i - 2] >>> 10;
+      w[i] = w[i - 16] + s0 + w[i - 7] + s1 >>> 0;
+    }
+    let [a, b, c, d, e, f, g, k] = h;
+    for (let i = 0; i < 64; i++) {
+      const t1 = k + (rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25)) + (e & f ^ ~e & g) + K[i] + w[i] >>> 0;
+      const t2 = (rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22)) + (a & b ^ a & c ^ b & c) >>> 0;
+      k = g;
+      g = f;
+      f = e;
+      e = d + t1 >>> 0;
+      d = c;
+      c = b;
+      b = a;
+      a = t1 + t2 >>> 0;
+    }
+    const next = [a, b, c, d, e, f, g, k];
+    for (let i = 0; i < 8; i++) h[i] = h[i] + next[i] >>> 0;
+  }
+  return Array.from(h, (v) => v.toString(16).padStart(8, "0")).join("");
+}
 
 // ../model-forge/src/kernel/application/surfaces.ts
 import * as THREE from "three";
@@ -1161,7 +1270,7 @@ function sphereUVs(positions) {
 var maxSurfaceRecipes = 256;
 function createSurfacePool() {
   const recipes = /* @__PURE__ */ new Map();
-  function apply(material, surface) {
+  function apply(material2, surface) {
     const { version, ...legacy } = surface;
     const surfaceAlgorithm = resolveSurfaceAlgorithm(surface);
     const key = `${surfaceAlgorithm}/${canonical(version === 1 ? legacy : surface)}`;
@@ -1190,10 +1299,10 @@ function createSurfacePool() {
       maps.color.colorSpace = THREE.SRGBColorSpace;
       recipes.set(key, maps);
     }
-    material.map = maps.color;
-    material.normalMap = maps.normal;
-    material.userData = {
-      ...material.userData,
+    material2.map = maps.color;
+    material2.normalMap = maps.normal;
+    material2.userData = {
+      ...material2.userData,
       surface: structuredClone(surface),
       surfaceAlgorithm
     };
@@ -1207,10 +1316,10 @@ function createSurfacePool() {
   }
   return { apply, dispose };
 }
-function applySurface(material, surface, owner) {
+function applySurface(material2, surface, owner) {
   const pool = owner ?? createSurfacePool();
-  pool.apply(material, surface);
-  if (!owner) material.addEventListener("dispose", pool.dispose);
+  pool.apply(material2, surface);
+  if (!owner) material2.addEventListener("dispose", pool.dispose);
 }
 function ensureSurfaceTangents(geometry) {
   if (geometry.getAttribute("tangent")) return;
@@ -1301,8 +1410,8 @@ function bindRig(root, spec) {
     const explicit = spec.bindings[mesh.name.slice(root.name.length + 1)];
     const explicitIndex = ordered.findIndex((joint) => joint.id === explicit);
     for (let i = 0; i < positions.count; i++) {
-      const point = new THREE3.Vector3().fromBufferAttribute(positions, i);
-      const nearest = origins.map((origin, index) => ({ index, distance: point.distanceTo(origin) })).sort((a, b) => a.distance - b.distance || a.index - b.index);
+      const point2 = new THREE3.Vector3().fromBufferAttribute(positions, i);
+      const nearest = origins.map((origin, index) => ({ index, distance: point2.distanceTo(origin) })).sort((a, b) => a.distance - b.distance || a.index - b.index);
       const first = explicit ? explicitIndex : nearest[0].index;
       indices[i * 4] = first;
       weights[i * 4] = 1;
@@ -1444,7 +1553,7 @@ function createMaterial(m, surfaces) {
       "MATERIAL_DEPTH_WRITE",
       "Disabling depth writes requires opacity below 1 for portable alpha blending."
     );
-  const common = {
+  const common2 = {
     color: m.color,
     opacity: m.opacity,
     transparent: m.opacity < 1,
@@ -1458,9 +1567,9 @@ function createMaterial(m, surfaces) {
       "INVALID_MATERIAL",
       "Surface detail requires standard PBR shading; remove surface or use standard shading."
     );
-  if (m.shading === "unlit") return new THREE5.MeshBasicMaterial(common);
+  if (m.shading === "unlit") return new THREE5.MeshBasicMaterial(common2);
   const standard = {
-    ...common,
+    ...common2,
     metalness: m.metalness,
     roughness: m.roughness,
     emissive: m.emissive ?? "#000000",
@@ -1551,7 +1660,7 @@ function organicGeometry(g) {
 import * as THREE7 from "three";
 function tubeGeometry(spec) {
   const curve = new THREE7.CatmullRomCurve3(
-    spec.points.map((point) => new THREE7.Vector3(...point)),
+    spec.points.map((point2) => new THREE7.Vector3(...point2)),
     spec.closed,
     "centripetal"
   );
@@ -1641,6 +1750,31 @@ function heightGrid(spec) {
       grid[iz * nx + ix] = height(spec, ix / (nx - 1), iz / (nz - 1)) * spec.amplitude;
   return grid;
 }
+function heightfieldSampler(spec) {
+  const grid = heightGrid(spec);
+  const [nx, nz] = spec.resolution, [sx, sz] = spec.size;
+  const cellX = sx / (nx - 1), cellZ = sz / (nz - 1);
+  return (x, z13) => {
+    const gx = (x + sx / 2) / cellX, gz = (z13 + sz / 2) / cellZ;
+    const inside2 = gx >= -1e-9 && gz >= -1e-9 && gx <= nx - 1 + 1e-9 && gz <= nz - 1 + 1e-9;
+    const cx = Math.min(nx - 1, Math.max(0, gx)), cz = Math.min(nz - 1, Math.max(0, gz));
+    const ix = Math.min(nx - 2, Math.floor(cx)), iz = Math.min(nz - 2, Math.floor(cz));
+    const fx = cx - ix, fz = cz - iz;
+    const a = grid[iz * nx + ix], b = grid[iz * nx + ix + 1], c = grid[(iz + 1) * nx + ix], d = grid[(iz + 1) * nx + ix + 1];
+    let y, slopeX, slopeZ;
+    if (fx + fz <= 1) {
+      y = a + fx * (b - a) + fz * (c - a);
+      slopeX = (b - a) / cellX;
+      slopeZ = (c - a) / cellZ;
+    } else {
+      y = d + (1 - fx) * (c - d) + (1 - fz) * (b - d);
+      slopeX = (d - c) / cellX;
+      slopeZ = (d - b) / cellZ;
+    }
+    const length = Math.sqrt(slopeX * slopeX + 1 + slopeZ * slopeZ);
+    return { y, normal: [-slopeX / length, 1 / length, -slopeZ / length], inside: inside2 };
+  };
+}
 function heightfieldGeometry(spec) {
   const grid = heightGrid(spec);
   const [nx, nz] = spec.resolution, [sx, sz] = spec.size;
@@ -1695,7 +1829,7 @@ function createResourcePool(warnings) {
   function scopeResources(scope, path13, overrides = {}) {
     const geometryCache = /* @__PURE__ */ new Map();
     const materialCache = /* @__PURE__ */ new Map();
-    function material(id) {
+    function material2(id) {
       if (Object.hasOwn(overrides, id)) return overrides[id];
       if (materialCache.has(id)) return materialCache.get(id);
       const m = scope.materials[id];
@@ -1901,7 +2035,7 @@ function createResourcePool(warnings) {
       geometryPool.set(key, result);
       return result;
     }
-    return { geometry, material };
+    return { geometry, material: material2 };
   }
   return {
     scopeResources,
@@ -1914,7 +2048,7 @@ function createResourcePool(warnings) {
     dispose() {
       surfaces.dispose();
       geometries.forEach((geometry) => geometry.dispose());
-      materials.forEach((material) => material.dispose());
+      materials.forEach((material2) => material2.dispose());
       geometries.clear();
       materials.clear();
       geometryPool.clear();
@@ -1945,7 +2079,7 @@ function compileScene(document2, models = {}, options = {}) {
   function buildScope(source, target, path13, parameters, overrides = {}, inheritedSlots = {}) {
     const scope = resolveData(source, parameters);
     const slots = (id) => [`${path13}/${id}`, ...inheritedSlots[id] ?? []];
-    const { geometry, material } = resources.scopeResources(scope, path13, overrides);
+    const { geometry, material: material2 } = resources.scopeResources(scope, path13, overrides);
     const objects = /* @__PURE__ */ new Map();
     const make = (node, nodePath) => {
       if (++objectCount > 2e4) fail("SCENE_BUDGET", "Expanded scene exceeds 20,000 objects.");
@@ -1956,7 +2090,7 @@ function compileScene(document2, models = {}, options = {}) {
         meshCount++;
         if (triangleCount > 2e6)
           fail("SCENE_BUDGET", "Expanded scene exceeds 2,000,000 triangles.");
-        const surface = material(node.material);
+        const surface = material2(node.material);
         if (surface instanceof THREE10.MeshStandardMaterial && surface.normalMap)
           ensureSurfaceTangents(g);
         object = new THREE10.Mesh(g, surface);
@@ -1974,7 +2108,7 @@ function compileScene(document2, models = {}, options = {}) {
         if (node.type === "model") {
           const model = models[node.model];
           const replace = Object.fromEntries(
-            Object.entries(node.materialOverrides).map(([from, to]) => [from, material(to)])
+            Object.entries(node.materialOverrides).map(([from, to]) => [from, material2(to)])
           );
           buildScope(
             model,
@@ -2692,7 +2826,7 @@ function auditScene(scene, models = {}, input = {}) {
         bounds.union(g.boundingBox.clone().applyMatrix4(object.matrixWorld));
       }
       if (!degenerate.has(g)) {
-        let invalid2 = 0;
+        let invalid3 = 0;
         for (let i = 0; i < count * 3; i += 3) {
           const at2 = (offset) => g.index ? g.index.getX(i + offset) : i + offset;
           a.fromBufferAttribute(position, at2(0));
@@ -2701,19 +2835,19 @@ function auditScene(scene, models = {}, input = {}) {
           ab.subVectors(b, a);
           ac.subVectors(c, a);
           const edge = Math.max(ab.lengthSq(), ac.lengthSq(), b.distanceToSquared(c));
-          if (ab.cross(ac).lengthSq() <= edge * edge * 1e-24) invalid2++;
+          if (ab.cross(ac).lengthSq() <= edge * edge * 1e-24) invalid3++;
         }
-        degenerate.set(g, invalid2);
+        degenerate.set(g, invalid3);
       }
-      const invalid = degenerate.get(g);
-      if (invalid)
+      const invalid2 = degenerate.get(g);
+      if (invalid2)
         add(
           "DEGENERATE_TRIANGLES",
           "error",
           "Visible geometry contains zero-area or nearly collinear triangles.",
           "Repair mesh indices/positions or revise boolean operands; inspect the listed paths.",
           object.name,
-          invalid
+          invalid2
         );
       if (policy.requireUVs && !g.hasAttribute("uv"))
         add(
@@ -2945,30 +3079,30 @@ function littlewildId(value) {
   const id = value.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/[^A-Za-z0-9_-]+/g, "-").toLowerCase().replace(/^[^a-z0-9]+/, "").slice(0, 72);
   return id || "node";
 }
-function materialData(material) {
-  const m = material;
+function materialData(material2) {
+  const m = material2;
   const result = {
     color: `#${m.color.getHexString()}`,
     roughness: round(m.roughness ?? 1, 1e-3),
     metalness: round(m.metalness ?? 0, 1e-3),
     flatShading: !!m.flatShading
   };
-  if (material.userData.surface) result.surface = structuredClone(material.userData.surface);
-  if (material instanceof THREE12.MeshPhysicalMaterial) {
-    result.sheen = round(material.sheen, 1e-3);
-    result.sheenColor = `#${material.sheenColor.getHexString()}`;
-    result.sheenRoughness = round(material.sheenRoughness, 1e-3);
-    result.clearcoat = round(material.clearcoat, 1e-3);
-    result.clearcoatRoughness = round(material.clearcoatRoughness, 1e-3);
+  if (material2.userData.surface) result.surface = structuredClone(material2.userData.surface);
+  if (material2 instanceof THREE12.MeshPhysicalMaterial) {
+    result.sheen = round(material2.sheen, 1e-3);
+    result.sheenColor = `#${material2.sheenColor.getHexString()}`;
+    result.sheenRoughness = round(material2.sheenRoughness, 1e-3);
+    result.clearcoat = round(material2.clearcoat, 1e-3);
+    result.clearcoatRoughness = round(material2.clearcoatRoughness, 1e-3);
   }
   if (m.emissive && m.emissive.getHex() !== 0) {
     result.emissive = `#${m.emissive.getHexString()}`;
     result.emissiveIntensity = round(m.emissiveIntensity ?? 1, 1e-3);
   }
-  if (material.side === THREE12.DoubleSide) result.doubleSided = true;
-  if (!material.depthWrite) result.depthWrite = false;
-  if (material.opacity < 1) {
-    result.opacity = round(material.opacity, 1e-3);
+  if (material2.side === THREE12.DoubleSide) result.doubleSided = true;
+  if (!material2.depthWrite) result.depthWrite = false;
+  if (material2.opacity < 1) {
+    result.opacity = round(material2.opacity, 1e-3);
     result.transparent = true;
   }
   return result;
@@ -3015,16 +3149,16 @@ function boxSize(geometry) {
 function littlewildModel(root, options) {
   const materials = {}, materialRoles = /* @__PURE__ */ new Map(), meshes = {}, meshIds = /* @__PURE__ */ new Map(), ids = /* @__PURE__ */ new Set(), rig = {}, warnings = /* @__PURE__ */ new Set(), stats = { nodes: 0, meshes: 0, primitives: 0, vertices: 0, triangles: 0 };
   const roles = new Set(littlewildPetRoles);
-  function role(material, authoredRole) {
-    if (Array.isArray(material))
+  function role(material2, authoredRole) {
+    if (Array.isArray(material2))
       fail("LITTLEWILD_EXPORT", "Multi-material meshes are unsupported.");
-    const data = materialData(material);
-    const key = JSON.stringify([authoredRole ?? material.name, data]);
+    const data = materialData(material2);
+    const key = JSON.stringify([authoredRole ?? material2.name, data]);
     const known = materialRoles.get(key);
     if (known) return known;
-    if (material.type === "MeshBasicMaterial")
+    if (material2.type === "MeshBasicMaterial")
       warnings.add("Unlit materials are exported as standard Littlewild materials.");
-    const base = (authoredRole ?? material.name.split("/").pop() ?? "material").slice(0, 72);
+    const base = (authoredRole ?? material2.name.split("/").pop() ?? "material").slice(0, 72);
     let name = base;
     for (let n = 2; materials[name] && JSON.stringify(materials[name]) !== JSON.stringify(data); n++)
       name = `${base}-${n}`;
@@ -3179,14 +3313,14 @@ function importedMaterials(materials, used) {
     if (typeof data.emissiveIntensity === "number" && data.emissiveIntensity > 20)
       unsupported("emissiveIntensity", "exceeds Scene Forge\u2019s maximum of 20.");
     const { transparent: _transparent, ...mapped } = data;
-    const material = {
+    const material2 = {
       roughness: 0.98,
       metalness: 0,
       opacity: 1,
       flatShading: !mesh,
       ...mapped
     };
-    const key = canonical([role, material]);
+    const key = canonical([role, material2]);
     const found = byValue.get(key);
     if (found) return found;
     const stem = (Object.hasOwn(materials, role) ? role : `c${role.replace("#", "")}`).replace(
@@ -3199,7 +3333,7 @@ function importedMaterials(materials, used) {
     const start = id;
     let collision = 1;
     while (Object.hasOwn(used, id)) id = `${start.slice(0, 55)}-${collision++}`;
-    used[id] = material;
+    used[id] = material2;
     byValue.set(key, id);
     return id;
   };
@@ -3389,8 +3523,640 @@ function assertLittlewildComplexity(visual) {
   visit(visual, 0);
 }
 
+// ../model-forge/src/kernel/application/terrain.ts
+var identity = () => ({ scale: 1, yaw: 0, translation: [0, 0, 0] });
+function turn(yaw, x, z13) {
+  if (yaw === 0) return [x, z13];
+  const c = Math.cos(yaw), s = Math.sin(yaw);
+  return [x * c + z13 * s, -x * s + z13 * c];
+}
+function applySimilarity(f, p) {
+  const [x, z13] = turn(f.yaw, p[0] * f.scale, p[2] * f.scale);
+  return [x + f.translation[0], p[1] * f.scale + f.translation[1], z13 + f.translation[2]];
+}
+function invertSimilarity(f, p) {
+  const [x, z13] = turn(-f.yaw, p[0] - f.translation[0], p[2] - f.translation[2]);
+  return [x / f.scale, (p[1] - f.translation[1]) / f.scale, z13 / f.scale];
+}
+function nodeFrame(scene, id, role) {
+  const chain = [];
+  const seen = /* @__PURE__ */ new Set();
+  for (let current = id; current; ) {
+    if (seen.has(current)) fail("CYCLE", `Parent cycle includes ${current}.`);
+    seen.add(current);
+    const node = scene.nodes.find((n) => n.id === current);
+    if (!node) return fail("REFERENCE_MISSING", `Node ${current} does not exist.`);
+    chain.push(node);
+    current = node.parent;
+  }
+  let frame = identity();
+  for (const node of chain.reverse()) {
+    const t = resolveData(node.transform ?? {}, scene.parameters);
+    const [rx, ry, rz] = t.rotation ?? [0, 0, 0], [sx, sy, sz] = t.scale ?? [1, 1, 1];
+    if (node.pattern || Math.abs(rx) > 1e-9 || Math.abs(rz) > 1e-9 || sx <= 0 || Math.abs(sx - sy) > 1e-9 || Math.abs(sx - sz) > 1e-9)
+      fail(
+        "TERRAIN_TRANSFORM",
+        `Node ${node.id} on the ${role} chain uses a transform grounding cannot follow.`,
+        {
+          node: node.id,
+          transform: node.transform,
+          pattern: node.pattern !== void 0,
+          hint: "Terrain grounding supports translation, yaw (rotation about Y) and positive uniform scale, without patterns, on the terrain node, the scatter parent and their ancestors."
+        }
+      );
+    const local = {
+      scale: sx,
+      yaw: ry * Math.PI / 180,
+      translation: t.position ?? [0, 0, 0]
+    };
+    frame = {
+      scale: frame.scale * local.scale,
+      yaw: frame.yaw + local.yaw,
+      translation: applySimilarity(frame, local.translation)
+    };
+  }
+  return frame;
+}
+function terrainSpec(scene, id) {
+  const node = scene.nodes.find((n) => n.id === id);
+  if (!node) return fail("REFERENCE_MISSING", `Terrain node ${id} does not exist.`);
+  const geometry = node.type === "mesh" ? scene.geometries[node.geometry] : void 0;
+  if (!geometry || geometry.type !== "heightfield")
+    fail("INVALID_NODE_TYPE", `Node ${id} is not a mesh with heightfield geometry.`, {
+      hint: "Ground on a mesh node whose geometry has type heightfield."
+    });
+  const spec = resolveData(geometry, scene.parameters);
+  if (spec.size.some((v) => !(v > 0)))
+    fail("INVALID_GEOMETRY", `Heightfield of ${id} needs a positive size.`);
+  return spec;
+}
+function terrainSampler(scene, terrain, frameNode) {
+  const sample = heightfieldSampler(terrainSpec(scene, terrain));
+  const terrainFrame = nodeFrame(scene, terrain, "terrain"), frame = nodeFrame(scene, frameNode, "scatter parent");
+  return (x, z13) => {
+    const local = invertSimilarity(terrainFrame, applySimilarity(frame, [x, 0, z13]));
+    const hit = sample(local[0], local[2]);
+    const world = applySimilarity(terrainFrame, [local[0], hit.y, local[2]]);
+    const [nx, nz] = turn(terrainFrame.yaw - frame.yaw, hit.normal[0], hit.normal[2]);
+    return {
+      y: invertSimilarity(frame, world)[1],
+      normal: [nx, hit.normal[1], nz],
+      inside: hit.inside
+    };
+  };
+}
+function sampleTerrainNode(scene, terrain, points) {
+  const sample = terrainSampler(scene, terrain);
+  return points.map(([x, z13]) => ({ x, z: z13, ...sample(x, z13) }));
+}
+
+// ../model-forge/src/kernel/application/terrain-presets.ts
+var terrainPresetNames = ["plains", "hills", "mountains", "island", "dunes"];
+var defaultTerrainPreset = "hills";
+var material = { color: "#ffffff", roughness: 0.95, vertexColors: true };
+var terrainPresets = {
+  plains: {
+    description: "Gently rolling grassland, nearly flat; good for layouts and roads.",
+    geometry: {
+      size: [64, 64],
+      amplitude: 1.5,
+      resolution: [64, 64],
+      noise: { kind: "value", octaves: 3, frequency: 2, lacunarity: 2, gain: 0.45 },
+      falloff: "none",
+      terrace: 0,
+      bands: [
+        { below: 0.4, color: "#5f8f3e" },
+        { below: 1, color: "#7aa851" }
+      ]
+    },
+    material
+  },
+  hills: {
+    description: "Rolling hills with grass valleys and earthy tops.",
+    geometry: {
+      size: [64, 64],
+      amplitude: 6,
+      resolution: [96, 96],
+      noise: { kind: "value", octaves: 5, frequency: 3, lacunarity: 2, gain: 0.5 },
+      falloff: "none",
+      terrace: 0,
+      bands: [
+        { below: 0.45, color: "#5b8a3a" },
+        { below: 0.75, color: "#7c9a4a" },
+        { below: 1, color: "#8a7a55" }
+      ]
+    },
+    material
+  },
+  mountains: {
+    description: "Ridged peaks with rock faces and snow caps.",
+    geometry: {
+      size: [128, 128],
+      amplitude: 28,
+      resolution: [128, 128],
+      noise: { kind: "ridged", octaves: 6, frequency: 2.5, lacunarity: 2.1, gain: 0.55 },
+      falloff: "none",
+      terrace: 0,
+      bands: [
+        { below: 0.3, color: "#4f7a3a" },
+        { below: 0.65, color: "#7a7268" },
+        { below: 0.85, color: "#9a948c" },
+        { below: 1, color: "#f2f4f7" }
+      ]
+    },
+    material
+  },
+  island: {
+    description: "A single island falling off to sea level at the edges, with beaches.",
+    geometry: {
+      size: [96, 96],
+      amplitude: 10,
+      resolution: [96, 96],
+      noise: { kind: "value", octaves: 5, frequency: 3, lacunarity: 2, gain: 0.5 },
+      falloff: "island",
+      terrace: 0,
+      bands: [
+        { below: 0.04, color: "#d9c58f" },
+        { below: 0.5, color: "#5b8a3a" },
+        { below: 0.8, color: "#6f7d4a" },
+        { below: 1, color: "#8c8478" }
+      ]
+    },
+    material
+  },
+  dunes: {
+    description: "Soft desert dunes with billowed crests.",
+    geometry: {
+      size: [64, 64],
+      amplitude: 4,
+      resolution: [96, 96],
+      noise: { kind: "billow", octaves: 3, frequency: 4, lacunarity: 2, gain: 0.4 },
+      falloff: "none",
+      terrace: 0,
+      bands: [
+        { below: 0.5, color: "#d6b77a" },
+        { below: 1, color: "#e6cc92" }
+      ]
+    },
+    material
+  }
+};
+function terrainPreset(name, options = {}) {
+  if (!terrainPresetNames.includes(name))
+    fail("NOT_FOUND", `Terrain preset ${name} does not exist.`, {
+      available: terrainPresetNames,
+      hint: `Use one of ${terrainPresetNames.join(", ")}.`
+    });
+  const preset = terrainPresets[name];
+  const geometry = parse(HeightfieldGeometrySchema, {
+    type: "heightfield",
+    ...structuredClone(preset.geometry),
+    ...Object.fromEntries(Object.entries(options).filter(([, value]) => value !== void 0))
+  });
+  return { geometry, material: parse(MaterialSchema, structuredClone(preset.material)) };
+}
+
+// ../model-forge/src/kernel/application/placement.ts
+var round4 = (value) => Math.round(value * 1e4) / 1e4 + 0;
+var point = (x, z13) => [round4(x), round4(z13)];
+function budget(count, what) {
+  if (count > PROCEDURAL_MAX_CANDIDATES)
+    fail(
+      "PROCEDURAL_BUDGET",
+      `${what} would generate about ${Math.ceil(count)} candidate points; the limit is ${PROCEDURAL_MAX_CANDIDATES}.`,
+      {
+        limit: PROCEDURAL_MAX_CANDIDATES,
+        estimate: Math.ceil(count),
+        hint: "Increase the spacing (minDistance, step or spacing) or shrink the area."
+      }
+    );
+}
+function areaBounds(area) {
+  if (area.type === "rect") return { min: [...area.min], max: [...area.max] };
+  if (area.type === "circle") {
+    const [x, z13] = area.center;
+    return { min: [x - area.radius, z13 - area.radius], max: [x + area.radius, z13 + area.radius] };
+  }
+  const pad = area.type === "path" ? area.width / 2 : 0;
+  const xs = area.points.map((p) => p[0]), zs = area.points.map((p) => p[1]);
+  return {
+    min: [Math.min(...xs) - pad, Math.min(...zs) - pad],
+    max: [Math.max(...xs) + pad, Math.max(...zs) + pad]
+  };
+}
+function segmentDistance2(p, a, b) {
+  const dx = b[0] - a[0], dz = b[1] - a[1], length2 = dx * dx + dz * dz;
+  let t = length2 > 0 ? ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / length2 : 0;
+  t = t < 0 ? 0 : t > 1 ? 1 : t;
+  const ex = p[0] - (a[0] + t * dx), ez = p[1] - (a[1] + t * dz);
+  return ex * ex + ez * ez;
+}
+function insideArea(area, p) {
+  switch (area.type) {
+    case "rect":
+      return p[0] >= area.min[0] && p[0] <= area.max[0] && p[1] >= area.min[1] && p[1] <= area.max[1];
+    case "circle": {
+      const dx = p[0] - area.center[0], dz = p[1] - area.center[1];
+      return dx * dx + dz * dz <= area.radius * area.radius;
+    }
+    case "polygon": {
+      let inside2 = false;
+      const points = area.points;
+      for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+        const [xi, zi] = points[i], [xj, zj] = points[j];
+        if (zi > p[1] !== zj > p[1] && p[0] < (xj - xi) * (p[1] - zi) / (zj - zi) + xi)
+          inside2 = !inside2;
+      }
+      return inside2;
+    }
+    case "path": {
+      const limit = area.width / 2 * (area.width / 2);
+      for (let i = 1; i < area.points.length; i++)
+        if (segmentDistance2(p, area.points[i - 1], area.points[i]) <= limit) return true;
+      return false;
+    }
+  }
+}
+var insideBounds = (bounds, p) => p[0] >= bounds.min[0] && p[0] <= bounds.max[0] && p[1] >= bounds.min[1] && p[1] <= bounds.max[1];
+function poissonDisk(bounds, minDistance, random) {
+  const width = bounds.max[0] - bounds.min[0], depth = bounds.max[1] - bounds.min[1], r = minDistance, r2 = r * r;
+  budget(0.6 * (width * depth) / r2, "Poisson sampling");
+  const cell = r / Math.SQRT2, columns = Math.floor(width / cell) + 1, rows = Math.floor(depth / cell) + 1;
+  const grid = new Int32Array(columns * rows).fill(-1);
+  const points = [], active = [];
+  const cellOf = (p) => [
+    Math.min(columns - 1, Math.floor((p[0] - bounds.min[0]) / cell)),
+    Math.min(rows - 1, Math.floor((p[1] - bounds.min[1]) / cell))
+  ];
+  const free = (p) => {
+    const [cx, cz] = cellOf(p);
+    for (let z13 = Math.max(0, cz - 2); z13 <= Math.min(rows - 1, cz + 2); z13++)
+      for (let x = Math.max(0, cx - 2); x <= Math.min(columns - 1, cx + 2); x++) {
+        const index = grid[z13 * columns + x];
+        if (index < 0) continue;
+        const dx = points[index][0] - p[0], dz = points[index][1] - p[1];
+        if (dx * dx + dz * dz < r2) return false;
+      }
+    return true;
+  };
+  const add = (p) => {
+    budget(points.length + 1, "Poisson sampling");
+    const [cx, cz] = cellOf(p);
+    grid[cz * columns + cx] = points.length;
+    active.push(points.length);
+    points.push(p);
+  };
+  add(point(bounds.min[0] + random.next() * width, bounds.min[1] + random.next() * depth));
+  while (active.length) {
+    const slot = Math.floor(random.next() * active.length), origin = points[active[slot]];
+    let found = false;
+    for (let attempt = 0; attempt < 30 && !found; attempt++) {
+      for (let tries = 0; tries < 32; tries++) {
+        const dx = (random.next() * 4 - 2) * r, dz = (random.next() * 4 - 2) * r, d2 = dx * dx + dz * dz;
+        if (d2 < r2 || d2 > 4 * r2) continue;
+        const candidate = point(origin[0] + dx, origin[1] + dz);
+        if (insideBounds(bounds, candidate) && free(candidate)) {
+          add(candidate);
+          found = true;
+        }
+        break;
+      }
+    }
+    if (!found) {
+      active[slot] = active[active.length - 1];
+      active.pop();
+    }
+  }
+  return points;
+}
+function gridLayout(bounds, step, jitter, random) {
+  const width = bounds.max[0] - bounds.min[0], depth = bounds.max[1] - bounds.min[1];
+  const columns = Math.floor(width / step + 1e-9) + 1, rows = Math.floor(depth / step + 1e-9) + 1;
+  budget(columns * rows, "Grid layout");
+  const startX = bounds.min[0] + (width - (columns - 1) * step) / 2, startZ = bounds.min[1] + (depth - (rows - 1) * step) / 2;
+  const points = [];
+  for (let z13 = 0; z13 < rows; z13++)
+    for (let x = 0; x < columns; x++) {
+      const ox = jitter > 0 ? (random.next() - 0.5) * jitter * step : 0, oz = jitter > 0 ? (random.next() - 0.5) * jitter * step : 0;
+      points.push(point(startX + x * step + ox, startZ + z13 * step + oz));
+    }
+  return points;
+}
+function pathLayout(points, spacing) {
+  const segments2 = [];
+  let total = 0;
+  for (let i = 1; i < points.length; i++) {
+    const dx = points[i][0] - points[i - 1][0], dz = points[i][1] - points[i - 1][1], length = Math.sqrt(dx * dx + dz * dz);
+    if (length > 1e-9) segments2.push({ a: points[i - 1], dx, dz, length });
+    total += length;
+  }
+  if (!segments2.length) return [{ point: point(points[0][0], points[0][1]), heading: 0 }];
+  const count = Math.floor(total / spacing + 1e-9) + 1;
+  budget(count, "Path layout");
+  const result = [];
+  let segment = 0, start = 0;
+  for (let k = 0; k < count; k++) {
+    const distance = Math.min(total, k * spacing);
+    while (segment < segments2.length - 1 && distance > start + segments2[segment].length) {
+      start += segments2[segment].length;
+      segment++;
+    }
+    const s = segments2[segment], t = Math.min(1, (distance - start) / s.length);
+    result.push({
+      point: point(s.a[0] + t * s.dx, s.a[1] + t * s.dz),
+      heading: round4(Math.atan2(s.dx, s.dz) * 180 / Math.PI)
+    });
+  }
+  return result;
+}
+function uniformRandom(area, count, random) {
+  const bounds = areaBounds(area), width = bounds.max[0] - bounds.min[0], depth = bounds.max[1] - bounds.min[1];
+  const points = [];
+  let inside2 = 0;
+  for (let attempt = 0; attempt < count * 64 && inside2 < count; attempt++) {
+    const p = point(bounds.min[0] + random.next() * width, bounds.min[1] + random.next() * depth);
+    points.push(p);
+    if (insideArea(area, p)) inside2++;
+  }
+  return { points, inside: inside2 };
+}
+
 // ../model-forge/src/kernel/application/scatter.ts
 import { Box3 as Box36, Matrix4 as Matrix42, Vector3 as Vector312 } from "three";
+
+// ../model-forge/src/kernel/application/scatter-items.ts
+function scatterSources(scene, models, recipe) {
+  return recipe.items.map((item, index) => {
+    let target;
+    let template;
+    if (item.model !== void 0) {
+      if (!Object.hasOwn(models, item.model))
+        fail("REFERENCE_MISSING", `Scatter item ${index} uses unregistered model ${item.model}.`, {
+          item: index,
+          hint: "Register or import the model first, or use a node template item."
+        });
+      target = models[item.model];
+    } else {
+      template = scene.nodes.find((n) => n.id === item.node);
+      if (!template)
+        fail("REFERENCE_MISSING", `Scatter item ${index} copies missing node ${item.node}.`, {
+          item: index
+        });
+      if (template.type !== "mesh" && template.type !== "model")
+        fail("INVALID_NODE_TYPE", `Template ${template.id} must be a mesh or model node.`, {
+          item: index
+        });
+      if (scene.nodes.some((n) => n.parent === template.id))
+        fail("INVALID_NODE_TYPE", `Template ${template.id} has children and cannot be copied.`, {
+          item: index,
+          hint: "Capture the assembly as a model and scatter model instances instead."
+        });
+      if (template.type === "model") target = models[template.model];
+    }
+    const vary = Object.keys(item.vary).sort().map((name) => {
+      if (!target)
+        fail("UNKNOWN_PARAMETER", `Scatter item ${index} varies ${name}, but it is a mesh.`, {
+          item: index,
+          hint: "vary applies to model parameters; remove it from mesh templates."
+        });
+      const declared = target.parameters[name];
+      if (!declared)
+        fail("UNKNOWN_PARAMETER", `Model ${target.id} has no parameter ${name}.`, {
+          item: index
+        });
+      let [min, max] = item.vary[name];
+      if (declared.min !== void 0 && min < declared.min || declared.max !== void 0 && max > declared.max)
+        fail("PARAMETER_RANGE", `vary.${name} must stay inside ${target.id}.${name}'s range.`, {
+          item: index,
+          vary: [min, max],
+          min: declared.min,
+          max: declared.max
+        });
+      if (declared.integer) {
+        [min, max] = [Math.ceil(min), Math.floor(max)];
+        if (min > max)
+          fail("PARAMETER_RANGE", `vary.${name} contains no whole number.`, { item: index });
+      }
+      return [name, min, max, declared.integer === true];
+    });
+    return { weight: item.weight, model: item.model, template, vary };
+  });
+}
+function transformOf(draw, baseScale) {
+  const rotation2 = [draw.tilt[0], draw.yaw, draw.tilt[1]].map(round4);
+  const scale = baseScale.map((v) => round4(v * draw.scale));
+  return {
+    position: draw.position.map(round4),
+    ...rotation2.some((v) => v !== 0) ? { rotation: rotation2 } : {},
+    ...scale.some((v) => v !== 1) ? { scale } : {}
+  };
+}
+function instanceNode(scene, source, id, group, tag, draw, random) {
+  const parameters = Object.fromEntries(
+    source.vary.map(([name, min, max, integer2]) => {
+      const value = random.range(min, max);
+      return [name, integer2 ? Math.min(max, Math.round(value)) : round4(value)];
+    })
+  );
+  if (source.model !== void 0)
+    return {
+      id,
+      type: "model",
+      model: source.model,
+      parent: group,
+      tags: [tag],
+      transform: transformOf(draw, [1, 1, 1]),
+      ...source.vary.length ? { parameters } : {}
+    };
+  const template = structuredClone(source.template);
+  const base = resolveData(template.transform?.scale ?? [1, 1, 1], scene.parameters);
+  return {
+    ...template,
+    id,
+    parent: group,
+    visible: true,
+    tags: [...template.tags.filter((t) => t !== tag), tag].slice(-32),
+    transform: transformOf(draw, base),
+    ...template.type === "model" ? { parameters: { ...template.parameters, ...parameters } } : {}
+  };
+}
+
+// ../model-forge/src/kernel/application/scatter.ts
+var MAX_NODES = 1e4;
+function candidates(recipe, random) {
+  const d = recipe.distribution;
+  if (d.type === "path")
+    return pathLayout(d.points, d.spacing).map(({ point: point2, heading }) => ({
+      point: point2,
+      heading: d.orient === "yaw" ? heading : void 0
+    }));
+  const area = recipe.area;
+  if (d.type === "random")
+    return uniformRandom(area, d.count, random).points.map((point2) => ({ point: point2 }));
+  const bounds = areaBounds(area);
+  const points = d.type === "poisson" ? poissonDisk(bounds, d.minDistance, random) : gridLayout(bounds, d.step, d.jitter, random);
+  return points.map((point2) => ({ point: point2 }));
+}
+function footprints(scene, models, recipe) {
+  if (!recipe.avoidNodes) return [];
+  const { ids, margin } = recipe.avoidNodes;
+  for (const id of ids)
+    if (!scene.nodes.some((n) => n.id === id))
+      fail("REFERENCE_MISSING", `avoidNodes names missing node ${id}.`, { node: id });
+  const built = compileScene(scene, models, { bindRigs: false });
+  try {
+    const frame = recipe.parent ? built.content.getObjectByName(`${scene.id}/${recipe.parent}`) : built.content;
+    const toFrame = new Matrix42().copy(frame.matrixWorld).invert();
+    return ids.map((id) => {
+      const object = built.content.getObjectByName(`${scene.id}/${id}`);
+      const box = new Box36().setFromObject(object);
+      if (box.isEmpty()) box.setFromPoints([object.getWorldPosition(new Vector312())]);
+      const corners = [0, 1, 2, 3, 4, 5, 6, 7].map(
+        (i) => new Vector312(
+          i & 1 ? box.max.x : box.min.x,
+          i & 2 ? box.max.y : box.min.y,
+          i & 4 ? box.max.z : box.min.z
+        ).applyMatrix4(toFrame)
+      );
+      const xs = corners.map((c) => c.x), zs = corners.map((c) => c.z);
+      return {
+        min: [Math.min(...xs) - margin, Math.min(...zs) - margin],
+        max: [Math.max(...xs) + margin, Math.max(...zs) + margin]
+      };
+    });
+  } finally {
+    built.dispose();
+  }
+}
+function grounding(scene, recipe) {
+  const ground = recipe.ground;
+  if (ground.mode === "none") return () => 0;
+  if (ground.mode === "plane") return () => ground.y;
+  const sample = terrainSampler(scene, ground.node, recipe.parent);
+  const steepest = ground.maxSlope >= 90 ? -Infinity : Math.cos(ground.maxSlope * Math.PI / 180);
+  return ([x, z13]) => {
+    const hit = sample(x, z13);
+    if (!hit.inside) return "outside";
+    if (hit.normal[1] < steepest - 1e-12) return "slope";
+    return hit.y - ground.sink;
+  };
+}
+function subset(total, count, random) {
+  const indices = Array.from({ length: total }, (_, i) => i);
+  for (let i = 0; i < count; i++) {
+    const j = random.int(i, total - 1);
+    [indices[i], indices[j]] = [indices[j], indices[i]];
+  }
+  return indices.slice(0, count).sort((a, b) => a - b);
+}
+function planScatter(scene, models, input, options = {}) {
+  const recipe = parse(ScatterRecipeSchema, input);
+  const recipeHash = sha256Hex(canonical(recipe));
+  const tag = `scatter:${recipeHash.slice(0, 8)}`;
+  const existing = scene.nodes.some((n) => n.id === recipe.group);
+  if (existing && !options.replace)
+    fail("DUPLICATE_ID", `Node ${recipe.group} already exists.`, {
+      id: recipe.group,
+      hint: "Choose another group ID, or replace the existing scatter group (replace: true / --replace) with the write guards."
+    });
+  const removed = existing ? subtreeIds(scene, recipe.group) : /* @__PURE__ */ new Set();
+  const working = { ...scene, nodes: scene.nodes.filter((n) => !removed.has(n.id)) };
+  if (recipe.parent && !working.nodes.some((n) => n.id === recipe.parent))
+    fail("REFERENCE_MISSING", `Scatter parent ${recipe.parent} does not exist.`);
+  const sources2 = scatterSources(working, models, recipe);
+  const ground = grounding(working, recipe);
+  const avoid = footprints(working, models, recipe);
+  const root = createRandom(recipe.seed, "scatter");
+  const pool = candidates(recipe, root.fork("distribution"));
+  const rejected = { outside: 0, exclusion: 0, slope: 0, budget: 0 };
+  const accepted = [];
+  for (const [index, candidate] of pool.entries()) {
+    const p = candidate.point;
+    if (recipe.area && !insideArea(recipe.area, p)) {
+      rejected.outside++;
+      continue;
+    }
+    if (recipe.exclude.some((area) => insideArea(area, p)) || avoid.some((b) => insideBounds(b, p))) {
+      rejected.exclusion++;
+      continue;
+    }
+    const y = ground(p);
+    if (y === "outside" || y === "slope") {
+      rejected[y]++;
+      continue;
+    }
+    accepted.push({ index, candidate, y });
+  }
+  const kept = accepted.length > recipe.maxCount ? subset(accepted.length, recipe.maxCount, root.fork("budget")).map((i) => accepted[i]) : accepted;
+  rejected.budget = accepted.length - kept.length;
+  if (!kept.length && !options.allowEmpty)
+    fail("SCATTER_EMPTY", "The scatter placed nothing.", {
+      candidates: pool.length,
+      rejected,
+      hint: "Read details.rejected: widen the area, lower minDistance or step, relax exclude/avoidNodes margin or ground.maxSlope, or pass allowEmpty to accept an empty group."
+    });
+  if (working.nodes.length + 1 + kept.length > MAX_NODES)
+    fail("PROCEDURAL_BUDGET", `The scatter would exceed ${MAX_NODES} document nodes.`, {
+      limit: MAX_NODES,
+      existing: working.nodes.length,
+      placements: kept.length,
+      hint: "Lower maxCount or scatter into a separate model."
+    });
+  const taken = new Set(working.nodes.map((n) => n.id));
+  const nodes2 = kept.map(({ index, candidate, y }, n) => {
+    const id = `${recipe.group}-${n + 1}`;
+    if (taken.has(id))
+      fail("DUPLICATE_ID", `Placement ID ${id} is already used by another node.`, {
+        id,
+        hint: "Choose a group ID whose <group>-<n> instance IDs are free."
+      });
+    const random = root.fork(`c${index}`);
+    const source = random.pick(
+      sources2,
+      sources2.map((s) => s.weight)
+    );
+    const scale = random.range(recipe.scale[0], recipe.scale[1]);
+    const yawRange = recipe.rotation.yaw ?? (candidate.heading !== void 0 ? [0, 0] : [0, 360]);
+    const yaw = (candidate.heading ?? 0) + random.range(yawRange[0], yawRange[1]);
+    const tilt = [
+      random.range(recipe.rotation.tilt[0], recipe.rotation.tilt[1]),
+      random.range(recipe.rotation.tilt[0], recipe.rotation.tilt[1])
+    ];
+    const position = [candidate.point[0], y, candidate.point[1]];
+    return instanceNode(
+      working,
+      source,
+      id,
+      recipe.group,
+      tag,
+      { position, yaw, tilt, scale },
+      random
+    );
+  });
+  const group = {
+    id: recipe.group,
+    type: "group",
+    ...recipe.parent ? { parent: recipe.parent } : {},
+    tags: ["scatter", tag]
+  };
+  const operations = [
+    ...existing ? [{ op: "removeNode", id: recipe.group, cascade: true }] : [],
+    { op: "putNode", node: group },
+    ...nodes2.map((node) => ({ op: "putNode", node }))
+  ].map((operation) => parse(OperationSchema, operation));
+  return {
+    recipe,
+    operations,
+    placement: {
+      seed: recipe.seed,
+      recipeHash,
+      group: recipe.group,
+      placed: kept.length,
+      candidates: pool.length,
+      rejected
+    }
+  };
+}
 
 // ../model-forge/src/kernel/io/files.ts
 import { promises as fs, createReadStream } from "node:fs";
@@ -4425,7 +5191,8 @@ var schemas = {
   "quality-policy": QualityPolicySchema,
   pattern: PatternSchema,
   rig: RigSchema,
-  "littlewild-export": LittlewildExportSchema
+  "littlewild-export": LittlewildExportSchema,
+  scatter: ScatterRecipeSchema
 };
 var schemaKinds = Object.keys(schemas);
 function jsonSchema(kind) {
@@ -4619,12 +5386,23 @@ async function commitOperations(start, sceneId, ops, options = {}) {
   return withLock(root, async () => {
     const snapshot = await loadUnlocked(root, sceneId);
     const { next, result } = prepareSceneEdit(snapshot, ops, options, stateHash);
-    if (result.changed && !options.dryRun) {
-      const { scene, manifest } = snapshot;
-      await writeJson(await inside(root, `history/${scene.id}/${scene.revision}.json`), scene);
-      await writeJson(await inside(root, manifest.scenes[scene.id]), next);
-    }
+    if (result.changed && !options.dryRun) await persistScene(root, snapshot, next);
     return result;
+  });
+}
+async function persistScene(root, { scene, manifest }, next) {
+  await writeJson(await inside(root, `history/${scene.id}/${scene.revision}.json`), scene);
+  await writeJson(await inside(root, manifest.scenes[scene.id]), next);
+}
+async function commitPlanned(start, sceneId, plan, options = {}) {
+  const root = await findProject(start);
+  return withLock(root, async () => {
+    const snapshot = await loadUnlocked(root, sceneId);
+    checkGuards(snapshot, options);
+    const { operations, report } = plan(snapshot);
+    const { next, result } = prepareSceneEdit(snapshot, operations, options, stateHash);
+    if (result.changed && !options.dryRun) await persistScene(root, snapshot, next);
+    return { ...result, ...report };
   });
 }
 async function importModel(start, input, replace = false, options = {}) {
@@ -4879,7 +5657,7 @@ import { fileURLToPath } from "node:url";
 var embeddedAssets = void 0;
 
 // src/infra/assets.ts
-function candidates(name) {
+function candidates2(name) {
   const base = import.meta.url;
   if (!base) return [];
   const relative = name.startsWith("examples/") ? [`./${name}`, `../../examples/catalog/${name.slice("examples/".length)}`] : [`./${name}`, `../../dist/${name}`];
@@ -4894,7 +5672,7 @@ async function readAsset(name) {
       `Packaged asset ${name} is missing from this executable. Rebuild it with npm run build:cli.`
     );
   }
-  for (const file of candidates(name)) {
+  for (const file of candidates2(name)) {
     try {
       return await fs7.readFile(file, "utf8");
     } catch (error) {
@@ -5029,7 +5807,7 @@ function registerExampleCommands(c) {
 }
 
 // src/commands/create-cli.ts
-import { Command as Command2, CommanderError as CommanderError2 } from "commander";
+import { Command as Command3, CommanderError as CommanderError2 } from "commander";
 import path12 from "node:path";
 
 // src/version.ts
@@ -5037,6 +5815,12 @@ var VERSION = "0.6.0";
 
 // src/commands/errors.ts
 import { CommanderError } from "commander";
+function withHint(error, hints) {
+  if (error instanceof ForgeError && Object.hasOwn(hints, error.code))
+    return Object.assign(error, { hint: hints[error.code] });
+  return error;
+}
+var ownHint = (error) => "hint" in error && typeof error.hint === "string" ? error.hint : void 0;
 function formatCliError(error) {
   const forge = error instanceof ForgeError ? error : new ForgeError(
     error instanceof CommanderError ? "CLI_USAGE" : "INTERNAL_ERROR",
@@ -5048,7 +5832,7 @@ function formatCliError(error) {
       error: {
         code: forge.code,
         message: forge.message,
-        hint: {
+        hint: ownHint(forge) ?? {
           SCHEMA_INVALID: "Run schema --kind <kind> --raw and repair the reported field paths.",
           CLI_USAGE: "Run describe <command path> to discover accepted arguments and flags.",
           REFERENCE_MISSING: "Inspect registered models and node IDs before retrying.",
@@ -5128,6 +5912,68 @@ var parseParameters = (value) => parse(z12.record(Id, NumberValue), parseJson(va
 
 // src/commands/discovery.ts
 import { Option } from "commander";
+
+// src/commands/procedural-catalog.ts
+function proceduralCatalog(name) {
+  const cli = `${name} -p <project>`;
+  return {
+    commands: ["scatter", "layout", "terrain add", "terrain sample"],
+    recipe: "scatter (schema --kind scatter --raw). Flags compile to this recipe; every result echoes the normalized recipe and recipeHash, and --file/--data replays it.",
+    determinism: "Same scene, model library, recipe and seed give the same operations, scene bytes and stateHash. Keyed PRNG (cyrb128 seed|stream -> sfc32); each candidate draws from its own stream, so exclusions never reshuffle survivors.",
+    distributions: {
+      poisson: "scatter --spacing <meters>: even blue noise, no two closer than spacing",
+      random: "scatter --count <n>: uniform random points",
+      path: 'layout --path "x,z;x,z" --spacing <meters> [--orient yaw|none]',
+      grid: "layout --grid CxR --step <meters> [--jitter 0..1] [--center x,z]"
+    },
+    areas: ["rect:x0,z0,x1,z1", "circle:x,z,radius", "polygon:x,z;x,z;x,z[;...]"],
+    defaultArea: "scatter --on <terrain> without --area or --parent covers the terrain footprint",
+    grounding: "--on <heightfield node> sets each origin on the rendered surface (--sink, --max-slope). Terrain and parent chains may only translate, yaw and scale uniformly (TERRAIN_TRANSFORM). Without --on, origins sit at y 0 of the frame.",
+    output: {
+      ids: "<group>-1..<group>-N under one group node",
+      tags: ["scatter (group)", "scatter:<recipeHash8> (group and every instance)"],
+      result: "normal edit result + recipe + placement{seed, recipeHash, group, placed, candidates, rejected{outside, exclusion, slope, budget}} + nextCommands",
+      regenerate: "--replace removes the group subtree first; rerunning the same recipe with --replace leaves the revision unchanged"
+    },
+    terrain: {
+      presets: Object.fromEntries(
+        terrainPresetNames.map((p) => [p, terrainPresets[p].description])
+      ),
+      defaultPreset: defaultTerrainPreset,
+      creates: "mesh node <id> (tag terrain), geometry <id>_geo (heightfield), material <id>_mat",
+      coloring: "Presets color by height bands through vertex colors; --color or --material makes a solid surface without bands",
+      geometry: "heightfield (schema --kind geometry --raw)",
+      replace: "--replace regenerates the terrain; placements keep their heights, so rerun the result.staleScatterGroups with scatter --replace"
+    },
+    guards: ["--dry-run", "--expected-revision", "--expected-state"],
+    limits: {
+      placements: PROCEDURAL_MAX_PLACEMENTS,
+      candidates: PROCEDURAL_MAX_CANDIDATES,
+      sceneNodes: 1e4,
+      items: 32,
+      exclusions: 64,
+      areaPoints: 256,
+      terrainResolution: HEIGHTFIELD_MAX_RESOLUTION,
+      samplePoints: 256
+    },
+    errors: {
+      DUPLICATE_ID: "group exists: --replace with guards, or another --group",
+      SCATTER_EMPTY: "nothing placed: read details.rejected, loosen spacing/area or --allow-empty",
+      PROCEDURAL_BUDGET: "too many candidates or placements: raise spacing, shrink area, --max",
+      TERRAIN_TRANSFORM: "tilted or non-uniformly scaled terrain/parent chain"
+    },
+    examples: [
+      `${cli} terrain add ground --preset hills --size 48,48 --seed 7`,
+      `${cli} terrain sample ground --at "0,0;10,-4"`,
+      `${cli} scatter --model tree,rock:2 --on ground --spacing 3 --scale 0.8..1.3 --seed 42 --group forest --dry-run`,
+      `${cli} layout --model post --path "-20,-20;20,-20;20,20" --spacing 2 --on ground --group fence`,
+      `${cli} layout --model crate --grid 4x3 --step 1.5 --center 0,5 --group stock`,
+      `${cli} scatter --file forest.scatter.json --replace --expected-revision <n> --expected-state <hash>`
+    ]
+  };
+}
+
+// src/commands/discovery.ts
 function registerDiscoveryCommands(c) {
   const { program, output, writeOut } = c;
   program.command("catalog").description("Discover commands, geometry types, conventions and limits").action(
@@ -5288,6 +6134,7 @@ function registerDiscoveryCommands(c) {
         limits: littlewildLimits,
         check: "littlewild sync --check fails when a definition is stale"
       },
+      procedural: proceduralCatalog(program.name()),
       lights: ["point", "spot", "directional"],
       materialShading: ["standard", "unlit"],
       materialDepthWrite: "Optional boolean. Use false for alpha-blended shadow decals (opacity < 1); GLB uses alphaMode BLEND.",
@@ -6324,13 +7171,13 @@ function registerLittlewildCommands(c) {
   ).option("--parameters <json>", "Model parameter overrides").option("--materials <json>", "Inline material replacements keyed by model material ID").option("--dry-run", "Compile and compare without writing").action(async (opts) => {
     const s = await snapshot(), out = resolvePath(opts.out), model = s.models[opts.model];
     if (!model) fail("NOT_FOUND", `Model ${opts.model} does not exist.`);
-    const identity = await littlewildExportIdentity(out, {
+    const identity2 = await littlewildExportIdentity(out, {
       family: opts.family,
       name: opts.name,
       fallbackName: model.name
     });
     const asset = parse(LittlewildAssetSchema, {
-      ...identity,
+      ...identity2,
       models: {
         [opts.variant]: {
           model: opts.model,
@@ -6359,8 +7206,420 @@ function registerLittlewildCommands(c) {
   });
 }
 
+// src/commands/procedural.ts
+import { Option as Option6 } from "commander";
+
+// src/domain/procedural.ts
+var invalid = (flag, expected, value) => fail("INVALID_OPTION", `${flag} expects ${expected}, got ${JSON.stringify(value)}.`, {
+  flag,
+  value
+});
+function numbersOf(text, flag, expected, count) {
+  const parts = text.split(",");
+  const values = parts.map(Number);
+  if (parts.some((part) => !part.trim()) || values.some((n) => !Number.isFinite(n)) || count !== void 0 && values.length !== count)
+    invalid(flag, expected, text);
+  return values;
+}
+function parsePoints(text, flag, minimum = 1) {
+  const points = text.split(";").map((part) => numbersOf(part, flag, "semicolon-separated x,z points", 2));
+  if (points.length < minimum) invalid(flag, `at least ${minimum} x,z points`, text);
+  return points;
+}
+function parseRange(text, flag) {
+  const parts = text.split("..");
+  const [low, high] = parts.map((part) => part.trim() ? Number(part) : NaN);
+  const range2 = [low, parts.length === 1 ? low : high];
+  if (parts.length > 2 || range2.some((v) => !Number.isFinite(v)) || range2[0] > range2[1])
+    invalid(flag, "a range min..max (or one value)", text);
+  return range2;
+}
+function parseArea(text, flag = "--area") {
+  const [type, body = ""] = text.split(/:(.*)/s);
+  if (type === "rect") {
+    const [x0, z0, x1, z1] = numbersOf(body, flag, "rect:x0,z0,x1,z1", 4);
+    return {
+      type: "rect",
+      min: [Math.min(x0, x1), Math.min(z0, z1)],
+      max: [Math.max(x0, x1), Math.max(z0, z1)]
+    };
+  }
+  if (type === "circle") {
+    const [x, z13, radius] = numbersOf(body, flag, "circle:x,z,radius", 3);
+    return { type: "circle", center: [x, z13], radius };
+  }
+  if (type === "polygon") return { type: "polygon", points: parsePoints(body, flag, 3) };
+  return invalid(flag, "rect:x0,z0,x1,z1, circle:x,z,r or polygon:x,z;x,z;x,z", text);
+}
+function parseItems(text) {
+  return text.split(",").map((entry) => {
+    const [model, weight] = entry.trim().split(":");
+    if (!model) invalid("--model", "model IDs, optionally weighted as id:weight", text);
+    if (weight === void 0) return { model };
+    const value = Number(weight);
+    if (!weight.trim() || !(value > 0)) invalid("--model", "a positive weight after id:", text);
+    return { model, weight: value };
+  });
+}
+function parseGrid(text) {
+  const match = /^(\d+)x(\d+)$/i.exec(text.trim());
+  const counts = match ? [Number(match[1]), Number(match[2])] : void 0;
+  if (!counts || counts.some((n) => n < 1))
+    return invalid("--grid", "COLUMNSxROWS such as 4x3", text);
+  return counts;
+}
+var recipeFlags = [
+  "model",
+  "area",
+  "spacing",
+  "count",
+  "parent",
+  "on",
+  "sink",
+  "maxSlope",
+  "scale",
+  "yaw",
+  "max",
+  "exclude",
+  "avoid",
+  "margin"
+];
+function common(flags, defaultGroup, defaultYaw) {
+  if (!flags.model) fail("INPUT_REQUIRED", "Pass --model <id[,id:weight...]> or a recipe --file.");
+  const items = parseItems(flags.model);
+  if ((flags.sink !== void 0 || flags.maxSlope !== void 0) && !flags.on)
+    fail("INVALID_OPTION", "--sink and --max-slope apply only with --on <terrain node>.");
+  if (flags.margin !== void 0 && !flags.avoid)
+    fail("INVALID_OPTION", "--margin applies only with --avoid <ids>.");
+  const yaw = flags.yaw ? parseRange(flags.yaw, "--yaw") : defaultYaw;
+  return {
+    schemaVersion: 1,
+    kind: "scatter",
+    ...flags.seed !== void 0 ? { seed: flags.seed } : {},
+    group: flags.group ?? `${items[0].model.slice(0, 48)}-${defaultGroup}`,
+    ...flags.parent ? { parent: flags.parent } : {},
+    ...flags.exclude?.length ? { exclude: flags.exclude.map((a) => parseArea(a, "--exclude")) } : {},
+    ...flags.avoid ? {
+      avoidNodes: {
+        ids: flags.avoid.split(",").map((id) => id.trim()),
+        ...flags.margin !== void 0 ? { margin: flags.margin } : {}
+      }
+    } : {},
+    ...flags.max !== void 0 ? { maxCount: flags.max } : {},
+    items,
+    ...flags.scale ? { scale: parseRange(flags.scale, "--scale") } : {},
+    ...yaw ? { rotation: { yaw } } : {},
+    ...flags.on ? {
+      ground: {
+        mode: "terrain",
+        node: flags.on,
+        ...flags.sink !== void 0 ? { sink: flags.sink } : {},
+        ...flags.maxSlope !== void 0 ? { maxSlope: flags.maxSlope } : {}
+      }
+    } : {}
+  };
+}
+function terrainFootprint(scene, node) {
+  const [sx, sz] = terrainSpec(scene, node).size;
+  const frame = nodeFrame(scene, node, "terrain");
+  const corners = [
+    [-sx / 2, -sz / 2],
+    [sx / 2, -sz / 2],
+    [sx / 2, sz / 2],
+    [-sx / 2, sz / 2]
+  ].map(([x, z13]) => {
+    const p = applySimilarity(frame, [x, 0, z13]);
+    return [p[0], p[2]];
+  });
+  if (Math.abs(frame.yaw % (2 * Math.PI)) > 1e-12) return { type: "polygon", points: corners };
+  return { type: "rect", min: corners[0], max: corners[2] };
+}
+function scatterRecipe(flags, scene) {
+  if (flags.spacing === void 0 === (flags.count === void 0))
+    fail(
+      "INPUT_REQUIRED",
+      "Pass exactly one of --spacing <meters> (even blue noise) or --count <n>."
+    );
+  let area;
+  if (flags.area) area = parseArea(flags.area);
+  else if (flags.on && !flags.parent) area = terrainFootprint(scene, flags.on);
+  else
+    return fail("INPUT_REQUIRED", "Pass --area rect:x0,z0,x1,z1|circle:x,z,r|polygon:x,z;...", {
+      hint: "--area may be omitted only with --on <terrain> and no --parent: it then covers the terrain."
+    });
+  return {
+    ...common(flags, "scatter"),
+    area,
+    distribution: flags.spacing !== void 0 ? { type: "poisson", minDistance: flags.spacing } : { type: "random", count: flags.count }
+  };
+}
+function layoutRecipe(flags) {
+  if (!!flags.path === !!flags.grid)
+    fail("INPUT_REQUIRED", 'Pass exactly one of --path "x,z;x,z;..." or --grid COLUMNSxROWS.');
+  if (flags.path) {
+    if (flags.spacing === void 0) fail("INPUT_REQUIRED", "--path needs --spacing <meters>.");
+    if (flags.step || flags.jitter !== void 0 || flags.center)
+      fail("INVALID_OPTION", "--step, --jitter and --center apply only to --grid.");
+    return {
+      ...common(flags, "layout", [0, 0]),
+      distribution: {
+        type: "path",
+        points: parsePoints(flags.path, "--path", 2),
+        spacing: flags.spacing,
+        orient: flags.orient ?? "yaw"
+      }
+    };
+  }
+  if (flags.spacing !== void 0 || flags.orient)
+    fail("INVALID_OPTION", "--spacing and --orient apply only to --path; use --step for --grid.");
+  if (!flags.step) return fail("INPUT_REQUIRED", "--grid needs --step <meters>.");
+  const steps = numbersOf(flags.step, "--step", "one spacing s, or s,s", void 0);
+  if (steps.length > 2 || steps.some((s) => !(s > 0)) || steps[0] !== steps.at(-1))
+    fail("INVALID_OPTION", "Grid layouts use one positive step on both axes.", {
+      step: flags.step,
+      hint: "Pass --step s. For different row spacing, lay out each row with --path."
+    });
+  const [columns, rows] = parseGrid(flags.grid);
+  const step = steps[0];
+  const [cx, cz] = flags.center ? numbersOf(flags.center, "--center", "x,z", 2) : [0, 0];
+  const half = (count) => (count - 1) * step / 2 + step * 0.4999;
+  return {
+    ...common(flags, "layout", [0, 0]),
+    area: {
+      type: "rect",
+      min: [cx - half(columns), cz - half(rows)],
+      max: [cx + half(columns), cz + half(rows)]
+    },
+    distribution: {
+      type: "grid",
+      step,
+      ...flags.jitter !== void 0 ? { jitter: flags.jitter } : {}
+    }
+  };
+}
+
+// src/commands/procedural.ts
+var numeric = (value) => {
+  const n = Number(value);
+  if (!value.trim() || !Number.isFinite(n))
+    fail("INVALID_OPTION", `Expected a number, got ${JSON.stringify(value)}.`);
+  return n;
+};
+var collect2 = (value, previous = []) => [...previous, value];
+var placementHints = {
+  DUPLICATE_ID: "The group (or one of its <group>-<n> IDs) exists. Pass --replace with --expected-revision/--expected-state to regenerate the group, or choose another --group.",
+  SCATTER_EMPTY: "Nothing was placed; read details.rejected. Lower --spacing, widen --area, relax --max-slope, --exclude or --avoid/--margin, or pass --allow-empty.",
+  PROCEDURAL_BUDGET: "Raise --spacing or --step, shrink --area or the path, or lower --max/--count. Limits: catalog procedural.limits."
+};
+var placementOptions = (cmd) => cmd.option(
+  "--seed <n>",
+  "Seed 0..4294967295; the same seed replays identically (default 1)",
+  integer
+).option("--group <id>", "Group node owning the placements <group>-<n>").option("--parent <id>", "Existing parent node; x,z coordinates are in its frame").option("--on <node>", "Ground every placement on this heightfield terrain node").option("--sink <meters>", "With --on: sink origins below the surface", numeric).option("--max-slope <degrees>", "With --on: reject steeper ground (0-90)", numeric).option("--scale <min..max>", "Uniform scale range, or one value").option("--yaw <min..max>", "Yaw range in degrees, or one value").option("--max <n>", "Keep at most n placements (keyed subset)", integer).option("--exclude <area>", "Keep-out area (repeatable), same syntax as --area", collect2).option("--avoid <ids>", "Keep clear of these nodes' XZ bounds").option("--margin <meters>", "With --avoid: extra clearance", numeric).option("--replace", "Regenerate: remove an existing group of the same ID first").option("--allow-empty", "Write an empty group instead of failing with SCATTER_EMPTY");
+function registerProceduralCommands(c) {
+  const { program, global, output, input, sourceOptions: sourceOptions2, editOptions: editOptions2, snapshot } = c;
+  const name = program.name();
+  async function place(opts, recipeOf) {
+    const { project, scene } = global();
+    const result = await commitPlanned(
+      project,
+      scene,
+      (s) => {
+        try {
+          const plan = planScatter(s.scene, s.models, recipeOf(s.scene), {
+            replace: !!opts.replace,
+            allowEmpty: !!opts.allowEmpty
+          });
+          return {
+            operations: plan.operations,
+            report: { recipe: plan.recipe, placement: plan.placement }
+          };
+        } catch (error) {
+          throw withHint(error, placementHints);
+        }
+      },
+      opts
+    );
+    const cli = [name, "-p", project, ...scene ? ["-s", scene] : []];
+    const tag = `scatter:${result.placement.recipeHash.slice(0, 8)}`;
+    const nextCommands = result.dryRun ? [
+      [
+        ...cli,
+        "scatter",
+        "--data",
+        JSON.stringify(result.recipe),
+        ...opts.replace ? ["--replace"] : [],
+        ...opts.allowEmpty ? ["--allow-empty"] : [],
+        "--expected-revision",
+        String(result.revision),
+        "--expected-state",
+        result.stateHash
+      ]
+    ] : [
+      [...cli, "node", "list", "--tag", tag, "--details", "--limit", "5"],
+      [...cli, "review", "--out", `${project}/exports/review-r${result.revision}`]
+    ];
+    return { ...result, nextCommands };
+  }
+  async function recipeInput(opts) {
+    const used = recipeFlags.filter((flag) => opts[flag] !== void 0);
+    if (used.length)
+      fail(
+        "INVALID_OPTION",
+        "A recipe file already defines the placement; drop the recipe flags.",
+        {
+          flags: used,
+          hint: "With --file/--data only --seed and --group override the recipe."
+        }
+      );
+    const recipe = await input(opts);
+    if (!recipe || typeof recipe !== "object" || Array.isArray(recipe)) return recipe;
+    return {
+      ...recipe,
+      ...opts.seed !== void 0 ? { seed: opts.seed } : {},
+      ...opts.group !== void 0 ? { group: opts.group } : {}
+    };
+  }
+  editOptions2(
+    placementOptions(
+      sourceOptions2(
+        program.command("scatter").description(
+          "Scatter registered models over an area or terrain, deterministically from a seed"
+        )
+      ).option("--model <ids>", "Registered models, optionally weighted: rock,tree:3").option(
+        "--area <area>",
+        "rect:x0,z0,x1,z1 | circle:x,z,r | polygon:x,z;x,z;x,z (default with --on: the terrain)"
+      ).option("--spacing <meters>", "Minimum distance between placements (blue noise)", numeric).option("--count <n>", "Uniform random placements instead of --spacing", integer)
+    )
+  ).action(async (opts) => {
+    const fromRecipe = opts.file !== void 0 || opts.data !== void 0;
+    const recipe = fromRecipe ? await recipeInput(opts) : void 0;
+    output(await place(opts, (scene) => fromRecipe ? recipe : scatterRecipe(opts, scene)));
+  });
+  editOptions2(
+    placementOptions(
+      program.command("layout").description("Place models evenly along a path or on a grid (yaw 0 unless --yaw)").option("--model <ids>", "Registered models, optionally weighted: post,lamp:0.2").option("--path <points>", 'Polyline "x,z;x,z;..."; instances face along it').option("--spacing <meters>", "With --path: distance between placements", numeric).addOption(
+        new Option6("--orient <mode>", "With --path: yaw follows the path").choices([
+          "yaw",
+          "none"
+        ])
+      ).option("--grid <CxR>", "Grid of COLUMNSxROWS placements, e.g. 4x3").option("--step <meters>", "With --grid: spacing on both axes").option("--jitter <0..1>", "With --grid: random offset up to jitter * step / 2", numeric).option("--center <x,z>", "With --grid: grid center (default 0,0)")
+    )
+  ).action(async (opts) => output(await place(opts, () => layoutRecipe(opts))));
+  const terrain = program.command("terrain").description("Heightfield terrain: create from presets, then sample heights and normals");
+  editOptions2(
+    terrain.command("add <id>").description(
+      "Create a heightfield mesh node <id> with geometry <id>_geo and material <id>_mat"
+    ).addOption(
+      new Option6("--preset <name>", "Terrain preset").choices(terrainPresetNames).default(defaultTerrainPreset)
+    ).option("--size <w,d>", "Width (X) and depth (Z) in meters").option("--resolution <n|nx,nz>", "Vertices per axis (2-256)").option("--amplitude <meters>", "Height range", numeric).option("--seed <n>", "Noise seed 0..4294967295 (default 1)", integer).option("--at <x,y,z>", "Node position").option("--material <id>", "Use an existing material (solid; drops the height bands)").option("--color <hex>", "Solid #rrggbb material instead of the height bands").option("--replace", "Replace an existing node, geometry or material of these IDs")
+  ).action(async (id, opts) => {
+    parse(Id, id);
+    if (opts.material && opts.color)
+      fail("INVALID_OPTION", "Pass --material or --color, not both.");
+    const pair = (text, flag) => {
+      const values = text.split(",").map((v) => v.trim() ? Number(v) : NaN);
+      if (values.length === 1) values.push(values[0]);
+      if (values.length !== 2 || values.some((v) => !Number.isFinite(v)))
+        fail("INVALID_OPTION", `${flag} expects one number or two comma-separated numbers.`);
+      return values;
+    };
+    const { geometry, material: material2 } = terrainPreset(opts.preset, {
+      size: opts.size ? pair(opts.size, "--size") : void 0,
+      resolution: opts.resolution ? pair(opts.resolution, "--resolution") : void 0,
+      amplitude: opts.amplitude,
+      seed: opts.seed
+    });
+    const solid = opts.material || opts.color;
+    if (solid) delete geometry.bands;
+    const ids = { node: id, geometry: `${id}_geo`, material: opts.material ?? `${id}_mat` };
+    const { project, scene } = global();
+    const result = await commitPlanned(
+      project,
+      scene,
+      (s) => {
+        const taken = [
+          s.scene.nodes.some((n) => n.id === ids.node) && `node ${ids.node}`,
+          Object.hasOwn(s.scene.geometries, ids.geometry) && `geometry ${ids.geometry}`,
+          !opts.material && Object.hasOwn(s.scene.materials, ids.material) && `material ${ids.material}`
+        ].filter(Boolean);
+        if (taken.length && !opts.replace)
+          throw withHint(
+            new ForgeError("DUPLICATE_ID", `Terrain ${id} would overwrite ${taken.join(", ")}.`, {
+              taken
+            }),
+            {
+              DUPLICATE_ID: "Pass --replace (with the guards) to regenerate this terrain, then rerun its scatters with --replace; or choose another ID."
+            }
+          );
+        if (opts.material && !Object.hasOwn(s.scene.materials, opts.material))
+          fail("REFERENCE_MISSING", `Material ${opts.material} does not exist.`);
+        const operations = [
+          ...opts.material ? [] : [
+            {
+              op: "putMaterial",
+              id: ids.material,
+              material: opts.color ? parse(MaterialSchema, { color: opts.color, roughness: 0.95 }) : material2
+            }
+          ],
+          { op: "putGeometry", id: ids.geometry, geometry },
+          {
+            op: "putNode",
+            node: {
+              id,
+              type: "mesh",
+              geometry: ids.geometry,
+              material: ids.material,
+              tags: ["terrain"],
+              ...opts.at ? { transform: { position: c.at(opts.at) } } : {}
+            }
+          }
+        ];
+        return {
+          operations,
+          report: {
+            terrain: { ...ids, preset: opts.preset, bands: !solid, geometry },
+            // Placements keep the heights they were planned on; regenerate them on new ground.
+            ...taken.length ? {
+              staleScatterGroups: s.scene.nodes.filter((n) => n.type === "group" && n.tags.includes("scatter")).map((n) => n.id)
+            } : {}
+          }
+        };
+      },
+      opts
+    );
+    const cli = [name, "-p", project, ...scene ? ["-s", scene] : []];
+    output({
+      ...result,
+      nextCommands: [
+        [...cli, "terrain", "sample", id, "--at", "0,0"],
+        [...cli, "scatter", "--model", "<model>", "--on", id, "--spacing", "4", "--dry-run"],
+        [...cli, "review", "--out", `${project}/exports/review-r${result.revision}`]
+      ]
+    });
+  });
+  terrain.command("sample <node>").description("Read-only world-space terrain heights and normals at x,z points").requiredOption("--at <points>", 'World x,z points: "x,z;x,z;..." (at most 256)').action(async (node, opts) => {
+    const points = parsePoints(opts.at, "--at");
+    if (points.length > 256) fail("INVALID_OPTION", "--at accepts at most 256 points.");
+    const s = await snapshot();
+    output({
+      scene: s.scene.id,
+      revision: s.scene.revision,
+      stateHash: s.stateHash,
+      terrain: node,
+      samples: sampleTerrainNode(s.scene, node, points).map((p) => ({
+        x: p.x,
+        z: p.z,
+        y: round4(p.y),
+        normal: p.normal.map(round4),
+        inside: p.inside
+      }))
+    });
+  });
+}
+
 // src/commands/create-cli.ts
-function createCli(overrides = {}, identity = { name: "forge3d" }) {
+function createCli(overrides = {}, identity2 = { name: "forge3d" }) {
   const runtime = {
     cwd: process.cwd(),
     stdin: process.stdin,
@@ -6372,13 +7631,13 @@ function createCli(overrides = {}, identity = { name: "forge3d" }) {
     },
     ...overrides
   };
-  const program = new Command2().name(identity.name).description("Data-driven 3D modeling for agents. JSON in, reproducible geometry out.").version(VERSION).option(
+  const program = new Command3().name(identity2.name).description("Data-driven 3D modeling for agents. JSON in, reproducible geometry out.").version(VERSION).option(
     "-p, --project <directory>",
     "Project directory; otherwise find the nearest project",
     runtime.cwd
   ).option("-s, --scene <id>", "Scene to use; otherwise use activeScene").option("--compact", "Write compact JSON for smaller agent responses").showHelpAfterError(false).exitOverride().configureOutput({ writeOut: runtime.writeOut, writeErr: () => {
   } });
-  if (identity.helpFooter) program.addHelpText("after", identity.helpFooter);
+  if (identity2.helpFooter) program.addHelpText("after", identity2.helpFooter);
   const resolvePath = (value) => path12.resolve(runtime.cwd, value);
   const global = () => {
     const options = program.opts();
@@ -6411,6 +7670,7 @@ function createCli(overrides = {}, identity = { name: "forge3d" }) {
   registerExampleCommands(context);
   registerRigCommands(context);
   registerLittlewildCommands(context);
+  registerProceduralCommands(context);
   return {
     program,
     /** One invocation per factory instance, with a returned status rather than process.exit. */

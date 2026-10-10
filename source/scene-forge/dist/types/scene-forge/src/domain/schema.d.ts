@@ -3896,6 +3896,91 @@ export declare const schemas: {
             metadata: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodUnion<readonly [z.ZodNumber, z.ZodString]>>>;
         }, z.core.$strict>>;
     }, z.core.$strict>;
+    scatter: z.ZodObject<{
+        schemaVersion: z.ZodLiteral<1>;
+        kind: z.ZodLiteral<"scatter">;
+        seed: z.ZodDefault<z.ZodNumber>;
+        group: z.ZodString;
+        parent: z.ZodOptional<z.ZodString>;
+        area: z.ZodOptional<z.ZodDiscriminatedUnion<[z.ZodObject<{
+            type: z.ZodLiteral<"rect">;
+            min: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+            max: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"circle">;
+            center: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+            radius: z.ZodNumber;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"polygon">;
+            points: z.ZodArray<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"path">;
+            points: z.ZodArray<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            width: z.ZodNumber;
+        }, z.core.$strict>], "type">>;
+        exclude: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
+            type: z.ZodLiteral<"rect">;
+            min: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+            max: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"circle">;
+            center: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+            radius: z.ZodNumber;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"polygon">;
+            points: z.ZodArray<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"path">;
+            points: z.ZodArray<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            width: z.ZodNumber;
+        }, z.core.$strict>], "type">>>;
+        avoidNodes: z.ZodOptional<z.ZodObject<{
+            ids: z.ZodArray<z.ZodString>;
+            margin: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>>;
+        distribution: z.ZodDiscriminatedUnion<[z.ZodObject<{
+            type: z.ZodLiteral<"poisson">;
+            minDistance: z.ZodNumber;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"grid">;
+            step: z.ZodNumber;
+            jitter: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"path">;
+            points: z.ZodArray<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            spacing: z.ZodNumber;
+            orient: z.ZodDefault<z.ZodEnum<{
+                none: "none";
+                yaw: "yaw";
+            }>>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"random">;
+            count: z.ZodNumber;
+        }, z.core.$strict>], "type">;
+        maxCount: z.ZodDefault<z.ZodNumber>;
+        items: z.ZodArray<z.ZodObject<{
+            model: z.ZodOptional<z.ZodString>;
+            node: z.ZodOptional<z.ZodString>;
+            weight: z.ZodDefault<z.ZodNumber>;
+            vary: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>>;
+        }, z.core.$strict>>;
+        scale: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+        rotation: z.ZodDefault<z.ZodObject<{
+            yaw: z.ZodOptional<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+            tilt: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+        }, z.core.$strict>>;
+        ground: z.ZodDefault<z.ZodDiscriminatedUnion<[z.ZodObject<{
+            mode: z.ZodLiteral<"terrain">;
+            node: z.ZodString;
+            sink: z.ZodDefault<z.ZodNumber>;
+            maxSlope: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>, z.ZodObject<{
+            mode: z.ZodLiteral<"plane">;
+            y: z.ZodDefault<z.ZodNumber>;
+        }, z.core.$strict>, z.ZodObject<{
+            mode: z.ZodLiteral<"none">;
+        }, z.core.$strict>], "mode">>;
+    }, z.core.$strict>;
 };
 export declare const schemaKinds: (keyof typeof schemas)[];
 export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPayload<z.ZodType<import("../kernel.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("../kernel.js").ScalarValue, unknown>> | z.ZodDiscriminatedUnion<[z.ZodObject<{
@@ -6049,6 +6134,90 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
     allowTransparency: z.ZodDefault<z.ZodBoolean>;
     allowDoubleSided: z.ZodDefault<z.ZodBoolean>;
     requireUVs: z.ZodDefault<z.ZodBoolean>;
+}, z.core.$strict> | z.ZodObject<{
+    schemaVersion: z.ZodLiteral<1>;
+    kind: z.ZodLiteral<"scatter">;
+    seed: z.ZodDefault<z.ZodNumber>;
+    group: z.ZodString;
+    parent: z.ZodOptional<z.ZodString>;
+    area: z.ZodOptional<z.ZodDiscriminatedUnion<[z.ZodObject<{
+        type: z.ZodLiteral<"rect">;
+        min: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+        max: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"circle">;
+        center: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+        radius: z.ZodNumber;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"polygon">;
+        points: z.ZodArray<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"path">;
+        points: z.ZodArray<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+        width: z.ZodNumber;
+    }, z.core.$strict>], "type">>;
+    exclude: z.ZodDefault<z.ZodArray<z.ZodDiscriminatedUnion<[z.ZodObject<{
+        type: z.ZodLiteral<"rect">;
+        min: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+        max: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"circle">;
+        center: z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>;
+        radius: z.ZodNumber;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"polygon">;
+        points: z.ZodArray<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"path">;
+        points: z.ZodArray<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+        width: z.ZodNumber;
+    }, z.core.$strict>], "type">>>;
+    avoidNodes: z.ZodOptional<z.ZodObject<{
+        ids: z.ZodArray<z.ZodString>;
+        margin: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>>;
+    distribution: z.ZodDiscriminatedUnion<[z.ZodObject<{
+        type: z.ZodLiteral<"poisson">;
+        minDistance: z.ZodNumber;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"grid">;
+        step: z.ZodNumber;
+        jitter: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"path">;
+        points: z.ZodArray<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+        spacing: z.ZodNumber;
+        orient: z.ZodDefault<z.ZodEnum<{
+            none: "none";
+            yaw: "yaw";
+        }>>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"random">;
+        count: z.ZodNumber;
+    }, z.core.$strict>], "type">;
+    maxCount: z.ZodDefault<z.ZodNumber>;
+    items: z.ZodArray<z.ZodObject<{
+        model: z.ZodOptional<z.ZodString>;
+        node: z.ZodOptional<z.ZodString>;
+        weight: z.ZodDefault<z.ZodNumber>;
+        vary: z.ZodDefault<z.ZodRecord<z.ZodString, z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>>;
+    }, z.core.$strict>>;
+    scale: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+    rotation: z.ZodDefault<z.ZodObject<{
+        yaw: z.ZodOptional<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+        tilt: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber], null>>;
+    }, z.core.$strict>>;
+    ground: z.ZodDefault<z.ZodDiscriminatedUnion<[z.ZodObject<{
+        mode: z.ZodLiteral<"terrain">;
+        node: z.ZodString;
+        sink: z.ZodDefault<z.ZodNumber>;
+        maxSlope: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>, z.ZodObject<{
+        mode: z.ZodLiteral<"plane">;
+        y: z.ZodDefault<z.ZodNumber>;
+    }, z.core.$strict>, z.ZodObject<{
+        mode: z.ZodLiteral<"none">;
+    }, z.core.$strict>], "mode">>;
 }, z.core.$strict> | z.ZodObject<{
     schemaVersion: z.ZodLiteral<1>;
     name: z.ZodString;
