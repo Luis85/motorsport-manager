@@ -10,11 +10,12 @@ walks through one small process from `process create` to Present and export.
 ## What the studio can and cannot edit
 
 > The studio tunes an existing process. **Edit process…** (the Definition editor) changes
-> process settings, resources and arrivals, and **Edit step…** (the step editor) changes one
-> step's fields and its outgoing paths. The studio cannot create a new process, and its forms
-> cannot add or remove steps: start a process with `process create` and a guarded recipe (or
-> import a JSON or BPMN file), and add or remove steps with a recipe (`putStep`, `removeStep`)
-> or in the Definition editor's **Raw JSON** pane.
+> process settings, resources and arrivals, with undo and redo, and **Edit step…** (the step
+> editor) changes one step's fields and its outgoing paths: it can add a path to an existing
+> step, point a path at another step and remove a path. The studio cannot create a new process,
+> and its forms cannot add, remove or duplicate steps or change a step's kind: start a process
+> with `process create` and a guarded recipe (or import a JSON or BPMN file), and add or remove
+> steps with a recipe (`putStep`, `removeStep`) or in the Definition editor's **Raw JSON** pane.
 
 ## Create a process incrementally
 
@@ -94,7 +95,9 @@ bin/wildlands process slides --input /tmp/process-work/review.json --format md
 ```
 
 `diff` reports changed steps (with names), flows, resources, arrival rules and
-process settings plus both revisions and fingerprints. `slides` explains the
+process settings plus both revisions and fingerprints, lists the changed resources, flows and
+arrival rules by name, and itemises every changed value with its path, old and new value
+(`fields`, for example `/steps/pay/duration` from 15 to 10). `slides` explains the
 process as a slide deck: an overview (SIPOC for business processes, phases and
 touchpoints for journeys), the resource pools, every main-route step phase by
 phase, every other path and a summary. Add `--minutes N [--seed S]` for read-only
@@ -177,8 +180,10 @@ Run it unlimited for a while (`wildlands process run --input shop.json --minutes
 and read the snapshot: `metrics.goals`, `metrics.lost` and `metrics.conversion` (permille;
 676 means 67.6%), `metrics.tracked.mood` at the finish, and for each step `reached`
 (distinct visitors who got that far), `entered` (visits) and `tracked.mood` (average mood
-on entry, a measured curve per touchpoint). Drop-off between two steps is the difference
-of their `reached`. To model more drop-off, add another decision with a `chance` route
+on entry, a measured curve per touchpoint). The difference of two steps' `reached` also holds
+cases on an alternative route or still in progress; the studio's Journey map counts as drop-off
+only cases that ended at a `lost` end since the previous main-route step, and labels a branch that
+rejoins ("split, rejoins at …") and work still in progress ("n in progress"). To model more drop-off, add another decision with a `chance` route
 to the same `lost` end; to model waiting, add a `timer` or give the touchpoint `timing`.
 The numbers are scenario assumptions for one seed, not a forecast. Persona libraries,
 attribution models and text sentiment are not supported; see
@@ -270,8 +275,8 @@ fallback):
 }
 ```
 
-`interval` stays required as the mean spacing. Run it unlimited (Run length
-"Unlimited" in the page, `horizon: null` in code) and it keeps going until you pause;
+`interval` stays required as the mean spacing. Run it unlimited (**Run until** "Until: no
+limit" in the page, `horizon: null` in code) and it keeps going until you pause;
 at 500 unfinished cases further arrivals are refused (event `arrival-dropped`,
 metric `dropped`) and only the 200 newest finished cases stay in the case list while
 the totals remain exact.
@@ -383,7 +388,11 @@ boundary events, complex gateways) are rejected with their element ids and nothi
 with `--unsupported drop` they are removed or approximated instead (a complex gateway becomes an
 exclusive decision), each with a warning. The studio offers the same through **Export BPMN**,
 **Export BPMN with BPSim** and **Import…** (the **Import BPMN** dialog below). Add `--bpsim` to
-`export-bpmn` to write a BPSim scenario beside the extension values. Exported XML is checked for
+`export-bpmn` to write a BPSim scenario beside the extension values; it also carries the first
+arrival rule's constant case data and whole-number draws as start-event properties and the seed
+as the scenario seed. Before handing the file to another tool, read the printed `fidelity` list:
+each line names what only the `wl:` extension carries (for example "BPSim carries arrival rule 1
+of 2; rule 2 is only in the Wildlands extension."), so a tool that ignores the extension loses it. Exported XML is checked for
 well-formedness, and the registered `business-process-bpmn` suite checks the demo and example
 exports with the built-in BPMN 2.0 / BPSim 1.0 conformance validator (next section); an earlier
 one-off run also used the OMG schema files
@@ -461,8 +470,8 @@ Edit the imported JSON like any definition (the guarded `edit` recipes, or the s
 imported definition exports to BPMN again and re-imports to the same fingerprint.
 
 **In the studio.** Choose **Import…** (on a phone, **⋯** then **Import JSON or BPMN…**) and pick
-the `.bpmn` or `.xml` file. A JSON file still replaces the active process at once; a BPMN file
-opens the **Import BPMN** dialog instead, and nothing changes until you choose **Import**:
+the `.bpmn` or `.xml` file. A BPMN file opens the **Import BPMN** dialog, and nothing changes until
+you choose **Import**:
 
 1. Pick the **Process** and, with **Use BPSim simulation parameters** on, the **BPSim scenario**.
    The dialog lists the process's lanes and element counts.
@@ -475,8 +484,11 @@ opens the **Import BPMN** dialog instead, and nothing changes until you choose *
    three. It is information only and never blocks **Import**.
 4. Read the **Preview**, which updates shortly after each change: whether the result is ready to
    import, rejections with their element ids, warnings (the assumptions made) and the mapping
-   grouped into steps, flows, pools, case fields, arrivals and SIPOC. The suggested run length
-   from the BPSim scenario is shown only; set **Run until** yourself if you want it.
+   grouped into steps, flows, pools, case fields, arrivals and SIPOC (at most 200 rows per group,
+   then "… N more entries not shown"). The suggested run length from the BPSim scenario is shown
+   only; set **Run until** yourself if you want it. A process with more than 512 flow nodes or
+   1,024 sequence flows is rejected at once with "This process is too large to import: …": split
+   the model into smaller processes.
 5. Choose **Import**. It is disabled, with the reason in the footer, while an option is invalid,
    the preview lists rejections or the result cannot run. If the current run is past minute 0
    or you have an unapplied draft, the dialog first says what will be discarded and starts on
@@ -504,16 +516,20 @@ the requested horizon when all scheduled cases have ended. It does not execute
 real services or update external systems.
 
 Open the HTML directly. Use **Run simulation**, **Pause**, **Step 1 min**,
-**Advance 30 min**, and **Reset run**. **2D** and **3D** show one simulation;
+**Advance 30 min** (it names fewer minutes when fewer remain before the run length), and **Reset
+run**. When a run stops, **Reset run** becomes the highlighted button and the status says what to
+do next. **2D** and **3D** show one simulation;
 a third button shows the process-type lens over the same simulation: **SIPOC** for a
 business process, **Journey map** for a customer or user journey (the lens never offers
 the other one), and **Present** opens the slide deck beside the 2D map (see
 [Present a process to stakeholders](present-a-process.md)). A journey opens on its map; switching to another process keeps the lens
 for a process of the same kind and otherwise returns to your last 2D or 3D choice.
-Selecting a card or stage selects its step, and Escape clears it. Journeys also say
+Selecting a card or stage selects its step; **← Whole process** in the stage header, or Escape on
+the map or the 3D scene, returns to the whole process. Journeys also say
 customers or users instead of cases, show Finished, Goals, Lost and Conversion, and up
 to two tracked averages next to the run numbers.
-**Step scenes** and **Whole process** change the view without advancing time.
+**Step scenes** and **Whole process** change the view without advancing time. On a phone a
+business process opens in 2D; choose **3D** for the rooms.
 **Edit process…** in the header opens the **Definition editor** (validation before **Apply draft and reset run**, see below); a chip beside it names an unapplied draft.
 
 **Edit one step.** Select the step and choose **Edit step…** beside **Frame view**. The step
@@ -524,10 +540,17 @@ every field and its range.
 1. **Edit the sections that apply.** Sections follow the kind of step: basics, timing and
    cost, people and capacity (tasks), equipment (machine steps) or systems (system steps),
    completion values and counters, declared outputs, needs from earlier steps, backlog and
-   outgoing flows (conditions on decisions, with a short summary of the order the paths are
-   checked).
+   **Where work goes next** (conditions on decisions, with a short summary of the order the paths
+   are checked). Case-field boxes suggest the names the draft already uses.
+   - Each path has **Go to** (where it leads) and **Label shown on this path**; a decision's paths
+     also have **Move up** and **Move down**. **Remove path** removes one, and is disabled with the
+     reason when the step would have too few paths ("A task needs exactly one outgoing path.").
+     Choose a step in **Add path to…** and then **Add path** to add a path without a label or
+     condition. The draft is checked as you edit, so a path the step kind cannot have is reported
+     until you remove it or use it, for example as a deadline path.
    - Work steps and duration timers also offer **Random timing** (the planning duration stays
-     the average shown in estimates while each visit draws its own time) and **Random
+     the value shown in estimates while each visit draws its own time; the inspector says
+     "draws average about N min" when the draws average more than 5% away from it) and **Random
      outcomes (draws)** for chance, weighted-choice and whole-number fields. **Random timing**
      and the arrival gap also offer Normal and Erlang distributions.
    - A decision path can take a random share of cases instead of testing a field, and any
@@ -540,21 +563,29 @@ every field and its range.
      kind as optional; every other step has collapsed **Journey notes**, and end steps choose
      an **Outcome** (None, Goal reached or Customer or user lost).
    - Forks add **Branching** (parallel, or inclusive with conditions on its paths), and work
-     steps add **Multiple instances** and a **Deadline** with its interrupt or escalate path.
+     steps add **Multiple instances** and a **Deadline** with its interrupt or escalate path. A
+     deadline needs a second path: if the step has only one, the **Deadline** section links to
+     **Add path to…**; add the path there, then choose it under **Which outgoing flow is the
+     deadline path?**.
 2. **Fix what it reports.** Inconsistent numbers are reported next to the field. Problems
-   the engine finds for the step appear beside the fields as you type, and the problem list
-   at the top links to each field.
+   the engine finds for the step appear beside the fields in plain words as you type ("Task
+   duration must be 1 or more"), and the problem list at the top links to each field; problems
+   elsewhere in the draft are listed apart with a button that opens the Definition editor.
 3. **Save or apply.** **Save to draft** keeps your edits in the draft without starting
    anything, and the draft summary reads, for example, "Unapplied draft: 1 step changed".
    **Apply and reset run** applies the whole draft (including other unapplied edits, which a
    banner announces); when a run is already in progress it first asks you to confirm that the
-   run will be discarded, so export the run report beforehand if you need it.
-4. **Or leave.** **Cancel**, Escape, **Close** and a click outside the dialog all ask before
-   throwing edits away.
+   run will be discarded, so export the run report beforehand if you need it. Both buttons are
+   disabled, with the reason beside them, while there is nothing to save or apply. The applied
+   run keeps a seed you typed into **Seed** (unless the definition's own seed changed) and the
+   selected step (unless it no longer exists).
+4. **Move on or leave.** **Previous step** and **Next step** open the neighbouring steps in
+   draft order; **Cancel**, Escape, **Close** and a click outside the dialog all ask before
+   throwing edits away, and **Open the Definition editor** offers **Save to draft and open**.
 
-Adding or removing flows and steps is still done in the raw JSON draft (or with a guarded
-recipe). The step editor never adds a flow: for a deadline it lets you choose among the
-step's existing flows and explains where to add the flow in the JSON when there is none.
+Adding, removing or duplicating steps and changing a step's kind is still done in the raw JSON
+draft (or with a guarded recipe). The step editor has no undo of its own: **Cancel** discards its
+unsaved edits, and the Definition editor's undo covers what was saved to the draft.
 
 **Edit the whole process.** The Definition editor is a dialog with two panes: **Tune values** (process name,
 description, **Process type** (business process, customer journey or user journey) and **Seed**, up to six **Tracked measures** that the simulation averages to draw the measured curve, shared resources with their kind People, Machine or System,
@@ -566,14 +597,30 @@ are tabs; on a phone the dialog is a full sheet. The run pauses while it is open
 go to the draft as you type, so closing never loses text, and the chip in the header
 ("Unapplied draft · 3 steps, 1 resource changed") reopens it. **Restore active
 definition** and **Apply draft and reset run** (when a run is past minute 0) ask first;
-export the run report beforehand if you need it. **Export draft**
-saves the draft text exactly, including unfinished JSON. **Export JSON** and
-**Download HTML** continue to use the active definition until you apply a valid
-draft. Editing clears the previous validation result; validate again before applying.
-A rejected import retains the previous definition and run.
+export the run report beforehand if you need it. **Apply draft and reset run** is disabled while
+the draft holds the running definition (use **Reset run** to restart instead). Ctrl+Z (Cmd+Z on a
+Mac) undoes the last draft change and Ctrl+Shift+Z or Ctrl+Y redoes it, anywhere in the editor
+except inside the JSON text, which keeps the browser's own undo; removing a row in **Tune values**
+offers "Removed … **Undo**". The history lasts until you apply, import or switch process. Removing
+a resource that steps still use asks first and then clears their demands; each resource says which
+steps use it. **Export draft** saves the draft text exactly, including unfinished JSON. **Export
+JSON** and **Download HTML** continue to use the active definition until you apply a valid
+draft; while a draft exists the **Export ▾** menu says so and adds **Export draft JSON**.
+Editing clears the previous validation result; validate again before applying.
+The draft lives in this page only: while one exists, reloading or closing the page makes the
+browser ask first, but a draft you leave behind is not recovered. Export it to keep it.
+
+**Import JSON.** Choose **Import…** and a `.process.json` file. A file that is not valid JSON
+or not a valid process changes nothing; the status line says why in plain words (for example
+"Import rejected: the file is not valid JSON (line 1, column 2). …"). When the run is past minute
+0 or you have an unapplied draft, a question names what the import discards and starts on
+**Cancel**; choose **Import and replace** to continue.
+
 If the game folder lists several processes, choose one with the **Process**
 selector. Switching starts that process paused at minute 0 and keeps the others'
-applied edits and unapplied drafts for the session; import and apply change only
+applied edits and unapplied drafts for the session; when the current run is past minute 0 it
+first asks "Switch to …?" (starting on **Cancel**, which keeps the run). A seed you typed applies
+only to the process it was typed for. Import and apply change only
 the active process, and the JSON, BPMN, draft and report exports use it too.
 Use **Inputs & outputs** beneath either view to select a case. **Whole process**
 shows its arrival fields and, after completion, final outputs. Select a task to
@@ -585,36 +632,53 @@ retain the latest 128 task completions, with an explicit omitted-record count.
 In 3D, active work appears as desk actors typing and reviewing screens while
 playback runs. Pause freezes their motion; reduced-motion preferences disable
 it. Additional work uses bounded markers, with counts preserving total activity.
-Focus the canvas to orbit with arrow keys, pan with Shift+arrows or WASD (or right-drag), zoom with +/−, or frame with F. In 2D, drag to pan, scroll or pinch to zoom, and press 0 to reset. Use **Run until** in the toolbar to choose a run length or Unlimited, and the **Tune values** pane of the Definition editor (**Edit process…**: name, seed, resources, arrivals) or **Edit step…** (one step) to fine-tune an agent-built process before applying it.
+Focus the canvas to orbit with arrow keys, pan with Shift+arrows or WASD (or right-drag), zoom with +/−, or frame with F. In 2D, drag to pan, scroll or pinch to zoom, and press 0 to reset. Use **Run until** in the toolbar to choose a run length or no limit, and the **Tune values** pane of the Definition editor (**Edit process…**: name, seed, resources, arrivals) or **Edit step…** (one step) to fine-tune an agent-built process before applying it.
 
 **Studio layout.** On a window 1100 px wide or more the studio fits one screen: a compact
 header and run toolbar, the step list on the left, the stage in the middle and the inspector on
 the right, each column scrolling inside itself. **Run simulation** (**Pause** while playing) is
-the only amber button; **Step 1 min**, **Advance 30 min** and **Reset run** follow, then
-**Speed**, **Run until** and **Seed**, and finally **Activity**, the clock and the run state.
+the only amber button until the run stops, when **Reset run** takes over; **Step 1 min**,
+**Advance 30 min** and **Reset run** follow, then **Speed** (1 min, 5 min, 30 min, 2 h or 24 h of
+simulated time per tick), **Run until** (24 h, 168 h or 720 h, each with its minutes, 100,000 min,
+no limit or a custom number of minutes) and **Seed**, and finally **Activity**, the clock ("M min
+of H", with hours underneath once an hour has passed) and the run state.
 Typing a **Seed** (0 to 2,147,483,647) starts a fresh paused run that uses it ("Seed 7 · fresh
-paused run"); Reset keeps it, importing or applying a definition returns to that definition's
-seed. The status message sits under the stage title. **Inputs & outputs** is a collapsible panel
+paused run"); Reset keeps it, and applying or importing a new revision of the same process keeps
+it while the definition's own seed is unchanged ("Run seed 7 kept."); switching process, or a
+changed definition seed, returns to the definition's seed and the status says so. The status
+message sits under the stage title: a note gives way when the run state changes, and an error
+stays until your next successful action. **Inputs & outputs** is a collapsible panel
 under the metrics (open by default on screens 1600 px wide or more). The inspector lists
 **Shared resources** first (utilisation bars with percentages), then the step's details, including
 **Random timing**, **Random outcomes** and the share of each chance route, or, for the whole
-process, the seed and the arrival streams. On a phone the header keeps **Edit** and a **⋯** menu,
+process, the seed and the arrival streams. The KPI strip under the stage shows **Mean cycle** as
+"—" until a case finishes and **Mean age in progress** beside it, and two costs: **Work cost**
+charges pools only for the minutes they work plus fixed step costs, **Capacity cost** charges every
+pool unit for every minute, busy or idle. A pool's bar is its average use since minute 0, and the
+text beside it says how many units are busy now. A step whose work waits for room in the next
+backlog shows **Blocked after finishing**. On a phone the header keeps **Edit** and a **⋯** menu,
 the run bar stays at the top with **Run options** holding the secondary controls, and steps
 become a horizontal scroller above the stage. In a short window (for example 200% zoom on a
 laptop) dialogs become one scrolling page with the main action kept at the bottom. The studio
 follows your browser's default font size and has a dark theme only.
 
+**Reading the 2D map.** Card borders and work markers follow the legend: a filled disc is working,
+a ring waiting, an hourglass a timer, a square a backlog and a cross blocked work, and a card's
+border shows one of those states, blocked first, then working, waiting, timer and backlog. Long-dashed lines are conditional paths and dotted lines
+deadline paths. Zoomed out, each card shows one count per state under its name; hover or focus a
+card to read its full name and counts in the caption under the map.
+
 **Large maps.** When step names no longer fit on a zoomed-out 2D map, cards show their list
-number instead (the hint reads "Card numbers match the step list · zoom in for names"); zoom in,
-or select a step, to read names. Small cues such as deadline tags and instance pills keep a
+number instead and the key "Card numbers match the step list" appears beside the zoom buttons;
+choose **Zoom in for names** in the legend row, zoom in, or select a step, to read names. Small cues such as deadline tags and instance pills keep a
 readable glyph; hover them for a tooltip, or select the step, for their wording. The inspector's
 overview counts multi-instance items, deadline firings and inclusive forks, and a step shows its
 branching, instances and deadline with live counters.
 
 **Export ▾** holds **Export JSON**, **Export BPMN**, **Export BPMN with BPSim**, **Export run report** and **Download HTML**
 (arrow keys, Home, End and Escape work; the menu closes after a choice). **Activity** opens the
-**Run activity** modal without pausing the run; its badge counts events since you last looked
-(99+ at most). Filter by kind, step or case, choose a step name to select that step and return
+**Run activity** modal without pausing the run; its badge appears only for new problems (failed
+work, blocked work and dropped arrivals) since you last looked (99+ at most). Filter by kind, step or case, choose a step name to select that step and return
 to it in the list, and **Export CSV** or **Export JSON** the filtered events (`<process-id>.events.csv`
 or `.json`, oldest first; text cells that start with `=`, `+`, `-` or `@` get a leading apostrophe).
 The engine keeps its latest 128 events, and the modal says when earlier ones are not kept. While
@@ -624,7 +688,8 @@ otherwise a "N new events — Show" button waits.
 **Export run report** downloads observed results, including retained task I/O. **Download HTML** embeds the
 active definition (for a multi-process game, every applied process in list order)
 and starts a fresh paused run when reopened. There is no
-checkpoint import or automatic browser persistence in v1.
+checkpoint import or automatic browser persistence in v1: unapplied drafts and runs live only in
+the open page.
 
 For reusable game folders, copy the agency `game.json` shape, choose an ID equal
 to the folder name, set `template: process`, and point `content.definition` at

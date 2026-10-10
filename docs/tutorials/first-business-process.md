@@ -111,8 +111,10 @@ bin/wildlands process diff --input /tmp/first-process/expense.json --against /tm
 ```
 
 `validate` prints `"runnable": true` and no diagnostics. `diff` summarises the edit as
-"Changes: 7 steps, 8 flows, 2 resources, 1 arrival rule, 3 process settings changed" and
-lists the added, changed and removed steps by name.
+"Changes: 7 steps, 8 flows, 2 resources, 1 arrival rule, 3 process settings changed", lists
+the added, changed and removed steps, resources, flows and arrival rules by name, and itemises
+each changed value in `fields` (for example `/steps/start/name` from "Intake" to "Expense claim
+submitted").
 
 ## 4. Run it and read the deck
 
@@ -123,9 +125,11 @@ bin/wildlands process slides --input /tmp/first-process/expense.json --format md
 
 With seed 7 the run completes by itself at minute 190 (`advancedMinutes`), before the
 480 minutes you allowed: 12 claims arrived and completed, the mean cycle time is 52.5
-minutes and the simulated cost is 555. In `report.json`, `snapshot.resources` shows the
-finance clerk busy for 180 of the 190 minutes; the single clerk is the bottleneck. These
-are business minutes and simulated cost units from one seeded scenario, not a forecast.
+minutes, the work cost (`metrics.cost`: pool minutes actually worked) is 555 and the capacity
+cost (`metrics.capacityCost`: every pool unit for every minute, busy or idle) is 760. In
+`report.json`, `snapshot.resources` shows the finance clerk busy for 180 of the 190 minutes; the
+single clerk is the bottleneck. These are business minutes and simulated cost units from one
+seeded scenario, not a forecast.
 
 `slides.md` holds the 14-slide deck in six sections: the introduction, one section per
 phase (Submit, Review, Pay), the variant path **Ask for a corrected receipt** and a
@@ -138,11 +142,12 @@ bin/wildlands process build --input /tmp/first-process/expense.json --output /tm
 ```
 
 Open `/tmp/first-process/expense.html` in the browser. The studio opens paused at minute
-0 in the **3D** view, with the six steps in the step list and **2D**, **3D**, **SIPOC**
+0 in the **3D** view (on a phone, in **2D**), with the six steps in the step list and **2D**, **3D**, **SIPOC**
 and **Present** above the stage.
 
-1. Choose **Run simulation**. The clock runs to minute 190 and stops; the metrics read
-   Completed 12, Mean cycle 52.5 min and Simulated cost 555, the same as the command line.
+1. Choose **Run simulation**. The clock runs to minute 190 and stops, and **Reset run**
+   becomes the highlighted button; the metrics read Completed 12, Mean cycle 52.5 min, Work
+   cost 555 and Capacity cost 760, the same as the command line.
 2. Choose **2D** to see the map, then **SIPOC** to see the suppliers, inputs, phases,
    outputs and customers. Changing the view never advances the clock.
 
@@ -157,18 +162,22 @@ and **Present** above the stage.
    in the header reads "Unapplied draft · 1 step changed".
 4. Choose **Edit step…** again and **Apply and reset run**. Because the run is past minute
    0, the footer first asks you to confirm and starts on **Back**; choose **Apply and
-   reset**. The studio starts a fresh paused run at minute 0 and the chip disappears.
+   reset**. The studio starts a fresh paused run at minute 0, the chip disappears and **Pay the
+   claim** stays selected.
 5. Choose **Run simulation** again. This time the run completes at minute 165 with a mean
-   cycle of 27.1 min and a simulated cost of 435.
+   cycle of 27.1 min, a work cost of 435 and a capacity cost of 660.
 
 ## 7. Present it
 
-1. Choose **Present**. The deck opens beside the 2D map: "Slide 1 of 14", and because the
-   run is past minute 0 the header adds "Live facts come from one simulated run at minute
-   165 (seed 7)."
-2. Choose **Next**, or press the Right arrow or Page Down, to move through the slides; a
-   step slide frames its step on the map. **Contents** lists every slide by section.
-3. Choose **Exit** or press Escape. The studio returns to the view you had and the run
+1. Choose **Present**. The deck opens beside the 2D map on the slide of the selected step,
+   **Pay the claim**: "Slide 10 of 14". Because the run is past minute 0 the header adds "Live
+   facts come from one simulated run at business minute 165 (seed 7, completed)."
+2. Press Home for slide 1, whose **Key results** repeat the run: 12 cases arrived and completed,
+   mean cycle time 27.1 min, work cost 435 units and the most utilised pool, Finance clerk.
+3. Choose **Next**, or press the Right arrow, Page Down or `n`, to move through the slides; a
+   step slide frames its step and its neighbours on the map. **Contents** lists every slide by
+   section.
+4. Choose **Exit** or press Escape. The studio returns to the view you had and the run
    stays paused.
 
 [Present a process to stakeholders](../how-to/present-a-process.md) covers choosing a
@@ -187,8 +196,10 @@ bin/wildlands process export-bpmn --input ~/Downloads/expense-approval.process.j
 bin/wildlands process validate-bpmn --input /tmp/first-process/expense.bpmn
 ```
 
-`diff` reports "Changes: 1 step changed" (**Pay the claim**), and `validate-bpmn` exits 0
-with `"conforms": true`. The same **Export ▾** menu also offers **Export BPMN**, **Export
+`diff` reports "Changes: 1 step changed" (**Pay the claim**) with one changed value,
+`/steps/pay/duration` from 15 to 10. `export-bpmn` prints a `fidelity` note that without BPSim
+the arrivals, durations, probabilities, pool sizes and costs travel only in the Wildlands extension
+(add `--bpsim` to carry them), and `validate-bpmn` exits 0 with `"conforms": true`. The same **Export ▾** menu also offers **Export BPMN**, **Export
 BPMN with BPSim**, **Export run report** and **Download HTML**.
 
 ## Where to go next
