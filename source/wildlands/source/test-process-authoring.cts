@@ -142,7 +142,7 @@ test('CLI agent workflow supports create, dry-run, guarded edit, inspect and bou
   const report = call(['run', '--input', 'b.json', '--minutes', '20', '--output', 'report.json']); assert.equal(report.advancedMinutes, 5);
   call(['run', '--input', 'b.json', '--minutes', '20', '--output', 'b.json'], 2);
   fs.linkSync(path.join(dir, 'b.json'), path.join(dir, 'alias.json')); call(['run', '--input', 'b.json', '--minutes', '20', '--output', 'alias.json'], 2);
-  assert(call(['schema', '--kind', 'recipe']).schema); assert.equal(call(['discover']).operations.length, 15);
+  assert(call(['schema', '--kind', 'recipe']).schema); assert.equal(call(['discover']).operations.length, 17);
   call(['export-bpmn', '--input', 'b.json', '--output', 'b.bpmn']); call(['export-bpmn', '--input', 'b.json', '--output', 'b.txt'], 2); call(['export-bpmn', '--input', 'b.json', '--output', 'b.bpmn'], 0);
   const imported = call(['import-bpmn', '--input', 'b.bpmn', '--output', 'c.json']); assert.equal(imported.runnable, true); assert.deepEqual(imported.warnings, []);
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, 'c.json'), 'utf8')), JSON.parse(fs.readFileSync(path.join(dir, 'b.json'), 'utf8')));
