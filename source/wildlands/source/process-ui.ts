@@ -276,7 +276,7 @@
   enter: () => {
    const paused = view.playing; if (paused) command(() => app.play(false));
    before = {mode: view.mode, flat, selected: view.selected}; command(() => app.mode('2d'));
-   status(paused ? 'Presenting slides. The run is paused while you present.' : 'Presenting slides.'); return {view, paused};
+   status(paused ? 'Presenting slides. The run is paused while you present.' : 'Presenting slides.'); return {view, paused, draft: draft.changed()};
   },
   show: step => {command(() => app.select(step)); svg.frame();},
   leave: paused => {

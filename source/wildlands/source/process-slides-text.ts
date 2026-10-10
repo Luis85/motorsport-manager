@@ -1,5 +1,6 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-slides-contracts.d.ts" />
+/// <reference path="./process-time.ts" />
 /// <reference path="./process-random-view.ts" />
 /// <reference path="./process-terms.ts" />
 /**
@@ -26,11 +27,19 @@ declare namespace LWProcessSlidesText {
   kindCount(kind: LWProcess.Kind, n: number): string;
   stepBlocks(step: LWProcess.Step, context: Context): LWProcessSlides.Block[];
   concepts(step: LWProcess.Step, context: Context): LWProcessSlides.Concept[];
-  /** 'One simulated run · minute 1,440 · seed 7'. */
+  /** 'One simulated run · business minute 1,440 · seed 7'. */
   liveHeading(snapshot: LWProcess.Snapshot): string;
+  /** The run status in plain words: 'not started', 'still running', 'completed', 'blocked' or 'stopped at the time limit'. */
+  statusText(snapshot: Pick<LWProcess.Snapshot, 'status'>): string;
+  /** One step's counters; work blocked after finishing is listed apart from waiting work, and a completed run drops 'so far'. */
   stepLive(metric: LWProcess.StepMetric | undefined, snapshot: LWProcess.Snapshot, terms: LWProcessTerms.Terms): LWProcessSlides.Block;
-  runLive(snapshot: LWProcess.Snapshot, terms: LWProcessTerms.Terms): LWProcessSlides.Block;
-  /** Whole numbers with thousands separators ('119,928'); other numbers keep their decimals. */
+  /** The summary's run facts: status, counts, mean cycle ('none yet' until a case finishes), mean age, work and capacity cost, the most utilised pool. */
+  runLive(snapshot: LWProcess.Snapshot, terms: LWProcessTerms.Terms, definition: LWProcess.Definition): LWProcessSlides.Block;
+  /** The title slide's short 'Key results' block (heading starts 'Key results · '). */
+  keyResults(snapshot: LWProcess.Snapshot, terms: LWProcessTerms.Terms, definition: LWProcess.Definition): LWProcessSlides.Block;
+  /** The resources slide's live facts: per pool, most utilised first, its utilisation, busy units now and the work waiting at its steps. */
+  resourcesLive(snapshot: LWProcess.Snapshot, definition: LWProcess.Definition): LWProcessSlides.Block;
+  /** Whole numbers with thousands separators ('119,928'); other numbers keep their decimals (LWProcessTime.number). */
   number(n: number): string;
   /** 'People', 'Machine' or 'System'. */
   poolKind(pool: LWProcess.Resource): string;
@@ -38,9 +47,9 @@ declare namespace LWProcessSlidesText {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessSlidesText?: LWProcessSlidesText.Api; LWProcessRandomView: LWProcessRandomView.Api};
+ const root = inputRoot as {LWProcessSlidesText?: LWProcessSlidesText.Api; LWProcessRandomView: LWProcessRandomView.Api; LWProcessTime: LWProcessTime.Api};
  type Step = LWProcess.Step; type Ctx = LWProcessSlidesText.Context; type Block = LWProcessSlides.Block;
- const view = () => root.LWProcessRandomView;
+ const view = () => root.LWProcessRandomView, time = () => root.LWProcessTime;
  const KIND: Record<LWProcess.Kind, [string, string, string]> = {
   start: ['Start', 'start step', 'start steps'], task: ['Task', 'task', 'tasks'], touchpoint: ['Touchpoint', 'touchpoint', 'touchpoints'],
   machine: ['Machine step', 'machine step', 'machine steps'], system: ['System step', 'system step', 'system steps'], timer: ['Timer', 'timer', 'timers'],
@@ -48,11 +57,7 @@ declare namespace LWProcessSlidesText {
  };
  const WORK = new Set<LWProcess.Kind>(['task', 'touchpoint', 'machine', 'system']);
  const POOL_KIND: Record<LWProcess.ResourceKind, string> = {people: 'People', machine: 'Machine', system: 'System'};
- function number(n: number): string {
-  if (!Number.isFinite(n)) return String(n);
-  const [whole, fraction] = String(Math.abs(n)).split('.');
-  return (n < 0 ? '-' : '') + whole!.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (fraction !== undefined ? '.' + fraction : '');
- }
+ const number = (n: number): string => time().number(n);
  const quote = (text: string) => `“${text}”`;
  const nameOf = (c: Ctx, id: string) => c.steps.get(id)?.name ?? id;
  const kindLabel = (s: Step): string => s.kind === 'fork' ? (s.mode === 'inclusive' ? 'Inclusive gateway' : 'Parallel fork') : KIND[s.kind]?.[0] ?? s.kind;
@@ -170,24 +175,64 @@ declare namespace LWProcessSlidesText {
   return (w.all ?? w.any ?? []).some(hasChance) || (w.not !== undefined && hasChance(w.not));
  }
  const concepts = (s: Step, c: Ctx): LWProcessSlides.Concept[] => CONCEPTS.filter(([, , applies]) => applies(s, c)).map(([id, name, , text]) => ({id, name, text: text(c.terms)}));
- const liveHeading = (q: LWProcess.Snapshot): string => `One simulated run · minute ${number(q.minute)} · seed ${q.seed}`;
+ /** The run status in plain words: 'still running', 'completed', 'blocked', 'stopped at the time limit', 'not started'. */
+ const STATUS: Record<LWProcess.Snapshot['status'], string> = {
+  ready: 'not started', running: 'still running', completed: 'completed', blocked: 'blocked', limit: 'stopped at the time limit',
+ };
+ const statusText = (q: Pick<LWProcess.Snapshot, 'status'>): string => STATUS[q.status] ?? q.status;
+ const liveHeading = (q: LWProcess.Snapshot): string => `One simulated run · business minute ${number(q.minute)} · seed ${q.seed}`;
+ const units = (n: number) => number(Math.round(n * 100) / 100);
  function stepLive(m: LWProcess.StepMetric | undefined, q: LWProcess.Snapshot, t: LWProcessTerms.Terms): Block {
   if (!m) return {heading: liveHeading(q), items: ['No facts for this step in this run.']};
+  const held = m.held ?? 0, wait = time().minutes(m.waitMinutes);
   const items = [`Entered ${number(m.entered)} ${m.entered === 1 ? 'time' : 'times'} by ${number(m.reached)} ${m.reached === 1 ? t.one : t.many}`, `Completed ${number(m.completed)} ${m.completed === 1 ? 'time' : 'times'}`,
-   `Now in progress: ${number(m.active)}; now waiting: ${number(m.queued)}`, `Waiting time so far: ${number(m.waitMinutes)} min in total`];
+   `Now in progress: ${number(m.active)}; now waiting: ${number(m.queued - held)}${held ? `; blocked after finishing: ${number(held)}` : ''}`,
+   q.status === 'completed' ? `Waiting time: ${wait} in total` : `Waiting time so far: ${wait} in total`];
   if (m.timers.waiting) items.push(`Waiting on the timer now: ${number(m.timers.waiting)}`);
   if (m.items) items.push(`Instances started: ${number(m.items.started)}; finished: ${number(m.items.finished)}`);
   if (m.deadlines) items.push(`Deadlines fired: ${number(m.deadlines.interrupted)} interrupted, ${number(m.deadlines.escalated)} escalated`);
   return {heading: liveHeading(q), items};
  }
- function runLive(q: LWProcess.Snapshot, t: LWProcessTerms.Terms): Block {
-  const m = q.metrics, items = [`Run status: ${q.status}`, `${t.Many} arrived: ${number(m.arrived)}`, `${t.finished}: ${number(m.completed)}`, `In progress: ${number(m.active)}`];
+ /** Pools with their names, most utilised first (ties keep the definition order). */
+ function ranked(q: LWProcess.Snapshot, d: LWProcess.Definition): {name: string; metric: LWProcess.PoolMetric; pct: number}[] {
+  const names = new Map(d.resources.map(r => [r.id, r.name]));
+  return q.resources.map((metric, i) => ({name: names.get(metric.id) ?? metric.id, metric, pct: Math.round(metric.utilization * 100), i}))
+   .sort((a, b) => b.pct - a.pct || a.i - b.i);
+ }
+ const busiest = (q: LWProcess.Snapshot, d: LWProcess.Definition): string[] => {
+  const top = ranked(q, d)[0]; return top ? [`Most utilised pool: ${top.name}, ${top.pct}% on average since minute 0`] : [];
+ };
+ /** The mean cycle time, or 'none yet' before any case finishes (a 0 min mean would read as instant work). */
+ const cycle = (m: LWProcess.Snapshot['metrics'], t: LWProcessTerms.Terms) =>
+  m.completed ? time().minutes(m.meanCycleMinutes) : `none yet, no ${t.one} has finished`;
+ function runLive(q: LWProcess.Snapshot, t: LWProcessTerms.Terms, d: LWProcess.Definition): Block {
+  const m = q.metrics;
+  const items = [`Run status: ${statusText(q)}`, `${t.Many} arrived: ${number(m.arrived)}`, `${t.finished}: ${number(m.completed)}`];
+  items.push(`In progress: ${number(m.active)}`);
   if (m.failed) items.push(`Failed: ${number(m.failed)}`);
-  items.push(`Simulated cost: ${number(Math.round(m.cost * 100) / 100)} units`, `Mean cycle time: ${number(Math.round(m.meanCycleMinutes * 10) / 10)} min`);
+  items.push(`Mean cycle time: ${cycle(m, t)}`);
+  if (m.meanAgeMinutes !== null) items.push(`Mean age of the ${t.many} in progress: ${time().minutes(m.meanAgeMinutes)}`);
+  items.push(`Work cost: ${units(m.cost)} units`, `Capacity cost: ${units(m.capacityCost)} units`, ...busiest(q, d));
   if (m.conversion !== null) items.push(`Conversion: ${m.conversion / 10}%`);
   for (const tracked of Object.values(m.tracked)) if (tracked.mean !== null) items.push(`${tracked.label} at the finish: mean ${tracked.mean}`);
   return {heading: liveHeading(q), items};
  }
- root.LWProcessSlidesText = {kindLabel, kindCount, stepBlocks, concepts, liveHeading, stepLive, runLive, number, poolKind};
+ /** The title slide's 'Key results' of one run: arrivals, finished, cycle time, work cost and the most utilised pool. */
+ function keyResults(q: LWProcess.Snapshot, t: LWProcessTerms.Terms, d: LWProcess.Definition): Block {
+  const m = q.metrics, counts = `${t.Many} arrived: ${number(m.arrived)}; ${t.finished.toLowerCase()}: ${number(m.completed)}`;
+  return {heading: `Key results · ${liveHeading(q)}`,
+   items: [`Run status: ${statusText(q)}`, counts, `Mean cycle time: ${cycle(m, t)}`, `Work cost: ${units(m.cost)} units`, ...busiest(q, d)]};
+ }
+ /** Live facts of the resources slide: every pool's average utilisation, busy units now and the work waiting at the steps that use it. */
+ function resourcesLive(q: LWProcess.Snapshot, d: LWProcess.Definition): Block {
+  const steps = new Map(q.steps.map(s => [s.id, s]));
+  const waiting = (id: string) => d.steps.filter(s => Object.hasOwn(s.resources ?? {}, id))
+   .reduce((n, s) => { const x = steps.get(s.id); return n + (x ? x.queued - (x.held ?? 0) : 0); }, 0);
+  return {heading: liveHeading(q), items: ranked(q, d).map(({name, metric, pct}) =>
+   `${name}: ${pct}% average utilisation since minute 0, busy ${time().minutes(metric.busyMinutes)} in total; `
+   + `${number(metric.busy)} of ${number(metric.capacity)} busy now; ${number(waiting(metric.id))} waiting at its steps`)};
+ }
+ root.LWProcessSlidesText = {kindLabel, kindCount, stepBlocks, concepts, liveHeading, statusText, stepLive, runLive, keyResults, resourcesLive,
+  number, poolKind};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessSlidesText;
 })(globalThis);

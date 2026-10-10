@@ -2,6 +2,7 @@
 /// <reference path="./process-slides-contracts.d.ts" />
 /// <reference path="./process-route.ts" />
 /// <reference path="./process-sipoc-model.ts" />
+/// <reference path="./process-time.ts" />
 /// <reference path="./process-slides-text.ts" />
 /**
  * Pure slide model: turns one process definition (and optionally one snapshot) into a detached, deterministic deck that
@@ -14,17 +15,42 @@
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessSlides?: LWProcessSlides.Api; LWProcessRoute: LWProcessRoute.Api; LWProcessSipocModel: LWProcessSipoc.ModelApi;
-  LWProcessRandomView: LWProcessRandomView.Api; LWProcessTerms: LWProcessTerms.Api; LWProcessSlidesText: LWProcessSlidesText.Api};
+  LWProcessRandomView: LWProcessRandomView.Api; LWProcessTerms: LWProcessTerms.Api; LWProcessSlidesText: LWProcessSlidesText.Api;
+  LWProcessTime: LWProcessTime.Api};
  type Step = LWProcess.Step; type Slide = LWProcessSlides.Slide; type Block = LWProcessSlides.Block; type Section = LWProcessSlides.Section;
  const KINDS: LWProcess.Kind[] = ['start', 'task', 'touchpoint', 'machine', 'system', 'timer', 'decision', 'fork', 'join', 'end'];
  const SYNTHETIC = /\b(synthetic|illustrative)\b/i;
  const EMPTY_SNAPSHOT: LWProcess.Snapshot = {minute: 0, status: 'ready', cases: [], tokens: [], receipts: [], receiptsDropped: 0, steps: [], resources: [], events: [],
-  metrics: {arrived: 0, completed: 0, failed: 0, dropped: 0, active: 0, cost: 0, meanCycleMinutes: 0, throughputPerHour: 0, goals: 0, lost: 0, conversion: null, tracked: {}}, seed: 0, retention: {finishedDropped: 0}};
+  metrics: {arrived: 0, completed: 0, failed: 0, dropped: 0, active: 0, cost: 0, capacityCost: 0, meanCycleMinutes: 0, meanAgeMinutes: null,
+   throughputPerHour: 0, goals: 0, lost: 0, conversion: null, tracked: {}}, seed: 0, retention: {finishedDropped: 0}};
  const detach = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
  const quote = (text: string) => `“${text}”`;
  const plural = (n: number, one: string, many = one + 's') => `${root.LWProcessSlidesText.number(n)} ${n === 1 ? one : many}`;
  const slide = (id: string, kind: LWProcessSlides.Kind, section: string, title: string, subtitle: string, lead: string, blocks: Block[], step: string | null = null): Slide =>
   ({id, kind, section, title, subtitle, lead, blocks: blocks.filter(b => b.items.length), concepts: [], live: null, step});
+ const LEAD_WORDS = 60;
+ const words = (text: string) => text.split(/\s+/).filter(Boolean).length;
+ /**
+  * The title slide's lead: the first paragraph of the description, cut after the last whole sentence that keeps it within about
+  * 60 words (a first sentence longer than that is cut at 60 words with an ellipsis). '' without a description.
+  */
+ function leadOf(description: string): string {
+  const first = description.split(/\n\s*\n/)[0]!.trim(); if (words(first) <= LEAD_WORDS) return first;
+  let lead = '';
+  for (const sentence of first.split(/(?<=[.!?])\s+(?=[A-Z0-9“"(])/)) {
+   const next = lead ? lead + ' ' + sentence : sentence; if (words(next) > LEAD_WORDS) break; lead = next;
+  }
+  return lead || first.split(/\s+/).slice(0, LEAD_WORDS).join(' ') + ' …';
+ }
+ /** A section's lead counts the steps between the start and the end, as the SIPOC overview does, and names a start or end it holds. */
+ function sectionLead(steps: Step[]): string {
+  const work = steps.filter(s => s.kind !== 'start' && s.kind !== 'end'), start = steps.find(s => s.kind === 'start');
+  const end = steps.filter(s => s.kind === 'end').at(-1);
+  const core = !work.length ? 'No steps on the main route here besides its start or end'
+   : work.length === 1 ? `1 step on the main route: ${quote(work[0]!.name)}`
+   : `${plural(work.length, 'step')} on the main route, from ${quote(work[0]!.name)} to ${quote(work[work.length - 1]!.name)}`;
+  return `${core}${start ? `, after the start ${quote(start.name)}` : ''}${end ? `, then the end ${quote(end.name)}` : ''}.`;
+ }
  /** Off-route steps, breadth-first from the main route in flow order, labelled by how they are first reached. */
  function variantsOf(d: LWProcess.Definition, path: Step[]): {step: Step; label: string; from: string | null}[] {
   const by = new Map(d.steps.map(s => [s.id, s])), main = new Set(path.map(s => s.id)), found = new Map<string, {label: string; from: string | null}>(), queue = [...path];
@@ -51,7 +77,8 @@
  function overview(d: LWProcess.Definition, terms: LWProcessTerms.Terms, path: Step[], groups: LWProcessRoute.Group[]): Slide {
   const text = root.LWProcessSlidesText, rv = root.LWProcessRandomView, last = path[path.length - 1];
   const ending = last?.kind === 'end' ? ` and the main route ends at ${quote(last.name)}` : ' and the main route loops back to an earlier step';
-  const lead = `${terms.label} with ${plural(d.steps.length, 'step')}, ${text.number(path.length)} of them on the main route. ${terms.Many} start at ${quote(path[0]?.name ?? d.start)}${ending}.`;
+  const lead = `${terms.label} with ${plural(d.steps.length, 'step')}; the main route has ${text.number(path.length)} of them, start and end included. `
+   + `${terms.Many} start at ${quote(path[0]?.name ?? d.start)}${ending}.`;
   const arrivals: Block = {heading: `How ${terms.many} arrive`, items: d.arrivals.flatMap(a => [a.count === 1 && !a.gap ? `One ${terms.one} arrives at minute ${text.number(a.at)}.` : rv.describeArrival(a, terms) + '.',
    ...Object.entries(a.data).map(([field, value]) => `Each starts with ${field} = ${rv.scalar(value)}.`), ...(a.draws ?? []).map(dr => `Each arrival: ${rv.describeDraw(dr)}.`)])};
   if (terms.journey) {
@@ -60,24 +87,37 @@
     .map(s => `${s.name}${s.channel ? ` (${rv.describeChannel(s.channel)})` : ''}${main.has(s.id) ? '' : ', on an alternative path'}`)})).map(b => b.items.length ? b : {heading: b.heading, items: ['No touchpoints in this phase.']});
    return slide('overview', 'overview', 'intro', 'Overview', 'Journey map: phases and touchpoints', lead, [...blocks, arrivals]);
   }
-  const m = root.LWProcessSipocModel.model(d, EMPTY_SNAPSHOT), party = (p: LWProcessSipoc.Party, none: string) => p.placeholder ? none : p.detail ? `${p.name}: ${p.detail}` : p.name;
+  const m = root.LWProcessSipocModel.model(d, EMPTY_SNAPSHOT), route = new Set(path.map(s => s.id));
+  const party = (p: LWProcessSipoc.Party, none: string) => p.placeholder ? none : p.detail ? `${p.name}: ${p.detail}` : p.name;
   return slide('overview', 'overview', 'intro', 'Overview', 'SIPOC: suppliers, inputs, process, outputs and customers', lead, [
    {heading: 'Suppliers', items: m.suppliers.map(p => party(p, 'No suppliers authored (add them in Edit process).'))},
    {heading: 'Inputs', items: m.inputs.length ? m.inputs.map(i => `${i.label}${i.label !== i.field ? ` (${i.field})` : ''}${i.example !== null ? `, for example ${i.example}` : ''}`) : ['No arrival data or external needs.']},
-   {heading: 'Process', items: m.stages.map(s => `${s.name}: ${plural(s.steps, 'step')}${s.parallel ? ', in parallel' : ''}${s.variant ? ', with alternative paths' : ''}`)},
+   // Counted like the section slides: steps between the start and the end, on the main route and off it.
+   {heading: 'Process', items: m.stages.map(s => {
+    const on = s.stepIds.filter(id => route.has(id)).length, off = s.steps - on;
+    const where = `${plural(on, 'step')} on the main route${off ? ` and ${plural(off, 'step')} off it` : ''}`;
+    return `${s.name}: ${where}${s.parallel ? ', in parallel' : ''}${s.variant ? ', with alternative paths' : ''}`;
+   })},
    {heading: 'Outputs', items: m.outputs.map(o => `${o.label}: ${o.detail}`)},
    {heading: 'Customers', items: m.customers.map(p => party(p, 'No customers authored (add them in Edit process).'))}, arrivals]);
  }
- function resources(d: LWProcess.Definition, terms: LWProcessTerms.Terms): Slide {
+ function resources(d: LWProcess.Definition, terms: LWProcessTerms.Terms, snapshot: LWProcess.Snapshot | null): Slide {
   const text = root.LWProcessSlidesText;
   if (!d.resources.length) return slide('resources', 'resources', 'intro', 'Resources', 'No resource pools', `This process has no resource pools, so no step ever waits for capacity.`, []);
+  const s = poolSlide(d, terms); if (snapshot) s.live = text.resourcesLive(snapshot, d);
+  return s;
+ }
+ function poolSlide(d: LWProcess.Definition, terms: LWProcessTerms.Terms): Slide {
+  const text = root.LWProcessSlidesText;
   const users = (id: string) => d.steps.filter(s => Object.hasOwn(s.resources ?? {}, id)).map(s => s.name);
   const blocks = ['People', 'Machine', 'System'].map(kind => ({heading: kind === 'People' ? 'People' : kind + 's', items: d.resources.filter(r => text.poolKind(r) === kind).map(r => {
    const used = users(r.id);
    return `${r.name}: capacity ${text.number(r.capacity)}, cost ${text.number(r.costPerMinute)} per minute; ${used.length ? 'used by ' + used.join(', ') : 'not used by any step'}.`;
   })}));
   return slide('resources', 'resources', 'intro', 'Resources', plural(d.resources.length, 'resource pool'),
-   `Pools are capacity slots: work starts when its pools have free units, otherwise the ${terms.one} waits in a queue. Costs are simulated units, not money.`, blocks);
+   `Pools are capacity slots: work starts when its pools have free units, otherwise the ${terms.one} waits in a queue. Costs are simulated units, not money: `
+   + 'work cost charges pools only for the minutes they work (plus fixed step costs), '
+   + 'while capacity cost charges every pool unit for every minute, busy or idle.', blocks);
  }
  function summary(d: LWProcess.Definition, terms: LWProcessTerms.Terms, path: Step[], phases: number, variants: number, snapshot: LWProcess.Snapshot | null): Slide {
   const text = root.LWProcessSlidesText, kinds = KINDS.map(k => [k, d.steps.filter(s => s.kind === k).length] as const).filter(([, n]) => n > 0);
@@ -86,13 +126,13 @@
    `Open the ${terms.lensLabel} view to see the same process as ${terms.lens === 'sipoc' ? 'suppliers, inputs, stages, outputs and customers' : 'phases, touchpoints, feelings and the funnel'}.`,
    ...d.resources.length ? ["Change a pool's capacity in Edit process and compare waiting time, cost and cycle time."] : [],
    ...d.steps.some(s => s.kind === 'decision') ? [`Change a decision's condition or chance and watch how many ${terms.many} take each route.`] : [],
-   ...random ? ['Change the seed to see another run; the same seed always repeats the same run.'] : [],
-   'From the command line: wildlands process run for a bounded run, or process slides --minutes N for these slides with live facts.'];
+   ...random ? ['Change the seed to see another run; the same seed always repeats the same run.'] : []];
   const s = slide('summary', 'summary', 'summary', 'Summary', d.name, `${plural(d.steps.length, 'step')} in ${plural(phases, 'phase')}, ${plural(d.resources.length, 'resource pool')} and ${plural(variants, 'step')} off the main route.`, [
    {heading: 'Steps by kind', items: kinds.map(([k, n]) => text.kindCount(k, n))},
-   {heading: 'Structure', items: [`Main route: ${plural(path.length, 'step')}.`, `Off the main route: ${plural(variants, 'step')}.`, `Arrival rules: ${text.number(d.arrivals.length)}.`, ...d.seed !== undefined ? [`Seed: ${d.seed}.`] : []]},
+   {heading: 'Structure', items: [`Main route: ${plural(path.length, 'step')}, start and end included.`, `Off the main route: ${plural(variants, 'step')}.`,
+    `Arrival rules: ${text.number(d.arrivals.length)}.`, ...d.seed !== undefined ? [`Seed: ${d.seed}.`] : []]},
    {heading: 'Try in the studio', items: tries}]);
-  if (snapshot) s.live = text.runLive(snapshot, terms);
+  if (snapshot) s.live = text.runLive(snapshot, terms, d);
   return s;
  }
  function build(input: LWProcess.Definition, rawSnapshot: LWProcess.Snapshot | null = null): LWProcessSlides.Deck {
@@ -107,15 +147,19 @@
    const out = slide('step-' + s.id, 'step', section, s.name, subtitle, s.description ?? 'No description authored.', text.stepBlocks(s, context), s.id);
    out.concepts = text.concepts(s, context); if (snapshot) out.live = text.stepLive(metrics.get(s.id), snapshot, terms); return out;
   };
-  const title = slide('title', 'title', 'intro', d.name, terms.label, d.description ?? 'No description authored.', [
+  const description = d.description?.trim() ?? '', lead = leadOf(description), unit = root.LWProcessTime.UNIT;
+  const title = slide('title', 'title', 'intro', d.name, terms.label, lead || 'No description authored.', [
    ...d.description && SYNTHETIC.test(d.description) ? [{heading: 'About the values', items: ['The description says these values are synthetic or illustrative: they are scenario assumptions, not measurements.']}] : [],
    {heading: 'How to read this deck', items: [`The overview and resources come first, then the main route ${groups.length ? 'phase by phase' : 'step by step'}${variants.length ? ', then every step off the main route' : ''}, then a summary.`,
-    `Each step slide says what happens, who or what does it, how long it takes, what it needs and delivers, and where the ${terms.one} goes next.`]}]);
-  add({id: 'intro', title: 'Introduction', kind: 'intro'}, [title, overview(d, terms, path, groups), resources(d, terms)]);
+    `Each step slide says what happens, who or what does it, how long it takes, what it needs and delivers, and where the ${terms.one} goes next.`,
+    `Times are simulated ${unit} (min), the working time the model counts, not wall-clock time; long times also show hours (h).`]},
+   // The lead is clamped to a slide-sized opening; the whole description follows for reference.
+   ...lead !== description ? [{heading: 'Process description', items: description.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)}] : []]);
+  if (snapshot) title.live = text.keyResults(snapshot, terms, d);
+  add({id: 'intro', title: 'Introduction', kind: 'intro'}, [title, overview(d, terms, path, groups), resources(d, terms, snapshot)]);
   const onRoute = new Set(path.map(s => s.id)), how = new Map(variants.map(v => [v.step.id, v.label.toLowerCase()]));
   const leaving = (steps: Step[]) => steps.flatMap(s => d.flows.filter(f => f.from === s.id && !onRoute.has(f.to)).map(f => `${s.name} → ${context.steps.get(f.to)?.name ?? f.to} (${how.get(f.to) ?? 'other path'})`));
-  const sectionSlide = (id: string, name: string, subtitle: string, steps: Step[]) => slide('section-' + id, 'section', id, name, subtitle,
-   steps.length === 1 ? `1 step on the main route: ${quote(steps[0]!.name)}.` : `${plural(steps.length, 'step')} on the main route, from ${quote(steps[0]!.name)} to ${quote(steps[steps.length - 1]!.name)}.`,
+  const sectionSlide = (id: string, name: string, subtitle: string, steps: Step[]) => slide('section-' + id, 'section', id, name, subtitle, sectionLead(steps),
    [{heading: 'In this part', items: steps.map(s => `${s.name} (${text.kindLabel(s).toLowerCase()})`)}, {heading: 'Leaves the main route', items: leaving(steps)}], steps[0]!.id);
   if (groups.length) groups.forEach((g, i) => { const id = 'phase-' + (i + 1); add({id, title: g.name, kind: 'phase'}, [sectionSlide(id, g.name, `Phase ${i + 1} of ${groups.length}`, g.steps), ...g.steps.map(s => stepSlide(s, id, `${text.kindLabel(s)} · ${g.name}`))]); });
   else if (path.length) add({id: 'route', title: 'Main route', kind: 'route'}, [sectionSlide('route', 'Main route', 'No phases authored', path), ...path.map(s => stepSlide(s, 'route', `${text.kindLabel(s)} · main route`))]);
@@ -130,7 +174,11 @@
  }
  function markdown(deck: LWProcessSlides.Deck): string {
   const lines = [`# ${deck.process.name}`, '', `Process \`${deck.process.id}\` · ${root.LWProcessTerms.of(deck.process.genre).label} · revision ${deck.process.revision} · ${plural(deck.slides.length, 'slide')}`];
-  if (deck.live) lines.push('', `Live facts come from one simulated run: minute ${root.LWProcessSlidesText.number(deck.live.minute)}, seed ${deck.live.seed}, status ${deck.live.status}.`);
+  if (deck.live) {
+   const status = root.LWProcessSlidesText.statusText({status: deck.live.status as LWProcess.Snapshot['status']});
+   const minute = root.LWProcessSlidesText.number(deck.live.minute);
+   lines.push('', `Live facts come from one simulated run: business minute ${minute}, seed ${deck.live.seed}, status ${status}.`);
+  }
   const list = (b: Block) => ['', `**${b.heading}**`, '', ...b.items.map(item => `- ${item}`)];
   deck.sections.forEach((section, i) => {
    lines.push('', `## ${i + 1}. ${section.title}`);
@@ -138,11 +186,16 @@
     lines.push('', `### Slide ${section.first + j + 1}: ${s.title}`);
     if (s.subtitle) lines.push('', `_${s.subtitle}_`);
     if (s.lead) lines.push('', s.lead);
+    // As in Present: the title slide's key results follow its lead, other live facts close their slide.
+    if (s.live && s.kind === 'title') lines.push(...list(s.live));
     for (const b of s.blocks) lines.push(...list(b));
     if (s.concepts.length) lines.push(...list({heading: 'Concepts', items: s.concepts.map(c => `${c.name}: ${c.text}`)}));
-    if (s.live) lines.push(...list(s.live));
+    if (s.live && s.kind !== 'title') lines.push(...list(s.live));
    });
   });
+  // A tip for whoever reviews the Markdown; the audience-facing deck in Present does not show it.
+  lines.push('', '---', '', '_Reproduce with the command line: `bin/wildlands process slides --input FILE --minutes N` adds live facts from one bounded run, '
+   + 'and `bin/wildlands process run --input FILE --minutes N` runs it without slides._');
   return lines.join('\n') + '\n';
  }
  root.LWProcessSlides = {build, markdown};

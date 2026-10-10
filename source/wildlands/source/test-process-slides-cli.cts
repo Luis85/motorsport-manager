@@ -39,7 +39,7 @@ test('CLI process slides emits JSON, prints Markdown, writes either file and add
  assert.deepEqual(live.live, {minute: q.minute, seed: 4, status: q.status}); assert.deepEqual(JSON.parse(read(dir, 'live.json')), slides.build(d, q));
  assert.equal(call(['slides', '--input', 'a.json', '--minutes', '120']).deck.live.seed, 3, 'without --seed the definition seed is used, as in process run');
  const liveMd = raw(['slides', '--input', 'a.json', '--format', 'md', '--minutes', '120', '--seed', '4']).stdout; assert.equal(liveMd, slides.markdown(slides.build(d, q)));
- assert(liveMd.includes(`Live facts come from one simulated run: minute ${q.minute}, seed 4, status ${q.status}.`));
+ assert.equal(q.status, 'completed'); assert(liveMd.includes(`Live facts come from one simulated run: business minute ${q.minute}, seed 4, status completed.`));
  const train = path.resolve(__dirname, '../../../docs/concepts/agency-delivery/content/delivery-release.process.json');
  assert.equal(call(['slides', '--input', train]).deck.slides.length, 36);
 }));
