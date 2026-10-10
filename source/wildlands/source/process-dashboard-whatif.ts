@@ -65,18 +65,18 @@ declare namespace LWProcessDashboardWhatIf {
   const U = u(), problems: string[] = [], max = maxMinutes(view), work = i.mode === 'compare' ? 2 : 1, last = i.seed + i.runs - 1;
   if (!whole(i.runs, LIMITS.runsMin, LIMITS.runsMax)) problems.push(`Runs must be a whole number from ${LIMITS.runsMin} to ${LIMITS.runsMax}.`);
   const length = view.horizon === null ? '' : ' (the run length)';
-  if (!whole(i.minutes, 1, max)) problems.push(`Minutes per run must be a whole number from 1 to ${U.number(max)}${length}.`);
-  if (!whole(i.seed, 0, LIMITS.seed)) problems.push(`The first seed must be a whole number from 0 to ${U.number(LIMITS.seed)}.`);
-  else if (whole(i.runs, 1, LIMITS.runsMax) && last > LIMITS.seed) problems.push(`Seeds ${i.seed} to ${last} pass the largest seed, ${U.number(LIMITS.seed)}.`);
+  if (!whole(i.minutes, 1, max)) problems.push(`Minutes per run must be a whole number from 1 to ${U.count(max)}${length}.`);
+  if (!whole(i.seed, 0, LIMITS.seed)) problems.push(`The first seed must be a whole number from 0 to ${U.count(LIMITS.seed)}.`);
+  else if (whole(i.runs, 1, LIMITS.runsMax) && last > LIMITS.seed) problems.push(`Seeds ${i.seed} to ${last} pass the largest seed, ${U.count(LIMITS.seed)}.`);
   const total = i.runs * i.minutes * work;
   if (!problems.length && total > LIMITS.work) {
-   problems.push(`This plan simulates ${U.number(total)} minutes; the limit is ${U.number(LIMITS.work)}. Lower the runs or the minutes.`);
+   problems.push(`This plan simulates ${U.count(total)} minutes; the limit is ${U.count(LIMITS.work)}. Lower the runs or the minutes.`);
   }
   const why = i.mode === 'compare' ? compareReason(draft) : null;
   if (why) problems.push(why);
   const designs = work === 2 ? ' × 2 designs' : '';
-  const plan = problems.length ? '' : `Seeds ${i.seed} to ${last} · ${i.runs} × ${U.number(i.minutes)} minutes${designs} = `
-   + `${U.number(total)} of at most ${U.number(LIMITS.work)} simulated minutes.`;
+  const plan = problems.length ? '' : `Seeds ${i.seed} to ${last} · ${i.runs} × ${U.count(i.minutes)} minutes${designs} = `
+   + `${U.count(total)} of at most ${U.count(LIMITS.work)} simulated minutes.`;
   const advice = whole(i.runs, LIMITS.runsMin, 9) ? 'Intervals are wide with few runs.' : '';
   return {ok: !problems.length, problems, plan, advice};
  }
@@ -118,7 +118,7 @@ declare namespace LWProcessDashboardWhatIf {
   const stats = compare ? pairs.flatMap(k => [k.a, k.b]) : single;
   const flat = done > 1 && stats.every(s => s.sd === null || s.sd === 0), seeds = r.seeds.slice(0, Math.max(1, done));
   const honesty = `Spread under the authored assumptions across ${U.plural(done, 'seed')} (${seeds[0]} to ${seeds.at(-1)}), measured at minute `
-   + `${U.number(r.minutes)} of runs that start empty, so start-up is included. Intervals use Student t (normal 1.96 above 30 degrees of freedom, `
+   + `${U.count(r.minutes)} of runs that start empty, so start-up is included. Intervals use Student t (normal 1.96 above 30 degrees of freedom, `
    + 'slightly narrow between 31 and about 120). This is not a forecast.'
    + (compare ? ' Both designs run on the same seeds, so they share random numbers wherever they agree.' : '');
   const status = r.complete ? (compare ? 'Comparison complete.' : 'Replications complete.') : `Partial results (${done} of ${r.runs} runs).`;

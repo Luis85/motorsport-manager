@@ -99,7 +99,10 @@ declare namespace LWProcessDashboardModel {
  type State = keyof LWProcessDashboardData.StateMinutes;
  /** Shared helpers of the dashboard model modules. */
  interface Util {
+  /** A value with thousands separators: whole numbers exact, others rounded for reading (`round`). */
   number(n: number): string;
+  /** An exact count or identifier-like number with thousands separators, never rounded (seeds, limits, totals of runs). */
+  count(n: number): string;
   minutes(n: number, d: LWProcess.Definition): string;
   percent(part: number, whole: number): string;
   /** At most 3 significant digits from 1,000 up, whole numbers from 100, one decimal below. */
@@ -155,7 +158,8 @@ declare namespace LWProcessDashboardSections {
   }
   return a >= 100 ? Math.round(n) : Math.round(n * 10) / 10;
  }
- const number = (n: number) => time().number(round(n));
+ /** Whole numbers (counts) stay exact; other values are rounded for reading. */
+ const number = (n: number) => time().number(Number.isInteger(n) ? n : round(n));
  const minutes = (n: number, d: LWProcess.Definition) => time().span(round(n), d.calendar ?? null);
  const percent = (part: number, whole: number) => whole > 0 ? `${Math.round(part * 1000 / whole) / 10}%` : '—';
  const plural = (n: number, one: string, many = one + 's') => `${time().number(n)} ${n === 1 ? one : many}`;
@@ -217,7 +221,8 @@ declare namespace LWProcessDashboardSections {
  }
  const panel = (id: string, title: string, question: string, f: Partial<Panel>): Panel =>
   ({id, title, question, empty: null, caption: '', notes: [], chart: null, legend: [], table: null, ...f});
- const util: LWProcessDashboardModel.Util = {number, minutes, percent, round, plural, random, order, state, rank, bin, merge, table, panel, STATES};
+ const count = (n: number) => time().number(n);
+ const util: LWProcessDashboardModel.Util = {number, count, minutes, percent, round, plural, random, order, state, rank, bin, merge, table, panel, STATES};
  /** Whole-run cycle bins: the fine distribution when present, else the snapshot's 1-2-5 histogram. */
  function cycleBins(input: Input): {edges: number[]; counts: number[]} {
   const fine = input.distributions;

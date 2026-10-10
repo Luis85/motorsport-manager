@@ -167,8 +167,8 @@
   lensButton.title = terms.lensTitle; lensButton.setAttribute('aria-label', terms.lensTitle);
   get<HTMLButtonElement>('mode-3d').disabled = !!unavailable;
   const lensFit = `Scroll the ${terms.lensLabel} back to the start`;
-  const frameTitle = view.mode === 'dashboard' ? 'Scroll the dashboard back to its top' : view.mode === '2d' ? 'Fit the map to the view (0)' : 'Reset camera (F)';
-  get('frame').title = view.mode === 'lens' ? lensFit : frameTitle;
+  const fits = {lens: lensFit, dashboard: 'Scroll the dashboard back to its top', '2d': 'Fit the map to the view (0)', '3d': 'Reset camera (F)'};
+  get('frame').title = fits[view.mode];
   hints(selected);
   const visibleTokens = q.tokens.filter(t => !selected || t.stepId === selected).length;
   get('marker-count').textContent = view.mode === '3d' && visibleTokens > 120 ? `Showing 120 of ${visibleTokens} work markers` : '';
@@ -232,7 +232,9 @@
   e.preventDefault(); command(() => app.select(null));
  });
  // Fit to view: the 2D map fits the whole process, the lens scrolls back to its start and the 3D camera returns to its frame.
- on('frame', () => {if (view.mode === '2d') svg.frame(); else if (view.mode === 'lens') lens.frame(); else if (view.mode === 'dashboard') dashboard.frame(); else three?.frame();});
+ on('frame', () => {
+  if (view.mode === '2d') svg.frame(); else if (view.mode === 'lens') lens.frame(); else if (view.mode === 'dashboard') dashboard.frame(); else three?.frame();
+ });
  // ---- Dashboard binding (Package DB-UI): the per-process Dashboard view. It draws detached views only, holds no session, never
  // ticks; choosing a step is the same select command as on the map. The read-model reads (series, distributions, recent) are wired
  // here once the session offers them. ----

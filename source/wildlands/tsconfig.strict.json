@@ -519,6 +519,8 @@
     "source/test-process-slides-cli.cts",
     "source/test-process-calendar.cts",
     "source/test-process-advice.cts",
+    "source/test-process-dashboard.cts",
+    "source/test-process-dashboard-render.cts",
     "source/test-process-application.cts",
     "source/test-process-bpmn-helpers.cts",
     "source/test-process-bpmn-extensions.cts",
@@ -543,6 +545,7 @@
     "source/verification/process-readability-browser.ts",
     "source/verification/process-present-browser.ts",
     "source/verification/process-shell-browser.ts",
+    "source/verification/process-dashboard-browser.ts",
     "source/verification/process-shots.ts",
     "source/test-support/scene-journeys.cts"
   ],

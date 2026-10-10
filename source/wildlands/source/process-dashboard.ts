@@ -80,7 +80,7 @@ declare namespace LWProcessDashboard {
   const part = (name: string) => region.querySelector<HTMLElement>(`[data-part="${name}"]`)!, tip = region.querySelector<HTMLElement>('.db-tip')!;
   const whatif = root.LWProcessDashboardWhatIfView.create({draft: () => env.draft(), validate: text => env.validate(text)});
   region.insertBefore(whatif.element, region.querySelector('.db-data'));
-  let last: View | null = null, model: LWProcessDashboardModel.Model | null = null, signature = '', layout = '', windowAt = 0, width = 0;
+  let last: View | null = null, model: LWProcessDashboardModel.Model | null = null, signature = '', layout = '', windowAt = 0, width = 0, drawnRem = 0;
   let expanded = new Set<string>(), distKey = '', recentKey = -1;
   let data: Pick<Data, 'series' | 'distributions' | 'recent'> = {series: null, distributions: null, recent: null};
   /** Replaces a node's markup only when it changed (the studio's setHtml diff). */
@@ -132,6 +132,7 @@ declare namespace LWProcessDashboard {
    if (!force && parts.join('|') === signature) return;
    signature = parts.join('|');
    width = w;
+   drawnRem = rem;
    readData(q);
    const key = focusKey();
    model = M.build({view, ...data, draft, window: windowAt});
@@ -212,7 +213,10 @@ declare namespace LWProcessDashboard {
   region.addEventListener('keydown', e => {
    if (e.key === 'Escape' && (e.target as Element).matches('input, select, textarea')) e.preventDefault();
   });
-  const resize = new ResizeObserver(() => { if (last && Math.abs(region.clientWidth - width) > 1) requestAnimationFrame(redraw); });
+  // A new width or root font size redraws the charts at their new pixel size (they are drawn 1:1, never scaled).
+  const resize = new ResizeObserver(() => {
+   if (last && (Math.abs(region.clientWidth - width) > 1 || remPx() !== drawnRem)) requestAnimationFrame(redraw);
+  });
   resize.observe(region);
   return {
    draw,

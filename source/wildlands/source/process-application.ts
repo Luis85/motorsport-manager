@@ -138,7 +138,12 @@ declare namespace LWProcessApp {
     playing, horizon, processes: slots.map(d => ({id: d.id, name: d.name})), active,
    }),
    select(id) { if (id !== null && !definition.steps.some(s => s.id === id)) throw Error('Unknown step: ' + id); selected = id; },
-   mode(value) { if (!['2d', '3d', 'lens', 'dashboard'].includes(value)) throw Error('Unknown view mode.'); mode = value; if (value === '2d' || value === '3d') flat = value; },
+   mode(value) {
+    if (!['2d', '3d', 'lens', 'dashboard'].includes(value)) throw Error('Unknown view mode.');
+    mode = value;
+    // Only 2D and 3D are the remembered flat choice; the lens and the dashboard are not.
+    if (value === '2d' || value === '3d') flat = value;
+   },
    play(value) { playing = value && !terminal(); }, advance, runToEnd,
    horizon(value) { alive(); session.setHorizon(value); horizon = value; if (terminal()) playing = false; },
    pulse(minutes) { if (playing) advance(horizon === null ? minutes : Math.min(minutes, horizon - session.query().minute)); },
