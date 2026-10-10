@@ -124,6 +124,10 @@ div.db-row { display:grid; gap:var(--s1); padding:var(--s1) var(--s2); }
 .db-fold > summary:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 .process-studio .db-fold > summary h2 { margin:0; }
 .db-fold > * + * { margin-top:var(--s3); }
+/* While the dashboard is shown, the page keeps scrolled-to headings and focused controls below the sticky run bar: --db-sticky-top is
+   the bar's measured bottom edge (LWProcessDashboard, 0px when it does not stick), plus a small gap. The literal .5rem is --s2, which
+   is defined on the studio root below html. */
+html:has(#dashboard:not([hidden])) { scroll-padding-top:calc(var(--db-sticky-top, 0px) + .5rem); }
 /* Narrow windows and short desktops: the dashboard grows with the page instead of scrolling inside the stage. */
 @media(max-width:1099px),(max-height:599px) {
  #viewport:has(> #dashboard:not([hidden])) { height:auto; min-height:0; }
