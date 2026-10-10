@@ -133,7 +133,7 @@ playtested or balance-validated.
 
 Wildlands verification has a fast tier (`npm test`: typecheck, build and the
 quick Node suites, partial evidence) and the complete registered gate
-(`npm run verify`: 116 suites, 2,109 reviewed named checks) on a parallel
+(`npm run verify`: 116 suites, 2,111 reviewed named checks) on a parallel
 runner. `source/wildlands/source/verification/suites.json` and
 `gate-expectations.json` are the authority for suites and check names; CI runs
 the fast tier first, then the complete gate with `--jobs 3 --browser-jobs 2`.

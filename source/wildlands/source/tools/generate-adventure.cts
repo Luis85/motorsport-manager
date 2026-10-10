@@ -67,13 +67,27 @@ function lootTable(random: Random, reference: Reference, peers: Quest[], templat
  return table.sort((a, b) => b.chance - a.chance || (a.item < b.item ? -1 : 1));
 }
 
+/**
+ * A display name no earlier quest of the batch uses: the drawn adjective when free, else the next
+ * free adjective in list order, else the drawn one with a number. Deterministic and draw-free, so
+ * every other value of the batch is unchanged.
+ */
+function distinctName(adjective: string, biome: string, used: Set<string>): string {
+ const start = ADJECTIVES.indexOf(adjective);
+ let name = '';
+ for (let offset = 0; offset < ADJECTIVES.length && (!name || used.has(name)); offset++) name = `${ADJECTIVES[(start + offset) % ADJECTIVES.length]} ${biome} outing`;
+ for (let number = 2; used.has(name); number++) name = `${adjective} ${biome} outing ${number}`;
+ used.add(name);
+ return name;
+}
+
 /** Generate `count` quests; ids are `gen-<seed>-<n>` so a replay with the same seed names the same quests. */
 export function generateQuests(library: Plain, recipe: AdventureRecipe): {quests: Quest[]; summary: Record<string, unknown>} {
  const reference = adventureReference(library);
  if (recipe.biome !== undefined && !reference.biomes.includes(recipe.biome)) throw new GenerateError('unknown-reference', `Unknown biome ${recipe.biome}; choose one of ${reference.biomes.join(', ')}.`, 2);
  const tiers = reference.tiers.filter(tier => tier >= ADVENTURE_LIMITS.tier[0] && tier <= ADVENTURE_LIMITS.tier[1]);
  if (!tiers.length) throw new GenerateError('unsupported-catalog', 'The adventure library has no quests of tiers 1 to 3.');
- const random = createRandom(recipe.seed, 'adventure-quests'), quests: Quest[] = [], references: string[] = [];
+ const random = createRandom(recipe.seed, 'adventure-quests'), quests: Quest[] = [], references: string[] = [], names = new Set<string>();
  const costKeys = [...new Set(reference.quests.flatMap(quest => Object.keys(quest.cost ?? {})))].filter(item => reference.resources.includes(item));
  for (let index = 0; index < recipe.count; index++) {
   // Unset tier or biome follow the library: a biome's own tiers, a tier's own biomes (falling back to all of them).
@@ -99,7 +113,7 @@ export function generateQuests(library: Plain, recipe: AdventureRecipe): {quests
   }
   const loot = lootTable(own.fork('loot'), reference, peers, template);
   const adjective = own.pick(ADJECTIVES), skillNames = steps.map(step => step.skill);
-  quests.push({id: 'gen-' + recipe.seed + '-' + (index + 1), name: `${adjective} ${biome} outing`, biome, tier,
+  quests.push({id: 'gen-' + recipe.seed + '-' + (index + 1), name: distinctName(adjective, biome, names), biome, tier,
    duration: stat('duration'), energy: stat('energy'), cost: sortedCost, steps, loot, coins: stat('coins'), research: stat('research'),
    description: `Generated tier ${tier} outing (seed ${recipe.seed}). Checks: ${skillNames.join(', ')}. Its loot table recombines the finds of the library's tier ${tier} quests.`});
  }

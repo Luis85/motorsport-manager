@@ -200,6 +200,52 @@ test('Stale digests, duplicate ids and occupied or in-folder outputs are refused
  assert.equal(run(['generate', 'adventure-quests', '--game', quests, '--count', '24', '--seed', '13', '--dry-run'], 1).code, 'generate-budget');
 });
 
+test('Outputs resolve through symlinks and are created exclusively, never replacing an existing entry', () => {
+ const game = copy('rts-frontier'), before = snapshot(game), links = path.join(scratch, 'links-' + copies);
+ fs.mkdirSync(links);
+ // A directory link into the folder, and the folder itself reached through a link, are both inside.
+ fs.symlinkSync(path.join(game, 'content'), path.join(links, 'into-game'));
+ const throughLink = run(['generate', 'rts-mission', '--game', game, '--mission', 'x', '--output', path.join(links, 'into-game', 'new.json')], 2);
+ assert.equal(throughLink.code, 'output-refused'); assert.match(String(throughLink.errors), /symlinks/);
+ fs.symlinkSync(path.dirname(game), path.join(links, 'alias'));
+ const alias = path.join(links, 'alias', 'rts-frontier');
+ assert.equal(run(['generate', 'rts-mission', '--game', alias, '--mission', 'x', '--output', path.join(game, 'new.json')], 2).code, 'output-refused');
+ assert.deepEqual(snapshot(game), before, 'nothing was written into the folder');
+ // A dangling link at the target is an existing entry: refused and left as it was.
+ const dangling = path.join(links, 'dangling.json');
+ fs.symlinkSync(path.join(links, 'nowhere.json'), dangling);
+ assert.equal(run(['generate', 'rts-mission', '--game', game, '--mission', 'x', '--output', dangling], 2).code, 'output-refused');
+ assert(fs.lstatSync(dangling).isSymbolicLink()); assert.equal(fs.existsSync(path.join(links, 'nowhere.json')), false);
+ // A file created between the check and the publication is never replaced.
+ const {publishCopy} = require('./tools/generate-write.cjs') as typeof import('./tools/generate-write.cjs');
+ const racing = path.join(links, 'racing.json'), link = fs.linkSync;
+ (fs as {linkSync: typeof fs.linkSync}).linkSync = (from, to) => { fs.writeFileSync(to, 'concurrent\n'); link(from, to); };
+ try { assert.throws(() => publishCopy(game, racing, '{}\n'), (error: Error & {code?: string}) => error.code === 'output-refused' && /meanwhile/.test(error.message)); }
+ finally { (fs as {linkSync: typeof fs.linkSync}).linkSync = link; }
+ assert.equal(fs.readFileSync(racing, 'utf8'), 'concurrent\n');
+ // A real new output is written once, through a linked directory outside the folder, with no temporary left behind.
+ const outside = path.join(scratch, 'outside-' + copies); fs.mkdirSync(outside); fs.symlinkSync(outside, path.join(links, 'out'));
+ const written = run(['generate', 'rts-mission', '--game', game, '--mission', 'x', '--output', path.join(links, 'out', 'mission.json')]);
+ assert.equal(written.ok, true); assert.deepEqual(fs.readdirSync(outside), ['mission.json']);
+ assert.ok(read(path.join(outside, 'mission.json')), 'the copy is complete JSON');
+ assert.deepEqual(fs.readdirSync(links).filter(name => name.startsWith('.wildlands-output-')), [], 'no staging directory is left behind');
+});
+
+test('adventure-quests display names are distinct within one batch, deterministically', () => {
+ const library = (read(path.join(gameDirectory('littlewild'), 'content/balancing.json')).libraries as Plain).adventure as Plain;
+ for (const seed of [1, 2, 3, 17]) {
+  const recipe = {schemaVersion: 1, generator: 'adventure-quests', seed, count: 24, biome: 'Brook'} as const;
+  const first = generateQuests(library, recipe).quests, again = generateQuests(library, recipe).quests;
+  assert.equal(new Set(first.map(quest => quest.name)).size, 24, 'seed ' + seed);
+  assert.deepEqual(again, first);
+  for (const quest of first) assert.match(quest.name, /^[A-Z][\w-]+ Brook outing( \d+)?$/);
+ }
+ // Only names change: every other field equals the same batch drawn one quest at a time.
+ const batch = generateQuests(library, {schemaVersion: 1, generator: 'adventure-quests', seed: 5, count: 24, biome: 'Brook'}).quests;
+ const single = generateQuests(library, {schemaVersion: 1, generator: 'adventure-quests', seed: 5, count: 1, biome: 'Brook'}).quests[0]!;
+ assert.deepEqual({...batch[0], name: ''}, {...single, name: ''}); assert.equal(batch[0]!.name, single.name);
+});
+
 test('Non-canonical content files are refused with a reformatting hint and left unchanged', () => {
  const game = copy('rts-frontier'), file = path.join(game, 'content/rts.json');
  fs.writeFileSync(file, JSON.stringify(read(file)));
