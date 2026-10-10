@@ -138,7 +138,7 @@
  }
  function build(input: LWProcess.Definition, rawSnapshot: LWProcess.Snapshot | null = null): LWProcessSlides.Deck {
   const d = detach(input), snapshot = rawSnapshot ? detach(rawSnapshot) : null, terms = root.LWProcessTerms.of(d), text = root.LWProcessSlidesText;
-  const {path} = root.LWProcessRoute.walk(d), groups = root.LWProcessRoute.phases(path) ?? [], variants = variantsOf(d, path);
+  const path = root.LWProcessRoute.mainRoute(d), groups = root.LWProcessRoute.phases(path) ?? [], variants = variantsOf(d, path);
   const order = new Map([...path, ...variants.map(v => v.step)].map((s, i) => [s.id, i]));
   const mainFlows = new Set(path.map(s => root.LWProcessRoute.next(d, s.id)?.id).filter((id): id is string => id !== undefined));
   const context: LWProcessSlidesText.Context = {definition: d, terms, steps: new Map(d.steps.map(s => [s.id, s])), pools: new Map(d.resources.map(r => [r.id, r])), counterLoops: counterLoops(d, order), mainFlows};

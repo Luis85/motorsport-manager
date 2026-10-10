@@ -32,14 +32,11 @@ declare namespace LWProcessJourney {
  const pct = (part: number, whole: number) => whole > 0 ? Math.round(part * 100 / whole) : 0;
  /**
   * Phase columns in order of first appearance along the main route; everything else is a branch under the phase it hangs from. The
-  * route follows LWProcessRoute.next at each step (the rule SIPOC and the slides share), but unlike LWProcessRoute.walk a fork is not
-  * expanded: its first branch stays on the route and the other branches are drawn as branches.
+  * route is the shared LWProcessRoute main route (the rule SIPOC and the slides use) with its explicit 'first-branch' fork rule: a
+  * fork is not expanded, its first branch stays on the route and the other branches are drawn as branches.
   */
  function layout(d: LWProcess.Definition): LWProcessJourney.Layout {
-  const steps = new Map(d.steps.map(s => [s.id, s])), route: LWProcess.Step[] = [], seen = new Set<string>();
-  for (let cur = steps.get(d.start); cur && !seen.has(cur.id);) {
-   seen.add(cur.id); route.push(cur); const f = root.LWProcessRoute.next(d, cur.id); cur = f ? steps.get(f.to) : undefined;
-  }
+  const steps = new Map(d.steps.map(s => [s.id, s])), route = root.LWProcessRoute.mainRoute(d, {forks: 'first-branch'});
   const anyPhase = d.steps.some(s => s.phase), fallback = !anyPhase && (d.genre ?? 'process') === 'process' ? 'Process' : 'Journey';
   const phaseOf = new Map<string, string>(); let previous = fallback;
   for (const s of route) {previous = s.phase ?? previous; phaseOf.set(s.id, previous);}

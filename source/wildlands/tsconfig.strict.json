@@ -505,6 +505,7 @@
     "source/test-process-semantics.cts",
     "source/test-process-slides.cts",
     "source/test-process-slides-cli.cts",
+    "source/test-process-route.cts",
     "source/test-process-calendar.cts",
     "source/test-process-advice.cts",
     "source/test-process-application.cts",
