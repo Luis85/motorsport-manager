@@ -123,6 +123,39 @@ test('A session restore takes its seed, caps and series from the saved state, re
  assert.throws(() => runtime.create(d, {restore: {}}), /snapshot\.seed is missing/);
  session.dispose();
 });
+/** One case a minute, 1-4 minutes of work, then a 70% goal: past 50,000 completed cases within about 50,000 minutes. */
+function flood(): LWProcess.Definition {
+ const at = (id: string, kind: LWProcess.Kind, x: number, extra: Partial<LWProcess.Step> = {}): LWProcess.Step =>
+  ({id, name: id, kind, scene: {id: 'scene-' + id, position: [x, 0], color: '#ffbb73'}, ...extra});
+ return {format: 'wildlands-process', schemaVersion: 1, revision: 0, id: 'flood', name: 'Flood', start: 'in', resources: [],
+  steps: [at('in', 'start', 0), at('work', 'task', 12, {duration: 3, timing: {dist: 'uniform', min: 1, max: 4}}), at('pick', 'decision', 24),
+   at('won', 'end', 36, {outcome: 'goal'}), at('gone', 'end', 48, {outcome: 'lost'})],
+  flows: [{id: 'f1', from: 'in', to: 'work'}, {id: 'f2', from: 'work', to: 'pick'}, {id: 'f3', from: 'pick', to: 'won', when: {chance: 70}},
+   {id: 'f4', from: 'pick', to: 'gone'}],
+  arrivals: [{at: 0, interval: 1, open: true, data: {}}]};
+}
+test('Exact lead-time percentiles, whole run and per outcome, survive a checkpoint before and past the 50,000-case bound', () => {
+ const d = flood(), whole = runtime.create(d, {horizon: null});
+ const restore = (text: string) => runtime.create(d, {horizon: null, restore: checkpoints.verify(checkpoints.parse(text), d).snapshot});
+ whole.advance(30000);
+ assert.equal(whole.distributions().percentiles!.cycle.exact, true, 'a read sorts the values kept so far');
+ whole.advance(19990);
+ const before = JSON.stringify(checkpoints.create(d, null, whole.state())), exact = checkpoints.parse(before).snapshot.ledger.exact;
+ assert(exact.cycle.ordered > 0 && exact.cycle.ordered < exact.cycle.values.length && exact.outcomes !== null, 'a sorted prefix and new values');
+ assert.equal(exact.cycle.values.length, whole.query().metrics.completed);
+ const early = restore(before);
+ assert.equal(reads(early), reads(whole), 'restored below the bound');
+ whole.advance(200); early.advance(200);
+ const percentiles = whole.distributions().percentiles!;
+ assert.deepEqual([percentiles.cycle.exact, percentiles.byOutcome!.goal.exact], [false, false], 'the run passed the bound');
+ assert.equal(reads(early), reads(whole), 'continued past the bound');
+ const past = JSON.stringify(checkpoints.create(d, null, whole.state()));
+ assert.deepEqual(checkpoints.parse(past).snapshot.ledger.exact.cycle.values, [], 'past the bound nothing is kept');
+ const late = restore(past);
+ whole.advance(500); late.advance(500);
+ assert.equal(reads(late), reads(whole), 'restored past the bound');
+ for (const s of [whole, early, late]) s.dispose();
+});
 require('./test-process-checkpoint-hostile.cjs');
 require('./test-process-checkpoint-cli.cjs');
 const report = {suite: 'business-process-checkpoint', passed: results.filter(r => r.passed).length, total: results.length, results};

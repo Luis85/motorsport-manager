@@ -18,6 +18,10 @@
  *  - Minutes and the engine's invariants between clock commands: no time after the clock minute; timers due after it, running work
  *    with work left; pool units busy equal the demands of the running work and fit the capacity; case, arrival and pruning counts
  *    agree with the clock; series samples sit on their grid from minute 0 and the last observed frame is the clock minute.
+ *  - The exact lead-time store (LWProcessLedgerExact): its bound is 1..50,000, it counted exactly the completed cases, it passed the
+ *    bound exactly when it counted more, and then it keeps no value; otherwise it keeps one whole lead time (0..the clock minute) per
+ *    completed case, its sorted prefix is ascending and not longer than its values, it keeps per-outcome values exactly when an end
+ *    declares an outcome, and every kept list falls into the fine bins exactly as the ledger counted them.
  * The result is a detached copy built only from checked values. Nothing here ticks, reads a clock or touches storage.
  */
 declare namespace LWProcessCheckpointCheck {
@@ -33,7 +37,8 @@ declare namespace LWProcessCheckpointCheck {
 (function(inputRoot: unknown) {
  'use strict';
  type Box = Record<string, unknown>;
- const root = inputRoot as {LWProcessLimits: LWProcess.Limits; LWProcessCheckpointCheck?: LWProcessCheckpointCheck.Api};
+ const root = inputRoot as {LWProcessLimits: LWProcess.Limits; LWProcessLedger: LWProcessLedger.Api; LWProcessLedgerExact: LWProcessLedgerExact.Api;
+  LWProcessCheckpointCheck?: LWProcessCheckpointCheck.Api};
  const limits = root.LWProcessLimits;
  const MAX_VALUES = 4000000, MAX_DEPTH = 24, MAX_SEED = 2147483647, MAX_RETAINED = 10000, MAX_TOKENS = 200000, SAFE = Number.MAX_SAFE_INTEGER;
  const FIELD = /^[a-z][a-zA-Z0-9_]{0,63}$/, CASE = /^case-\d{4,12}$/, TOKEN = /^token-\d{8}$/, KIND = /^[a-z][a-z-]{0,39}$/;
@@ -282,7 +287,7 @@ declare namespace LWProcessCheckpointCheck {
  function ledger(d: LWProcess.Definition, input: unknown, w: World): void {
   const p = 'snapshot.ledger', n = d.steps.length, FINE = 54;
   const l = shape(input, p, ['steps', 'cycles', 'minutesBy', 'failedAt', 'wipArea', 'fine', 'books', 'leadTime', 'flow', 'completedCost',
-   'failedCost', 'failedMinutes', 'firstPass', 'repeats', 'ring', 'head']);
+   'failedCost', 'failedMinutes', 'firstPass', 'repeats', 'ring', 'head', 'exact']);
   list(l.steps, `${p}.steps`, n, n).forEach((s, i) => {
    const box = shape(s, `${p}.steps[${i}]`, ['starts', 'fixedCost', 'workCost']);
    for (const key of ['starts', 'fixedCost', 'workCost']) whole(box[key], `${p}.steps[${i}].${key}`);
@@ -319,6 +324,33 @@ declare namespace LWProcessCheckpointCheck {
    whole(box.repeats, `${path}.repeats`); nullable(box.working, x => whole(x, `${path}.working`));
   });
   whole(l.head, `${p}.head`, 0, ring.length < w.retained ? 0 : w.retained - 1);
+  exact(l.exact, fine, w);
+ }
+ /** The exact lead-time store against the clock and the fine bins the ledger counted (see the header). */
+ function exact(input: unknown, fine: Box, w: World): void {
+  const p = 'snapshot.ledger.exact', clock = w.v.clock as Record<string, number>, edges = root.LWProcessLedger.FINE;
+  const e = shape(input, p, ['limit', 'completed', 'over', 'cycle', 'outcomes']);
+  const limit = whole(e.limit, `${p}.limit`, 1, root.LWProcessLedgerExact.LIMIT);
+  if (whole(e.completed, `${p}.completed`) !== clock.completed) bad(`${p}.completed`, 'must equal the completed cases of the clock');
+  if (e.over !== (clock.completed! > limit)) bad(`${p}.over`, `must be ${clock.completed! > limit}: it says whether more than ${limit} cases completed`);
+  if ((fine.outcomes === null) !== (e.outcomes === null)) bad(`${p}.outcomes`, fine.outcomes === null ? 'must be null' : 'is missing');
+  const kept = (v: unknown, path: string, bins: unknown) => {
+   const box = shape(v, path, ['values', 'ordered']);
+   const values = list(box.values, `${path}.values`, e.over ? 0 : limit).map((x, i) => whole(x, `${path}.values[${i}]`, 0, w.minute));
+   const ordered = whole(box.ordered, `${path}.ordered`, 0, values.length);
+   for (let i = 1; i < ordered; i++) if (values[i - 1]! > values[i]!) bad(`${path}.values`, `are not ascending in their first ${ordered}`);
+   if (e.over) return values.length;
+   const counts = edges.map(() => 0);
+   for (const x of values) counts[root.LWProcessLedger.fineBin(x)]!++;
+   if (counts.some((n, i) => n !== (bins as number[])[i])) bad(`${path}.values`, 'do not match the fine bins of the ledger');
+   return values.length;
+  };
+  const n = kept(e.cycle, `${p}.cycle`, fine.cycle);
+  if (!e.over && n !== clock.completed) bad(`${p}.cycle.values`, 'must hold one lead time per completed case');
+  if (e.outcomes !== null) {
+   const o = shape(e.outcomes, `${p}.outcomes`, ['goal', 'lost', 'none']), f = fine.outcomes as Box;
+   for (const key of ['goal', 'lost', 'none']) kept(o[key], `${p}.outcomes.${key}`, f[key]);
+  }
  }
  function series(d: LWProcess.Definition, input: unknown, minute: number): void {
   if (input === null) return;

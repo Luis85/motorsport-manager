@@ -54,6 +54,14 @@ const state: Case[] = [
  ['running work without its ledger book', (c) => { c.snapshot.ledger.books = []; }, /has no book for case-\d+, which has running work/],
  ['a negative ledger total', (c) => { c.snapshot.ledger.wipArea = -1; }, /snapshot\.ledger\.wipArea must be a whole number/],
  ['a ledger list of the wrong length', (c) => { c.snapshot.ledger.cycles.push(0); }, /snapshot\.ledger\.cycles must have 17 entries/],
+ ['an exact store that miscounts completed cases', (c) => { c.snapshot.ledger.exact.completed += 1; },
+  /snapshot\.ledger\.exact\.completed must equal the completed cases of the clock/],
+ ['an exact store over its 50,000-case bound', (c) => { c.snapshot.ledger.exact.limit = 50001; },
+  /snapshot\.ledger\.exact\.limit must be a whole number from 1 to 50000/],
+ ['an exact value the fine bins never counted', (c) => { c.snapshot.ledger.exact.cycle.values.push(7); },
+  /snapshot\.ledger\.exact\.cycle\.values do not match the fine bins of the ledger/],
+ ['an exact sorted prefix longer than its values', (c) => { c.snapshot.ledger.exact.cycle.ordered = c.snapshot.ledger.exact.cycle.values.length + 1; },
+  /snapshot\.ledger\.exact\.cycle\.ordered must be a whole number from 0 to \d+/],
  ['an unknown snapshot field', (c) => { c.snapshot.extra = true; }, /snapshot\.extra is not a known field/],
 ];
 test('Hostile and malformed checkpoint files are refused with a plain reason, never pollute a prototype and leave a controller unchanged', () => {
