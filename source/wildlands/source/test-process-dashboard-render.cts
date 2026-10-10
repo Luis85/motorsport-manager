@@ -143,7 +143,7 @@ test('What-if results show mean, 95% interval and percentiles per measure with t
  assert.deepEqual([done.n, done.mean, done.ci], [4, M.util.number(stats.mean!), `${M.util.number(stats.ci95![0])} to ${M.util.number(stats.ci95![1])}`]);
  assert.match(r.kpis.find(k => k.id.startsWith('utilization.'))!.mean, /^[\d.]+%$/);
  assert.match(r.honesty, /^Spread under the authored assumptions across 4 seeds \(\d+ to \d+\), measured at minute 300 of runs that start empty, /);
- assert.match(r.honesty, /, so start-up is included\. Intervals use Student t /);
+ assert.match(r.honesty, /, so start-up is included\. Intervals use exact Student t /);
  assert.match(r.honesty, /This is not a forecast\.$/);
  const html = W.markup(r, 480, 16);
  assert.match(html, /<p class="db-notice" role="note">Spread under the authored assumptions/);

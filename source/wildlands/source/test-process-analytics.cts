@@ -89,15 +89,13 @@ test('The event sink streams every engine event in order as detached values, ide
 });
 
 test('Replication statistics use the sample sd, Student t intervals and nearest-rank percentiles as computed by hand', () => {
- assert.deepEqual(replicate.summarize([2, 4, 4, 4, 5, 5, 7, 9]), {n: 8, mean: 5, sd: 2.13809, ci95: [3.212228, 6.787772], p10: 2, p50: 4, p90: 9});
- assert.deepEqual(replicate.summarize([3, null, 1]), {n: 2, mean: 2, sd: 1.414214, ci95: [-10.706, 14.706], p10: 1, p50: 1, p90: 3});
+ assert.deepEqual(replicate.summarize([2, 4, 4, 4, 5, 5, 7, 9]), {n: 8, mean: 5, sd: 2.13809, ci95: [3.212512, 6.787488], p10: 2, p50: 4, p90: 9});
+ assert.deepEqual(replicate.summarize([3, null, 1]), {n: 2, mean: 2, sd: 1.414214, ci95: [-10.706205, 14.706205], p10: 1, p50: 1, p90: 3});
  assert.deepEqual(replicate.summarize([null, 4]), {n: 1, mean: 4, sd: null, ci95: null, p10: 4, p50: 4, p90: 4});
  assert.deepEqual(replicate.summarize([null]), {n: 0, mean: null, sd: null, ci95: null, p10: null, p50: null, p90: null});
  assert.deepEqual(replicate.summarize([7, 7, 7]), {n: 3, mean: 7, sd: 0, ci95: [7, 7], p10: 7, p50: 7, p90: 7});
- // Intervals keep the 3-decimal table to 30 degrees of freedom and use the exact quantile beyond (no longer the normal 1.96).
- assert.deepEqual([replicate.interval95(1), replicate.interval95(7), replicate.interval95(30), replicate.T95.length], [12.706, 2.365, 2.042, 30]);
- assert.equal(replicate.interval95(31), replicate.t95(31));
- assert(Math.abs(replicate.t95(31) - 2.039513) < 1e-6);
+ // The exact quantile for every df (formerly a 3-decimal table to 30 degrees of freedom and the normal 1.96 beyond).
+ for (const [df, t] of [[1, 12.706205], [7, 2.364624], [30, 2.042272], [31, 2.039513]]) assert(Math.abs(replicate.t95(df!) - t!) < 1e-6, 'df ' + df);
  const tens = Array.from({length: 30}, (_, i) => i + 1), stats = replicate.summarize(tens);
  assert.deepEqual([stats.p10, stats.p50, stats.p90], [3, 15, 27], 'q × n / 100 is exact for whole ranks');
 });

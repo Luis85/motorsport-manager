@@ -17,7 +17,7 @@
  *
  * Statistics per KPI over the runs with a value: `n`; `mean`; `sd`, the sample standard deviation (n - 1; `null` below 2 values);
  * `ci95`, the two-sided 95% confidence interval of the mean, mean ± t × sd / √n with t the Student t quantile for n - 1 degrees of
- * freedom (`interval95`), `null` below 2 values; and `p10`, `p50`, `p90` by the nearest-rank rule (the smallest observed value with
+ * freedom (`t95`, exact for every df), `null` below 2 values; and `p10`, `p50`, `p90` by the nearest-rank rule (the smallest observed value with
  * at least q% of the values at or below it). Every statistic is rounded to 6 decimals.
  *
  * Student t quantile (`t95`): the exact two-sided 95% (one-sided 97.5%) quantile for any whole df ≥ 1, pure and dependency-free.
@@ -25,9 +25,7 @@
  * finite series in θ = atan(t / √df) for whole df) by 64 bisection steps between 1.959964 and 12.75; beyond, the four-term
  * Cornish-Fisher expansion around the normal quantile 1.959964 (A&S 26.7.5), whose error there is below 1e-12. Both agree with
  * independent references to better than 1e-9 (12.706205 at 1, 2.042272 at 30, 2.021075 at 40, 1.983972 at 100, 1.962339 at 1,000).
- * Intervals with 1 to 30 degrees of freedom use that quantile rounded to 3 decimals (`T95`, the classic printed table, which
- * reports pinned before this used; within 0.0005 of the exact value), and from 31 on the exact quantile; until then 31 and more used
- * the normal 1.96, slightly narrow up to about 120.
+ * It replaces a 3-decimal table for 1 to 30 degrees of freedom and the normal 1.96 beyond, which was slightly narrow up to about 120.
  *
  * A comparison runs both definitions with the same seeds. Draws are keyed by seed and stable identities (case, step, visit), so
  * the runs share common random numbers wherever the definitions agree. Per KPI it reports A's and B's statistics and the paired
@@ -87,12 +85,8 @@ declare namespace LWProcessReplicate {
  }
  interface Api {
   readonly LIMITS: {readonly runs: number; readonly work: number};
-  /** The exact two-sided 95% Student t quantiles for 1..30 degrees of freedom rounded to 3 decimals (index 0 is df 1). */
-  readonly T95: readonly number[];
   /** The exact two-sided 95% Student t quantile for a whole df ≥ 1 (Infinity gives the normal 1.959964); throws otherwise. */
   t95(df: number): number;
-  /** The quantile `ci95` uses: `T95[df - 1]` for 1..30 degrees of freedom, `t95(df)` beyond. */
-  interval95(df: number): number;
   summarize(values: readonly (number | null)[]): Stats;
   /** Validates options and expands the seeds; `work` is the simulated minutes per replication factor (2 for a comparison). */
   plan(options: Options, definitionSeed?: number, work?: number): Plan;
@@ -148,8 +142,6 @@ declare namespace LWProcessReplicate {
   }
   return t;
  }
- const T95: readonly number[] = Object.freeze(Array.from({length: 30}, (_, i) => Math.round(t95(i + 1) * 1000) / 1000));
- const interval95 = (df: number) => df >= 1 && df <= T95.length ? T95[df - 1]! : t95(df);
  /** Six decimals; `|| 0` turns a rounded -0 into 0. */
  const round = (value: number) => Math.round(value * 1e6) / 1e6 || 0;
  const whole = (value: unknown, min: number, max: number) => Number.isSafeInteger(value) && (value as number) >= min && (value as number) <= max;
@@ -160,7 +152,7 @@ declare namespace LWProcessReplicate {
   // Nearest rank with integer arithmetic: q * n / 100 is exact whenever it is a whole number.
   const rank = (q: number) => sorted[Math.max(0, Math.ceil(q * n / 100) - 1)]!;
   const sd = n > 1 ? Math.sqrt(xs.reduce((sum, x) => sum + (x - mean) * (x - mean), 0) / (n - 1)) : null;
-  const half = sd === null ? null : interval95(n - 1) * sd / Math.sqrt(n);
+  const half = sd === null ? null : t95(n - 1) * sd / Math.sqrt(n);
   return {n, mean: round(mean), sd: sd === null ? null : round(sd), ci95: half === null ? null : [round(mean - half), round(mean + half)],
    p10: round(rank(10)), p50: round(rank(50)), p90: round(rank(90))};
  }
@@ -340,7 +332,7 @@ declare namespace LWProcessReplicate {
   while (runner.step()) { /* one replication per step */ }
   return runner.report();
  }
- root.LWProcessReplicate = {LIMITS, T95, t95, interval95, summarize, plan, kpis, measure, replications, comparison,
+ root.LWProcessReplicate = {LIMITS, t95, summarize, plan, kpis, measure, replications, comparison,
   replicate: (input, options) => drain(replications(input, options)), compare: (a, b, options) => drain(comparison(a, b, options))};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessReplicate;
 })(globalThis);

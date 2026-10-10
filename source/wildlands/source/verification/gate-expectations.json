@@ -729,7 +729,7 @@
     {"suite": "process-hostile-editors-browser", "name": "A foreign BPMN file with hostile names, an unsupported gateway and a dangling flow shows them as text and imports nothing"},
     {"suite": "process-renderers-browser", "name": "2D map framing does not depend on its history in DejaVu Sans: an untouched map matches a fresh draw after every tick and Fit to view, also with numbered cards, and a camera the reader zoomed or panned keeps its view across ticks"},
     {"suite": "business-process-analysis", "name": "Student t quantiles are exact to 1e-6 for any whole df, also where the expansion takes over, and fall towards 1.959964"},
-    {"suite": "business-process-analysis", "name": "Replication intervals use the exact t quantile from 31 degrees of freedom and keep every pinned value up to 30"},
+    {"suite": "business-process-analysis", "name": "Replication intervals use the exact Student t quantile for every df, at 1, 7 and 31 degrees of freedom as computed by hand"},
     {"suite": "business-process-analysis", "name": "Exact lead-time percentiles of a small run equal the nearest ranks of the hand-computed list, and the Dashboard says exact"},
     {"suite": "business-process-analysis", "name": "Exact lead-time percentiles fall back to bin brackets past the bound, per outcome too, and the Dashboard says why"},
     {"suite": "business-process-analysis", "name": "Kept lead times give the same percentiles under random chunkings, one-minute advances and pruning, whole-run and per outcome"}
@@ -3027,7 +3027,7 @@
       "Dashboard series cache follows a run incrementally and reads everything again after a restart or a new seed",
       "What-if takes the dashboard window as each replication's warm-up and labels the windowed measures",
       "Student t quantiles are exact to 1e-6 for any whole df, also where the expansion takes over, and fall towards 1.959964",
-      "Replication intervals use the exact t quantile from 31 degrees of freedom and keep every pinned value up to 30",
+      "Replication intervals use the exact Student t quantile for every df, at 1, 7 and 31 degrees of freedom as computed by hand",
       "Exact lead-time percentiles of a small run equal the nearest ranks of the hand-computed list, and the Dashboard says exact",
       "Exact lead-time percentiles fall back to bin brackets past the bound, per outcome too, and the Dashboard says why",
       "Kept lead times give the same percentiles under random chunkings, one-minute advances and pruning, whole-run and per outcome"
