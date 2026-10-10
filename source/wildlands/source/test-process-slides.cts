@@ -117,7 +117,7 @@ test('Slides are deterministic, detached from frozen inputs and carry live facts
  // The run completed, so the waiting time is a total, not 'so far'; the heading names the unit.
  assert.equal(q.status, 'completed');
  assert.deepEqual(a.slides.find(s => s.id === 'step-joined')!.live, {heading: `One simulated run · business minute ${q.minute} · seed 4`,
-  items: ['Entered 6 times by 3 cases', 'Completed 3 times', 'Now in progress: 0; now waiting: 0', 'Waiting time: 0 min in total']});
+  items: ['Entered 6 times by 3 cases', 'Completed 3 times', 'Now: 0 working, 0 waiting', 'Waiting time: 0 min in total']});
  const withLive = new Set(['title', 'resources', 'step', 'summary']);
  assert(a.slides.filter(s => withLive.has(s.kind)).every(s => s.live !== null) && a.slides.filter(s => !withLive.has(s.kind)).every(s => s.live === null));
  // Title 'Key results', the resources slide's pool utilisation and the summary name the most utilised pool and both costs.
@@ -127,7 +127,8 @@ test('Slides are deterministic, detached from frozen inputs and carry live facts
  const cycle = `Mean cycle time: ${Math.round(q.metrics.meanCycleMinutes * 10) / 10} min`;
  assert.deepEqual(at('title').items, ['Run status: completed', 'Cases arrived: 3; completed: 3', cycle, `Work cost: ${q.metrics.cost} units`, busiest]);
  const busy = q.resources[0]!.busyMinutes;
- const pool = `Claims clerks: ${pct}% average utilisation since minute 0, busy ${busy} min in total; 0 of 2 busy now; 0 waiting at its steps`;
+ // A people pool's units are working (machine and system units are running), as on the studio's cards.
+ const pool = `Claims clerks: ${pct}% average utilisation since minute 0, busy ${busy} min in total; 0 of 2 working now; 0 waiting at its steps`;
  assert.deepEqual(at('resources').items, [pool]);
  assert.deepEqual(at('summary').items.slice(-3), [`Work cost: ${q.metrics.cost} units`, `Capacity cost: ${2 * 1 * q.minute} units`, busiest]);
  assert.equal(q.metrics.capacityCost, 2 * 1 * q.minute, 'capacity cost charges both clerks for every minute');

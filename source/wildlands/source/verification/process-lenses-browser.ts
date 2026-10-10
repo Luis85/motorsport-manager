@@ -94,11 +94,17 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   await mountSipoc(def); const host = page.locator('#sipoc-host');
   assert.deepEqual(await host.locator('.sipoc-col > h3').allInnerTexts(), ['S\nSuppliers', 'I\nInputs', 'P\nProcess', 'O\nOutputs', 'C\nCustomers']);
   assert.equal(await host.locator('section.sipoc-col[aria-labelledby]').count(), 5); assert.equal(await host.locator('.sipoc-col-suppliers').innerText().then(t => /Client/.test(t) && /brief and budget/.test(t)), true);
-  assert.deepEqual(await host.locator('.sipoc-stage').evaluateAll(b => b.map(x => x.getAttribute('aria-label'))), ['Stage Discover, 1 step, 1 in progress, 0 completed', 'Stage Design, 4 steps, 0 in progress, 0 completed', 'Stage Build, 4 steps, 0 in progress, 0 completed, has alternative paths', 'Stage Deliver, 1 step, 0 in progress, 0 completed']);
+  // Stage work uses the studio's words (LWProcessWorkState): working people, waiting = queued minus held, blocked only when held.
+  const stageLabels = await host.locator('.sipoc-stage').evaluateAll(b => b.map(x => x.getAttribute('aria-label')));
+  assert.deepEqual(stageLabels, ['Stage Discover, 1 step, 1 working, 0 waiting, 0 completed',
+   'Stage Design, 4 steps, 0 working, 0 waiting, 0 completed', 'Stage Build, 4 steps, 0 working, 0 waiting, 0 completed, has alternative paths',
+   'Stage Deliver, 1 step, 0 working, 0 waiting, 0 completed']);
+  assert.deepEqual(await host.locator('.sipoc-stage').first().locator('.sipoc-count').allInnerTexts(), ['1 working', '0 waiting', '0 completed']);
   assert.equal(await host.locator('.sipoc-tag-variant').count(), 1); assert.equal(await host.locator('.sipoc-stage', {hasText: 'in parallel'}).count(), 1); assert.match(await host.locator('.sipoc-col-inputs').innerText(), /Client brief/); assert.match(await host.locator('.sipoc-col-inputs').innerText(), /1 case arrived/);
   const unchanged = await host.evaluate(h => { const first = h.querySelector('.sipoc-grid'); (first as any).__mark = 1; return true; }); await redrawSipoc(); assert.equal(await host.evaluate(h => (h.querySelector('.sipoc-grid') as any).__mark), 1, 'identical view must not redraw'); assert(unchanged);
   await page.locator('#horizon').selectOption('100000'); await page.locator('#advance').click(); await page.waitForFunction(() => (globalThis as any).LWProcessStudio.query().snapshot.minute > 0); await page.locator('#advance').click(); await redrawSipoc();
-  const live = await host.locator('.sipoc-stage').evaluateAll(b => b.map(x => x.getAttribute('aria-label')!)); assert(live.some(l => /[1-9]\d* in progress|[1-9]\d* completed/.test(l)), live.join('|'));
+  const live = await host.locator('.sipoc-stage').evaluateAll(b => b.map(x => x.getAttribute('aria-label')!));
+  assert(live.some(l => /[1-9]\d* (working|waiting)|[1-9]\d* completed/.test(l)), live.join('|'));
   // A stage counts the cases that left it: never more than arrived, and Discover is left by exactly the cases that reached the design fork.
   const ran = await query(page);
   const after = await page.evaluate(d => {
@@ -189,6 +195,17 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   assert.deepEqual(live.counts, route.map(id => reached.get(id))); assert(live.counts[0]! > idle.counts[0]! && live.counts[0]! >= live.counts.at(-1)!, 'the funnel follows the run');
   assert.deepEqual(live.pcts, route.map(id => `${Math.round(reached.get(id)! * 100 / reached.get('start')!)}% of start`)); assert.equal(live.measured, 1, 'measured curve appears once the tracked field has data');
   await funnelAdds(route, reached, 'mid-run'); await tableColumns();
+  // Work still in progress before a step is worded like the 2D cards: working, waiting (queued minus held) and blocked when held.
+  const work = await page.evaluate(() => [...document.querySelectorAll('#jtest .jm-funnel')].map(c => ({
+   wip: c.querySelector('.jm-wip')?.textContent ?? null, work: c.querySelector('.jm-work')?.textContent ?? null, label: c.getAttribute('aria-label')!})));
+  assert(work.some(w => w.wip !== null), 'some cases are between two route steps mid-run');
+  for (const w of work) {
+   assert.equal(w.work !== null, w.wip !== null, 'work words appear exactly where cases are in progress');
+   if (w.work !== null) {
+    assert.match(w.work, /^\d+ working · \d+ waiting( · \d+ blocked)?$/, w.work);
+    assert(w.label.includes(`still in progress before it (${w.work.split(' · ').join(', ')})`), w.label);
+   }
+  }
   assert.match(live.labels.find(l => l.startsWith('Browse the shop'))!, new RegExp(`^Browse the shop, Website, phase Consideration, feeling \\+1, ${reached.get('browse')} reached$`));
   assert.match(live.labels.find(l => l.startsWith('Order delivered'))!, /^Order delivered, End, goal, phase Delivery, \d+ reached$/); assert.match(live.summary, new RegExp(`Goals ${running.snapshot.metrics.goals} · Lost ${running.snapshot.metrics.lost}`));
   await page.locator('#jtest .jm-lane-name', {hasText: 'Funnel'}).waitFor(); assert.match(await page.locator('#jtest .jm-badge.goal').innerText(), /^Goal · \d+$/); assert.match(await page.locator('#jtest .jm-badge.lost').innerText(), /^Lost · \d+$/);

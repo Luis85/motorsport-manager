@@ -452,6 +452,7 @@
         "process-3d-stations.ts",
         "process-renderer-3d.ts",
         "process-route.ts",
+        "process-work-state.ts",
         "process-sipoc-model.ts",
         "process-renderer-sipoc.ts",
         "process-renderer-journey.ts",

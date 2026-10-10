@@ -12,11 +12,11 @@ const commands: Record<string, readonly string[]> = {
  build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output', '--bpsim'], 'validate-bpmn': ['--input'],
  'import-bpmn': ['--input', '--output', '--draft', '--default-duration', '--process', '--lanes', '--default-capacity', '--no-auto-system-pool', '--system-capacity', '--minutes-per-day', '--minutes-per-hour', '--unsupported', '--no-bpsim', '--scenario', '--report'],
  attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint', '--output', '--dry-run'],
- slides: ['--input', '--format', '--minutes', '--seed', '--output'], diff: ['--input', '--against'],
+ slides: ['--input', '--format', '--minutes', '--seed', '--output', '--brief'], diff: ['--input', '--against'],
  replicate: ['--input', '--minutes', '--runs', '--seed', '--output', '--warmup'],
  compare: ['--input', '--against', '--minutes', '--runs', '--seed', '--output', '--warmup']
 };
-const flags = new Set(['--draft', '--dry-run', '--bpsim', '--no-auto-system-pool', '--no-bpsim']);
+const flags = new Set(['--draft', '--dry-run', '--bpsim', '--no-auto-system-pool', '--no-bpsim', '--brief']);
 /** Options every invocation of a command must carry; checked before any file is read or work is done. */
 const requiredOptions: Record<string, readonly string[]> = {create: ['--id', '--output'], validate: ['--input'], inspect: ['--input'], edit: ['--input', '--recipe'],
  run: ['--input', '--minutes', '--output'], build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output'], 'import-bpmn': ['--input', '--output'], 'validate-bpmn': ['--input'],
@@ -31,7 +31,10 @@ const descriptions: Record<string, string> = {discover: 'Discover commands, limi
  'validate-bpmn': 'Check a BPMN 2.0 XML file (and its BPSim 1.0 data) against the built-in conformance rules (no schema files); prints the report (errors with line, path, code and message; elements not covered; unchecked extension content); exit 0 when it conforms, 2 when not.',
  'export-bpmn': 'Export a BPMN 2.0 XML file (with Wildlands extension values and diagram layout); --bpsim adds a BPSim scenario (processing times, probabilities, arrivals, pool quantities and costs); fidelity lists what only the Wildlands extension carries.',
  'import-bpmn': 'Import a BPMN 2.0 XML file into a simulatable definition (lanes, sub-processes, call activities, gateways, loops, boundary timers, expressions and BPSim parameters are mapped); prints the structured report (warnings, mapping counts, rejections); unsupported elements are rejected (exit 2) or, with --unsupported drop, dropped with warnings.', forge: 'Create an editable Scene Forge project with one scene per step.', attach: 'Attach a Scene Forge Wildlands asset to a step using edit guards.',
- slides: 'Explain the process as a slide deck (title, overview, resources, main route by phase, variants, summary); --format json (default) or md (Markdown printed as plain text without --output); --minutes N [--seed S] adds read-only facts from one fresh bounded run.',
+ slides: 'Explain the process as a slide deck (title, overview, resources, main route by phase, variants, summary); '
+  + '--format json (default) or md (Markdown printed as plain text without --output); '
+  + '--minutes N [--seed S] adds read-only facts from one fresh bounded run; '
+  + '--brief keeps the section slides only (title, overview, resources, one slide per section, summary).',
  replicate: 'Run the definition for --minutes over --runs consecutive seeds (from --seed, else the definition seed, else 1); '
   + 'report n, mean, sample sd, t-based 95% interval and p10/p50/p90 per KPI with per-seed rows; --output writes the report file; '
   + '--warmup W adds windowed KPIs after minute W.',
@@ -200,10 +203,12 @@ export function run(args: readonly string[]): void {
     const live = runtime.create(definition, values.has('--seed') ? {seed: Number(values.get('--seed'))} : {});
     try {snapshot = live.advance(Number(values.get('--minutes')));} finally {live.dispose();}
    }
-   const deck = slides.build(definition, snapshot), format = values.get('--format') ?? 'json', text = format === 'md' ? slides.markdown(deck) : null;
+   const deck = slides.build(definition, snapshot, {brief: values.has('--brief')}), format = values.get('--format') ?? 'json';
+   const text = format === 'md' ? slides.markdown(deck) : null;
    if (values.has('--output')) {
     const target = text === null ? writeJsonFile(required('--output'), deck, [file]) : writeTextFile(required('--output'), text, [file]);
-    success({output: target, format, slides: deck.slides.length, sections: deck.sections.length, live: deck.live}); return;
+    const counts = {slides: deck.slides.length, sections: deck.sections.length, ...deck.brief ? {brief: true} : {}};
+    success({output: target, format, ...counts, live: deck.live}); return;
    }
    if (text !== null) {process.stdout.write(text); return;}
    success({format, deck}); return;

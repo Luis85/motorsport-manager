@@ -1,6 +1,11 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-route.ts" />
-/** Journey map: phases as columns, lanes for touchpoints, channel, feeling, pain points, opportunities and the live funnel. Renders detached view values; selection sends intent only. */
+/// <reference path="./process-work-state.ts" />
+/**
+ * Journey map: phases as columns, lanes for touchpoints, channel, feeling, pain points, opportunities and the live funnel. Renders
+ * detached view values; selection sends intent only. The map shows no durations, so the display calendar does not change it. The
+ * funnel words the work still in progress between two route steps like the 2D cards and the step list (LWProcessWorkState).
+ */
 declare namespace LWProcessJourney {
  interface Surface {draw(view: LWProcessApp.View): void; frame(): void; dispose(): void;}
  interface Api {create(host: HTMLElement, onSelect: (stepId: string | null) => void): Surface;}
@@ -11,13 +16,15 @@ declare namespace LWProcessJourney {
  /**
   * Funnel facts of one main-route step about the stretch from the previous main-route step to it: `lost` counts cases that
   * finished at a lost end branching off in that stretch, `wip` the cases still in progress there (at the previous step or on
-  * a branch from it), and `rejoin` names the later main-route step where a branch from the previous step comes back.
+  * a branch from it), and `rejoin` names the later main-route step where a branch from the previous step comes back. `work` words
+  * the work at those steps while cases are in progress there ('1 working', '2 waiting', … from LWProcessWorkState), else [].
   */
- interface FunnelFacts {lost: number; wip: number; rejoin: string | null;}
+ interface FunnelFacts {lost: number; wip: number; rejoin: string | null; work: string[];}
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessJourney?: LWProcessJourney.Api; LWProcessRooms: LWProcessRooms.Api; LWProcessRoute: LWProcessRoute.Api};
+ const root = inputRoot as {LWProcessJourney?: LWProcessJourney.Api; LWProcessRooms: LWProcessRooms.Api; LWProcessRoute: LWProcessRoute.Api;
+  LWProcessWorkState: LWProcessWorkState.Api};
  const NS = 'http://www.w3.org/2000/svg', LANE_WIDE = 132, LANE_NARROW = 112, SLOT_DEFAULT = 172, SLOT_MIN = 148, SLOT_MAX = 172, FEEL_H = 176, FACE_R = 12;
  const KINDS: Record<string, string> = {start: 'Start', task: 'Task', touchpoint: 'Touchpoint', machine: 'Machine', system: 'System', timer: 'Timer', decision: 'Decision', fork: 'Fork', join: 'Join', end: 'End'};
  const PHASE_COLORS = ['#7fb3e0', '#ffbb73', '#8fd68a', '#e58ac8', '#a79bf0', '#6fc7e8', '#d9c58a'];
@@ -32,14 +39,11 @@ declare namespace LWProcessJourney {
  const pct = (part: number, whole: number) => whole > 0 ? Math.round(part * 100 / whole) : 0;
  /**
   * Phase columns in order of first appearance along the main route; everything else is a branch under the phase it hangs from. The
-  * route follows LWProcessRoute.next at each step (the rule SIPOC and the slides share), but unlike LWProcessRoute.walk a fork is not
-  * expanded: its first branch stays on the route and the other branches are drawn as branches.
+  * route is the shared LWProcessRoute main route (the rule SIPOC and the slides use) with its explicit 'first-branch' fork rule: a
+  * fork is not expanded, its first branch stays on the route and the other branches are drawn as branches.
   */
  function layout(d: LWProcess.Definition): LWProcessJourney.Layout {
-  const steps = new Map(d.steps.map(s => [s.id, s])), route: LWProcess.Step[] = [], seen = new Set<string>();
-  for (let cur = steps.get(d.start); cur && !seen.has(cur.id);) {
-   seen.add(cur.id); route.push(cur); const f = root.LWProcessRoute.next(d, cur.id); cur = f ? steps.get(f.to) : undefined;
-  }
+  const steps = new Map(d.steps.map(s => [s.id, s])), route = root.LWProcessRoute.mainRoute(d, {forks: 'first-branch'});
   const anyPhase = d.steps.some(s => s.phase), fallback = !anyPhase && (d.genre ?? 'process') === 'process' ? 'Process' : 'Journey';
   const phaseOf = new Map<string, string>(); let previous = fallback;
   for (const s of route) {previous = s.phase ?? previous; phaseOf.set(s.id, previous);}
@@ -98,8 +102,12 @@ declare namespace LWProcessJourney {
   for (const t of q.tokens ?? []) {
    const i = t.status === 'spent' ? undefined : at(t.stepId); if (i !== undefined) (wip.get(i) ?? wip.set(i, new Set()).get(i)!).add(t.caseId);
   }
-  const facts = (i: number): LWProcessJourney.FunnelFacts => ({lost: lost.get(i) ?? 0, wip: wip.get(i)?.size ?? 0, rejoin: rejoin.get(i) ?? null});
-  return new Map(order.map((s, i) => [s.id, i ? facts(i - 1) : {lost: 0, wip: 0, rejoin: null}]));
+  // The work at the stretch's steps (the route step and the branches hanging from it), worded only while cases are in progress there.
+  const members = (i: number) => d.steps.filter(s => at(s.id) === i).map(s => s.id), words = root.LWProcessWorkState;
+  const work = (i: number) => wip.get(i)?.size ? words.parts(words.tally(d, q, members(i))) : [];
+  const facts = (i: number): LWProcessJourney.FunnelFacts =>
+   ({lost: lost.get(i) ?? 0, wip: wip.get(i)?.size ?? 0, rejoin: rejoin.get(i) ?? null, work: work(i)});
+  return new Map(order.map((s, i) => [s.id, i ? facts(i - 1) : {lost: 0, wip: 0, rejoin: null, work: []}]));
  }
  /** Catmull-Rom spline through the points as a cubic Bezier path. */
  function smooth(points: {x: number; y: number}[]): string {
@@ -130,8 +138,8 @@ declare namespace LWProcessJourney {
    const d = view.definition, q = view.snapshot, m = map!, field = d.track?.[0]?.field, metrics = new Map(q.steps.map(s => [s.id, s]));
    laneW = region.clientWidth > 0 && region.clientWidth < 600 ? LANE_NARROW : LANE_WIDE;
    const signature = [view.selected, slotW, laneW, q.metrics.goals, q.metrics.lost, q.metrics.conversion, ...m.nodes.map(n => { const s = metrics.get(n.step.id); return `${s?.reached ?? 0}:${field ? s?.tracked[field]?.mean ?? '' : ''}`; })].join('|')
-    // Work moving between steps changes the funnel's in-progress counts without changing any reached count.
-    + '|' + m.nodes.map(n => { const s = metrics.get(n.step.id); return (s?.active ?? 0) + (s?.queued ?? 0); }).join(',');
+    // Work moving between steps, or starting or blocking at one, changes the funnel's in-progress words without changing any reached count.
+    + '|' + m.nodes.map(n => { const s = metrics.get(n.step.id); return `${s?.active ?? 0}:${s?.queued ?? 0}:${s?.held ?? 0}`; }).join(',');
    if (signature === lastSignature) return; lastSignature = signature;
    const focusId = grid.contains(document.activeElement) ? (document.activeElement as HTMLElement).dataset.step : undefined, previousSelected = selected; selected = view.selected;
    render(d, q, m, field, metrics); rove(); if (focusId) grid.querySelector<HTMLElement>(`[data-step="${CSS.escape(focusId)}"]`)?.focus({preventScroll: true});
@@ -216,8 +224,10 @@ declare namespace LWProcessJourney {
     c.append(div('jm-drop' + (f.lost > 0 ? ' loss' : ''), before ? lossText : 'entry point', 'em'));
     if (f.rejoin) c.append(div('jm-drop jm-split', `split, rejoins at ${f.rejoin}`, 'em'));
     if (f.wip) c.append(div('jm-drop jm-wip', `${f.wip} in progress`, 'em'));
+    if (f.work.length) c.append(div('jm-drop jm-work', f.work.join(' · '), 'em'));
     const loss = before ? ', ' + (f.lost > 0 ? `${drop}% drop-off, ${f.lost} lost` : 'no drop-off') : '';
-    const extra = [f.rejoin ? `split after the previous step, rejoins at ${f.rejoin}` : '', f.wip ? `${f.wip} still in progress before it` : '']
+    const work = f.work.length ? ` (${f.work.join(', ')})` : '';
+    const extra = [f.rejoin ? `split after the previous step, rejoins at ${f.rejoin}` : '', f.wip ? `${f.wip} still in progress before it${work}` : '']
      .filter(Boolean);
     c.setAttribute('aria-label', `${n.step.name}: ${reached} reached, ${pct(reached, start)}% of start${loss}${extra.map(x => ', ' + x).join('')}`);
    }

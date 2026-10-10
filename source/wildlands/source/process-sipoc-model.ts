@@ -19,7 +19,10 @@
  * - OUTPUTS are declared step `outputs`, fields delivered (set/add/draws) by the steps right before end steps, and one entry per end step (goal/lost outcome or reaching the end),
  *   with the end or declaring step's completed count.
  * - MEASURES: completed, in progress, mean cycle ('—' until a case finishes), mean age in progress, work cost, capacity cost, throughput per 100 minutes,
- *   conversion when known, tracked finish means when present. Durations are worded by LWProcessTime.
+ *   conversion when known, tracked finish means when present. Durations are worded by LWProcessTime.span with the definition's
+ *   display calendar (business days and weeks when `calendar` is set; exactly LWProcessTime.minutes without one).
+ * The stage sums are the studio's work-state rule (LWProcessWorkState): `active` is working plus running work, `queued` is waiting
+ *   work (queued minus held) and `held` is blocked work; the SIPOC lens words them with LWProcessWorkState.
  */
 declare namespace LWProcessSipoc {
  interface Party {name: string; detail?: string; placeholder?: boolean;}
@@ -154,11 +157,11 @@ declare namespace LWProcessSipoc {
    for (const field of new Set(before.flatMap(fieldsOf))) if (!outputs.has(field)) outputs.set(field, {id: 'out-' + field, label: labelOf(field), detail: 'delivered by ' + names(before.filter(s => fieldsOf(s).includes(field))), count: done.get(e.id) ?? 0, kind: 'delivered'});
   }
   const outcomes = ends.map<LWProcessSipoc.Output>(e => ({id: 'end-' + e.id, kind: 'outcome', count: done.get(e.id) ?? 0, label: e.outcome ? `${e.name}: ${e.outcome === 'goal' ? 'goal reached' : 'lost'}` : 'Reached ' + e.name, detail: e.outcome ? 'end outcome' : 'end of the process'}));
-  const m = q.metrics, time = root.LWProcessTime, tracked = Object.values(m.tracked).filter(t => t.n > 0 && t.mean !== null);
+  const m = q.metrics, age = m.meanAgeMinutes, time = root.LWProcessTime, tracked = Object.values(m.tracked).filter(t => t.n > 0 && t.mean !== null);
   const units = (n: number) => String(Math.round(n * 100) / 100), measures: LWProcessSipoc.Measure[] = [
    {id: 'completed', label: 'Completed', value: String(m.completed)}, {id: 'active', label: 'In progress', value: String(m.active)},
-   {id: 'cycle', label: 'Mean cycle', value: m.completed ? time.minutes(m.meanCycleMinutes) : '—'},
-   {id: 'age', label: 'Mean age in progress', value: time.maybe(m.meanAgeMinutes)},
+   {id: 'cycle', label: 'Mean cycle', value: m.completed ? time.span(m.meanCycleMinutes, d.calendar) : '—'},
+   {id: 'age', label: 'Mean age in progress', value: age === null || !Number.isFinite(age) ? '—' : time.span(age, d.calendar)},
    {id: 'cost', label: 'Work cost', value: units(m.cost)}, {id: 'capacity-cost', label: 'Capacity cost', value: units(m.capacityCost)},
    {id: 'throughput', label: 'Throughput per 100 min', value: String(q.minute > 0 ? Math.round(m.completed * 1000 / q.minute) / 10 : 0)},
   ];

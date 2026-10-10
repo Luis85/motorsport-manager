@@ -345,6 +345,7 @@ export const INSERTS: readonly Insert[] = [
   ["PROCESS_3D_STATIONS", "process-3d-stations.js", "script", "template-process"],
   ["PROCESS_RENDERER_3D", "process-renderer-3d.js", "script", "template-process"],
   ["PROCESS_ROUTE", "process-route.js", "script", "template-process"],
+  ["PROCESS_WORK_STATE", "process-work-state.js", "script", "template-process"],
   ["PROCESS_SIPOC_MODEL", "process-sipoc-model.js", "script", "template-process"],
   ["PROCESS_RENDERER_SIPOC", "process-renderer-sipoc.js", "script", "template-process"],
   ["PROCESS_RENDERER_JOURNEY", "process-renderer-journey.js", "script", "template-process"],

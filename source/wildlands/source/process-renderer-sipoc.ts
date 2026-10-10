@@ -1,9 +1,12 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-sipoc-model.ts" />
+/// <reference path="./process-work-state.ts" />
 /**
  * SIPOC lens: Suppliers, Inputs, Process, Outputs, Customers as a read-only DOM grid over the same definition and snapshot.
  * Selection sends intent only; this module never ticks, mutates or retains a run. The columns come from the pure model in
  * process-sipoc-model.ts (`LWProcessSipocModel`, also exposed here as `model`), whose main route is the shared LWProcessRoute walk.
+ * A stage's live work is worded like the 2D cards and the step list (LWProcessWorkState): "working" or "running", "waiting"
+ * (queued minus held) and, when any, "blocked", then the cases that left the stage as "completed".
  */
 declare namespace LWProcessSipoc {
  interface ViewLike {definition: LWProcess.Definition; snapshot: LWProcess.Snapshot; selected: string | null;}
@@ -12,7 +15,7 @@ declare namespace LWProcessSipoc {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessSipoc?: LWProcessSipoc.Api; LWProcessSipocModel: LWProcessSipoc.ModelApi};
+ const root = inputRoot as {LWProcessSipoc?: LWProcessSipoc.Api; LWProcessSipocModel: LWProcessSipoc.ModelApi; LWProcessWorkState: LWProcessWorkState.Api};
  const plural = (n: number, one: string, many = one + 's') => n + ' ' + (n === 1 ? one : many);
  const model = (d: LWProcess.Definition, q: LWProcess.Snapshot): LWProcessSipoc.Model => root.LWProcessSipocModel.model(d, q);
  const NS = 'http://www.w3.org/2000/svg';
@@ -34,10 +37,10 @@ declare namespace LWProcessSipoc {
   const rootEl = h('div', 'sipoc'), scroller = h('div', 'sipoc-scroll', undefined, {tabindex: '0', role: 'group', 'aria-label': 'SIPOC: suppliers, inputs, process, outputs and customers'}), strip = h('dl', 'sipoc-measures', undefined, {'aria-label': 'Run measures'});
   rootEl.append(scroller, strip); host.append(rootEl); let drawn = '';
   const party = (p: LWProcessSipoc.Party) => { const li = h('li', 'sipoc-card' + (p.placeholder ? ' sipoc-muted' : '')); li.append(h('strong', 'sipoc-name', p.name)); if (p.detail) li.append(h('span', 'sipoc-detail', p.detail)); return li; };
-  function stage(s: LWProcessSipoc.Stage, index: number, selected: boolean): HTMLLIElement {
-   const blocked = s.held ? `${s.held} blocked, ` : '', waiting = s.queued ? s.queued + ' waiting, ' : '';
+  /** One stage card; `parts` is its live work in the studio's words (LWProcessWorkState.parts). */
+  function stage(s: LWProcessSipoc.Stage, index: number, selected: boolean, parts: string[]): HTMLLIElement {
    const li = h('li', 'sipoc-stage-item');
-   const label = `Stage ${s.name}, ${plural(s.steps, 'step')}, ${s.active} in progress, ${waiting}${blocked}${s.completed} completed`
+   const label = `Stage ${s.name}, ${plural(s.steps, 'step')}, ${parts.join(', ')}, ${s.completed} completed`
     + (s.variant ? ', has alternative paths' : '');
    const b = h('button', 'sipoc-card sipoc-stage' + (s.variant ? ' sipoc-variant' : '') + (selected ? ' selected' : ''), undefined, {type: 'button', 'aria-label': label, 'aria-pressed': String(selected), 'data-stage': s.id});
    const head = h('span', 'sipoc-stage-head'), kinds = h('span', 'sipoc-kinds'), counts = h('span', 'sipoc-counts');
@@ -45,19 +48,21 @@ declare namespace LWProcessSipoc {
    kinds.append(...s.kinds.slice(0, 6).map(icon), h('span', 'sipoc-detail', plural(s.steps, 'step')));
    if (s.parallel) kinds.append(h('span', 'sipoc-tag', 'in parallel'));
    if (s.variant) kinds.append(h('span', 'sipoc-tag sipoc-tag-variant', 'variant', {title: 'Contains a decision or rework loop'}));
-   counts.append(h('span', 'sipoc-count', `${s.active} in progress`), h('span', 'sipoc-count', `${s.queued} waiting`));
-   if (s.held) counts.append(h('span', 'sipoc-count', `${s.held} blocked`));
+   counts.append(...parts.map(text => h('span', 'sipoc-count', text)));
    counts.append(h('span', 'sipoc-count', `${s.completed} completed`, {title: 'Cases that left this stage'}));
    b.append(head, kinds, counts); b.addEventListener('click', () => onSelect(s.first)); li.append(b); return li;
   }
   function draw(view: LWProcessSipoc.ViewLike): void {
-   const m = model(view.definition, view.snapshot), key = JSON.stringify([m, view.selected]); if (key === drawn) return; drawn = key;
+   // The key covers the work-state words too: work can move between a running and a working step of one stage with equal sums.
+   const m = model(view.definition, view.snapshot), work = root.LWProcessWorkState;
+   const words = m.stages.map(s => work.parts(work.tally(view.definition, view.snapshot, s.stepIds)));
+   const key = JSON.stringify([m, view.selected, words]); if (key === drawn) return; drawn = key;
    const focused = scroller.contains(document.activeElement) ? (document.activeElement as HTMLElement).dataset.stage : undefined, grid = h('div', 'sipoc-grid');
    const selectedStage = m.stages.find(s => view.selected !== null && s.stepIds.includes(view.selected))?.id;
    const bodies = [m.suppliers.map(party), m.inputs.map(i => {
     const li = h('li', 'sipoc-card'); li.append(h('strong', 'sipoc-name', i.label)); if (i.label !== i.field) li.append(h('span', 'sipoc-detail sipoc-field', i.field));
     if (i.example !== null) li.append(h('span', 'sipoc-detail', 'e.g. ' + i.example)); if (i.arrived !== null) li.append(h('span', 'sipoc-count', plural(i.arrived, 'case') + ' arrived')); return li;
-   }), m.stages.map((s, i) => stage(s, i, s.id === selectedStage)), m.outputs.map(o => {
+   }), m.stages.map((s, i) => stage(s, i, s.id === selectedStage, words[i]!)), m.outputs.map(o => {
     const li = h('li', 'sipoc-card'); li.append(h('strong', 'sipoc-name', o.label), h('span', 'sipoc-detail', o.detail)); if (o.count !== null) li.append(h('span', 'sipoc-count', o.count + ' completed')); return li;
    }), m.customers.map(party)];
    if (!m.inputs.length) { const none = h('li', 'sipoc-card sipoc-muted'); none.append(h('strong', 'sipoc-name', 'No arrival data or external needs')); bodies[1] = [none]; }
