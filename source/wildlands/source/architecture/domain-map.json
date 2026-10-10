@@ -455,6 +455,39 @@
         "process-data-view.ts",
         "process-sdk.cts"
       ]
+    },
+    {
+      "id": "armored",
+      "layer": "domain",
+      "files": [
+        "armored-catalog.ts",
+        "armored-visuals.ts",
+        "armored-physics.ts",
+        "armored-combat.ts",
+        "armored-ai.ts",
+        "armored-missions.ts",
+        "armored-checkpoint.ts"
+      ]
+    },
+    {
+      "id": "armored-application",
+      "layer": "application",
+      "files": [
+        "armored-session.ts",
+        "armored-application.ts"
+      ]
+    },
+    {
+      "id": "armored-presentation",
+      "layer": "presentation",
+      "files": [
+        "armored-world.ts",
+        "armored-renderer.ts",
+        "armored-controls.ts",
+        "armored-audio.ts",
+        "armored-ui.ts",
+        "armored-host.ts"
+      ]
     }
   ],
   "moduleBudgetBytes": 40000,
@@ -551,7 +584,16 @@
     "LWProcessCatalog",
     "LWProcessSystems",
     "LWProcessDefinition",
-    "LWProcessDefinitions"
+    "LWProcessDefinitions",
+    "LWArmoredCatalog",
+    "LWArmoredVisualsAdmission",
+    "LWArmoredPhysics",
+    "LWArmoredCombat",
+    "LWArmoredAI",
+    "LWArmoredMission",
+    "LWArmoredCheckpoint",
+    "LWArmoredDefinitions",
+    "LWArmoredVisuals"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",
@@ -585,7 +627,9 @@
     "LWPetAssetDefinitions",
     "LWGameProfile",
     "LWProcessDefinition",
-    "LWProcessDefinitions"
+    "LWProcessDefinitions",
+    "LWArmoredDefinitions",
+    "LWArmoredVisuals"
   ],
   "strictTypingDebt": {},
   "strictTypingDebtBudget": 0,

@@ -46,6 +46,9 @@ declare namespace LWContentProvider {
   readonly scenarios?:ScenarioCatalog;
   /** RTS catalog (`wildlands-rts` document). */
   readonly rts?:unknown;
+  /** Independently versioned armored catalog and admitted visual package. */
+  readonly armored?:unknown;
+  readonly armoredVisuals?:unknown;
   readonly pet?:PetContent;
   /** Business-process definition; owned by LWProcessCatalog. */
   readonly process?:unknown;

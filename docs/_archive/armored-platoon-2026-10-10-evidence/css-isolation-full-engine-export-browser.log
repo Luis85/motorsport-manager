@@ -1,0 +1,15 @@
+{"kind":"littlewild-browser-provenance","node":"v24.19.0","playwright":"1.63.0","playwrightCore":"1.63.0","browser":"151.0.7922.173","selection":"explicit-override","args":["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"]}
+PASS Declared source inflation bounds stop oversized streaming data before admission
+PASS An altered inline vendor script rejects engine export instead of exporting an incomplete inventory
+PASS 1440px actual engine JSON download matches Node full source inventory and native draft
+PASS Browser built-in and custom renderer/p5 exports validate in a cold Node CLI after extension withdrawal
+PASS Browser validates cryptographic source integrity and rejects tampered inert text
+PASS Async programmatic export captures caller data before the await boundary
+PASS Changed authoring revision cancels a pending export download
+PASS 390px engine source stays compressed during offline startup and editor opening
+PASS Mobile engine export retains a reachable 44px touch target
+PASS 390px actual engine JSON download matches Node full source inventory and native draft
+PASS Engine export browser performs no external requests, script errors or console warnings
+{"suite":"engine-export-browser","passed":11,"total":12,"results":[{"name":"1440px engine source stays compressed during offline startup and editor opening","passed":false,"error":"AssertionError [ERR_ASSERTION]: startup 22986ms"},{"name":"Declared source inflation bounds stop oversized streaming data before admission","passed":true},{"name":"An altered inline vendor script rejects engine export instead of exporting an incomplete inventory","passed":true},{"name":"1440px actual engine JSON download matches Node full source inventory and native draft","passed":true},{"name":"Browser built-in and custom renderer/p5 exports validate in a cold Node CLI after extension withdrawal","passed":true},{"name":"Browser validates cryptographic source integrity and rejects tampered inert text","passed":true},{"name":"Async programmatic export captures caller data before the await boundary","passed":true},{"name":"Changed authoring revision cancels a pending export download","passed":true},{"name":"390px engine source stays compressed during offline startup and editor opening","passed":true},{"name":"Mobile engine export retains a reachable 44px touch target","passed":true},{"name":"390px actual engine JSON download matches Node full source inventory and native draft","passed":true},{"name":"Engine export browser performs no external requests, script errors or console warnings","passed":true}],"diagnostics":{"errors":[],"consoleProblems":[],"requests":["https://localhost/littlewild-engine-export-proof","https://localhost/littlewild-engine-export-proof"]}}
+
+1440px engine source stays compressed during offline startup and editor opening AssertionError [ERR_ASSERTION]: startup 22986ms

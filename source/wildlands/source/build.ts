@@ -127,6 +127,8 @@ function bundledData(packPath: string | null): Map<string, unknown> {
     ["LWProcessDefinition", bundled("agency-delivery").data.get("LWProcessDefinition")],
     ["LWProcessDefinitions", bundled("agency-delivery").data.get("LWProcessDefinitions") ?? [bundled("agency-delivery").data.get("LWProcessDefinition")]],
     ["LWRTSDefinitions", rts.get("LWRTSDefinitions")],
+    ["LWArmoredDefinitions", bundled("armored-platoon").data.get("LWArmoredDefinitions")],
+    ["LWArmoredVisuals", bundled("armored-platoon").data.get("LWArmoredVisuals")],
     ["LWPetDefinitions", pet.get("LWPetDefinitions")],
     ["LWPetAssetDefinitions", pet.get("LWPetAssetDefinitions")],
     ["LWScenarioPacks", packs]

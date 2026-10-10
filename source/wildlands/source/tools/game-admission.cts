@@ -60,8 +60,13 @@ export function admitColony(game: CompiledGame, profile: Profile, audit: Balanci
 }
 
 /** Runtime catalog validator of an RTS or Pocket Pet profile. */
-export function admitTemplate(template: 'rts' | 'pet', profile: Profile): void {
- if (template === 'rts') (require('../rts-catalog.js') as LWRTSData.CatalogApi).validate(profile.rts);
+export function admitTemplate(template: 'rts' | 'pet' | 'armored', profile: Profile): void {
+ if (template === 'armored') {
+  const catalog = (require('../armored-catalog.js') as LWArmoredData.CatalogApi).validate(profile.armored);
+  const visuals = (require('../armored-visuals.js') as {validate(input: unknown): {assets: Record<string, unknown>}}).validate(profile.armoredVisuals);
+  for (const vehicle of catalog.vehicles) if (!Object.hasOwn(visuals.assets, vehicle.asset)) throw Error('Armored vehicle has no admitted visual: ' + vehicle.asset);
+ }
+ else if (template === 'rts') (require('../rts-catalog.js') as LWRTSData.CatalogApi).validate(profile.rts);
  else (require('../pet-catalog.js') as LWPetData.CatalogApi).validate(profile.pet?.definitions);
 }
 

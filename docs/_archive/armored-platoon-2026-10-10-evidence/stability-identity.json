@@ -1,0 +1,41 @@
+{
+  "gitHead": "187dd821316cb334f13947780bb5e135878bda2c",
+  "artifact": {
+    "path": "demos/armored-platoon.html",
+    "bytes": 1809495,
+    "sha256": "8587053e9591e505313a86936b8b0036a1088f4cb2d270d27ffba3210742e93b"
+  },
+  "scriptSha256": "a1c75bc66cda1f22718cfb17fd253602c5d76bcc7883663c52c1e67434b3aeb6",
+  "harnessSha256": "a464f9b13b46be5a626c628a805960170bbfca74c65fee26d2ea7a4926843bad",
+  "node": "v24.19.0",
+  "playwright": "1.63.0",
+  "os": {
+    "platform": "linux",
+    "release": "6.18.44",
+    "architecture": "x64",
+    "logicalCpus": 5,
+    "cpuModel": "INTEL(R) XEON(R) PLATINUM 8573C",
+    "totalMemoryBytes": 18882699264
+  },
+  "viewport": {
+    "width": 960,
+    "height": 600
+  },
+  "deviceScaleFactor": 1,
+  "executablePath": "/usr/bin/chromium",
+  "args": [
+    "--no-sandbox",
+    "--enable-unsafe-swiftshader",
+    "--use-angle=swiftshader"
+  ],
+  "browser": "151.0.7922.173",
+  "webgl": {
+    "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+    "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+    "vendor": "Google Inc. (Google)",
+    "drawingBuffer": {
+      "width": 960,
+      "height": 600
+    }
+  }
+}

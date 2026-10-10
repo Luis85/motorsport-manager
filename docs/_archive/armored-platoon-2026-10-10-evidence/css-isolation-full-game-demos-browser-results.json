@@ -1,0 +1,60 @@
+{
+  "passed": 1,
+  "total": 11,
+  "results": [
+    {
+      "name": "CLI-built Littlewild demo boots from file:// with its own game profile and no requests",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/littlewild.html\nCall log:\n\u001b[2m  - navigating to \"file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/littlewild.html\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "name": "CLI-built RTS and Pocket Pet demos boot standalone under their own storage namespaces",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/rts-frontier.html\nCall log:\n\u001b[2m  - navigating to \"file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/rts-frontier.html\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "name": "CLI-built studio boots the colony with editors and export tools on demand",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/studio.html\nCall log:\n\u001b[2m  - navigating to \"file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/studio.html\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "name": "Published demos/manifest.json lists one byte-identical demo per game folder within its play budget",
+      "passed": true
+    },
+    {
+      "name": "Published agency process demo boots offline with all step scenes and explicit clock control",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/agency-delivery.html\nCall log:\n\u001b[2m  - navigating to \"file:///workspace/work/armored-platoon/demos/agency-delivery.html\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "name": "Published Armored Platoon demo boots offline and saves its paused match under the wildlands.armored-platoon storage namespace",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/armored-platoon.html\nCall log:\n\u001b[2m  - navigating to \"file:///workspace/work/armored-platoon/demos/armored-platoon.html\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "name": "Published Littlewild demo boots only Littlewild from file:// and keeps the legacy littlewild save keys",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/littlewild.html\nCall log:\n\u001b[2m  - navigating to \"file:///workspace/work/armored-platoon/demos/littlewild.html\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "name": "Published Emberworks demo boots only Emberworks from file:// under the wildlands.emberworks storage namespace",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/emberworks.html\nCall log:\n\u001b[2m  - navigating to \"file:///workspace/work/armored-platoon/demos/emberworks.html\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "name": "Published Office demo boots only Office from file:// under the wildlands.office storage namespace",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/office.html\nCall log:\n\u001b[2m  - navigating to \"file:///workspace/work/armored-platoon/demos/office.html\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "name": "Published RTS Frontier demo boots only its RTS match from file:// under the wildlands.rts-frontier storage namespace",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/rts-frontier.html\nCall log:\n\u001b[2m  - navigating to \"file:///workspace/work/armored-platoon/demos/rts-frontier.html\", waiting until \"load\"\u001b[22m\n"
+    },
+    {
+      "name": "Published Pocket Pet demo boots only its pet room from file:// under the wildlands.pocket-pet storage namespace",
+      "passed": false,
+      "error": "Error: page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/pocket-pet.html\nCall log:\n\u001b[2m  - navigating to \"file:///workspace/work/armored-platoon/demos/pocket-pet.html\", waiting until \"load\"\u001b[22m\n"
+    }
+  ]
+}

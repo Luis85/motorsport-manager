@@ -5180,6 +5180,9 @@ async function reviewRender(scene, models, output, input, renderer, options = {}
   );
 }
 
+// ../model-forge/src/kernel/application/semantic-bindings.ts
+import { Box3 as Box38 } from "three";
+
 // src/infra/project.ts
 import { promises as fs6 } from "node:fs";
 import path7 from "node:path";

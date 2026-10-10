@@ -1,0 +1,726 @@
+{
+  "status": "passed",
+  "run_id": 38088144152,
+  "run_url": "https://github.com/Luis85/motorsport-manager/actions/runs/38088144152",
+  "commit": "187dd821316cb334f13947780bb5e135878bda2c",
+  "engine_version": "4.7.2.stable.official.ed1daf0bf",
+  "engine_sha256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+  "aggregate_job_id": 114328193324,
+  "aggregate": {
+    "passed": true,
+    "source": "8d07fd8e647e275bd4920b7b9e50b93cd3fb9867af87dec9e60aed918838e32d",
+    "suites": 103,
+    "checks": 21346,
+    "shards": 6
+  },
+  "jobs": [
+    {
+      "job_id": 114318879790,
+      "name": "suites-0",
+      "started_at": "2026-10-10T21:34:31.7762563Z",
+      "summary": {
+        "source": "8d07fd8e647e275bd4920b7b9e50b93cd3fb9867af87dec9e60aed918838e32d",
+        "index": 0,
+        "count": 6,
+        "mode": "full",
+        "passed": true,
+        "suites": [
+          {
+            "id": "architecture_characterization",
+            "passed": true,
+            "checks": 36,
+            "seconds": 146.276
+          },
+          {
+            "id": "architecture_ui_tests",
+            "passed": true,
+            "checks": 45,
+            "seconds": 24.823
+          },
+          {
+            "id": "living_racecraft_ui",
+            "passed": true,
+            "checks": 33,
+            "seconds": 22.566
+          },
+          {
+            "id": "practice_scenario_runs",
+            "passed": true,
+            "checks": 17,
+            "seconds": 126.753
+          },
+          {
+            "id": "replay_performance",
+            "passed": true,
+            "checks": 15,
+            "seconds": 61.589
+          },
+          {
+            "id": "rivals_ui_tests",
+            "passed": true,
+            "checks": 60,
+            "seconds": 35.695
+          },
+          {
+            "id": "tactical_duel_ui_tests",
+            "passed": true,
+            "checks": 88,
+            "seconds": 80.754
+          },
+          {
+            "id": "ui_finish_guide_tests",
+            "passed": true,
+            "checks": 303,
+            "seconds": 79.102
+          },
+          {
+            "id": "ui_polish_tests",
+            "passed": true,
+            "checks": 208,
+            "seconds": 69.073
+          },
+          {
+            "id": "weather_ui_smoke",
+            "passed": true,
+            "checks": 33,
+            "seconds": 18.357
+          },
+          {
+            "id": "weekend_flow_ui_tests",
+            "passed": true,
+            "checks": 43,
+            "seconds": 23.517
+          },
+          {
+            "id": "storage_contract_tests",
+            "passed": true,
+            "checks": 89,
+            "seconds": 2.622
+          },
+          {
+            "id": "roster_content_ui_tests",
+            "passed": true,
+            "checks": 17,
+            "seconds": 20.763
+          },
+          {
+            "id": "editor_gesture_tests",
+            "passed": true,
+            "checks": 147,
+            "seconds": 17.903
+          },
+          {
+            "id": "content_environment_tests",
+            "passed": true,
+            "checks": 483,
+            "seconds": 12.2
+          },
+          {
+            "id": "content_mechanic_profile_tests",
+            "passed": true,
+            "checks": 106,
+            "seconds": 13.856
+          },
+          {
+            "id": "toolbox_protocol_tests",
+            "passed": true,
+            "checks": 1416,
+            "seconds": 41.18
+          },
+          {
+            "id": "balance_config_validation_tests",
+            "passed": true,
+            "checks": 48,
+            "seconds": 11.697
+          }
+        ],
+        "script_loads": 453
+      }
+    },
+    {
+      "job_id": 114318879849,
+      "name": "suites-1",
+      "started_at": "2026-10-10T21:34:33.0497216Z",
+      "summary": {
+        "source": "8d07fd8e647e275bd4920b7b9e50b93cd3fb9867af87dec9e60aed918838e32d",
+        "index": 1,
+        "count": 6,
+        "mode": "full",
+        "passed": true,
+        "suites": [
+          {
+            "id": "director_weekend_ui_tests",
+            "passed": true,
+            "checks": 49,
+            "seconds": 106.026
+          },
+          {
+            "id": "compact_ui_tests",
+            "passed": true,
+            "checks": 125,
+            "seconds": 39.202
+          },
+          {
+            "id": "minimal_tests",
+            "passed": true,
+            "checks": 113,
+            "seconds": 48.351
+          },
+          {
+            "id": "practice_tests",
+            "passed": true,
+            "checks": 78,
+            "seconds": 49.751
+          },
+          {
+            "id": "replay_scenario_runs",
+            "passed": true,
+            "checks": 39,
+            "seconds": 94.275
+          },
+          {
+            "id": "run_tests",
+            "passed": true,
+            "checks": 752,
+            "seconds": 155.63
+          },
+          {
+            "id": "ui_clarity_tests",
+            "passed": true,
+            "checks": 181,
+            "seconds": 73.726
+          },
+          {
+            "id": "ui_finish_observation_tests",
+            "passed": true,
+            "checks": 19,
+            "seconds": 15.697
+          },
+          {
+            "id": "ui_repair_tests",
+            "passed": true,
+            "checks": 89,
+            "seconds": 19.555
+          },
+          {
+            "id": "weekend_strategy_tests",
+            "passed": true,
+            "checks": 109,
+            "seconds": 33.206
+          },
+          {
+            "id": "presentation_boundary_tests",
+            "passed": true,
+            "checks": 28,
+            "seconds": 3.274
+          },
+          {
+            "id": "content_tests",
+            "passed": true,
+            "checks": 61,
+            "seconds": 5.881
+          },
+          {
+            "id": "content_tyre_tests",
+            "passed": true,
+            "checks": 57,
+            "seconds": 56.896
+          },
+          {
+            "id": "weekend_lifecycle_tests",
+            "passed": true,
+            "checks": 109,
+            "seconds": 150.75
+          },
+          {
+            "id": "content_operations_tests",
+            "passed": true,
+            "checks": 273,
+            "seconds": 9.185
+          },
+          {
+            "id": "content_wheel_operating_tests",
+            "passed": true,
+            "checks": 49,
+            "seconds": 3.071
+          },
+          {
+            "id": "toolbox_track_tests",
+            "passed": true,
+            "checks": 190,
+            "seconds": 3.272
+          }
+        ],
+        "script_loads": 453
+      }
+    },
+    {
+      "job_id": 114318879946,
+      "name": "suites-2",
+      "started_at": "2026-10-10T21:34:32.4015239Z",
+      "summary": {
+        "source": "8d07fd8e647e275bd4920b7b9e50b93cd3fb9867af87dec9e60aed918838e32d",
+        "index": 2,
+        "count": 6,
+        "mode": "full",
+        "passed": true,
+        "suites": [
+          {
+            "id": "duel_scenario_runs",
+            "passed": true,
+            "checks": 149,
+            "seconds": 1447.471
+          },
+          {
+            "id": "director_tests",
+            "passed": true,
+            "checks": 76,
+            "seconds": 166.075
+          },
+          {
+            "id": "minimal_ui_tests",
+            "passed": true,
+            "checks": 295,
+            "seconds": 49.326
+          },
+          {
+            "id": "practice_ui_smoke",
+            "passed": true,
+            "checks": 67,
+            "seconds": 39.301
+          },
+          {
+            "id": "replay_tests",
+            "passed": true,
+            "checks": 59,
+            "seconds": 27.63
+          },
+          {
+            "id": "scenario_authoring_ui",
+            "passed": true,
+            "checks": 109,
+            "seconds": 72.268
+          },
+          {
+            "id": "ui_completion_tests",
+            "passed": true,
+            "checks": 68,
+            "seconds": 40.753
+          },
+          {
+            "id": "ui_finish_populated_tests",
+            "passed": true,
+            "checks": 655,
+            "seconds": 448.673
+          },
+          {
+            "id": "ui_smoke",
+            "passed": true,
+            "checks": 116,
+            "seconds": 98.367
+          },
+          {
+            "id": "workspace_performance",
+            "passed": true,
+            "checks": 14,
+            "seconds": 107.331
+          },
+          {
+            "id": "car_entity_tests",
+            "passed": true,
+            "checks": 51,
+            "seconds": 3.072
+          },
+          {
+            "id": "content_pack_tests",
+            "passed": true,
+            "checks": 41,
+            "seconds": 10.488
+          },
+          {
+            "id": "content_tyre_ui_tests",
+            "passed": true,
+            "checks": 51,
+            "seconds": 16.75
+          },
+          {
+            "id": "shipping_runtime_tests",
+            "passed": true,
+            "checks": 88,
+            "seconds": 174.557
+          },
+          {
+            "id": "content_competition_tests",
+            "passed": true,
+            "checks": 295,
+            "seconds": 49.175
+          },
+          {
+            "id": "scenario_catalog_tests",
+            "passed": true,
+            "checks": 117,
+            "seconds": 2.621
+          },
+          {
+            "id": "toolbox_campaign_tests",
+            "passed": true,
+            "checks": 605,
+            "seconds": 205.242
+          }
+        ],
+        "script_loads": 453
+      }
+    },
+    {
+      "job_id": 114318879665,
+      "name": "suites-3",
+      "started_at": "2026-10-10T21:34:32.0463438Z",
+      "summary": {
+        "source": "8d07fd8e647e275bd4920b7b9e50b93cd3fb9867af87dec9e60aed918838e32d",
+        "index": 3,
+        "count": 6,
+        "mode": "full",
+        "passed": true,
+        "suites": [
+          {
+            "id": "minimal_weekend_ui_tests",
+            "passed": true,
+            "checks": 122,
+            "seconds": 125.115
+          },
+          {
+            "id": "director_ui_tests",
+            "passed": true,
+            "checks": 248,
+            "seconds": 68.35
+          },
+          {
+            "id": "notebook_tests",
+            "passed": true,
+            "checks": 100,
+            "seconds": 12.847
+          },
+          {
+            "id": "recovery_scenario_runs",
+            "passed": true,
+            "checks": 24,
+            "seconds": 193.758
+          },
+          {
+            "id": "replay_ui_tests",
+            "passed": true,
+            "checks": 111,
+            "seconds": 85.435
+          },
+          {
+            "id": "strategy_scenario_runs",
+            "passed": true,
+            "checks": 19,
+            "seconds": 193.287
+          },
+          {
+            "id": "ui_finish_analysis_tests",
+            "passed": true,
+            "checks": 18,
+            "seconds": 14.646
+          },
+          {
+            "id": "ui_finish_soak_tests",
+            "passed": true,
+            "checks": 15,
+            "seconds": 52.867
+          },
+          {
+            "id": "ux_performance",
+            "passed": true,
+            "checks": 8,
+            "seconds": 51.978
+          },
+          {
+            "id": "mechanics_tests",
+            "passed": true,
+            "checks": 117,
+            "seconds": 3.424
+          },
+          {
+            "id": "car_record_tests",
+            "passed": true,
+            "checks": 297,
+            "seconds": 9.294
+          },
+          {
+            "id": "content_roster_tests",
+            "passed": true,
+            "checks": 58,
+            "seconds": 188.699
+          },
+          {
+            "id": "reproduction_tests",
+            "passed": true,
+            "checks": 19,
+            "seconds": 19.471
+          },
+          {
+            "id": "record_traversal_tests",
+            "passed": true,
+            "checks": 436,
+            "seconds": 4.579
+          },
+          {
+            "id": "content_persistence_tests",
+            "passed": true,
+            "checks": 614,
+            "seconds": 12.301
+          },
+          {
+            "id": "content_editor_profile_tests",
+            "passed": true,
+            "checks": 19,
+            "seconds": 3.074
+          },
+          {
+            "id": "race_physics_balance_tests",
+            "passed": true,
+            "checks": 44,
+            "seconds": 5.58
+          }
+        ],
+        "script_loads": 453
+      }
+    },
+    {
+      "job_id": 114318879836,
+      "name": "suites-4",
+      "started_at": "2026-10-10T21:34:31.8285604Z",
+      "summary": {
+        "source": "8d07fd8e647e275bd4920b7b9e50b93cd3fb9867af87dec9e60aed918838e32d",
+        "index": 4,
+        "count": 6,
+        "mode": "full",
+        "passed": true,
+        "suites": [
+          {
+            "id": "scenario_authoring_runs",
+            "passed": true,
+            "checks": 42,
+            "seconds": 228.762
+          },
+          {
+            "id": "duel_contract_tests",
+            "passed": true,
+            "checks": 31,
+            "seconds": 4.026
+          },
+          {
+            "id": "notebook_ui_tests",
+            "passed": true,
+            "checks": 117,
+            "seconds": 84.809
+          },
+          {
+            "id": "recovery_tests",
+            "passed": true,
+            "checks": 128,
+            "seconds": 38.872
+          },
+          {
+            "id": "rival_scenario_runs",
+            "passed": true,
+            "checks": 34,
+            "seconds": 302.421
+          },
+          {
+            "id": "strategy_ui_smoke",
+            "passed": true,
+            "checks": 34,
+            "seconds": 21.765
+          },
+          {
+            "id": "ui_finish_details_tests",
+            "passed": true,
+            "checks": 111,
+            "seconds": 197.417
+          },
+          {
+            "id": "ui_finish_states_tests",
+            "passed": true,
+            "checks": 40,
+            "seconds": 24.522
+          },
+          {
+            "id": "weather_scenario_runs",
+            "passed": true,
+            "checks": 10,
+            "seconds": 153.986
+          },
+          {
+            "id": "editor_session_tests",
+            "passed": true,
+            "checks": 146,
+            "seconds": 3.174
+          },
+          {
+            "id": "game_flow_coherence_ui_tests",
+            "passed": true,
+            "checks": 382,
+            "seconds": 70.025
+          },
+          {
+            "id": "content_roster_ui_tests",
+            "passed": true,
+            "checks": 37,
+            "seconds": 20.361
+          },
+          {
+            "id": "operation_sequence_tests",
+            "passed": true,
+            "checks": 2959,
+            "seconds": 182.114
+          },
+          {
+            "id": "content_tuning_tests",
+            "passed": true,
+            "checks": 124,
+            "seconds": 16.461
+          },
+          {
+            "id": "content_catalog_tests",
+            "passed": true,
+            "checks": 87,
+            "seconds": 17.966
+          },
+          {
+            "id": "content_editor_interaction_tests",
+            "passed": true,
+            "checks": 77,
+            "seconds": 18.407
+          },
+          {
+            "id": "content_planning_balance_tests",
+            "passed": true,
+            "checks": 106,
+            "seconds": 7.236
+          }
+        ],
+        "script_loads": 453
+      }
+    },
+    {
+      "job_id": 114318879825,
+      "name": "suites-5",
+      "started_at": "2026-10-10T21:34:32.1666166Z",
+      "summary": {
+        "source": "8d07fd8e647e275bd4920b7b9e50b93cd3fb9867af87dec9e60aed918838e32d",
+        "index": 5,
+        "count": 6,
+        "mode": "full",
+        "passed": true,
+        "suites": [
+          {
+            "id": "architecture_tests",
+            "passed": true,
+            "checks": 40,
+            "seconds": 7.533
+          },
+          {
+            "id": "living_racecraft_tests",
+            "passed": true,
+            "checks": 113,
+            "seconds": 15.25
+          },
+          {
+            "id": "pitwall_ux_tests",
+            "passed": true,
+            "checks": 149,
+            "seconds": 37.046
+          },
+          {
+            "id": "recovery_ui_smoke",
+            "passed": true,
+            "checks": 41,
+            "seconds": 26.572
+          },
+          {
+            "id": "rival_styles_tests",
+            "passed": true,
+            "checks": 50,
+            "seconds": 16.855
+          },
+          {
+            "id": "tactical_duel_tests",
+            "passed": true,
+            "checks": 98,
+            "seconds": 100.04
+          },
+          {
+            "id": "ui_finish_execution_tests",
+            "passed": true,
+            "checks": 57,
+            "seconds": 60.986
+          },
+          {
+            "id": "ui_finish_tests",
+            "passed": true,
+            "checks": 47,
+            "seconds": 86.637
+          },
+          {
+            "id": "weather_tests",
+            "passed": true,
+            "checks": 97,
+            "seconds": 28.28
+          },
+          {
+            "id": "weekend_launch_tests",
+            "passed": true,
+            "checks": 962,
+            "seconds": 74.868
+          },
+          {
+            "id": "command_contract_tests",
+            "passed": true,
+            "checks": 1821,
+            "seconds": 23.27
+          },
+          {
+            "id": "roster_content_tests",
+            "passed": true,
+            "checks": 37,
+            "seconds": 205.127
+          },
+          {
+            "id": "command_responsibility_tests",
+            "passed": true,
+            "checks": 65,
+            "seconds": 2.721
+          },
+          {
+            "id": "content_weekend_ui_tests",
+            "passed": true,
+            "checks": 22,
+            "seconds": 15.597
+          },
+          {
+            "id": "content_scenario_ui_tests",
+            "passed": true,
+            "checks": 37,
+            "seconds": 14.747
+          },
+          {
+            "id": "toolbox_weekend_tests",
+            "passed": true,
+            "checks": 2545,
+            "seconds": 58.954
+          },
+          {
+            "id": "balance_campaign_presentation_tests",
+            "passed": true,
+            "checks": 67,
+            "seconds": 40.463
+          }
+        ],
+        "script_loads": 453
+      }
+    }
+  ]
+}

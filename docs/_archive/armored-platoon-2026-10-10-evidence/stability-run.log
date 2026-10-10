@@ -1,0 +1,142 @@
+{"kind":"sample","elapsed":1.216,"mission":"crossroads","tick":18,"status":"running","paused":false,"heap":27340736,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":0}}
+{"kind":"sample","elapsed":16.272,"mission":"crossroads","tick":456,"status":"running","paused":false,"heap":20466168,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":15}}
+{"kind":"sample","elapsed":31.594,"mission":"crossroads","tick":917,"status":"running","paused":false,"heap":27409572,"counts":{"vehicles":6,"projectiles":2,"obstacles":42,"smoke":0,"events":29}}
+{"kind":"sample","elapsed":46.716,"mission":"crossroads","tick":1357,"status":"running","paused":false,"heap":32486500,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":47}}
+{"kind":"sample","elapsed":61.774,"mission":"crossroads","tick":1808,"status":"running","paused":false,"heap":31397688,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":57}}
+{"kind":"sample","elapsed":76.856,"mission":"crossroads","tick":2234,"status":"running","paused":false,"heap":36373560,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":70}}
+{"kind":"sample","elapsed":91.894,"mission":"crossroads","tick":2681,"status":"running","paused":false,"heap":27689644,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":85}}
+{"kind":"sample","elapsed":106.952,"mission":"crossroads","tick":3149,"status":"running","paused":false,"heap":28947188,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":95}}
+{"kind":"sample","elapsed":122.198,"mission":"crossroads","tick":3539,"status":"running","paused":false,"heap":27834516,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":105}}
+{"kind":"sample","elapsed":137.238,"mission":"crossroads","tick":3930,"status":"running","paused":false,"heap":25997368,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":121}}
+{"kind":"sample","elapsed":152.253,"mission":"crossroads","tick":4372,"status":"running","paused":false,"heap":27932728,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":123}}
+{"kind":"sample","elapsed":167.279,"mission":"crossroads","tick":4836,"status":"running","paused":false,"heap":22309448,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":123}}
+{"kind":"sample","elapsed":182.3,"mission":"crossroads","tick":5306,"status":"running","paused":false,"heap":26939316,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":122}}
+{"kind":"sample","elapsed":197.316,"mission":"crossroads","tick":5730,"status":"running","paused":false,"heap":30462992,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":121}}
+{"kind":"sample","elapsed":212.345,"mission":"crossroads","tick":6204,"status":"running","paused":false,"heap":31100616,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":121}}
+{"kind":"sample","elapsed":227.366,"mission":"crossroads","tick":6689,"status":"running","paused":false,"heap":25415276,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":121}}
+{"kind":"sample","elapsed":243.578,"mission":"pine-ridge","tick":20,"status":"running","paused":false,"heap":18327792,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":0}}
+{"kind":"sample","elapsed":258.968,"mission":"pine-ridge","tick":393,"status":"running","paused":false,"heap":24504044,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":7}}
+{"kind":"sample","elapsed":274.012,"mission":"pine-ridge","tick":672,"status":"running","paused":false,"heap":20890692,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":7}}
+{"kind":"sample","elapsed":289.076,"mission":"pine-ridge","tick":976,"status":"running","paused":false,"heap":28091908,"counts":{"vehicles":4,"projectiles":0,"obstacles":49,"smoke":0,"events":7}}
+{"kind":"sample","elapsed":304.113,"mission":"pine-ridge","tick":1224,"status":"running","paused":false,"heap":34580008,"counts":{"vehicles":4,"projectiles":0,"obstacles":49,"smoke":0,"events":7}}
+{"kind":"sample","elapsed":319.172,"mission":"pine-ridge","tick":1468,"status":"running","paused":false,"heap":34297420,"counts":{"vehicles":4,"projectiles":1,"obstacles":49,"smoke":0,"events":10}}
+{"kind":"sample","elapsed":334.292,"mission":"pine-ridge","tick":1729,"status":"running","paused":false,"heap":36021652,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":10}}
+{"kind":"sample","elapsed":349.31,"mission":"pine-ridge","tick":2045,"status":"running","paused":false,"heap":26325852,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":10}}
+{"kind":"sample","elapsed":364.348,"mission":"pine-ridge","tick":2244,"status":"running","paused":false,"heap":44515252,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":10}}
+{"kind":"sample","elapsed":379.37,"mission":"pine-ridge","tick":2528,"status":"running","paused":false,"heap":25760284,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":14}}
+{"kind":"sample","elapsed":394.489,"mission":"pine-ridge","tick":2815,"status":"running","paused":false,"heap":18684096,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":14}}
+{"kind":"sample","elapsed":409.501,"mission":"pine-ridge","tick":3158,"status":"running","paused":false,"heap":19564488,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":14}}
+{"kind":"sample","elapsed":424.545,"mission":"pine-ridge","tick":3431,"status":"running","paused":false,"heap":22719792,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":14}}
+{"kind":"sample","elapsed":439.555,"mission":"pine-ridge","tick":3700,"status":"running","paused":false,"heap":20240976,"counts":{"vehicles":3,"projectiles":1,"obstacles":49,"smoke":0,"events":15}}
+{"kind":"sample","elapsed":454.574,"mission":"pine-ridge","tick":3988,"status":"running","paused":false,"heap":23437356,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":16}}
+{"kind":"sample","elapsed":469.59,"mission":"pine-ridge","tick":4290,"status":"running","paused":false,"heap":22507288,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":16}}
+{"kind":"sample","elapsed":486.162,"mission":"iron-counterattack","tick":30,"status":"running","paused":false,"heap":12895360,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":0}}
+{"kind":"sample","elapsed":501.209,"mission":"iron-counterattack","tick":321,"status":"running","paused":false,"heap":17299056,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":4}}
+{"kind":"sample","elapsed":516.23,"mission":"iron-counterattack","tick":651,"status":"running","paused":false,"heap":15251132,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":4}}
+{"kind":"sample","elapsed":531.264,"mission":"iron-counterattack","tick":942,"status":"running","paused":false,"heap":19822432,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":4}}
+{"kind":"sample","elapsed":546.283,"mission":"iron-counterattack","tick":1210,"status":"running","paused":false,"heap":18012828,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":4}}
+{"kind":"sample","elapsed":561.304,"mission":"iron-counterattack","tick":1578,"status":"running","paused":false,"heap":26999028,"counts":{"vehicles":3,"projectiles":1,"obstacles":42,"smoke":0,"events":5}}
+{"kind":"sample","elapsed":576.343,"mission":"iron-counterattack","tick":2011,"status":"running","paused":false,"heap":18892328,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":6}}
+{"kind":"sample","elapsed":591.39,"mission":"iron-counterattack","tick":2323,"status":"running","paused":false,"heap":20957020,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":6}}
+{"kind":"sample","elapsed":606.432,"mission":"iron-counterattack","tick":2466,"status":"running","paused":false,"heap":20426688,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":6}}
+{"kind":"sample","elapsed":621.473,"mission":"iron-counterattack","tick":2625,"status":"running","paused":false,"heap":32404496,"counts":{"vehicles":3,"projectiles":1,"obstacles":42,"smoke":0,"events":9}}
+{"kind":"sample","elapsed":636.494,"mission":"iron-counterattack","tick":2776,"status":"running","paused":false,"heap":25590008,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":10}}
+{"kind":"sample","elapsed":651.525,"mission":"iron-counterattack","tick":2965,"status":"running","paused":false,"heap":26331752,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":10}}
+{"kind":"sample","elapsed":666.578,"mission":"iron-counterattack","tick":3149,"status":"running","paused":false,"heap":20504940,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":10}}
+{"kind":"sample","elapsed":681.627,"mission":"iron-counterattack","tick":3330,"status":"running","paused":false,"heap":22596104,"counts":{"vehicles":3,"projectiles":1,"obstacles":42,"smoke":0,"events":11}}
+{"kind":"sample","elapsed":696.746,"mission":"iron-counterattack","tick":3515,"status":"running","paused":false,"heap":22862560,"counts":{"vehicles":3,"projectiles":1,"obstacles":42,"smoke":0,"events":11}}
+{"kind":"sample","elapsed":712.002,"mission":"iron-counterattack","tick":3708,"status":"running","paused":false,"heap":23992436,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":12}}
+{"kind":"sample","elapsed":727.601,"mission":"crossroads","tick":19,"status":"running","paused":false,"heap":22889668,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":0}}
+{"kind":"sample","elapsed":742.712,"mission":"crossroads","tick":186,"status":"running","paused":false,"heap":23452780,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":4}}
+{"kind":"sample","elapsed":757.848,"mission":"crossroads","tick":337,"status":"running","paused":false,"heap":27171888,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":14}}
+{"kind":"sample","elapsed":772.975,"mission":"crossroads","tick":509,"status":"running","paused":false,"heap":33136292,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":14}}
+{"kind":"sample","elapsed":788.194,"mission":"crossroads","tick":672,"status":"running","paused":false,"heap":46333808,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":22}}
+{"kind":"sample","elapsed":803.33,"mission":"crossroads","tick":846,"status":"running","paused":false,"heap":41024556,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":25}}
+{"kind":"sample","elapsed":818.382,"mission":"crossroads","tick":995,"status":"running","paused":false,"heap":26149352,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":28}}
+{"kind":"sample","elapsed":833.42,"mission":"crossroads","tick":1145,"status":"running","paused":false,"heap":24149560,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":35}}
+{"kind":"sample","elapsed":848.971,"mission":"crossroads","tick":1265,"status":"running","paused":false,"heap":36547556,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":36}}
+{"kind":"sample","elapsed":866.845,"mission":"crossroads","tick":1415,"status":"running","paused":false,"heap":39193804,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":46}}
+{"kind":"sample","elapsed":882.006,"mission":"crossroads","tick":1567,"status":"running","paused":false,"heap":41277996,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":48}}
+{"kind":"sample","elapsed":897.075,"mission":"crossroads","tick":1787,"status":"running","paused":false,"heap":52662672,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":52}}
+{"kind":"sample","elapsed":912.159,"mission":"crossroads","tick":2173,"status":"running","paused":false,"heap":29928504,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":59}}
+{"kind":"sample","elapsed":927.201,"mission":"crossroads","tick":2585,"status":"running","paused":false,"heap":44472888,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":70}}
+{"kind":"sample","elapsed":942.234,"mission":"crossroads","tick":3000,"status":"running","paused":false,"heap":30124384,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":78}}
+{"kind":"sample","elapsed":957.304,"mission":"crossroads","tick":3413,"status":"running","paused":false,"heap":43396092,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":86}}
+{"kind":"sample","elapsed":972.341,"mission":"pine-ridge","tick":340,"status":"running","paused":false,"heap":17711248,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":0}}
+{"kind":"sample","elapsed":987.37,"mission":"pine-ridge","tick":897,"status":"running","paused":false,"heap":13597244,"counts":{"vehicles":3,"projectiles":1,"obstacles":49,"smoke":0,"events":5}}
+{"kind":"sample","elapsed":1002.411,"mission":"pine-ridge","tick":1430,"status":"running","paused":false,"heap":40189192,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":8}}
+{"kind":"sample","elapsed":1017.464,"mission":"pine-ridge","tick":1870,"status":"running","paused":false,"heap":31601556,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":19}}
+{"kind":"sample","elapsed":1032.511,"mission":"pine-ridge","tick":2323,"status":"running","paused":false,"heap":48863396,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":26}}
+{"kind":"sample","elapsed":1047.608,"mission":"pine-ridge","tick":2722,"status":"running","paused":false,"heap":36979096,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":35}}
+{"kind":"sample","elapsed":1062.663,"mission":"pine-ridge","tick":3155,"status":"running","paused":false,"heap":50608744,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":40}}
+{"kind":"sample","elapsed":1077.686,"mission":"pine-ridge","tick":3589,"status":"running","paused":false,"heap":42356336,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":48}}
+{"kind":"sample","elapsed":1092.702,"mission":"pine-ridge","tick":3966,"status":"running","paused":false,"heap":24544172,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":53}}
+{"kind":"sample","elapsed":1107.917,"mission":"pine-ridge","tick":4365,"status":"running","paused":false,"heap":57610472,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":68}}
+{"kind":"sample","elapsed":1122.965,"mission":"pine-ridge","tick":4780,"status":"running","paused":false,"heap":35251180,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":74}}
+{"kind":"sample","elapsed":1137.989,"mission":"pine-ridge","tick":5193,"status":"running","paused":false,"heap":28477460,"counts":{"vehicles":5,"projectiles":1,"obstacles":49,"smoke":0,"events":62}}
+{"kind":"sample","elapsed":1153.016,"mission":"pine-ridge","tick":5635,"status":"running","paused":false,"heap":49074904,"counts":{"vehicles":5,"projectiles":0,"obstacles":49,"smoke":0,"events":67}}
+{"kind":"sample","elapsed":1168.079,"mission":"pine-ridge","tick":6062,"status":"running","paused":false,"heap":47325316,"counts":{"vehicles":5,"projectiles":0,"obstacles":49,"smoke":0,"events":73}}
+{"kind":"sample","elapsed":1183.109,"mission":"pine-ridge","tick":6475,"status":"running","paused":false,"heap":36485336,"counts":{"vehicles":5,"projectiles":0,"obstacles":49,"smoke":0,"events":77}}
+{"kind":"sample","elapsed":1198.17,"mission":"pine-ridge","tick":6896,"status":"running","paused":false,"heap":26419928,"counts":{"vehicles":5,"projectiles":0,"obstacles":49,"smoke":0,"events":81}}
+{"kind":"sample","elapsed":1213.195,"mission":"iron-counterattack","tick":357,"status":"running","paused":false,"heap":30105640,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":0}}
+{"kind":"sample","elapsed":1228.239,"mission":"iron-counterattack","tick":797,"status":"running","paused":false,"heap":39686272,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":6}}
+{"kind":"sample","elapsed":1243.259,"mission":"iron-counterattack","tick":1223,"status":"running","paused":false,"heap":18420828,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":6}}
+{"kind":"sample","elapsed":1258.299,"mission":"iron-counterattack","tick":1691,"status":"running","paused":false,"heap":33550156,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":6}}
+{"kind":"sample","elapsed":1273.352,"mission":"iron-counterattack","tick":2161,"status":"running","paused":false,"heap":35839108,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":6}}
+{"kind":"sample","elapsed":1288.377,"mission":"iron-counterattack","tick":2624,"status":"running","paused":false,"heap":37584196,"counts":{"vehicles":3,"projectiles":1,"obstacles":42,"smoke":0,"events":9}}
+{"kind":"sample","elapsed":1303.39,"mission":"iron-counterattack","tick":3102,"status":"running","paused":false,"heap":42642992,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":10}}
+{"kind":"sample","elapsed":1318.402,"mission":"iron-counterattack","tick":3539,"status":"running","paused":false,"heap":33064592,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":10}}
+{"kind":"sample","elapsed":1333.435,"mission":"iron-counterattack","tick":3889,"status":"running","paused":false,"heap":45430036,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":10}}
+{"kind":"sample","elapsed":1348.458,"mission":"iron-counterattack","tick":4229,"status":"running","paused":false,"heap":41130964,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":14}}
+{"kind":"sample","elapsed":1363.477,"mission":"iron-counterattack","tick":4583,"status":"running","paused":false,"heap":37725720,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":14}}
+{"kind":"sample","elapsed":1378.503,"mission":"iron-counterattack","tick":4932,"status":"running","paused":false,"heap":34158184,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":14}}
+{"kind":"sample","elapsed":1393.542,"mission":"iron-counterattack","tick":5296,"status":"running","paused":false,"heap":35072492,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":14}}
+{"kind":"sample","elapsed":1408.569,"mission":"iron-counterattack","tick":5652,"status":"running","paused":false,"heap":41439840,"counts":{"vehicles":3,"projectiles":1,"obstacles":42,"smoke":0,"events":15}}
+{"kind":"sample","elapsed":1423.603,"mission":"iron-counterattack","tick":6006,"status":"running","paused":false,"heap":37729156,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":16}}
+{"kind":"sample","elapsed":1438.658,"mission":"iron-counterattack","tick":6372,"status":"running","paused":false,"heap":37008268,"counts":{"vehicles":3,"projectiles":0,"obstacles":42,"smoke":0,"events":16}}
+{"kind":"sample","elapsed":1453.698,"mission":"crossroads","tick":285,"status":"running","paused":false,"heap":24160116,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":10}}
+{"kind":"sample","elapsed":1468.757,"mission":"crossroads","tick":703,"status":"running","paused":false,"heap":46304100,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":26}}
+{"kind":"sample","elapsed":1483.78,"mission":"crossroads","tick":1112,"status":"running","paused":false,"heap":46288928,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":36}}
+{"kind":"sample","elapsed":1498.797,"mission":"crossroads","tick":1507,"status":"running","paused":false,"heap":29081188,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":44}}
+{"kind":"sample","elapsed":1513.815,"mission":"crossroads","tick":1875,"status":"running","paused":false,"heap":41209188,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":50}}
+{"kind":"sample","elapsed":1528.861,"mission":"crossroads","tick":2245,"status":"running","paused":false,"heap":35772548,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":59}}
+{"kind":"sample","elapsed":1543.905,"mission":"crossroads","tick":2646,"status":"running","paused":false,"heap":33751868,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":65}}
+{"kind":"sample","elapsed":1558.948,"mission":"crossroads","tick":3085,"status":"running","paused":false,"heap":30493728,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":71}}
+{"kind":"sample","elapsed":1573.973,"mission":"crossroads","tick":3428,"status":"running","paused":false,"heap":29936744,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":77}}
+{"kind":"sample","elapsed":1588.993,"mission":"crossroads","tick":3821,"status":"running","paused":false,"heap":34393064,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":88}}
+{"kind":"sample","elapsed":1604.02,"mission":"crossroads","tick":4238,"status":"running","paused":false,"heap":35530828,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":94}}
+{"kind":"sample","elapsed":1619.056,"mission":"crossroads","tick":4664,"status":"running","paused":false,"heap":40477952,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":100}}
+{"kind":"sample","elapsed":1634.193,"mission":"crossroads","tick":5068,"status":"running","paused":false,"heap":37384656,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":108}}
+{"kind":"sample","elapsed":1649.241,"mission":"crossroads","tick":5487,"status":"running","paused":false,"heap":28370104,"counts":{"vehicles":6,"projectiles":1,"obstacles":42,"smoke":0,"events":118}}
+{"kind":"sample","elapsed":1664.293,"mission":"crossroads","tick":5943,"status":"running","paused":false,"heap":29330384,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":119}}
+{"kind":"sample","elapsed":1679.349,"mission":"crossroads","tick":6429,"status":"running","paused":false,"heap":36052808,"counts":{"vehicles":6,"projectiles":0,"obstacles":42,"smoke":0,"events":119}}
+{"kind":"sample","elapsed":1694.375,"mission":"pine-ridge","tick":460,"status":"running","paused":false,"heap":28882672,"counts":{"vehicles":3,"projectiles":0,"obstacles":49,"smoke":0,"events":0}}
+{"kind":"sample","elapsed":1709.393,"mission":"pine-ridge","tick":1021,"status":"running","paused":false,"heap":23383744,"counts":{"vehicles":3,"projectiles":1,"obstacles":49,"smoke":0,"events":5}}
+{"kind":"sample","elapsed":1724.409,"mission":"pine-ridge","tick":1566,"status":"running","paused":false,"heap":40818928,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":8}}
+{"kind":"sample","elapsed":1739.44,"mission":"pine-ridge","tick":2003,"status":"running","paused":false,"heap":44040520,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":19}}
+{"kind":"sample","elapsed":1754.478,"mission":"pine-ridge","tick":2452,"status":"running","paused":false,"heap":35176288,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":26}}
+{"kind":"sample","elapsed":1769.494,"mission":"pine-ridge","tick":2875,"status":"running","paused":false,"heap":31330112,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":35}}
+{"kind":"sample","elapsed":1784.533,"mission":"pine-ridge","tick":3324,"status":"running","paused":false,"heap":39626368,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":40}}
+{"kind":"sample","elapsed":1799.613,"mission":"pine-ridge","tick":3762,"status":"running","paused":false,"heap":33682960,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":48}}
+{"kind":"sample","elapsed":1800.034,"mission":"pine-ridge","tick":3768,"status":"running","paused":false,"heap":37664388,"counts":{"vehicles":6,"projectiles":0,"obstacles":49,"smoke":0,"events":48}}
+# Armored Platoon: bounded software-browser observation
+
+Source: 187dd821316cb334f13947780bb5e135878bda2c
+Published artifact SHA-256: 8587053e9591e505313a86936b8b0036a1088f4cb2d270d27ffba3210742e93b
+Observed wall duration: 1800.002 seconds; planned duration completed: true.
+Samples: 121; transitions: 14; commands: 371.
+Page errors: 0; recorded console warnings/errors: 8; observation failures: 0.
+Published bytes unchanged: true.
+CDP JS heap: first 27340736, final 37664388, observed minimum 12895360, maximum 57610472 bytes. No GC was forced.
+
+- Software SwiftShader at 960x600; no hardware performance conclusion.
+- Entity counts are detached visible projection counts, not total live ECS or GPU allocations.
+- JS heap is CDP heap usage without forced garbage collection; fluctuations do not establish leak freedom.
+- GPU memory, resource residency, renderer geometry/texture counters, hardware VRAM and thermal/power data are unavailable.
+- Native RAF elapsed times are retained; no private ticks, RAF replacement, altered content, or fabricated checkpoint state.
+- This bounded observation is not full Q03 acceptance or reference-fidelity evidence.
+
+Raw evidence: observations.json, samples.jsonl, commands.jsonl, transitions.jsonl, identity.json, captures.jsonl and PNG captures.
+
+
+Cleanup: [{"name":"cdp","closed":true,"at":"2026-10-10T22:45:04.356Z"},{"name":"context","closed":true,"at":"2026-10-10T22:45:04.600Z"},{"name":"browser","closed":true,"at":"2026-10-10T22:45:06.446Z"}]

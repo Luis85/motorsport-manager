@@ -1,0 +1,99 @@
+{"kind":"littlewild-browser-provenance","node":"v24.19.0","playwright":"1.63.0","playwrightCore":"1.63.0","browser":"151.0.7922.173","selection":"explicit-override","args":["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"]}
+PASS Editor opens the separate pack draft with navigable worlds and scenes at 1440px
+PASS Delayed real pack import preserves a newer scene draft and history at 1440px
+PASS World terrain and resource generation have visual controls at 1440px
+PASS Direct grid placement and keyboard tile focus mutate only the draft at 1440px
+PASS Canonical inventory inspector retains supported items and history at 1440px
+PASS Visual connection, entry requirement and event rows author typed metadata at 1440px
+PASS Bound child scene creation uses source authority and stable floor IDs at 1440px
+PASS Canonical rectangular floors and explicitly authored holes project correct placement cells at 1440px
+PASS Invalid import is atomic and presents recovery guidance at 1440px
+PASS Full pack export includes the bound child and canonical item edit at 1440px
+PASS Review cancellation preserves draft revision and active story at 1440px
+PASS Closing and reopening retains the draft; another pack requires explicit replacement at 1440px
+PASS Deletion confirmation initially focuses Cancel at 1440px
+PASS Authored pack launches only after review and instantiates its actual 3D prop asset
+PASS Cross-world connection review cancellation preserves native state and camera
+PASS Editor opens the separate pack draft with navigable worlds and scenes at 390px
+PASS Delayed real pack import preserves a newer scene draft and history at 390px
+PASS World terrain and resource generation have visual controls at 390px
+PASS Direct grid placement and keyboard tile focus mutate only the draft at 390px
+PASS Canonical inventory inspector retains supported items and history at 390px
+PASS Visual connection, entry requirement and event rows author typed metadata at 390px
+PASS Decorative props use canonical asset/model choices and direct placement at 390px
+PASS Bound child scene creation uses source authority and stable floor IDs at 390px
+PASS Canonical rectangular floors and explicitly authored holes project correct placement cells at 390px
+PASS Invalid import is atomic and presents recovery guidance at 390px
+PASS Full pack export includes the bound child and canonical item edit at 390px
+PASS Review cancellation preserves draft revision and active story at 390px
+PASS Closing and reopening retains the draft; another pack requires explicit replacement at 390px
+PASS Deletion confirmation initially focuses Cancel at 390px
+PASS Editor browser execution has no page errors, console warnings or external requests
+Scene editor browser: 30/33 passed.
+
+Decorative props use canonical asset/model choices and direct placement at 1440px locator.click: Timeout 7000ms exceeded.
+Call log:
+[2m  - waiting for locator('.scene-editor-cell[data-x="2"][data-y="1"]')[22m
+[2m    - locator resolved to <button data-x="2" data-y="1" type="button" tabindex="-1" aria-pressed="false" data-scene-editor="tile" title="Tile 2, 1: empty" class="scene-editor-cell   " aria-label="Tile 2, 1: empty"></button>[22m
+[2m  - attempting click action[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - performing click action[22m
+
+    at /workspace/work/armored-platoon/source/wildlands/.generated/verification/scene-editor-browser.js:144:79
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/scene-editor-browser.js:20:5)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/scene-editor-browser.js:133:13) {
+  log: [
+    `  - waiting for locator('.scene-editor-cell[data-x="2"][data-y="1"]')`,
+    '    - locator resolved to <button data-x="2" data-y="1" type="button" tabindex="-1" aria-pressed="false" data-scene-editor="tile" title="Tile 2, 1: empty" class="scene-editor-cell   " aria-label="Tile 2, 1: empty"></button>',
+    '  - attempting click action',
+    '    - waiting for element to be visible, enabled and stable',
+    '    - element is visible, enabled and stable',
+    '    - scrolling into view if needed',
+    '    - done scrolling',
+    '    - performing click action'
+  ],
+  name: 'TimeoutError'
+}
+Cross-world committed travel and return restore the native checkpoint and camera locator.click: Timeout 7000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-scenario="enter"]')[22m
+[2m    - locator resolved to <button data-id="" type="button" class="btn primary" data-scenario="enter">Enter scene</button>[22m
+[2m  - attempting click action (trial run)[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - performing click action[22m
+
+    at admit (/workspace/work/armored-platoon/source/wildlands/.generated/verification/browser-pages.js:60:19)
+    at /workspace/work/armored-platoon/source/wildlands/.generated/verification/scene-editor-browser.js:260:53
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/scene-editor-browser.js:20:5)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/scene-editor-browser.js:253:17) {
+  log: [
+    `  - waiting for locator('[data-scenario="enter"]')`,
+    '    - locator resolved to <button data-id="" type="button" class="btn primary" data-scenario="enter">Enter scene</button>',
+    '  - attempting click action (trial run)',
+    '    - waiting for element to be visible, enabled and stable',
+    '    - element is visible, enabled and stable',
+    '    - scrolling into view if needed',
+    '    - done scrolling',
+    '    - performing click action'
+  ],
+  name: 'TimeoutError'
+}
+Bound interior travel and portable restore open the canonical floor and preserve source state locator.click: Timeout 7000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-scenario="transition"][data-id="to-home"]')[22m
+
+    at admit (/workspace/work/armored-platoon/source/wildlands/.generated/verification/browser-pages.js:60:19)
+    at /workspace/work/armored-platoon/source/wildlands/.generated/verification/scene-editor-browser.js:267:53
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/scene-editor-browser.js:20:5)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/scene-editor-browser.js:265:17) {
+  log: [
+    `  - waiting for locator('[data-scenario="transition"][data-id="to-home"]')`
+  ],
+  name: 'TimeoutError'
+}

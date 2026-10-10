@@ -310,3 +310,49 @@ relevant evidence.
 - [Historical handoffs and review ledgers](../_archive/README.md).
 
 **Change discipline:** no content definition may bypass its production consumer/validation; no UI may own authoritative race or campaign state/ticking; changing an actual sporting rule, campaign rule, save schema, financial/personnel/operations authority or provider state requires explicit versioning, characterization and separate scope.
+
+## Armored Platoon integration checkpoint
+
+The additive [armored template](armored-platoon.md) introduces a separate 60 Hz
+Wildlands ECS authority, original Forge vehicle assemblies, browser tank controls,
+ballistics/component damage, platoon orders, objectives and checkpoint admission.
+It preserves the existing RTS template and native game's contracts. This is an
+intermediate development checkpoint; production physics/assets, complete
+campaign/content/mode coverage and online multiplayer remain incomplete. See the
+[parity ledger](armored-platoon-parity.md) for explicit gaps and the
+[dated evidence](../_archive/armored-platoon-2026-10-10-integration.md) for actual checks.
+
+An automated original Pine Ridge mission has reached a visible browser debrief
+through public input/query ports, using software SwiftShader and an explicitly
+supplied accelerated clock. The [portable evidence](../_archive/armored-platoon-2026-10-10-evidence/README.md)
+keeps that artifact separate from the focused Chromium checks and generated demo.
+This is functional development evidence, not human realtime play, a GPU benchmark
+or reference fidelity. Draft [PR #49](https://github.com/Luis85/motorsport-manager/pull/49)
+remains unmerged. A discovered shared-showcase CSS leak has been corrected by
+scoping Armored styles to its host; the corrected focused build/browser gate
+passes ten checks, including style isolation. Corrected source `187dd821` is
+pushed, and its runnable demo passed focused and Wildlands CLI/all seven demo
+output checks. The complete registered CI gate also passed on that exact
+implementation; full reference parity remains separate. The earlier
+full Wildlands run was interrupted; the corrected local complete run **failed**:
+115/120 suites passed, including all 82 Node suites and Armored 10/10. Its
+2,084/2,084 accepted-check count excludes 70 expected checks from five failed
+suites. Serial reruns passed Scene Editor 33/33 and Engine Export 12/12;
+Process Present remained 9/10, with the same title-fit failure reproduced on
+the exact selected base under local Chromium 151. Managed Chromium blocked
+file navigation in two suites; the pinned-browser download failed with HTTP
+403. Current-head Wildlands CI attempt 1 failed a renderer click check while
+passing four locally failing suites; artifact play was not attempted. Attempt 2
+completed successfully: 120 suites / 2,154 checks, additional Storytelling
+24/24 and Godot export passed, including Artifact play 4/4. Eight other current-head
+workflows and exact-head native CI passed; native covered all six shards and
+aggregation, 103 suites / 21,346 checks, at `187dd821`. Earlier results retain
+their separate identities. A 1,800.002-second software stability observation
+completed seven exact checkpoint restores, seven mission switches and 371
+accepted commands without errors/rejections; eight identical Three.js warnings
+were retained. Q03 remains partial: software SwiftShader, bounded workload and
+unforced-GC heap observations do not establish hardware performance, leak
+freedom, worst-case stress or context-loss recovery. All current implementation
+CI workflows are successful; no verification run is active. Remaining reference
+parity and browser/hardware acceptance are tracked in the dated integration
+record; no complete parity gate is claimed. Earlier mission captures retain their own artifact identities.

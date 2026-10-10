@@ -1,0 +1,52 @@
+{
+  "status": "partial-passed",
+  "passed": 10,
+  "total": 10,
+  "suites": [
+    {
+      "name": "armored-browser",
+      "command": [
+        "node",
+        ".generated/test-armored-browser.cjs"
+      ],
+      "result": "verification/v15/armored-browser-results.json",
+      "timeout": 300,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 52.12,
+      "passed": 10,
+      "total": 10
+    }
+  ],
+  "browserIncluded": true,
+  "complete": false,
+  "selection": {
+    "tier": "full",
+    "noBrowser": false,
+    "only": [
+      "armored-browser"
+    ],
+    "shard": null,
+    "suites": 1
+  },
+  "execution": {
+    "jobs": 1,
+    "browserJobs": 1,
+    "keepGoing": false,
+    "wallSeconds": 90.62
+  },
+  "registrySha256": "761ef7b4cc4bfb341f5d7d6a49346fcdb4e5c2c7e7314a031e19a67318a46ff6",
+  "expectationsSha256": "bc2fa518d878a397dea88aa62c47c7ca5b16c50a3b53d0153ad65700b898b4bd",
+  "sourceSha256": "6f000038fcbdf3b3702cdb15af81c117c479492c25089dc049964e66ad10b541",
+  "startedAt": "2026-10-10T21:18:02.920Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "architecture": "x64",
+    "chromium": "/usr/bin/chromium",
+    "cores": 4
+  },
+  "htmlSha256": "eb36a53bcbedcc37e30a5eaf71f75502a0a3b944a927bdf53b166b36b86b00f3",
+  "htmlBytes": 20199948,
+  "finishedAt": "2026-10-10T21:19:33.543Z"
+}

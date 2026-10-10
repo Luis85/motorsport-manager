@@ -123,7 +123,7 @@ try {
   test("Game builds place exactly what the build assembler places for the same profile",()=>{
     const games=gamesFixtureRoot("wildlands-placement-");
     try{
-      for(const folder of [gameDirectory("littlewild"),templateGame("rts",games),templateGame("pet",games)]){
+      for(const folder of [gameDirectory("littlewild"),templateGame("rts",games),templateGame("pet",games),gameDirectory("armored-platoon")]){
         const game=compileGame(folder),built=assembleGame(game,"play"),candidate=gameProfile(game.manifest,"play",new Set(game.data.keys()));
         const reference=assembleArtifact(candidate,{source:path.join(ROOT,"source"),generated:path.join(ROOT,".generated"),data:game.data});
         const meta=`<meta name="wildlands-engine" content="${engineKit().identity}"><meta name="wildlands-game-digest" content="${game.digest}">\n`;

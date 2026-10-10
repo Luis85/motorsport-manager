@@ -1,0 +1,41 @@
+{
+  "repository": "Luis85/motorsport-manager",
+  "head": "187dd821316cb334f13947780bb5e135878bda2c",
+  "sourceSha256": "6f000038fcbdf3b3702cdb15af81c117c479492c25089dc049964e66ad10b541",
+  "runId": 38088144186,
+  "attempt": 1,
+  "jobId": 114318879781,
+  "status": "failure",
+  "gate": {
+    "selectedSuites": 120,
+    "attemptedSuites": 58,
+    "acceptedChecks": 1022,
+    "acceptedTotal": 1022,
+    "completePass": false,
+    "failedSuite": "renderers-browser",
+    "failedSuitePassed": 13,
+    "failedSuiteTotal": 14
+  },
+  "browser": {
+    "node": "v22.23.3",
+    "playwright": "1.63.0",
+    "chromium": "153.0.8010.12",
+    "selection": "bundled-desktop-chromium"
+  },
+  "additionalStorytelling": "skipped",
+  "godotExport": "success",
+  "artifactPlayBrowser": "not attempted",
+  "artifacts": {
+    "diagnostics": {
+      "id": 11683823600,
+      "bytes": 107285,
+      "sha256": "e7423d5bc65f4d58037fabf421eba0399f5546e3dec66536698249ef0081738c"
+    },
+    "full": {
+      "id": 11683294138,
+      "bytes": 55671326,
+      "sha256": "cded68724b73458cd265d6bfa6e189e90ba8db766bb7f7258c0f5a2dfe851d59"
+    }
+  },
+  "provenance": "Gate and failed result extracted from GitHub job log; failure log retained as exact decoded excerpt. Original full job log not bundled."
+}

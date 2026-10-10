@@ -1,0 +1,107 @@
+{
+  "mission": "crossroads",
+  "catalogPath": "docs/concepts/armored-platoon/content/catalog.json",
+  "coordinates": "metres, +Y up, +Z forward; Forge Euler degrees",
+  "terrainSamples": 2401,
+  "diagnostics": [],
+  "dryRun": {
+    "scene": "main",
+    "revision": 2,
+    "stateHash": "d2d37e7a30ef4ea5b4b1bc3c153d6c1e88971f22e63c695dd93c97687fdbb9ba",
+    "proposedStateHash": "308b8ce6070769be27963e75b485715208e17ad746c1aebdf60a633dcc1fd57e",
+    "proposedRevision": 3,
+    "changes": {
+      "nodes": {
+        "added": [],
+        "updated": ["ground"],
+        "removed": []
+      },
+      "geometries": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "materials": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "parameters": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "settings": []
+    },
+    "changed": true,
+    "dryRun": true,
+    "operations": 96,
+    "stats": {
+      "nodes": 1261,
+      "meshes": 1111,
+      "triangles": 29712,
+      "materials": 14,
+      "geometries": 47,
+      "bounds": {
+        "min": [0, -1.5992000102996826, 0],
+        "max": [576, 9.5688, 576],
+        "size": [576, 11.168000010299682, 576]
+      },
+      "warnings": [
+        "Custom mesh uses local spherical UV fallback; author seam-aware uvs for precise surface placement."
+      ]
+    }
+  },
+  "result": {
+    "scene": "main",
+    "revision": 3,
+    "stateHash": "308b8ce6070769be27963e75b485715208e17ad746c1aebdf60a633dcc1fd57e",
+    "proposedStateHash": "308b8ce6070769be27963e75b485715208e17ad746c1aebdf60a633dcc1fd57e",
+    "proposedRevision": 3,
+    "changes": {
+      "nodes": {
+        "added": [],
+        "updated": ["ground"],
+        "removed": []
+      },
+      "geometries": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "materials": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "parameters": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "settings": []
+    },
+    "changed": true,
+    "dryRun": false,
+    "operations": 96,
+    "stats": {
+      "nodes": 1261,
+      "meshes": 1111,
+      "triangles": 29712,
+      "materials": 14,
+      "geometries": 47,
+      "bounds": {
+        "min": [0, -1.5992000102996826, 0],
+        "max": [576, 9.5688, 576],
+        "size": [576, 11.168000010299682, 576]
+      },
+      "warnings": [
+        "Custom mesh uses local spherical UV fallback; author seam-aware uvs for precise surface placement."
+      ]
+    }
+  },
+  "limitations": [
+    "Visual objective-access review required; diagnostics do not prove reachability.",
+    "Run against a fresh scene when changing mission; this upserts and does not delete unrelated nodes."
+  ]
+}

@@ -1080,3 +1080,21 @@ increasing gameplay-data limits. Non-finite numbers, accessors, sparse arrays an
 invalid topology remain rejected. A `MESH_COMPLEXITY_LIMIT` diagnostic means to
 reuse meshes or reduce geometry detail; dividing the same data across assets does
 not evade the aggregate limit.
+
+## Armored combat template
+
+`template: "armored"` is an additive, independently versioned combat runtime;
+it does not change RTS tick or save semantics. Its manifest content declares
+`catalog` and `visuals`, each a relative JSON path inside the same
+closed game-folder inventory. The template offers `play`, not `studio` or Godot
+export. Existing inventory/byte limits and digest/provenance rules apply.
+
+```sh
+bin/wildlands validate-game --game docs/concepts/armored-platoon
+bin/wildlands build-game --game docs/concepts/armored-platoon --output work/armored-platoon.html
+```
+
+The current visual package admits bounded offline Forge geometry and semantic
+bindings. Unsupported production formats fail explicitly; the
+[development contract](armored-platoon.md) and [parity ledger](armored-platoon-parity.md)
+describe the incomplete production and gameplay scope.

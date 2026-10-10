@@ -1,0 +1,47 @@
+{
+  "passed": 9,
+  "total": 10,
+  "results": [
+    {
+      "name": "Present pages with Right, Left, PageDown, PageUp, Home and End, announces each slide and disables Previous and Next at the ends",
+      "passed": true
+    },
+    {
+      "name": "Escape closes Contents first, then exits to the invoker with the previous view mode, selection and map position restored",
+      "passed": true
+    },
+    {
+      "name": "Presenting never ticks: minute and snapshot stay fixed across the whole deck, Contents and map interaction",
+      "passed": true
+    },
+    {
+      "name": "Present pauses a playing run with a command, says so, and leaves it paused after exit",
+      "passed": true
+    },
+    {
+      "name": "Present opens on the selected step slide or slide 1, and a step chosen on the map moves the deck to its slide",
+      "passed": true
+    },
+    {
+      "name": "Contents lists every slide once under its section, toggles aria-expanded, jumps to the chosen slide and marks it current",
+      "passed": true
+    },
+    {
+      "name": "Present fits phones and short windows in both fonts: menu entry, no sideways overflow, 44 px Previous and Next, unclipped text",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: 390x844 slide 1 {\"page\":true,\"dialog\":true,\"prev\":true,\"next\":true,\"heights\":[44,44],\"clipped\":[],\"title\":false}\n+ actual - expected\n\n  [\n    true,\n    true,\n    true,\n    true,\n    [],\n+   false\n-   true\n  ]\n"
+    },
+    {
+      "name": "Every bundled process presents its pinned deck with each step on exactly one slide and no errors",
+      "passed": true
+    },
+    {
+      "name": "Present refuses to open over another studio dialog and keeps the studio behind it unreachable",
+      "passed": true
+    },
+    {
+      "name": "Process present browser lifecycle emits no runtime errors or network requests",
+      "passed": true
+    }
+  ]
+}

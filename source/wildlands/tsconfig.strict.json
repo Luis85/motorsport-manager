@@ -476,7 +476,26 @@
     "source/verification/process-readability-browser.ts",
     "source/verification/process-present-browser.ts",
     "source/verification/process-shots.ts",
-    "source/test-support/scene-journeys.cts"
+    "source/test-support/scene-journeys.cts",
+    "source/armored-catalog.ts",
+    "source/armored-visuals.ts",
+    "source/armored-physics.ts",
+    "source/armored-combat.ts",
+    "source/armored-ai.ts",
+    "source/armored-missions.ts",
+    "source/armored-checkpoint.ts",
+    "source/armored-session.ts",
+    "source/armored-application.ts",
+    "source/armored-world.ts",
+    "source/armored-renderer.ts",
+    "source/armored-controls.ts",
+    "source/armored-audio.ts",
+    "source/armored-ui.ts",
+    "source/armored-host.ts",
+    "source/test-armored-admission.cts",
+    "source/test-armored-runtime.cts",
+    "source/test-armored-combat.cts",
+    "source/test-armored-browser.cts"
   ],
   "include": []
 }

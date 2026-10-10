@@ -1,0 +1,21 @@
+{"kind":"littlewild-browser-provenance","node":"v22.23.3","playwright":"1.63.0","playwrightCore":"1.63.0","browser":"153.0.8010.12","selection":"bundled-desktop-chromium","args":["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"]}
+13/14 browser renderer checks passed
+
+Custom Office frames keep a real onsite customer-call quest actor visible and selectable locator.click: Timeout 5000ms exceeded.
+Call log:
+  - waiting for locator('[data-scenario=select]').filter({ hasText: 'Office' })
+    - locator resolved to <button data-id="2" aria-pressed="false" data-scenario="select">…</button>
+  - attempting click action
+    - waiting for element to be visible, enabled and stable
+
+    at /home/runner/work/motorsport-manager/motorsport-manager/source/wildlands/.generated/verification/renderers-browser.js:127:85
+    at async check (/home/runner/work/motorsport-manager/motorsport-manager/source/wildlands/.generated/verification/renderers-browser.js:17:5)
+    at async main (/home/runner/work/motorsport-manager/motorsport-manager/source/wildlands/.generated/verification/renderers-browser.js:124:9) {
+  log: [
+    "  - waiting for locator('[data-scenario=select]').filter({ hasText: 'Office' })",
+    '    - locator resolved to <button data-id="2" aria-pressed="false" data-scenario="select">…</button>',
+    '  - attempting click action',
+    '    - waiting for element to be visible, enabled and stable'
+  ],
+  name: 'TimeoutError'
+}

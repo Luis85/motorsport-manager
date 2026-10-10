@@ -155,12 +155,15 @@ test('validate-game and inspect-game report a game folder\'s identity, inventory
  const checked=run(['validate-game','--game',littlewildGame]);assert.equal(checked.status,0,JSON.stringify(checked.out));assert.deepEqual(Object.keys(checked.out).sort(),['digest','errors','id','ok','protocolVersion','template']);
  assert.equal(checked.out.id,'littlewild');assert.equal(checked.out.template,'colony');assert.match(String(checked.out.digest),/^[0-9a-f]{64}$/);assert.deepEqual(checked.out.errors,[]);
  for(const kind of ['rts','pet'] as const){const folder=templateGame(kind,games);fixtures.set(kind,folder);const result=run(['validate-game','--game',folder]);assert.equal(result.status,0,JSON.stringify(result.out));assert.equal(result.out.template,kind);}
+ fixtures.set('armored',gameDirectory('armored-platoon'));
+ const armored=run(['validate-game','--game',fixtures.get('armored')!]);assert.equal(armored.status,0,JSON.stringify(armored.out));assert.equal(armored.out.template,'armored');
  const inspected=run(['inspect-game','--game',littlewildGame]);assert.equal(inspected.status,0);assert.equal(inspected.out.digest,checked.out.digest);
  const inventory=inspected.out.inventory as {files:number;bytes:number;entries:{path:string;bytes:number}[]};assert.equal(inventory.files,inventory.entries.length);assert(inventory.entries.some(entry=>entry.path==='game.json'));
  assert.equal(inventory.bytes,inventory.entries.reduce((total,entry)=>total+entry.bytes,0));
  const sections=(inspected.out.profile as {sections:Record<string,number>}).sections;for(const section of ['balancing','librarySchema','creatures','assets','scenarios'])assert(sections[section]!>0,section);
  assert.deepEqual(Object.keys(inspected.out.builds as object),['play','studio']);assert.equal((inspected.out.builds as {play:{profile:string}}).play.profile,'colony-play');
  assert.deepEqual(Object.keys(run(['inspect-game','--game',fixtures.get('pet')!]).out.builds as object),['play']);
+ assert.deepEqual(Object.keys(run(['inspect-game','--game',fixtures.get('armored')!]).out.builds as object),['play']);
  // Rejected folders are exit 1 with the folder's own diagnostic; nothing is installed or written.
  const broken=colonyGame(games,'broken');fs.writeFileSync(path.join(broken,'content','stray.json'),'{}');
  for(const command of ['validate-game','inspect-game']){const result=run([command,'--game',broken]);assert.equal(result.status,1,command);assert.equal(result.out.code,'invalid-game');assert.match((result.out.errors as string[])[0]!,/not referenced by game\.json: content\/stray\.json/);}
@@ -170,7 +173,7 @@ test('validate-game and inspect-game report a game folder\'s identity, inventory
 });
 const sha=(file:string):string=>createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 test('build-game builds deterministic play artifacts for colony, RTS and Pocket Pet folders and --check detects staleness',()=>{
- for(const [name,folder,profile] of [['littlewild',littlewildGame,'colony-play'],['rts',fixtures.get('rts')!,'rts-play'],['pet',fixtures.get('pet')!,'pet-play']] as const){
+ for(const [name,folder,profile] of [['littlewild',littlewildGame,'colony-play'],['rts',fixtures.get('rts')!,'rts-play'],['pet',fixtures.get('pet')!,'pet-play'],['armored',fixtures.get('armored')!,'armored-play']] as const){
   const first=path.join(directory,name+'.html'),second=path.join(directory,name+'-again.html');
   const built=run(['build-game','--game',folder,'--output',first]);assert.equal(built.status,0,JSON.stringify(built.out));assert.equal(built.out.profile,profile);assert.equal(built.out.kind,'play');
   assert.equal(run(['build-game','--game',folder,'--output',second]).status,0);assert(fs.readFileSync(first).equals(fs.readFileSync(second)),name+' is byte-deterministic');
@@ -191,7 +194,7 @@ test('build-game builds deterministic play artifacts for colony, RTS and Pocket 
  assert.equal(run(['build-game','--game',pet,'--check',petHtml]).out.current,true);
  assert.match(fs.readFileSync(path.join(directory,'littlewild.html'),'utf8'),/<title>Littlewild<\/title>/);
  // The presentation text comes from game.json; the play engine is identical for every game.
- const engines=['littlewild','rts','pet'].map(name=>/name="wildlands-engine" content="([0-9a-f]{64})"/.exec(fs.readFileSync(path.join(directory,name+'.html'),'utf8'))![1]);assert.equal(new Set(engines).size,1);
+ const engines=['littlewild','rts','pet','armored'].map(name=>/name="wildlands-engine" content="([0-9a-f]{64})"/.exec(fs.readFileSync(path.join(directory,name+'.html'),'utf8'))![1]);assert.equal(new Set(engines).size,1);
 });
 test('build-game enforces the play budget and writes nothing over it',()=>{
  const tight=templateGame('rts',games,'tight-frontier',manifest=>{(manifest.targets as {html:{budgetBytes:number}}).html.budgetBytes=4096;});

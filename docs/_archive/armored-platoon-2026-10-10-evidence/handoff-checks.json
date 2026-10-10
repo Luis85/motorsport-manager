@@ -1,0 +1,90 @@
+{
+  "recordedAt": "2026-10-10T22:51:33.304693+00:00",
+  "implementationCommit": "187dd821316cb334f13947780bb5e135878bda2c",
+  "scope": "Final documentation/evidence follow-up; executable implementation and generated outputs remain at the tested commit.",
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "scripts/check_docs.py"
+      ],
+      "exitCode": 0,
+      "stdout": "Documentation check passed: 3136 local links; layout and navigation valid\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "187dd821",
+        "--",
+        "source",
+        "scripts",
+        "tests",
+        "config",
+        "project.godot",
+        "bin",
+        "demos"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "ls-files",
+        "--others",
+        "--exclude-standard",
+        "source",
+        "scripts",
+        "tests",
+        "config",
+        "bin",
+        "demos"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/check_docs.py"
+      ],
+      "exitCode": 0,
+      "stdout": "Documentation check passed: 3137 local links; layout and navigation valid\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "artifactSha256": {
+    "bin/wildlands": "efdc491b1238c75cb2b8c1bb05d67b395cec5a0ecae4d447adf43fc64446d652",
+    "bin/model-forge": "02df4736e7973534682ef3a98152a64136087a24c2131d177bd71bc532d8ff03",
+    "bin/scene-forge": "05f9f8208eab917211e66a4f5cfa0d7906aeaa74b96791fb38950e0ce97fba3f",
+    "bin/character-studio": "854cb4324b844ebaff1207862dd837830dc489fda02af96f9c346ee11e78b548",
+    "demos/armored-platoon.html": "8587053e9591e505313a86936b8b0036a1088f4cb2d270d27ffba3210742e93b"
+  },
+  "rawLogPreservation": "Initial staged whitespace validation identified three raw logs with terminal blank lines. Their exact bytes were retained using verified lossless gzip; authored-text whitespace checks were not relaxed."
+}

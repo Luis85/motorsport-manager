@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../source/wildlands/source/schemas/game.schema.json",
+  "format": "wildlands-game",
+  "schemaVersion": 1,
+  "id": "armored-platoon",
+  "name": "Armored Platoon",
+  "version": "0.1.0",
+  "template": "armored",
+  "engine": {
+    "api": 1
+  },
+  "content": {
+    "catalog": "content/catalog.json",
+    "visuals": "content/visuals.json"
+  },
+  "presentation": {
+    "title": "Armored Platoon",
+    "description": "Command and operate an armored platoon in original WWII scenarios."
+  },
+  "storage": {
+    "namespace": "wildlands.armored-platoon"
+  },
+  "targets": {
+    "html": {
+      "output": "demos/armored-platoon.html",
+      "budgetBytes": 8388608
+    }
+  }
+}

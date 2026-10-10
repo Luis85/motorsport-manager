@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "kind": "scene",
+  "id": "iron-counterattack",
+  "name": "Iron Counterattack authoring scene",
+  "revision": 0,
+  "units": "meters",
+  "parameters": {},
+  "geometries": {},
+  "materials": {},
+  "nodes": [],
+  "environment": {
+    "background": "#171d25",
+    "ambient": 1.8,
+    "keyIntensity": 3.5,
+    "keyPosition": [5, 10, 7]
+  }
+}

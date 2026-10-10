@@ -30,7 +30,8 @@ export const BUNDLES = [
   "rts-editor",
   "template-pet",
   "play-boot",
-  "template-process"
+  "template-process",
+  "template-armored"
 ] as const;
 export type BundleTag = typeof BUNDLES[number];
 export type Insert = readonly [marker:string,file:string,kind:InsertKind,bundle:BundleTag];
@@ -350,5 +351,21 @@ export const INSERTS: readonly Insert[] = [
   ["PROCESS_DIALOGS_CSS", "process-dialogs.css", "style", "template-process"],
   ["PROCESS_LENSES_CSS", "process-lenses.css", "style", "template-process"],
   ["PROCESS_BPMN_DIALOG_CSS", "process-bpmn-dialog.css", "style", "template-process"],
-  ["PROCESS_PRESENT_CSS", "process-present.css", "style", "template-process"]
+  ["PROCESS_PRESENT_CSS", "process-present.css", "style", "template-process"],
+  ["ARMORED_CATALOG", "armored-catalog.js", "script", "template-armored"],
+  ["ARMORED_VISUALS", "armored-visuals.js", "script", "template-armored"],
+  ["ARMORED_PHYSICS", "armored-physics.js", "script", "template-armored"],
+  ["ARMORED_COMBAT", "armored-combat.js", "script", "template-armored"],
+  ["ARMORED_AI", "armored-ai.js", "script", "template-armored"],
+  ["ARMORED_MISSIONS", "armored-missions.js", "script", "template-armored"],
+  ["ARMORED_CHECKPOINT", "armored-checkpoint.js", "script", "template-armored"],
+  ["ARMORED_SESSION", "armored-session.js", "script", "template-armored"],
+  ["ARMORED_APPLICATION", "armored-application.js", "script", "template-armored"],
+  ["ARMORED_WORLD", "armored-world.js", "script", "template-armored"],
+  ["ARMORED_RENDERER", "armored-renderer.js", "script", "template-armored"],
+  ["ARMORED_CONTROLS", "armored-controls.js", "script", "template-armored"],
+  ["ARMORED_AUDIO", "armored-audio.js", "script", "template-armored"],
+  ["ARMORED_UI", "armored-ui.js", "script", "template-armored"],
+  ["ARMORED_HOST", "armored-host.js", "script", "template-armored"],
+  ["ARMORED_CSS", "armored.css", "style", "template-armored"]
 ];
