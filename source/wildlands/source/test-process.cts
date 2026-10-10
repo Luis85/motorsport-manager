@@ -9,6 +9,8 @@ import './test-process-steps.cjs';
 import './test-process-random.cjs';
 import './test-process-journeys.cjs';
 import './test-process-semantics.cjs';
+import './test-process-slides.cjs';
+import './test-process-slides-cli.cjs';
 const report = {suite: 'business-process', passed: results.filter(r => r.passed).length, total: results.length, results};
 fs.writeFileSync(path.join(__dirname, 'process-results.json'), JSON.stringify(report, null, 2) + '\n');
 console.log(`${report.passed}/${report.total} process checks passed`); for (const r of results) if (!r.passed) console.error(r.name, r.error);

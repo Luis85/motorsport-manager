@@ -152,7 +152,7 @@ export function createViewport(canvas: HTMLCanvasElement) {
   function update(character: Parameters<typeof compileVisual>[0]) {
     if (disposed) return;
     const visual = compileVisual(character);
-    const {metadata: _metadata, ...renderContent} = visual;
+    const {metadata: _metadata, id: _id, name: _name, ...renderContent} = visual;
     const next = JSON.stringify(renderContent);
     if (next === stamp) return;
     const appearance = Object.values(visual.behaviors.appearances)[0] as {model: string; materials: Record<string, unknown>; scale: number[]};

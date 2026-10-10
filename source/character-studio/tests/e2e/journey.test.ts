@@ -148,6 +148,7 @@ test('real browser creates, edits, imports, guards conflicts and reflows the com
     await page.locator('[data-action="reload-disk"]').waitFor();
     assert.equal((await character(page)).identity.name, 'Browser draft');
     await click(page, 'reload-disk');
+    await page.waitForFunction(() => (window.characterStudio as any).inspect().character.identity.name === 'Written by agent');
     assert.equal((await character(page)).identity.name, 'Written by agent');
     await click(page, 'collection');
     assert.ok(await page.getByText('Browser draft', {exact:true}).count());

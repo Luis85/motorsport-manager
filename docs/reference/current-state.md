@@ -122,8 +122,10 @@ boundary deadlines (interrupting or escalating), seeded random timing, outcomes
 and arrival streams, and customer and user journeys with touchpoints, outcomes,
 conversion and tracked measures. The studio shows one detached run in 2D, Three.js
 3D and a SIPOC or journey lens, with an Activity modal, a Definition editor, a step
-editor and offline HTML downloads; it has a dark theme only. Navigation, dialogs
-and lenses never tick the clock.
+editor, a **Present** mode (the slide deck of the active definition beside the studio's
+own 2D map, on a phone from the **⋯** menu) and offline HTML downloads; it has a dark
+theme only. Navigation, dialogs, lenses and Present mode never tick the clock; entering
+Present pauses a running simulation with a command.
 
 The [agency delivery lab](../concepts/agency-delivery/README.md) holds seven
 synthetic processes behind a **Process** switch (an agency pipeline, an agile
@@ -149,6 +151,14 @@ structural, type and reference rules only) backs `process validate-bpmn` and the
 dialog's informational Standards check, and the registered gate checks every demo and
 example export with it; an earlier one-off run used the OMG schema files
 ([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)).
+`process slides` explains an admitted definition as a deterministic plain-text slide
+deck (JSON or Markdown; optional read-only facts from one bounded seeded run) built by
+the pure `LWProcessSlides` model, `process diff` compares two definitions, and guarded
+recipe operations set or remove the description, seed, genre, SIPOC parties and tracked
+fields without changing the definition schema. `npm run process:shots` (in
+`source/wildlands`) captures one process of a game at a chosen minute in desktop and phone
+layouts, including Present mode and the DejaVu Sans fallback font, and reports horizontal
+overflow and console errors; it is a review aid, not usability validation.
 
 Not implemented: BPMN execution, external service execution, calendars or working
 hours for timers, event-driven gateway semantics, complex gateways beyond the drop

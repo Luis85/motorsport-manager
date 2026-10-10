@@ -24,7 +24,7 @@ app.innerHTML = `<header class="app-header"><a href="#" class="brand" data-actio
 try {
   viewport = createViewport(document.querySelector<HTMLCanvasElement>('#viewport')!);
   dialogs.portrait = character => viewport?.portrait(character);
-  viewport.setMode(mode); viewport.setLight(light); viewport.setPose(pose); viewport.setCamera(camera);
+  viewport.configure({mode, light, pose, camera, paused});
 } catch (error) {
   const notice = document.createElement('p');
   notice.className = 'viewport-error';

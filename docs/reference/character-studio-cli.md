@@ -193,7 +193,7 @@ interface exposed by both the served and offline page:
 | `preview.zoom(delta)` | Adjust the presentation camera |
 | `preview.reset()` | Reset the view |
 | `preview.pause(boolean)` | Pause or resume presentation animation |
-| `preview.inspect()` | Return current mode, lighting, pose, camera, time, pause state and live renderer budgets |
+| `preview.inspect()` | Return current mode, lighting, pose, camera, time, pause state and live renderer budgets; `modelRevision` counts geometry rebuilds and `renderer.frame` counts rendered frames |
 | `preview.configure(options)` | Validate and apply mode, light, pose, camera, paused and reset together with one render; invalid configuration changes nothing |
 | `preview.capture()` | Return the current canvas as a PNG data URL when the renderer is available |
 

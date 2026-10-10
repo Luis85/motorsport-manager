@@ -53,6 +53,22 @@ drawing a whole amount and customer years, so the run completes by itself shortl
 1 SLA escalation, simulated cost 2414). Step descriptions name the BPMN construct and
 BPSim value behind each step.
 
+The SIPOC **Process** column and the journey map follow the definition's main route: from
+the start, the first flow without a condition at each step (never a deadline flow). For
+this loan that route runs through high risk, **Manual review** and **Send rejection
+letter** to **Application rejected**, although 31 of the 32 seed-7 applications are paid
+out. This is deliberate. The BPMN gateways name no default flow, so the import makes the
+last flow of each gateway the unconditional fallback (high risk, rejected) and chains the
+others as chances; the main route is that chain of defaults, not the most frequent path.
+The defaults are kept as imported because a swap cannot keep the run: every chance route
+draws a random number keyed by its own flow id, so making approval the default (rejected
+as a 30% chance) gives the same shares but other cases (seed 7: 30 paid out and 2
+rejected), and making low risk the default as well needs other whole-percent chances
+(medium 30%, then 36% of the rest high) and changes the run (seed 7: 7 manual reviews, 3
+SLA escalations, simulated cost 3229). It would also stop the definition matching a
+default import of the example file. Read the paid-out path from the end steps and their
+counts in the **Outputs** column, and the branch shares from the step counts.
+
 Provenance: converted from
 [`source/wildlands/examples/bpmn/loan-application.bpmn`](../../../source/wildlands/examples/bpmn/README.md)
 and its BPSim scenario `Scenario_Base` with

@@ -46,6 +46,7 @@ Discover the current view and review options instead of guessing them.
 ```sh
 bin/character-studio preview --project work/character-workflow/characters --id moss --out work/character-workflow/moss.html
 bin/character-studio capture --project work/character-workflow/characters --id moss --camera front --light studio --out work/character-workflow/moss-front.png
+bin/character-studio review --project work/character-workflow/characters --id moss --out work/character-workflow/review-v1
 bin/character-studio export --project work/character-workflow/characters --id moss --format recipe --out work/character-workflow/moss.recipe.json
 bin/character-studio export --project work/character-workflow/characters --id moss --format package --out work/character-workflow/moss.package.json
 ```
@@ -54,6 +55,10 @@ Inspect the render against the artboard: silhouette, proportions, eyes, coat,
 material response and outfit placement. Keep the recipe as the source of Studio
 edits, and keep captured view settings when comparing versions. New filenames
 preserve earlier output evidence.
+
+After an edit, repeat `review` with `--plan
+work/character-workflow/review-v1/replay-plan.json` and a new `--out` directory.
+The manifest binds each frame to the recipe, compiled visual, camera and lighting.
 
 ## Install into a portable engine project
 

@@ -229,6 +229,10 @@
     {
       "path": "process-contracts.d.ts",
       "owner": "process-definition"
+    },
+    {
+      "path": "process-slides-contracts.d.ts",
+      "owner": "process-presentation"
     }
   ]
 }
