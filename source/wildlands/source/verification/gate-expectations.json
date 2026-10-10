@@ -3,7 +3,7 @@
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
   "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-bpmn", "business-process-browser", "process-layout-browser", "process-step-editor-browser", "process-definition-browser", "process-renderers-browser", "process-lenses-browser", "process-bpmn-import-browser", "process-readability-browser", "process-present-browser"],
-  "totalChecks": 2090,
+  "totalChecks": 2093,
   "reviewedAdditions": [
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
@@ -463,7 +463,6 @@
     {"suite": "process-definition-browser", "name": "Step editor edits touchpoints with channels, phases, feelings, pain points and end outcomes"},
     {"suite": "process-definition-browser", "name": "Definition editor edits the process type and tracked measures with inline problems"},
     {"suite": "process-layout-browser", "name": "Activity opens as a modal from the toolbar, filters, links to steps and exports without pausing the run"},
-    {"suite": "process-layout-browser", "name": "Activity freezes while scrolled and shows a new-events pill, the badge counts unseen events"},
     {"suite": "process-layout-browser", "name": "Header and toolbar fit one desktop viewport without document scrolling and keep exports in a menu"},
     {"suite": "business-process-browser", "name": "Seed field starts a fresh paused run with the chosen seed"},
     {"suite": "process-layout-browser", "name": "Phone layout keeps the run bar, step navigation and dialogs usable without horizontal overflow"},
@@ -551,11 +550,16 @@
     {"suite": "process-bpmn-import-browser", "name": "BPMN import dialog caps each mapping group at 200 rows and counts the rest, refuses a process too large for a definition in plain words, and Import reuses the preview analysis"},
     {"suite": "process-renderers-browser", "name": "3D keeps one WebGL renderer and canvas across process switches, frees each scene, and redraws on demand at most 30 times a second while playing"},
     {"suite": "business-process", "name": "SIPOC model is pinned for every demo, counts cases per stage and shares the LWProcessRoute main route with the slides"},
-    {"suite": "process-present-browser", "name": "Present names the run status and an unapplied draft, shows key results and pool use, and pages with Space, ArrowDown, n and p from the slide"}
+    {"suite": "process-present-browser", "name": "Present names the run status and an unapplied draft, shows key results and pool use, and pages with Space, ArrowDown, n and p from the slide"},
+    {"suite": "process-layout-browser", "name": "Activity freezes while scrolled and shows a new-events pill, the badge counts unseen problems only"},
+    {"suite": "business-process-browser", "name": "The status line gives way to the next state change and names run lengths, speeds, the stride left and the hours elapsed"},
+    {"suite": "business-process-browser", "name": "Leaving the page asks while any process holds an unapplied draft, and the back/forward cache only suspends the studio"},
+    {"suite": "process-layout-browser", "name": "At 400% zoom no focus stop hides under sticky chrome; forced colours, larger text and lens views keep state cues and plain control names"}
   ],
   "renames": [
     {"suite": "wildlands-acceptance", "from": "Every discovered built-in scenario compiles complete resources with verified manifest hashes", "to": "Every discovered game folder scenario compiles complete resources with verified manifest hashes", "reason": "Phase 4A (decision D1): the engine CLI has no built-in scenarios. The check now compiles every scenario of every colony game folder (scenarios --game DIR) instead of the three former built-in packs; its assertions on complete resources and manifest hashes are unchanged."},
-    {"suite": "business-process", "from": "SIPOC model stays byte-identical after the main route moved into the shared LWProcessRoute", "to": "SIPOC model is pinned for every demo, counts cases per stage and shares the LWProcessRoute main route with the slides", "reason": "Process Studio read-model pass (DOM-8, DOM-9, DOM-4, DOM-1): SIPOC stages now count distinct cases that left them instead of summed step visits, inputs drop internal counters and need-condition labels and list every arrival value, and the measures gain '—' before a case finishes, the mean age in progress, work cost and capacity cost. The pinned model was re-pinned for that deliberate change, and the check gained explicit assertions for each new rule; the main-route agreement assertions are unchanged."}
+    {"suite": "business-process", "from": "SIPOC model stays byte-identical after the main route moved into the shared LWProcessRoute", "to": "SIPOC model is pinned for every demo, counts cases per stage and shares the LWProcessRoute main route with the slides", "reason": "Process Studio read-model pass (DOM-8, DOM-9, DOM-4, DOM-1): SIPOC stages now count distinct cases that left them instead of summed step visits, inputs drop internal counters and need-condition labels and list every arrival value, and the measures gain '—' before a case finishes, the mean age in progress, work cost and capacity cost. The pinned model was re-pinned for that deliberate change, and the check gained explicit assertions for each new rule; the main-route agreement assertions are unchanged."},
+    {"suite": "process-layout-browser", "from": "Activity freezes while scrolled and shows a new-events pill, the badge counts unseen events", "to": "Activity freezes while scrolled and shows a new-events pill, the badge counts unseen problems only", "reason": "UX-14: the Activity badge now counts only unseen problems (failed work, blocked work, dropped arrivals) in the danger tone; routine events no longer raise it. The check keeps the freeze, pill, 128-row window and announcer assertions and replaces the all-events badge counts with problem counts."}
   ],
   "retirements": [
   ],
@@ -2775,17 +2779,20 @@
       "Process switch lists each process of a multi-process game, switches without ticking and stays hidden for one process",
       "Editing one process survives switching away and back with its applied definition and unapplied draft",
       "Downloaded HTML of a multi-process game reopens with every process in order and the applied edits",
-      "Seed field starts a fresh paused run with the chosen seed"
+      "Seed field starts a fresh paused run with the chosen seed",
+      "The status line gives way to the next state change and names run lengths, speeds, the stride left and the hours elapsed",
+      "Leaving the page asks while any process holds an unapplied draft, and the back/forward cache only suspends the studio"
     ],
     "process-layout-browser": [
       "Desktop and mobile reflow retain controls without horizontal overflow",
       "Process switch reflows at phone width without horizontal overflow and wraps long names",
       "Activity opens as a modal from the toolbar, filters, links to steps and exports without pausing the run",
-      "Activity freezes while scrolled and shows a new-events pill, the badge counts unseen events",
       "Header and toolbar fit one desktop viewport without document scrolling and keep exports in a menu",
       "Phone layout keeps the run bar, step navigation and dialogs usable without horizontal overflow",
       "Desktop fit and phone layout keep one toolbar row, no overflow and no clipped header controls in the wider DejaVu Sans fallback font",
-      "Process layout browser lifecycle emits no runtime errors or network requests"
+      "Process layout browser lifecycle emits no runtime errors or network requests",
+      "Activity freezes while scrolled and shows a new-events pill, the badge counts unseen problems only",
+      "At 400% zoom no focus stop hides under sticky chrome; forced colours, larger text and lens views keep state cues and plain control names"
     ],
     "process-step-editor-browser": [
       "Step editor opens as a modal from the inspector, traps focus, closes with Escape and restores the invoker focus",

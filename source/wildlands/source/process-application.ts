@@ -11,8 +11,17 @@ declare namespace LWProcessApp {
  interface Controller {
   query(): View; select(id: string | null): void; mode(value: ViewMode): void;
   play(value: boolean): void; horizon(value: number | null): void; advance(minutes: number): void; pulse(minutes: number): void;
-  reset(): void; replace(input: unknown): void; dispose(): void;
-  /** Starts a fresh paused run at minute 0 whose random draws use this whole-number seed (0 to 2,147,483,647); `null` returns to the definition's own seed. Reset keeps the choice; replacing or switching the process drops it. */
+  reset(): void; dispose(): void;
+  /**
+   * Replaces the active definition with a fresh paused run. A new revision of the same process (same id) keeps the run seed chosen
+   * with `seed()` while the definition's own seed is unchanged, and keeps the selected step while it still exists; anything else
+   * starts on the definition's seed with nothing selected.
+   */
+  replace(input: unknown): void;
+  /**
+   * Starts a fresh paused run at minute 0 whose random draws use this whole-number seed (0 to 2,147,483,647); `null` returns to the definition's
+   * own seed. Reset keeps the choice; switching the process drops it; replacing keeps it only as `replace` describes.
+   */
   seed(value: number | null): void;
   /** Switch the active process: a new paused session at minute 0, nothing selected. Never ticks. A journey opens on its Journey map; leaving a journey while its map is shown returns to the last 2D or 3D choice. */
   use(index: number): void;
@@ -57,8 +66,11 @@ declare namespace LWProcessApp {
    },
    replace(value) {
     alive();
-    const checked = root.LWProcessCatalog.admit(value), next = root.LWProcessRuntime.create(checked, {horizon});
-    session.dispose(); session = next; definition = checked; slots[active] = checked; playing = false; selected = null; seedOverride = undefined;
+    const checked = root.LWProcessCatalog.admit(value), same = checked.id === definition.id;
+    const seed = same && (checked.seed ?? 1) === (definition.seed ?? 1) ? seedOverride : undefined;
+    const next = root.LWProcessRuntime.create(checked, {horizon, ...seed === undefined ? {} : {seed}});
+    session.dispose(); session = next; definition = checked; slots[active] = checked; playing = false; seedOverride = seed;
+    if (!same || selected !== null && !checked.steps.some(s => s.id === selected)) selected = null;
    },
    use(index) {
     alive();
