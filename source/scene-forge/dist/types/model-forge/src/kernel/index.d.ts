@@ -43,3 +43,4 @@ export * from './io/playwright.js';
 export * from './io/capture.js';
 export * from './io/review.js';
 export type * from './render/page.js';
+export * from './application/semantic-bindings.js';

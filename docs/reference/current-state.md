@@ -310,3 +310,14 @@ relevant evidence.
 - [Historical handoffs and review ledgers](../_archive/README.md).
 
 **Change discipline:** no content definition may bypass its production consumer/validation; no UI may own authoritative race or campaign state/ticking; changing an actual sporting rule, campaign rule, save schema, financial/personnel/operations authority or provider state requires explicit versioning, characterization and separate scope.
+
+## Armored Platoon integration checkpoint
+
+The additive [armored template](armored-platoon.md) introduces a separate 60 Hz
+Wildlands ECS authority, original Forge vehicle assemblies, browser tank controls,
+ballistics/component damage, platoon orders, objectives and checkpoint admission.
+It preserves the existing RTS template and native game's contracts. This is an
+intermediate development checkpoint; production physics/assets, complete
+campaign/content/mode coverage and online multiplayer remain incomplete. See the
+[parity ledger](armored-platoon-parity.md) for explicit gaps and the
+[dated evidence](../_archive/armored-platoon-2026-10-10-integration.md) for actual checks.

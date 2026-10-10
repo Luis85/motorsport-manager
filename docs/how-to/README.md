@@ -25,3 +25,5 @@ the procedure to the relevant [contracts](../reference/README.md).
 editor presets and authored weekends.
 
 - [Business process authoring](business-process-authoring.md) — guarded agent edits, Scene Forge assets and offline builds.
+
+- [Author Armored Platoon vehicles and scenes](armored-platoon-authoring.md).

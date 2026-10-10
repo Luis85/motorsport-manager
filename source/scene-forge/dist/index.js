@@ -5266,6 +5266,65 @@ async function reviewRender(scene, models, output, input, renderer, options = {}
   );
 }
 
+// ../model-forge/src/kernel/application/semantic-bindings.ts
+import { Box3 as Box38 } from "three";
+function reject(message) {
+  return fail("SCHEMA_INVALID", message, {
+    hint: "Repair semantic tags, unique node paths and finite geometry in the source recipe; recompile before exporting."
+  });
+}
+function semanticBindings(root, required2 = []) {
+  root.updateWorldMatrix(true, true);
+  const bindings = [];
+  const roles = /* @__PURE__ */ new Set();
+  const pathCounts = /* @__PURE__ */ new Map();
+  let visited = 0;
+  root.traverse((object) => {
+    if (++visited > 2e4) reject("Semantic binding traversal exceeds 20,000 objects.");
+    if (object.name) pathCounts.set(object.name, (pathCounts.get(object.name) ?? 0) + 1);
+  });
+  root.traverse((object) => {
+    const tags = object.userData.tags;
+    if (!Array.isArray(tags)) return;
+    for (const tag of tags) {
+      if (typeof tag !== "string" || !/^(socket|articulation|volume):/.test(tag)) continue;
+      const match = /^(socket|articulation|volume):([a-zA-Z][a-zA-Z0-9_-]{0,63})$/.exec(tag);
+      if (!match) reject(`Invalid semantic role: ${tag}`);
+      if (roles.has(tag)) reject(`Duplicate semantic role: ${tag}`);
+      if (!object.name) reject(`Semantic role ${tag} requires a stable object path.`);
+      if (pathCounts.get(object.name) !== 1) reject(`Duplicate semantic path: ${object.name}`);
+      const binding = {
+        kind: match[1],
+        role: match[2],
+        path: object.name,
+        parent: object.parent?.name ?? "",
+        localMatrix: object.matrix.toArray(),
+        worldMatrix: object.matrixWorld.toArray()
+      };
+      if (![...binding.localMatrix, ...binding.worldMatrix].every(Number.isFinite))
+        reject(`Non-finite semantic transform: ${tag}`);
+      if (binding.kind === "volume") {
+        const bounds = new Box38().setFromObject(object, true);
+        if (bounds.isEmpty() || ![...bounds.min.toArray(), ...bounds.max.toArray()].every(Number.isFinite))
+          reject(`Semantic volume ${tag} needs nonempty finite geometry.`);
+        binding.bounds = { min: bounds.min.toArray(), max: bounds.max.toArray() };
+      }
+      roles.add(tag);
+      bindings.push(binding);
+      if (bindings.length > 256) reject("An assembly supports at most 256 semantic bindings.");
+    }
+  });
+  for (const role of required2) {
+    if (!roles.has(role)) reject(`Missing required semantic role: ${role}`);
+  }
+  return {
+    format: "forge-semantic-bindings",
+    version: 1,
+    coordinates: { unit: "metre", up: "+Y", forward: "+Z", matrix: "column-major" },
+    bindings: bindings.sort((a, b) => `${a.kind}:${a.role}`.localeCompare(`${b.kind}:${b.role}`))
+  };
+}
+
 // src/domain/schema.ts
 import { z as z10 } from "zod";
 var ProjectSchema = z10.object({
@@ -6779,8 +6838,8 @@ function registerOutputsCommands(c) {
         res.end("Scene build failed: " + errorMessage(error));
       }
     });
-    await new Promise((resolve, reject) => {
-      server.once("error", reject);
+    await new Promise((resolve, reject2) => {
+      server.once("error", reject2);
       server.listen(opts.port, "127.0.0.1", () => resolve());
     });
     output({
@@ -8005,6 +8064,7 @@ export {
   schemas,
   screenshot,
   selectNodes,
+  semanticBindings,
   sha256Hex,
   sphereUVs,
   stateHash,

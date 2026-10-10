@@ -117,6 +117,10 @@
     {"name": "process-bpmn-import-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-bpmn-import-browser.js", "result": "verification/v15/process-bpmn-import-browser-results.json", "timeout": 300, "cost": 60},
     {"name": "process-readability-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-readability-browser.js", "result": "verification/v15/process-readability-browser-results.json", "timeout": 300, "cost": 70},
     {"name": "process-present-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-present-browser.js", "result": "verification/v15/process-present-browser-results.json", "timeout": 240, "cost": 72},
-    {"name": "generate", "kind": "node", "tier": "fast", "entry": ".generated/test-generate.cjs", "result": ".generated/generate-results.json", "timeout": 180, "cost": 29.0}
+    {"name": "generate", "kind": "node", "tier": "fast", "entry": ".generated/test-generate.cjs", "result": ".generated/generate-results.json", "timeout": 180, "cost": 29.0},
+    {"name": "armored-admission", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-admission.cjs", "result": ".generated/armored-admission-results.json", "timeout": 120, "cost": 1.0},
+    {"name": "armored-runtime", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-runtime.cjs", "result": ".generated/armored-runtime-results.json", "timeout": 120, "cost": 1.0},
+    {"name": "armored-combat", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-combat.cjs", "result": ".generated/armored-combat-results.json", "timeout": 120, "cost": 1.0},
+    {"name": "armored-browser", "kind": "browser", "tier": "full", "entry": ".generated/test-armored-browser.cjs", "result": "verification/v15/armored-browser-results.json", "timeout": 300, "cost": 30.0}
   ]
 }

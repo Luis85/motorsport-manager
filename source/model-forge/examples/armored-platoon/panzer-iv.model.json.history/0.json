@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "panzer-iv",
+  "category": "vehicles",
+  "name": "Panzer IV study",
+  "parameters": {},
+  "geometries": {},
+  "materials": {},
+  "nodes": []
+}

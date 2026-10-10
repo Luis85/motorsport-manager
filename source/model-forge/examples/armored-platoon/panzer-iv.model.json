@@ -1,0 +1,2781 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "panzer-iv",
+  "category": "vehicles",
+  "name": "Panzer IV study",
+  "parameters": {},
+  "geometries": {
+    "lowerHull": {
+      "type": "box",
+      "size": [2.15, 0.65, 4.5]
+    },
+    "deck": {
+      "type": "box",
+      "size": [2.8, 0.3, 4.9]
+    },
+    "sidePlate": {
+      "type": "box",
+      "size": [0.14, 0.65, 4.2]
+    },
+    "frontSlope": {
+      "type": "box",
+      "size": [2.58, 0.12, 1.25]
+    },
+    "rearPlate": {
+      "type": "box",
+      "size": [2.62, 0.65, 0.18]
+    },
+    "fender": {
+      "type": "box",
+      "size": [0.57, 0.12, 5.5]
+    },
+    "trackShoe": {
+      "type": "box",
+      "size": [0.48, 0.12, 0.24]
+    },
+    "wheel": {
+      "type": "cylinder",
+      "radiusTop": 0.29,
+      "radiusBottom": 0.29,
+      "height": 0.36,
+      "segments": 16
+    },
+    "wheelHub": {
+      "type": "cylinder",
+      "radiusTop": 0.15,
+      "radiusBottom": 0.15,
+      "height": 0.41,
+      "segments": 12
+    },
+    "sprocket": {
+      "type": "cylinder",
+      "radiusTop": 0.42,
+      "radiusBottom": 0.42,
+      "height": 0.4,
+      "segments": 14
+    },
+    "turretRing": {
+      "type": "cylinder",
+      "radiusTop": 1,
+      "radiusBottom": 1,
+      "height": 0.15,
+      "segments": 20
+    },
+    "hatch": {
+      "type": "cylinder",
+      "radiusTop": 0.3,
+      "radiusBottom": 0.3,
+      "height": 0.08,
+      "segments": 14
+    },
+    "cupola": {
+      "type": "cylinder",
+      "radiusTop": 0.38,
+      "radiusBottom": 0.38,
+      "height": 0.22,
+      "segments": 16
+    },
+    "gunTube": {
+      "type": "cylinder",
+      "radiusTop": 0.065,
+      "radiusBottom": 0.065,
+      "height": 3.3,
+      "segments": 16
+    },
+    "gunSleeve": {
+      "type": "cylinder",
+      "radiusTop": 0.13,
+      "radiusBottom": 0.13,
+      "height": 0.65,
+      "segments": 16
+    },
+    "muzzle": {
+      "type": "cylinder",
+      "radiusTop": 0.1,
+      "radiusBottom": 0.1,
+      "height": 0.26,
+      "segments": 12
+    },
+    "muzzleBaffle": {
+      "type": "box",
+      "size": [0.34, 0.23, 0.38]
+    },
+    "blackMuzzle": {
+      "type": "box",
+      "size": [0.12, 0.11, 0.015]
+    },
+    "mantlet": {
+      "type": "box",
+      "size": [0.9, 0.62, 0.32]
+    },
+    "vent": {
+      "type": "box",
+      "size": [1.62, 0.065, 0.08]
+    },
+    "stowage": {
+      "type": "box",
+      "size": [1.4, 0.45, 0.38]
+    },
+    "tool": {
+      "type": "box",
+      "size": [0.08, 0.055, 1.6]
+    },
+    "vision": {
+      "type": "box",
+      "size": [0.32, 0.11, 0.075]
+    },
+    "crossLong": {
+      "type": "box",
+      "size": [0.04, 0.36, 0.065]
+    },
+    "crossWide": {
+      "type": "box",
+      "size": [0.04, 0.065, 0.36]
+    },
+    "antenna": {
+      "type": "cylinder",
+      "radiusTop": 0.011,
+      "radiusBottom": 0.011,
+      "height": 1.6,
+      "segments": 6
+    },
+    "exhaust": {
+      "type": "cylinder",
+      "radiusTop": 0.11,
+      "radiusBottom": 0.11,
+      "height": 0.65,
+      "segments": 10
+    },
+    "volumeEngine": {
+      "type": "box",
+      "size": [1.65, 0.65, 1.5]
+    },
+    "volumeAmmo": {
+      "type": "box",
+      "size": [0.62, 0.65, 0.9]
+    },
+    "turretShell": {
+      "type": "extrude",
+      "points": [
+        [-1, -0.8],
+        [1, -0.8],
+        [0.93, 0.7],
+        [0.6, 1.25],
+        [-0.6, 1.25],
+        [-0.93, 0.7]
+      ],
+      "depth": 0.75,
+      "bevel": 0.035
+    },
+    "schurzen": {
+      "type": "box",
+      "size": [0.075, 0.7, 0.93]
+    }
+  },
+  "materials": {
+    "armor": {
+      "color": "#857b59",
+      "metalness": 0.2,
+      "roughness": 0.84,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": true
+    },
+    "raised": {
+      "color": "#a19973",
+      "metalness": 0.2,
+      "roughness": 0.84,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": true
+    },
+    "dark": {
+      "color": "#323b32",
+      "metalness": 0.2,
+      "roughness": 0.84,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": true
+    },
+    "track": {
+      "color": "#292c29",
+      "metalness": 0.65,
+      "roughness": 0.84,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": true
+    },
+    "steel": {
+      "color": "#77786d",
+      "metalness": 0.7,
+      "roughness": 0.84,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": true
+    },
+    "rubber": {
+      "color": "#202521",
+      "metalness": 0,
+      "roughness": 0.84,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": true
+    },
+    "markings": {
+      "color": "#ece5cd",
+      "metalness": 0,
+      "roughness": 0.84,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": true
+    },
+    "glass": {
+      "color": "#536c73",
+      "metalness": 0.6,
+      "roughness": 0.84,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": true
+    },
+    "mud": {
+      "color": "#685c42",
+      "metalness": 0,
+      "roughness": 0.84,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": true
+    }
+  },
+  "nodes": [
+    {
+      "id": "chassis",
+      "transform": {
+        "position": [0, 0, 0]
+      },
+      "visible": true,
+      "tags": ["articulation:hull"],
+      "type": "group"
+    },
+    {
+      "id": "lowerHull",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 0.76, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "lowerHull",
+      "material": "dark"
+    },
+    {
+      "id": "upperDeck",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.36, -0.04]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "deck",
+      "material": "armor"
+    },
+    {
+      "id": "glacis",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.13, 2.1],
+        "rotation": [-30, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "frontSlope",
+      "material": "armor"
+    },
+    {
+      "id": "rearPlate",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1, -2.4]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "rearPlate",
+      "material": "armor"
+    },
+    {
+      "id": "leftTrack",
+      "parent": "chassis",
+      "transform": {
+        "position": [-1.38, 0, 0]
+      },
+      "visible": true,
+      "tags": ["articulation:leftTrack"],
+      "type": "group"
+    },
+    {
+      "id": "leftSideArmor",
+      "parent": "chassis",
+      "transform": {
+        "position": [-1.27, 1.13, -0.05]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "sidePlate",
+      "material": "armor"
+    },
+    {
+      "id": "leftFender",
+      "parent": "chassis",
+      "transform": {
+        "position": [-1.42, 1.33, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "fender",
+      "material": "armor"
+    },
+    {
+      "id": "leftWheel0",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.48, -1.8]
+      },
+      "visible": true,
+      "tags": ["articulation:leftWheel0"],
+      "type": "group"
+    },
+    {
+      "id": "leftTire0",
+      "parent": "leftWheel0",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "leftHub0",
+      "parent": "leftWheel0",
+      "transform": {
+        "position": [-0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "leftWheel1",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.48, -1.2857142857142856]
+      },
+      "visible": true,
+      "tags": ["articulation:leftWheel1"],
+      "type": "group"
+    },
+    {
+      "id": "leftTire1",
+      "parent": "leftWheel1",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "leftHub1",
+      "parent": "leftWheel1",
+      "transform": {
+        "position": [-0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "leftWheel2",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.48, -0.7714285714285714]
+      },
+      "visible": true,
+      "tags": ["articulation:leftWheel2"],
+      "type": "group"
+    },
+    {
+      "id": "leftTire2",
+      "parent": "leftWheel2",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "leftHub2",
+      "parent": "leftWheel2",
+      "transform": {
+        "position": [-0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "leftWheel3",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.48, -0.2571428571428571]
+      },
+      "visible": true,
+      "tags": ["articulation:leftWheel3"],
+      "type": "group"
+    },
+    {
+      "id": "leftTire3",
+      "parent": "leftWheel3",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "leftHub3",
+      "parent": "leftWheel3",
+      "transform": {
+        "position": [-0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "leftWheel4",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.48, 0.25714285714285734]
+      },
+      "visible": true,
+      "tags": ["articulation:leftWheel4"],
+      "type": "group"
+    },
+    {
+      "id": "leftTire4",
+      "parent": "leftWheel4",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "leftHub4",
+      "parent": "leftWheel4",
+      "transform": {
+        "position": [-0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "leftWheel5",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.48, 0.7714285714285716]
+      },
+      "visible": true,
+      "tags": ["articulation:leftWheel5"],
+      "type": "group"
+    },
+    {
+      "id": "leftTire5",
+      "parent": "leftWheel5",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "leftHub5",
+      "parent": "leftWheel5",
+      "transform": {
+        "position": [-0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "leftWheel6",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.48, 1.2857142857142858]
+      },
+      "visible": true,
+      "tags": ["articulation:leftWheel6"],
+      "type": "group"
+    },
+    {
+      "id": "leftTire6",
+      "parent": "leftWheel6",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "leftHub6",
+      "parent": "leftWheel6",
+      "transform": {
+        "position": [-0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "leftWheel7",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.48, 1.8]
+      },
+      "visible": true,
+      "tags": ["articulation:leftWheel7"],
+      "type": "group"
+    },
+    {
+      "id": "leftTire7",
+      "parent": "leftWheel7",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "leftHub7",
+      "parent": "leftWheel7",
+      "transform": {
+        "position": [-0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "leftSprocketRear",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.65, -2.27],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "sprocket",
+      "material": "steel"
+    },
+    {
+      "id": "leftSprocketFront",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.65, 2.27],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "sprocket",
+      "material": "steel"
+    },
+    {
+      "id": "leftShoeBottom0",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, -2.3]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "leftShoeTop0",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, -2.3]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "leftShoeBottom1",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, -2.07]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop1",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, -2.07]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom2",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, -1.8399999999999999]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop2",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, -1.8399999999999999]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom3",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, -1.6099999999999999]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop3",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, -1.6099999999999999]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom4",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, -1.38]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "leftShoeTop4",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, -1.38]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "leftShoeBottom5",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, -1.1499999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop5",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, -1.1499999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom6",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, -0.9199999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop6",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, -0.9199999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom7",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, -0.6899999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop7",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, -0.6899999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom8",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, -0.45999999999999974]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "leftShoeTop8",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, -0.45999999999999974]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "leftShoeBottom9",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, -0.22999999999999954]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop9",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, -0.22999999999999954]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom10",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, 4.440892098500626e-16]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop10",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, 4.440892098500626e-16]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom11",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, 0.23000000000000043]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop11",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, 0.23000000000000043]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom12",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, 0.4600000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "leftShoeTop12",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, 0.4600000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "leftShoeBottom13",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, 0.6900000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop13",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, 0.6900000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom14",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, 0.9200000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop14",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, 0.9200000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom15",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, 1.1500000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop15",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, 1.1500000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom16",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, 1.3800000000000003]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "leftShoeTop16",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, 1.3800000000000003]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "leftShoeBottom17",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, 1.6100000000000003]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop17",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, 1.6100000000000003]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom18",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, 1.8400000000000007]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop18",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, 1.8400000000000007]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom19",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, 2.0700000000000003]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeTop19",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, 2.0700000000000003]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeBottom20",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.1, 2.3000000000000007]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "leftShoeTop20",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.1, 2.3000000000000007]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "leftShoeArcRear1",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.16698729810778062, -2.55],
+        "rotation": [29.999999999999993, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeArcRear2",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.35, -2.733012701892219],
+        "rotation": [60, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeArcRear3",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.6, -2.8],
+        "rotation": [90, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeArcRear4",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.8499999999999999, -2.733012701892219],
+        "rotation": [120, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeArcRear5",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.0330127018922193, -2.55],
+        "rotation": [150, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeArcFront1",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.16698729810778062, 2.55],
+        "rotation": [150, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeArcFront2",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.35, 2.733012701892219],
+        "rotation": [120, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeArcFront3",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.6, 2.8],
+        "rotation": [90, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeArcFront4",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 0.8499999999999999, 2.733012701892219],
+        "rotation": [60.00000000000001, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftShoeArcFront5",
+      "parent": "leftTrack",
+      "transform": {
+        "position": [0, 1.0330127018922193, 2.55],
+        "rotation": [29.999999999999993, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "leftSkirt0",
+      "parent": "chassis",
+      "transform": {
+        "position": [-1.74, 1.1, -2]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "schurzen",
+      "material": "armor"
+    },
+    {
+      "id": "leftSkirt1",
+      "parent": "chassis",
+      "transform": {
+        "position": [-1.74, 1.1, -1]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "schurzen",
+      "material": "raised"
+    },
+    {
+      "id": "leftSkirt2",
+      "parent": "chassis",
+      "transform": {
+        "position": [-1.74, 1.1, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "schurzen",
+      "material": "armor"
+    },
+    {
+      "id": "leftSkirt3",
+      "parent": "chassis",
+      "transform": {
+        "position": [-1.74, 1.1, 1]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "schurzen",
+      "material": "raised"
+    },
+    {
+      "id": "leftSkirt4",
+      "parent": "chassis",
+      "transform": {
+        "position": [-1.74, 1.1, 2]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "schurzen",
+      "material": "armor"
+    },
+    {
+      "id": "leftTool",
+      "parent": "chassis",
+      "transform": {
+        "position": [-1, 1.55, -1.2]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "tool",
+      "material": "steel"
+    },
+    {
+      "id": "rightTrack",
+      "parent": "chassis",
+      "transform": {
+        "position": [1.38, 0, 0]
+      },
+      "visible": true,
+      "tags": ["articulation:rightTrack"],
+      "type": "group"
+    },
+    {
+      "id": "rightSideArmor",
+      "parent": "chassis",
+      "transform": {
+        "position": [1.27, 1.13, -0.05]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "sidePlate",
+      "material": "armor"
+    },
+    {
+      "id": "rightFender",
+      "parent": "chassis",
+      "transform": {
+        "position": [1.42, 1.33, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "fender",
+      "material": "armor"
+    },
+    {
+      "id": "rightWheel0",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.48, -1.8]
+      },
+      "visible": true,
+      "tags": ["articulation:rightWheel0"],
+      "type": "group"
+    },
+    {
+      "id": "rightTire0",
+      "parent": "rightWheel0",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "rightHub0",
+      "parent": "rightWheel0",
+      "transform": {
+        "position": [0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "rightWheel1",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.48, -1.2857142857142856]
+      },
+      "visible": true,
+      "tags": ["articulation:rightWheel1"],
+      "type": "group"
+    },
+    {
+      "id": "rightTire1",
+      "parent": "rightWheel1",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "rightHub1",
+      "parent": "rightWheel1",
+      "transform": {
+        "position": [0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "rightWheel2",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.48, -0.7714285714285714]
+      },
+      "visible": true,
+      "tags": ["articulation:rightWheel2"],
+      "type": "group"
+    },
+    {
+      "id": "rightTire2",
+      "parent": "rightWheel2",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "rightHub2",
+      "parent": "rightWheel2",
+      "transform": {
+        "position": [0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "rightWheel3",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.48, -0.2571428571428571]
+      },
+      "visible": true,
+      "tags": ["articulation:rightWheel3"],
+      "type": "group"
+    },
+    {
+      "id": "rightTire3",
+      "parent": "rightWheel3",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "rightHub3",
+      "parent": "rightWheel3",
+      "transform": {
+        "position": [0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "rightWheel4",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.48, 0.25714285714285734]
+      },
+      "visible": true,
+      "tags": ["articulation:rightWheel4"],
+      "type": "group"
+    },
+    {
+      "id": "rightTire4",
+      "parent": "rightWheel4",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "rightHub4",
+      "parent": "rightWheel4",
+      "transform": {
+        "position": [0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "rightWheel5",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.48, 0.7714285714285716]
+      },
+      "visible": true,
+      "tags": ["articulation:rightWheel5"],
+      "type": "group"
+    },
+    {
+      "id": "rightTire5",
+      "parent": "rightWheel5",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "rightHub5",
+      "parent": "rightWheel5",
+      "transform": {
+        "position": [0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "rightWheel6",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.48, 1.2857142857142858]
+      },
+      "visible": true,
+      "tags": ["articulation:rightWheel6"],
+      "type": "group"
+    },
+    {
+      "id": "rightTire6",
+      "parent": "rightWheel6",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "rightHub6",
+      "parent": "rightWheel6",
+      "transform": {
+        "position": [0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "rightWheel7",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.48, 1.8]
+      },
+      "visible": true,
+      "tags": ["articulation:rightWheel7"],
+      "type": "group"
+    },
+    {
+      "id": "rightTire7",
+      "parent": "rightWheel7",
+      "transform": {
+        "position": [0, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheel",
+      "material": "rubber"
+    },
+    {
+      "id": "rightHub7",
+      "parent": "rightWheel7",
+      "transform": {
+        "position": [0.03, 0, 0],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "wheelHub",
+      "material": "raised"
+    },
+    {
+      "id": "rightSprocketRear",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.65, -2.27],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "sprocket",
+      "material": "steel"
+    },
+    {
+      "id": "rightSprocketFront",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.65, 2.27],
+        "rotation": [0, 0, 90]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "sprocket",
+      "material": "steel"
+    },
+    {
+      "id": "rightShoeBottom0",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, -2.3]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "rightShoeTop0",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, -2.3]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "rightShoeBottom1",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, -2.07]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop1",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, -2.07]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom2",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, -1.8399999999999999]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop2",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, -1.8399999999999999]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom3",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, -1.6099999999999999]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop3",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, -1.6099999999999999]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom4",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, -1.38]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "rightShoeTop4",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, -1.38]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "rightShoeBottom5",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, -1.1499999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop5",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, -1.1499999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom6",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, -0.9199999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop6",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, -0.9199999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom7",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, -0.6899999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop7",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, -0.6899999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom8",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, -0.45999999999999974]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "rightShoeTop8",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, -0.45999999999999974]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "rightShoeBottom9",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, -0.22999999999999954]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop9",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, -0.22999999999999954]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom10",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, 4.440892098500626e-16]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop10",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, 4.440892098500626e-16]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom11",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, 0.23000000000000043]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop11",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, 0.23000000000000043]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom12",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, 0.4600000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "rightShoeTop12",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, 0.4600000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "rightShoeBottom13",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, 0.6900000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop13",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, 0.6900000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom14",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, 0.9200000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop14",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, 0.9200000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom15",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, 1.1500000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop15",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, 1.1500000000000004]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom16",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, 1.3800000000000003]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "rightShoeTop16",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, 1.3800000000000003]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "rightShoeBottom17",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, 1.6100000000000003]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop17",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, 1.6100000000000003]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom18",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, 1.8400000000000007]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop18",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, 1.8400000000000007]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom19",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, 2.0700000000000003]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeTop19",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, 2.0700000000000003]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeBottom20",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.1, 2.3000000000000007]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "rightShoeTop20",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.1, 2.3000000000000007]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "mud"
+    },
+    {
+      "id": "rightShoeArcRear1",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.16698729810778062, -2.55],
+        "rotation": [29.999999999999993, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeArcRear2",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.35, -2.733012701892219],
+        "rotation": [60, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeArcRear3",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.6, -2.8],
+        "rotation": [90, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeArcRear4",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.8499999999999999, -2.733012701892219],
+        "rotation": [120, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeArcRear5",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.0330127018922193, -2.55],
+        "rotation": [150, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeArcFront1",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.16698729810778062, 2.55],
+        "rotation": [150, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeArcFront2",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.35, 2.733012701892219],
+        "rotation": [120, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeArcFront3",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.6, 2.8],
+        "rotation": [90, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeArcFront4",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 0.8499999999999999, 2.733012701892219],
+        "rotation": [60.00000000000001, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightShoeArcFront5",
+      "parent": "rightTrack",
+      "transform": {
+        "position": [0, 1.0330127018922193, 2.55],
+        "rotation": [29.999999999999993, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "trackShoe",
+      "material": "track"
+    },
+    {
+      "id": "rightSkirt0",
+      "parent": "chassis",
+      "transform": {
+        "position": [1.74, 1.1, -2]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "schurzen",
+      "material": "armor"
+    },
+    {
+      "id": "rightSkirt1",
+      "parent": "chassis",
+      "transform": {
+        "position": [1.74, 1.1, -1]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "schurzen",
+      "material": "raised"
+    },
+    {
+      "id": "rightSkirt2",
+      "parent": "chassis",
+      "transform": {
+        "position": [1.74, 1.1, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "schurzen",
+      "material": "armor"
+    },
+    {
+      "id": "rightSkirt3",
+      "parent": "chassis",
+      "transform": {
+        "position": [1.74, 1.1, 1]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "schurzen",
+      "material": "raised"
+    },
+    {
+      "id": "rightSkirt4",
+      "parent": "chassis",
+      "transform": {
+        "position": [1.74, 1.1, 2]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "schurzen",
+      "material": "armor"
+    },
+    {
+      "id": "rightTool",
+      "parent": "chassis",
+      "transform": {
+        "position": [1, 1.55, -1.2]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "tool",
+      "material": "steel"
+    },
+    {
+      "id": "engineVent0",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.54, -2.03]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "vent",
+      "material": "dark"
+    },
+    {
+      "id": "engineVent1",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.54, -1.9099999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "vent",
+      "material": "dark"
+    },
+    {
+      "id": "engineVent2",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.54, -1.7899999999999998]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "vent",
+      "material": "dark"
+    },
+    {
+      "id": "engineVent3",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.54, -1.67]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "vent",
+      "material": "dark"
+    },
+    {
+      "id": "engineVent4",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.54, -1.5499999999999998]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "vent",
+      "material": "dark"
+    },
+    {
+      "id": "engineVent5",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.54, -1.4299999999999997]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "vent",
+      "material": "dark"
+    },
+    {
+      "id": "engineVent6",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.54, -1.3099999999999998]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "vent",
+      "material": "dark"
+    },
+    {
+      "id": "engineVent7",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.54, -1.19]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "vent",
+      "material": "dark"
+    },
+    {
+      "id": "engineVent8",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.54, -1.0699999999999998]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "vent",
+      "material": "dark"
+    },
+    {
+      "id": "engineVolume",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 0.93, -1.48]
+      },
+      "visible": false,
+      "tags": ["volume:engine"],
+      "type": "mesh",
+      "geometry": "volumeEngine",
+      "material": "dark"
+    },
+    {
+      "id": "ammoVolume",
+      "parent": "chassis",
+      "transform": {
+        "position": [0.65, 0.95, 0.2]
+      },
+      "visible": false,
+      "tags": ["volume:ammunition"],
+      "type": "mesh",
+      "geometry": "volumeAmmo",
+      "material": "dark"
+    },
+    {
+      "id": "turretRing",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.58, 0.28]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "turretRing",
+      "material": "dark"
+    },
+    {
+      "id": "turretPivot",
+      "parent": "chassis",
+      "transform": {
+        "position": [0, 1.65, 0.28]
+      },
+      "visible": true,
+      "tags": ["articulation:turret"],
+      "type": "group"
+    },
+    {
+      "id": "turretShell",
+      "parent": "turretPivot",
+      "transform": {
+        "position": [0, 0.03, 0],
+        "rotation": [-90, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "turretShell",
+      "material": "armor"
+    },
+    {
+      "id": "turretStowage",
+      "parent": "turretPivot",
+      "transform": {
+        "position": [0, 0.31, -1.02]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "stowage",
+      "material": "raised"
+    },
+    {
+      "id": "cupola",
+      "parent": "turretPivot",
+      "transform": {
+        "position": [0, 0.82, -0.42]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "cupola",
+      "material": "raised"
+    },
+    {
+      "id": "commanderHatch",
+      "parent": "turretPivot",
+      "transform": {
+        "position": [0, 0.98, -0.42]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "hatch",
+      "material": "armor"
+    },
+    {
+      "id": "loaderHatch",
+      "parent": "turretPivot",
+      "transform": {
+        "position": [0.4, 0.8, 0.25]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "hatch",
+      "material": "armor"
+    },
+    {
+      "id": "sight",
+      "parent": "turretPivot",
+      "transform": {
+        "position": [0.5, 0.63, 0.95]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "vision",
+      "material": "glass"
+    },
+    {
+      "id": "antenna",
+      "parent": "turretPivot",
+      "transform": {
+        "position": [-0.75, 1.42, -0.72]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "antenna",
+      "material": "dark"
+    },
+    {
+      "id": "commanderSocket",
+      "parent": "turretPivot",
+      "transform": {
+        "position": [-0.34, 1.1, -0.42]
+      },
+      "visible": true,
+      "tags": ["socket:commander"],
+      "type": "group"
+    },
+    {
+      "id": "opticSocket",
+      "parent": "turretPivot",
+      "transform": {
+        "position": [0.42, 0.65, 0.96]
+      },
+      "visible": true,
+      "tags": ["socket:optic"],
+      "type": "group"
+    },
+    {
+      "id": "gunPivot",
+      "parent": "turretPivot",
+      "transform": {
+        "position": [0, 0.32, 1.05]
+      },
+      "visible": true,
+      "tags": ["articulation:gun"],
+      "type": "group"
+    },
+    {
+      "id": "mantlet",
+      "parent": "gunPivot",
+      "transform": {
+        "position": [0, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "mantlet",
+      "material": "raised"
+    },
+    {
+      "id": "recoilSlide",
+      "parent": "gunPivot",
+      "transform": {
+        "position": [0, 0, 0]
+      },
+      "visible": true,
+      "tags": ["articulation:recoil"],
+      "type": "group"
+    },
+    {
+      "id": "barrel",
+      "parent": "recoilSlide",
+      "transform": {
+        "position": [0, 0, 1.65],
+        "rotation": [90, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "gunTube",
+      "material": "armor"
+    },
+    {
+      "id": "gunSleeve",
+      "parent": "recoilSlide",
+      "transform": {
+        "position": [0, 0, 0.37],
+        "rotation": [90, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "gunSleeve",
+      "material": "raised"
+    },
+    {
+      "id": "muzzleBrake",
+      "parent": "recoilSlide",
+      "transform": {
+        "position": [0, 0, 3.3],
+        "rotation": [0, 0, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "muzzleBaffle",
+      "material": "dark"
+    },
+    {
+      "id": "muzzleBore",
+      "parent": "recoilSlide",
+      "transform": {
+        "position": [0, 0, 3.5]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "blackMuzzle",
+      "material": "rubber"
+    },
+    {
+      "id": "muzzleSocket",
+      "parent": "recoilSlide",
+      "transform": {
+        "position": [0, 0, 3.52]
+      },
+      "visible": true,
+      "tags": ["socket:muzzle"],
+      "type": "group"
+    },
+    {
+      "id": "exhaustSocket",
+      "parent": "chassis",
+      "transform": {
+        "position": [0.75, 1, -2.54]
+      },
+      "visible": true,
+      "tags": ["socket:exhaust"],
+      "type": "group"
+    }
+  ],
+  "revision": 1
+}

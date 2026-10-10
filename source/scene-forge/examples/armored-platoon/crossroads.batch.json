@@ -1,0 +1,1017 @@
+{
+  "operations": [
+    {
+      "op": "putMaterial",
+      "id": "terrain",
+      "material": {
+        "color": "#6a7350",
+        "roughness": 0.95
+      }
+    },
+    {
+      "op": "putMaterial",
+      "id": "masonry",
+      "material": {
+        "color": "#a4957f",
+        "roughness": 0.95
+      }
+    },
+    {
+      "op": "putMaterial",
+      "id": "stone",
+      "material": {
+        "color": "#8b887b",
+        "roughness": 0.95
+      }
+    },
+    {
+      "op": "putMaterial",
+      "id": "wood",
+      "material": {
+        "color": "#665440",
+        "roughness": 0.95
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "ground",
+      "geometry": {
+        "type": "box",
+        "size": [576, 0.15, 576]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "ground",
+        "type": "mesh",
+        "geometry": "ground",
+        "material": "terrain",
+        "transform": {
+          "position": [288, -0.1, 288]
+        },
+        "tags": ["mission:crossroads"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "farmhouse-0",
+      "geometry": {
+        "type": "box",
+        "size": [15, 7, 20]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "farmhouse-0",
+        "type": "mesh",
+        "geometry": "farmhouse-0",
+        "material": "masonry",
+        "transform": {
+          "position": [240, 4.2079, 288]
+        },
+        "tags": ["obstacle:masonry"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "farmhouse-1",
+      "geometry": {
+        "type": "box",
+        "size": [13, 7, 17]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "farmhouse-1",
+        "type": "mesh",
+        "geometry": "farmhouse-1",
+        "material": "masonry",
+        "transform": {
+          "position": [302, 5.0637, 282]
+        },
+        "tags": ["obstacle:masonry"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "farmhouse-2",
+      "geometry": {
+        "type": "box",
+        "size": [12, 7, 14]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "farmhouse-2",
+        "type": "mesh",
+        "geometry": "farmhouse-2",
+        "material": "masonry",
+        "transform": {
+          "position": [220, 3.6467, 326]
+        },
+        "tags": ["obstacle:masonry"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "farmhouse-3",
+      "geometry": {
+        "type": "box",
+        "size": [19, 7, 14]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "farmhouse-3",
+        "type": "mesh",
+        "geometry": "farmhouse-3",
+        "material": "masonry",
+        "transform": {
+          "position": [311, 4.9046, 334]
+        },
+        "tags": ["obstacle:masonry"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "farmhouse-4",
+      "geometry": {
+        "type": "box",
+        "size": [9, 7, 11]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "farmhouse-4",
+        "type": "mesh",
+        "geometry": "farmhouse-4",
+        "material": "masonry",
+        "transform": {
+          "position": [210, 3.651, 267]
+        },
+        "tags": ["obstacle:masonry"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "farmhouse-5",
+      "geometry": {
+        "type": "box",
+        "size": [11, 7, 12]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "farmhouse-5",
+        "type": "mesh",
+        "geometry": "farmhouse-5",
+        "material": "masonry",
+        "transform": {
+          "position": [338, 5.006, 303]
+        },
+        "tags": ["obstacle:masonry"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "farmhouse-6",
+      "geometry": {
+        "type": "box",
+        "size": [14, 7, 12]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "farmhouse-6",
+        "type": "mesh",
+        "geometry": "farmhouse-6",
+        "material": "masonry",
+        "transform": {
+          "position": [290, 4.2757, 379]
+        },
+        "tags": ["obstacle:masonry"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "farmhouse-7",
+      "geometry": {
+        "type": "box",
+        "size": [14, 7, 14]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "farmhouse-7",
+        "type": "mesh",
+        "geometry": "farmhouse-7",
+        "material": "masonry",
+        "transform": {
+          "position": [239, 3.9465, 371]
+        },
+        "tags": ["obstacle:masonry"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "orchard-wall-0",
+      "geometry": {
+        "type": "box",
+        "size": [3.4, 1.8, 0.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "orchard-wall-0",
+        "type": "mesh",
+        "geometry": "orchard-wall-0",
+        "material": "stone",
+        "transform": {
+          "position": [180.0, 0.3647, 230]
+        },
+        "tags": ["obstacle:stone"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "orchard-wall-1",
+      "geometry": {
+        "type": "box",
+        "size": [3.4, 1.8, 0.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "orchard-wall-1",
+        "type": "mesh",
+        "geometry": "orchard-wall-1",
+        "material": "stone",
+        "transform": {
+          "position": [183.5, 0.3647, 230]
+        },
+        "tags": ["obstacle:stone"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "orchard-wall-2",
+      "geometry": {
+        "type": "box",
+        "size": [3.4, 1.8, 0.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "orchard-wall-2",
+        "type": "mesh",
+        "geometry": "orchard-wall-2",
+        "material": "stone",
+        "transform": {
+          "position": [187.0, 0.5761000000000001, 230]
+        },
+        "tags": ["obstacle:stone"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "orchard-wall-3",
+      "geometry": {
+        "type": "box",
+        "size": [3.4, 1.8, 0.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "orchard-wall-3",
+        "type": "mesh",
+        "geometry": "orchard-wall-3",
+        "material": "stone",
+        "transform": {
+          "position": [190.5, 0.5761000000000001, 230]
+        },
+        "tags": ["obstacle:stone"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "orchard-wall-4",
+      "geometry": {
+        "type": "box",
+        "size": [3.4, 1.8, 0.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "orchard-wall-4",
+        "type": "mesh",
+        "geometry": "orchard-wall-4",
+        "material": "stone",
+        "transform": {
+          "position": [194.0, 0.5761000000000001, 230]
+        },
+        "tags": ["obstacle:stone"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "orchard-wall-5",
+      "geometry": {
+        "type": "box",
+        "size": [3.4, 1.8, 0.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "orchard-wall-5",
+        "type": "mesh",
+        "geometry": "orchard-wall-5",
+        "material": "stone",
+        "transform": {
+          "position": [197.5, 0.5761000000000001, 230]
+        },
+        "tags": ["obstacle:stone"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "orchard-wall-6",
+      "geometry": {
+        "type": "box",
+        "size": [3.4, 1.8, 0.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "orchard-wall-6",
+        "type": "mesh",
+        "geometry": "orchard-wall-6",
+        "material": "stone",
+        "transform": {
+          "position": [201.0, 0.7979, 230]
+        },
+        "tags": ["obstacle:stone"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "orchard-wall-7",
+      "geometry": {
+        "type": "box",
+        "size": [3.4, 1.8, 0.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "orchard-wall-7",
+        "type": "mesh",
+        "geometry": "orchard-wall-7",
+        "material": "stone",
+        "transform": {
+          "position": [204.5, 0.7979, 230]
+        },
+        "tags": ["obstacle:stone"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "orchard-wall-8",
+      "geometry": {
+        "type": "box",
+        "size": [3.4, 1.8, 0.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "orchard-wall-8",
+        "type": "mesh",
+        "geometry": "orchard-wall-8",
+        "material": "stone",
+        "transform": {
+          "position": [208.0, 0.7979, 230]
+        },
+        "tags": ["obstacle:stone"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "orchard-wall-9",
+      "geometry": {
+        "type": "box",
+        "size": [3.4, 1.8, 0.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "orchard-wall-9",
+        "type": "mesh",
+        "geometry": "orchard-wall-9",
+        "material": "stone",
+        "transform": {
+          "position": [211.5, 1.0231000000000001, 230]
+        },
+        "tags": ["obstacle:stone"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "orchard-wall-10",
+      "geometry": {
+        "type": "box",
+        "size": [3.4, 1.8, 0.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "orchard-wall-10",
+        "type": "mesh",
+        "geometry": "orchard-wall-10",
+        "material": "stone",
+        "transform": {
+          "position": [215.0, 1.0231000000000001, 230]
+        },
+        "tags": ["obstacle:stone"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "orchard-wall-11",
+      "geometry": {
+        "type": "box",
+        "size": [3.4, 1.8, 0.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "orchard-wall-11",
+        "type": "mesh",
+        "geometry": "orchard-wall-11",
+        "material": "stone",
+        "transform": {
+          "position": [218.5, 1.0231000000000001, 230]
+        },
+        "tags": ["obstacle:stone"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-0",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-0",
+        "type": "mesh",
+        "geometry": "pine-0",
+        "material": "wood",
+        "transform": {
+          "position": [95, 3.4318999999999997, 280]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-1",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-1",
+        "type": "mesh",
+        "geometry": "pine-1",
+        "material": "wood",
+        "transform": {
+          "position": [117, 3.4596999999999998, 280]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-2",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-2",
+        "type": "mesh",
+        "geometry": "pine-2",
+        "material": "wood",
+        "transform": {
+          "position": [139, 3.685, 280]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-3",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-3",
+        "type": "mesh",
+        "geometry": "pine-3",
+        "material": "wood",
+        "transform": {
+          "position": [161, 3.8636, 280]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-4",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-4",
+        "type": "mesh",
+        "geometry": "pine-4",
+        "material": "wood",
+        "transform": {
+          "position": [183, 4.324, 280]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-5",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-5",
+        "type": "mesh",
+        "geometry": "pine-5",
+        "material": "wood",
+        "transform": {
+          "position": [95, 3.4585, 309]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-6",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-6",
+        "type": "mesh",
+        "geometry": "pine-6",
+        "material": "wood",
+        "transform": {
+          "position": [117, 3.4859, 309]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-7",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-7",
+        "type": "mesh",
+        "geometry": "pine-7",
+        "material": "wood",
+        "transform": {
+          "position": [139, 3.7074, 309]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-8",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-8",
+        "type": "mesh",
+        "geometry": "pine-8",
+        "material": "wood",
+        "transform": {
+          "position": [161, 3.883, 309]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-9",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-9",
+        "type": "mesh",
+        "geometry": "pine-9",
+        "material": "wood",
+        "transform": {
+          "position": [183, 4.3355, 309]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-10",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-10",
+        "type": "mesh",
+        "geometry": "pine-10",
+        "material": "wood",
+        "transform": {
+          "position": [95, 3.6067, 338]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-11",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-11",
+        "type": "mesh",
+        "geometry": "pine-11",
+        "material": "wood",
+        "transform": {
+          "position": [117, 3.6314, 338]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-12",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-12",
+        "type": "mesh",
+        "geometry": "pine-12",
+        "material": "wood",
+        "transform": {
+          "position": [139, 3.8316, 338]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-13",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-13",
+        "type": "mesh",
+        "geometry": "pine-13",
+        "material": "wood",
+        "transform": {
+          "position": [161, 3.9903, 338]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-14",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-14",
+        "type": "mesh",
+        "geometry": "pine-14",
+        "material": "wood",
+        "transform": {
+          "position": [183, 4.3994, 338]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-15",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-15",
+        "type": "mesh",
+        "geometry": "pine-15",
+        "material": "wood",
+        "transform": {
+          "position": [95, 3.9996, 367]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-16",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-16",
+        "type": "mesh",
+        "geometry": "pine-16",
+        "material": "wood",
+        "transform": {
+          "position": [117, 4.0174, 367]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-17",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-17",
+        "type": "mesh",
+        "geometry": "pine-17",
+        "material": "wood",
+        "transform": {
+          "position": [139, 4.1611, 367]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-18",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-18",
+        "type": "mesh",
+        "geometry": "pine-18",
+        "material": "wood",
+        "transform": {
+          "position": [161, 4.275, 367]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-19",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-19",
+        "type": "mesh",
+        "geometry": "pine-19",
+        "material": "wood",
+        "transform": {
+          "position": [183, 4.5687999999999995, 367]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-20",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-20",
+        "type": "mesh",
+        "geometry": "pine-20",
+        "material": "wood",
+        "transform": {
+          "position": [95, 4.3497, 396]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putGeometry",
+      "id": "pine-21",
+      "geometry": {
+        "type": "box",
+        "size": [1.8, 10, 1.8]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "pine-21",
+        "type": "mesh",
+        "geometry": "pine-21",
+        "material": "wood",
+        "transform": {
+          "position": [117, 4.3612, 396]
+        },
+        "tags": ["obstacle:wood"]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "able-1",
+        "type": "model",
+        "model": "m4-sherman",
+        "transform": {
+          "position": [264, -0.5913, 92],
+          "rotation": [0, 0.0, 0]
+        },
+        "tags": ["spawn:allies"]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "able-2",
+        "type": "model",
+        "model": "m4-sherman",
+        "transform": {
+          "position": [247, -0.6778, 72],
+          "rotation": [0, 0.0, 0]
+        },
+        "tags": ["spawn:allies"]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "able-3",
+        "type": "model",
+        "model": "m4-sherman",
+        "transform": {
+          "position": [281, -0.9561999999999999, 72],
+          "rotation": [0, 0.0, 0]
+        },
+        "tags": ["spawn:allies"]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "guard-1",
+        "type": "model",
+        "model": "panzer-iv",
+        "transform": {
+          "position": [264, 0.1889, 420],
+          "rotation": [0, 180.0, 0]
+        },
+        "tags": ["spawn:axis"]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "guard-2",
+        "type": "model",
+        "model": "panzer-iv",
+        "transform": {
+          "position": [330, 0.04909999999999998, 435],
+          "rotation": [0, 180.0, 0]
+        },
+        "tags": ["spawn:axis"]
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "guard-3",
+        "type": "model",
+        "model": "panzer-iv",
+        "transform": {
+          "position": [190, -0.2171, 390],
+          "rotation": [0, 180.0, 0]
+        },
+        "tags": ["spawn:axis"]
+      }
+    }
+  ]
+}
