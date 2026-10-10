@@ -7,8 +7,9 @@
  *
  * The engine keeps its latest 128 events in a sliding window without sequence numbers, so the tracker numbers them itself: every
  * `ingest` finds how far the new window overlaps the previous one and counts only the appended events. That gives the opener's
- * "new events" badge (events not yet shown in the modal), the "latest N of M" subtitle and the "N new events" pill. If more than a
- * whole window arrives between two ingests the exact count is a lower bound and the list says earlier events are not kept.
+ * badge (problems not yet shown in the modal: failed work, blocked work and dropped arrivals; routine events never raise it), the
+ * "latest N of M" subtitle and the "N new events" pill. If more than a whole window arrives between two ingests the exact count is
+ * a lower bound and the list says earlier events are not kept.
  *
  * Live behaviour while the modal is open: the list re-renders on a pulse only when it is scrolled to the top and no filter or row
  * control has focus. Otherwise it freezes and a status pill "N new events - Show" re-renders on request. The list itself is never
@@ -27,8 +28,8 @@ declare namespace LWProcessActivity {
   select(stepId: string): void;
   /** The element that receives focus after a step was chosen in the list. */
   stepItem(stepId: string): HTMLElement | null;
-  /** Called whenever the number of events not yet shown changes. */
-  badge(unseen: number): void;
+  /** Called whenever the number of problem events (failed, blocked, dropped arrival) not yet shown changes. */
+  badge(problems: number): void;
   save(name: string, data: string, type: string): void;
  }
  interface Surface {
@@ -38,6 +39,8 @@ declare namespace LWProcessActivity {
   isOpen(): boolean;
   /** Events appended since the modal last showed them. */
   unseen(): number;
+  /** Problem events (failed, blocked, dropped arrival) appended since the modal last showed them. */
+  problems(): number;
   /** 'Latest: 120 min · case-0007 · failed · Quality review', or '' without events. */
   latest(): string;
   /** Forgets everything (a new run started). */
@@ -48,7 +51,7 @@ declare namespace LWProcessActivity {
   create(host: HTMLElement, env: Env): Surface;
   /** Plain wording of an engine event kind: 'finished-task' becomes 'finished task', 'held' becomes 'blocked'. */
   kindText(kind: string): string;
-  /** The largest unseen-event count the opener badge shows as a number; more reads as `${MAX_BADGE}+`. */
+  /** The largest unseen-problem count the opener badge shows as a number; more reads as `${MAX_BADGE}+`. */
   MAX_BADGE: number;
  }
 }
@@ -76,13 +79,19 @@ declare namespace LWProcessActivity {
  const cell = (v: string | number) => { const s = String(v), safe = typeof v === 'string' && /^[=+\-@\t\r]/.test(s) ? "'" + s : s; return /[",\r\n]/.test(safe) ? '"' + safe.replaceAll('"', '""') + '"' : safe; };
  type Row = {seq: number; event: LWProcess.Event};
  function create(host: HTMLElement, env: LWProcessActivity.Env): LWProcessActivity.Surface {
-  let rows: Row[] = [], keys: string[] = [], total = 0, seen = 0, rendered = 0, lastMinute = 0, pending = 0, newest: LWProcess.Event | undefined, spoke = -Infinity, speak = 0, signature = '';
+  let rows: Row[] = [], keys: string[] = [], total = 0, seen = 0, rendered = 0, lastMinute = 0, pending = 0, newest: LWProcess.Event | undefined, spoke = -Infinity;
+  let speak = 0, signature = '';
+  /** Problem events (URGENT kinds) counted like `total`, `seen` and `rendered`; only these raise the opener badge. */
+  let urgentTotal = 0, urgentSeen = 0, urgentRendered = 0;
   const filter = {kind: '', step: '', caseId: ''};
   const dialog = root.LWProcessDialog.create(host.ownerDocument.body, {
    id: 'act', size: 'list', title: 'Run activity', inertRoot: env.inertRoot, closeLabel: 'Close',
    actions: [{id: 'csv', label: 'Export CSV'}, {id: 'json', label: 'Export JSON'}, {id: 'done', label: 'Close', cancel: true}],
    onAction: id => { if (id === 'csv' || id === 'json') exportRows(id); },
-   onClose: reason => { seen = rendered; q('rows').innerHTML = ''; signature = ''; env.badge(unseen()); if (reason === 'action' && chosen) { const id = chosen; chosen = ''; env.stepItem(id)?.focus(); } },
+   onClose: reason => {
+    seen = rendered; urgentSeen = urgentRendered; q('rows').innerHTML = ''; signature = ''; env.badge(problems());
+    if (reason === 'action' && chosen) { const id = chosen; chosen = ''; env.stepItem(id)?.focus(); }
+   },
   });
   let chosen = '';
   dialog.el.classList.add('act-dialog');
@@ -93,7 +102,7 @@ declare namespace LWProcessActivity {
    <div class="act-scroll" id="act-scroll" tabindex="0" role="region" aria-label="Events, newest first">
     <table class="act-table" role="table" aria-label="Run events, newest first"><thead role="rowgroup"><tr role="row"><th role="columnheader" scope="col">Minute</th><th role="columnheader" scope="col" id="act-col-case">Case</th><th role="columnheader" scope="col">Event</th><th role="columnheader" scope="col">Step</th><th role="columnheader" scope="col">Detail</th></tr></thead><tbody id="act-rows" role="rowgroup"></tbody></table></div>`);
   const q = <T extends HTMLElement = HTMLElement>(id: string) => dialog.el.querySelector<T>('#act-' + id)!;
-  const unseen = () => total - seen;
+  const unseen = () => total - seen, problems = () => urgentTotal - urgentSeen;
   const filtered = () => rows.filter(r => (!filter.kind || r.event.kind === filter.kind) && (!filter.step || (filter.step === NO_STEP ? r.event.stepId === '' : r.event.stepId === filter.step)) && (!filter.caseId || r.event.caseId === filter.caseId));
   const active = () => !!(filter.kind || filter.step || filter.caseId);
   /** True when a live re-render would not disturb the reader: the list is at its top and no filter or row control has focus. */
@@ -125,7 +134,7 @@ declare namespace LWProcessActivity {
    if (!dialog.isOpen()) return;
    if (!force && !calm()) { pill(); return; }
    const view = env.view(), d = view.definition, shown = filtered(), truncated = total > rows.length;
-   rendered = total; seen = total; env.badge(0); controls(d);
+   rendered = total; seen = total; urgentRendered = urgentSeen = urgentTotal; env.badge(0); controls(d);
    dialog.setTitle('Run activity', `Minute ${num(view.snapshot.minute)} · ${truncated ? `showing the latest ${rows.length} of ${total} events` : `${total} ${total === 1 ? 'event' : 'events'}`}${active() ? ` · ${shown.length} match` : ''}`);
    q('note').hidden = !truncated;
    const html = shown.length ? [...shown].reverse().map(({event: e}) => {
@@ -152,7 +161,10 @@ declare namespace LWProcessActivity {
    if (rest > 0) { pending += rest; newest = added.filter(e => !URGENT.has(e.kind)).at(-1); }
    if (pending > 0 && !speak) { const wait = Math.max(0, spoke + BATCH_MS - performance.now()); if (wait === 0) flush(); else speak = window.setTimeout(flush, wait); }
   }
-  function wipe(): void { rows = []; keys = []; total = 0; seen = 0; rendered = 0; lastMinute = 0; pending = 0; newest = undefined; signature = ''; window.clearTimeout(speak); speak = 0; env.announcer.textContent = ''; }
+  function wipe(): void {
+   rows = []; keys = []; total = 0; seen = 0; urgentTotal = 0; urgentSeen = 0; urgentRendered = 0; rendered = 0; lastMinute = 0; pending = 0; newest = undefined;
+   signature = ''; window.clearTimeout(speak); speak = 0; env.announcer.textContent = '';
+  }
   function ingest(view: LWProcessApp.View): void {
    const events = view.snapshot.events, next = events.map(keyOf);
    if (view.snapshot.minute < lastMinute) wipe();
@@ -164,8 +176,10 @@ declare namespace LWProcessActivity {
     if (overlap === 0 || keys.slice(s).every((k, i) => k === next[i])) { added = next.length - overlap; break; }
    }
    total += added; keys = next; rows = events.map((event, i) => ({seq: total - events.length + 1 + i, event}));
-   if (added > 0) announce(events.slice(events.length - added), view.definition);
-   env.badge(unseen()); render(false);
+   if (added > 0) {
+    const fresh = events.slice(events.length - added); urgentTotal += fresh.filter(e => URGENT.has(e.kind)).length; announce(fresh, view.definition);
+   }
+   env.badge(problems()); render(false);
   }
   dialog.body.addEventListener('change', e => {
    const t = e.target as HTMLSelectElement; if (t.id === 'act-kind') filter.kind = t.value; else if (t.id === 'act-step') filter.step = t.value; else if (t.id === 'act-case') filter.caseId = t.value; else return;
@@ -178,7 +192,7 @@ declare namespace LWProcessActivity {
    else if (step) { chosen = step.dataset.actStep!; env.select(chosen); dialog.close('action'); }
   });
   return {
-   ingest, isOpen: () => dialog.isOpen(), unseen,
+   ingest, isOpen: () => dialog.isOpen(), unseen, problems,
    open(invoker) { if (!dialog.open({invoker: invoker ?? null})) return false; render(true); return true; },
    latest() { const e = rows.at(-1)?.event; return e ? `Latest: ${num(e.minute)} min · ${e.caseId} · ${kindText(e.kind)}${stepName(env.view().definition, e.stepId) ? ' · ' + stepName(env.view().definition, e.stepId) : ''}` : ''; },
    reset() { wipe(); filter.kind = filter.step = filter.caseId = ''; env.badge(0); },

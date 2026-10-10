@@ -116,7 +116,18 @@ conversion and tracked measures. The studio shows one detached run in 2D, Three.
 3D and a SIPOC or journey lens, with an Activity modal, a Definition editor, a step
 editor, a **Present** mode (the slide deck of the active definition beside the studio's
 own 2D map, on a phone from the **⋯** menu) and offline HTML downloads; it has a dark
-theme only. Navigation, dialogs, lenses and Present mode never tick the clock; entering
+theme only. The studio tunes an existing definition: the step editor edits a step's fields and
+adds, retargets and removes its outgoing paths, and the Definition editor has in-memory undo and
+redo, but the studio cannot create a new process, and its forms do not add, remove or duplicate
+steps or change a step's kind (the Definition editor's Raw JSON pane and guarded CLI recipes do).
+Switching process or importing JSON over a run past minute 0 or an unapplied draft asks first
+(starting on Cancel), applying a new revision of the same process keeps a typed run seed and the
+selected step, and leaving the page with an unapplied draft asks the browser to confirm; drafts are
+never written to storage, so one that is left is not recovered. The 2D map shares a shape-coded work-state encoding with its
+legend. Run metrics report a work cost and a capacity cost (idle capacity included), mean cycle
+time over finished cases only ("—" before the first), the mean age of cases in progress and work
+blocked after finishing; these describe one seeded run, without replications or confidence
+intervals. Navigation, dialogs, lenses and Present mode never tick the clock; entering
 Present pauses a running simulation with a command.
 
 The [agency delivery lab](../concepts/agency-delivery/README.md) holds seven
@@ -133,7 +144,10 @@ BPMN maps tasks and their types, lanes (as pools), exclusive, parallel and
 inclusive gateways, event-based gateways (as a race by chance), multi-instance and
 standard loops, embedded sub-processes and call activities (both inlined), timer
 catch events and timer boundary events (as deadlines) with ISO-8601 durations, and
-reads BPSim times, distributions, probabilities, arrivals, capacities and costs. It
+reads BPSim times, distributions, probabilities, arrivals, capacities, costs and the scenario
+seed. A process beyond four times the definition limits (512 flow nodes or 1,024 sequence flows)
+is rejected before analysis, and `process export-bpmn` lists in `fidelity` what only the Wildlands
+extension carries. It
 reports every mapping and warning, and rejects unsupported constructs with their
 element ids or, in drop mode, removes or approximates them with a warning each. The
 CLI and the studio's **Import BPMN** dialog (options, live preview, Cancel-first
@@ -145,7 +159,8 @@ example export with it; an earlier one-off run used the OMG schema files
 ([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)).
 `process slides` explains an admitted definition as a deterministic plain-text slide
 deck (JSON or Markdown; optional read-only facts from one bounded seeded run) built by
-the pure `LWProcessSlides` model, `process diff` compares two definitions, and guarded
+the pure `LWProcessSlides` model, `process diff` compares two definitions and itemises every
+changed value with its old and new value, and guarded
 recipe operations set or remove the description, seed, genre, SIPOC parties and tracked
 fields without changing the definition schema. `npm run process:shots` (in
 `source/wildlands`) captures one process of a game at a chosen minute in desktop and phone
@@ -155,11 +170,16 @@ overflow and console errors; it is a review aid, not usability validation.
 Not implemented: BPMN execution, external service execution, calendars or working
 hours for timers, event-driven gateway semantics, complex gateways beyond the drop
 approximation, compensation, nested gateways inside a fork region, process
-checkpoints or saved-run restoration, light theme and Godot process export. A
+checkpoints or saved-run restoration, draft recovery after a reload, structural step editing
+or a new process from the studio's forms, automatic layout, replications with confidence
+intervals, event-log export, side-by-side scenario comparison of results, light theme and Godot
+process export. A
 mapped BPMN model, a seeded run and the passing process suites are automated
 scenario evidence, not a validated process model, forecast or human usability
-review. See the [contract](business-process-engine.md) and
-[authoring workflow](../how-to/business-process-authoring.md).
+review. See the [contract](business-process-engine.md), the
+[authoring workflow](../how-to/business-process-authoring.md),
+[Present a process to stakeholders](../how-to/present-a-process.md) and the
+[first business process tutorial](../tutorials/first-business-process.md).
 
 ## Interface selection and retained specialist tools
 

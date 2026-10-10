@@ -36,9 +36,16 @@ declare namespace LWProcessTuningFields {
   return `<div class="de-field ${extra}"><label for="${id}">${esc(label)}</label>${control}${help ? `<p class="de-help" id="${id}-help">${esc(help)}</p>` : ''}<div class="de-errs" id="${id}-err" data-errs="${esc(path)}"></div></div>`;
  }
  const describe = (id: string, help?: string) => `aria-describedby="${help ? id + '-help ' : ''}${id}-err"`;
+ /**
+  * Attribute text for a number taken from the draft. The draft is only shape-checked JSON, so a "number" may be any value a
+  * person pasted: only a finite number is written, anything else becomes an empty attribute and never markup.
+  */
+ const num = (value: unknown): string => typeof value === 'number' && Number.isFinite(value) ? String(value) : '';
  function int(id: string, label: string, path: string, value: number | undefined, o: LWProcessTuningFields.IntOptions): string {
   const unit = o.unit ? ` (${o.unit})` : '', range = `${o.min.toLocaleString('en-US')} to ${o.max.toLocaleString('en-US')}`;
-  return field(id, label + unit, `<input id="${id}" type="number" inputmode="numeric" step="1" min="${o.min}" max="${o.max}" data-path="${esc(path)}" data-kind="int"${o.optional ? ' data-optional="1"' : ''} value="${value ?? ''}" ${describe(id, o.help ?? range)}>`, path, o.help ?? `Whole number, ${range}.`);
+  const attrs = `id="${id}" type="number" inputmode="numeric" step="1" min="${num(o.min)}" max="${num(o.max)}" data-path="${esc(path)}" data-kind="int"`;
+  const input = `<input ${attrs}${o.optional ? ' data-optional="1"' : ''} value="${num(value)}" ${describe(id, o.help ?? range)}>`;
+  return field(id, label + unit, input, path, o.help ?? `Whole number, ${range}.`);
  }
  function text(id: string, label: string, path: string, value: string | undefined, o: {max?: number; help?: string; hint?: string; long?: boolean} = {}): string {
   const attrs = `id="${id}" data-path="${esc(path)}" data-kind="text" maxlength="${o.max ?? 120}"${o.hint ? ` data-hint="${esc(o.hint)}"` : ''} ${describe(id, o.help)}`;
@@ -51,7 +58,7 @@ declare namespace LWProcessTuningFields {
  function scalar(id: string, label: string, path: string, value: LWProcess.Scalar | undefined, optional: boolean): string {
   const type = typeOf(value), types: [string, string][] = [...optional ? [['unset', 'Not set'] as [string, string]] : [], ['string', 'Text'], ['number', 'Number'], ['boolean', 'Yes or no'], ['null', 'Empty']];
   const control = type === 'boolean' ? `<select id="${id}" data-path="${esc(path)}" data-kind="scalar" aria-label="${esc(label)} value"><option value="true"${value === true ? ' selected' : ''}>Yes</option><option value="false"${value === false ? ' selected' : ''}>No</option></select>`
-   : type === 'number' ? `<input id="${id}" type="number" step="1" inputmode="numeric" data-path="${esc(path)}" data-kind="scalar" aria-label="${esc(label)} value" value="${value as number}">`
+   : type === 'number' ? `<input id="${id}" type="number" step="1" inputmode="numeric" data-path="${esc(path)}" data-kind="scalar" aria-label="${esc(label)} value" value="${num(value)}">`
    : type === 'string' ? `<input id="${id}" type="text" maxlength="256" data-path="${esc(path)}" data-kind="scalar" aria-label="${esc(label)} value" value="${esc(value as string)}">`
    : `<span class="de-none">${type === 'null' ? 'Empty (no value)' : 'Not set'}</span>`;
   return `<div class="de-field de-scalar"><span class="de-label" id="${id}-label">${esc(label)}</span><div class="de-pair"><select id="${id}-type" data-path="${esc(path)}" data-kind="scalar-type" aria-label="${esc(label)} type">${types.map(([v, name]) => `<option value="${v}"${v === type ? ' selected' : ''}>${name}</option>`).join('')}</select>${control}</div><div class="de-errs" id="${id}-err" data-errs="${esc(path)}"></div></div>`;

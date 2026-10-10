@@ -22,7 +22,11 @@ declare namespace LWProcessSlides {
   section: string;
   title: string; subtitle: string; lead: string;
   blocks: Block[]; concepts: Concept[];
-  /** Read-only facts of one simulated run; only when a snapshot was passed (heading names the minute and seed). */
+  /**
+   * Read-only facts of one simulated run; only when a snapshot was passed (heading names the business minute and seed). The title
+   * slide carries 'Key results', the resources slide (when pools exist) the pool utilisation, step slides their counters and the
+   * summary the run totals; the overview and section slides carry none.
+   */
   live: Block | null;
   /** Step the map should show: the step of a step slide, the first step of a phase or main-route section slide; null shows the whole process. */
   step: string | null;

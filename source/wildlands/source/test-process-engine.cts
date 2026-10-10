@@ -1,8 +1,11 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-inspector.ts" />
 /** Engine core: business-minute clock, detached queries, capacity, decisions, joins, rework, chunking, horizons, backlogs and needs. */
 import assert from 'node:assert/strict';
-import {catalog, runtime} from './process-sdk.cjs';
+import {catalog, runtime, slides} from './process-sdk.cjs';
 import {test, base, copy, agency, run, stepOf, flowOf, build, startEnd} from './test-process-helpers.cjs';
+require('./process-inspector.js');
+const inspector = (globalThis as unknown as {LWProcessInspector: LWProcessInspector.Api}).LWProcessInspector;
 
 test('One task completes at its declared business minute with detached read queries', () => {
  const s = runtime.create(base()), first = s.query(); first.cases[0]!.data.changed = true;
@@ -104,12 +107,24 @@ function bench(backlog: LWProcess.Backlog | undefined, priorities: number[], gap
 }
 const startedOrder = (d: LWProcess.Definition) => {const s = runtime.create(d); try {s.advance(100); return s.query().events.filter(e => e.kind === 'started' && e.stepId === 'bench').map(e => e.caseId);} finally {s.dispose();}};
 test('Task backlogs bound waiting work, hold upstream work and honour fifo, lifo and priority order', () => {
- const d = bench({capacity: 1}, [1, 1, 1, 1]), s = runtime.create(d); let held = false;
+ const d = bench({capacity: 1}, [1, 1, 1, 1]), s = runtime.create(d); let held = false, blocked = false;
  for (let i = 0; i < 60; i++) {
   const q = s.advance(1), waiting = q.tokens.filter(t => t.stepId === 'bench' && t.status !== 'active' && t.status !== 'held').length;
   assert(waiting <= 1, 'backlog exceeded capacity'); held ||= q.tokens.some(t => t.status === 'held');
+  // Read model: work finished at intake and blocked by the full backlog is counted as held there, a part of queued.
+  const intake = q.steps.find(x => x.id === 'intake')!; assert.equal(intake.held, q.tokens.filter(t => t.stepId === 'intake' && t.status === 'held').length);
+  assert(intake.held <= intake.queued);
+  if (intake.held > 0 && !blocked) {
+   // The inspector and the step slide name it apart from waiting work.
+   const view = {definition: d, snapshot: q} as unknown as LWProcessApp.View, html = inspector.step(view, d.steps.find(x => x.id === 'intake')!);
+   assert(html.includes(`<dt>Blocked after finishing</dt><dd>${intake.held} blocked · waiting for room in the next backlog</dd>`), html);
+   const live = slides.build(d, q).slides.find(x => x.id === 'step-intake')!.live!.items;
+   const counts = `Now in progress: ${intake.active}; now waiting: ${intake.queued - intake.held}; blocked after finishing: ${intake.held}`;
+   assert(live.includes(counts), live.join('|'));
+  }
+  blocked ||= intake.held > 0;
  }
- assert(held); assert.equal(s.advance(40).metrics.completed, 4); s.dispose();
+ assert(held && blocked, 'the snapshot reports blocked work at the step that finished it'); assert.equal(s.advance(40).metrics.completed, 4); s.dispose();
  // The first case starts at once; the rest wait while it works, so their order shows the backlog rule.
  assert.deepEqual(startedOrder(bench(undefined, [1, 1, 3, 2])), ['case-0001', 'case-0002', 'case-0003', 'case-0004']);
  assert.deepEqual(startedOrder(bench({capacity: 3, order: 'lifo'}, [1, 1, 3, 2])), ['case-0001', 'case-0004', 'case-0003', 'case-0002']);
@@ -167,12 +182,12 @@ test('Escalation routes cannot race the normal route on case fields and needs an
  const data = (fields: LWProcess.Fields): LWProcess.Arrival[] => [{at: 0, count: 1, interval: 0, data: fields}];
  const why = (d: LWProcess.Definition) => catalog.validate(d).diagnostics.map(x => x.path + ' ' + x.message);
  // The escalation path reads x, which the normal route rewrites at any moment: x may be 1 or 2 there (the run used to fail the case).
- assert.deepEqual(why(build(steps({check: {needs: [{field: 'x', op: 'eq', value: 1}]}}), flows, data({x: 1}))), ['/steps/5/needs/0 Needs x = 1, but Delivered only on some routes; possible values: 1, 2.']);
+ assert.deepEqual(why(build(steps({check: {needs: [{field: 'x', op: 'eq', value: 1}]}}), flows, data({x: 1}))), ['/steps/5/needs/0 Needs x = 1, but it is delivered only on some routes; possible values: 1, 2.']);
  assert.deepEqual(why(build(steps({check: {needs: [{field: 'x'}]}}), flows, data({x: 1}))), []);
  // Both sides writing one field is a race whatever reads it.
  assert.deepEqual(why(build(steps({check: {set: {x: 99}}}), flows, data({x: 1}))), ['/steps/1/deadline The escalation path and the work that continues beside it both write x; the result would depend on timing. Give each side its own fields.']);
  // The normal route sees the escalation path's writes too.
- assert.deepEqual(why(build(steps({check: {set: {y: 1}}, setx: {needs: [{field: 'y', op: 'eq', value: 0}]}}), flows, data({x: 1, y: 0}))), ['/steps/2/needs/0 Needs y = 0, but Delivered only on some routes; possible values: 0, 1.']);
+ assert.deepEqual(why(build(steps({check: {set: {y: 1}}, setx: {needs: [{field: 'y', op: 'eq', value: 0}]}}), flows, data({x: 1, y: 0}))), ['/steps/2/needs/0 Needs y = 0, but it is delivered only on some routes; possible values: 0, 1.']);
  // Separate fields stay admitted and run as before.
  const fine = build(steps({check: {set: {alerted: true}, needs: [{field: 'x'}]}}), flows, data({x: 1}));
  assert.deepEqual(why(fine), []); const q = run(fine, 100); assert.deepEqual([q.metrics.completed, q.metrics.failed, q.steps.find(x => x.id === 'slow')!.deadlines], [1, 0, {interrupted: 0, escalated: 1}]);

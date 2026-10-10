@@ -17,6 +17,8 @@ runSuite('process step editor browser harness', 'process-step-editor-browser-res
   assert.equal(await page.evaluate(() => document.querySelector('dialog.pd-dialog[open]')!.matches(':modal')), true);
   assert.equal(await page.locator('#se-title').innerText(), 'Discovery'); assert.equal(await page.locator('#se-chip').innerText(), 'task'); assert.equal(await page.locator('#se-meta').innerText(), 'discovery');
   assert.equal(await activeId(), 'se-name'); assert.equal((await query(page)).selected, 'discovery');
+  assert.equal(await page.locator('#se-apply').isDisabled(), true, 'an unchanged step and draft have nothing to apply');
+  assert.match(await page.locator('#se-reason').innerText(), /Nothing to apply: this step and the draft hold the running definition\. Use Reset run to restart the run\./);
   await assert.rejects(page.locator('#play').click({timeout: 700}), 'the page behind the modal is inert');
   for (let i = 0; i < 70; i++) { await page.keyboard.press('Tab'); assert.equal(await page.evaluate(() => !!document.activeElement?.closest('dialog.pd-dialog')), true, 'forward Tab stays inside at ' + i); }
   for (let i = 0; i < 6; i++) { await page.keyboard.press('Shift+Tab'); assert.equal(await page.evaluate(() => !!document.activeElement?.closest('dialog.pd-dialog')), true, 'Shift+Tab stays inside'); }
@@ -49,7 +51,7 @@ runSuite('process step editor browser harness', 'process-step-editor-browser-res
   // A decision's conditions: compare with another field and save, then reopen, switch back to a value, reorder and apply. The draft also carries the discovery edits, which the modal announces.
   await page.locator('[data-step="review-gate"]').click(); await page.locator('#edit-step').click();
   assert.match(await page.locator('#se-flows-0-label').inputValue(), /Findings/); assert.equal(await page.locator('#se-flows-1-cond-on').isChecked(), false); assert.equal(await page.locator('[data-act="up"][data-i="0"]').isDisabled(), true);
-  assert.match(await page.locator('dialog.pd-dialog[open]').innerText(), /Cannot move up/); assert.match(await page.locator('dialog.pd-dialog[open]').innerText(), /edit the raw JSON draft/);
+  assert.match(await page.locator('dialog.pd-dialog[open]').innerText(), /Cannot move up/); assert.match(await page.locator('dialog.pd-dialog[open]').innerText(), /add a path with Add path to… or remove one/);
   await page.locator('#se-flows-0-cond-mode-field').check(); await page.locator('#se-flows-0-cond-valueField').fill('reworkLimit'); await page.locator('#se-flows-0-cond-op').selectOption('lt'); await page.locator('#se-flows-0-cond-field').fill('reworks'); await page.locator('#se-save').click();
   const gate = (JSON.parse(await draftText()) as LWProcess.Definition).flows.find(f => f.id === 'review-gate-rework')!; assert.deepEqual(gate.when, {field: 'reworks', op: 'lt', valueField: 'reworkLimit'});
   await page.locator('#edit-step').click(); assert.equal(await page.locator('#se-banner').isVisible(), true); assert.equal(await page.locator('#se-flows-0-cond-mode-field').isChecked(), true);
@@ -61,15 +63,27 @@ runSuite('process step editor browser harness', 'process-step-editor-browser-res
   assert.equal(applied.definition.steps[1]!.name, 'Discovery workshop'); assert.equal(applied.definition.steps[1]!.duration, 20);
   const out = applied.definition.flows.filter(f => f.from === 'review-gate'); assert.deepEqual(out.map(f => f.to), ['handover', 'rework']);
   assert.deepEqual(out[1]!.when, {field: 'needsRework', op: 'eq', value: true}); assert.equal(out[1]!.label, 'Findings to fix'); assert.equal(await page.locator('#message').innerText(), 'Definition applied. New run is paused.');
-  assert.equal(await activeId(), ''); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.step), 'review-gate', 'a fresh run clears the selection, so focus falls back to the step list item');
+  // A new revision of the same process keeps the selected step (UX-10), so Edit step stays and takes focus back.
+  assert.equal((await query(page)).selected, 'review-gate'); assert.equal(await activeId(), 'edit-step', 'focus returns to the invoker of the kept step');
  });
  await check('Step editor shows engine diagnostics inline, keeps the draft on Cancel and asks before discarding changes', async () => {
   await freshStudio(); const before = await query(page), original = await draftText();
   await page.locator('[data-step="implementation"]').click(); await page.locator('#edit-step').click();
   assert.equal(await page.locator('#se-status').innerText(), '', 'no problems means no status line'); assert.equal(await page.locator('#se-duration').getAttribute('aria-invalid'), null);
   await page.locator('#se-duration').fill(''); assert.match(await page.locator('#se-err-duration').innerText(), /Task duration must be 1 or more/); assert.match(await page.locator('#se-status').innerText(), /1 problem in this step/); assert.equal(await page.locator('#se-duration').getAttribute('aria-invalid'), 'true');
-  await page.locator('#se-save').waitFor(); await page.locator('#se-apply').click(); assert.equal(await page.locator('#se-apply-errors').isVisible(), true); assert.match(await page.locator('#se-apply-errors').innerText(), /duration/);
-  assert.equal(await dialogOpen(), 1); assert.equal(await draftText(), original, 'a failed apply never writes the draft'); assert.deepEqual((await query(page)).snapshot, before.snapshot);
+  assert.equal(await page.locator('#se-apply').isDisabled(), true); assert.match(await page.locator('#se-reason').innerText(), /Fix the problems in this step before applying\./);
+  assert.equal(await dialogOpen(), 1); assert.equal(await draftText(), original, 'a refused apply never writes the draft'); assert.deepEqual((await query(page)).snapshot, before.snapshot);
+  // Empty fields get plain local problems named after their row; the catalog's schema text never reaches the step editor.
+  await page.locator('#se-add-need').click(); assert.match(await page.locator('#se-status').innerText(), /Need 3: Name the field earlier steps must deliver, or remove this row\./);
+  await page.locator('#se-status a[data-goto="se-needs-2-field"]').click(); assert.equal(await activeId(), 'se-needs-2-field'); await page.locator('[data-act="remove-need"][data-i="2"]').click();
+  await page.locator('#se-name').fill(''); assert.match(await page.locator('#se-status').innerText(), /Give the step a name \(1 to 120 characters\)/);
+  assert.doesNotMatch(await page.locator('#se-status').innerText(), /String has invalid/); assert.equal(await page.locator('#se-apply').isDisabled(), true);
+  await page.locator('#se-status a[data-goto="se-name"]').click(); assert.equal(await activeId(), 'se-name'); await page.locator('#se-name').fill('Implementation');
+  // Case-field names come with suggestions: needs from fields delivered earlier, values and counters from every known field.
+  const listed = (id: string) => page.locator(`#${id} option`).evaluateAll(o => o.map(n => (n as HTMLOptionElement).value));
+  assert.equal(await page.locator('#se-needs-0-field').getAttribute('list'), 'se-fields-earlier'); assert.equal(await page.locator('[data-bind="set.0.key"]').getAttribute('list'), 'se-fields-all');
+  assert.deepEqual(await listed('se-fields-earlier'), ['needsRework', 'priority', 'problemFramed', 'requirementsReady', 'techReady']);
+  const known = await listed('se-fields-all'); assert.ok(['built', 'verified', 'needsRework', 'problemFramed'].every(n => known.includes(n)), known.join());
   await page.locator('#se-duration').fill('25'); assert.equal(await page.locator('#se-err-duration').innerText(), '');
   await page.locator('[data-bind="set.0.key"]').fill('built'); await page.locator('[data-bind="set.0.key"]').fill('');
   assert.match(await page.locator('#se-err-set').innerText(), /Name the field or remove this row/); assert.equal(await page.locator('#se-save').isDisabled(), true); assert.match(await page.locator('#se-reason').innerText(), /Fix the highlighted fields/);
@@ -200,7 +214,8 @@ runSuite('process step editor browser harness', 'process-step-editor-browser-res
   assert.equal(await activeId(), 'se-back'); assert.equal(await page.locator('#se-apply-reset').innerText(), 'Apply and reset'); assert.deepEqual((await query(page)).definition, before.definition);
   await page.keyboard.press('Escape'); assert.equal(await page.locator('#se-confirm').isHidden(), true); assert.equal(await dialogOpen(), 1); assert.equal((await query(page)).snapshot.minute, 30);
   await page.locator('#se-apply').click(); await page.locator('#se-apply-reset').click(); assert.equal(await dialogOpen(), 0);
-  const applied = await query(page); assert.equal(applied.snapshot.minute, 0); assert.equal(applied.definition.steps[1]!.duration, 20); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.step), 'discovery');
+  const applied = await query(page); assert.equal(applied.snapshot.minute, 0); assert.equal(applied.definition.steps[1]!.duration, 20);
+  assert.deepEqual([applied.selected, await activeId()], ['discovery', 'edit-step'], 'the selection survives the apply and focus returns to Edit step');
   // Errors link to fields, each field shows one problem, and problems elsewhere in the draft are listed with names.
   await openDef(); const raw = JSON.parse(await draftText()) as LWProcess.Definition; delete raw.steps[1]!.duration; await page.locator('#draft').fill(JSON.stringify(raw)); await closeDef();
   await page.locator('[data-step="implementation"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-duration').fill('');
@@ -336,15 +351,71 @@ runSuite('process step editor browser harness', 'process-step-editor-browser-res
   await page.locator('#se-deadline-mode-interrupt').check(); await page.locator('#se-deadline-flow').selectOption('f7'); assert.match(await page.locator('#se-sections fieldset.se-deadline-path legend').innerText(), /to Paid out · deadline path/); await page.locator('#se-deadline-flow').selectOption('approve-late');
   await page.locator('#se-save').click(); const approve = (await defOf()); assert.deepEqual(approve.steps.find(s => s.id === 'approve')!.deadline, {timing: {dist: 'normal', mean: 15, sd: 3}, mode: 'interrupt', flow: 'approve-late'});
   assert.deepEqual(approve.flows.filter(f => f.from === 'approve').map(f => [f.id, f.on]), [['f7', undefined], ['approve-late', 'deadline']]);
-  // A step with a single outgoing flow explains how to add the deadline flow in the JSON instead of offering one.
-  await openRandom('notify'); await page.locator('#se-deadline-kind').selectOption('after'); assert.match(await page.locator('#se-deadline-noflow').innerText(), /only one outgoing flow/); assert.equal(await page.locator('#se-deadline-flow').count(), 0);
-  assert.match(await page.locator('#se-err-deadline').innerText(), /second flow/); assert.equal(await page.locator('#se-save').isDisabled(), true); await page.locator('#se-deadline-help').click(); assert.equal(await page.locator('#se-deadline-help').getAttribute('aria-expanded'), 'true');
-  assert.match(await page.locator('#se-deadline-hint').innerText(), /"on": "deadline"/); await page.locator('#se-deadline-kind').selectOption('none'); assert.equal(await page.locator('#se-err-deadline .se-err').count(), 0); await discard();
+  // A step with a single outgoing path explains that a deadline needs a second one and links to Add path to….
+  await openRandom('notify'); await page.locator('#se-deadline-kind').selectOption('after'); assert.match(await page.locator('#se-deadline-noflow').innerText(), /only one outgoing path/); assert.equal(await page.locator('#se-deadline-flow').count(), 0);
+  assert.match(await page.locator('#se-err-deadline').innerText(), /second path/); assert.equal(await page.locator('#se-save').isDisabled(), true); assert.match(await page.locator('#se-deadline-noflow').innerText(), /Add one with Add path to…/);
+  await page.locator('#se-deadline-noflow a[data-goto="se-add-path-to"]').click(); assert.equal(await activeId(), 'se-add-path-to');
+  await page.locator('#se-deadline-kind').selectOption('none'); assert.equal(await page.locator('#se-err-deadline .se-err').count(), 0); await discard();
   // The saved draft is accepted by the engine and a seeded run records items and deadlines in the metrics.
   assert.equal(await catalogOk(await draftText()), true); await openRandom('approve'); await page.locator('#se-apply').click(); await page.waitForFunction(() => document.querySelectorAll('dialog.pd-dialog[open]').length === 0);
   for (let i = 0; i < 3; i++) await page.locator('#advance').click();
   const run = (await query(page)).snapshot, steps = new Map(run.steps.map(s => [s.id, s]));
   assert.ok(steps.get('inspect')!.items!.started >= 3 && steps.get('inspect')!.items!.finished >= 3, 'instances run as items'); assert.ok(steps.get('approve')!.deadlines!.interrupted > 0, 'approvals past the random deadline are interrupted'); assert.equal(steps.get('route')!.id, 'route');
+ });
+ await check('Step editor adds, retargets and removes outgoing paths and offers a new path as the deadline path', async () => {
+  await importClaims(false); await openRandom('notify');
+  const legends = () => page.locator('#se-h-flows ~ fieldset > legend').allInnerTexts();
+  assert.deepEqual(await legends(), ['Path 1 of 1 · to Escalated']); assert.equal(await page.locator('#se-flows-0-to').inputValue(), 'alert');
+  // A task keeps exactly one normal path, so its only path cannot be removed; the reason is visible and referenced.
+  const removeFirst = page.locator('[data-act="remove-path"][data-i="0"]');
+  assert.equal(await removeFirst.isDisabled(), true); assert.equal(await removeFirst.getAttribute('aria-describedby'), 'se-flows-0-keep');
+  assert.equal(await page.locator('#se-flows-0-keep').innerText(), 'A task needs exactly one outgoing path.');
+  const targets = await page.locator('#se-flows-0-to option').evaluateAll(o => o.map(n => (n as HTMLOptionElement).value));
+  assert.equal(targets.includes('start'), false, 'no path may lead back to the start'); assert.equal(targets.includes('notify'), false); assert.ok(targets.includes('done'));
+  // Add a second path, choose it as the deadline path and apply.
+  await page.locator('#se-deadline-kind').selectOption('after'); await page.locator('#se-add-path-to').selectOption('alert'); await page.locator('#se-add-path').click();
+  assert.equal(await activeId(), 'se-flows-1-to'); assert.deepEqual(await legends(), ['Path 1 of 2 · to Escalated', 'Path 2 of 2 · to Escalated']);
+  assert.deepEqual(await page.locator('#se-deadline-flow option').allInnerTexts(), ['Choose a flow', 'f8 → Escalated', 'notify-alert → Escalated']);
+  await page.locator('#se-deadline-flow').selectOption('notify-alert'); assert.equal(await page.locator('[data-act="remove-path"][data-i="1"]').isEnabled(), true, 'the deadline path may be removed');
+  // Go to points a path at another step and the deadline choice follows its new name.
+  await page.locator('#se-flows-1-to').selectOption('done'); assert.match((await legends())[1]!, /to Paid out · deadline path/);
+  assert.deepEqual(await page.locator('#se-deadline-flow option').allInnerTexts(), ['Choose a flow', 'f8 → Escalated', 'notify-alert → Paid out']);
+  await page.locator('#se-flows-1-to').selectOption('alert'); assert.equal(await page.locator('#se-status').innerText(), '');
+  await page.locator('#se-apply').click(); await page.waitForFunction(() => document.querySelectorAll('dialog.pd-dialog[open]').length === 0);
+  const applied = (await query(page)).definition, notify = applied.steps.find(s => s.id === 'notify')!;
+  assert.deepEqual(applied.flows.filter(f => f.from === 'notify'), [{id: 'f8', from: 'notify', to: 'alert'}, {id: 'notify-alert', from: 'notify', to: 'alert', on: 'deadline'}]);
+  assert.deepEqual(notify.deadline, {after: 8, mode: 'interrupt', flow: 'notify-alert'});
+  // Removing the deadline path leaves the deadline asking for a second path; a fork keeps at least two branches.
+  await openRandom('notify'); await page.locator('[data-act="remove-path"][data-i="1"]').click(); assert.equal(await activeId(), 'se-add-path');
+  assert.match(await page.locator('#se-err-deadline').innerText(), /second path/); await page.locator('#se-deadline-kind').selectOption('none'); await page.locator('#se-save').click();
+  assert.deepEqual((await defOf()).flows.filter(f => f.from === 'notify').map(f => f.id), ['f8']);
+  await openRandom('route'); assert.equal(await page.locator('#se-flows-1-keep').innerText(), 'A fork needs at least two outgoing paths.'); await page.locator('#se-close').click();
+  // An end step has no paths and offers none.
+  await openRandom('done'); assert.match(await dlgText(), /This step ends the process, so it has no outgoing paths\./); assert.equal(await page.locator('#se-add-path').count(), 0); await page.locator('#se-close').click();
+ });
+ await check('Step editor moves to the previous or next step behind the same dirty guard', async () => {
+  await freshStudio(); const original = await draftText(); await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-name').waitFor();
+  const prev = page.locator('#se-step-prev'), next = page.locator('#se-step-next');
+  assert.equal(await prev.innerText(), 'Previous step: Project intake'); assert.equal(await next.innerText(), 'Next step: Plan together');
+  await next.click(); assert.equal(await page.locator('#se-title').innerText(), 'Plan together'); assert.equal(await page.locator('#se-chip').innerText(), 'fork');
+  assert.equal(await activeId(), 'se-step-next', 'focus stays on Next for the following step'); await prev.click(); await prev.click();
+  assert.equal(await page.locator('#se-title').innerText(), 'Project intake'); assert.equal(await prev.isDisabled(), true); assert.equal(await prev.getAttribute('aria-describedby'), 'se-step-prev-why');
+  assert.equal(await page.locator('#se-step-prev-why').innerText(), 'This is the first step.'); assert.equal(await activeId(), 'se-step-next');
+  // Unsaved edits ask first: Keep editing is the default, Save to draft and go keeps them, Discard changes drops them.
+  await next.click(); await page.locator('#se-name').fill('Discovery workshop'); await next.click();
+  assert.equal(await page.locator('#se-confirm-title').innerText(), 'Go to Plan together? Your changes to Discovery workshop are not in the draft yet.');
+  assert.deepEqual(await page.locator('#se-choices button').allInnerTexts(), ['Keep editing', 'Save to draft and go', 'Discard changes']); assert.equal(await activeId(), 'se-keep');
+  await page.keyboard.press('Escape'); assert.equal(await page.locator('#se-title').innerText(), 'Discovery'); assert.equal(await page.locator('#se-name').inputValue(), 'Discovery workshop');
+  await next.click(); await page.locator('#se-save-go').click(); assert.equal(await page.locator('#se-title').innerText(), 'Plan together'); assert.match(await draftText(), /"name": "Discovery workshop"/);
+  await prev.click(); assert.equal(await page.locator('#se-name').inputValue(), 'Discovery workshop'); await page.locator('#se-name').fill('Dropped rename');
+  await prev.click(); await page.locator('#se-discard').click(); assert.equal(await page.locator('#se-title').innerText(), 'Project intake'); assert.doesNotMatch(await draftText(), /Dropped rename/);
+  // With local problems the edits cannot be saved, so only Keep editing and Discard changes are offered.
+  await next.click(); await page.locator('#se-add-set').click(); await next.click();
+  assert.deepEqual(await page.locator('#se-choices button').allInnerTexts(), ['Keep editing', 'Discard changes']); await page.locator('#se-discard').click();
+  for (let i = 0; i < 9; i++) await next.click();
+  assert.equal(await page.locator('#se-title').innerText(), 'Delivered'); assert.equal(await next.isDisabled(), true); assert.equal(await page.locator('#se-step-next-why').innerText(), 'This is the last step.');
+  await page.keyboard.press('Escape'); assert.equal(await dialogOpen(), 0); assert.equal(await activeId(), 'edit-step');
+  await openDef(); await restoreDef(); assert.equal(await draftText(), original); await closeDef();
  });
  await checkLifecycle('Process step editor browser lifecycle emits no runtime errors or network requests');
 });

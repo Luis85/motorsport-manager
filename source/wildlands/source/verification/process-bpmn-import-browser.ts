@@ -189,6 +189,42 @@ async function main(): Promise<void> {
    await page.locator('#bi-cancel').click(); await dlg.waitFor({state: 'hidden'}); assert.equal(await activeId(), 'more-menu', 'focus returns to the menu that opened it');
    await page.setViewportSize({width: 1440, height: 900});
   });
+  // Bounded import analysis: a capped preview, an early plain refusal of oversized processes, and one analysis per preview.
+  await check('BPMN import dialog caps each mapping group at 200 rows and counts the rest, refuses a process too large for a definition in plain words, '
+   + 'and Import reuses the preview analysis', async () => {
+   await fresh();
+   const file = (name: string, body: string) => '<?xml version="1.0"?><bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="D">'
+    + `<bpmn:process id="P" name="${name}" isExecutable="true">${body}</bpmn:process></bpmn:definitions>`;
+   const seq = (id: string, from: string, to: string) => `<bpmn:sequenceFlow id="${id}" sourceRef="${from}" targetRef="${to}"/>`;
+   const notes = Array.from({length: 450}, (_, i) => `<bpmn:textAnnotation id="N${i}"/>`).join('');
+   const work = '<bpmn:startEvent id="S"/><bpmn:task id="T" name="Work"/><bpmn:endEvent id="E"/>' + seq('F1', 'S', 'T') + seq('F2', 'T', 'E');
+   const annotated = file('Annotated', work + notes);
+   const none = await page.evaluate(x => {
+    const r = (globalThis as unknown as {LWProcessBpmn: LWProcessBpmn.Api}).LWProcessBpmn.analyze(x); return r.mapping.filter(m => m.target === 'none').length;
+   }, annotated);
+   assert(none >= 450, String(none)); await pick('annotated.bpmn', annotated);
+   const group = page.locator('#bi-preview details[data-group="none"]'); assert.match(await group.locator('summary').innerText(), new RegExp(`\\(${none}\\)$`));
+   await group.locator('summary').click(); const rows = group.locator('tbody tr');
+   assert.equal(await rows.count(), 201); assert.equal(await rows.last().innerText(), `… ${none - 200} more entries not shown`);
+   const options = await used(), want = await expected(page, annotated, options!);
+   // Import applies the definition the preview already analysed: neither analyze nor import runs again.
+   await page.evaluate(() => {
+    const w = globalThis as unknown as {LWProcessBpmn: Record<string, (...a: unknown[]) => unknown>; __calls: Record<string, number>};
+    w.__calls = {analyze: 0, import: 0};
+    for (const k of ['analyze', 'import']) { const f = w.LWProcessBpmn[k]!; w.LWProcessBpmn[k] = (...a: unknown[]) => { w.__calls[k]!++; return f(...a); }; }
+   });
+   await importAndWait('annotated.bpmn');
+   assert.deepEqual(await page.evaluate(() => (globalThis as unknown as {__calls: object}).__calls), {analyze: 0, import: 0});
+   assert.deepEqual([(await active(page)).fingerprint, (await active(page)).name], [want.fingerprint, 'Annotated']);
+   // 600 tasks can never become a 128-step definition: the preview names the limits instead of analysing the whole graph.
+   const tasks = Array.from({length: 600}, (_, i) => `<bpmn:task id="T${i}"/>` + seq('F' + i, i ? 'T' + (i - 1) : 'S', 'T' + i)).join('');
+   await fresh(); await pick('huge.bpmn', file('Huge', '<bpmn:startEvent id="S"/>' + tasks + '<bpmn:endEvent id="E"/>' + seq('FE', 'T599', 'E')));
+   assert.match(await page.locator('#bi-preview .bi-verdict').innerText(), /Cannot import: 1 rejection\./);
+   assert.match(await page.locator('#bi-preview .bi-bad li').innerText(),
+    /^import This process is too large to import: it has 602 flow nodes and 601 sequence flows, but a Wildlands process holds at most 128 steps and 256 flows/);
+   assert.equal(await page.locator('#bi-import').isDisabled(), true); assert.equal(await page.locator('#bi-preview details.bi-group').count(), 0);
+   await page.locator('#bi-cancel').click(); await dlg.waitFor({state: 'hidden'});
+  });
   await check('BPMN import browser lifecycle emits no runtime errors or network requests', async () => {
    assert.deepEqual(diagnostics.errors, []); assert.deepEqual(diagnostics.requests, []);
    assert.deepEqual(diagnostics.consoleProblems.filter(x => x.startsWith('error:')), []);

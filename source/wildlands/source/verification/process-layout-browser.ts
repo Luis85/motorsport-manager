@@ -5,8 +5,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {waitForReady, openArtifact, nextFrames} from './browser-harness';
 import {query, OUT, runSuite} from './process-browser-fixture';
+import {feedFixture} from './process-browser-models';
 runSuite('process layout browser harness', 'process-layout-browser-results.json', async studio => {
- const {page, dir, file, fixtureUrls, check, checkLifecycle, freshStudio, dialogOpen, activeId, switchTo, applyDraft, importFeed} = studio;
+ const {page, dir, file, fixtureUrls, check, checkLifecycle, freshStudio, dialogOpen, activeId, switchTo, applyDraft, importFeed, importJson} = studio;
  await check('Desktop and mobile reflow retain controls without horizontal overflow', async () => {
   await openArtifact(page, file, {url: fixtureUrls[0]!}); await waitForReady(page, {host: 'process'});
   await page.locator('[data-step="discovery"]').click(); await page.locator('#step').click(); await nextFrames(page);
@@ -18,8 +19,7 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   await page.screenshot({path: path.join(OUT, 'process-mobile-2d.png'), fullPage: true});
   await page.setViewportSize({width: 900, height: 900}); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   const long = (await query(page)).definition; long.name = 'LongProcessName'.repeat(8); long.steps[0]!.name = 'LongStepName'.repeat(7);
-  await page.locator('#file').setInputFiles({name: 'long-labels.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(long))});
-  await page.waitForFunction(name => document.getElementById('process-title')!.textContent === name, long.name);
+  await importJson('long-labels.json', long); await page.waitForFunction(name => document.getElementById('process-title')!.textContent === name, long.name);
   await page.locator('[data-step]').first().click();
   for (const width of [1440, 900, 390]) {await page.setViewportSize({width, height: 900}); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);}
   await page.setViewportSize({width: 1440, height: 1060});
@@ -38,6 +38,12 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   await page.setViewportSize({width: 1440, height: 1060});
  });
  const actOpen = page.locator('dialog.act-dialog[open]'), actRows = () => page.locator('#act-rows tr');
+ /** The colour a studio token resolves to, so an element's paint can be compared with the legend's tokens. */
+ const tokenColour = (token: string) => page.evaluate(t => {
+  const probe = document.createElement('i'); probe.style.color = `var(${t})`; document.querySelector('.process-studio')!.append(probe);
+  const colour = getComputedStyle(probe).color; probe.remove(); return colour;
+ }, token);
+ const paint = (selector: string, property: 'color' | 'backgroundColor') => page.locator(selector).evaluate((e, p) => getComputedStyle(e)[p], property);
  await check('Activity opens as a modal from the toolbar, filters, links to steps and exports without pausing the run', async () => {
   await page.setViewportSize({width: 1440, height: 1060}); await freshStudio();
   const opener = page.locator('#open-activity');
@@ -90,13 +96,32 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   await importFeed({arrivals: [{at: 100, count: 1, interval: 0, data: {}}]}); await opener.click(); await actOpen.waitFor();
   assert.match(await page.locator('#act-rows').innerText(), /No events yet\. Run the simulation\./); assert.match(await page.locator('#act-subtitle').innerText(), /^Minute 0 · 0 events$/); assert.equal(await page.locator('#act-csv').isDisabled(), true); await page.keyboard.press('Escape');
  });
- await check('Activity freezes while scrolled and shows a new-events pill, the badge counts unseen events', async () => {
+ await check('Activity freezes while scrolled and shows a new-events pill, the badge counts unseen problems only', async () => {
   await page.setViewportSize({width: 1440, height: 1060}); await importFeed();
   const opener = page.locator('#open-activity'), label = () => opener.getAttribute('aria-label');
-  await page.locator('#step').click(); const few = await opener.innerText(); assert.match(few, /^Activity · \d+$/); const n = Number(few.split('· ')[1]); assert(n >= 1 && n < 99, few);
-  assert.equal(await label(), `Activity, ${n} new event${n === 1 ? '' : 's'}`);
-  await opener.click(); await actOpen.waitFor(); await page.keyboard.press('Escape'); assert.equal(await opener.innerText(), 'Activity', 'opening marks the events as seen'); assert.equal(await label(), 'Activity');
-  await page.locator('#advance').click(); await page.locator('#advance').click(); assert.equal(await opener.innerText(), 'Activity · 99+'); assert.equal(await label(), 'Activity, more than 99 new events');
+  // Routine events (arrived, entered, started, routed) never raise the badge.
+  await page.locator('#step').click(); assert(((await query(page)).snapshot.events.length) > 0); assert.equal(await opener.innerText(), 'Activity');
+  assert.equal(await label(), 'Activity');
+  // A full backlog blocks arrivals: the badge counts those problems in the danger tone, and opening the list marks them seen.
+  const blocked = feedFixture(); (blocked.steps[1] as Record<string, unknown>).backlog = {capacity: 1};
+  await importJson('blocked-line.json', blocked); await page.locator('#step').click();
+  assert.equal(await opener.innerText(), 'Activity', 'nothing is blocked yet');
+  await page.locator('#advance').click(); const few = await opener.innerText(); assert.match(few, /^Activity · \d+$/); const n = Number(few.split('· ')[1]);
+  assert(n >= 1 && n < 99, few);
+  assert.equal(await label(), `Activity, ${n} new problem${n === 1 ? '' : 's'}`);
+  assert.equal(await paint('#activity-count', 'color'), await tokenColour('--danger-text'), 'the badge uses the danger tone');
+  // The step list dot shows live state in the legend colours: the start step holds blocked work and says so; an idle step has no dot.
+  const dot = page.locator('[data-step="start"] i');
+  assert.deepEqual([await dot.getAttribute('data-state'), await dot.getAttribute('aria-hidden')], ['held', 'true']);
+  assert.equal(await paint('[data-step="start"] i', 'backgroundColor'), await tokenColour('--danger'), 'blocked work in the legend colour');
+  assert.match(await page.locator('[data-step="start"] small').innerText(), / · \d+ blocked$/);
+  assert.equal(await page.locator('[data-step="end"] i').count(), 0, 'an idle step has no state dot');
+  for (let i = 0; i < 12 && await opener.innerText() !== 'Activity · 99+'; i++) await page.locator('#advance').click();
+  assert.equal(await opener.innerText(), 'Activity · 99+'); assert.equal(await label(), 'Activity, more than 99 new problems');
+  await opener.click(); await actOpen.waitFor(); await page.keyboard.press('Escape');
+  assert.equal(await opener.innerText(), 'Activity', 'opening marks the problems as seen'); assert.equal(await label(), 'Activity');
+  await importFeed(); await page.locator('#advance').click(); await page.locator('#advance').click();
+  assert.equal(await opener.innerText(), 'Activity', 'a long routine run stays quiet');
   await opener.click(); await actOpen.waitFor(); assert.match(await page.locator('#act-subtitle').innerText(), /showing the latest 128 of \d+ events/); assert.equal(await actRows().count(), 128);
   assert.equal(await page.locator('#act-note').isVisible(), true); assert.match(await page.locator('#act-note').innerText(), /Earlier events are not kept/); await page.keyboard.press('Escape'); assert.equal(await opener.innerText(), 'Activity');
   // Live: at the top the list follows the run; scrolled or with a filter focused it freezes and a status pill offers the update.
@@ -152,6 +177,20 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   await trigger.click(); pending = page.waitForEvent('download'); await page.locator('#report').click(); saved = await pending; assert.match(saved.suggestedFilename(), /\.report\.json$/);
   // The primary button swaps its label; the stage keeps its place while the run plays.
   await page.locator('#play').click(); assert.equal(await page.locator('#play').innerText(), 'Pause'); await page.locator('#play').click(); assert.equal(await page.locator('#play').innerText(), 'Run simulation');
+  // A stopped run moves the primary emphasis to Reset: the disabled Run loses the accent fill, and focus moves from Run to Reset.
+  await page.locator('#horizon').selectOption('custom'); await page.locator('#horizon-custom').fill('20');
+  await page.locator('#horizon-custom').dispatchEvent('change');
+  await page.locator('#play').focus(); await page.keyboard.press('Enter');
+  await page.waitForFunction(() => (globalThis as any).LWProcessStudio.query().snapshot.status === 'limit');
+  const emphasis = await page.evaluate(() => ({
+   primary: [...document.querySelectorAll('.process-toolbar button.primary')].map(b => b.id), focus: document.activeElement?.id,
+   reset: !(document.getElementById('reset') as HTMLButtonElement).disabled, play: (document.getElementById('play') as HTMLButtonElement).disabled,
+  }));
+  assert.deepEqual(emphasis, {primary: ['reset'], focus: 'reset', reset: true, play: true});
+  assert.notEqual(await paint('#play', 'backgroundColor'), await tokenColour('--accent'), 'the disabled Run loses the accent fill');
+  await page.keyboard.press('Enter');
+  assert.deepEqual([await page.locator('#play').getAttribute('class'), await page.locator('#reset').getAttribute('class')], ['primary', 'ghost']);
+  await page.locator('#horizon').selectOption('100000');
   // Inputs & outputs: remembered per session, with its own scroll.
   await page.setViewportSize({width: 1920, height: 1080}); await nextFrames(page); assert.equal((await fits()).io, true); assert.equal(await page.locator('#process-data').evaluate(e => getComputedStyle(e).overflowY), 'auto');
   await page.locator('#io-panel > summary').click(); assert.equal((await fits()).io, false); await page.setViewportSize({width: 1366, height: 768}); await page.setViewportSize({width: 2560, height: 1080}); await nextFrames(page); assert.equal((await fits()).io, false, 'the choice outlives resizing');
@@ -161,6 +200,10 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   await page.locator('#mode-3d').click(); await page.locator('#overview').click(); await page.screenshot({path: path.join(OUT, 'process-desktop-fit.png')});
  });
  await check('Phone layout keeps the run bar, step navigation and dialogs usable without horizontal overflow', async () => {
+  // A business process opens on the readable 2D map on a phone; 3D stays one press away.
+  await page.setViewportSize({width: 390, height: 844}); await freshStudio(); assert.equal((await query(page)).mode, '2d');
+  assert.equal(await page.locator('#map').isVisible(), true);
+  await page.locator('#mode-3d').click(); assert.equal((await query(page)).mode, '3d'); await page.setViewportSize({width: 1440, height: 1060});
   await freshStudio(); const noOverflow = () => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
   const small = (selector: string) => page.evaluate(s => [...document.querySelectorAll<HTMLElement>(s)].filter(n => n.getClientRects().length && n.getBoundingClientRect().height < 43.5).map(n => n.id || n.textContent), selector);
   for (const [width, height] of [[320, 640], [390, 844], [768, 1024], [1100, 800]] as const) { await page.setViewportSize({width, height}); await nextFrames(page); assert.equal(await noOverflow(), true, `no horizontal overflow at ${width}`); }
@@ -172,16 +215,43 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   for (const id of ['#advance', '#reset', '#speed', '#horizon', '#seed']) assert.equal(await page.locator(id).isVisible(), true, id); assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
   assert.deepEqual(await small('.process-toolbar button, .process-toolbar select, .process-toolbar input, .process-header button, .process-header select, .process-nav button'), [], 'touch targets are 44px'); await toggle.click(); assert.equal(await page.locator('#advance').isHidden(), true);
   await page.locator('#play').click(); assert.equal(await page.locator('#play').innerText(), 'Pause'); await page.locator('#play').click(); await page.locator('#step').click(); assert.equal((await query(page)).playing, false);
-  // Compact header: Edit and an overflow menu holding Import and the exports.
-  assert.equal(await page.locator('#open-definition').innerText(), 'Edit'); assert.equal(await page.locator('#export-menu').isHidden(), true); assert.equal(await page.locator('#import').isHidden(), true);
+  // A stopped run keeps Reset outside Run options as the primary action and moves focus to it from the disabled Run; Reset hands focus back to Run.
+  await toggle.click(); await page.locator('#speed').selectOption('120'); await toggle.click();
+  await page.locator('#play').focus(); await page.keyboard.press('Enter');
+  await page.waitForFunction(() => (globalThis as any).LWProcessStudio.query().snapshot.status === 'completed');
+  const stopped = () => page.evaluate(() => { const shown = (id: string) => document.getElementById(id)!.getClientRects().length > 0;
+   const get = (id: string) => document.getElementById(id)!;
+   return [document.activeElement?.id, shown('reset'), get('reset').className, get('play').className, shown('step'), get('run-options-toggle').getAttribute('aria-expanded')];
+   });
+  assert.deepEqual(await stopped(), ['reset', true, 'primary', '', false, 'false']); assert.equal(await noOverflow(), true);
+  await page.screenshot({path: path.join(OUT, 'process-mobile-stopped.png')});
+  await page.keyboard.press('Enter'); assert.deepEqual(await stopped(), ['play', false, 'ghost', 'primary', true, 'false']);
+  // Compact header: Edit and an overflow menu holding Import and the exports. The short label keeps the full accessible name.
+  assert.equal(await page.locator('#open-definition').innerText(), 'Edit');
+  assert.equal(await page.getByRole('button', {name: 'Edit process', exact: true}).count(), 1);
+  assert.equal(await page.locator('#export-menu').isHidden(), true); assert.equal(await page.locator('#import').isHidden(), true);
   await page.locator('#more-menu').click(); assert.deepEqual(await page.locator('#export-items [role=menuitem]:visible').allInnerTexts(), ['Import JSON or BPMN…', 'Present slides', 'Export JSON', 'Export BPMN', 'Export BPMN with BPSim', 'Export run report', 'Download HTML']);
   const menuBox = (await page.locator('#export-popup').boundingBox())!; assert(menuBox.x >= 0 && menuBox.x + menuBox.width <= 390, 'the menu stays on screen'); await page.keyboard.press('Escape'); assert.equal(await activeId(), 'more-menu');
   // Steps are a horizontal scroller above the stage; the stage is about 45vh; the inspector and Inputs & outputs collapse.
   const layout = await page.evaluate(() => { const nav = document.querySelector('.process-nav')!.getBoundingClientRect(), view = document.getElementById('viewport')!.getBoundingClientRect(), steps = document.getElementById('steps')!;
    return {above: nav.bottom <= view.top + 1, scroller: steps.scrollWidth > document.querySelector('.process-nav')!.clientWidth, row: getComputedStyle(steps).display, viewH: view.height}; });
   assert.deepEqual([layout.above, layout.scroller, layout.row], [true, true, 'flex']); assert(layout.viewH >= 300 && layout.viewH <= 844 * .55, 'stage height ' + layout.viewH);
-  await page.locator('#mode-2d').click(); const lastStep = (await query(page)).definition.steps.at(-1)!.id; await page.locator(`#process-map-${lastStep}`).click({force: true});
+  await page.locator('#mode-2d').click(); const lastStep = (await query(page)).definition.steps.at(-1)!.id;
+  await page.locator(`#process-map-${lastStep}`).scrollIntoViewIfNeeded();
+  const scrolled = await page.evaluate(() => scrollY); await page.locator(`#process-map-${lastStep}`).click({force: true});
   await page.waitForFunction(id => { const li = document.querySelector(`[data-step="${id}"]`)!.closest('li')!.getBoundingClientRect(), nav = document.querySelector('.process-nav')!.getBoundingClientRect(); return li.right <= nav.right + 1 && li.left >= nav.left - 1; }, lastStep);
+  // Selecting on the map scrolls only the step strip, never the page; a visible control in the stage bar leads back to the whole process.
+  const back = await page.evaluate(() => {
+   const b = document.getElementById('back-overview')!.getBoundingClientRect(), bar = document.querySelector('.process-toolbar')!.getBoundingClientRect();
+   return {y: scrollY, inside: b.left >= 0 && b.right <= innerWidth && b.top >= bar.bottom - .5 && b.bottom <= innerHeight};
+  });
+  assert.deepEqual(back, {y: scrolled, inside: true}, 'the page stays put and the way back is on screen below the run bar');
+  await page.locator('#back-overview').click(); assert.equal((await query(page)).selected, null);
+  await page.waitForFunction(() => {
+   const o = document.getElementById('overview')!.getBoundingClientRect(), nav = document.querySelector('.process-nav')!.getBoundingClientRect();
+   return o.left >= nav.left - 1 && o.right <= nav.right + 1;
+  });
+  await page.locator(`#process-map-${lastStep}`).click({force: true});
   const inspectorToggle = page.locator('#inspector-toggle'); assert.equal(await inspectorToggle.isVisible(), true); assert.equal(await page.locator('#inspector-body').isVisible(), true); await inspectorToggle.click(); assert.equal(await page.locator('#inspector-body').isHidden(), true); assert.equal(await inspectorToggle.getAttribute('aria-expanded'), 'false'); await inspectorToggle.click();
   assert.equal(await page.locator('#io-panel').evaluate((d: HTMLDetailsElement) => d.open), false); await page.locator('#io-panel > summary').click(); assert.equal(await page.locator('#process-data').isVisible(), true); assert.equal(await noOverflow(), true);
   assert.deepEqual(await small('.process-inspector button, #io-panel summary, .process-view-controls button'), [], 'inspector and stage targets are 44px');
@@ -198,6 +268,58 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
    }
   }
   await page.setViewportSize({width: 1440, height: 1060});
+ });
+ await check('At 400% zoom no focus stop hides under sticky chrome; forced colours, larger text and lens views keep state cues and plain control names',
+  async () => {
+  // 320x256 is 1280x1024 at 400% zoom: the run bar scrolls away with the page instead of covering the focused control.
+  await page.setViewportSize({width: 320, height: 256}); await freshStudio();
+  await page.evaluate(() => { scrollTo(0, 0); (document.activeElement as HTMLElement | null)?.blur(); });
+  assert.equal(await page.locator('.process-toolbar').evaluate(e => getComputedStyle(e).position), 'static');
+  const hidden: string[] = []; let stops = 0;
+  for (let i = 0; i < 70; i++) {
+   await page.keyboard.press('Tab');
+   const f = await page.evaluate(() => {
+    const a = document.activeElement as HTMLElement | null; if (!a || a === document.body) return null; const r = a.getBoundingClientRect();
+    const pinned = (n: HTMLElement) => ['sticky', 'fixed'].includes(getComputedStyle(n).position) && !n.contains(a) && !a.contains(n)
+     && n.getClientRects().length > 0;
+    const inside = (c: DOMRect) => r.top >= c.top - .5 && r.bottom <= c.bottom + .5 && r.left >= c.left - .5 && r.right <= c.right + .5;
+    const covered = [...document.querySelectorAll<HTMLElement>('body *')].filter(pinned).some(n => inside(n.getBoundingClientRect()));
+    return {name: a.id || (a.textContent ?? '').trim().slice(0, 24), hidden: covered || r.bottom <= 0 || r.top >= innerHeight};
+   });
+   if (!f) continue; stops++; if (f.hidden) hidden.push(f.name);
+  }
+  assert(stops >= 30, `the walk reached ${stops} stops`); assert.deepEqual(hidden, [], 'no focused control is hidden at 320x256');
+  // Forced colours keep the state swatches, the meter fills, the pressed view and the current step.
+  await page.setViewportSize({width: 1440, height: 1060}); await page.emulateMedia({forcedColors: 'active'});
+  await page.locator('#mode-2d').click(); await page.locator('[data-step="discovery"]').click(); await page.locator('#step').click();
+  const forced = await page.evaluate(() => {
+   const style = (s: string) => getComputedStyle(document.querySelector(s)!);
+   const swatches = [...document.querySelectorAll<Element>('.process-legend [data-legend] svg, .pool-bar i, .process-step i')];
+   return {swatches: swatches.length > 0 && swatches.every(i => getComputedStyle(i).forcedColorAdjust === 'none'),
+    pressed: [style('#mode-2d').outlineStyle, style('#mode-3d').outlineStyle],
+    step: [style('.process-step.selected').borderLeftWidth, style('.process-step:not(.selected)').borderLeftWidth !== '4px']};
+  });
+  assert.deepEqual(forced, {swatches: true, pressed: ['solid', 'none'], step: ['4px', true]}); await page.emulateMedia({forcedColors: 'none'});
+  // A larger default text size widens the side columns (rem) and never splits the step count.
+  await page.evaluate(() => { document.documentElement.style.fontSize = '24px'; }); await nextFrames(page);
+  const big = await page.evaluate(() => {
+   const r = (s: string) => document.querySelector(s)!.getBoundingClientRect(), count = document.getElementById('step-count')!;
+   return {nav: r('.process-nav').width, inspector: r('.process-inspector').width, 
+    lines: r('#step-count').height / parseFloat(getComputedStyle(count).lineHeight)};
+  });
+  assert(big.nav >= 13.5 * 24 - 1 && big.inspector >= 16.5 * 24 - 1 && big.lines < 1.5, JSON.stringify(big));
+  await page.evaluate(() => { document.documentElement.style.fontSize = ''; });
+  // Decorative glyphs stay out of accessible names; the metrics are a named group; lens views show no work-marker legend.
+  const snapshot = async (selectors: string[]) => (await Promise.all(selectors.map(s => page.locator(s).ariaSnapshot()))).join('\n');
+  const names = await snapshot(['.process-header', '.process-toolbar', '.process-stage']);
+  assert.doesNotMatch(names, /[▾▸←]/); assert.match(names, /button "Export"/); assert.match(names, /group "Run metrics"/);
+  await page.setViewportSize({width: 390, height: 844}); await nextFrames(page);
+  const phone = await snapshot(['.process-toolbar', '.process-inspector']);
+  assert.match(phone, /button "Run options"/); assert.match(phone, /button "Details"/); assert.doesNotMatch(phone, /[▾▸]/);
+  await page.setViewportSize({width: 1440, height: 1060}); assert(await page.locator('.process-legend [data-legend]:visible').count() > 0);
+  await page.locator('#mode-lens').click();
+  assert.deepEqual(await page.locator('.process-legend > :visible').evaluateAll(n => n.map(x => x.id)), ['camera-hint']);
+  await page.locator('#mode-2d').click(); assert(await page.locator('.process-legend [data-legend]:visible').count() > 0);
  });
  // Hosted CI has no Inter and falls back to DejaVu Sans, which is wider: a toolbar that fits locally can wrap there.
  // Forcing that font here makes the fit and phone geometry independent of the fonts the host happens to have.
@@ -235,6 +357,21 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
    if (width >= 1366) assert.equal(new Set(g.rows).size, 1, 'run actions, settings and status share one toolbar row at ' + at);
    assert.deepEqual([g.offscreen, g.clipped], [[], []], 'no header or toolbar control leaves the viewport or clips its label at ' + at);
    if (width === 1366) await page.screenshot({path: path.join(OUT, 'process-desktop-fit-dejavu.png')});
+  }
+  // A custom run length that has been reached (minutes field, long status, hours reading) still fits one row without a stray divider.
+  await page.setViewportSize({width: 1366, height: 768}); await page.locator('#horizon').selectOption('custom');
+  await page.locator('#horizon-custom').fill('95'); await page.locator('#horizon-custom').dispatchEvent('change');
+  for (let i = 0; i < 4; i++) if (await page.locator('#advance').isEnabled()) await page.locator('#advance').click();
+  assert.equal(await page.locator('#run-status').innerText(), 'Run limit reached'); assert.equal(await page.locator('#clock-hours').innerText(), '1.6 h');
+  assert.equal(await page.locator('#horizon-custom').evaluate(e => getComputedStyle(e).appearance), 'textfield', 'no spin buttons, like the seed field');
+  for (const [width, height] of [[1366, 768], [1440, 900], [1920, 1080]] as const) {
+   await page.setViewportSize({width, height}); await nextFrames(page);
+   const g = await headerGeometry(), at = `custom run length at ${width}x${height} ` + JSON.stringify(g);
+   assert(g.band <= 110, at); assert.equal(new Set(g.rows).size, 1, 'one toolbar row with a custom run length at ' + at);
+   assert.deepEqual([g.offscreen, g.clipped], [[], []], at);
+   const rules = await page.evaluate(() => ['.run-config', '.run-status'].map(s => getComputedStyle(document.querySelector(s)!).borderLeftStyle));
+   assert.deepEqual(rules, ['none', 'none'], 'groups are separated by space, so a wrapped row never starts with a divider');
+   if (width === 1366) await page.screenshot({path: path.join(OUT, 'process-desktop-custom-dejavu.png')});
   }
   for (const [width, height] of [[320, 640], [390, 844], [768, 1024], [1100, 800]] as const) {
    await page.setViewportSize({width, height}); await nextFrames(page); let g = await headerGeometry();

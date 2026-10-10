@@ -8,7 +8,10 @@ import {waitForReady, openArtifact, nextFrames} from './browser-harness';
 import {query, runSuite} from './process-browser-fixture';
 import {randomLine, feedFixture} from './process-browser-models';
 runSuite('process browser harness', 'process-browser-results.json', async studio => {
- const {page, context, diagnostics, dir, file, cli, gameDir, gameDefinitions, COUNT, fixtureUrls, check, checkLifecycle, freshStudio, defOpen, openDef, closeDef, restoreDef, applyDef, exportVia, showIo, switchTo, nameOf, allNames, applyDraft, importJson} = studio;
+ const {page, context, diagnostics, dir, file, cli, gameDir, gameDefinitions, COUNT, fixtureUrls, check, checkLifecycle, freshStudio, defOpen, openDef, closeDef,
+  restoreDef, applyDef, exportVia, showIo, switchTo, nameOf, allNames, applyDraft, importJson, activeId} = studio;
+ const message = () => page.locator('#message').innerText(), ask = page.locator('dialog.ask-dialog[open]');
+ const literal = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
  await check('Process artifact starts paused with one selectable scene per step and real WebGL', async () => {
   const q = await query(page); assert.equal(q.snapshot.minute, 0); assert.equal(q.playing, false); assert.equal(q.mode, '3d');
   assert.equal(await page.locator('[data-step]').count(), q.definition.steps.length);
@@ -98,19 +101,71 @@ runSuite('process browser harness', 'process-browser-results.json', async studio
   assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.step), 'discovery');
   await page.locator('#mode-2d').click(); await page.locator('#process-map-discovery').focus(); await page.keyboard.press('Enter');
   assert.equal(await page.evaluate(() => document.activeElement?.id), 'process-map-discovery');
+  // Escape on the 2D map or the 3D scene returns to the whole process without ticking, and the hint says so while a step is selected.
+  const minute = (await query(page)).snapshot.minute;
+  assert.match(await page.locator('#camera-hint').innerText(), /Escape returns to the whole process$/);
+  await page.keyboard.press('Escape'); assert.equal((await query(page)).selected, null);
+  assert.doesNotMatch(await page.locator('#camera-hint').innerText(), /Escape/);
+  await page.locator('[data-step="discovery"]').click(); await page.locator('#mode-3d').click(); await page.locator('#canvas').focus();
+  await page.keyboard.press('Escape');
+  assert.equal((await query(page)).selected, null); assert.equal((await query(page)).snapshot.minute, minute);
+  const canvas = page.locator('#canvas');
+  const ring = await canvas.evaluate(e => getComputedStyle(e).outlineOffset);
+  assert.deepEqual([await canvas.getAttribute('role'), ring], ['img', '-3px'], 'an image role and an inset ring');
+  // The stage bar offers the way back at every width; it moves focus to the stage heading, which then names the whole process.
+  assert.equal(await page.locator('#back-overview').isHidden(), true); await page.locator('[data-step="qa"]').click();
+  assert.equal(await page.locator('#back-overview').isVisible(), true); assert.equal(await page.locator('#back-overview').innerText(), '← Whole process');
+  assert.equal(await page.getByRole('button', {name: 'Whole process', exact: true}).count(), 2, 'the arrow is decoration');
+  await page.locator('#back-overview').click(); assert.equal((await query(page)).selected, null); assert.equal(await activeId(), 'scene-title');
+  assert.equal(await page.locator('#scene-title').innerText(), 'Whole process'); assert.equal(await page.locator('#back-overview').isHidden(), true);
+  const headings = [await page.locator('#scene-title').innerText(), await page.locator('#inspector-title').innerText()];
+  assert.notEqual(headings[0], headings[1], 'the stage and inspector headings differ');
   await page.locator('#overview').click();
  });
  await check('Run and pause controls advance only the owned process clock', async () => {
-  await page.locator('#reset').click(); const before = (await query(page)).snapshot.minute; await page.locator('#play').click();
+  await page.locator('#reset').click(); const before = (await query(page)).snapshot.minute;
+  // The closed Inputs & outputs panel is not rebuilt while the run plays; opening it draws the current view at once.
+  if (await page.locator('#io-panel').evaluate((d: HTMLDetailsElement) => d.open)) await page.locator('#io-panel > summary').click();
+  await page.evaluate(() => {
+   const w = globalThis as any; w.ioWrites = 0;
+   new MutationObserver(() => { w.ioWrites++; }).observe(document.getElementById('process-data')!, {childList: true, subtree: true});
+  });
+  await page.locator('#play').click();
   await page.waitForFunction(minute => (globalThis as unknown as {LWProcessStudio: {query(): {snapshot: {minute: number}}}}).LWProcessStudio.query().snapshot.minute > minute, before);
   await page.locator('#play').click(); assert.equal((await query(page)).playing, false);
+  assert.equal(await page.evaluate(() => (globalThis as any).ioWrites), 0);
+  await showIo(); assert.match(await page.locator('#process-data').innerText(), /Process inputs|Scheduled inputs/);
   await page.locator('#step').click(); assert.equal((await query(page)).playing, false);
  });
  await check('Invalid JSON import preserves the active definition and run', async () => {
-  const before = await query(page);
-  await page.locator('#file').setInputFiles({name: 'broken.json', mimeType: 'application/json', buffer: Buffer.from('{"format":"wrong"}')});
-  await page.waitForFunction(() => document.getElementById('message')!.textContent!.includes('Import rejected'));
-  assert.deepEqual(await query(page), before);
+  const before = await query(page), rejected = async (name: string, text: string) => {
+   const prior = await message();
+   await page.locator('#file').setInputFiles({name, mimeType: 'application/json', buffer: Buffer.from(text)});
+   await page.waitForFunction(p => {
+    const now = document.getElementById('message')!.textContent!; return now !== p && now.startsWith('Import rejected');
+   }, prior);
+   const said = await message(); assert.doesNotMatch(said, /Error: |SyntaxError|: :/, 'plain language, no developer prefixes');
+   assert.deepEqual(await query(page), before); return said;
+  };
+  const expected = literal('Choose a .process.json exported from the studio, or a BPMN file.');
+  const notProcess = new RegExp(`^Import rejected: this file is not a Wildlands process \\(\\d+ problems\\)\\. ${expected}$`);
+  assert.match(await rejected('broken.json', '{"format":"wrong"}'), notProcess);
+  assert.match(await rejected('syntax.json', '{bad'), new RegExp(`^Import rejected: the file is not valid JSON \\(line 1, column 2\\)\\. ${expected}$`));
+  const missing = JSON.parse(JSON.stringify(before.definition)) as LWProcess.Definition; delete (missing.steps[1] as Partial<LWProcess.Step>).scene;
+  assert.match(await rejected('missing.json', JSON.stringify(missing)),
+   /^Import rejected: this process has 1 problem; first, \/steps\/1: .*\. Fix the file, then import it again\.$/);
+  // A long eleven-problem summary stays within two lines and never reflows the stage bar.
+  await rejected('not-a-process.json', '{"not":"a process"}');
+  const bar = await page.evaluate(() => {
+   const m = document.getElementById('message')!, line = parseFloat(getComputedStyle(m).lineHeight);
+   const shown = [...document.querySelectorAll('.process-view-controls button')].filter(b => b.getClientRects().length);
+   return {lines: m.getBoundingClientRect().height / line, tops: shown.map(b => Math.round(b.getBoundingClientRect().top))};
+  });
+  assert(bar.lines <= 2.05, 'the status line is clamped to two lines: ' + bar.lines); assert.equal(new Set(bar.tops).size, 1, 'the view buttons keep one row');
+  // The error gives way to the next successful command.
+  assert.equal(await page.locator('#message').getAttribute('class'), 'process-message error');
+  await page.locator('#step').click(); assert.equal(await page.locator('#message').getAttribute('class'), 'process-message');
+  assert.match(await message(), /^Advanced to minute/);
  });
  await check('Definition editor validates before applying and resets a valid edit explicitly', async () => {
   await openDef(); const before = await query(page);
@@ -140,10 +195,38 @@ runSuite('process browser harness', 'process-browser-results.json', async studio
  await check('Browser exported JSON imports losslessly and report binds definition to observed metrics', async () => {
   let pending = page.waitForEvent('download'); await exportVia('#json'); let download = await pending; const jsonFile = path.join(dir, 'export.json'); await download.saveAs(jsonFile);
   const definition = (await query(page)).definition; assert.deepEqual(JSON.parse(fs.readFileSync(jsonFile, 'utf8')), definition);
+  assert.equal(await message(), `Exported ${definition.id}.process.json (the running definition).`);
   await page.locator('#advance').click(); pending = page.waitForEvent('download'); await exportVia('#report'); download = await pending; const reportFile = path.join(dir, 'report.json'); await download.saveAs(reportFile);
   const report = JSON.parse(fs.readFileSync(reportFile, 'utf8')); assert.equal(report.snapshot.minute, 30); assert.deepEqual(report.definition, definition);
-  await page.locator('#file').setInputFiles(jsonFile); await page.waitForFunction(() => document.getElementById('message')!.textContent!.includes('Imported'));
+  assert.equal(await message(), `Exported ${definition.id}.report.json: the run report at minute 30.`);
+  // With an unapplied draft the menu says exports use the running definition and offers the draft as written.
+  await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-name').fill('Discovery v2');
+  await page.locator('#se-save').click();
+  await page.locator('#export-menu').click();
+  assert.match(await page.locator('#export-hint').innerText(), /Your unapplied draft is not included; Export draft JSON saves it as written\.$/);
+  pending = page.waitForEvent('download'); await page.locator('#draft-json').click(); download = await pending;
+  assert.equal(download.suggestedFilename(), definition.id + '.draft.json');
+  const draftFile = path.join(dir, 'draft.json'); await download.saveAs(draftFile);
+  assert.equal(JSON.parse(fs.readFileSync(draftFile, 'utf8')).steps[1].name, 'Discovery v2');
+  // Importing over a run in progress or a draft asks first, starting on Cancel; Cancel keeps everything and returns focus to Import.
+  const running = await query(page), pick = async () => {
+   const chooser = page.waitForEvent('filechooser'); await page.locator('#import').click(); await (await chooser).setFiles(jsonFile);
+  };
+  await pick(); await ask.waitFor(); assert.equal(await activeId(), 'ask-cancel');
+  assert.equal(await page.locator('#ask-title').innerText(), `Replace ${definition.name}?`);
+  assert.equal(await page.locator('#ask-confirm-title').innerText(), `Importing export.json replaces ${definition.name} and discards minute 30`
+   + ' of the current run'
+   + ' and the unapplied draft (1 step changed). Export the run report or the draft first if you need them.');
+  await page.keyboard.press('Escape'); await ask.waitFor({state: 'hidden'}); assert.equal(await activeId(), 'import');
+  assert.deepEqual(await query(page), running);
+  assert.match(await page.locator('#draft-chip').innerText(), /^Unapplied draft/); assert.match(await message(), /^Import of export\.json cancelled/);
+  await pick(); await ask.waitFor(); await page.locator('#ask-go').click();
+  await page.waitForFunction(() => document.getElementById('message')!.textContent!.includes('Imported'));
   assert.deepEqual((await query(page)).definition, definition); assert.equal((await query(page)).snapshot.minute, 0);
+  assert.equal(await page.locator('#draft-chip').isHidden(), true);
+  await page.locator('#export-menu').click(); assert.equal(await page.locator('#draft-json').isHidden(), true);
+  assert.doesNotMatch(await page.locator('#export-hint').innerText(), /draft/);
+  await page.keyboard.press('Escape');
  });
  await check('Downloaded self-contained HTML reopens offline with the edited definition and no requests', async () => {
   const pending = page.waitForEvent('download'); await exportVia('#html'); const download = await pending, exported = path.join(dir, 'exported.html'); await download.saveAs(exported);
@@ -170,7 +253,16 @@ runSuite('process browser harness', 'process-browser-results.json', async studio
   await page.locator('#mode-2d').click(); await page.locator('#horizon').selectOption('1440'); await page.locator('#advance').click(); await page.locator('[data-step="discovery"]').click();
   assert.equal((await query(page)).snapshot.minute, 30);
   await page.locator('#play').click(); await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {snapshot: {minute: number}}}}).LWProcessStudio.query().snapshot.minute > 30);
-  await page.locator('#process-switch').focus(); await page.keyboard.press('ArrowDown');
+  // Past minute 0 the switch asks first, starting on Cancel; Cancel restores the list and focus and leaves the run playing.
+  await page.locator('#process-switch').focus(); await page.keyboard.press('ArrowDown'); await ask.waitFor(); assert.equal(await activeId(), 'ask-cancel');
+  const switching = `^Switching to ${literal(first.processes[1]!.name)} discards minute [\\d,]+ of the ${literal(first.definition.name)} run`;
+  const question = await page.locator('#ask-confirm-title').innerText();
+  assert.match(question, new RegExp(switching + ' \\(\\d+ cases?\\)\\. Export the run report first if you need it\\.$'));
+  await page.keyboard.press('Escape'); await ask.waitFor({state: 'hidden'});
+  const stayed = [(await query(page)).active, await page.locator('#process-switch').inputValue(), await activeId(), (await query(page)).playing];
+  assert.deepEqual(stayed, [0, '0', 'process-switch', true]);
+  assert.equal(await message(), `Stayed on ${first.definition.name}. The run is unchanged.`);
+  await page.keyboard.press('ArrowDown'); await ask.waitFor(); await page.locator('#ask-go').click();
   await page.waitForFunction(() => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === 1);
   const second = await query(page); await nextFrames(page);
   assert.equal(second.processes[1]!.name, second.definition.name); assert.notEqual(second.definition.id, first.definition.id);
@@ -232,6 +324,17 @@ runSuite('process browser harness', 'process-browser-results.json', async studio
   assert.deepEqual([fresh.snapshot.minute, fresh.playing, fresh.snapshot.seed], [0, false, 7]); assert.equal(await page.locator('#message').innerText(), 'Seed 7 · fresh paused run'); assert.equal(await page.locator('#metrics .metric-seed').innerText(), 'Seed 7');
   assert.equal(fresh.definition.seed === 7, false, 'the definition keeps its own seed'); assert.match(await page.locator('#inspector').innerText(), /Seed\s*7 · set for this run/);
   await page.locator('#advance').click(); await page.locator('#reset').click(); assert.equal(await seedOf(), 7, 'reset keeps the chosen seed'); assert.equal(await seedBox.inputValue(), '7');
+  // A new revision of the same process keeps the run seed and the selected step, and says so; switching away names the seed left behind.
+  await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-duration').fill('13');
+  await page.locator('#se-apply').click();
+  await page.waitForFunction(() => document.getElementById('message')!.textContent!.startsWith('Definition applied'));
+  const kept = await query(page);
+  assert.deepEqual([kept.snapshot.seed, kept.selected, kept.definition.steps.find(s => s.id === 'discovery')!.duration], [7, 'discovery', 13]);
+  assert.equal(await message(), 'Definition applied. New run is paused. Run seed 7 kept.');
+  await switchTo(1);
+  const left = `Run seed 7 applied only to ${literal(kept.definition.name)}; this process uses its own seed \\d+\\.$`;
+  assert.match(await message(), new RegExp(`^Switched to .+\\. Paused at minute 0\\. ${left}`));
+  await switchTo(0); assert.equal(await seedOf(), kept.definition.seed ?? 1);
   // A running simulation stops; invalid seeds are refused and the field returns to the seed in use.
   await page.locator('#play').click(); await page.waitForFunction(() => (globalThis as any).LWProcessStudio.query().snapshot.minute > 0); await seedBox.fill('9'); await seedBox.press('Enter'); await wait(9); assert.deepEqual([(await query(page)).playing, (await query(page)).snapshot.minute], [false, 0]);
   for (const bad of ['-3', '1.5', '2147483648']) { await seedBox.fill(bad); await seedBox.press('Enter'); await page.waitForFunction(v => (document.getElementById('seed') as HTMLInputElement).value === v, '9'); assert.match(await page.locator('#message').innerText(), /Seed must be a whole number from 0 to 2,147,483,647/); assert.equal(await seedOf(), 9); }
@@ -243,6 +346,56 @@ runSuite('process browser harness', 'process-browser-results.json', async studio
   const runOnce = async (seed: number) => { await seedBox.fill(String(seed)); await seedBox.press('Enter'); await wait(seed); for (let i = 0; i < 12; i++) await page.locator('#advance').click(); const q = (await query(page)).snapshot; return JSON.stringify({m: q.metrics, r: q.receipts.map(r => [r.stepId, r.started, r.finished, r.changes])}); };
   const first = await runOnce(12), other = await runOnce(13), again = await runOnce(12); assert.equal(first, again, 'same seed, same run'); assert.notEqual(first, other, 'another seed, another run');
   await importJson('feed-line.json', feedFixture()); assert.equal(await seedBox.inputValue(), '1', 'importing returns to the definition seed'); assert.equal(await seedOf(), 1);
+ });
+ await check('The status line gives way to the next state change and names run lengths, speeds, the stride left and the hours elapsed', async () => {
+  await page.setViewportSize({width: 1440, height: 1060}); await freshStudio(); assert.match(await message(), /^Ready\./);
+  // Speeds reach a day per tick; run lengths read in hours and minutes and never imply working days.
+  assert.deepEqual(await page.locator('#speed option').allInnerTexts(), ['Speed: 1 min', 'Speed: 5 min', 'Speed: 30 min', 'Speed: 2 h', 'Speed: 24 h']);
+  assert.deepEqual(await page.locator('#horizon option').allInnerTexts(),
+   ['Until: 24 h (1,440 min)', 'Until: 168 h (10,080 min)', 'Until: 720 h (43,200 min)', 'Until: 100,000 min (≈1,667 h)', 'Until: no limit', 'Until: custom…']);
+  // A refused custom length is an error; the next valid one replaces it with a confirmation. Advance names what is really left.
+  const custom = page.locator('#horizon-custom'); await page.locator('#horizon').selectOption('custom');
+  await custom.fill('0'); await custom.dispatchEvent('change'); assert.equal(await page.locator('#message').getAttribute('class'), 'process-message error');
+  await custom.fill('45'); await custom.dispatchEvent('change'); assert.equal(await message(), 'Run length set to 45 minutes.');
+  assert.equal(await page.locator('#message').getAttribute('class'), 'process-message');
+  await page.locator('#advance').click(); assert.equal(await page.locator('#advance').innerText(), 'Advance 15 min'); await page.locator('#advance').click();
+  assert.equal((await query(page)).snapshot.minute, 45); assert.equal(await message(), 'Run limit reached. Export the report or reset the run.');
+  await page.locator('#horizon').selectOption('1440'); assert.equal(await message(), 'Run length set to 1,440 minutes (24 h).');
+  await page.locator('#advance').click();
+  assert.deepEqual([await page.locator('#clock').innerText(), await page.locator('#clock-hours').innerText()], ['75 min of 1,440', '1.3 h']);
+  // Notes give way to the next state change: closing Present, then Run; an editor notice gives way when the editor closes.
+  await page.locator('#mode-present').click(); await page.locator('dialog#present[open]').waitFor(); await page.keyboard.press('Escape');
+  await page.locator('dialog#present[open]').waitFor({state: 'hidden'}); assert.equal(await message(), 'Presentation closed.');
+  await page.locator('#play').click(); assert.match(await message(), /^Run started\./); await page.locator('#play').click();
+  assert.match(await message(), /^Paused\./);
+  await page.locator('#open-definition').click(); await defOpen.waitFor(); assert.match(await message(), /^Editing the definition/);
+  await page.keyboard.press('Escape'); await defOpen.waitFor({state: 'hidden'});
+  await page.waitForFunction(() => !document.getElementById('message')!.textContent!.startsWith('Editing')); assert.match(await message(), /^Paused\./);
+  await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click(); await page.locator('dialog.pd-dialog[open]').waitFor();
+  assert.match(await message(), /^Editing a step/); await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.getElementById('message')!.textContent!.startsWith('Editing')); assert.equal(await activeId(), 'edit-step');
+ });
+ await check('Leaving the page asks while any process holds an unapplied draft, and the back/forward cache only suspends the studio', async () => {
+  await freshStudio();
+  const leaving = () => page.evaluate(() => { const e = new Event('beforeunload', {cancelable: true}); dispatchEvent(e); return e.defaultPrevented; });
+  assert.equal(await leaving(), false, 'a clean studio leaves without asking');
+  await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-name').fill('Kept draft');
+  await page.locator('#se-save').click();
+  assert.equal(await leaving(), true, 'the active process holds an unapplied draft');
+  await switchTo(1); assert.equal(await page.locator('#draft-chip').isHidden(), true);
+  assert.equal(await leaving(), true, 'a draft left in another process still counts');
+  await switchTo(0); await openDef(); await restoreDef(); await closeDef(); assert.equal(await leaving(), false, 'nothing is left to lose');
+  // A page put in the back/forward cache stops its loop without pausing or disposing the run; coming back resumes it.
+  await page.locator('#speed').selectOption('30'); await page.locator('#play').click();
+  await page.waitForFunction(() => (globalThis as any).LWProcessStudio.query().snapshot.minute > 0);
+  await page.evaluate(() => dispatchEvent(new PageTransitionEvent('pagehide', {persisted: true})));
+  const frozen = (await query(page)).snapshot.minute; await nextFrames(page, 40);
+  assert.deepEqual([(await query(page)).snapshot.minute, (await query(page)).playing], [frozen, true], 'a cached page does not tick and keeps its run');
+  await page.evaluate(() => dispatchEvent(new PageTransitionEvent('pageshow', {persisted: true})));
+  await page.waitForFunction(m => (globalThis as any).LWProcessStudio.query().snapshot.minute > m, frozen);
+  await page.locator('#play').click(); await page.locator('#step').click(); assert.match(await message(), /^Advanced to minute/);
+  await page.locator('#mode-2d').click();
+  assert.equal(await page.locator('#map svg').count(), 1, 'the studio is still alive');
  });
  await checkLifecycle('Process browser lifecycle emits no runtime errors or network requests');
 });

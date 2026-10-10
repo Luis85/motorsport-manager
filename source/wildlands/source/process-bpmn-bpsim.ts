@@ -7,7 +7,10 @@ declare namespace LWProcessBpmnBpsim {
  /** A BPSim `Property` of a start event: a constant case value, or a uniform whole-number range. */
  interface Prop {name: string; value?: LWProcess.Scalar; min?: number; max?: number;}
  interface Params {processing?: Time; wait?: Time; fixedCost?: number; unitCost?: number; quantity?: number; probability?: number; inter?: Time; count?: number; props: Prop[];}
- interface Data {scenario: {id: string; name: string}; scenarios: {id: string; name: string}[]; horizon: number | null; elements: Map<string, Params>;}
+ /** `seed` is the scenario's run seed when it is a whole number the engine accepts. */
+ interface Data {
+  scenario: {id: string; name: string}; scenarios: {id: string; name: string}[]; horizon: number | null; seed: number | null; elements: Map<string, Params>;
+ }
  interface Context {minutesPerDay: number; minutesPerHour: number; scenario?: string | undefined; warn(m: string): void;}
  interface Api {
   read(doc: X, c: Context): Data | undefined;
@@ -120,13 +123,16 @@ declare namespace LWProcessBpmnBpsim {
    }
   }
   for (const [what, refs] of ignored) c.warn('BPSim ' + what + ' parameters are ignored (' + [...refs].join(', ') + ').');
-  let horizon: number | null = null;
+  let horizon: number | null = null, seed: number | null = null;
   if (params) {
+   const raw = params.attrs.seed, n = Number(raw);
+   if (raw !== undefined && /^\d+$/.test(raw.trim()) && n <= 2147483647) seed = n;
+   else if (raw !== undefined) c.warn('BPSim seed "' + raw + '" is not a whole number from 0 to 2147483647 and is ignored.');
    const d = child(params, 'Duration'), t = d && time(d, 'scenario', 'Duration'); if (t) horizon = t.mean;
    const rep = child(params, 'Replication'), reps = params.attrs.replication ?? (rep && valueOf(rep));
    if (reps !== undefined) c.warn('BPSim replication ' + reps + ' is ignored: Wildlands runs one seeded run per command; vary the seed instead.');
   }
-  return {scenario: label(chosen), scenarios, horizon, elements};
+  return {scenario: label(chosen), scenarios, horizon, seed, elements};
  }
  root.LWProcessBpmnBpsim = {read, scenarios: doc => scenarioList(doc).map(label), duration, whole, isoMinutes};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessBpmnBpsim;

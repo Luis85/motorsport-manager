@@ -27,6 +27,8 @@ declare namespace LWProcessBpmn {
  }
  interface Api {
   export(definition: unknown, options?: {bpsim?: boolean}): string;
+  /** Plain-language notes on what an export with these options carries only in the Wildlands extension, so a tool that drops `wl:` loses it. */
+  fidelity(definition: unknown, options?: {bpsim?: boolean}): string[];
   /** Throws an Error listing every rejection (one per line); otherwise returns the report. */
   import(xml: string, options?: Options): ImportResult;
   /** The same report without throwing for content problems: `rejections` lists them and `definition` is absent. */

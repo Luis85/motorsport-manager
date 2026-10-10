@@ -9,3 +9,4 @@ you should observe before moving on. Start with a weekend if you are new to the 
 
 - [Explore the Wildlands RTS demonstration](rts-demo.md)
 - [Raise a Pocket Pet](pocket-pet-demo.md)
+- [Model your first business process](first-business-process.md)

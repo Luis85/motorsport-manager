@@ -7,7 +7,8 @@
  * Modal Definition editor, built on the shared LWProcessDialog (id 'de', size 'wide') and the shared draft store.
  * Two panes over ONE draft text: "Tune values" (LWProcessTuning: name, description, seed, resources, arrivals) and "Raw JSON"
  * (LWProcessDefinitionJson: textarea, line numbers, every catalog diagnostic as a jump button). Both write the draft on every
- * input, so closing the window can never lose text and there is deliberately no dirty guard. Opening it pauses a running
+ * input, so closing the window can never lose text and there is deliberately no dirty guard; Ctrl/Cmd+Z and Shift+Z (outside the
+ * JSON text, which keeps its own native undo) step through the draft's in-memory history, and a removed row offers Undo. Opening it pauses a running
  * simulation (a command, never a tick). Restore and Apply (past minute 0) ask in the footer first. Applying still goes through
  * the catalog and `env.apply`, which starts a fresh paused run; this module never ticks, retains a session or touches storage.
  */
@@ -67,11 +68,22 @@ declare namespace LWProcessDefinitionEditor {
      <p class="de-help">Process-level values. The draft updates as you type; applying starts a fresh paused run.</p><div id="tuning"></div></section>
     <section class="de-pane de-json-pane" id="de-pane-json" aria-labelledby="de-json-h"></section></div>`);
   const q = <T extends HTMLElement = HTMLElement>(id: string) => dialog.el.querySelector<T>('#' + id)!;
-  const tuning = root.LWProcessTuning.create(q('tuning'), () => draft.read(), text => draft.write(text, 'tuning'));
+  const ask = (m: string, choices: LWProcessDialog.Choice[]) => dialog.confirm(m, choices, {escape: 'keep-pool'});
+  const tuning = root.LWProcessTuning.create(q('tuning'), () => draft.read(), (text, label) => draft.write(text, 'tuning', label), ask);
   const json = root.LWProcessDefinitionJson.create(q('de-pane-json'), draft);
   let opener: HTMLElement | null = null, timer = 0;
   const showTab = (tab: 'form' | 'json') => { q('de-split').dataset.tab = tab; q('de-tab-form').setAttribute('aria-pressed', String(tab === 'form')); q('de-tab-json').setAttribute('aria-pressed', String(tab === 'json')); };
-  const message = (text: string) => { const m = q('de-message'); if (m.textContent !== text) m.textContent = text; };
+  const message = (text: string) => { const m = q('de-message'); if (m.textContent !== text || m.childElementCount) m.textContent = text; };
+  /** A removal is announced with an Undo button beside it; the next draft change replaces the message. */
+  const undoable = (label: string) => {
+   const m = q('de-message'); m.textContent = label + '. ';
+   m.insertAdjacentHTML('beforeend', '<button type="button" class="de-link" id="de-undo">Undo</button>');
+  };
+  function history(redo: boolean): void {
+   const done = redo ? draft.redo() : draft.undo();
+   message(done ? (redo ? 'Redone. Ctrl+Z (Cmd+Z on a Mac) undoes it again.' : 'Undone. Ctrl+Shift+Z (Cmd+Shift+Z on a Mac) redoes it.')
+    : redo ? 'Nothing to redo.' : 'Nothing to undo.');
+  }
   const parsed = (): unknown => { try { return JSON.parse(draft.read()); } catch { return undefined; } };
   /** The catalog's whole answer for the draft: syntax problem, or every diagnostic it returns, and which stage produced them. */
   function inspect(): {syntax: boolean; diagnostics: LWProcess.Diagnostic[]; stage: 'structure' | 'graph' | 'none'} {
@@ -80,8 +92,11 @@ declare namespace LWProcessDefinitionEditor {
    return {syntax: false, diagnostics, stage: !diagnostics.length ? 'none' : diagnostics.some(d => ['shape', 'data', 'asset'].includes(d.code)) ? 'structure' : 'graph'};
   }
   function footer(): void {
-   const same = !draft.changed();
+   const same = !draft.changed(), nothing = draft.same();
    dialog.setActionState('restore', {disabled: same, reason: same ? 'Restore is unavailable while the draft matches the running definition.' : ''});
+   // Applying an identical definition would only reset the run and bump the revision; Reset run does the first honestly.
+   const why = 'Nothing to apply: the draft holds the running definition. Use Reset run to restart the run.';
+   dialog.setActionState('apply', {disabled: nothing, reason: nothing ? why : ''});
   }
   const subtitle = () => { const a = env.active(); return `${a.name} \u00b7 revision ${a.revision} \u00b7 The run is paused while this window is open`; };
   const header = () => dialog.setTitle('Definition editor', subtitle(), draft.changed() ? 'Unapplied draft' : '');
@@ -97,7 +112,7 @@ declare namespace LWProcessDefinitionEditor {
   const unsubscribe = draft.subscribe(e => {
    const area = json.textarea;
    if (!dialog.isOpen()) { if (e.source !== 'raw' && area.value !== e.text) area.value = e.text; return; }
-   message(''); dialog.setStatus(''); header(); footer(); json.render(e.source);
+   message(''); dialog.setStatus(''); header(); footer(); json.render(e.source); if (e.label) undoable(e.label);
    window.clearTimeout(timer);
    if (e.source === 'raw') { q('de-sync').textContent = 'Updating form…'; timer = window.setTimeout(() => recompute(false), DEBOUNCE); } else recompute(e.source === 'tuning');
   });
@@ -135,9 +150,16 @@ declare namespace LWProcessDefinitionEditor {
   dialog.el.addEventListener('click', e => {
    const t = e.target as HTMLElement, link = t.closest<HTMLAnchorElement>('a[data-path]');
    if (link) { e.preventDefault(); json.jump(link.dataset.path!); return; }
+   if (t.closest('#de-undo')) { history(false); q('de-form-h').focus(); return; }
    if (t.closest('#de-tab-form')) { showTab('form'); return; }
    if (t.closest('#de-tab-json')) { showTab('json'); return; }
    if (t.closest('[data-act="show-json"]')) { showTab('json'); q('de-diag-h').focus(); q('de-diag-h').scrollIntoView({block: 'nearest'}); }
+  });
+  // Undo and redo for the whole draft. The JSON textarea keeps the browser's own text undo, so the shortcut is left alone there.
+  dialog.el.addEventListener('keydown', e => {
+   if (!(e.ctrlKey || e.metaKey) || e.altKey || e.target === json.textarea) return;
+   const key = e.key.toLowerCase(); if (key !== 'z' && key !== 'y') return;
+   e.preventDefault(); history(key === 'y' || e.shiftKey);
   });
   function focusPane(focus: LWProcessDefinitionEditor.Focus): void {
    const bad = json.syntax(), problems = bad ? [] : inspect().diagnostics, first = problems[0];

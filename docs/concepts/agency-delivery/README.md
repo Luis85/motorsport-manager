@@ -28,7 +28,10 @@ draw a source and a device, and meet a verification system step, timers (the ema
 link, day 1 and weekly waits; one day is compressed to about 20 minutes), a
 sessions counter that bounds the weekly loop, and chance routes for form
 abandonment, permission denial, the tour, churn after day 1 and an upgrade. Both
-end in goal and lost outcomes, so the snapshot reports conversion. Both journeys
+end in goal and lost outcomes, so the snapshot reports conversion. Every journey step
+has a one-to-three-sentence `description`, so each Present slide says what happens; they
+were added to the steps that had none with one guarded `putStep` edit per journey (revision
+0 to 1, `process diff` reports only changed steps), which changes no run. Both journeys
 are scenario models with invented numbers, not research data, measured conversion
 or a forecast, and neither has scene assets. The sixth,
 `content/loan-application.process.json`, is a loan application converted from BPMN 2.0
@@ -50,7 +53,7 @@ on **Manual review** that spawns an escalation to the supervisor while the revie
 Applications arrive with an exponential gap (mean 30 minutes) until minute 960, each
 drawing a whole amount and customer years, so the run completes by itself shortly after
 (at minute 984 with the definition seed 7: 32 applications, 31 paid out, 1 rejected,
-1 SLA escalation, simulated cost 2414). Step descriptions name the BPMN construct and
+1 SLA escalation, work cost 2414). Step descriptions name the BPMN construct and
 BPSim value behind each step.
 
 The SIPOC **Process** column and the journey map follow the definition's main route: from
@@ -65,7 +68,7 @@ draws a random number keyed by its own flow id, so making approval the default (
 as a 30% chance) gives the same shares but other cases (seed 7: 30 paid out and 2
 rejected), and making low risk the default as well needs other whole-percent chances
 (medium 30%, then 36% of the rest high) and changes the run (seed 7: 7 manual reviews, 3
-SLA escalations, simulated cost 3229). It would also stop the definition matching a
+SLA escalations, work cost 3229). It would also stop the definition matching a
 default import of the example file. Read the paid-out path from the end steps and their
 counts in the **Outputs** column, and the branch shares from the step counts.
 
@@ -144,8 +147,8 @@ planning, four iteration days, review, retrospective and release) takes about a 
 week. With the definition seed 7 the run completes at minute 19,007 (about eight working
 weeks): eight weekly iterations after 0.1.0, so 0.2.0 to 0.9.0 and then 1.0.0; feedback
 added one increment to the drawn scope of eight; 30 items built (one escalation), three UX
-acceptances and four migration rehearsals; simulated cost 119,928. Other seeds take from
-5 to 16 iterations.
+acceptances and four migration rehearsals; work cost 119,928 (the capacity cost, which also
+charges idle pool time, is 361,133). Other seeds take from 5 to 16 iterations.
 
 Provenance: written for this lab from a plain-language description of a team's delivery
 process (weekly refinement, planning, dailies, review and retro; continuous small releases
@@ -154,12 +157,16 @@ from BPMN and does not describe a specific company. It was authored with the gua
 `process create`, then a revision- and fingerprint-guarded `process edit` (dry run first)
 with every pool, step, flow and the arrival, then `process validate` and `process run`. The
 description, `seed` 7 and the SIPOC were then added to the JSON directly, because the edit
-vocabulary has no operation for them (the studio's **Edit process…** writes the same
-fields). A second guarded edit (revision 1 to 2) dropped the counters' zero starting values
+vocabulary had no operation for them at the time (the studio's **Edit process…** writes the
+same fields); the guarded `setDescription`, `setSeed` and `setSipoc` operations added since
+make this unnecessary, so do not copy that step. A second guarded edit (revision 1 to 2) dropped the counters' zero starting values
 from the arrival data, so the SIPOC lists only the drawn MVP scope as an input, and labelled
 that need on **MVP scope released?**; the run is unchanged. The result validates strictly. Each step has a scene marker and no scene asset. It
 exports to BPMN with and without BPSim; both exports pass `bin/wildlands process
-validate-bpmn` and re-import to the same fingerprint. All durations, costs, capacities and
+validate-bpmn` and re-import to the same fingerprint. The BPSim export also carries the seed and
+the drawn MVP scope as a start-event property, so a tool without the Wildlands extension repeats
+the arrival; its `fidelity` notes name what stays extension-only (the case fields and counters the
+steps write, needs and declared outputs, and the CI/CD pool kind). All durations, costs, capacities and
 probabilities are synthetic illustrative assumptions, not measured team performance, a
 delivery plan or a forecast.
 
@@ -180,8 +187,15 @@ bin/wildlands build-game --game docs/concepts/agency-delivery --output demos/age
 The business processes and journeys also carry a descriptive `sipoc` (suppliers and customers) and, for the
 business processes, step `phase` labels that group the SIPOC view; neither affects a run.
 
-Open `demos/agency-delivery.html` in a browser; use Run simulation, 2D/3D,
-and Step scenes. Every file is embedded and the demo runs offline.
+Open `demos/agency-delivery.html` in a browser; use **Run simulation**, **2D**/**3D**, the
+SIPOC or journey lens, **Step scenes**, and **Present** to walk through a process as slides
+beside its map ([Present a process to stakeholders](../../how-to/present-a-process.md)). For
+the release train, which runs for about 19,000 business minutes, choose **Speed** 2 h or 24 h and
+a **Run until** of 720 h. Every file is embedded and the demo runs offline. The
+studio tunes these processes (including where each step's paths lead) but cannot add steps or
+create a new process; to build your own, follow
+[Model your first business process](../../tutorials/first-business-process.md).
 
 [Contract](../../reference/business-process-engine.md) ·
-[Agent workflow](../../how-to/business-process-authoring.md).
+[Agent workflow](../../how-to/business-process-authoring.md) ·
+[Tutorial](../../tutorials/first-business-process.md).

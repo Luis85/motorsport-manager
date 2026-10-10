@@ -79,6 +79,13 @@
    if (whole(dist.mean) && whole(dist.max) && dist.mean! > dist.max!) fail(path, 'An exponential distribution needs mean at most max.');
   }
  }
+ const A_KIND: Record<LWProcess.Kind, string> = {start: 'The start step', task: 'A task', touchpoint: 'A touchpoint', machine: 'A machine step',
+  system: 'A system step', timer: 'A timer', decision: 'A decision', fork: 'A fork', join: 'A join', end: 'An end step'};
+ /** What a step of this kind needs and what it has, e.g. 'A task needs exactly 1 outgoing flow; this one has 0.' A deadline flow is not counted. */
+ function flowCount(s: LWProcess.Step, found: number): string {
+  const wanted = s.kind === 'end' ? 'no outgoing flow' : s.kind === 'decision' || s.kind === 'fork' ? 'at least 2 outgoing flows' : 'exactly 1 outgoing flow';
+  return (A_KIND[s.kind] ?? 'A ' + s.kind + ' step') + ' needs ' + wanted + (s.deadline ? ' besides its deadline flow' : '') + '; this one has ' + found + '.';
+ }
  /** Tasks, touchpoints, machine steps and system steps all execute work with duration, cost and resource demands. */
  const works = (s: LWProcess.Step) => s.kind === 'task' || s.kind === 'touchpoint' || s.kind === 'machine' || s.kind === 'system';
  function check(d: LWProcess.Definition): LWProcess.Diagnostic[] {
@@ -121,8 +128,10 @@
    } else if (w.field === undefined || w.op === undefined) fail(path, 'A condition needs a field and an operator, or a chance percent.');
    else if ((w.value === undefined) === (w.valueField === undefined)) fail(path, 'A condition compares to exactly one of a value or another case field (valueField).');
   };
+  // A flow whose endpoint is missing makes every route through it look broken; its own message is the root cause.
+  let dangling = false;
   d.flows.forEach((f, i) => {
-   if (!steps.has(f.from) || !steps.has(f.to)) fail('/flows/' + i, 'Both endpoints must exist.');
+   if (!steps.has(f.from) || !steps.has(f.to)) { dangling = true; fail('/flows/' + i, 'Both endpoints must exist.'); }
    const from = steps.get(f.from);
    if (f.on !== undefined && (!from?.deadline || from.deadline.flow !== f.id)) fail('/flows/' + i + '/on', 'A flow marked on "deadline" must leave a work step whose deadline names it (deadline.flow).');
    if (f.on !== undefined && f.when) fail('/flows/' + i + '/when', 'A deadline flow takes no condition.');
@@ -132,7 +141,7 @@
   d.steps.forEach((s, i) => {
    const path = '/steps/' + i, out = normal(s.id), into = incoming(s.id);
    if (s.kind === 'end' ? out.length !== 0 : s.kind === 'decision' || s.kind === 'fork' ? out.length < 2 : out.length !== 1)
-    fail(path, 'Invalid outgoing flow count for ' + s.kind + '.');
+    fail(path, flowCount(s, out.length));
    if (s.channel !== undefined && s.kind !== 'touchpoint') fail(path + '/channel', 'A channel is declared only on touchpoint steps.');
    if (s.outcome !== undefined && s.kind !== 'end') fail(path + '/outcome', 'An outcome (goal or lost) is declared only on end steps.');
    if (s.kind === 'start' && into.length) fail(path, 'Start cannot have incoming flows.');
@@ -145,7 +154,8 @@
     if (s.until !== undefined) fail(path + '/until', 'Only timers wait until a minute.');
     for (const [id, count] of Object.entries(s.resources ?? {})) {
      const pool = pools.get(id);
-     if (!pool || count > pool.capacity) fail(path + '/resources/' + id, 'Demand exceeds the available pool.');
+     if (!pool) fail(path + '/resources/' + id, 'Uses pool "' + id + '", which is not defined.');
+     else if (count > pool.capacity) fail(path + '/resources/' + id, 'Demand exceeds the available pool.');
      else if (s.kind !== 'touchpoint' && (pool.kind ?? 'people') !== wanted) fail(path + '/resources/' + id, label + ' may demand only ' + wanted + ' pools, but "' + id + '" is a ' + (pool.kind ?? 'people') + ' pool.');
     }
     if (s.kind !== 'task' && s.kind !== 'touchpoint' && !Object.keys(s.resources ?? {}).length) fail(path + '/resources', 'A ' + s.kind + ' step must demand at least one ' + s.kind + ' pool.');
@@ -200,7 +210,7 @@
    return seen;
   };
   const reachable = visit(d.start, false), toEnd = new Set(d.steps.filter(s => s.kind === 'end').flatMap(s => [...visit(s.id, true)]));
-  for (const s of d.steps) {
+  if (!dangling) for (const s of d.steps) {
    if (!reachable.has(s.id)) fail(at(s.id), 'Step is unreachable from start.');
    if (!toEnd.has(s.id)) fail(at(s.id), 'Step has no route to an end.');
   }

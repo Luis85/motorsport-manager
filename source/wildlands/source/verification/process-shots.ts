@@ -114,6 +114,10 @@ async function reachMinute(page: Page, index: number, minute: number): Promise<R
  const switcher = page.locator('#process-switch');
  if (await switcher.isVisible()) {
   await switcher.selectOption(String(index));
+  // Switching away from a run past minute 0 asks first; the shots always confirm.
+  const asked = (i: number) => (globalThis as unknown as {LWProcessStudio: {query(): StudioView}}).LWProcessStudio.query().active === i
+   || !!document.querySelector('dialog.ask-dialog[open]');
+  await page.waitForFunction(asked, index); if (await page.locator('dialog.ask-dialog[open]').count()) await page.locator('#ask-go').click();
   await page.waitForFunction(i => (globalThis as unknown as {LWProcessStudio: {query(): StudioView}}).LWProcessStudio.query().active === i, index);
  }
  if (minute === 0) return {horizonApplied: false, method: 'none (minute 0)'};

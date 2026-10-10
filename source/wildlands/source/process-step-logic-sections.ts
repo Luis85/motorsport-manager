@@ -9,13 +9,12 @@
  * strings with the shared control kit of LWProcessStepSections; it never touches the DOM, a session or storage.
  */
 declare namespace LWProcessStepLogicSections {
- interface Ui {deadlineHelp?: boolean; canOpenDefinition?: boolean}
  interface Api {
   /** Distribution select and parameter fields for `prefix` ('timing' or 'deadline.timing'); `none` adds the "no distribution" choice. */
   dist(prefix: string, t: LWProcessStepModel.Timing, errId: string, none: string | null): string;
   branching(m: LWProcessStepModel.Model): string;
   instances(m: LWProcessStepModel.Model): string;
-  deadline(m: LWProcessStepModel.Model, ui: Ui): string;
+  deadline(m: LWProcessStepModel.Model): string;
   /** The condition editor for path `k` (checkbox, mode and the tests). */
   condition(m: LWProcessStepModel.Model, f: LWProcessStepModel.FlowRow, k: number): string;
   /** The ordered summary items of the paths of a decision or inclusive fork; '' for other steps. */
@@ -53,13 +52,13 @@ declare namespace LWProcessStepLogicSections {
   const k = kit(), blocked = !!m.backlog?.on && i.kind === 'none';
   const kinds: [string, string][] = [['none', 'Once (no multiple instances)'], ['count', 'A fixed number of instances'], ['field', 'As many instances as a case field says']];
   const value = i.kind === 'count' ? k.field('instances.count', 'Number of instances (2 to 50)', i.count, {type: 'number', min: 2, max: 50, desc: 'se-err-instances', placeholder: '3'})
-   : i.kind === 'field' ? k.field('instances.field', 'Case field holding the number of instances (a whole number from 1 to 50)', i.field, {desc: 'se-err-instances', help: 'Read when a case enters the step; the case fails if it is missing or outside 1 to 50.'}) : '';
+   : i.kind === 'field' ? k.field('instances.field', 'Case field holding the number of instances (a whole number from 1 to 50)', i.field, {desc: 'se-err-instances', list: root.LWProcessStepSections.LISTS.all, help: 'Read when a case enters the step; the case fails if it is missing or outside 1 to 50.'}) : '';
   const mode = i.kind === 'none' ? '' : k.radios('instances.mode', 'How do the instances run?', [['parallel', 'In parallel: all instances queue at once'], ['sequential', 'One after another: each starts when the one before it is done']], i.mode);
   const why = blocked ? '<p class="se-help se-empty" id="se-instances-blocked">Multiple instances cannot be combined with a backlog. Turn off the backlog in the Backlog section to use them.</p>' : '';
   return k.section('instances', 'Multiple instances', 'Runs several items of this step for one case. Each instance asks for the step\'s people, equipment or systems and draws its own time; the step completes once, when every instance is done.',
    `${k.select('instances.kind', 'Run this step', kinds, i.kind, true, '', blocked ? 'se-instances-blocked' : '')}${why}${value ? `<div class="se-grid">${value}</div>` : ''}${mode}${i.kind === 'none' ? '' : `<p class="se-help" id="se-instances-note">${k.esc(notes(m)['se-instances-note'] ?? '')}</p>`}${k.err('instances')}`);
  }
- function deadline(m: M, ui: LWProcessStepLogicSections.Ui): string {
+ function deadline(m: M): string {
   const d = m.deadline; if (!d) return '';
   const k = kit(), kinds: [string, string][] = [['none', 'No deadline'], ['after', 'After a fixed number of minutes of work'], ['timing', 'After a random time of work']];
   let body = '';
@@ -68,14 +67,11 @@ declare namespace LWProcessStepLogicSections {
    const mode = k.radios('deadline.mode', 'When the deadline fires', [['interrupt', 'Interrupt: cancel the work and take the deadline path'], ['escalate', 'Escalate: keep working and start the deadline path in parallel']], d.mode);
    const options: [string, string][] = [['', 'Choose a flow'], ...m.flows.map((f): [string, string] => [f.id, `${f.label || f.id} → ${f.toName}`])];
    const flow = m.flows.length > 1 ? k.select('deadline.flow', 'Which outgoing flow is the deadline path?', options, d.flow, true, 'The other flow stays the normal route. Choosing a flow marks it as the deadline path.')
-    : `<p class="se-help se-empty" id="se-deadline-noflow">This step has only one outgoing flow, its normal route. A deadline needs a second flow for the deadline path.</p>${k.button('deadline-help', ui.deadlineHelp ? 'Hide how to add the flow' : 'How do I add the flow?', undefined, ` id="se-deadline-help" aria-expanded="${!!ui.deadlineHelp}" aria-controls="se-deadline-hint"`)}${ui.deadlineHelp ? hint(m, ui) : ''}`;
+    : '<p class="se-help se-empty" id="se-deadline-noflow">This step has only one outgoing path, its normal route. A deadline needs a second path to take. '
+     + 'Add one with <a href="#se-add-path-to" data-goto="se-add-path-to">Add path to…</a> under Where work goes next, then choose it here.</p>';
    body = `${time}${mode}${flow}<p class="se-help" id="se-deadline-note">${k.esc(notes(m)['se-deadline-note'] ?? '')}</p>`;
   }
   return k.section('deadline', 'Deadline', 'Optional. A boundary timer on this step: if the work is still running after the set time, either cancel it (interrupt) or let it finish and start a second path beside it (escalate).', `${k.select('deadline.kind', 'Deadline', kinds, d.kind, true)}${body}${k.err('deadline')}`);
- }
- function hint(m: M, ui: LWProcessStepLogicSections.Ui): string {
-  const k = kit(), json = `{"id": "${m.id}-late", "from": "${m.id}", "to": "<id of an existing step>", "on": "deadline"}`;
-  return `<div class="se-hint" id="se-deadline-hint" role="note"><p>The step editor does not add flows. In the Definition editor, open the JSON text and add this entry to "flows", pointing "to" at the step the deadline path should reach. Then come back and choose it here.</p><pre><code>${k.esc(json)}</code></pre>${ui.canOpenDefinition ? k.button('open-definition', 'Open the Definition editor') : ''}</div>`;
  }
  function notes(m: M): Record<string, string> {
   const v = root.LWProcessRandomView, l = L(), out: Record<string, string> = {};
@@ -90,8 +86,9 @@ declare namespace LWProcessStepLogicSections {
  function leaf(c: Cond, b: string, desc: string, about: string): string {
   const k = kit();
   if (c.mode === 'chance') return `<div class="se-grid">${k.field(b + '.chance', about ? `Share of cases${about} (percent, 1 to 99)` : 'Share of cases that take this path (percent, 1 to 99)', c.chance, {type: 'number', min: 1, max: 99, placeholder: '10', desc, ...about ? {} : {help: 'Each case draws its own random number, repeatable for the same seed. Paths are still checked in order and the first match wins.'}})}</div>`;
-  return `<div class="se-grid">${k.field(b + '.field', 'Case field to test' + about, c.field, about ? {desc} : {})}${k.select(b + '.op', 'Condition' + about, root.LWProcessStepModel.OPS, c.op)}</div>`
-   + (c.mode === 'field' ? `<div class="se-grid">${k.field(b + '.valueField', 'Other case field to compare with' + about, c.valueField, about ? {desc} : {})}</div>` : `<div class="se-grid">${k.valueEditor(b + '.value', c.value, desc, about)}</div>`);
+  const list = root.LWProcessStepSections.LISTS.after;
+  return `<div class="se-grid">${k.field(b + '.field', 'Case field to test' + about, c.field, about ? {desc, list} : {list})}${k.select(b + '.op', 'Condition' + about, root.LWProcessStepModel.OPS, c.op)}</div>`
+   + (c.mode === 'field' ? `<div class="se-grid">${k.field(b + '.valueField', 'Other case field to compare with' + about, c.valueField, about ? {desc, list} : {list})}</div>` : `<div class="se-grid">${k.valueEditor(b + '.value', c.value, desc, about)}</div>`);
  }
  const GROUP_HELP: Record<string, string> = {all: 'True when every test below is true.', any: 'True when at least one test below is true.', not: 'True when the test below is false.'};
  /** A group of tests. `level` is 1 for the group chosen on the path; `top` is the whole condition (for the leaf budget). */
