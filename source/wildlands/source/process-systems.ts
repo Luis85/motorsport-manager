@@ -55,12 +55,22 @@
    k.spawn(s, id, s.definition.start, null, null);
   }
  }
+ /** Work steps whose backlog re-ranks its queue (an order other than first-in), in step order; derived once per state. */
+ const reranked = new WeakMap<State, Step[]>();
+ function rerankedOf(s: State): Step[] {
+  let steps = reranked.get(s);
+  if (!steps) {
+   steps = s.definition.steps.filter(step => step.backlog && step.backlog.order && step.backlog.order !== 'fifo' && k.works(step));
+   reranked.set(s, steps);
+  }
+  return steps;
+ }
  /** Allocates pool capacity atomically to queued work in arrival order (backlog orders re-rank within their own step). */
  function start(s: State): boolean {
   const queued = k.tokens(s).filter(t => t.status === 'queued').sort(byEntry);
+  if (!queued.length) return false;
   // Backlog orders re-rank only within their own step's positions, so other steps keep first-in order.
-  for (const step of s.definition.steps) {
-   if (!step.backlog || !step.backlog.order || step.backlog.order === 'fifo' || !k.works(step)) continue;
+  for (const step of rerankedOf(s)) {
    const slots = queued.flatMap((t, i) => t.stepId === step.id ? [i] : []), ranked = slots.map(i => queued[i]!).sort(k.ranking(s, step));
    slots.forEach((i, n) => { queued[i] = ranked[n]!; });
   }

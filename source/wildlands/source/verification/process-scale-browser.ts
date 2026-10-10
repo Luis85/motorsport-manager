@@ -41,10 +41,18 @@ const BOUND = {
  present: 8000,
  /** Mean time to show the next slide while paging through the whole deck: measured 217 to 391 ms. */
  page: 2000,
- /** The longest gap between the five frames after Run to end: measured 333 to 600 ms (one long frame among them). */
- frame: 2500,
- /** Run to end over 10,000 minutes, the click to the first frame after it: measured 2,257 to 3,138 ms. */
- run: 20000,
+ /**
+  * The longest gap between the five frames after Run to end: measured 300 to 517 ms after the engine fast paths, in six runs at load
+  * average 7 to 16 from other agents (before them 333 to 600 ms). The long frame is the GPU process swapping the re-rastered map
+  * (SwiftShader), not page script.
+  */
+ frame: 2200,
+ /**
+  * Run to end over 10,000 minutes, the click to the first frame after it: measured 762 to 1,202 ms in the same six runs after the
+  * engine fast paths (token index, join plan, direct clock step; before them 2,257 to 3,138 ms under a 20,000 ms bound, whose margin
+  * this bound keeps).
+  */
+ run: 8000,
 } as const;
 
 runSuite('process scale browser harness', 'process-scale-browser-results.json', async studio => {

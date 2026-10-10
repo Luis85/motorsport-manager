@@ -34,6 +34,7 @@ require('./process-bpmn-conformance-bpsim.js');
 require('./process-bpmn-conformance-schema.js');
 require('./process-bpmn-conformance.js');
 require('./process-ledger-cases.js');
+require('./process-ledger-exact.js');
 require('./process-ledger.js');
 require('./process-kernel.js');
 require('./process-routing.js');

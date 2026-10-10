@@ -20,6 +20,9 @@ function errorCode(error) {
 }
 
 // src/domain/schema.ts
+import { z as z7 } from "zod";
+
+// src/domain/schema-values.ts
 import { z } from "zod";
 var Id = z.string().regex(/^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/);
 var NumberValue = z.number().finite().min(-1e6).max(1e6);
@@ -47,131 +50,134 @@ var Vec3 = z.tuple([Scalar, Scalar, Scalar]);
 var Vec2 = z.tuple([Scalar, Scalar]);
 var Color = z.string().regex(/^#[0-9a-fA-F]{6}$/);
 var Transform = z.object({ position: Vec3.optional(), rotation: Vec3.optional(), scale: Vec3.optional() }).strict();
-var segments = z.number().int().min(3).max(128);
-var GeometrySchema = z.discriminatedUnion("type", [
-  z.strictObject({ type: z.literal("box"), size: Vec3 }),
-  z.strictObject({ type: z.literal("sphere"), radius: Scalar, segments: segments.optional() }),
-  z.strictObject({
-    type: z.literal("cylinder"),
+
+// src/domain/schema-content.ts
+import { z as z2 } from "zod";
+var segments = z2.number().int().min(3).max(128);
+var GeometrySchema = z2.discriminatedUnion("type", [
+  z2.strictObject({ type: z2.literal("box"), size: Vec3 }),
+  z2.strictObject({ type: z2.literal("sphere"), radius: Scalar, segments: segments.optional() }),
+  z2.strictObject({
+    type: z2.literal("cylinder"),
     radiusTop: Scalar,
     radiusBottom: Scalar,
     height: Scalar,
     segments: segments.optional(),
-    openEnded: z.boolean().optional()
+    openEnded: z2.boolean().optional()
   }),
-  z.strictObject({
-    type: z.literal("cone"),
+  z2.strictObject({
+    type: z2.literal("cone"),
     radius: Scalar,
     height: Scalar,
     segments: segments.optional()
   }),
-  z.strictObject({
-    type: z.literal("torus"),
+  z2.strictObject({
+    type: z2.literal("torus"),
     radius: Scalar,
     tube: Scalar,
     segments: segments.optional()
   }),
-  z.strictObject({
-    type: z.literal("capsule"),
+  z2.strictObject({
+    type: z2.literal("capsule"),
     radius: Scalar,
     length: Scalar,
     segments: segments.optional()
   }),
-  z.strictObject({ type: z.literal("plane"), size: Vec2 }),
-  z.strictObject({
-    type: z.literal("tube"),
-    points: z.array(Vec3).min(2).max(256),
+  z2.strictObject({ type: z2.literal("plane"), size: Vec2 }),
+  z2.strictObject({
+    type: z2.literal("tube"),
+    points: z2.array(Vec3).min(2).max(256),
     radius: Scalar,
-    tubularSegments: z.number().int().min(4).max(512).default(64),
-    radialSegments: z.number().int().min(3).max(32).default(8),
-    closed: z.boolean().default(false),
-    capEnds: z.boolean().default(true)
+    tubularSegments: z2.number().int().min(4).max(512).default(64),
+    radialSegments: z2.number().int().min(3).max(32).default(8),
+    closed: z2.boolean().default(false),
+    capEnds: z2.boolean().default(true)
   }),
-  z.strictObject({
-    type: z.literal("lathe"),
-    points: z.array(Vec2).min(2).max(512),
+  z2.strictObject({
+    type: z2.literal("lathe"),
+    points: z2.array(Vec2).min(2).max(512),
     segments: segments.optional()
   }),
-  z.strictObject({
-    type: z.literal("extrude"),
-    points: z.array(Vec2).min(3).max(512),
-    holes: z.array(z.array(Vec2).min(3).max(512)).max(32).optional(),
+  z2.strictObject({
+    type: z2.literal("extrude"),
+    points: z2.array(Vec2).min(3).max(512),
+    holes: z2.array(z2.array(Vec2).min(3).max(512)).max(32).optional(),
     depth: Scalar,
     bevel: Scalar.optional(),
     bevelSegments: segments.optional()
   }),
-  z.strictObject({
-    type: z.literal("mesh"),
-    positions: z.array(Vec3).min(3).max(1e5),
-    indices: z.array(z.number().int().nonnegative()).min(3).max(6e5),
-    normals: z.array(Vec3).min(3).max(1e5).optional(),
-    uvs: z.array(Vec2).min(3).max(1e5).optional()
+  z2.strictObject({
+    type: z2.literal("mesh"),
+    positions: z2.array(Vec3).min(3).max(1e5),
+    indices: z2.array(z2.number().int().nonnegative()).min(3).max(6e5),
+    normals: z2.array(Vec3).min(3).max(1e5).optional(),
+    uvs: z2.array(Vec2).min(3).max(1e5).optional()
   }),
-  z.strictObject({
-    type: z.literal("boolean"),
-    operation: z.enum(["union", "subtract", "intersect"]),
+  z2.strictObject({
+    type: z2.literal("boolean"),
+    operation: z2.enum(["union", "subtract", "intersect"]),
     left: Id,
     right: Id,
     leftTransform: Transform.optional(),
     rightTransform: Transform.optional()
   })
 ]);
-var MaterialSchema = z.object({
+var MaterialSchema = z2.object({
   color: Color,
-  metalness: z.number().min(0).max(1).default(0),
-  roughness: z.number().min(0).max(1).default(0.65),
+  metalness: z2.number().min(0).max(1).default(0),
+  roughness: z2.number().min(0).max(1).default(0.65),
   emissive: Color.optional(),
-  emissiveIntensity: z.number().min(0).max(20).optional(),
-  opacity: z.number().min(0).max(1).default(1),
-  doubleSided: z.boolean().default(false),
-  flatShading: z.boolean().default(false),
-  shading: z.enum(["standard", "unlit"]).optional()
+  emissiveIntensity: z2.number().min(0).max(20).optional(),
+  opacity: z2.number().min(0).max(1).default(1),
+  doubleSided: z2.boolean().default(false),
+  flatShading: z2.boolean().default(false),
+  shading: z2.enum(["standard", "unlit"]).optional()
 }).strict();
-var PatternSchema = z.discriminatedUnion("type", [
-  z.strictObject({
-    type: z.literal("path"),
-    points: z.array(Vec3).min(1).max(256),
-    orient: z.enum(["none", "yaw"]).default("none")
+var PatternSchema = z2.discriminatedUnion("type", [
+  z2.strictObject({
+    type: z2.literal("path"),
+    points: z2.array(Vec3).min(1).max(256),
+    orient: z2.enum(["none", "yaw"]).default("none")
   }),
-  z.object({ type: z.literal("linear"), count: Scalar, step: Vec3 }).strict(),
-  z.object({
-    type: z.literal("radial"),
+  z2.object({ type: z2.literal("linear"), count: Scalar, step: Vec3 }).strict(),
+  z2.object({
+    type: z2.literal("radial"),
     count: Scalar,
     radius: Scalar,
     startAngle: Scalar.default(0),
     sweep: Scalar.default(360),
-    orient: z.boolean().default(true)
+    orient: z2.boolean().default(true)
   }).strict(),
-  z.object({
-    type: z.literal("grid"),
+  z2.object({
+    type: z2.literal("grid"),
     counts: Vec3,
     step: Vec3,
-    centered: z.boolean().default(false)
+    centered: z2.boolean().default(false)
   }).strict()
 ]);
-var JointVector = z.tuple([NumberValue, NumberValue, NumberValue]);
-var RigSchema = z.strictObject({
-  joints: z.array(
-    z.strictObject({
+var JointVector = z2.tuple([NumberValue, NumberValue, NumberValue]);
+var RigSchema = z2.strictObject({
+  joints: z2.array(
+    z2.strictObject({
       id: Id,
       parent: Id.optional(),
       position: JointVector,
       rotation: JointVector.default([0, 0, 0])
     })
   ).min(1).max(64),
-  binding: z.enum(["rigid", "smooth"]).default("rigid"),
-  bindings: z.record(z.string().min(1).max(512), Id).default({}),
-  pose: z.record(Id, JointVector).default({}),
-  clips: z.array(
-    z.strictObject({
+  binding: z2.enum(["rigid", "smooth"]).default("rigid"),
+  bindings: z2.record(z2.string().min(1).max(512), Id).default({}),
+  pose: z2.record(Id, JointVector).default({}),
+  clips: z2.array(
+    z2.strictObject({
       id: Id,
-      duration: z.number().positive().max(600),
-      tracks: z.array(
-        z.strictObject({
+      duration: z2.number().positive().max(600),
+      tracks: z2.array(
+        z2.strictObject({
           joint: Id,
-          keyframes: z.array(
-            z.strictObject({
-              time: z.number().min(0).max(600),
+          keyframes: z2.array(
+            z2.strictObject({
+              time: z2.number().min(0).max(600),
               rotation: JointVector
             })
           ).min(2).max(256)
@@ -182,62 +188,65 @@ var RigSchema = z.strictObject({
 });
 var nodeBase = {
   id: Id,
-  name: z.string().max(120).optional(),
+  name: z2.string().max(120).optional(),
   parent: Id.optional(),
   transform: Transform.optional(),
-  visible: z.boolean().default(true),
-  tags: z.array(z.string().max(64)).max(32).default([]),
+  visible: z2.boolean().default(true),
+  tags: z2.array(z2.string().max(64)).max(32).default([]),
   pattern: PatternSchema.optional()
 };
-var NodeSchema = z.discriminatedUnion("type", [
-  z.object({
+var NodeSchema = z2.discriminatedUnion("type", [
+  z2.object({
     ...nodeBase,
-    type: z.literal("light"),
-    light: z.enum(["point", "spot", "directional"]),
+    type: z2.literal("light"),
+    light: z2.enum(["point", "spot", "directional"]),
     color: Color.default("#ffffff"),
-    intensity: z.number().finite().min(0).max(1e4).default(50),
-    distance: z.number().finite().min(0).max(1e5).default(0),
-    angle: z.number().min(1).max(89).default(35),
-    penumbra: z.number().min(0).max(1).default(0.25),
-    castShadow: z.boolean().default(false)
+    intensity: z2.number().finite().min(0).max(1e4).default(50),
+    distance: z2.number().finite().min(0).max(1e5).default(0),
+    angle: z2.number().min(1).max(89).default(35),
+    penumbra: z2.number().min(0).max(1).default(0.25),
+    castShadow: z2.boolean().default(false)
   }).strict(),
-  z.object({ ...nodeBase, type: z.literal("group") }).strict(),
-  z.object({ ...nodeBase, type: z.literal("mesh"), geometry: Id, material: Id }).strict(),
-  z.object({
+  z2.object({ ...nodeBase, type: z2.literal("group") }).strict(),
+  z2.object({ ...nodeBase, type: z2.literal("mesh"), geometry: Id, material: Id }).strict(),
+  z2.object({
     ...nodeBase,
-    type: z.literal("model"),
+    type: z2.literal("model"),
     model: Id,
     rig: RigSchema.optional(),
-    parameters: z.record(Id, Scalar).default({}),
-    materialOverrides: z.record(Id, Id).default({})
+    parameters: z2.record(Id, Scalar).default({}),
+    materialOverrides: z2.record(Id, Id).default({})
   }).strict()
 ]);
+
+// src/domain/schema-documents.ts
+import { z as z3 } from "zod";
 var content = {
-  geometries: z.record(Id, GeometrySchema).default({}),
-  materials: z.record(Id, MaterialSchema).default({}),
-  nodes: z.array(NodeSchema).max(1e4).default([])
+  geometries: z3.record(Id, GeometrySchema).default({}),
+  materials: z3.record(Id, MaterialSchema).default({}),
+  nodes: z3.array(NodeSchema).max(1e4).default([])
 };
-var CameraSchema = z.object({
-  position: z.tuple([NumberValue, NumberValue, NumberValue]),
-  target: z.tuple([NumberValue, NumberValue, NumberValue]),
-  fov: z.number().min(5).max(120).default(40)
+var CameraSchema = z3.object({
+  position: z3.tuple([NumberValue, NumberValue, NumberValue]),
+  target: z3.tuple([NumberValue, NumberValue, NumberValue]),
+  fov: z3.number().min(5).max(120).default(40)
 }).strict();
-var EnvironmentSchema = z.object({
+var EnvironmentSchema = z3.object({
   background: Color.default("#171d25"),
-  exposure: z.number().min(0.1).max(4).optional(),
-  toneMapping: z.enum(["filmic", "neutral", "linear"]).optional(),
-  ambient: z.number().min(0).max(5).default(1.8),
-  keyIntensity: z.number().min(0).max(10).default(3.5),
-  keyPosition: z.tuple([NumberValue, NumberValue, NumberValue]).default([5, 10, 7])
+  exposure: z3.number().min(0.1).max(4).optional(),
+  toneMapping: z3.enum(["filmic", "neutral", "linear"]).optional(),
+  ambient: z3.number().min(0).max(5).default(1.8),
+  keyIntensity: z3.number().min(0).max(10).default(3.5),
+  keyPosition: z3.tuple([NumberValue, NumberValue, NumberValue]).default([5, 10, 7])
 }).strict();
-var SceneSchema = z.object({
-  schemaVersion: z.literal(1),
-  kind: z.literal("scene"),
+var SceneSchema = z3.object({
+  schemaVersion: z3.literal(1),
+  kind: z3.literal("scene"),
   id: Id,
-  name: z.string().min(1).max(120),
-  revision: z.number().int().nonnegative().default(0),
-  units: z.literal("meters").default("meters"),
-  parameters: z.record(Id, NumberValue).default({}),
+  name: z3.string().min(1).max(120),
+  revision: z3.number().int().nonnegative().default(0),
+  units: z3.literal("meters").default("meters"),
+  parameters: z3.record(Id, NumberValue).default({}),
   ...content,
   camera: CameraSchema.optional(),
   environment: EnvironmentSchema.default({
@@ -247,151 +256,160 @@ var SceneSchema = z.object({
     keyPosition: [5, 10, 7]
   })
 }).strict();
-var ModelSchema = z.object({
-  schemaVersion: z.literal(1),
-  kind: z.literal("model"),
+var ModelSchema = z3.object({
+  schemaVersion: z3.literal(1),
+  kind: z3.literal("model"),
   id: Id,
-  category: z.string().max(64).optional(),
-  description: z.string().max(600).optional(),
-  name: z.string().min(1).max(120),
-  parameters: z.record(
+  category: z3.string().max(64).optional(),
+  description: z3.string().max(600).optional(),
+  name: z3.string().min(1).max(120),
+  parameters: z3.record(
     Id,
-    z.object({
+    z3.object({
       default: NumberValue,
       min: NumberValue.optional(),
       max: NumberValue.optional(),
-      description: z.string().max(300).optional(),
-      integer: z.boolean().optional()
+      description: z3.string().max(300).optional(),
+      integer: z3.boolean().optional()
     }).strict()
   ).default({}),
   ...content
 }).strict();
-var ProjectSchema = z.object({
-  schemaVersion: z.literal(1),
-  name: z.string().min(1).max(120),
+var ProjectSchema = z3.object({
+  schemaVersion: z3.literal(1),
+  name: z3.string().min(1).max(120),
   activeScene: Id,
-  scenes: z.record(Id, z.string()),
-  models: z.record(Id, z.string())
+  scenes: z3.record(Id, z3.string()),
+  models: z3.record(Id, z3.string())
 }).strict();
-var NodePatchSchema = z.object({
-  name: z.string().max(120).optional(),
-  visible: z.boolean().optional(),
-  tags: z.array(z.string().max(64)).max(32).optional(),
+var ModelBundleSchema = z3.object({
+  schemaVersion: z3.literal(1),
+  kind: z3.literal("model-bundle"),
+  entry: Id,
+  models: z3.record(Id, ModelSchema)
+}).strict();
+var SceneBundleSchema = z3.object({
+  schemaVersion: z3.literal(1),
+  kind: z3.literal("scene-bundle"),
+  scene: SceneSchema,
+  models: z3.record(Id, ModelSchema)
+}).strict();
+
+// src/domain/schema-operations.ts
+import { z as z4 } from "zod";
+var NodePatchSchema = z4.object({
+  name: z4.string().max(120).optional(),
+  visible: z4.boolean().optional(),
+  tags: z4.array(z4.string().max(64)).max(32).optional(),
   transform: Transform.optional(),
   pattern: PatternSchema.nullable().optional(),
   rig: RigSchema.nullable().optional(),
   color: Color.optional(),
-  intensity: z.number().finite().min(0).max(1e4).optional(),
-  distance: z.number().finite().min(0).max(1e5).optional(),
-  angle: z.number().min(1).max(89).optional(),
-  penumbra: z.number().min(0).max(1).optional(),
-  castShadow: z.boolean().optional(),
-  parameters: z.record(Id, Scalar).optional(),
-  materialOverrides: z.record(Id, Id).optional()
+  intensity: z4.number().finite().min(0).max(1e4).optional(),
+  distance: z4.number().finite().min(0).max(1e5).optional(),
+  angle: z4.number().min(1).max(89).optional(),
+  penumbra: z4.number().min(0).max(1).optional(),
+  castShadow: z4.boolean().optional(),
+  parameters: z4.record(Id, Scalar).optional(),
+  materialOverrides: z4.record(Id, Id).optional()
 }).strict();
-var SelectorSchema = z.object({
-  ids: z.array(Id).min(1).max(1e3).optional(),
-  tag: z.string().max(64).optional(),
-  type: z.enum(["group", "mesh", "model", "light"]).optional(),
+var SelectorSchema = z4.object({
+  ids: z4.array(Id).min(1).max(1e3).optional(),
+  tag: z4.string().max(64).optional(),
+  type: z4.enum(["group", "mesh", "model", "light"]).optional(),
   model: Id.optional(),
   parent: Id.nullable().optional()
 }).strict();
-var OperationSchema = z.discriminatedUnion("op", [
-  z.object({ op: z.literal("putNode"), node: NodeSchema }).strict(),
-  z.object({ op: z.literal("patchNodes"), selector: SelectorSchema, patch: NodePatchSchema }).strict(),
-  z.object({ op: z.literal("removeNode"), id: Id, cascade: z.boolean().default(false) }).strict(),
-  z.object({ op: z.literal("putGeometry"), id: Id, geometry: GeometrySchema }).strict(),
-  z.object({ op: z.literal("removeGeometry"), id: Id }).strict(),
-  z.object({ op: z.literal("putMaterial"), id: Id, material: MaterialSchema }).strict(),
-  z.object({ op: z.literal("removeMaterial"), id: Id }).strict(),
-  z.object({ op: z.literal("setParameter"), id: Id, value: NumberValue }).strict(),
-  z.object({ op: z.literal("setCamera"), camera: CameraSchema }).strict(),
-  z.object({ op: z.literal("setEnvironment"), environment: EnvironmentSchema }).strict(),
-  z.object({ op: z.literal("patchNode"), id: Id, patch: NodePatchSchema }).strict(),
-  z.object({ op: z.literal("duplicateNode"), id: Id, newId: Id, offset: Vec3.default([0, 0, 0]) }).strict(),
-  z.object({
-    op: z.literal("reparentNode"),
+var OperationSchema = z4.discriminatedUnion("op", [
+  z4.object({ op: z4.literal("putNode"), node: NodeSchema }).strict(),
+  z4.object({ op: z4.literal("patchNodes"), selector: SelectorSchema, patch: NodePatchSchema }).strict(),
+  z4.object({ op: z4.literal("removeNode"), id: Id, cascade: z4.boolean().default(false) }).strict(),
+  z4.object({ op: z4.literal("putGeometry"), id: Id, geometry: GeometrySchema }).strict(),
+  z4.object({ op: z4.literal("removeGeometry"), id: Id }).strict(),
+  z4.object({ op: z4.literal("putMaterial"), id: Id, material: MaterialSchema }).strict(),
+  z4.object({ op: z4.literal("removeMaterial"), id: Id }).strict(),
+  z4.object({ op: z4.literal("setParameter"), id: Id, value: NumberValue }).strict(),
+  z4.object({ op: z4.literal("setCamera"), camera: CameraSchema }).strict(),
+  z4.object({ op: z4.literal("setEnvironment"), environment: EnvironmentSchema }).strict(),
+  z4.object({ op: z4.literal("patchNode"), id: Id, patch: NodePatchSchema }).strict(),
+  z4.object({ op: z4.literal("duplicateNode"), id: Id, newId: Id, offset: Vec3.default([0, 0, 0]) }).strict(),
+  z4.object({
+    op: z4.literal("reparentNode"),
     id: Id,
     parent: Id.nullable(),
-    keepWorld: z.boolean().default(true)
+    keepWorld: z4.boolean().default(true)
   }).strict(),
-  z.object({
-    op: z.literal("groupNodes"),
+  z4.object({
+    op: z4.literal("groupNodes"),
     id: Id,
-    nodes: z.array(Id).min(1).max(1e3),
-    name: z.string().max(120).optional()
+    nodes: z4.array(Id).min(1).max(1e3),
+    name: z4.string().max(120).optional()
   }).strict(),
-  z.object({ op: z.literal("groundNode"), id: Id, y: NumberValue.default(0) }).strict(),
-  z.object({
-    op: z.literal("placeNode"),
+  z4.object({ op: z4.literal("groundNode"), id: Id, y: NumberValue.default(0) }).strict(),
+  z4.object({
+    op: z4.literal("placeNode"),
     id: Id,
     target: Id,
-    side: z.enum(["right", "left", "front", "back", "above", "below"]),
-    gap: z.number().min(0).max(1e6).default(0),
-    center: z.boolean().default(true)
+    side: z4.enum(["right", "left", "front", "back", "above", "below"]),
+    gap: z4.number().min(0).max(1e6).default(0),
+    center: z4.boolean().default(true)
   }).strict()
 ]);
 var guards = {
   scene: Id.optional(),
-  expectedRevision: z.number().int().nonnegative().optional(),
-  expectedState: z.string().regex(/^[a-f0-9]{64}$/).optional()
+  expectedRevision: z4.number().int().nonnegative().optional(),
+  expectedState: z4.string().regex(/^[a-f0-9]{64}$/).optional()
 };
-var BatchSchema = z.object({ ...guards, operations: z.array(OperationSchema).min(1).max(1e4) }).strict();
-var CompositionSchema = z.object({
-  schemaVersion: z.literal(1),
-  kind: z.literal("composition"),
+var BatchSchema = z4.object({ ...guards, operations: z4.array(OperationSchema).min(1).max(1e4) }).strict();
+var CompositionSchema = z4.object({
+  schemaVersion: z4.literal(1),
+  kind: z4.literal("composition"),
   ...guards,
-  groups: z.array(z.object({ ...nodeBase, type: z.literal("group").default("group") }).strict()).default([]),
-  instances: z.array(
-    z.object({
+  groups: z4.array(z4.object({ ...nodeBase, type: z4.literal("group").default("group") }).strict()).default([]),
+  instances: z4.array(
+    z4.object({
       ...nodeBase,
-      type: z.literal("model").default("model"),
+      type: z4.literal("model").default("model"),
       model: Id,
-      parameters: z.record(Id, Scalar).default({}),
-      materialOverrides: z.record(Id, Id).default({})
+      parameters: z4.record(Id, Scalar).default({}),
+      materialOverrides: z4.record(Id, Id).default({})
     }).strict()
   ).min(1).max(1e4)
 }).strict();
-var ModelBundleSchema = z.object({
-  schemaVersion: z.literal(1),
-  kind: z.literal("model-bundle"),
-  entry: Id,
-  models: z.record(Id, ModelSchema)
-}).strict();
-var SceneBundleSchema = z.object({
-  schemaVersion: z.literal(1),
-  kind: z.literal("scene-bundle"),
-  scene: SceneSchema,
-  models: z.record(Id, ModelSchema)
-}).strict();
+
+// src/domain/schema-littlewild.ts
+import { z as z5 } from "zod";
 var littlewildFamilies = {
   items: "item",
   buildings: "building",
   creatures: "actor",
   pets: "pet"
 };
-var LittlewildId = z.string().regex(/^[a-z0-9][a-z0-9_-]{0,60}$/);
-var LittlewildVariantSchema = z.object({
+var LittlewildId = z5.string().regex(/^[a-z0-9][a-z0-9_-]{0,60}$/);
+var LittlewildVariantSchema = z5.object({
   model: Id,
-  parameters: z.record(Id, NumberValue).default({}),
+  parameters: z5.record(Id, NumberValue).default({}),
   /** Replace a model material with an inline specification for this variant. */
-  materials: z.record(Id, MaterialSchema).default({})
+  materials: z5.record(Id, MaterialSchema).default({})
 }).strict();
-var LittlewildAssetSchema = z.object({
+var LittlewildAssetSchema = z5.object({
   id: LittlewildId,
-  family: z.enum(["items", "buildings", "creatures", "pets"]),
-  name: z.string().min(1).max(120),
-  models: z.record(LittlewildId, LittlewildVariantSchema).refine((v) => Object.keys(v).length, {
+  family: z5.enum(["items", "buildings", "creatures", "pets"]),
+  name: z5.string().min(1).max(120),
+  models: z5.record(LittlewildId, LittlewildVariantSchema).refine((v) => Object.keys(v).length, {
     message: "At least one Littlewild model variant is required."
   }),
-  metadata: z.record(z.string().max(64), z.union([z.number(), z.string().max(120)])).default({})
+  metadata: z5.record(z5.string().max(64), z5.union([z5.number(), z5.string().max(120)])).default({})
 }).strict();
-var LittlewildExportSchema = z.object({
-  schemaVersion: z.literal(1),
-  kind: z.literal("littlewild-export"),
-  target: z.string().min(1).max(512),
-  assets: z.array(LittlewildAssetSchema).min(1).max(128)
+var LittlewildExportSchema = z5.object({
+  schemaVersion: z5.literal(1),
+  kind: z5.literal("littlewild-export"),
+  target: z5.string().min(1).max(512),
+  assets: z5.array(LittlewildAssetSchema).min(1).max(128)
 }).strict();
+
+// src/domain/schema-capture.ts
+import { z as z6 } from "zod";
 var viewNames = [
   "iso",
   "front",
@@ -404,18 +422,18 @@ var viewNames = [
   "authored",
   "orbit"
 ];
-var CameraNumber = z.number().finite();
-var NumericVec3 = z.tuple([CameraNumber, CameraNumber, CameraNumber]);
-var CameraSnapshotSchema = z.object({
-  projection: z.enum(["perspective", "orthographic"]),
+var CameraNumber = z6.number().finite();
+var NumericVec3 = z6.tuple([CameraNumber, CameraNumber, CameraNumber]);
+var CameraSnapshotSchema = z6.object({
+  projection: z6.enum(["perspective", "orthographic"]),
   position: NumericVec3,
   target: NumericVec3,
   up: NumericVec3,
-  near: z.number().positive().finite(),
-  far: z.number().positive().finite(),
-  zoom: z.number().positive().finite().default(1),
-  fov: z.number().min(5).max(120).optional(),
-  aspect: z.number().positive().finite().optional(),
+  near: z6.number().positive().finite(),
+  far: z6.number().positive().finite(),
+  zoom: z6.number().positive().finite().default(1),
+  fov: z6.number().min(5).max(120).optional(),
+  aspect: z6.number().positive().finite().optional(),
   left: CameraNumber.optional(),
   right: CameraNumber.optional(),
   top: CameraNumber.optional(),
@@ -436,38 +454,40 @@ var CameraSnapshotSchema = z.object({
   if (c.projection === "orthographic" && !(c.right > c.left && c.top > c.bottom))
     issue("Orthographic cameras need ordered left/right and bottom/top planes");
 });
-var CameraRequestSchema = z.object({
-  view: z.enum(viewNames).default("iso"),
-  projection: z.enum(["auto", "perspective", "orthographic"]).default("auto"),
+var CameraRequestSchema = z6.object({
+  view: z6.enum(viewNames).default("iso"),
+  projection: z6.enum(["auto", "perspective", "orthographic"]).default("auto"),
   azimuth: NumberValue.default(45),
-  elevation: z.number().min(-89.9).max(89.9).default(30),
-  padding: z.number().min(1.02).max(3).default(1.12),
-  fov: z.number().min(5).max(120).default(40),
+  elevation: z6.number().min(-89.9).max(89.9).default(30),
+  padding: z6.number().min(1.02).max(3).default(1.12),
+  fov: z6.number().min(5).max(120).default(40),
   fixed: CameraSnapshotSchema.optional()
 }).strict();
-var ReviewPlanSchema = z.object({
-  schemaVersion: z.literal(1),
-  kind: z.literal("review"),
-  width: z.number().int().min(64).max(2048).default(800),
-  height: z.number().int().min(64).max(2048).default(600),
-  grid: z.boolean().default(false),
-  wireframe: z.boolean().default(false),
-  contactSheet: z.boolean().default(true),
+var ReviewPlanSchema = z6.object({
+  schemaVersion: z6.literal(1),
+  kind: z6.literal("review"),
+  width: z6.number().int().min(64).max(2048).default(800),
+  height: z6.number().int().min(64).max(2048).default(600),
+  grid: z6.boolean().default(false),
+  wireframe: z6.boolean().default(false),
+  contactSheet: z6.boolean().default(true),
   background: Color.optional(),
-  frames: z.array(z.object({ id: Id, camera: CameraRequestSchema }).strict()).min(1).max(36)
+  frames: z6.array(z6.object({ id: Id, camera: CameraRequestSchema }).strict()).min(1).max(36)
 }).strict();
-var QualityPolicySchema = z.object({
-  schemaVersion: z.literal(1),
-  kind: z.literal("quality-policy"),
-  maxTriangles: z.number().int().nonnegative().optional(),
-  maxMeshes: z.number().int().nonnegative().optional(),
-  maxMaterials: z.number().int().nonnegative().optional(),
-  maxGeometries: z.number().int().nonnegative().optional(),
-  maxExtent: z.number().positive().finite().optional(),
-  allowTransparency: z.boolean().default(true),
-  allowDoubleSided: z.boolean().default(true),
-  requireUVs: z.boolean().default(false)
+var QualityPolicySchema = z6.object({
+  schemaVersion: z6.literal(1),
+  kind: z6.literal("quality-policy"),
+  maxTriangles: z6.number().int().nonnegative().optional(),
+  maxMeshes: z6.number().int().nonnegative().optional(),
+  maxMaterials: z6.number().int().nonnegative().optional(),
+  maxGeometries: z6.number().int().nonnegative().optional(),
+  maxExtent: z6.number().positive().finite().optional(),
+  allowTransparency: z6.boolean().default(true),
+  allowDoubleSided: z6.boolean().default(true),
+  requireUVs: z6.boolean().default(false)
 }).strict();
+
+// src/domain/schema.ts
 function parse(schema, input) {
   const pending = [[input, 0, false]];
   const visited = /* @__PURE__ */ new WeakSet(), active = /* @__PURE__ */ new WeakSet();
@@ -521,7 +541,7 @@ var schemaKinds = Object.keys(schemas);
 function jsonSchema(kind) {
   if (!Object.hasOwn(schemas, kind))
     fail("UNKNOWN_SCHEMA", `Unknown schema ${kind}.`, { available: Object.keys(schemas) });
-  return z.toJSONSchema(schemas[kind], {
+  return z7.toJSONSchema(schemas[kind], {
     target: "draft-2020-12",
     io: "input"
   });
@@ -2401,7 +2421,7 @@ function registerRigCommands(c) {
 }
 
 // src/infra/examples.ts
-import { z as z2 } from "zod";
+import { z as z8 } from "zod";
 
 // src/infra/assets.ts
 import { promises as fs3 } from "node:fs";
@@ -2503,18 +2523,18 @@ async function unpackScene(directory, input) {
 }
 
 // src/infra/examples.ts
-var Entry = z2.object({
+var Entry = z8.object({
   id: Id,
-  name: z2.string(),
-  description: z2.string(),
-  features: z2.array(z2.string()),
-  models: z2.array(Id),
-  stats: z2.unknown()
+  name: z8.string(),
+  description: z8.string(),
+  features: z8.array(z8.string()),
+  models: z8.array(Id),
+  stats: z8.unknown()
 }).strict();
 async function exampleData(name) {
   return JSON.parse(await readAsset(`examples/${name}`));
 }
-var listExamples = async () => parse(z2.array(Entry), await exampleData("index.json"));
+var listExamples = async () => parse(z8.array(Entry), await exampleData("index.json"));
 async function exampleBundle(id) {
   parse(Id, id);
   const examples = await listExamples();
@@ -2625,7 +2645,7 @@ var sourceOptions = (cmd) => cmd.option("--file <path>", "Read JSON from file, o
 var editOptions = (cmd) => cmd.option("--expected-revision <n>", "Reject if current revision differs", integer).option("--expected-state <hash>", "Reject if the scene or model library changed").option("--dry-run", "Validate and compile without writing");
 
 // src/commands/input.ts
-import { z as z3 } from "zod";
+import { z as z9 } from "zod";
 import path4 from "node:path";
 var parseJson = (value) => {
   if (Buffer.byteLength(value) > 16 * 1024 * 1024)
@@ -2653,7 +2673,7 @@ async function readInput(runtime, options) {
   }
   return readJson(path4.resolve(runtime.cwd, options.file));
 }
-var parseParameters = (value) => parse(z3.record(Id, NumberValue), parseJson(value));
+var parseParameters = (value) => parse(z9.record(Id, NumberValue), parseJson(value));
 
 // src/commands/discovery.ts
 import { Option } from "commander";

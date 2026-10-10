@@ -166,6 +166,8 @@
         }
         flush(): void {
             this.editable();
+            // Nothing deferred: the memberships below would be rebuilt only to apply no action.
+            if (!this.#structuralBuffer.length) return;
             const actions = this.#structuralBuffer.splice(0);
             const entities = new Set(this.#entitySet);
             const memberships = new Map([...this.#componentStores].map(([type, store]) =>
@@ -237,7 +239,7 @@
                 this.#stepping || world.running || world.pendingStructural) throw Error('Invalid ECS step.');
             if (!context || typeof context !== 'object') throw Error('Invalid ECS step context.');
             const entityId = context.entityId;
-            if (entityId !== undefined && (typeof entityId !== 'string' || !world.entities.has(entityId)))
+            if (entityId !== undefined && (typeof entityId !== 'string' || !world.has(entityId)))
                 throw Error('Unknown ECS step entity.');
             this.#stepping = true;
             activeWorlds.add(world);
