@@ -131,14 +131,23 @@ command/query boundaries; tool-only clock capabilities must not reach widgets.
 
 ## Standalone CLI projects
 
-`source/wildlands/` and `source/scene-forge/` are independent Node/TypeScript
-projects outside the Godot game; they do not read or write game saves,
-configuration or race/campaign state. Their CLIs, `bin/wildlands` and
-`bin/scene-forge`, are generated, checked-in bundles that need only Node.js 22+.
-Read `bin/README.md` and the handbook (`docs/reference/wildlands-cli.md`,
-`docs/reference/scene-forge-cli.md`) before using one. Never hand-edit `bin/`:
+`source/wildlands/`, `source/scene-forge/` and `source/process-studio/` are
+independent Node/TypeScript projects outside the Godot game; they do not read or
+write game saves, configuration or race/campaign state. Their CLIs,
+`bin/wildlands`, `bin/scene-forge` and `bin/process-studio`, are generated,
+checked-in bundles that need only Node.js 22+. Read `bin/README.md` and the
+handbook (`docs/reference/wildlands-cli.md`, `docs/reference/scene-forge-cli.md`,
+`docs/reference/process-studio-cli.md`) before using one. Never hand-edit `bin/`:
 rebuild with `npm run build:cli` in the source project, verify with
 `npm run check:cli`, and commit the regenerated bundle with the source change.
+
+Process Studio is the preferred tool for business-process definitions; it keeps
+`wildlands process` parity. Its bridge (`source/process-studio/src/kernel.cts`,
+allowlist `scripts/bridge.cts`) bundles Wildlands process code, and its `build`
+embeds the process slice of `bin/wildlands`'s engine kit. A change to a bridged
+Wildlands file or any Wildlands engine change therefore also needs
+`npm run build:cli` in `source/process-studio` (after `bin/wildlands` is
+rebuilt) and the regenerated `bin/process-studio` in the same commit.
 
 Wildlands games live in `docs/concepts/<id>/`: data only, never code; a folder's
 `README.md` is documentation outside its digest (`PROVENANCE.md`/`LICENSE*` are

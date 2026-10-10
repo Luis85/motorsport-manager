@@ -1,0 +1,13 @@
+{
+  "_comment": "Source texts for tests/architecture.test.cts, kept out of TypeScript so the architecture scan of the tests does not read them as imports.",
+  "bridge": "export {catalog} from '../../wildlands/source/process-sdk.cjs';\n",
+  "bypass": "import {catalog} from '../../wildlands/source/process-sdk.cjs';\n",
+  "reference": "/// <reference path=\"../../wildlands/source/process-contracts.d.ts\" />\n",
+  "require": "const x = require('../../wildlands/source/ecs.js');\n",
+  "package": "import {build} from 'esbuild';\n",
+  "script": "import {bundle} from '../scripts/bundle.cjs';\n",
+  "commented": "// import {build} from 'esbuild';\nimport fs from 'node:fs';\n",
+  "random": "const r = Math.random();\n",
+  "clock": "const t = new Date();\n",
+  "quoted": "const text = 'Date and Math.random in a string';\n// Date in a comment\n"
+}

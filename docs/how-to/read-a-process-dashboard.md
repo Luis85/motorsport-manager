@@ -8,7 +8,7 @@ rule and limit is listed in the [Dashboard reference](../reference/business-proc
 ## Before you start
 
 - A built studio: a process game such as `demos/agency-delivery.html`, or your own file from
-  `bin/wildlands process build` (see
+  `bin/process-studio build` (see
   [Model your first business process](../tutorials/first-business-process.md)).
 - A run past minute 0. At minute 0 the Dashboard says "Minute 0 — nothing has been simulated yet."
   Choose **Run simulation**, **Advance 30 min** or **Run to end** first. For a process with an open
@@ -122,8 +122,8 @@ clear difference …" when the 95% interval of the difference contains 0. Add ru
 small difference as real. If you edit the draft, apply it or change the seed or the measuring
 minute afterwards, the results are marked out of date; run them again.
 
-The same analysis runs from the command line with `bin/wildlands process replicate` and
-`process compare` (see [Compare designs across seeds](business-process-authoring.md#compare-designs-across-seeds)).
+The same analysis runs from the command line with `bin/process-studio replicate` and
+`compare` (see [Compare designs across seeds](business-process-authoring.md#compare-designs-across-seeds)).
 
 ## 11. Export the data
 

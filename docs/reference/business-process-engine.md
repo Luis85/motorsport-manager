@@ -251,7 +251,7 @@ given step. The exponential, normal and Erlang distributions use a deterministic
 square root built from exactly rounded arithmetic, so results do not depend on the JavaScript engine.
 
 **Seed.** The definition may declare `seed` (integer 0 to 2,147,483,647, default 1).
-`Runtime.create(definition, {seed})` and `wildlands process run --seed N` override it
+`Runtime.create(definition, {seed})` and `process-studio run --seed N` (or `wildlands process run --seed N`) override it
 for one run without editing the definition. The snapshot reports the seed in use
 as `seed`, so a report is reproducible from its definition and that number. A different
 seed changes every drawn value; it changes nothing else.
@@ -666,8 +666,9 @@ active session; a failure retains the existing process. Editing creates a new
 revision and resets only when explicitly applied. The browser starts paused.
 
 Agent tooling exposes discover, schema, create, validate, inspect, edit, run,
-build, forge, BPMN, slides, diff, replicate and compare operations under `wildlands process`
-(`process discover` lists 17 commands and 15 edit operations). Edit recipes require an
+build, forge, BPMN, slides, diff, replicate and compare operations in the standalone
+[`bin/process-studio`](process-studio-cli.md) and, identically, under `wildlands process`
+(`discover` lists 17 commands and 15 edit operations). Edit recipes require an
 expected revision and fingerprint, apply complete upserts/removals atomically,
 support dry runs, and report the resulting definition plus validation diagnostics.
 Drafts may have graph diagnostics between incremental edits; runnable/exported
@@ -1827,6 +1828,11 @@ compiled CLI (`.generated/tools/wildlands-cli.cjs` after `npm run build`, else `
 controls, and writes desktop 2D, 3D and lens, desktop and phone (390x844) Present (first and a
 step slide), the phone studio and DejaVu Sans Present captures plus `shots.json` with each
 capture's horizontal overflow and the page's console errors.
+
+`bin/process-studio` is checked by its own project tests rather than a registered suite: in
+`source/process-studio`, `npm test` runs its contract tests and compares every `wildlands process`
+subcommand with `bin/wildlands process` byte for byte, and `npm run check:cli` checks the executable
+([Process Studio CLI](process-studio-cli.md#rebuild-and-check-the-executable)).
 
 Passing suites are automated evidence of the stated behaviour, and screenshots of a synthetic run
 are review material; neither is human usability,

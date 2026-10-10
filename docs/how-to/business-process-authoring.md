@@ -1,7 +1,9 @@
 # Author and simulate a business process
 
-Use the checked-in `bin/wildlands` and `bin/scene-forge` with Node.js 22+.
-No build or dependencies are needed to run these tools. The
+Use the checked-in `bin/process-studio` (the [Process Studio CLI](../reference/process-studio-cli.md)),
+`bin/scene-forge` and, for game folders, `bin/wildlands` with Node.js 22+.
+No build or dependencies are needed to run these tools; `bin/wildlands process`
+accepts the same process commands with identical results. The
 [process contract](../reference/business-process-engine.md) defines the supported
 semantics and limits. This workflow starts with definitions and then builds scenes.
 New to the tools? [Model your first business process](../tutorials/first-business-process.md)
@@ -29,11 +31,11 @@ Run from the repository root and choose a new output directory:
 
 ```sh
 mkdir -p /tmp/process-work
-bin/wildlands process discover
-bin/wildlands process schema --kind definition
-bin/wildlands process schema --kind recipe
-bin/wildlands process create --id my-process --name "My process" --output /tmp/process-work/process.json
-bin/wildlands process inspect --input /tmp/process-work/process.json
+bin/process-studio discover
+bin/process-studio schema --kind definition
+bin/process-studio schema --kind recipe
+bin/process-studio create --id my-process --name "My process" --output /tmp/process-work/process.json
+bin/process-studio inspect --input /tmp/process-work/process.json
 ```
 
 `inspect` returns the current revision and fingerprint. The fingerprint covers
@@ -61,10 +63,10 @@ Write `/tmp/process-work/edit.json`, using the fingerprint you just read:
 ```
 
 ```sh
-bin/wildlands process edit --input /tmp/process-work/process.json --recipe /tmp/process-work/edit.json --dry-run
-bin/wildlands process edit --input /tmp/process-work/process.json --recipe /tmp/process-work/edit.json --output /tmp/process-work/review.json
-bin/wildlands process validate --input /tmp/process-work/review.json
-bin/wildlands process inspect --input /tmp/process-work/review.json
+bin/process-studio edit --input /tmp/process-work/process.json --recipe /tmp/process-work/edit.json --dry-run
+bin/process-studio edit --input /tmp/process-work/process.json --recipe /tmp/process-work/edit.json --output /tmp/process-work/review.json
+bin/process-studio validate --input /tmp/process-work/review.json
+bin/process-studio inspect --input /tmp/process-work/review.json
 ```
 
 `putStep`, `putFlow`, and `putResource` replace complete definitions. Keep fields
@@ -74,6 +76,7 @@ may point to definitions added later in the same recipe. Unknown operations and
 fields fail. Output cannot overwrite input, including hard-link/symlink aliases. Argument errors
 (missing, duplicate or unknown options, non-numeric `--minutes` or
 `--expected-revision`, `--dry-run` with `--output`) exit 2 before any work; see the
+[Process Studio CLI](../reference/process-studio-cli.md#commands) and the
 [option tables](../reference/wildlands-cli.md#business-processes).
 
 For a longer graph, use `edit --draft` while adding unconnected steps and flows.
@@ -99,8 +102,8 @@ average."; raise a short mean or accept the bias knowingly.
 To review a change, compare two definitions and explain the result:
 
 ```sh
-bin/wildlands process diff --input /tmp/process-work/review.json --against /tmp/process-work/process.json
-bin/wildlands process slides --input /tmp/process-work/review.json --format md
+bin/process-studio diff --input /tmp/process-work/review.json --against /tmp/process-work/process.json
+bin/process-studio slides --input /tmp/process-work/review.json --format md
 ```
 
 `diff` reports changed steps (with names), flows, resources, arrival rules and
@@ -119,8 +122,8 @@ One seeded run is one possible history. To see the spread of a design, run it ov
 consecutive seeds; to judge a change, run both versions on the same seeds:
 
 ```sh
-bin/wildlands process replicate --input /tmp/process-work/review.json --minutes 480 --runs 20
-bin/wildlands process compare --input /tmp/process-work/review.json --against /tmp/process-work/process.json --minutes 480 --runs 20
+bin/process-studio replicate --input /tmp/process-work/review.json --minutes 480 --runs 20
+bin/process-studio compare --input /tmp/process-work/review.json --against /tmp/process-work/process.json --minutes 480 --runs 20
 ```
 
 1. **Choose the length and the number of runs.** `--minutes` (1 to 100,000) is the length of every
@@ -148,8 +151,8 @@ assumptions, not a forecast.
 `process run` can stream every engine event of its run to a file:
 
 ```sh
-bin/wildlands process run --input /tmp/process-work/review.json --minutes 480 --output /tmp/process-work/report.json --event-log /tmp/process-work/events.csv
-bin/wildlands process run --input /tmp/process-work/review.json --minutes 480 --output /tmp/process-work/report.json --event-log /tmp/process-work/events.xes --format xes
+bin/process-studio run --input /tmp/process-work/review.json --minutes 480 --output /tmp/process-work/report.json --event-log /tmp/process-work/events.csv
+bin/process-studio run --input /tmp/process-work/review.json --minutes 480 --output /tmp/process-work/report.json --event-log /tmp/process-work/events.xes --format xes
 ```
 
 The CSV has one row per event (`case_id,step_id,step_name,event,minute,timestamp,detail`); XES
@@ -230,7 +233,7 @@ after browsing, counts mood with a counter, and runs an open stream of visitors:
 }
 ```
 
-Run it unlimited for a while (`wildlands process run --input shop.json --minutes 2000 --output report.json`)
+Run it unlimited for a while (`bin/process-studio run --input shop.json --minutes 2000 --output report.json`)
 and read the snapshot: `metrics.goals`, `metrics.lost` and `metrics.conversion` (permille;
 676 means 67.6%), `metrics.tracked.mood` at the finish, and for each step `reached`
 (distinct visitors who got that far), `entered` (visits) and `tracked.mood` (average mood
@@ -394,7 +397,7 @@ to cancel the work and route the token along that flow instead.
 ## Author each step scene with Scene Forge
 
 ```sh
-bin/wildlands process forge --input /tmp/process-work/review.json --output /tmp/process-work/forge
+bin/process-studio forge --input /tmp/process-work/review.json --output /tmp/process-work/forge
 bin/scene-forge -p /tmp/process-work/forge catalog
 bin/scene-forge -p /tmp/process-work/forge inspect --source
 bin/scene-forge -p /tmp/process-work/forge validate
@@ -412,8 +415,8 @@ and can be brought into Scene Forge with `littlewild import` for exact editing.
 Attach an exported model to the process step. Read fresh guards from `inspect`:
 
 ```sh
-bin/wildlands process attach --input /tmp/process-work/review.json --step work --asset /tmp/process-work/forge/exports/items/scene-work/definition.json --expected-revision 1 --expected-fingerprint REPLACE_WITH_INSPECT_FINGERPRINT --dry-run
-bin/wildlands process attach --input /tmp/process-work/review.json --step work --asset /tmp/process-work/forge/exports/items/scene-work/definition.json --expected-revision 1 --expected-fingerprint REPLACE_WITH_INSPECT_FINGERPRINT --output /tmp/process-work/visual.json
+bin/process-studio attach --input /tmp/process-work/review.json --step work --asset /tmp/process-work/forge/exports/items/scene-work/definition.json --expected-revision 1 --expected-fingerprint REPLACE_WITH_INSPECT_FINGERPRINT --dry-run
+bin/process-studio attach --input /tmp/process-work/review.json --step work --asset /tmp/process-work/forge/exports/items/scene-work/definition.json --expected-revision 1 --expected-fingerprint REPLACE_WITH_INSPECT_FINGERPRINT --output /tmp/process-work/visual.json
 ```
 
 The `visual` facet becomes `step.scene.asset`; a bare `littlewild-3d-asset` is
@@ -427,8 +430,8 @@ is the editable source of the demo's attached scene geometry.
 ## Exchange BPMN 2.0
 
 ```sh
-bin/wildlands process export-bpmn --input /tmp/process-work/review.json --output /tmp/process-work/review.bpmn
-bin/wildlands process import-bpmn --input /tmp/process-work/review.bpmn --output /tmp/process-work/imported.json
+bin/process-studio export-bpmn --input /tmp/process-work/review.json --output /tmp/process-work/review.bpmn
+bin/process-studio import-bpmn --input /tmp/process-work/review.bpmn --output /tmp/process-work/imported.json
 ```
 
 Export carries durations, needs, backlogs and layout in a `wl:` extension, so a
@@ -459,7 +462,7 @@ one-off run also used the OMG schema files
 Before handing a file to another tool, or to see why a modeler's file looks odd, check it:
 
 ```sh
-bin/wildlands process validate-bpmn --input /tmp/process-work/review.bpmn
+bin/process-studio validate-bpmn --input /tmp/process-work/review.bpmn
 ```
 
 1. **Read the verdict.** Exit 0 and `"conforms": true` mean every checked element follows the
@@ -491,8 +494,8 @@ drawn. Two illustrative files are in
 application and a support ticket. Their numbers are synthetic.
 
 ```sh
-bin/wildlands process import-bpmn --input source/wildlands/examples/bpmn/loan-application.bpmn --output /tmp/process-work/loan.json --report /tmp/process-work/loan-report.json
-bin/wildlands process run --input /tmp/process-work/loan.json --minutes 3000 --seed 7 --output /tmp/process-work/loan-run.json
+bin/process-studio import-bpmn --input source/wildlands/examples/bpmn/loan-application.bpmn --output /tmp/process-work/loan.json --report /tmp/process-work/loan-report.json
+bin/process-studio run --input /tmp/process-work/loan.json --minutes 3000 --seed 7 --output /tmp/process-work/loan-run.json
 ```
 
 1. **Read the printed report.** `warnings` states every assumption (defaulted durations, folded
@@ -560,8 +563,8 @@ Export BPMN with BPSim** writes the active process back out with a BPSim scenari
 ## Run and build
 
 ```sh
-bin/wildlands process run --input /tmp/process-work/review.json --minutes 100 --output /tmp/process-work/report.json
-bin/wildlands process build --input /tmp/process-work/review.json --output /tmp/process-work/process.html
+bin/process-studio run --input /tmp/process-work/review.json --minutes 100 --output /tmp/process-work/report.json
+bin/process-studio build --input /tmp/process-work/review.json --output /tmp/process-work/process.html
 bin/wildlands validate-game --game docs/concepts/agency-delivery
 bin/wildlands build-game --game docs/concepts/agency-delivery --output /tmp/process-work/agency.html
 ```
@@ -825,7 +828,7 @@ The build has no external scripts, fonts, asset requests or account dependency.
 
 To walk an audience or a reviewer through a process step by step, choose **Present** beside
 the view buttons (on a phone: **⋯**, then **Present slides**) or export the same deck with
-`bin/wildlands process slides --format md`. The steps, keys, live facts and the Markdown
+`bin/process-studio slides --format md`. The steps, keys, live facts and the Markdown
 review are in [Present a process to stakeholders](present-a-process.md). "No description
 authored." on a slide marks a step without a `description`; add one with `putStep`.
 

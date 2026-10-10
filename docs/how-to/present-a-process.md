@@ -10,7 +10,7 @@ simulated run; neither is a forecast. The deck model and its limits are in the
 ## Before you start
 
 - A built studio: a process game such as `demos/agency-delivery.html`, or your own file
-  from `bin/wildlands process build` (see
+  from `bin/process-studio build` (see
   [Model your first business process](../tutorials/first-business-process.md)).
 - Apply any draft you want to show. Present always shows the **applied** definition, not
   an unapplied draft: if the header chip reads "Unapplied draft · …", open it and choose
@@ -78,18 +78,20 @@ Review the same deck as text, optionally with facts from one fresh bounded run, 
 the file beside a change for review:
 
 ```sh
-bin/wildlands process slides --input docs/concepts/agency-delivery/content/agency.process.json --format md --output /tmp/agency-slides.md
-bin/wildlands process slides --input docs/concepts/agency-delivery/content/agency.process.json --format md --minutes 240 --seed 7
-bin/wildlands process slides --input docs/concepts/agency-delivery/content/agency.process.json --format md --brief --output /tmp/agency-brief.md
+bin/process-studio slides --input docs/concepts/agency-delivery/content/agency.process.json --format md --output /tmp/agency-slides.md
+bin/process-studio slides --input docs/concepts/agency-delivery/content/agency.process.json --format md --minutes 240 --seed 7
+bin/process-studio slides --input docs/concepts/agency-delivery/content/agency.process.json --format md --brief --output /tmp/agency-brief.md
 ```
 
 `--format md` without `--output` prints the Markdown itself; with `--output` the command
 prints one JSON object naming the file, the slide and section counts and the `live` run
 (minute, seed, status). The Markdown ends with a short tip on reproducing the deck with
-`bin/wildlands process slides` and `process run`; the deck in Present has no command-line tip. `--minutes N [--seed S]` runs the same bounded run as
+`bin/wildlands process slides` and `process run` (`bin/process-studio slides` and `run` are the
+same commands); the deck in Present has no command-line tip. `--minutes N [--seed S]` runs the same bounded run as
 `process run`; `--seed` needs `--minutes`. `--brief` writes the brief deck (for the agency process 10
 slides instead of 22) and reports `brief: true`. See the
-[CLI handbook](../reference/wildlands-cli.md#business-processes) for every option.
+[Process Studio CLI](../reference/process-studio-cli.md#commands) and the
+[Wildlands CLI process table](../reference/wildlands-cli.md#business-processes) for every option.
 
 Read the Markdown as a learner: every step should say what happens, who or what does it,
 how long it takes, what it needs and delivers and where the work goes next.
