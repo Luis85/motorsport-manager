@@ -399,6 +399,9 @@
         "process-bpmn-conformance.ts",
         "process-graph.ts",
         "process-catalog.ts",
+        "process-ledger.ts",
+        "process-kernel.ts",
+        "process-routing.ts",
         "process-systems.ts"
       ]
     },
@@ -407,6 +410,7 @@
       "layer": "application",
       "files": [
         "process-session.ts",
+        "process-replicate.ts",
         "process-authoring.ts",
         "process-application.ts"
       ]
@@ -556,6 +560,9 @@
     "LWProcessGraph",
     "LWProcessCatalog",
     "LWProcessSystems",
+    "LWProcessLedger",
+    "LWProcessKernel",
+    "LWProcessRouting",
     "LWProcessDefinition",
     "LWProcessDefinitions"
   ],
