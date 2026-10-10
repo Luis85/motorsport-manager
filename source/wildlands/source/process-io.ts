@@ -2,6 +2,7 @@
 /// <reference path="./process-dom.ts" />
 /// <reference path="./process-guard.ts" />
 /// <reference path="./process-bpmn-dialog.ts" />
+/// <reference path="./process-html.ts" />
 /**
  * File import and export for Process Studio: the Export menu items, Download HTML, the file picker, the BPMN import dialog hand-off and
  * the export notes.
@@ -60,9 +61,11 @@ declare namespace LWProcessIO {
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessCatalog: LWProcess.Catalog; LWProcessBpmn: LWProcessBpmn.Api; LWProcessBpmnDialog: LWProcessBpmnDialog.Api;
-  LWProcessRunBar: LWProcessRunBar.Api; LWProcessDialog: LWProcessDialog.Api; LWProcessDom: LWProcessDom.Api; LWProcessIO?: LWProcessIO.Api};
+  LWProcessRunBar: LWProcessRunBar.Api; LWProcessDialog: LWProcessDialog.Api; LWProcessDom: LWProcessDom.Api; LWProcessIO?: LWProcessIO.Api;
+  LWProcessHtml: LWProcessHtml.Api};
  const get = <T extends HTMLElement = HTMLElement>(id: string) => root.LWProcessDom.must<T>(id);
- const esc = (v: unknown) => root.LWProcessDialog.escape(v);
+ // Text for markup (the export notes and the offline page title) is escaped by the studio's one escaping module.
+ const {esc, html} = root.LWProcessHtml;
  const MAX_BYTES = 8 * 1024 * 1024, EXPECTED = 'Choose a .process.json exported from the studio, or a BPMN file.';
  const plural = (n: number, one: string) => `${n.toLocaleString()} ${one}${n === 1 ? '' : 's'}`;
  const clip = (text: string, max = 90) => text.length > max ? text.slice(0, max - 1).trimEnd() + '…' : text;
@@ -96,12 +99,12 @@ declare namespace LWProcessIO {
   const safe = (value: unknown) => JSON.stringify(value).replaceAll('<', '\\u003c').replaceAll('>', '\\u003e').replaceAll('&', '\\u0026');
   const many = defs.length > 1, list = 'window.LWProcessDefinitions = ' + safe(defs) + ';';
   // The first list entry stays the single-definition global, so a multi-process page reopens on its first process.
-  let html = pristine.replace(ONE, () => 'window.LWProcessDefinition = ' + safe(defs[0]) + ';')
+  let page = pristine.replace(ONE, () => 'window.LWProcessDefinition = ' + safe(defs[0]) + ';')
    .replace(/<meta name="wildlands-game-digest"[^>]*>/g, '');
-  if (!many) return html.replace(/<title>[^<]*<\/title>/, () => '<title>' + esc(defs[0]!.name) + '</title>');
+  if (!many) return page.replace(/<title>[^<]*<\/title>/, () => '<title>' + esc(defs[0]!.name) + '</title>');
   // A page built for one process has no list yet: it gains one right after the single-definition global.
-  if (LIST.test(html)) return html.replace(LIST, () => list);
-  return html.replace(ONE, (line: string) => line + '\n' + list);
+  if (LIST.test(page)) return page.replace(LIST, () => list);
+  return page.replace(ONE, (line: string) => line + '\n' + list);
  }
  function create(env: LWProcessIO.Env): LWProcessIO.Surface {
   const save = (name: string, data: string, type: string, message: string) => { env.download(name, data, type); env.status(message); };
@@ -128,8 +131,8 @@ declare namespace LWProcessIO {
    });
    const body = notesDialog.body.querySelector('.xn-notes') ?? notesDialog.body.appendChild(document.createElement('div'));
    body.className = 'xn-notes';
-   body.innerHTML = `<p>These values of ${esc(notes.file)} travel only in the Wildlands extension (<code>wl:</code>), so a tool that drops it`
-    + ` loses them:</p><ul>${notes.list.map(n => `<li>${esc(n)}</li>`).join('')}</ul>`;
+   body.innerHTML = String(html`<p>These values of ${notes.file} travel only in the Wildlands extension (<code>wl:</code>), so a tool that drops it`)
+    + String(html` loses them:</p><ul>${notes.list.map(n => html`<li>${n}</li>`)}</ul>`);
    if (!notesDialog.open({subtitle: notes.file, invoker: trigger(), focusFallback: trigger})) env.status('Close the open window first.', true);
   }
   on('json', () => {

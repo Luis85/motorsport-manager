@@ -4,6 +4,7 @@
 /// <reference path="./process-draft.ts" />
 /// <reference path="./process-recovery.ts" />
 /// <reference path="./process-run-bar.ts" />
+/// <reference path="./process-html.ts" />
 /**
  * Process slots of the studio shell: the Process selector, switching between processes, and adding a process (New process… and the
  * add half of Import). Owner of the slot-level user flows; the application controller owns the slots and their runs.
@@ -56,12 +57,15 @@ declare namespace LWProcessSlots {
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessSlots?: LWProcessSlots.Api; LWProcessDom: LWProcessDom.Api; LWProcessDialog: LWProcessDialog.Api;
-  LWProcessAuthoring: LWProcess.Authoring; LWProcessApplication: LWProcessApp.Api; LWProcessRunBar: LWProcessRunBar.Api};
+  LWProcessAuthoring: LWProcess.Authoring; LWProcessApplication: LWProcessApp.Api; LWProcessRunBar: LWProcessRunBar.Api;
+  LWProcessHtml: LWProcessHtml.Api};
  const get = <T extends HTMLElement = HTMLElement>(id: string) => root.LWProcessDom.must<T>(id);
- const esc = (v: unknown) => root.LWProcessDialog.escape(v);
+ // Resolved per call, so `uniqueId` can be loaded in Node checks without the studio's escaping module.
+ const html = (strings: TemplateStringsArray, ...values: unknown[]) => root.LWProcessHtml.html(strings, ...values);
  const FULL = 'A studio holds at most 8 processes.';
  function uniqueId(name: string, taken: string[]): string {
-  const slug = name.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^[^a-z]+|-+$/g, '').slice(0, 56).replace(/-+$/, '');
+  const slug = name.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^[^a-z]+|-+$/g, '')
+   .slice(0, 56).replace(/-+$/, '');
   const base = slug || 'process', used = new Set(taken);
   if (!used.has(base)) return base;
   for (let n = 2; ; n++) if (!used.has(`${base}-${n}`)) return `${base}-${n}`;
@@ -84,8 +88,11 @@ declare namespace LWProcessSlots {
    env.changed();
    if (!many) return;
    const label = (p: {id: string; name: string}) => names.filter(n => n === p.name).length > 1 ? `${p.name} (${p.id})` : p.name;
-   const html = view.processes.map((p, i) => `<option value="${i}">${esc(label(p))}</option>`).join('');
-   if (select.dataset.html !== html) { select.dataset.html = html; select.innerHTML = html; }
+   const markup = String(html`${view.processes.map((p, i) => html`<option value="${i}">${label(p)}</option>`)}`);
+   if (select.dataset.html !== markup) {
+    select.dataset.html = markup;
+    select.innerHTML = markup;
+   }
    select.value = String(view.active);
   }
   /** Where the run stands, in words: "at minute 0." or "at minute 120 (paused)." */
@@ -102,7 +109,8 @@ declare namespace LWProcessSlots {
    if (env.draft.changed()) away.add(before.active); else away.delete(before.active);
    env.draft.leave(); env.app.use(index); away.delete(index); env.reopen();
    const view = env.view();
-   const note = override && view.snapshot.seed !== seed ? ` Run seed ${seed} stays with ${before.definition.name}; this run uses seed ${view.snapshot.seed}.` : '';
+   const note = override && view.snapshot.seed !== seed
+    ? ` Run seed ${seed} stays with ${before.definition.name}; this run uses seed ${view.snapshot.seed}.` : '';
    env.status(`Switched to ${view.definition.name}. Its run is ${where(view.snapshot)}${note}`);
    const select = get<HTMLSelectElement>('process-switch');
    await env.recovery.offer(select, () => get('process-switch'));
@@ -143,7 +151,7 @@ declare namespace LWProcessSlots {
     dialog!.close('action');
     void switchTo(index).then(() => env.status(`Created ${name} as a new process. Its run is paused at minute 0.`));
    } catch (e) {
-    dialog!.setStatus(`<p><strong>${esc(root.LWProcessRunBar.plain(e))}</strong></p>`, 'alert');
+    dialog!.setStatus(String(html`<p><strong>${root.LWProcessRunBar.plain(e)}</strong></p>`), 'alert');
    }
   }
   const shown = (n: HTMLElement | null) => !!n && n.getClientRects().length > 0;
