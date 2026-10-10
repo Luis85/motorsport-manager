@@ -576,6 +576,9 @@
     "source/verification/process-hostile-io-checks.ts",
     "source/verification/process-hostile-browser.ts",
     "source/verification/process-hostile-editors-browser.ts",
+    "source/verification/process-scale-models.ts",
+    "source/verification/process-scale-probe.ts",
+    "source/verification/process-scale-browser.ts",
     "source/verification/process-shots.ts",
     "source/test-support/scene-journeys.cts"
   ],
