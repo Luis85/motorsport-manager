@@ -26,6 +26,11 @@
  * 32 pools give perSample 1,484 and K 269), so the store never holds more than 400,000 values (3.2 MB as Float64Array); typical
  * processes (12 steps, 4 pools) hold 152 values per sample, about 0.6 MB at K = 480. Storage grows by doubling up to K rows.
  * Per observation the cost is O(perSample) plus the ledger's token profile, which the next charges reuse.
+ *
+ * Working hours: the clock stops at every opening and closing (LWProcessSystems), so the minutes between two observations share
+ * one openness, that of the earlier one. A frame records it (slot `width + 1`), and the fill of a closed interval grows only the
+ * WIP area: work cost, waiting and blocked token-minutes and busy minutes charge nothing while closed (their closed minutes are the
+ * ledger's `closed` books). Without working hours the flag is always open and every value is the one from before the field existed.
  */
 declare namespace LWProcessSeries {
  interface Store {
@@ -48,10 +53,13 @@ declare namespace LWProcessSeries {
 (function(inputRoot: unknown) {
  'use strict';
  type Store = LWProcessSeries.Store;
- const root = inputRoot as {LWProcessLedger: LWProcessLedger.Api; LWProcessKernel: LWProcessKernel.Api; LWProcessSeries?: LWProcessSeries.Api};
+ const root = inputRoot as {LWProcessLedger: LWProcessLedger.Api; LWProcessKernel: LWProcessKernel.Api;
+  LWProcessHours: LWProcessHours.Api; LWProcessSeries?: LWProcessSeries.Api};
  const BUDGET = 400000, RUN = 12, STEP = 11, POOL = 2;
  /** Column kinds: the sample minute, a gauge, an event count (held over quiet minutes), a minute-charged total, an interval peak. */
  const MINUTE = 0, GAUGE = 1, EVENT = 2, CHARGED = 3, PEAK = 4;
+ /** The run block's WIP area: the one minute-charged total that also grows outside working hours. */
+ const WIP_AREA = 10;
  const RUN_NAMES = ['wip', 'wipPeak', 'arrived', 'completed', 'failed', 'dropped', 'goals', 'lost', 'cycleSum', 'wipArea', 'cost'] as const;
  const STEP_NAMES = ['waiting', 'working', 'blocked', 'timers', 'waitingPeak', 'starts', 'completed', 'entered', 'waitMinutes', 'waitingArea',
   'blockedArea'] as const;
@@ -81,10 +89,10 @@ declare namespace LWProcessSeries {
   });
   const points = Math.min(requested, Math.floor(BUDGET / width)), peakColumns = [...kinds.keys()].filter(c => kinds[c] === PEAK);
   return {steps, pools, costs: definition.resources.map(r => r.costPerMinute), base: every, every, level: 0, points, requested, width, kinds, sources,
-   peakColumns, data: new Float64Array(Math.min(points, 64) * width), count: 0, previous: null, live: new Float64Array(width + 1),
+   peakColumns, data: new Float64Array(Math.min(points, 64) * width), count: 0, previous: null, live: new Float64Array(width + 2),
    peaks: new Float64Array(width).fill(-1), stations: null, poolState: null};
  }
- /** Writes the settled state of `s` into `frame` (slot `width` holds the pools' work cost per minute). */
+ /** Writes the settled state of `s` into `frame` (slot `width` holds the pools' work cost per minute, `width + 1` 1 when open, else 0). */
  function capture(store: Store, s: LWProcess.State, frame: Float64Array): void {
   const ledger = s.ledger!, clock = s.clock, counts = root.LWProcessLedger.profile(ledger, root.LWProcessKernel.tokens(s)).counts;
   store.stations ??= store.steps.map(id => root.LWProcessKernel.station(s, id));
@@ -116,6 +124,8 @@ declare namespace LWProcessSeries {
    costRate += pool.busy * store.costs[i]!;
   });
   frame[store.width] = costRate;
+  const hours = s.definition.workingHours;
+  frame[store.width + 1] = hours && !root.LWProcessHours.open(hours, clock.minute) ? 0 : 1;
  }
  /** Folds a frame's gauges into the open interval's peaks. */
  function fold(store: Store, frame: Float64Array): void {
@@ -129,11 +139,11 @@ declare namespace LWProcessSeries {
    grown.set(store.data);
    store.data = grown;
   }
-  const row = store.count * w, data = store.data;
+  const row = store.count * w, data = store.data, open = frame[w + 1] === 1;
   for (let c = 0; c < w; c++) {
    const kind = store.kinds[c];
    if (kind === MINUTE) data[row + c] = g;
-   else if (kind === CHARGED) data[row + c] = frame[c]! + frame[store.sources[c]!]! * (g - from);
+   else if (kind === CHARGED) data[row + c] = frame[c]! + (open || c === WIP_AREA ? frame[store.sources[c]!]! * (g - from) : 0);
    else if (kind === PEAK) data[row + c] = store.peaks[c]!;
    else data[row + c] = frame[c]!;
   }
@@ -174,7 +184,7 @@ declare namespace LWProcessSeries {
   }
   fold(store, live);
   if (m % store.every === 0) record(store, m, live, m);
-  store.live = previous ?? new Float64Array(store.width + 1);
+  store.live = previous ?? new Float64Array(store.width + 2);
   store.previous = live;
  }
  function read(store: Store, after?: LWProcess.SeriesCursor): LWProcess.Series {

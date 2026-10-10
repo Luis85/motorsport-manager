@@ -9,6 +9,7 @@ import type {Insert} from './build-inserts.cjs';
 
 export const PROCESS_INSERTS: readonly Insert[] = [
   ["PROCESS_SCHEMA", "process-schema.js", "script", "template-process"],
+  ["PROCESS_HOURS", "process-hours.js", "script", "template-process"],
   ["PROCESS_RANDOM", "process-random.js", "script", "template-process"],
   ["PROCESS_NEEDS", "process-needs.js", "script", "template-process"],
   ["PROCESS_GRAPH_ROUTES", "process-graph-routes.js", "script", "template-process"],
@@ -108,6 +109,7 @@ export const PROCESS_INSERTS: readonly Insert[] = [
   ["PROCESS_TUNING_TRACK", "process-tuning-track.js", "script", "template-process"],
   ["PROCESS_TUNING_SIPOC", "process-tuning-sipoc.js", "script", "template-process"],
   ["PROCESS_TUNING_CALENDAR", "process-tuning-calendar.js", "script", "template-process"],
+  ["PROCESS_TUNING_HOURS", "process-tuning-hours.js", "script", "template-process"],
   ["PROCESS_TUNING", "process-tuning.js", "script", "template-process"],
   ["PROCESS_DIFF", "process-diff.js", "script", "template-process"],
   ["PROCESS_DRAFT", "process-draft.js", "script", "template-process"],

@@ -1,4 +1,5 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-hours.ts" />
 /**
  * Replications and paired comparisons (LWProcessReplicate), owned by the process-application context because it creates runtimes.
  * Pure and browser-safe: it runs fresh `LWProcessRuntime.create(definition, {seed, horizon})` sessions over a list of seeds for a
@@ -101,7 +102,8 @@ declare namespace LWProcessReplicate {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessRuntime: LWProcess.Runtime; LWProcessCatalog: LWProcess.Catalog; LWProcessReplicate?: LWProcessReplicate.Api};
+ const root = inputRoot as {LWProcessRuntime: LWProcess.Runtime; LWProcessCatalog: LWProcess.Catalog; LWProcessHours: LWProcessHours.Api;
+  LWProcessReplicate?: LWProcessReplicate.Api};
  type Stats = LWProcessReplicate.Stats; type Options = LWProcessReplicate.Options; type Kpi = LWProcessReplicate.Kpi;
  const LIMITS = Object.freeze({runs: 200, work: 1000000}), MAX_SEED = 2147483647;
  /** The two-sided 95% normal quantile, the limit of the Student t quantile as df grows. */
@@ -205,14 +207,16 @@ declare namespace LWProcessReplicate {
  const identity = (d: LWProcess.Definition): LWProcessReplicate.Identity =>
   ({id: d.id, name: d.name, revision: d.revision, fingerprint: root.LWProcessCatalog.fingerprint(d)});
  /** Differences of cumulative totals between the warm-up snapshot `w` and the end snapshot `q`. */
- function measureWindow(w: LWProcess.Snapshot, q: LWProcess.Snapshot): Record<string, number | null> {
+ function measureWindow(d: LWProcess.Definition, w: LWProcess.Snapshot, q: LWProcess.Snapshot): Record<string, number | null> {
   const a = w.metrics, b = q.metrics, span = q.minute - w.minute, completed = b.completed - a.completed;
+  // With working hours pools are available only in working minutes, as the snapshot's utilisation counts them (LWProcessHours).
+  const h = d.workingHours, open = h ? root.LWProcessHours.working(h, q.minute) - root.LWProcessHours.working(h, w.minute) : span;
   const values: Record<string, number | null> = {'window.completed': completed, 'window.failed': b.failed - a.failed,
    'window.dropped': b.dropped - a.dropped, 'window.workCost': b.cost - a.cost, 'window.capacityCost': b.capacityCost - a.capacityCost,
    'window.meanCycleMinutes': completed ? (b.cycleSum! - a.cycleSum!) / completed : null,
    'window.meanWip': span ? (b.wipArea! - a.wipArea!) / span : null, 'window.throughputPerHour': span ? completed * 60 / span : null};
   q.resources.forEach((pool, i) => {
-   values['window.utilization.' + pool.id] = span ? (pool.busyMinutes - w.resources[i]!.busyMinutes) / (span * pool.capacity) : null;
+   values['window.utilization.' + pool.id] = open ? (pool.busyMinutes - w.resources[i]!.busyMinutes) / (open * pool.capacity) : null;
   });
   return values;
  }
@@ -238,7 +242,7 @@ declare namespace LWProcessReplicate {
      job.warm = q;
      continue;
     }
-    job.outcome = {minute: q.minute, status: q.status, values: {...measure(job.d, q), ...job.warm ? measureWindow(job.warm, q) : {}}};
+    job.outcome = {minute: q.minute, status: q.status, values: {...measure(job.d, q), ...job.warm ? measureWindow(job.d, job.warm, q) : {}}};
     job.session.dispose();
     return used;
    }

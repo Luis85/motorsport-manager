@@ -113,10 +113,13 @@ declare namespace LWProcessJsonPath {
   }
   return null;
  }
- /** Plain names for the journey fields, used in diagnostic labels such as "Checkout › feeling" or "Process › process type". */
+ /**
+  * Plain names for the journey fields and working hours, used in diagnostic labels such as "Checkout › feeling", "Process › process
+  * type" or "Process › working hours › closesAt".
+  */
  const NAMES: Record<string, string> = {
   genre: 'process type', track: 'tracked measures', phase: 'phase', emotion: 'feeling', pain: 'pain point', opportunity: 'opportunity',
-  channel: 'channel', outcome: 'outcome',
+  channel: 'channel', outcome: 'outcome', workingHours: 'working hours',
  };
  function label(definition: unknown, path: string): string {
   const parts = path.split('/').filter(Boolean), d = (definition && typeof definition === 'object' ? definition : {}) as Record<string, unknown>;

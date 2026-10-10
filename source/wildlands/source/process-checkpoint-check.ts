@@ -1,5 +1,6 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-engine-state.ts" />
+/// <reference path="./process-hours.ts" />
 /**
  * Untrusted saved engine state checks (LWProcessCheckpointCheck), owned by the process-definition context. A run checkpoint is a
  * file a person may edit or forge, so before a saved state (LWProcessEngineState.Saved) reaches a session it is checked here
@@ -22,6 +23,9 @@
  *    bound exactly when it counted more, and then it keeps no value; otherwise it keeps one whole lead time (0..the clock minute) per
  *    completed case, its sorted prefix is ascending and not longer than its values, it keeps per-outcome values exactly when an end
  *    declares an outcome, and every kept list falls into the fine bins exactly as the ledger counted them.
+ *  - Working hours (LWProcessHours), present exactly when the definition has them: the ledger's `closedBy`, seven lead buckets
+ *    instead of six, a series frame of `width + 2` whose last value is the clock minute's openness, stream cursors in working
+ *    minutes whose arrival begins after the clock minute, and running work started in working time.
  * The result is a detached copy built only from checked values. Nothing here ticks, reads a clock or touches storage.
  */
 declare namespace LWProcessCheckpointCheck {
@@ -38,7 +42,7 @@ declare namespace LWProcessCheckpointCheck {
  'use strict';
  type Box = Record<string, unknown>;
  const root = inputRoot as {LWProcessLimits: LWProcess.Limits; LWProcessLedger: LWProcessLedger.Api; LWProcessLedgerExact: LWProcessLedgerExact.Api;
-  LWProcessCheckpointCheck?: LWProcessCheckpointCheck.Api};
+  LWProcessHours: LWProcessHours.Api; LWProcessCheckpointCheck?: LWProcessCheckpointCheck.Api};
  const limits = root.LWProcessLimits;
  const MAX_VALUES = 4000000, MAX_DEPTH = 24, MAX_SEED = 2147483647, MAX_RETAINED = 10000, MAX_TOKENS = 200000, SAFE = Number.MAX_SAFE_INTEGER;
  const FIELD = /^[a-z][a-zA-Z0-9_]{0,63}$/, CASE = /^case-\d{4,12}$/, TOKEN = /^token-\d{8}$/, KIND = /^[a-z][a-z-]{0,39}$/;
@@ -196,6 +200,8 @@ declare namespace LWProcessCheckpointCheck {
    nullable(box.fork, f => text(f, `${path}.fork`, 200)); nullable(box.branch, f => text(f, `${path}.branch`, 200));
    if (status === 'active') {
     if (remaining < 1 || box.started === null || box.input === null) bad(path, 'is running work without time left, a start or an input');
+    const h = d.workingHours;
+    if (h && !root.LWProcessHours.open(h, box.started as number)) bad(`${path}.started`, 'is outside working hours, when no work starts');
     for (const [pool, quantity] of Object.entries(s.resources ?? {})) busy.set(pool, busy.get(pool)! + quantity);
    }
    if (status === 'timer' && whole(box.due, `${path}.due`, minute + 1) <= minute) bad(`${path}.due`, 'must be after the clock minute');
@@ -241,7 +247,9 @@ declare namespace LWProcessCheckpointCheck {
   list(v.streams, 'snapshot.streams', d.arrivals.length, d.arrivals.length).forEach((st, i) => {
    const path = `snapshot.streams[${i}]`, box = shape(st, path, ['k', 'at']), arrival = d.arrivals[i]!;
    whole(box.k, `${path}.k`, 0, arrival.count ?? SAFE);
-   nullable(box.at, n => whole(n, `${path}.at`, w.minute + 1));
+   const h = d.workingHours, after = (n: number) => root.LWProcessHours.at(h!, n) > w.minute ? n : bad(`${path}.at`, 'must begin after the clock minute');
+   // With working hours a cursor is a working minute; its arrival begins at the elapsed minute where that working minute starts.
+   nullable(box.at, n => h ? after(whole(n, `${path}.at`)) : whole(n, `${path}.at`, w.minute + 1));
   });
  }
  /** Per-case maps name active cases; aggregates name tracked fields. */
@@ -287,14 +295,18 @@ declare namespace LWProcessCheckpointCheck {
  function ledger(d: LWProcess.Definition, input: unknown, w: World): void {
   const p = 'snapshot.ledger', n = d.steps.length, FINE = 54;
   const l = shape(input, p, ['steps', 'cycles', 'minutesBy', 'failedAt', 'wipArea', 'fine', 'books', 'leadTime', 'flow', 'completedCost',
-   'failedCost', 'failedMinutes', 'firstPass', 'repeats', 'ring', 'head', 'exact']);
+   'failedCost', 'failedMinutes', 'firstPass', 'repeats', 'ring', 'head', 'exact'], ['closedBy']);
+  // Working hours add the closed minutes per step and a seventh (closed) lead bucket; without them neither may appear.
+  const hours = !!d.workingHours, lead = hours ? 7 : 6;
+  if (hours !== Object.hasOwn(l, 'closedBy')) bad(`${p}.closedBy`, hours ? 'is missing for a process with working hours' : 'is not a known field');
+  if (hours) counts(l.closedBy, `${p}.closedBy`, n);
   list(l.steps, `${p}.steps`, n, n).forEach((s, i) => {
    const box = shape(s, `${p}.steps[${i}]`, ['starts', 'fixedCost', 'workCost']);
    for (const key of ['starts', 'fixedCost', 'workCost']) whole(box[key], `${p}.steps[${i}].${key}`);
   });
   counts(l.cycles, `${p}.cycles`, 17); counts(l.minutesBy, `${p}.minutesBy`, n * 6); counts(l.failedAt, `${p}.failedAt`, n);
   for (const key of ['wipArea', 'completedCost', 'failedCost', 'failedMinutes', 'firstPass']) whole(l[key], `${p}.${key}`);
-  counts(l.leadTime, `${p}.leadTime`, 6); counts(l.flow, `${p}.flow`, 10); counts(l.repeats, `${p}.repeats`, 6);
+  counts(l.leadTime, `${p}.leadTime`, lead); counts(l.flow, `${p}.flow`, 10); counts(l.repeats, `${p}.repeats`, 6);
   const fine = shape(l.fine, `${p}.fine`, ['cycle', 'failed', 'outcomes', 'steps']), outcomes = d.steps.some(s => s.kind === 'end' && s.outcome);
   counts(fine.cycle, `${p}.fine.cycle`, FINE); counts(fine.failed, `${p}.fine.failed`, FINE);
   if (outcomes === (fine.outcomes === null)) bad(`${p}.fine.outcomes`, outcomes ? 'is missing for a process with outcomes' : 'must be null');
@@ -311,7 +323,7 @@ declare namespace LWProcessCheckpointCheck {
    if (!w.live.has(id) || books.has(id)) bad(`${path}[0]`, 'names no active case or repeats one');
    books.add(id);
    const box = shape(pair[1], `${path}[1]`, ['lead', 'cost', 'repeats']);
-   counts(box.lead, `${path}[1].lead`, 6); whole(box.cost, `${path}[1].cost`); whole(box.repeats, `${path}[1].repeats`);
+   counts(box.lead, `${path}[1].lead`, lead); whole(box.cost, `${path}[1].cost`); whole(box.repeats, `${path}[1].repeats`);
   });
   for (const id of running) if (!books.has(id)) bad(`${p}.books`, `has no book for ${id}, which has running work`);
   const ring = list(l.ring, `${p}.ring`, w.retained);
@@ -364,8 +376,11 @@ declare namespace LWProcessCheckpointCheck {
   if (s.level !== level || s.count !== count) bad(p, `must hold ${count} samples at level ${level} for minute ${minute}`);
   const data = list(s.data, `${p}.data`, count * width, count * width).map((x, i) => finite(x, `${p}.data[${i}]`));
   for (let i = 0; i < count; i++) if (data[i * width] !== i * every) bad(`${p}.data`, `sample ${i} is not on the grid of every ${every} minutes`);
-  const previous = list(s.previous, `${p}.previous`, width + 1, width + 1).map((x, i) => finite(x, `${p}.previous[${i}]`));
+  const h = d.workingHours, frame = width + (h ? 2 : 1);
+  const previous = list(s.previous, `${p}.previous`, frame, frame).map((x, i) => finite(x, `${p}.previous[${i}]`));
   if (previous[0] !== minute) bad(`${p}.previous`, 'must be the frame of the clock minute');
+  // With working hours the frame's last value says whether the clock minute is working time (1) or closed (0).
+  if (h && previous[frame - 1] !== (root.LWProcessHours.open(h, minute) ? 1 : 0)) bad(`${p}.previous`, 'does not say whether the clock minute is open');
   list(s.peaks, `${p}.peaks`, width, width).forEach((x, i) => finite(x, `${p}.peaks[${i}]`));
  }
  root.LWProcessCheckpointCheck = {MAX_VALUES, plain, state};

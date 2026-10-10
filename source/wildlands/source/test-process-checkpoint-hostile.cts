@@ -63,6 +63,8 @@ const state: Case[] = [
  ['an exact sorted prefix longer than its values', (c) => { c.snapshot.ledger.exact.cycle.ordered = c.snapshot.ledger.exact.cycle.values.length + 1; },
   /snapshot\.ledger\.exact\.cycle\.ordered must be a whole number from 0 to \d+/],
  ['an unknown snapshot field', (c) => { c.snapshot.extra = true; }, /snapshot\.extra is not a known field/],
+ ['closed minutes in a process without working hours', (c) => { c.snapshot.ledger.closedBy = c.snapshot.ledger.failedAt.map(() => 0); },
+  /snapshot\.ledger\.closedBy is not a known field/],
 ];
 test('Hostile and malformed checkpoint files are refused with a plain reason, never pollute a prototype and leave a controller unchanged', () => {
  const d = demo('agency.process.json'), base = checkpointText(d, 120, {horizon: 6000});

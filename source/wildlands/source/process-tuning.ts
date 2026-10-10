@@ -4,12 +4,13 @@
 /// <reference path="./process-tuning-track.ts" />
 /// <reference path="./process-tuning-sipoc.ts" />
 /// <reference path="./process-tuning-calendar.ts" />
+/// <reference path="./process-tuning-hours.ts" />
 /// <reference path="./process-json-path.ts" />
 /// <reference path="./process-html.ts" />
 /**
- * The "Tune values" form of the Definition editor: process name, description, process type, seed and display-only working
- * calendar (process-tuning-calendar.ts), shared resources (name, kind, capacity, cost), case arrivals, tracked measures and the
- * SIPOC suppliers and customers. It edits the unapplied draft TEXT through the `write` callback; applying still goes through
+ * The "Tune values" form of the Definition editor: process name, description, process type, seed, display-only working
+ * calendar (process-tuning-calendar.ts) and working hours (process-tuning-hours.ts; removing them asks first), shared resources
+ * (name, kind, capacity, cost), case arrivals, tracked measures and the SIPOC suppliers and customers. It edits the unapplied draft TEXT through the `write` callback; applying still goes through
  * catalog admission and resets the run. The catalog's diagnostics are handed in with `setDiagnostics` and shown beside the field
  * they name, with `aria-invalid` on the control; the form never decides what is valid. Per-step values belong to the step editor.
  * All markup is built with LWProcessHtml's `html` template, so every draft value (names, descriptions, field names, arrival data)
@@ -40,10 +41,11 @@ declare namespace LWProcessTuning {
  'use strict';
  const root = inputRoot as {LWProcessTuningFields: LWProcessTuningFields.Api; LWProcessTuningArrivals: LWProcessTuningArrivals.Api;
   LWProcessTuningTrack: LWProcessTuningTrack.Api; LWProcessTuningSipoc: LWProcessTuningSipoc.Api; LWProcessTuningCalendar: LWProcessTuningCalendar.Api;
-  LWProcessJsonPath: LWProcessJsonPath.Api; LWProcessHtml: LWProcessHtml.Api; LWProcessTuning?: LWProcessTuning.Api};
+  LWProcessTuningHours: LWProcessTuningHours.Api; LWProcessJsonPath: LWProcessJsonPath.Api; LWProcessHtml: LWProcessHtml.Api;
+  LWProcessTuning?: LWProcessTuning.Api};
  const F = root.LWProcessTuningFields, A = root.LWProcessTuningArrivals, T = root.LWProcessTuningTrack, P = root.LWProcessTuningSipoc;
  const {html} = root.LWProcessHtml;
- const C = root.LWProcessTuningCalendar;
+ const C = root.LWProcessTuningCalendar, H = root.LWProcessTuningHours;
  const KINDS: [string, string][] = [['people', 'People'], ['machine', 'Machine'], ['system', 'System']];
  const SEED = 2147483647, SEED_HELP = 'Same seed, same run. Change it to see another scenario. Leave empty for the default seed (1).';
  /** Names of the steps that demand pool `id`, in draft order. */
@@ -78,7 +80,7 @@ declare namespace LWProcessTuning {
    <section class="de-sec" aria-labelledby="tune-h-process">${processHead}
     ${F.text('tune-name', 'Name', 'name', d.name)}${F.text('tune-desc', 'Description', 'description', d.description, {max: 4000, long: true})}
     ${T.genreMarkup(d)}${F.int('tune-seed', 'Seed', 'seed', d.seed, {min: 0, max: SEED, optional: true, help: SEED_HELP})}
-    ${C.markup(d)}</section>
+    ${C.markup(d)}${H.markup(d)}</section>
    <section class="de-sec" aria-labelledby="tune-h-res">${poolHead}${pools}</section>
    <section class="de-sec" aria-labelledby="tune-h-arr">${arrivalHead}${streams}</section>
    ${T.trackMarkup(d)}
@@ -102,7 +104,7 @@ declare namespace LWProcessTuning {
  function formable(d: LWProcess.Definition): LWProcess.Definition | undefined {
   return d && Array.isArray(d.resources) && Array.isArray(d.steps) && (d.arrivals === undefined || Array.isArray(d.arrivals)) ? d : undefined;
  }
- const WAIT_FOR_CHANGE = new Set(['choice', 'end', 'scalar-type', 'data-name']);
+ const WAIT_FOR_CHANGE = new Set(['choice', 'end', 'scalar-type', 'data-name', 'clock', 'days']);
  function create(host: HTMLElement, read: () => string, write: LWProcessTuning.Write, confirm?: LWProcessTuning.Confirm): LWProcessTuning.Surface {
   let shown = '', diagnostics: LWProcess.Diagnostic[] = [], other = 0;
   const local = new Map<string, string>();
@@ -218,7 +220,7 @@ declare namespace LWProcessTuning {
    const el = e.target as HTMLInputElement, kind = el.dataset?.kind, path = el.dataset?.path; if (!kind || !path) return;
    if (WAIT_FOR_CHANGE.has(kind) !== (e.type === 'change')) return;
    const def = parse(); if (!def) { render(); return; }
-   const special = T.special(def, el) ?? C.special(def, el) ?? A.special(def, el);
+   const special = T.special(def, el) ?? C.special(def, el) ?? H.special(def, el) ?? A.special(def, el);
    if (special) {
     if (special.local) {
      local.set(...special.local);
@@ -279,8 +281,12 @@ declare namespace LWProcessTuning {
     return;
    }
    if (what === 'res-remove') { void removePool(def, Number(b.dataset.i)); return; }
+   if (what === 'hours-remove') {
+    void H.remove(confirm, parse).then(next => { if (next) commit(next, '#tune-hours-add', true, 'Removed working hours'); });
+    return;
+   }
    // A removed row is named after its button ('Remove arrival 2' becomes 'Removed arrival 2') so it can be undone by name.
-   const result = T.act(def, b) ?? P.act(def, b) ?? A.act(def, b), named = (b.getAttribute('aria-label') ?? b.textContent ?? '').trim();
+   const result = T.act(def, b) ?? P.act(def, b) ?? H.act(def, b) ?? A.act(def, b), named = (b.getAttribute('aria-label') ?? b.textContent ?? '').trim();
    if (result) commit(def, result.focus, result.rerender, /-remove$/.test(what) && /^Remove\b/.test(named) ? named.replace(/^Remove\b/, 'Removed') : undefined);
   }
   /** Removes a pool. While steps still demand it, asks first (Cancel is the default) and then clears those demands with it. */

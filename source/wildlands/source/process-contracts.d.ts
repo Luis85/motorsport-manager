@@ -100,6 +100,10 @@ declare namespace LWProcess {
  interface Arrival { at: number; count?: number; until?: number; open?: true; interval: number; gap?: Dist; draws?: Draw[]; data: Fields; }
  /** Business minutes per working day (1..1440) and working days per week (1..7), for display only. */
  interface Calendar { minutesPerDay: number; daysPerWeek: number; }
+ // Opt-in run calendar: minutes after midnight (`opensAt` 0..1439, `closesAt` 1..1440 and after it) on the first `daysPerWeek`
+ // days of each week from Monday. Unlike `calendar` the run reads it: work and arrivals pause outside it (LWProcessHours), and
+ // `MinutesBy.closed` (present only then) holds the minutes outside working time, whatever the token's status.
+ interface WorkingHours { opensAt: number; closesAt: number; daysPerWeek: number; }
  interface Definition {
   $schema?: string; format: 'wildlands-process'; schemaVersion: 1; revision: number;
   id: string; name: string; description?: string; start: string; seed?: number;
@@ -107,6 +111,8 @@ declare namespace LWProcess {
   genre?: Genre; track?: Track[]; sipoc?: Sipoc;
   /** Display-only working calendar (added after v1): how views word durations; never read by a run. */
   calendar?: Calendar;
+  // Working hours (added after v1): the run clock counts elapsed minutes and work and arrivals pause outside these hours.
+  workingHours?: WorkingHours;
   resources: Resource[]; steps: Step[]; flows: Flow[]; arrivals: Arrival[];
  }
  interface Diagnostic { path: string; code: string; message: string; }
@@ -174,7 +180,7 @@ declare namespace LWProcess {
   failed?: number;
  }
  /** Minutes by state; in `StepMetric.minutesBy` token-minutes, in `metrics.leadTime` case-minutes by the case's dominant state. */
- interface MinutesBy { waiting: number; working: number; blocked: number; backlog: number; timer: number; joining: number; }
+ interface MinutesBy { waiting: number; working: number; blocked: number; backlog: number; timer: number; joining: number; closed?: number; }
  /**
   * `workCost` (read model) is `busyMinutes × costPerMinute`, the pool's share of `metrics.cost` (the pools' `workCost` plus the steps'
   * `fixedCost` sum to `metrics.cost`); `capacityCost` is `capacity × costPerMinute × minute`, the pool's share of `metrics.capacityCost`.
@@ -312,7 +318,8 @@ declare namespace LWProcess {
    {op: 'setArrivals'; value: Arrival[]} | {op: 'setStart'; value: string} | {op: 'rename'; value: string} |
    /** Process settings: null removes the field; `setGenre` with `process` removes `genre`. All validation stays with the catalog. */
    {op: 'setDescription'; value: string | null} | {op: 'setSeed'; value: number | null} | {op: 'setGenre'; value: Genre} |
-   {op: 'setSipoc'; value: Sipoc | null} | {op: 'setTrack'; value: Track[] | null} | {op: 'setCalendar'; value: Calendar | null})[];
+   {op: 'setSipoc'; value: Sipoc | null} | {op: 'setTrack'; value: Track[] | null} | {op: 'setCalendar'; value: Calendar | null} |
+   {op: 'setWorkingHours'; value: WorkingHours | null})[];
  }
  interface Authoring {
   create(id: string, name: string): Definition;

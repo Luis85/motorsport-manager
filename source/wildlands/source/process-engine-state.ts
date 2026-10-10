@@ -30,6 +30,11 @@
  * the world on first read) or kept current token by token; the cached token list is dropped. The join plan and the re-ranked work
  * steps depend only on the definition and are derived on first use from the fresh state, so none can be stale.
  *
+ * Working hours (`definition.workingHours`): their run adds the ledger's `closedBy` (per-step closed token-minutes), a seventh
+ * (closed) lead bucket in every book and in the run lead time, and series frames of `width + 2` values whose last slot is the observed
+ * minute's openness (1 open, 0 closed). Stream cursors are saved as they are, in working minutes, and paused running work keeps its
+ * remaining minutes in its token. Without working hours none of these exist and every saved value is the one of version 1.
+ *
  * A run can be saved only between clock commands: no clock-step failure or escalation may be pending (both are applied by the
  * settle that ends every command). Nothing here reads a clock, ticks, or touches storage.
  */
@@ -41,6 +46,8 @@ declare namespace LWProcessEngineState {
   fine: {cycle: number[]; failed: number[]; outcomes: {goal: number[]; lost: number[]; none: number[]} | null; steps: number[][][]};
   books: Pairs<Book>; leadTime: number[]; flow: number[]; completedCost: number; failedCost: number; failedMinutes: number;
   firstPass: number; repeats: number[]; ring: LWProcess.FinishedCase[]; head: number; exact: Exact;
+  /** Only with working hours: per-step token-minutes outside them. */
+  closedBy?: number[];
  }
  /** `every` and `points` are the series options the run was created with; `level` and `count` say where decimation stands. */
  interface Series { every: number; points: number; level: number; count: number; data: number[]; previous: number[]; peaks: number[]; }
@@ -116,11 +123,13 @@ declare namespace LWProcess {
    fine: {cycle: [...f.cycle], failed: [...f.failed], outcomes: f.outcomes ? copy(f.outcomes) : null, steps: copy(f.steps)},
    books: pairs(c.books, b => ({lead: [...b.lead], cost: b.cost, repeats: b.repeats})), leadTime: [...c.leadTime], flow: [...c.flow],
    completedCost: c.completedCost, failedCost: c.failedCost, failedMinutes: c.failedMinutes, firstPass: c.firstPass, repeats: [...c.repeats],
-   ring: copy(c.ring), head: c.head, exact: exactOf(l.exact)};
+   ring: copy(c.ring), head: c.head, exact: exactOf(l.exact), ...l.closedBy ? {closedBy: [...l.closedBy]} : {}};
  }
- function seriesOf(store: LWProcessSeries.Store): LWProcessEngineState.Series {
+ /** The last observed frame keeps its openness slot only with working hours (without them it is always 1, and version 1 had none). */
+ function seriesOf(store: LWProcessSeries.Store, hours: boolean): LWProcessEngineState.Series {
+  const previous = hours ? store.previous! : store.previous!.subarray(0, store.width + 1);
   return {every: store.base, points: store.requested, level: store.level, count: store.count,
-   data: Array.from(store.data.subarray(0, store.count * store.width)), previous: Array.from(store.previous!), peaks: Array.from(store.peaks)};
+   data: Array.from(store.data.subarray(0, store.count * store.width)), previous: Array.from(previous), peaks: Array.from(store.peaks)};
  }
  function capture(s: LWProcess.State, series: LWProcessSeries.Store | null): Saved {
   if (s.failures.length || s.spawns.length) throw Error('A run can be saved only between clock commands.');
@@ -132,7 +141,7 @@ declare namespace LWProcess {
    events: s.events, receipts: s.receipts, receiptsDropped: s.receiptsDropped, streams: s.streams.map(st => ({k: st.k, at: st.at})),
    finished: s.finished, visits: pairs(s.visits, steps => [...steps]), groups: [...s.groups.values()], outcomes: [...s.outcomes],
    seen: pairs(s.seen, steps => [...steps]), finishAgg: [...s.finishAgg], entryAgg: [...s.entryAgg],
-   ledger: ledgerOf(s), series: series ? seriesOf(series) : null});
+   ledger: ledgerOf(s), series: series ? seriesOf(series, !!s.definition.workingHours) : null});
  }
  /** The ledger's saved values; the running pool cost per minute (per step and per case book) follows from the active tokens. */
  function applyLedger(s: LWProcess.State, saved: LWProcessEngineState.Ledger): void {
@@ -156,6 +165,7 @@ declare namespace LWProcess {
   Object.assign(c, {completedCost: saved.completedCost, failedCost: saved.failedCost, failedMinutes: saved.failedMinutes, firstPass: saved.firstPass,
    ring: copy(saved.ring), head: saved.head});
   l.exact = exactFrom(saved.exact);
+  if (l.closedBy && saved.closedBy) fill(l.closedBy, saved.closedBy);
   l.profile = null;
  }
  function applySeries(store: LWProcessSeries.Store, saved: LWProcessEngineState.Series): void {
@@ -165,8 +175,10 @@ declare namespace LWProcess {
   store.count = saved.count;
   store.data = new Float64Array(rows * w);
   store.data.set(saved.data);
-  store.previous = Float64Array.from(saved.previous);
-  store.live = new Float64Array(w + 1);
+  // A frame without its openness slot (no working hours) is open.
+  store.previous = new Float64Array(w + 2).fill(1);
+  store.previous.set(saved.previous);
+  store.live = new Float64Array(w + 2);
   store.peaks = Float64Array.from(saved.peaks);
   store.stations = null;
   store.poolState = null;

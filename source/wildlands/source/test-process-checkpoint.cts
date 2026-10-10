@@ -157,6 +157,7 @@ test('Exact lead-time percentiles, whole run and per outcome, survive a checkpoi
  for (const s of [whole, early, late]) s.dispose();
 });
 require('./test-process-checkpoint-hostile.cjs');
+require('./test-process-checkpoint-hours.cjs');
 require('./test-process-checkpoint-cli.cjs');
 const report = {suite: 'business-process-checkpoint', passed: results.filter(r => r.passed).length, total: results.length, results};
 fs.writeFileSync(path.join(__dirname, 'process-checkpoint-results.json'), JSON.stringify(report, null, 2) + '\n');

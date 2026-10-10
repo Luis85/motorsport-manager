@@ -60,7 +60,7 @@ test('LWProcessHtml num admits only finite numbers for value, min and max attrib
 test('Tune values and the inspector carry no local escaper; the remaining escapers are listed', () => {
  const dir = path.resolve(__dirname, '../source'), local = /replace\(\/\[&<>"'\]\/g|LWProcessDialog\.escape\(|\besc = F\.esc/;
  const migrated = ['process-tuning.ts', 'process-tuning-fields.ts', 'process-tuning-arrivals.ts', 'process-tuning-track.ts', 'process-tuning-sipoc.ts',
-  'process-tuning-calendar.ts', 'process-inspector.ts', 'process-data-view.ts', 'process-definition-structure.ts'];
+  'process-tuning-calendar.ts', 'process-tuning-hours.ts', 'process-inspector.ts', 'process-data-view.ts', 'process-definition-structure.ts'];
  for (const file of migrated) {
   const text = fs.readFileSync(path.join(dir, file), 'utf8');
   assert.doesNotMatch(text, local, file + ' has no local escaper'); assert.match(text, /LWProcessHtml/, file + ' uses LWProcessHtml');
