@@ -701,9 +701,16 @@ payloads.
 - [Developer toolbox](../../source/wildlands/DEVELOPER-TOOLBOX.md): typed SDK sessions, commands and agent guidance for source builds.
 - [Wildlands documentation index](../../source/wildlands/DOCUMENTATION.md): every Wildlands guide and contract.
 - [Engine JSON export](../../source/wildlands/ENGINE-EXPORT.md): the separate inert source/data export format.
+- [Process Studio CLI](process-studio-cli.md): the standalone business-process command line (`bin/process-studio`).
 
 
 ## Business processes
+
+For process work, prefer the standalone [`bin/process-studio`](process-studio-cli.md):
+the same subcommands with identical options, results, written files and exit
+codes, plus `version`, `doctor` and `--compact`, in a 1.2 MB executable that
+needs no Wildlands CLI. `bin/wildlands process` remains a documented equivalent;
+the table below applies to both.
 
 `bin/wildlands process` (also `process --help`, `-h`) describes the definition-first process tool family. It is a separate protocol from the game commands above: `process` failures use `code: "process-operation-failed"` with exit 2, and `process validate` exits 1 with no code when the definition is rejected. Options take one value (`--flag value`); `--draft`, `--dry-run`, `--bpsim`, `--no-auto-system-pool` and `--no-bpsim` take none. Unknown, duplicate and missing options, non-whole `--minutes` or `--expected-revision`, an unknown `--kind` or `--format`, `--seed` on `slides` without `--minutes`, `--dry-run` together with `--output`, and a missing `--output` on `edit`/`attach` without `--dry-run` all fail with exit 2 before any file is read or written. Outputs never overwrite an input (including hard-link and symlink aliases). Required options are marked **yes**.
 

@@ -13,6 +13,7 @@ needs only Node.js 22 or newer, no `npm ci`, no `node_modules`, no network and
 no other repository file. It does not read or write the native game's saves,
 configuration or race/campaign state.
 
+The user handbook is [Process Studio CLI](../../docs/reference/process-studio-cli.md).
 The definition grammar, simulation semantics, BPMN mapping and limits are those
 of the Wildlands process engine; the engine handbook is
 [Business process engine](../../docs/reference/business-process-engine.md).
@@ -83,13 +84,16 @@ bin/process-studio build --input /tmp/intake.json --output /tmp/intake.html
 `discover` is authoritative: it lists every process command with its options and
 description, the limits, the guarded edit operations, the workflow and the recipe
 shape. The option meanings are documented in the
-[Wildlands CLI handbook](../../docs/reference/wildlands-cli.md#business-processes).
+[Process Studio CLI handbook](../../docs/reference/process-studio-cli.md#commands) and the
+[Wildlands CLI process table](../../docs/reference/wildlands-cli.md#business-processes).
 
 ## Relationship to `bin/wildlands process`
 
 Every `bin/wildlands process` subcommand exists here with identical options,
 results, written files and exit codes; `tests/parity.test.cts` checks this
-against the checked-in `bin/wildlands` on a corpus that covers every subcommand,
+against the checked-in `bin/wildlands` on a corpus that covers every subcommand
+(including usage errors, outputs refused through links, a byte order mark and a
+diagnosed BPMN import),
 and fails naming any subcommand `bin/wildlands process discover` lists that
 Process Studio lacks. The documented differences are:
 

@@ -4,7 +4,7 @@ This tutorial builds a small expense approval process from nothing, runs it, ope
 in the Process Studio, tunes one step, presents it and exports the result. It takes
 about 30 minutes. Every value is a synthetic example.
 
-You use the checked-in `bin/wildlands` command-line tool to create the process, because
+You use the checked-in `bin/process-studio` command-line tool to create the process, because
 the studio tunes an existing process but cannot create one or add steps from a form (see
 [What the studio can and cannot edit](../how-to/business-process-authoring.md#what-the-studio-can-and-cannot-edit)).
 The [process contract](../reference/business-process-engine.md) defines every field used
@@ -21,17 +21,17 @@ tutorial only touches.
 
 ```sh
 mkdir -p /tmp/first-process
-bin/wildlands process discover
+bin/process-studio discover
 ```
 
-`discover` prints the `process` commands, their limits and the 14 guarded
+`discover` prints the process commands, their limits and the 15 guarded
 `editOperations` (for example `putStep`, `putFlow` and `setDescription`).
 
 ## 1. Create a starter process
 
 ```sh
-bin/wildlands process create --id expense-approval --name "Expense approval" --output /tmp/first-process/process.json
-bin/wildlands process inspect --input /tmp/first-process/process.json
+bin/process-studio create --id expense-approval --name "Expense approval" --output /tmp/first-process/process.json
+bin/process-studio inspect --input /tmp/first-process/process.json
 ```
 
 The starter is runnable: a start step **Intake**, a task **Deliver work** and an end
@@ -96,8 +96,8 @@ twelve claims arriving ten minutes apart, a description, seed 7 and the supplier
 customers of the SIPOC view. Preview it first, then write a new file:
 
 ```sh
-bin/wildlands process edit --input /tmp/first-process/process.json --recipe /tmp/first-process/edit.json --dry-run
-bin/wildlands process edit --input /tmp/first-process/process.json --recipe /tmp/first-process/edit.json --output /tmp/first-process/expense.json
+bin/process-studio edit --input /tmp/first-process/process.json --recipe /tmp/first-process/edit.json --dry-run
+bin/process-studio edit --input /tmp/first-process/process.json --recipe /tmp/first-process/edit.json --output /tmp/first-process/expense.json
 ```
 
 Both print `"ok": true` with `"diagnostics": []`; the dry run writes nothing. If you see
@@ -106,8 +106,8 @@ a stale-guard error, run `inspect` again and copy the current fingerprint; never
 ## 3. Validate and review the change
 
 ```sh
-bin/wildlands process validate --input /tmp/first-process/expense.json
-bin/wildlands process diff --input /tmp/first-process/expense.json --against /tmp/first-process/process.json
+bin/process-studio validate --input /tmp/first-process/expense.json
+bin/process-studio diff --input /tmp/first-process/expense.json --against /tmp/first-process/process.json
 ```
 
 `validate` prints `"runnable": true` and no diagnostics. `diff` summarises the edit as
@@ -119,8 +119,8 @@ submitted").
 ## 4. Run it and read the deck
 
 ```sh
-bin/wildlands process run --input /tmp/first-process/expense.json --minutes 480 --output /tmp/first-process/report.json
-bin/wildlands process slides --input /tmp/first-process/expense.json --format md --output /tmp/first-process/slides.md
+bin/process-studio run --input /tmp/first-process/expense.json --minutes 480 --output /tmp/first-process/report.json
+bin/process-studio slides --input /tmp/first-process/expense.json --format md --output /tmp/first-process/slides.md
 ```
 
 With seed 7 the run completes by itself at minute 190 (`advancedMinutes`), before the
@@ -138,7 +138,7 @@ summary. Each step slide starts with the description you wrote.
 ## 5. Build and open the studio
 
 ```sh
-bin/wildlands process build --input /tmp/first-process/expense.json --output /tmp/first-process/expense.html
+bin/process-studio build --input /tmp/first-process/expense.json --output /tmp/first-process/expense.html
 ```
 
 Open `/tmp/first-process/expense.html` in the browser. The studio opens paused at minute
@@ -191,9 +191,9 @@ minute, the phone menu and the Markdown export.
    folder) and export it to BPMN 2.0:
 
 ```sh
-bin/wildlands process diff --input ~/Downloads/expense-approval.process.json --against /tmp/first-process/expense.json
-bin/wildlands process export-bpmn --input ~/Downloads/expense-approval.process.json --output /tmp/first-process/expense.bpmn
-bin/wildlands process validate-bpmn --input /tmp/first-process/expense.bpmn
+bin/process-studio diff --input ~/Downloads/expense-approval.process.json --against /tmp/first-process/expense.json
+bin/process-studio export-bpmn --input ~/Downloads/expense-approval.process.json --output /tmp/first-process/expense.bpmn
+bin/process-studio validate-bpmn --input /tmp/first-process/expense.bpmn
 ```
 
 `diff` reports "Changes: 1 step changed" (**Pay the claim**) with one changed value,
@@ -210,7 +210,8 @@ BPMN with BPSim**, **Export run report** and **Download HTML**.
   [agency delivery lab](../concepts/agency-delivery/README.md)
   (`demos/agency-delivery.html`).
 - Look up commands and exit codes in the
-  [CLI handbook](../reference/wildlands-cli.md#business-processes).
+  [Process Studio CLI handbook](../reference/process-studio-cli.md); `bin/wildlands process`
+  takes the same commands ([Wildlands CLI](../reference/wildlands-cli.md#business-processes)).
 
 A finished tutorial run is a working walkthrough of the tools, not a validated process
 model, balance check or usability review.

@@ -3,7 +3,8 @@
 Process Studio is the standalone command line for Wildlands business-process
 definitions. Use the repository executable `bin/process-studio`, or
 `npm run cli -- <args>` from this directory. The project overview, protocol and
-command table are in [README.md](README.md); the process grammar and semantics
+command table are in [README.md](README.md), the user handbook is
+[docs/reference/process-studio-cli.md](../../docs/reference/process-studio-cli.md); the process grammar and semantics
 are in [docs/reference/business-process-engine.md](../../docs/reference/business-process-engine.md).
 
 ## Editing protocol for agents

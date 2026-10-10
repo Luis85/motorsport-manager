@@ -8,26 +8,30 @@ description: Add or edit a business-process demo in a Wildlands process game fol
 Model change: PR #42 (`1336f48`, "Wildlands process: weekly delivery and release train demo") added
 `docs/concepts/agency-delivery/content/delivery-release.process.json`. Follow the same shape. Read
 first: `AGENTS.md` ("Standalone CLI projects", "Documentation housekeeping"),
-`docs/how-to/business-process-authoring.md`, `docs/reference/wildlands-cli.md#business-processes`,
+`docs/how-to/business-process-authoring.md`, `docs/reference/process-studio-cli.md`,
+`docs/reference/wildlands-cli.md#business-processes`,
 `docs/reference/business-process-engine.md` ("Presentation limits", "Verification suites").
 
-Run everything from the repository root with the checked-in `bin/wildlands` (Node 22+). When the
-branch changes engine or CLI source and `bin/` is not rebuilt yet, run the same commands with
-`node source/wildlands/.generated/tools/wildlands-cli.cjs` after `npm run build` in `source/wildlands`.
+Run everything from the repository root (Node 22+): process commands with the checked-in
+`bin/process-studio`, game-folder commands (`validate-game`, `build-game`) with `bin/wildlands`.
+`bin/process-studio <command>` is the identical equivalent of `bin/process-studio <command>`.
+When the branch changes engine or CLI source and `bin/` is not rebuilt yet, run the process commands
+as `node source/wildlands/.generated/tools/wildlands-cli.cjs process …` after `npm run build` in
+`source/wildlands`; `bin/process-studio` embeds the engine of the checked-in `bin/wildlands`.
 Work in a scratch directory (`W=/tmp/pd`); never write a draft into the game folder until it validates.
 
 ## 1. Author with guarded edits
 
 ```sh
 mkdir -p $W
-bin/wildlands process discover                      # commands, limits, editOperations
-bin/wildlands process schema --kind recipe          # exact recipe shape
-bin/wildlands process create --id my-demo --name "My demo" --output $W/p0.json
-bin/wildlands process inspect --input $W/p0.json    # -> revision, fingerprint (copy both)
-bin/wildlands process edit --input $W/p0.json --recipe $W/r1.json --dry-run
-bin/wildlands process edit --input $W/p0.json --recipe $W/r1.json --output $W/p1.json
-bin/wildlands process validate --input $W/p1.json   # strict
-bin/wildlands process diff --input $W/p1.json --against $W/p0.json
+bin/process-studio discover                      # commands, limits, editOperations
+bin/process-studio schema --kind recipe          # exact recipe shape
+bin/process-studio create --id my-demo --name "My demo" --output $W/p0.json
+bin/process-studio inspect --input $W/p0.json    # -> revision, fingerprint (copy both)
+bin/process-studio edit --input $W/p0.json --recipe $W/r1.json --dry-run
+bin/process-studio edit --input $W/p0.json --recipe $W/r1.json --output $W/p1.json
+bin/process-studio validate --input $W/p1.json   # strict
+bin/process-studio diff --input $W/p1.json --against $W/p0.json
 # add --draft to edit (and validate) only for intermediate states with graph diagnostics
 ```
 
@@ -61,7 +65,7 @@ is written. This one validates strictly (no `--draft` needed).
   `setDescription {value: string|null}`, `setSeed {value: int|null}`, `setSipoc {value|null}`,
   `setTrack {value|null}` (`null` removes the field) and `setGenre {value}` with `process`,
   `customer-journey` or `user-journey` (`process` removes the field; `null` is rejected).
-  `process discover` lists all 14 in `editOperations`. Do not hand-edit the definition JSON.
+  `discover` lists all 15 in `editOperations` (with `setCalendar`). Do not hand-edit the definition JSON.
 - Every edit: `inspect` for fresh guards, `--dry-run` first, then `--output` to a new file. On a stale
   guard, re-inspect and reconcile; never guess a revision. Keep the final file's revision small and
   explain it in the README provenance (PR #42 ended at revision 2).
@@ -94,7 +98,7 @@ is written. This one validates strictly (no `--draft` needed).
    The browser suites derive the count from `game.json` (`process-browser-fixture.ts` `COUNT`), and the
    BPMN conformance check exports every `content/*.process.json` automatically. Two checks pin each
    deck instead, so a new process, or an edit that adds, removes, renames or re-phases steps, must
-   update them (take the numbers from `bin/wildlands process slides --input F`, which prints `slides`):
+   update them (take the numbers from `bin/process-studio slides --input F`, which prints `slides`):
    - `PINNED` in `source/wildlands/source/verification/process-present-browser.ts`: one slide count
      per process in `content.definitions` order (append the new deck's count);
      `process-present-browser` asserts `COUNT === PINNED.length` and every deck's length.
@@ -114,15 +118,15 @@ Append a `test(...)` to `source/wildlands/source/test-process-steps.cts`, modell
 application demo ..." and "Weekly delivery and release train ..." (~:230 and ~:254):
 
 - `catalog.validate(d)` ok with `diagnostics: []`; `catalog.fingerprint(d)` equals the pinned value
-  (`process inspect` prints it); id, seed, genre, every step `scene` without `asset` and a `phase`.
+  (`inspect` prints it); id, seed, genre, every step `scene` without `asset` and a `phase`.
 - Structure that matters (instances, deadlines, inclusive forks, chance flows, arrivals).
 - `run(d, MINUTES)`: exact `[seed, minute, status, arrived, completed, failed, cost, meanCycleMinutes]`
   (`cost` is the work cost; `capacityCost` and `meanAgeMinutes` are read-model values you may pin too),
   resource `busyMinutes`, step `completed`/`visits`/`items`/`deadlines`, final case data.
-  Take the numbers from `bin/wildlands process run --input F --minutes N --output $W/run.json`.
+  Take the numbers from `bin/process-studio run --input F --minutes N --output $W/run.json`.
 - Chunked-advance identity: one advance equals chunks `[1]`, `[7]`, `[60]`, `[1, 7, 60]`, and capacity
   is never exceeded; `run(copy(d), N)` equals the first run.
-- A second seed (`runtime.create(d, {seed: 8})`, cross-check with `process run --seed 8`) with exact
+- A second seed (`runtime.create(d, {seed: 8})`, cross-check with `run --seed 8`) with exact
   numbers.
 
 Then register it in `source/wildlands/source/verification/gate-expectations.json` with **targeted
@@ -137,16 +141,16 @@ Quick partial run: `cd source/wildlands && npm run verify -- --only business-pro
 
 ```sh
 F=docs/concepts/agency-delivery/content/<id>.process.json
-bin/wildlands process export-bpmn --input $F --output $W/p.bpmn
-bin/wildlands process export-bpmn --input $F --output $W/p.bpsim.bpmn --bpsim
-bin/wildlands process validate-bpmn --input $W/p.bpmn          # exit 0, "conforms": true
-bin/wildlands process validate-bpmn --input $W/p.bpsim.bpmn    # exit 0
-bin/wildlands process import-bpmn --input $W/p.bpmn --output $W/re1.json
-bin/wildlands process import-bpmn --input $W/p.bpsim.bpmn --output $W/re2.json
-bin/wildlands process inspect --input $W/re1.json   # fingerprint == the definition's (repeat for re2)
-bin/wildlands process diff --input $W/p1.json --against $W/p0.json   # changes from p0 to p1, per edit
-bin/wildlands process slides --input $F --format md --output $W/slides.md
-bin/wildlands process slides --input $F --format md --minutes 2400 --seed 7 --output $W/slides-live.md
+bin/process-studio export-bpmn --input $F --output $W/p.bpmn
+bin/process-studio export-bpmn --input $F --output $W/p.bpsim.bpmn --bpsim
+bin/process-studio validate-bpmn --input $W/p.bpmn          # exit 0, "conforms": true
+bin/process-studio validate-bpmn --input $W/p.bpsim.bpmn    # exit 0
+bin/process-studio import-bpmn --input $W/p.bpmn --output $W/re1.json
+bin/process-studio import-bpmn --input $W/p.bpsim.bpmn --output $W/re2.json
+bin/process-studio inspect --input $W/re1.json   # fingerprint == the definition's (repeat for re2)
+bin/process-studio diff --input $W/p1.json --against $W/p0.json   # changes from p0 to p1, per edit
+bin/process-studio slides --input $F --format md --output $W/slides.md
+bin/process-studio slides --input $F --format md --minutes 2400 --seed 7 --output $W/slides-live.md
 ```
 
 - `diff --input NEW --against OLD` reports what changed from OLD to NEW (`summary`, `changes`,
@@ -204,6 +208,18 @@ mkdir -p /tmp/v && TMPDIR=/tmp/v PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/opt/pw-bro
 cd ../.. && python3 scripts/check_docs.py && python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 
+After any engine change (so after `bin/wildlands` is rebuilt), and always before the handoff, check
+`bin/process-studio` against the rebuilt `bin/wildlands`:
+
+```sh
+cd source/process-studio
+npm ci --no-audit --no-fund
+npm run build:cli    # only when bin/wildlands or a bridged Wildlands file changed
+npm run check:cli
+npm test             # contract and byte-for-byte parity with bin/wildlands process
+cd ../..
+```
+
 Never hand-edit `bin/` or `demos/`; commit regenerated files with the source change. A README-only
 change in the game folder needs no demo rebuild. Build and check the bundle from a clean `npm ci` in
 `source/wildlands`: a `node_modules` borrowed from another checkout can differ from the lockfile and
@@ -212,9 +228,9 @@ make `check:cli` report a stale `bin/wildlands` even on an unchanged tree.
 ## 6. Handoff
 
 - Source identity: branch, base and head SHAs, `bin/wildlands` and demo engine identity if rebuilt.
-- Gates with results: `check:cli`, `check:demos`, `validate-game`, strict `tsc`, `architecture`,
+- Gates with results: `check:cli` (Wildlands and Process Studio), Process Studio `npm test`, `check:demos`, `validate-game`, strict `tsc`, `architecture`,
   full `npm run verify` (suites/checks passed, `totalChecks`), `check_docs.py`, Python unittest,
-  `validate-bpmn` x2 and the re-import fingerprints, `process diff` of each edit, `process slides`
+  `validate-bpmn` x2 and the re-import fingerprints, `diff` of each edit, `slides`
   reviewed (slide count, sections).
 - Pinned numbers: fingerprint, seed, minute, status, cost, key counts, second-seed numbers.
 - Skipped or unavailable checks and why (a `--only` or `--no-browser` run is partial evidence).

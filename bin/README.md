@@ -10,6 +10,7 @@ a tool; each documents its JSON protocol, exit codes and limits.
 |---|---|---|---|---|---|
 | `bin/wildlands` | The Wildlands engine without game content: validate, inspect and build game folders (`docs/concepts/<id>/`) into self-contained HTML; create, validate, inspect, play, edit and compile portable projects into Godot desktop projects | [Wildlands CLI](../docs/reference/wildlands-cli.md) | [`source/wildlands/`](../source/wildlands/README.md) | `cd source/wildlands && npm ci && npm run build:cli` | `cd source/wildlands && npm run check:cli` |
 | `bin/scene-forge` | Author, validate, export and review declarative 3D projects, models and scenes | [Scene Forge CLI](../docs/reference/scene-forge-cli.md) | [`source/scene-forge/`](../source/scene-forge/README.md) | `cd source/scene-forge && npm ci && npm run build:cli` | `cd source/scene-forge && npm run check:cli` |
+| `bin/process-studio` | Author, validate, simulate, replicate, compare, explain and BPMN-exchange Wildlands business-process definitions and build each into one offline HTML studio; the standalone equivalent of `bin/wildlands process` | [Process Studio CLI](../docs/reference/process-studio-cli.md) | [`source/process-studio/`](../source/process-studio/README.md) | `cd source/process-studio && npm ci && npm run build:cli` | `cd source/process-studio && npm run check:cli` |
 
 ## Requirements
 
@@ -17,6 +18,8 @@ a tool; each documents its JSON protocol, exit codes and limits.
   `npm ci`, `node_modules`, build step or network access.
 - `bin/scene-forge screenshot` and `review` additionally need Playwright and a
   Chromium build; `bin/scene-forge doctor` reports their status.
+- `bin/process-studio` needs nothing else either, not even `bin/wildlands`: its
+  `build` embeds the process slice of the Wildlands engine kit.
 - `bin/wildlands` builds and plays only the games you point it at with
   `--game DIR` (for example `docs/concepts/littlewild`); it has no built-in game.
   The HTML files it builds run in a desktop browser from `file://`; the
@@ -32,6 +35,9 @@ Run from the repository root:
 ```sh
 bin/wildlands --help
 bin/scene-forge --help
+bin/process-studio --version
+bin/process-studio validate --input docs/concepts/agency-delivery/content/agency.process.json
+bin/process-studio replicate --input docs/concepts/agency-delivery/content/agency.process.json --minutes 2400 --runs 10 --seed 1 --compact
 node bin/wildlands discover
 bin/wildlands validate-game --game docs/concepts/littlewild
 bin/wildlands build-game --game docs/concepts/littlewild --check demos/littlewild.html
@@ -40,14 +46,20 @@ for folder in docs/concepts/*/; do [ -f "$folder/game.json" ] && bin/wildlands v
 
 `bin/wildlands` prints one JSON object, except `process slides --format md`
 without `--output`, which prints the Markdown deck itself. `bin/scene-forge` prints
-JSON for its commands; add `--compact` for smaller responses.
+JSON for its commands; add `--compact` for smaller responses. `bin/process-studio`
+prints one JSON object with the same exception as `process slides`, and accepts
+`--compact` anywhere.
 
 ## Generated files: never edit by hand
 
-Both executables are generated bundles. Do not edit, format or patch them
-directly. After any change under `source/wildlands/` or `source/scene-forge/`,
-rebuild the matching executable with its rebuild command and commit it together
-with the source change. Each project's `npm run check:cli` rebuilds the bundle
+All three executables are generated bundles. Do not edit, format or patch them
+directly. After any change under `source/wildlands/`, `source/scene-forge/` or
+`source/process-studio/`, rebuild the matching executable with its rebuild
+command and commit it together with the source change. `bin/process-studio`
+bundles Wildlands process code through its bridge and embeds the process slice of
+the engine kit in `bin/wildlands`, so a change to a bridged Wildlands file or any
+Wildlands engine change also needs `npm run build:cli` in `source/process-studio`
+after `bin/wildlands` is rebuilt. Each project's `npm run check:cli` rebuilds the bundle
 without replacing it and fails when the checked-in file differs or is not
 executable; CI runs it, and also validates every game folder with the
 checked-in `bin/wildlands` alone, before installing any dependency.
