@@ -296,4 +296,28 @@ commands through the application controller.
 
 ## Verification
 
-Filled in by the coordinator after the complete gate.
+Source identity: the complete gate ran on the integrated branch at commit `bd8e70e` (all six packages
+merged plus the coordinator's integration fix), before the documentation-only merge and the regenerated
+`bin/` and `demos/` that follow it.
+
+- **Complete registered gate:** `npm run verify -- --jobs 3 --browser-jobs 2` passed 2,097/2,097 checks
+  in 115 suites (1,667 s) on a 4-core container with Chromium 141 (SwiftShader). The registry grew from
+  2,079 to 2,097 checks through reviewed additions; two checks were renamed with `renames` entries.
+- **Fast checks:** `npm run typecheck` clean; `npm run architecture` 21/21; `npm test` 815/815 on an
+  intermediate merge.
+- **Integration repeats:** process-readability, process-layout, process-renderers and
+  business-process-browser passed three consecutive runs at four concurrent suites after the
+  coordinator's caption fix. Before that fix, the hover-caption check failed in one of two loaded runs.
+- **Generated artifacts:** `npm run check:cli` and `npm run check:demos` report `bin/wildlands` and
+  every `demos/` page current after regeneration.
+- **Repository checks:** `python3 scripts/check_docs.py` passed (2,922 local links),
+  `python3 scripts/check_architecture.py` reported no violations, and
+  `python3 -m unittest discover -s tests -p 'test_*.py'` passed (19 skipped).
+- **Native visual evidence:** `npm run process:shots` for processes 1 and 7 at minute 240 wrote 24
+  captures: desktop 2D, 3D and lens, Present, the phone studio and Present, and DejaVu Sans variants.
+  None had horizontal overflow, and the console logged no errors.
+- **Not run:** the Godot `scripts/verify.py` gate, which this standalone project does not touch, and
+  `scripts/quality.py`, whose policy does not cover TypeScript (ENG-10). There was no human usability
+  test or screen-reader session, and real back/forward-cache restore and Windows High Contrast were not
+  exercised (both are emulated in the suites). These are synthetic fixture runs, not validation of
+  physical processes, balance or human usability.
