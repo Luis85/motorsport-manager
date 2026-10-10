@@ -3,8 +3,27 @@ import assert from 'node:assert/strict';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { hostname } from 'node:os';
+import { execFile } from 'node:child_process';
 import { withFileLock } from '../src/infra/files.js';
-import { boxModel, copyProject, failure, ok, withTemp } from './helpers.js';
+import { boxModel, copyProject, failure, ok, repository, withTemp } from './helpers.js';
+
+/**
+ * Run the checked-in executable, which embeds the preview page script; source runs need
+ * `npm run build` for it, and CI runs the unit tests without building.
+ */
+function bin(args: string[], cwd: string) {
+  return new Promise<{ status: number; json: any }>((resolve) => {
+    execFile(
+      process.execPath,
+      [path.join(repository, 'bin/model-forge'), ...args],
+      { cwd },
+      (error, stdout, stderr) => {
+        const status = error ? Number(error.code ?? 1) : 0;
+        resolve({ status, json: JSON.parse(status === 0 ? stdout : stderr) });
+      },
+    );
+  });
+}
 
 const readonly = 'PROJECT_MODEL_READONLY';
 
@@ -72,12 +91,12 @@ test('outputs never silently replace files, the document, locks or history', () 
       await ok([...doc, ...out], { cwd });
       assert.equal((await failure([...doc, ...out], { cwd })).code, 'ALREADY_EXISTS', format);
     }
-    await ok([...doc, 'preview', '--out', 'crate.html'], { cwd });
-    assert.equal(
-      (await failure([...doc, 'preview', '--out', 'crate.html'], { cwd })).code,
-      'ALREADY_EXISTS',
-    );
-    await ok([...doc, 'preview', '--out', 'crate.html', '--overwrite'], { cwd });
+    const preview = [...doc, 'preview', '--out', 'crate.html'];
+    assert.equal((await bin(preview, cwd)).status, 0);
+    const again = await bin(preview, cwd);
+    assert.equal(again.status, 1);
+    assert.equal(again.json.error.code, 'ALREADY_EXISTS');
+    assert.equal((await bin([...preview, '--overwrite'], cwd)).status, 0);
     await fs.mkdir(path.join(cwd, 'folder.glb'));
     assert.equal(
       (await failure([...doc, 'export', '--out', 'folder.glb', '--overwrite'], { cwd })).code,
@@ -101,7 +120,7 @@ test('outputs never silently replace files, the document, locks or history', () 
         assert.equal(error.code, 'INVALID_PATH', `${out} ${overwrite.join('')}`);
       }
     assert.equal(
-      (await failure([...doc, 'preview', '--out', 'crate.model.json.history/p.html'], { cwd }))
+      (await bin([...doc, 'preview', '--out', 'crate.model.json.history/p.html'], cwd)).json.error
         .code,
       'INVALID_PATH',
     );
