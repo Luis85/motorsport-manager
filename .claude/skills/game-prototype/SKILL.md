@@ -1,23 +1,27 @@
 ---
 name: game-prototype
-description: Build a fast, throwaway playable game prototype with the checked-in tools (bin/character-studio, bin/model-forge, bin/scene-forge, bin/wildlands) and present it as a self-contained HTML storyboard. Use when asked to "prototype a game", try a "quick game idea", "make a playable prototype and storyboard", pitch or mock up a Wildlands game, build a vertical slice or demo from an idea, or show a game concept with real captures (hero character, props, key art, built HTML game, headless play facts).
+description: Build a fast, throwaway playable game prototype with the checked-in tools (bin/character-studio, bin/model-forge, bin/scene-forge, bin/wildlands) and present it as a self-contained HTML storyboard. Use when asked to "prototype a game", try a "quick game idea", "make a playable prototype and storyboard", pitch or mock up a Wildlands game, build a vertical slice or demo from an idea, or show a game concept with real captures (hero character, generated props, procedural key art, generated missions or quests, built HTML game, headless play facts).
 ---
 
 # Fast game prototype and storyboard
 
-Turns a one-line idea into: a hero (Character Studio), a reskinned prop (Model Forge), key art
-(Scene Forge), a validated portable project with headless play facts and a self-contained playable
-HTML (Wildlands), screenshots, and one deterministic storyboard page (`wildlands storyboard`).
-Everything is data driven through guarded CLI commands: **no engine or game code is written**.
-A validated run took about 7 minutes of tool time. Time-box it to one pass; do not polish.
+Turns a one-line idea into: a hero (Character Studio), generated and reskinned props (Model
+Forge), procedural key art (Scene Forge terrain, layout and scatter), a validated portable project
+with generated content, headless play facts and a self-contained playable HTML (Wildlands),
+screenshots, and one deterministic storyboard page (`wildlands storyboard`). Everything is data
+driven through guarded CLI commands: **no engine or game code is written**. A validated run (Track
+A plus Track C) took about 4 minutes of tool time. Time-box it to one pass; do not polish.
 
 Read first (skim): `AGENTS.md` ("Standalone CLI projects", "Documentation housekeeping"),
 `bin/README.md`, `docs/reference/wildlands-cli.md` (`storyboard`, `create`, `run`, `edit`,
-Character Studio interchange), `docs/how-to/character-agent-workflow.md`. Flags change: when a
+Character Studio interchange, `generate`), `docs/how-to/character-agent-workflow.md`,
+`docs/how-to/procedural-generation.md` and [references/procedural.md](references/procedural.md)
+(prop scale, key-art layout, content generators, replays). Flags change: when a
 command here fails with a usage error, run its discovery (`bin/wildlands discover`,
 `bin/wildlands creature discover`, `bin/wildlands storyboard schema`,
 `bin/model-forge describe <cmd>`, `bin/scene-forge describe <cmd>`,
-`bin/character-studio describe --command <cmd>`) and follow it, not memory.
+`bin/character-studio describe --command <cmd>`, `bin/model-forge generate show <gen>`,
+`bin/wildlands generate discover`) and follow it, not memory.
 
 Rules: work only in a new scratch directory; never write into `docs/concepts/`, `demos/`, `bin/`
 or `source/`; never hand-edit generated output (built HTML, review manifests); outputs go to new
@@ -25,9 +29,9 @@ paths. Another agent may rebuild `bin/*` concurrently: if a bin command behaves 
 
 ## 0. Set up the scratch run (once)
 
-Tool time per block: A1-A4 under a minute each; A5 about 40 s; A6 about 2 minutes (`build-game`
-twice); A7 about 80 s with software WebGL. Give shell calls a 5-minute timeout or run long blocks in
-the background. Shell state does not persist between tool calls, so the run keeps its variables
+Tool time per block: A1-A6 and C under a minute each (A4's review and A5's run take 30-45 s); A7
+about 80 s with software WebGL; slower machines took up to 2 minutes for A6. Give shell calls a
+5-minute timeout or run long blocks in the background. Shell state does not persist between tool calls, so the run keeps its variables
 and two helpers in `$W/env.sh`; start **every** later shell call with
 `W=<same absolute path>; . "$W/env.sh"`. `env.sh` sets `set -e`, so a block stops at the first
 failure: fix it and continue from that command. Do not re-run a whole block: Character Studio
@@ -76,7 +80,8 @@ game folder**; do not invent mechanics the engine lacks.
 |---|---|---|---|
 | Companions living, gathering, caring, building (garden, village, workshop) | colony | `docs/concepts/emberworks` (complete pack, own scene ids; verified) or `office` (operations; not verified here) | A (below) |
 | Deliveries, queues, service flows, customer/user journeys | process | a new definition (`process create`) | B: [references/process-track.md](references/process-track.md) |
-| One virtual pet; a small skirmish map | pet / rts | `docs/concepts/pocket-pet` / `rts-frontier` | C: copy + re-identify (A1), validate, build, capture only |
+| A small skirmish map | rts | `docs/concepts/rts-frontier` | C (below): copy + re-identify (A1), generate a mission, validate, build, capture |
+| One virtual pet | pet | `docs/concepts/pocket-pet` | copy + re-identify (A1), validate, build (A6), capture (A7) only |
 
 Run `bin/wildlands discover --game <base folder>` to see the gameplay commands that exist.
 
@@ -109,10 +114,16 @@ g.targets.html.budgetBytes=8388608;      // a Character Studio hero adds ~1.5 MB
 fs.writeFileSync(f,JSON.stringify(g,null,2)+"\n");
 ' "$W/game/$ID" "$ID" "Glowmoss Garden" "Prototype: a lantern-moss garden tended by Glim. Synthetic values."
 r a1-validate bin/wildlands validate-game --game "$W/game/$ID"
+r a1-quests-dry bin/wildlands generate adventure-quests --game "$W/game/$ID" --count 2 --tier 1 --seed 11 --dry-run
+r a1-quests bin/wildlands generate adventure-quests --game "$W/game/$ID" --count 2 --tier 1 --seed 11 --expected-digest "$(j "$W/logs/a1-quests-dry.json" digest)"
+j "$W/logs/a1-quests.json" summary.ids; echo
+r a1-validate2 bin/wildlands validate-game --game "$W/game/$ID"
 ```
 
 Report the raised `budgetBytes` (the published Emberworks budget is 4 MiB). Keep the README copy as
-is; it is outside the digest. Track C stops after A1 here and continues at A6/A7.
+is; it is outside the digest. The two generated quests (`gen-11-1`, `gen-11-2`) use only the pack's
+existing biomes, skills and loot; skip them for a non-colony base. Track C continues at C below;
+a pet prototype continues at A6/A7.
 
 ### A2. Hero with Character Studio
 
@@ -148,10 +159,25 @@ r cs-package bin/character-studio export --project "$W/chars" --id glim --format
 Open `$W/hero-review/contact-sheet.png` and look at it before moving on. A stale guard exits 3:
 inspect again and rebuild the batch. Presets: `pip`, `fern`, `mochi`, `bramble`.
 
-### A3. Prop with Model Forge (reskin an existing asset)
+### A3. Props with Model Forge (generate for key art, reskin for the game)
 
-Reskinning a definition the game already uses keeps gameplay valid and shows up in the build. The
-scratch folder copy is laid out as `<family>/<id>/definition.json`, so export merges in place.
+The fast path for key-art props is a generator: one command writes a parametric model, its
+replayable `<id>.generate.json` recipe and a four-view review. Size generated props to the game's
+scale (a companion is about 1 m tall; see references/procedural.md).
+
+```sh
+W=<abs>; . "$W/env.sh"
+bin/model-forge generate list > "$W/logs/mf-generators.json"   # generators, presets, examples
+r mf-gen-rock bin/model-forge --compact generate rock --preset stone --seed 5 --set size=0.3 --set color=#55606b --out "$W/models/mossrock.model.json" --review "$W/mossrock-review"
+r mf-gen-bush bin/model-forge --compact generate bush --preset flowering --seed 6 --set size=0.6 --set leafColor=#3fbf9a --set flowerColor=#f4ffb8 --out "$W/models/glowbush.model.json" --review "$W/glowbush-review"
+j "$W/logs/mf-gen-bush.json" data.documents.0.stats.bounds.size; echo
+```
+
+Open both `contact-sheet.png` files. A generated model is not used by the game until content refers
+to it; to put one in the build, export it over an existing definition of similar size
+(references/procedural.md). Reskinning a definition the game already uses keeps gameplay valid and
+shows up in the build. The scratch folder copy is laid out as `<family>/<id>/definition.json`, so
+export merges in place.
 
 ```sh
 W=<abs>; . "$W/env.sh"; ID=glowmoss; DEF="$W/game/$ID/assets/items/herbs/definition.json"
@@ -181,42 +207,46 @@ r a3-validate bin/wildlands validate-game --game "$W/game/$ID"
 
 The first `--check` must pass (an unedited import re-exports byte-identically); if it fails, stop
 and report. Failures print JSON on stderr (`logs/NAME.err`) with `error.code` and `error.hint`.
-For a brand-new model instead: `bin/model-forge create "$W/models/<id>.model.json" --id <id> --name
-"<name>"`, `add box|sphere|cylinder|cone|torus|capsule|plane`, then `review` and
-`export --format glb --validate` (a new definition is not used by the game until content refers to it).
+For a hand-built model instead of a generator: `bin/model-forge create "$W/models/<id>.model.json"
+--id <id> --name "<name>"`, `add box|sphere|cylinder|cone|torus|capsule|plane`, then `review`.
 
-### A4. Key art with Scene Forge
+### A4. Key art with Scene Forge (terrain, layout, scatter)
+
+Small hills at prop scale, the hero grounded at the center, moss beds around it and the generated
+props in an outer ring, all seeded and guarded. Imports do not change the scene revision; each
+placement does, so the guards count up from the terrain's dry run.
 
 ```sh
-W=<abs>; . "$W/env.sh"
-r sf-init bin/scene-forge --compact init "$W/keyart" --name "Glowmoss key art"
-r sf-model-dry bin/scene-forge --compact -p "$W/keyart" model import --file "$W/models/glowmoss.model-bundle.json" --dry-run
-r sf-model bin/scene-forge --compact -p "$W/keyart" model import --file "$W/models/glowmoss.model-bundle.json"
-r sf-inspect bin/scene-forge --compact -p "$W/keyart" inspect
+W=<abs>; . "$W/env.sh"; P="$W/keyart"
+r sf-init bin/scene-forge --compact init "$P" --name "Glowmoss key art"
+r sf-model-dry bin/scene-forge --compact -p "$P" model import --file "$W/models/glowmoss.model-bundle.json" --dry-run
+r sf-model bin/scene-forge --compact -p "$P" model import --file "$W/models/glowmoss.model-bundle.json"
+r sf-rock bin/scene-forge --compact -p "$P" model import --file "$W/models/mossrock.model.json"
+r sf-bush bin/scene-forge --compact -p "$P" model import --file "$W/models/glowbush.model.json"
+r sf-inspect bin/scene-forge --compact -p "$P" inspect
 REV=$(j "$W/logs/sf-inspect.json" data.revision); STATE=$(j "$W/logs/sf-inspect.json" data.stateHash)
-r sf-hero-dry bin/scene-forge --compact -p "$W/keyart" littlewild import --definition "$W/glim.package.json" --expected-revision "$REV" --expected-state "$STATE" --dry-run
-r sf-hero bin/scene-forge --compact -p "$W/keyart" littlewild import --definition "$W/glim.package.json" --expected-revision "$REV" --expected-state "$STATE"
+r sf-hero-dry bin/scene-forge --compact -p "$P" littlewild import --definition "$W/glim.package.json" --expected-revision "$REV" --expected-state "$STATE" --dry-run
+r sf-hero bin/scene-forge --compact -p "$P" littlewild import --definition "$W/glim.package.json" --expected-revision "$REV" --expected-state "$STATE"
 j "$W/logs/sf-hero.json" data.variantModels; echo   # pick world-<ears of the hero>, e.g. glimWorldPointed
-r sf-inspect2 bin/scene-forge --compact -p "$W/keyart" inspect
-REV=$(j "$W/logs/sf-inspect2.json" data.revision); STATE=$(j "$W/logs/sf-inspect2.json" data.stateHash)
-cat > "$W/keyart.composition.json" <<'EOF'
-{"schemaVersion":1,"kind":"composition","scene":"main",
- "groups":[{"id":"glade","name":"Glowmoss glade"}],
- "instances":[
-  {"id":"hero","model":"glimWorldPointed","parent":"glade","transform":{"rotation":[0,-20,0]}},
-  {"id":"moss-a","model":"herbsWorld","parent":"glade","transform":{"position":[-0.9,0,0.3],"rotation":[0,30,0]}},
-  {"id":"moss-b","model":"herbsWorld","parent":"glade","transform":{"position":[0.9,0,0.1],"rotation":[0,-25,0]}},
-  {"id":"moss-c","model":"herbsWorld","parent":"glade","transform":{"position":[0.1,0,-0.9]}}
- ]}
-EOF
-r sf-compose-dry bin/scene-forge --compact -p "$W/keyart" scene compose --file "$W/keyart.composition.json" --dry-run
-r sf-compose bin/scene-forge --compact -p "$W/keyart" scene compose --file "$W/keyart.composition.json" --expected-revision "$REV" --expected-state "$STATE"
-r sf-validate bin/scene-forge --compact -p "$W/keyart" validate
-r sf-review bin/scene-forge --compact -p "$W/keyart" review --out "$W/keyart-review" --views iso,front --width 640 --height 400 --background '#1b2430'
+HERO=glimWorldPointed
+r sf-terrain-dry bin/scene-forge --compact -p "$P" terrain add ground --preset hills --size 5,5 --amplitude 0.3 --seed 3 --dry-run
+REV=$(j "$W/logs/sf-terrain-dry.json" data.revision); STATE=$(j "$W/logs/sf-terrain-dry.json" data.stateHash)
+r sf-terrain bin/scene-forge --compact -p "$P" terrain add ground --preset hills --size 5,5 --amplitude 0.3 --seed 3 --expected-revision "$REV" --expected-state "$STATE"
+r sf-hero-place bin/scene-forge --compact -p "$P" layout --model "$HERO" --grid 1x1 --step 1 --yaw -20 --on ground --group hero --expected-revision $((REV + 1))
+r sf-moss bin/scene-forge --compact -p "$P" scatter --model herbsWorld --area circle:0,0,1.3 --exclude circle:0,0,0.6 --exclude rect:-0.6,0,0.6,3 --spacing 0.7 --max 4 --seed 4 --on ground --group moss --expected-revision $((REV + 2))
+r sf-props-dry bin/scene-forge --compact -p "$P" scatter --model mossrock,glowbush --area circle:0,0,2.4 --exclude circle:0,0,1.4 --exclude rect:-1,0,1,3 --spacing 0.75 --scale 0.8..1.3 --seed 7 --on ground --group props --dry-run
+j "$W/logs/sf-props-dry.json" data.placement; echo
+r sf-props bin/scene-forge --compact -p "$P" scatter --model mossrock,glowbush --area circle:0,0,2.4 --exclude circle:0,0,1.4 --exclude rect:-1,0,1,3 --spacing 0.75 --scale 0.8..1.3 --seed 7 --on ground --group props --expected-revision $((REV + 3))
+r sf-validate bin/scene-forge --compact -p "$P" validate
+r sf-review bin/scene-forge --compact -p "$P" review --out "$W/keyart-review" --views iso,front --width 640 --height 400 --background '#1b2430'
 ```
 
-The Model Forge bundle's entry id (`herbsWorld`) is the Scene Forge model id. Dry-runs of
-`littlewild import` print the whole model, which is why `r` keeps stdout in a file.
+The Model Forge bundle's entry id (`herbsWorld`) and the generated documents' ids (`mossrock`,
+`glowbush`) are the Scene Forge model ids. Dry-runs of `littlewild import` print the whole model,
+which is why `r` keeps stdout in a file. Each placement result reports `placed`, `rejected` counts
+and a `recipeHash`; the `rect` exclusions keep the `front` view of the hero clear. Open the contact
+sheet; to adjust a ring, repeat its command with another `--seed` or `--spacing`, `--replace` and the
+current revision.
 
 ### A5. Portable project: retitle, edit, install the hero, play headlessly
 
@@ -300,63 +330,12 @@ scenario pack the folder names, so it round-trips into the folder. `over-budget`
 
 ### A7. Capture the built game headlessly
 
-There is no CLI capture for colony/pet/rts HTML, so write this small Playwright script into the
-run (not into the repository). It loads the page from `file://`, waits for fonts and animation
-frames (never fixed sleeps), captures desktop and phone, optionally clicks the scene button and a
-speed button, and records console errors.
+There is no CLI capture for colony/pet/rts HTML. Write the Playwright capture script once from
+[references/capture-html.md](references/capture-html.md) (its block writes
+`$W/tools/capture-html.mjs`; never into the repository), then:
 
 ```sh
 W=<abs>; . "$W/env.sh"
-cat > "$W/tools/capture-html.mjs" <<'EOF'
-// node capture-html.mjs PAGE.html OUT_DIR [--click "Scene button"] [--speed "Four times speed"] [--frames 240]
-import { createRequire } from 'node:module';
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
-const { chromium } = createRequire(import.meta.url)(process.env.PW_ENTRY);
-const [html, outDir, ...rest] = process.argv.slice(2);
-const opt = {};
-for (let i = 0; i < rest.length; i += 2) opt[rest[i].replace(/^--/, '')] = rest[i + 1];
-mkdirSync(outDir, { recursive: true });
-// Wait for `count` rendered frames, bounded by `ms` (software WebGL can render only a few frames per second).
-const frames = (page, count, ms = 20000) => page.evaluate(([n, limit]) => new Promise((done) => {
-  const end = performance.now() + limit; let i = 0;
-  const tick = () => (++i >= n || performance.now() > end ? done(i) : requestAnimationFrame(tick)); requestAnimationFrame(tick);
-}), [count, ms]);
-const report = { html: resolve(html), browser: null, captures: [], consoleErrors: [], warnings: [], framesBeforePlay: {} };
-const browser = await chromium.launch({ executablePath: process.env.FORGE_CHROMIUM_PATH || undefined, args: ['--enable-unsafe-swiftshader'] });
-report.browser = browser.version();
-try {
-  for (const [name, viewport] of [['desktop', { width: 1280, height: 800 }], ['phone', { width: 390, height: 844 }]]) {
-    const page = await browser.newPage({ viewport });
-    page.on('pageerror', (e) => report.consoleErrors.push(`${name}: ${e.message}`));
-    page.on('console', (m) => { if (m.type() === 'error') report.consoleErrors.push(`${name}: ${m.text()}`); });
-    await page.goto(pathToFileURL(resolve(html)).href, { waitUntil: 'load' });
-    await page.evaluate(() => document.fonts.ready);
-    await frames(page, 30);
-    const shot = async (label) => {
-      const file = `${name}-${label}.png`;
-      await page.screenshot({ path: `${outDir}/${file}` });
-      report.captures.push({ file, viewport, title: await page.title() });
-    };
-    await shot('start');
-    if (opt.click) {
-      await page.getByRole('button', { name: opt.click }).first().click({ timeout: 15000 });
-      if (opt.speed) {
-        try { await page.getByRole('button', { name: opt.speed, exact: true }).first().click({ timeout: 5000 }); }
-        catch (e) { report.warnings.push(`${name}: speed button not clicked: ${e.message.split('\n')[0]}`); }
-      }
-      report.framesBeforePlay[name] = await frames(page, Number(opt.frames ?? 240));
-      await shot('play');
-    }
-    await page.close();
-  }
-} finally {
-  await browser.close();
-}
-writeFileSync(`${outDir}/captures.json`, JSON.stringify(report, null, 2) + '\n');
-console.log(JSON.stringify(report));
-EOF
 export PW_ENTRY="$(j "$W/logs/mf-doctor.json" data.playwright.resolvedFrom)"
 r a7-capture timeout 180 node "$W/tools/capture-html.mjs" "$W/build/glowmoss.html" "$W/captures" --click "First glow" --speed "Four times speed" --frames 240
 ```
@@ -369,6 +348,31 @@ Open every PNG and check: the new title, the hero in the world, readable text, n
 `consoleErrors` must be `[]`; otherwise report them. Process games use `process:shots` instead
 (Track B).
 
+## 2C. Track C: generated skirmish map
+
+Run A1 with `BASE=docs/concepts/rts-frontier`, a new id (for example `ID=ridgefront`) and title,
+without the quest lines (an RTS play build is about 190 KB, so drop A1's 8 MiB `budgetBytes` line
+to keep the folder's 512 KiB budget). Then generate the map instead of hand-authoring it (write the
+capture script first, A7):
+
+```sh
+W=<abs>; . "$W/env.sh"; ID=ridgefront
+r c-gen-dry bin/wildlands generate rts-mission --game "$W/game/$ID" --mission ridge --preset frontier --seed 7 --first --dry-run
+j "$W/logs/c-gen-dry.json" summary; echo
+r c-gen bin/wildlands generate rts-mission --game "$W/game/$ID" --mission ridge --preset frontier --seed 7 --first --expected-digest "$(j "$W/logs/c-gen-dry.json" digest)"
+j "$W/logs/c-gen.json" recipe > "$W/ridge.recipe.json"
+r c-validate bin/wildlands validate-game --game "$W/game/$ID"
+r c-build bin/wildlands build-game --game "$W/game/$ID" --output "$W/build/$ID.html"
+export PW_ENTRY="$(j "$W/logs/mf-doctor.json" data.playwright.resolvedFrom)"
+r c-capture timeout 180 node "$W/tools/capture-html.mjs" "$W/build/$ID.html" "$W/captures-rts"
+```
+
+`--first` makes the generated mission the one the play build starts. `summary` has the factions,
+terrain tiles, `connected`, spawns, deposits and encounter budget for the storyboard caption;
+`generation-failed` means no playable layout for that seed (try the next). Storyboard cards: the
+summary (`logs/c-gen.json`, caption with seed and `recipeHash`), the build (`logs/c-build.json`)
+and the captures. Presets and bounds: references/procedural.md.
+
 ## 3. Storyboard
 
 Write `$W/storyboard.json` (all paths relative to it, all inputs beneath `$W`). Keep the three
@@ -378,6 +382,18 @@ claim in a caption that a source or image does not show.
 
 ```sh
 W=<abs>; . "$W/env.sh"
+# Seeds and recipe hashes of every generated output -> logs/generated.json (+ .tsv) for the caption.
+node -e '
+const fs = require("fs"), path = require("path"), rows = [], [out, ...files] = process.argv.slice(1);
+for (const f of files) {
+  if (!fs.existsSync(f)) continue;
+  const d = JSON.parse(fs.readFileSync(f, "utf8")), v = d.data ?? d, p = v.placement ?? v, t = v.terrain;
+  rows.push({ output: path.basename(f, ".json"), seed: p.seed ?? t?.geometry.seed, recipeHash: p.recipeHash ?? null,
+    ...(t ? { terrain: { preset: t.preset, size: t.geometry.size, amplitude: t.geometry.amplitude } } : {}) });
+}
+fs.writeFileSync(out, JSON.stringify(rows, null, 2) + "\n");
+for (const r of rows) console.log([r.output, r.seed, r.recipeHash ?? JSON.stringify(r.terrain)].join("\t"));
+' "$W/logs/generated.json" "$W"/logs/{a1-quests,mf-gen-rock,mf-gen-bush,sf-terrain,sf-hero-place,sf-moss,sf-props,c-gen}.json | tee "$W/logs/generated.tsv"
 cat > "$W/storyboard.json" <<'EOF'
 {"format":"wildlands-storyboard","schemaVersion":1,
  "title":"Glowmoss Garden · prototype storyboard",
@@ -393,7 +409,10 @@ cat > "$W/storyboard.json" <<'EOF'
     {"id":"hero-review","title":"Captured hero views","source":"hero-review/manifest.json","caption":"Actual compiled model: front, three-quarter, portrait and night walk."}]},
   {"id":"assets","title":"World assets · Model Forge and Scene Forge","cards":[
     {"id":"prop-review","title":"Glowing moss bed (reskinned herb bed)","source":"prop-review/review.json","caption":"Model Forge review of the edited herbs visual (Littlewild asset format) exported back into the scratch game folder."},
-    {"id":"keyart","title":"Key art","source":"keyart-review/review.json","caption":"Scene Forge composition of the hero and three moss beds."}]},
+    {"id":"gen-bush","title":"Generated glow bush","source":"glowbush-review/review.json","caption":"model-forge generate bush, preset flowering, seed 6, size 0.6 m; recipe models/glowbush.generate.json."},
+    {"id":"gen-rock","title":"Generated moss rock","source":"mossrock-review/review.json","caption":"model-forge generate rock, preset stone, seed 5, size 0.3 m."},
+    {"id":"keyart","title":"Key art","source":"keyart-review/review.json","caption":"Scene Forge: hills terrain (seed 3), the hero by layout, moss beds and generated props scattered on the terrain."},
+    {"id":"generated","title":"Generated content: seeds and recipe hashes","source":"logs/generated.json","caption":"Copied from logs/generated.tsv: <one line per output: log, seed, recipeHash>."}]},
   {"id":"game","title":"Game · Wildlands facts","cards":[
     {"id":"project","title":"Portable project","source":"project/p4.json","intent":"Emberworks colony rules and assets, retitled pack, Glowmoss Hollow world, two extra moss beds, Glim as companion c1."},
     {"id":"play","title":"Headless play: 300 s","source":"logs/wl-run.json","caption":"Recipe: start, select c1, herbs stock target 6, advance 300 s. Copied from logs/wl-run.json: 3000 steps, advancedSeconds 300, day 1 08:00 to 23:00, Glim idle ('Enjoying the glade'), coins 86 to 122, xp 0 to 30, herbs gathered 0, both new beds still 80/80. Not a balance test."},
@@ -403,7 +422,7 @@ cat > "$W/storyboard.json" <<'EOF'
     {"id":"cap-play","title":"First glow at 4× (desktop)","image":"captures/desktop-play.png"},
     {"id":"cap-phone","title":"First glow (phone)","image":"captures/phone-play.png"}]},
   {"id":"limits","title":"What this does not show","cards":[
-    {"id":"limits-card","title":"Limits","intent":"Synthetic, automated prototype. No human playtest, usability, accessibility or balance validation; screenshots come from headless Chromium; scripted play covers 300 simulated seconds. Tutorial text still names the base game's companion and the world header still reads Mossmeadow (the edited world name is in the pack, not in that header)."}]}
+    {"id":"limits-card","title":"Limits","intent":"Synthetic, automated prototype. No human playtest, usability, accessibility or balance validation; screenshots come from headless Chromium; scripted play covers 300 simulated seconds; generated quests and props passed the validators but were not playtested. Tutorial text still names the base game's companion and the world header still reads Mossmeadow (the edited world name is in the pack, not in that header)."}]}
  ]}
 EOF
 r sb-dry bin/wildlands storyboard build --input "$W/storyboard.json" --dry-run
@@ -412,7 +431,8 @@ r sb-build bin/wildlands storyboard build --input "$W/storyboard.json" --output 
 ls -l "$W/storyboard-v$V.html"; sha256sum "$W/storyboard-v$V.html"
 ```
 
-- Replace the example's copied numbers with your own run's values.
+- Replace the example's copied numbers with your own run's values, including the `generated`
+  caption, which must list every line of `logs/generated.tsv`.
 - Recognized sources (Wildlands projects, Character Studio recipes/reviews, Forge reviews) show
   real facts; any other JSON shows only its field names. Put the numbers that matter in that
   card's `caption`, copied verbatim and naming the file ("Copied from logs/wl-run.json: ...").
@@ -432,7 +452,8 @@ ls -l "$W/storyboard-v$V.html"; sha256sum "$W/storyboard-v$V.html"
 Give the user: the storyboard path (`$W/storyboard-vN.html`) and the playable game
 (`$W/build/<id>.html`), both open offline from `file://`; a five-line summary (pitch, template and
 base, what each tool produced, play facts such as `advancedSeconds` and the companion's task);
-and the evidence list. If asked to share it, publish the storyboard HTML as an artifact.
+and the evidence list with the seeds and recipe hashes (`logs/generated.tsv`). If asked to share
+it, publish the storyboard HTML as an artifact.
 
 Report the actual execution: tool versions (`logs/versions-wildlands.json`, `bin/model-forge
 --version`, `bin/scene-forge --version`, `bin/character-studio version`), repository commit,
@@ -447,8 +468,12 @@ usability, accessibility or balance validation; say so.
   (or caption it as missing) and continue. Keep every recipe and run bounded.
 - No code: games are data only. Never add scripts, markup or unreferenced files to a game folder,
   never edit `bin/`, `demos/` or `source/`, never patch built HTML or review manifests.
-- Guards: always dry-run, then commit with fresh revision/state/fingerprint values read from the
-  previous step's log. On a conflict, re-inspect; never guess or remove locks you do not own.
+- Guards: always dry-run, then commit with fresh revision/state/fingerprint/digest values read from
+  the previous step's log. On a conflict, re-inspect; never guess or remove locks you do not own.
+- Reproducibility: record the seed and `recipeHash` of every generated model, placement, mission and
+  quest set (terrain: preset, size and seed) in the storyboard facts (`logs/generated.tsv` and the
+  `generated` card, source `logs/generated.json`). Never present generated content without them; replays are in
+  references/procedural.md.
 - Clean up: `capture-html.mjs` closes its browser; `character-studio serve` and
   `scene-forge preview --serve` are not needed here; if you start one, stop it before finishing.
 - Keep the scratch tree: it is the evidence and the storyboard inputs.

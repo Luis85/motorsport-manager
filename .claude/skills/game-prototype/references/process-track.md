@@ -60,7 +60,7 @@ r pr-shots env PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH="$PLAYWRIGHT_CHROMIUM_EXECUTA
 `process:shots` runs from `source/wildlands` and needs its `node_modules` (`npm ci` there once if
 missing; that touches no checked-in file). It writes `desktop-2d.png`, `desktop-3d.png`,
 `desktop-lens.png`, Present captures and `shots.json`; check `consoleErrors: []` and
-`overflowing: []`. Without it, use `capture-html.mjs` from SKILL.md A7 on `build/courier.html`
+`overflowing: []`. Without it, use `capture-html.mjs` (SKILL.md A7, script in references/capture-html.md) on `build/courier.html`
 (no `--click`).
 
 ## B3. Storyboard cards for a process prototype
