@@ -20,6 +20,8 @@ runSuite('process definition editor browser harness', 'process-definition-browse
   assert.equal(await page.evaluate(() => document.querySelector('dialog.de-dialog')!.matches(':modal')), true); assert.equal(await page.getByRole('dialog', {name: 'Definition editor'}).count(), 1);
   assert.equal(await page.locator('#de-title').innerText(), 'Definition editor'); assert.equal(await page.locator('#de-subtitle').innerText(), `${before.definition.name} · revision ${before.definition.revision} · The run is paused while this window is open`);
   assert.equal(await page.locator('#de-chip').isHidden(), true); assert.equal(await activeId(), 'tune-name'); assert.equal(await page.locator('#de-sync').innerText(), 'Form in sync');
+  assert.equal(await page.locator('#de-apply').isDisabled(), true, 'a draft that holds the running definition has nothing to apply');
+  assert.match(await page.locator('#de-reason').innerText(), /Nothing to apply: the draft holds the running definition\. Use Reset run to restart the run\./);
   const frozen = await query(page); assert.equal(frozen.playing, false); await nextFrames(page, 45); assert.equal((await query(page)).snapshot.minute, frozen.snapshot.minute, 'nothing ticks while the editor is open');
   await assert.rejects(page.locator('#play').click({timeout: 700}), 'the page behind the modal is inert');
   assert.equal(await page.evaluate(() => ['de-form-h', 'de-json-h'].every(id => document.getElementById(id)!.tagName === 'H3') && document.querySelectorAll('dialog.de-dialog section[aria-labelledby]').length >= 2 && document.getElementById('draft-state')!.getAttribute('role') === 'status'), true);
@@ -77,6 +79,18 @@ runSuite('process definition editor browser harness', 'process-definition-browse
   await page.locator('#tune-arr-0-draw-0-min').fill('20'); assert.match(await page.locator('#tune-arr-0-draw-0-err2').innerText(), /min at most max/); await page.locator('[data-act="draw-remove"]').first().click(); assert.equal((await defOf()).arrivals[0]!.draws, undefined);
   // Add and remove arrivals.
   await page.locator('#tune-arr-add').click(); const total = (await defOf()).arrivals.length; assert.equal(total, 3); await page.locator('[data-act="arr-remove"]').last().click(); await page.locator('[data-act="arr-remove"]').last().click(); assert.equal((await defOf()).arrivals.length, 1); assert.equal(await page.locator('[data-act="arr-remove"]').isDisabled(), true);
+  // Each pool says which steps use it; removing a used pool asks first, starting on Cancel, and then clears those demands.
+  const owner = page.locator('[data-act="res-remove"][data-i="0"]'), demands = async () => (await defOf()).steps.filter(s => s.resources && 'product-owner' in s.resources).map(s => s.id);
+  assert.equal(await page.locator('#tune-res-0-used').innerText(), 'Used by Discovery and Client handover.'); assert.equal(await owner.getAttribute('aria-describedby'), 'tune-res-0-used');
+  await owner.click(); assert.equal(await page.locator('#de-confirm-title').innerText(), 'Discovery and Client handover still use Product owner. Removing the pool also clears those demands.');
+  assert.deepEqual(await page.locator('#de-choices button').allInnerTexts(), ['Cancel', 'Remove and clear demands']); assert.equal(await activeId(), 'de-keep-pool');
+  await page.keyboard.press('Escape'); assert.equal(await page.locator('#de-confirm').isHidden(), true); assert.equal(await page.evaluate(() => (document.activeElement as HTMLElement).dataset.act), 'res-remove');
+  assert.equal((await defOf()).resources[0]!.id, 'product-owner'); assert.deepEqual(await demands(), ['discovery', 'handover']);
+  await owner.click(); await page.locator('#de-keep-pool').click(); assert.equal((await defOf()).resources[0]!.id, 'product-owner', 'Cancel keeps the pool');
+  await owner.click(); await page.locator('#de-remove-pool').click(); assert.equal((await defOf()).resources.some(r => r.id === 'product-owner'), false); assert.deepEqual(await demands(), []);
+  assert.equal(await activeId(), 'tune-res-add'); await page.locator('#tune-res-add').click(); const fresh = (await defOf()).resources.length - 1;
+  assert.equal(await page.locator(`#tune-res-${fresh}-used`).innerText(), 'Not used by any step yet.'); await page.locator(`[data-act="res-remove"][data-i="${fresh}"]`).click();
+  assert.equal(await page.locator('#de-confirm').isHidden(), true, 'an unused pool is removed without asking'); assert.equal((await defOf()).resources.length, fresh);
   await restoreDef(); await closeDef(); assert.equal(await page.locator('#draft-chip').isHidden(), true);
  });
  await check('Definition editor raw JSON reports line and column, lists every diagnostic and jumps to the offending text', async () => {
@@ -124,6 +138,9 @@ runSuite('process definition editor browser harness', 'process-definition-browse
   await page.locator('#de-restore').click(); const pending = page.waitForEvent('download'); await page.locator('#de-download-first').click(); const saved = await pending; const file2 = path.join(dir, 'before-restore.json'); await saved.saveAs(file2); assert.equal(fs.readFileSync(file2, 'utf8'), edited);
   assert.equal(await draftText(), edited, 'downloading does not restore'); await page.locator('#de-restore').click(); await page.locator('#de-keep').click(); assert.equal(await draftText(), edited);
   await restoreDef(); assert.equal(await draftText(), JSON.stringify(before.definition, null, 2)); assert.equal(await page.locator('#de-message').innerText(), 'Draft restored from the running definition.'); assert.equal(await page.locator('#de-restore').isDisabled(), true);
+  // Reformatted text of the same definition is a different draft text but nothing to apply: no reset and no revision bump.
+  await pasteDraft(JSON.stringify(before.definition)); assert.equal(await page.locator('#de-restore').isEnabled(), true); assert.equal(await page.locator('#de-apply').isDisabled(), true);
+  assert.match(await page.locator('#de-reason').innerText(), /Nothing to apply/); assert.equal((await query(page)).definition.revision, before.definition.revision);
   // Applying past minute 0 names the minute that is discarded.
   await page.locator('#draft').fill('{bad'); await page.locator('#de-apply').click(); assert.equal(await page.locator('#de-status').getAttribute('role'), 'alert'); assert.equal(await page.locator('#de-confirm').isHidden(), true, 'an invalid draft is refused before asking'); assert.equal((await query(page)).snapshot.minute, 30);
   await page.locator('#tune-name').count(); await restoreDef(); await page.locator('#tune-name').fill('Applied over a run'); await page.locator('#de-apply').click();
@@ -167,7 +184,15 @@ runSuite('process definition editor browser harness', 'process-definition-browse
   // A step editor with unsaved edits asks first; keeping them keeps the step editor, discarding opens the Definition editor.
   await page.locator('#edit-step').click(); await page.locator('#se-name').fill('Unsaved rename'); await page.locator('#se-status [data-act="open-definition"]').click();
   assert.equal(await page.locator('#se-confirm').isVisible(), true); await page.locator('#se-keep').click(); assert.equal(await dialogOpen(), 1); assert.equal(await page.locator('#se-title').isVisible(), true); assert.equal(await page.locator('#se-name').inputValue(), 'Unsaved rename');
-  await page.locator('#se-status [data-act="open-definition"]').click(); await page.locator('#se-discard').click(); await defOpen.waitFor(); assert.equal(await dialogOpen(), 1); assert.doesNotMatch(await draftText(), /Unsaved rename/);
+  await page.locator('#se-status [data-act="open-definition"]').click();
+  assert.equal(await page.locator('#se-confirm-title').innerText(), 'Open the Definition editor? Your changes to Unsaved rename are not in the draft yet.');
+  assert.deepEqual(await page.locator('#se-choices button').allInnerTexts(), ['Keep editing', 'Save to draft and open', 'Discard changes']); assert.equal(await activeId(), 'se-keep');
+  await page.locator('#se-discard').click(); await defOpen.waitFor(); assert.equal(await dialogOpen(), 1); assert.doesNotMatch(await draftText(), /Unsaved rename/);
+  await closeDef();
+  // Save to draft and open keeps the edits: they are in the draft the Definition editor shows.
+  await page.locator('#edit-step').click(); await page.locator('#se-name').fill('Saved rename'); await page.locator('#se-status [data-act="open-definition"]').click();
+  assert.equal(await activeId(), 'se-keep'); await page.locator('#se-save-open').click(); await defOpen.waitFor(); assert.equal(await dialogOpen(), 1);
+  assert.equal((await defOf()).steps.find(s => s.id === 'implementation')!.name, 'Saved rename');
   await restoreDef(); await closeDef();
  });
  await check('Step editor edits touchpoints with channels, phases, feelings, pain points and end outcomes', async () => {
@@ -350,6 +375,43 @@ runSuite('process definition editor browser harness', 'process-definition-browse
   gap = (await defOf()).arrivals[0]!.gap!; assert.deepEqual([gap.sd, gap.min, gap.max], [4, 9, 20]); await arr('gap-dist').selectOption('erlang'); gap = (await defOf()).arrivals[0]!.gap!; assert.deepEqual(Object.keys(gap).sort(), ['dist', 'k', 'mean']); assert.equal(gap.k, 3);
   await arr('gap-k').fill('40'); assert.match(await page.locator('#tune-arr-0-gap-k-err').innerText(), /from 1 to 32/); await arr('gap-k').fill('4'); assert.equal(await page.locator('#tune-arr-0-gap-k-err').innerText(), '');
   assert.equal(await arr('gap-dist').getAttribute('aria-invalid'), null); await applyDef(); const applied = await query(page); assert.deepEqual(applied.definition.arrivals[0]!.gap, {dist: 'erlang', k: 4, mean: applied.definition.arrivals[0]!.gap!.mean});
+ });
+ await check('Definition editor undoes and redoes draft edits with Ctrl+Z and offers Undo after a removed row', async () => {
+  await page.setViewportSize({width: 1440, height: 1060}); await freshStudio(); await page.locator('#open-definition').click(); await defOpen.waitFor();
+  const original = await draftText(), name = async () => (await defOf()).name, arrivals = async () => (await defOf()).arrivals.length;
+  const count = await arrivals(); assert(count >= 2, 'the agency process has two arrival streams');
+  await page.locator('#tune-name').fill('Undo me'); assert.equal(await name(), 'Undo me');
+  // A removed row is announced with an Undo button; Undo brings the row back and keeps the earlier rename.
+  await page.locator('[data-act="arr-remove"]').last().click(); assert.equal(await arrivals(), count - 1);
+  assert.equal(await page.locator('#de-message').innerText(), `Removed arrival ${count}. Undo`); await page.locator('#de-undo').click();
+  assert.equal(await arrivals(), count); assert.equal(await name(), 'Undo me'); assert.match(await page.locator('#de-message').innerText(), /^Undone\./);
+  assert.equal(await activeId(), 'de-form-h'); assert.equal(await page.locator('#de-undo').count(), 0);
+  // Outside the JSON text the shortcut steps through the draft: undo the rename, then redo it and the removal.
+  await page.locator('#tune-seed').focus(); await page.keyboard.press('ControlOrMeta+Z'); assert.equal(await draftText(), original); assert.equal(await page.locator('#tune-name').inputValue(), (await query(page)).definition.name);
+  await page.keyboard.press('ControlOrMeta+Z'); assert.equal(await page.locator('#de-message').innerText(), 'Nothing to undo.'); assert.equal(await draftText(), original);
+  await page.keyboard.press('ControlOrMeta+Shift+Z'); assert.equal(await name(), 'Undo me'); assert.equal(await arrivals(), count);
+  await page.keyboard.press('ControlOrMeta+Shift+Z'); assert.equal(await arrivals(), count - 1); assert.equal(await page.locator('#de-message').innerText(), 'Redone. Ctrl+Z (Cmd+Z on a Mac) undoes it again.');
+  await page.keyboard.press('ControlOrMeta+Shift+Z'); assert.equal(await page.locator('#de-message').innerText(), 'Nothing to redo.');
+  // A new edit after undo starts a new branch: redo has nothing left.
+  await page.keyboard.press('ControlOrMeta+Z'); await page.locator('#tune-seed').fill('9'); await page.keyboard.press('ControlOrMeta+Shift+Z'); assert.equal(await page.locator('#de-message').innerText(), 'Nothing to redo.');
+  await restoreDef(); await closeDef();
+ });
+ await check('A poisoned draft opened in Tune values or the step editor creates no element and runs no handler', async () => {
+  await page.setViewportSize({width: 1440, height: 1060}); await freshStudio(); await openDef();
+  // The draft is only shape-checked JSON, so a number field can hold any text a person pastes.
+  const payload = '"><img src=x onerror="globalThis.__pwned = (globalThis.__pwned || 0) + 1">';
+  const poisoned = await defOf() as unknown as Record<string, any>;
+  poisoned.resources[0].capacity = payload; poisoned.arrivals[0].at = payload; poisoned.seed = payload;
+  await pasteDraft(JSON.stringify(poisoned, null, 2)); await inSync();
+  const dialogImages = () => page.locator('dialog.pd-dialog img').count(), pwned = () => page.evaluate(() => (globalThis as any).__pwned);
+  assert.equal(await dialogImages(), 0); assert.equal(await pwned(), undefined);
+  for (const id of ['tune-res-0-cap', 'tune-arr-0-at', 'tune-seed']) assert.equal(await page.locator('#' + id).inputValue(), '', id + ' shows no value');
+  assert.equal(await page.locator('#tune-res-0-cap').getAttribute('max'), '1000');
+  assert.match(await page.locator('#diagnostics').innerText(), /Expected integer/);
+  await closeDef(); await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-name').waitFor();
+  assert.equal(await dialogImages(), 0); assert.equal(await page.locator('#se-pools-0-count').getAttribute('max'), null, 'a capacity that is not a number is not written as a bound');
+  assert.match(await page.locator('#se-pools-0-count-help').innerText(), /<img src=x/); await nextFrames(page); assert.equal(await pwned(), undefined);
+  await page.locator('#se-close').click(); await openDef(); await restoreDef(); await closeDef();
  });
  await checkLifecycle('Process definition editor browser lifecycle emits no runtime errors or network requests');
 });

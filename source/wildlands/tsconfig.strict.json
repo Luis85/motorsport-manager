@@ -422,6 +422,7 @@
     "source/process-step-logic.ts",
     "source/process-step-model.ts",
     "source/process-step-logic-sections.ts",
+    "source/process-step-flows.ts",
     "source/process-step-sections.ts",
     "source/process-step-editor.ts",
     "source/process-json-path.ts",

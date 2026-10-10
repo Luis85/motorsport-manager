@@ -97,7 +97,7 @@ declare namespace LWProcessNeeds {
    (step.needs ?? []).forEach((need, j) => {
     const values = [...state.get(need.field) ?? []], unmet = values.filter(v => !satisfied(need, v));
     if (!unmet.length) return;
-    const by = deliveries(d, step.id).find(x => x.field === need.field), source = by && (by.steps.length || by.arrivals) ? 'Delivered only on some routes' : 'No earlier step or arrival delivers ' + need.field;
+    const by = deliveries(d, step.id).find(x => x.field === need.field), source = by && (by.steps.length || by.arrivals) ? 'it is delivered only on some routes' : 'no earlier step or arrival delivers ' + need.field;
     errors.push({path: '/steps/' + i + '/needs/' + j, code: 'needs', message: `Needs ${describe(need)}, but ${source}; possible values: ${values.map(v => v === ABSENT ? 'not delivered' : v === NUMBER ? 'a counter or drawn value' : v).join(', ')}.`});
    });
    // `instances.field` is read when the step is entered. A field nothing delivers would fail every case; a delivered value is judged per case at run time.
