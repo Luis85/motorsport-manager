@@ -29,6 +29,38 @@ const freshDraw = (page: Page) => page.evaluate(() => {
  } finally { surface.dispose(); host.remove(); }
 });
 
+interface CameraView {box: string; size: [number, number]; strip: number; column: number}
+/**
+ * The live map's viewBox and svg size once the rendering update has run (a resize is redrawn before it is painted), and the room the
+ * dock takes under or beside the map (LWProcessMapCamera reserves one of them, with a 6px gap, and centres the camera in the rest).
+ */
+async function camera(page: Page): Promise<CameraView> {
+ await nextFrames(page, 2);
+ return page.evaluate(() => {
+  const svg = document.querySelector('#map svg')!, r = svg.getBoundingClientRect();
+  const d = document.querySelector('#map .process-map-dock')!.getBoundingClientRect();
+  return {box: svg.getAttribute('viewBox')!, size: [r.width, r.height] as [number, number], strip: r.bottom - d.top + 6, column: r.right - d.left + 6};
+ });
+}
+/**
+ * A kept camera: with the same svg size the exact same viewBox. After a real resize the same scale (pixels per world unit) and the
+ * same world point at the middle of the area clear of the dock, so the reader's zoom and focus stay and only the edges of the view
+ * follow the svg. The camera reserves the strip under the dock or the column beside it, whichever leaves the larger scale for the
+ * whole map, and a resize may change that choice: the centre is kept for one of the two reservations before and after.
+ */
+function keptView(before: CameraView, after: CameraView, label: string): void {
+ if (before.size[0] === after.size[0] && before.size[1] === after.size[1]) { assert.equal(after.box, before.box, label); return; }
+ const view = (c: CameraView) => {
+  const [x, y, w, h] = c.box.split(' ').map(Number) as [number, number, number, number], k = c.size[0] / w, [W, H] = c.size;
+  return {kx: k, ky: H / h, centres: [[x + W / 2 / k, y + (H - c.strip) / 2 / k], [x + (W - c.column) / 2 / k, y + H / 2 / k]]};
+ };
+ const a = view(before), b = view(after), near = (p: number, q: number) => Math.abs(p - q) <= 1e-6 * Math.max(1, Math.abs(p));
+ const where = `(svg ${before.size.join('x')} -> ${after.size.join('x')}, viewBox ${before.box} -> ${after.box})`;
+ assert(near(a.kx, b.kx) && near(a.ky, b.ky), `${label}: the scale ${a.kx} became ${b.kx} ${where}`);
+ const kept = a.centres.some(p => b.centres.some(q => near(p[0]!, q[0]!) && near(p[1]!, q[1]!)));
+ assert(kept, `${label}: the centre moved ${JSON.stringify([a.centres, b.centres])} ${where}`);
+}
+
 export async function mapUpdateChecks(studio: Studio): Promise<void> {
  const {page, check, freshStudio, switchTo} = studio;
  const DEJAVU = '*{font-family:"DejaVu Sans",sans-serif !important}';
@@ -69,6 +101,7 @@ export async function mapUpdateChecks(studio: Studio): Promise<void> {
   // Many more ticks, then the live map equals a map drawn fresh from the same view in a host of the same size.
   for (let i = 0; i < 3; i++) await page.locator('#advance').click();
   for (let i = 0; i < 8; i++) await page.locator('#step').click();
+  await nextFrames(page, 2);
   const same = await freshDraw(page);
   assert.deepEqual({equal: same.equal, cards: same.cards}, {equal: true, cards: (await query(page)).definition.steps.length},
    'the patched map matches a fresh draw');
@@ -80,7 +113,10 @@ export async function mapUpdateChecks(studio: Studio): Promise<void> {
  // Hosted CI has no Inter and draws in DejaVu Sans. There the run bar's guidance written during a clock command's refresh wraps the
  // stage heading onto another line until the clock's sentence replaces it after the refresh, so the map is drawn while the svg has a
  // passing size that is never painted. Framing for that size used to leave the map different from a fresh draw (and moved a zoomed
- // camera); the camera now frames for the size the last rendering update reported.
+ // camera); the camera now frames for the size the last rendering update reported. A real resize is reported (and redrawn) before the
+ // next paint, so each comparison waits for two frames. The stage can also really change size during a run (the KPI strip under the
+ // map wraps to a second row when the outcome tiles appear): a kept camera then keeps its scale and the world point at its centre,
+ // so only the viewBox edges move with the svg. Where the svg size did not change the viewBox must be exactly the same.
  await check('2D map framing does not depend on its history in DejaVu Sans: an untouched map matches a fresh draw after every '
   + 'tick and Fit to view, also with numbered cards, and a camera the reader zoomed or panned keeps its view across ticks', async () => {
   for (const index of [0, 4]) {
@@ -95,6 +131,7 @@ export async function mapUpdateChecks(studio: Studio): Promise<void> {
    const numbered = await page.evaluate(() => !(document.querySelector('#map .process-map-key') as HTMLElement).hidden);
    assert.equal(numbered, index === 4, `process ${index}: the number key shows exactly on the numbered map`);
    const matches = async (when: string) => {
+    await nextFrames(page, 2);
     const f = await freshDraw(page);
     assert.equal(f.equal, true, `process ${index} ${when}: the live map (viewBox ${f.live}) matches a fresh draw (viewBox ${f.fresh})`);
    };
@@ -112,12 +149,17 @@ export async function mapUpdateChecks(studio: Studio): Promise<void> {
    for (const keys of [['+'], ['+', 'ArrowRight']]) {
     await page.locator('#map svg').focus();
     for (const key of keys) await page.keyboard.press(key);
-    const kept = await page.locator('#map svg').getAttribute('viewBox');
-    for (const control of ['#step', '#advance']) {
-     await tick(control);
-     assert.equal(await page.locator('#map svg').getAttribute('viewBox'), kept, `process ${index}: ${keys.join(' ')} view kept after ${control}`);
+    // Two ticks, then a real window resize and back: the view is kept through each.
+    const changes: [string, () => Promise<void>][] = [['#step', () => tick('#step')], ['#advance', () => tick('#advance')],
+     ['a shorter window', () => page.setViewportSize({width: 1440, height: 1000})],
+     ['the window back', () => page.setViewportSize({width: 1440, height: 1060})]];
+    let kept = await camera(page);
+    for (const [what, change] of changes) {
+     await change();
+     const now = await camera(page);
+     keptView(kept, now, `process ${index}: ${keys.join(' ')} view kept after ${what}`); kept = now;
     }
-    await page.locator('#frame').click(); await matches(`after ${keys.join(' ')}, ticks and Fit to view`);
+    await page.locator('#frame').click(); await matches(`after ${keys.join(' ')}, ticks, resizes and Fit to view`);
    }
    assert.equal(JSON.stringify((await query(page)).definition), definition, 'framing never changes the definition');
   }
