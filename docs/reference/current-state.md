@@ -86,10 +86,15 @@ clone without `npm ci` or `node_modules`:
   `source/wildlands/` without any game content. It validates, inspects and builds
   game folders (`docs/concepts/<id>/`) into self-contained HTML files, and
   creates, validates, inspects, plays, edits and compiles portable projects,
-  which embed their game, into Godot desktop projects. Running a compiled or
-  exported Godot project requires Godot. Native story saving uses the runtime's
-  `story.export` JSON string verbatim, preserving authored floating point values
-  and their validated fingerprints across save/load.
+  which embed their game, into Godot desktop projects. `generate` adds
+  deterministic procedural content to a game folder (playable point-symmetric
+  RTS missions, adventure quests with loot tables) from what the game already
+  defines, through a dry run or a digest-guarded write validated by the engine
+  validators; generated content is not playtested or balance-validated.
+  Running a compiled or exported Godot project requires Godot. Native story
+  saving uses the runtime's `story.export` JSON string verbatim, preserving
+  authored floating point values and their validated fingerprints across
+  save/load.
 - [`bin/scene-forge`](scene-forge-cli.md) authors, validates and exports
   declarative 3D projects, model registries and composed scenes from
   `source/scene-forge/`. Its `screenshot` and `review` capture commands
@@ -116,7 +121,7 @@ project's `npm run check:cli`.
 
 Wildlands verification has a fast tier (`npm test`: typecheck, build and the
 quick Node suites, partial evidence) and the complete registered gate
-(`npm run verify`: 104 suites, 1,869 reviewed named checks) on a parallel
+(`npm run verify`: 116 suites, 2,109 reviewed named checks) on a parallel
 runner. `source/wildlands/source/verification/suites.json` and
 `gate-expectations.json` are the authority for suites and check names; CI runs
 the fast tier first, then the complete gate with `--jobs 3 --browser-jobs 2`.

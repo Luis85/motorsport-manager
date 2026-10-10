@@ -43,6 +43,12 @@ In an RTS studio build (`bin/wildlands build-game --game docs/concepts/rts-front
 objectives and mission settings in a separate validated catalog draft. Undo/redo
 and complete JSON import/export retain the authoring boundary; explicitly playing
 the draft creates a paused fresh match. Follow the [mission authoring guide](../../docs/how-to/rts-mission-editor.md).
+To generate content instead, `bin/wildlands generate discover` lists the
+procedural generators: `generate rts-mission` adds a playable, point-symmetric
+mission to an RTS game folder and `generate adventure-quests` adds quests with
+loot tables to a colony game, both from what the game already defines and through
+a dry run or a digest-guarded, validated write (see the
+[handbook](../../docs/reference/wildlands-cli.md#generate)).
 
 Open a ready-to-play demo from the repository's [`demos/`](../../demos/README.md) in a full desktop browser: `littlewild.html`, `emberworks.html`, `office.html`, `rts-frontier.html` or `pocket-pet.html`. Each file carries one game and runs from disk; no server, network, account, API key, asset download, install or build is needed. In Littlewild, choose **A first morning** for earned progression or **A charted home** for the existing multi-creature demonstration. Starting a scene replaces the active story only after review and confirmation; export a backup first.
 

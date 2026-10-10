@@ -9,11 +9,14 @@ folders, one per game, under [`docs/concepts/<id>/`](../concepts/README.md)
 - validates, inspects and builds a game folder into one self-contained,
   ready-to-play HTML file (the five checked-in [`demos/`](../../demos/README.md),
   Littlewild, Emberworks, Office, RTS Frontier and Pocket Pet, are built this
-  way), and
+  way),
 - creates, validates, inspects, plays, edits and compiles portable **Wildlands
   projects** (`wildlands-project` documents) into runnable Godot desktop
   projects. A project embeds the game it was made from, so after `create` no
-  command needs the game folder again.
+  command needs the game folder again, and
+- generates procedural content into game folders (`generate`): playable RTS
+  missions and adventure quests with loot tables, built only from what the
+  game already defines and published through a digest-guarded, validated write.
 
 The file is one self-contained, checked-in CommonJS executable. It embeds the
 compiled engine, the HTML templates and precompiled (minified) engine code of
@@ -158,6 +161,7 @@ stdin.
 | `2` | `false` | `process-operation-failed` | Any `wildlands process` usage or operation failure (unknown command, bad option, bad number, refused output, I/O). Nothing was written. |
 | `2` | `false` | `game-required` | The command needs `--game DIR` (`create`, `scenarios`, the game commands, schemaVersion 1 projects). The engine has no built-in game. |
 | `2` | `false` | `game-embedded` | `--game` was given for a schemaVersion 2 project, which embeds its game. |
+| `1` / `2` | `false` | `stale-digest`, `generate-usage`, … | `wildlands generate` failures; see [`generate`](#generate) for every code and its exit status. Nothing was written. |
 | `2` | `false` | `operation-failed` | Usage error, unknown/duplicate/missing option, I/O failure, invalid recipe or pack, rejected gameplay command, refused output path or compiler failure. Nothing was written. |
 
 Every result carries `"protocolVersion": 1`. Failures always have this shape;
@@ -254,6 +258,9 @@ Arguments in `[brackets]` are optional.
 | `validate-game --game DIR` | Validate a game folder with the engine's validators. |
 | `inspect-game --game DIR` | Manifest summary, inventory, digest and profile sizes of a game folder. |
 | `build-game --game DIR (--output FILE.html \| --check FILE.html) [--profile play\|studio]` | Build a game's self-contained HTML, or check one for freshness. |
+| `generate discover` | Generators, presets, bounded parameters, recipe schemas, error codes and examples of procedural generation. |
+| `generate rts-mission --game DIR --mission ID [--seed N] [--preset skirmish\|island\|frontier\|river] [--width W] [--height H] [--difficulty 1..5] [--name TEXT] [--recipe FILE] [--replace] [--first] (--dry-run \| --expected-digest HEX \| --output NEW.json)` | Add a playable, point-symmetric mission to an RTS game's catalog. |
+| `generate adventure-quests --game DIR --count N [--seed N] [--tier 1..3] [--biome NAME] [--recipe FILE] [--replace] (--dry-run \| --expected-digest HEX \| --output NEW.json)` | Add quests with loot tables to a colony game's adventure library. |
 | `storyboard discover` or `storyboard schema` | Discover the presentation protocol and bounded JSON input schema. |
 | `storyboard build (--input PLAN.json \| --project PROJECT.json) (--output NEW.html \| --dry-run)` | Compose a deterministic, self-contained review page from authored intent, source facts and supplied captures. |
 
@@ -628,6 +635,93 @@ Output is byte-deterministic: the same engine and folder always give the same
 bytes, wherever and by whichever distribution they are built. `bin/wildlands`
 and a source checkout's `npm run build:demos` produce identical files.
 
+### `generate`
+
+```sh
+bin/wildlands generate discover | jq '.generators[] | {id, template, presets: (.presets // {} | keys)}'
+DIGEST="$(bin/wildlands inspect-game --game "$GAME" | jq -r .digest)"
+bin/wildlands generate rts-mission --game "$GAME" --mission dunes --preset skirmish --seed 7 --dry-run | jq '{proposedDigest, summary}'
+bin/wildlands generate rts-mission --game "$GAME" --mission dunes --preset skirmish --seed 7 --expected-digest "$DIGEST"
+bin/wildlands generate adventure-quests --game "$GAME2" --count 3 --tier 2 --seed 11 --output "$OUT/balancing.json"
+```
+
+Deterministic procedural content for a game folder. A generator reads the one
+canonical content file `game.json` names for it, adds generated records that
+reference only what the game already defines, stages a temporary copy of the
+whole folder with the proposed file and runs the engine's validators on that
+copy (exactly as [`validate-game`](#validate-game)) before anything is
+published. Exactly one publication mode is required:
+
+| Mode | Effect |
+|---|---|
+| `--dry-run` | Generate and validate the staged copy; write nothing. |
+| `--expected-digest HEX` | Then replace only that one content file in place, by atomic rename, if the folder digest (`inspect-game` `.digest`, or `digest` of a dry run) still equals `HEX`; it is checked again right before the rename. |
+| `--output NEW.json` | Then write the whole proposed content file to a new `.json` path outside the game folder; the folder is unchanged. |
+
+**Generators.**
+
+- `rts-mission` (RTS games, writes `content.catalog`) adds one mission with id
+  `--mission` (an existing id needs `--replace`; `--first` makes it the first
+  mission, which the play build starts). The map is point-symmetric: ranked
+  value-noise terrain is mapped onto existing catalog terrain (open, cover,
+  water, impassable and fast roles) and normalised into patches by the mission
+  editor's own paint projection; mirrored bases of two catalog factions get a
+  headquarters, a producer of the faction's preferred unit, workers and guards;
+  every resource gets a home deposit near each base plus Poisson-disk deposits,
+  with amounts taken from the catalog's existing missions; neutral encounter
+  groups of existing land combat units fill a budget of `--difficulty` times the
+  cost of the opponent's preferred AI unit per half; item drops use catalog
+  items; the objective is to eliminate the opponent. The bases are always
+  connected by land (a corridor is carved when the noise separates them).
+  Presets: `skirmish` (40 x 32), `island` (48 x 40), `frontier` (48 x 36, with
+  a road) and `river` (48 x 36, fords only); `--width` and `--height` are 16 to
+  128 tiles. Factions default to the first mission's player, the first other
+  AI faction and the first remaining faction; a `--recipe` may name others.
+- `adventure-quests` (colony games) appends `--count` quests (1 to 24; the
+  library admits at most 100) with ids `gen-<seed>-<n>` to the adventure library
+  the game plays: `content.balancing` when a canonical pack inherits it, else
+  the complete default pack. Biomes, check skills, provisions and loot items are
+  ones the library's quests and catalogs already use, and every number
+  (duration, energy, coins, research, provisions, modifiers, loot quantities and
+  chances) lies inside the envelope of the library's existing quests of the same
+  tier. `--tier` is 1 to 3 and `--biome` must be an existing biome; unset, each
+  quest follows the library's own tier and biome pairs.
+
+Generators never add archetypes, items, terrain, skills or balance values. Seeds
+are 0 to 4294967295 (default 1); randomness is keyed (cyrb128 of `seed|stream`
+seeding sfc32, the first draw equal to the process engine's `unit`), so the same
+game, recipe and seed always give the same bytes. `--recipe FILE` (JSON, at most
+64 KiB, schema in `generate discover`) supplies the parameters; flags override
+its fields. Content files are rewritten only when they are canonical two-space
+JSON (optionally with non-ASCII characters escaped, the colony balancing
+layout), so a generated edit inserts records and changes no other bytes.
+
+Result: `{ok, protocolVersion, generator, game, file, seed, recipe, recipeHash,
+digest, proposedDigest, dryRun, written, output, bytes, sha256, replaced,
+summary, generated, nextCommands}`. `recipe` is the effective recipe (replay it
+with `--recipe`), `generated` the new mission or quests, `summary` the counts
+(terrain tiles by id, patches, spawns, deposits, encounter budget, quest tiers
+and biomes), and `nextCommands` the guarded write after a dry run or
+`validate-game`/`build-game` after one.
+
+| Exit | `code` | Meaning |
+|---|---|---|
+| 2 | `generate-usage` | Unknown, duplicate or missing option or value, an out-of-bounds number, an invalid recipe, or not exactly one publication mode. |
+| 2 | `unknown-reference` | A faction or biome the game does not define. |
+| 2 | `output-refused` | `--output` is not a new `.json` path outside the game folder. |
+| 1 | `invalid-game` | The folder or its content file does not load; run `validate-game`. |
+| 1 | `wrong-template` | The generator needs another template (`rts-mission`: RTS, `adventure-quests`: colony). |
+| 1 | `stale-digest` | The folder digest differs from `--expected-digest`. |
+| 1 | `non-canonical-file` | The content file is not canonical two-space JSON; reformat it in its own reviewed change first. |
+| 1 | `duplicate-id` | A generated mission or quest id exists; pass `--replace` or choose another id or seed. |
+| 1 | `unsupported-catalog` | The catalog lacks what the generator needs (land terrain, two factions, reference quests). |
+| 1 | `generate-budget` | The result would exceed an engine limit (4,096 terrain patches, 100 quests). |
+| 1 | `generation-failed` | No playable layout for this seed; try another seed. |
+| 1 | `invalid-generated` | The engine validators rejected the staged folder. |
+
+A generated mission or quest is automated content: it passes the engine's
+validators and builds, which is not playtesting or balance validation.
+
 ## Recipes
 
 Recipes are data-only JSON documents with exactly the fields `format`,
@@ -722,6 +816,7 @@ describes the editable data.
 | Game folder | 2,048 files, 8 MiB per file, 32 MiB in total, 8 directory levels |
 | `game.json` `targets.html.budgetBytes` | 1 byte to 64 MiB; enforced on `play` builds |
 | `build-game --check` file | 64 MiB |
+| `generate --recipe` file | 64 KiB; seeds 0–4,294,967,295; maps 16–128 tiles per side; difficulty 1–5; 1–24 quests per run, tiers 1–3 |
 
 Input files must be regular files containing UTF-8 JSON. Duplicate JSON keys and
 prototype-shaped values are rejected.
@@ -764,6 +859,8 @@ bin/wildlands create --output "$OUT/a.json"; echo "exit=$?"
    and recipe operations it lists. Never infer commands from source code.
 4. Games are folders. Run `validate-game` after changing a folder and before
    building or creating projects; never add code or unreferenced files to it.
+   Generate content with `generate … --dry-run`, then publish it with the
+   reported digest (`--expected-digest`) instead of editing content files by hand.
 5. Get stable actor, building, node, scene and connection IDs from `scenarios`,
    `inspect` and `connections`, not from display names.
 6. Treat documents as immutable inputs: always write `run`, `edit`, `scenario`,
