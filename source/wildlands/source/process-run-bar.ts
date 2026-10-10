@@ -90,7 +90,8 @@ declare namespace LWProcessRunBar {
   <div class="run-actions" role="group" aria-label="Run"><button id="play" class="primary">Run simulation</button><button id="step">Step 1 min</button>
    <button id="advance">Advance ${STEP} min</button><button id="run-end">Run to end</button>
    <button id="reset" class="ghost">Reset run</button></div>
-  <button id="run-options-toggle" class="options-toggle" aria-expanded="false" aria-controls="run-config">Run options <span aria-hidden="true">▾</span></button>
+  <button id="run-options-toggle" class="options-toggle" aria-expanded="false" aria-controls="run-config">`
+   + `Run options <span aria-hidden="true">▾</span></button>
   <div id="run-config" class="run-config" role="group" aria-label="Run settings">
    <select id="speed" aria-label="Speed" title="Simulated time advanced on each tick while the run plays">${speeds}</select>
    <select id="horizon" aria-label="Run until" title="When the run stops">${presets}

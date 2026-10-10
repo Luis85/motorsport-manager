@@ -21,7 +21,8 @@ declare namespace LWProcess {
  interface Backlog { capacity: number; order?: 'fifo' | 'lifo' | 'priority'; priority?: string; pull?: number; }
  interface Step {
   id: string; name: string; kind: Kind; scene: Scene; description?: string;
-  duration?: number; until?: number; cost?: number; resources?: Record<string, number>; set?: Fields; add?: Record<string, number>; join?: string; needs?: Need[]; backlog?: Backlog;
+  duration?: number; until?: number; cost?: number; resources?: Record<string, number>; set?: Fields; add?: Record<string, number>;
+  join?: string; needs?: Need[]; backlog?: Backlog;
   /** Forks only: `inclusive` activates every outgoing flow whose condition holds (default flow otherwise); absent means parallel. */
   mode?: 'inclusive';
   /** Work steps only: run several items of this step; the step completes once when all are done. */
@@ -32,7 +33,10 @@ declare namespace LWProcess {
   technology?: string; outputs?: Output[];
   /** Realized-duration distribution drawn when work starts (timer: on arrival); `duration` stays the planning/mean value. Not allowed on `until` timers. */
   timing?: Dist;
-  /** Display and analysis annotations, allowed on any step kind: journey stage or process milestone, expected feeling -3..3, a friction note and an improvement note. */
+  /**
+   * Display and analysis annotations, allowed on any step kind: journey stage or process milestone, expected feeling -3..3, a
+   * friction note and an improvement note.
+   */
   phase?: string; emotion?: number; pain?: string; opportunity?: string;
   /** Touchpoints only: the interaction channel. `outcome` applies to end steps only: the case reached its goal or was lost. */
   channel?: Channel; outcome?: 'goal' | 'lost';
@@ -43,8 +47,14 @@ declare namespace LWProcess {
  interface Instances { count?: number; field?: string; mode: 'parallel' | 'sequential'; }
  /** Fires `after` minutes (or a drawn `timing`) after work started; `flow` names the flow with `on: 'deadline'` leaving the step. */
  interface Deadline { after?: number; timing?: Dist; mode: 'interrupt' | 'escalate'; flow: string; }
- /** An integer distribution of minutes: uniform {min,max}, triangular {min,mode,max}, exponential {mean,max?}, normal {mean,sd,min?,max?} or erlang {k,mean}. */
- interface Dist { dist: 'uniform' | 'triangular' | 'exponential' | 'normal' | 'erlang'; min?: number; mode?: number; max?: number; mean?: number; sd?: number; k?: number; }
+ /**
+  * An integer distribution of minutes: uniform {min,max}, triangular {min,mode,max}, exponential {mean,max?}, normal
+  * {mean,sd,min?,max?} or erlang {k,mean}.
+  */
+ interface Dist {
+  dist: 'uniform' | 'triangular' | 'exponential' | 'normal' | 'erlang'; min?: number; mode?: number; max?: number; mean?: number; sd?: number;
+  k?: number;
+ }
  /** A random case field: `chance` {percent, whenTrue?, whenFalse?}, `choice` {values:[{value,weight}]} or `int` {min,max}. */
  interface Draw {
   field: string; kind: 'chance' | 'choice' | 'int'; percent?: number; whenTrue?: Scalar; whenFalse?: Scalar;
@@ -52,22 +62,38 @@ declare namespace LWProcess {
  }
  type Op = 'eq' | 'ne' | 'gt' | 'gte' | 'lt' | 'lte';
  /** Compares a case field to a literal `value`. */
- interface ValueCondition { field: string; op: Op; value: Scalar; valueField?: undefined; chance?: undefined; all?: undefined; any?: undefined; not?: undefined; }
+ interface ValueCondition {
+  field: string; op: Op; value: Scalar; valueField?: undefined; chance?: undefined; all?: undefined; any?: undefined; not?: undefined;
+ }
  /** Compares a case field to another case field named by `valueField`. */
- interface FieldCondition { field: string; op: Op; valueField: string; value?: undefined; chance?: undefined; all?: undefined; any?: undefined; not?: undefined; }
+ interface FieldCondition {
+  field: string; op: Op; valueField: string; value?: undefined; chance?: undefined; all?: undefined; any?: undefined; not?: undefined;
+ }
  /**
   * A comparison leaf: exactly one of `value` and `valueField`. `field !== undefined` narrows a `When` to it (every other form declares
   * `field?: undefined`), and `valueField !== undefined` then tells the two forms apart, so no cast is needed.
   */
  type Condition = ValueCondition | FieldCondition;
  /** A route taken by a keyed random draw (flow id, case, visit) below `chance` percent; decision flows only. */
- interface ChanceCondition { chance: number; field?: undefined; op?: undefined; value?: undefined; valueField?: undefined; all?: undefined; any?: undefined; not?: undefined; }
+ interface ChanceCondition {
+  chance: number; field?: undefined; op?: undefined; value?: undefined; valueField?: undefined; all?: undefined; any?: undefined;
+  not?: undefined;
+ }
  /** Combinators: `all` (and), `any` (or) of 1..8 conditions, `not` of one. At most 3 levels and 8 leaves per `when`; exactly one form per node. */
- interface AllCondition { all: When[]; any?: undefined; not?: undefined; field?: undefined; op?: undefined; value?: undefined; valueField?: undefined; chance?: undefined; }
- interface AnyCondition { any: When[]; all?: undefined; not?: undefined; field?: undefined; op?: undefined; value?: undefined; valueField?: undefined; chance?: undefined; }
- interface NotCondition { not: When; all?: undefined; any?: undefined; field?: undefined; op?: undefined; value?: undefined; valueField?: undefined; chance?: undefined; }
+ interface AllCondition {
+  all: When[]; any?: undefined; not?: undefined; field?: undefined; op?: undefined; value?: undefined; valueField?: undefined; chance?: undefined;
+ }
+ interface AnyCondition {
+  any: When[]; all?: undefined; not?: undefined; field?: undefined; op?: undefined; value?: undefined; valueField?: undefined; chance?: undefined;
+ }
+ interface NotCondition {
+  not: When; all?: undefined; any?: undefined; field?: undefined; op?: undefined; value?: undefined; valueField?: undefined; chance?: undefined;
+ }
  type When = Condition | ChanceCondition | AllCondition | AnyCondition | NotCondition;
- /** `on: 'deadline'` marks the single extra flow of a step with a `deadline`; it is not the step's normal outgoing flow. `when` applies to flows leaving decisions and inclusive forks. */
+ /**
+  * `on: 'deadline'` marks the single extra flow of a step with a `deadline`; it is not the step's normal outgoing flow. `when`
+  * applies to flows leaving decisions and inclusive forks.
+  */
  interface Flow { id: string; from: string; to: string; label?: string; when?: When; on?: 'deadline'; }
  interface Resource { id: string; name: string; capacity: number; costPerMinute: number; kind?: ResourceKind; }
  /** Exactly one end rule: `count` (1..200), `until` (absolute minute) or `open: true`. `interval` is the spacing, or the planning mean when `gap` draws it. */
@@ -84,7 +110,10 @@ declare namespace LWProcess {
   resources: Resource[]; steps: Step[]; flows: Flow[]; arrivals: Arrival[];
  }
  interface Diagnostic { path: string; code: string; message: string; }
- /** `ok` is strict: structurally valid and no diagnostics. `acceptable` is true when a definition was produced and a draft may be kept despite graph diagnostics. */
+ /**
+  * `ok` is strict: structurally valid and no diagnostics. `acceptable` is true when a definition was produced and a draft may be
+  * kept despite graph diagnostics.
+  */
  interface Validation { ok: boolean; acceptable: boolean; diagnostics: Diagnostic[]; definition?: Definition; }
  interface Catalog {
   schema: Record<string, unknown>; validate(input: unknown, draft?: boolean): Validation;
@@ -117,7 +146,8 @@ declare namespace LWProcess {
  interface TrackedFinish { label: string; n: number; mean: number | null; min: number | null; max: number | null; }
  /** `entered` equals `visits` (every entry); `reached` counts distinct cases that entered at least once. */
  interface StepMetric {
-  id: string; queued: number; active: number; timers: TimerMetric; visits: number; completed: number; waitMinutes: number; entered: number; reached: number; tracked: Record<string, TrackedEntry>;
+  id: string; queued: number; active: number; timers: TimerMetric; visits: number; completed: number; waitMinutes: number; entered: number;
+  reached: number; tracked: Record<string, TrackedEntry>;
   /**
    * Read model: tokens at the step with status `held`, i.e. work that finished here and is blocked until the next step's backlog has
    * room (a subset of `queued`, which counts every token here that is neither active nor on a timer). Blocked time is not in `waitMinutes`.
@@ -179,7 +209,10 @@ declare namespace LWProcess {
     * `meanCycleMinutes` covers finished cases only and is 0 until one finishes.
     */
    meanAgeMinutes: number | null;
-   /** Completed cases that ended at a `goal` / `lost` end step; `conversion` is goals*1000/(goals+lost) rounded half up (permille), `null` when neither happened. */
+   /**
+    * Completed cases that ended at a `goal` / `lost` end step; `conversion` is goals*1000/(goals+lost) rounded half up (permille),
+    * `null` when neither happened.
+    */
    goals: number; lost: number; conversion: number | null; tracked: Record<string, TrackedFinish>;
    /** Read model (LWProcessLedger): Σ over minutes of cases in progress (case-minutes), Little's A over [0, minute]. */
    wipArea?: number;
@@ -256,7 +289,10 @@ declare namespace LWProcess {
   caseId: string; entered: number; finished: number; status: 'completed' | 'failed'; end: string | null; outcome: 'goal' | 'lost' | null;
   repeats: number; working: number | null;
  }
- interface Limits { readonly cases: number; readonly minutes: number; readonly transitions: number; readonly events: number; readonly receipts: number; readonly active: number; readonly retained: number; }
+ interface Limits {
+  readonly cases: number; readonly minutes: number; readonly transitions: number; readonly events: number; readonly receipts: number;
+  readonly active: number; readonly retained: number;
+ }
  /**
   * `seed` overrides the definition's seed; `active` (1..limits.active) and `retained` (1..10,000) override the case caps.
   * `onEvent` receives every engine event in order (also those before the first advance and beyond the retained history) as a
@@ -290,7 +326,9 @@ declare namespace LWProcess {
   query(types: readonly string[]): string[];
  }
  interface Ecs { World: new () => EcsWorld; Scheduler: new () => {
-  register(spec: {id: string; phase: 'pre' | 'simulate' | 'post'; order: number; query: readonly string[]; update: (world: EcsWorld, id: string, dt: number) => void}): unknown;
+  register(spec: {
+   id: string; phase: 'pre' | 'simulate' | 'post'; order: number; query: readonly string[]; update: (world: EcsWorld, id: string, dt: number) => void;
+  }): unknown;
   step(world: EcsWorld, dt: number): void;
  }; }
 }
@@ -312,7 +350,10 @@ declare namespace LWProcess {
   */
  interface Ledger { unit: Map<string, number>; rate: Map<string, number>; steps: Map<string, StepCosts>; cycles: number[]; }
  interface Pool extends Record<string, unknown> { id: string; capacity: number; busy: number; busyMinutes: number; costPerMinute: number; }
- interface Station extends Record<string, unknown> { id: string; visits: number; completed: number; waitMinutes: number; reached: number; deadlines?: {interrupted: number; escalated: number}; items?: {started: number; finished: number}; }
+ interface Station extends Record<string, unknown> {
+  id: string; visits: number; completed: number; waitMinutes: number; reached: number; deadlines?: {interrupted: number; escalated: number};
+  items?: {started: number; finished: number};
+ }
  /** One multi-instance visit: items finished so far, the first item's start and input, and the visit number that keys its draws. */
  interface Group { id: string; count: number; done: number; started: number | null; input: Fields | null; visit: number; }
  interface State {
@@ -323,14 +364,20 @@ declare namespace LWProcess {
   finished: string[]; visits: Map<string, Map<string, number>>; tokenList: Token[] | null; poolList: Pool[] | null;
   /** Clock-step failures recorded while the scheduler is locked; the next settle applies them. */
   failures: {caseId: string; message: string; stepId?: string}[];
-  /** Multi-instance visits in progress, escalations detected by the clock awaiting their token, and pending outcomes of cases that still wait for escalated tokens. */
+  /**
+   * Multi-instance visits in progress, escalations detected by the clock awaiting their token, and pending outcomes of cases that
+   * still wait for escalated tokens.
+   */
   deadlines: Map<string, Flow>; groups: Map<string, Group>; spawns: {caseId: string; flow: string}[]; outcomes: Map<string, 'goal' | 'lost'>;
   /** Journey bookkeeping: steps each active case has entered (dropped when it finishes), finish aggregates by field, entry aggregates by `stepId|field`. */
   seen: Map<string, Set<string>>; finishAgg: Map<string, Aggregate>; entryAgg: Map<string, Aggregate>;
   /** Read-model aggregates and the streaming event sink; sessions always set `ledger`, hand-built test states may omit both. */
   ledger?: Ledger; sink?: ((event: Event) => void) | null;
  }
- interface Systems { settle(s: State): void; work(s: State): void; admit(s: State): void; nextArrival(s: State): number | null; progress(s: State): {tokens: number; running: boolean}; fastForward(s: State, target: number): void; }
+ interface Systems {
+  settle(s: State): void; work(s: State): void; admit(s: State): void; nextArrival(s: State): number | null;
+  progress(s: State): {tokens: number; running: boolean}; fastForward(s: State, target: number): void;
+ }
 }
 
 declare namespace LWProcessRandom {
