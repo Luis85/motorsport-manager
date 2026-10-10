@@ -393,6 +393,7 @@ export const INSERTS: readonly Insert[] = [
   ["PROCESS_RECOVERY", "process-recovery.js", "script", "template-process"],
   ["PROCESS_SLOTS", "process-slots.js", "script", "template-process"],
   ["PROCESS_IO", "process-io.js", "script", "template-process"],
+  ["PROCESS_DRAFT_ACTIONS", "process-draft-actions.js", "script", "template-process"],
   ["PROCESS_SHELL_MARKUP", "process-shell-markup.js", "script", "template-process"],
   ["PROCESS_UI", "process-ui.js", "script", "template-process"],
   ["PROCESS_CSS", "process.css", "style", "template-process"],

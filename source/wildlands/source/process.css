@@ -63,6 +63,16 @@
 .process-studio #export-items button:focus-visible { outline-offset:-2px; }
 /* An unavailable item stays focusable so its reason (title and menu hint) is reachable; it only looks disabled. */
 .process-studio #export-items button[aria-disabled=true] { opacity:.55; cursor:not-allowed; }
+/* Add step… and Tidy layout keep focus and their reason (title) while the draft is not valid JSON; they only look disabled. Below
+   1,200 px the header row has no room for them (it would wrap), so they move into the Export (or, on a phone, ⋯) menu. */
+.process-studio .draft-action[aria-disabled=true] { opacity:.55; cursor:not-allowed; }
+.menu-draft { display:none; }
+@media(max-width:1199px) { .process-file-actions>.draft-action { display:none; } .process-studio #export-items .menu-draft { display:block; } }
+/* Add step dialog: labelled fields in one column; the insert box and its reason sit together. */
+.as-form { display:grid; gap:var(--s2); padding-block:var(--s2); }
+.as-form input[type=text],.as-form select { width:100%; }
+.as-form .as-check { display:flex; align-items:center; gap:var(--s2); margin-top:var(--s2); }
+.as-form p { margin:0; font-size:var(--t-xs); }
 /* The run groups are separated by a wider column gap rather than divider lines, so a wrapped row never starts with a stray rule. */
 .process-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); padding:var(--s2) var(--s4); border-bottom:1px solid var(--line);
  background:var(--bg); }

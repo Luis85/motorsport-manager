@@ -490,6 +490,7 @@
         "process-step-list.ts",
         "process-guard.ts",
         "process-io.ts",
+        "process-draft-actions.ts",
         "process-ui.ts",
         "process-dom.ts",
         "process-recovery.ts",
