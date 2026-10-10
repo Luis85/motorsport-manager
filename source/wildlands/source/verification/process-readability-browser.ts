@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {nextFrames} from './browser-harness';
 import {query, runSuite} from './process-browser-fixture';
 import {claimsDesk} from './process-browser-models';
+import {mapLabelChecks} from './process-map-label-checks';
 runSuite('process readability browser harness', 'process-readability-browser-results.json', async studio => {
  const {page, check, checkLifecycle, freshStudio, switchTo, importJson, importClaims, activeId, dialogOpen} = studio;
  const DEJAVU = '*{font-family:"DejaVu Sans",sans-serif !important}';
@@ -233,5 +234,6 @@ runSuite('process readability browser harness', 'process-readability-browser-res
   await page.locator('#se-name').fill('Discovery'); assert.equal(await page.locator('#se-name').getAttribute('aria-invalid'), null);
   await page.keyboard.press('Escape'); if (await page.locator('#se-discard').isVisible()) await page.locator('#se-discard').click(); assert.equal(await dialogOpen(), 0);
  });
+ await mapLabelChecks(studio);
  await checkLifecycle('Process readability browser lifecycle emits no runtime errors or network requests');
 });

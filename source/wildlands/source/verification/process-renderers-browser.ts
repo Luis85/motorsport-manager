@@ -6,6 +6,7 @@ import {waitForReady, openArtifact, nextFrames} from './browser-harness';
 import {query, OUT, runSuite} from './process-browser-fixture';
 import {timerFixture, automationFixture, roomsFixture, claimsDesk, blockedLine} from './process-browser-models';
 import {encoding, STATE, waitingAt} from './process-map-probe';
+import {mapUpdateChecks} from './process-map-update-checks';
 runSuite('process renderers browser harness', 'process-renderers-browser-results.json', async studio => {
  const {page, file, fixtureUrls, check, checkLifecycle, freshStudio, showIo, switchTo, applyDraft, importClaims, importJson, COUNT} = studio;
  await check('Actor joints animate only during playback, respect reduced motion, and do not tick the process', async () => {
@@ -407,10 +408,20 @@ runSuite('process renderers browser harness', 'process-renderers-browser-results
   for (let i = 0; i < 20 && !(await query(page)).snapshot.tokens.some(t => t.status === 'held'); i++) await page.locator('#step').click();
   const held = (await query(page)).snapshot.tokens.filter(t => t.status === 'held' && t.stepId === 'make').length; assert(held > 0, 'work is held');
   const blocked = await encoding(page), g = blocked.cards.find(c => c.id === 'make')!;
-  assert.deepEqual([g.status, g.stroke], ['held', blocked.key.held!.paint]); assert.match(g.label, new RegExp(`\\(${held} blocked\\)`));
+  // Held work is blocked, not waiting: the waiting count leaves it out (queued - held) and the blocked count follows it.
+  const make = (await query(page)).snapshot.steps.find(s => s.id === 'make')!;
+  assert.deepEqual([g.status, g.stroke], ['held', blocked.key.held!.paint]);
+  assert.match(g.label, new RegExp(`, ${make.queued - held} waiting, ${held} blocked`));
   assert(g.marks.some(m => m.status === 'held' && m.d === f.key.held!.d), 'held work uses the cross marker');
+  assert.equal(g.marks.filter(m => m.status === 'held').length, held, 'one blocked marker per held item');
+  // Zoomed out, the counts row shows held work as its own blocked count.
+  for (let i = 0; i < 12 && !(await page.locator('#process-map-make .pm-count').count()); i++) await page.locator('button[aria-label="Zoom out"]').click();
+  const rows = (await encoding(page)).cards.find(c => c.id === 'make')!.counts.filter(c => c.status === 'held' || c.status === 'queued')
+   .map(c => [c.status, c.text]);
+  assert.deepEqual(rows, [['held', String(held)], ...make.queued > held ? [['queued', String(make.queued - held)]] : []], 'held work is a blocked count');
   await page.locator('#process-map-make').focus();
-  assert.match(await page.locator('#map-caption').innerText(), new RegExp(`^Make the part · task · .*${held} blocked`));
+  const waits = `${make.queued - held} waiting · ${held} blocked`;
+  assert.match(await page.locator('#map-caption').innerText(), new RegExp(`^Make the part · task · \\d+ working · ${waits}`));
  });
  await check('Present frames a step slide with its direct neighbours and keeps the card-number key beside a numbered map', async () => {
   await page.setViewportSize({width: 1440, height: 1060}); await freshStudio();
@@ -443,5 +454,6 @@ runSuite('process renderers browser harness', 'process-renderers-browser-results
   assert.deepEqual(key, {visible: true, text: 'Card numbers match the step list', first: '01'});
   await page.keyboard.press('Escape'); await page.locator('#present').waitFor({state: 'hidden'});
  });
+ await mapUpdateChecks(studio);
  await checkLifecycle('Process renderers browser lifecycle emits no runtime errors or network requests');
 });

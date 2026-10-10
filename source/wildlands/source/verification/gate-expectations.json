@@ -3,7 +3,7 @@
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
   "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-bpmn", "business-process-browser", "process-layout-browser", "process-step-editor-browser", "process-definition-browser", "process-renderers-browser", "process-lenses-browser", "process-bpmn-import-browser", "process-readability-browser", "process-present-browser"],
-  "totalChecks": 2107,
+  "totalChecks": 2113,
   "reviewedAdditions": [
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
@@ -568,7 +568,13 @@
     {"suite": "business-process", "name": "CLI process run streams every engine event to a CSV or XES event log without changing the run or its report"},
     {"suite": "business-process", "name": "Event log cells are escaped like the Activity CSV and XES refuses text XML 1.0 cannot represent"},
     {"suite": "business-process", "name": "CLI process replicate and compare print seeded reports or write them, and match the pure module"},
-    {"suite": "business-process", "name": "Process commands name --minutes, --runs and --format in their errors and refuse a clashing event log before writing"}
+    {"suite": "business-process", "name": "Process commands name --minutes, --runs and --format in their errors and refuse a clashing event log before writing"},
+    {"suite": "process-renderers-browser", "name": "2D map refreshes in place: card groups keep their identity across ticks, only changed attributes mutate, and after many ticks the map matches a fresh draw"},
+    {"suite": "process-renderers-browser", "name": "2D map step cards are one roving tab stop: arrow keys move to the nearest card, Home and End reach the ends, Enter selects, and the map surface keeps its pan and zoom keys"},
+    {"suite": "process-renderers-browser", "name": "2D map cards move by drag or Alt+Arrow only with a move option, once per drop, without ticking or changing the definition; a click still selects and Escape cancels a drag"},
+    {"suite": "process-renderers-browser", "name": "Outcome badges sit inside numbered and zoomed-out cards, clear of the number, the title and other cards, with a 12px glyph"},
+    {"suite": "process-readability-browser", "name": "Process 7 at 1366x768 keeps 2D card labels apart and readable: no overlapping labels or cards, no label under the minimum size and no short word cut, at fit and after Zoom in for names, also in DejaVu Sans"},
+    {"suite": "process-readability-browser", "name": "At a 24px root font the legend folds into a Legend disclosure and the agency map keeps its names at 1440x1060; the default size keeps the complete legend"}
   ],
   "renames": [
     {"suite": "wildlands-acceptance", "from": "Every discovered built-in scenario compiles complete resources with verified manifest hashes", "to": "Every discovered game folder scenario compiles complete resources with verified manifest hashes", "reason": "Phase 4A (decision D1): the engine CLI has no built-in scenarios. The check now compiles every scenario of every colony game folder (scenarios --game DIR) instead of the three former built-in packs; its assertions on complete resources and manifest hashes are unchanged."},
@@ -2865,7 +2871,11 @@
       "Process renderers browser lifecycle emits no runtime errors or network requests",
       "3D keeps one WebGL renderer and canvas across process switches, frees each scene, and redraws on demand at most 30 times a second while playing",
       "2D card borders, work markers and the legend share one shape-coded state encoding, and zoomed-out cards count waiting work",
-      "Present frames a step slide with its direct neighbours and keeps the card-number key beside a numbered map"
+      "Present frames a step slide with its direct neighbours and keeps the card-number key beside a numbered map",
+      "2D map refreshes in place: card groups keep their identity across ticks, only changed attributes mutate, and after many ticks the map matches a fresh draw",
+      "2D map step cards are one roving tab stop: arrow keys move to the nearest card, Home and End reach the ends, Enter selects, and the map surface keeps its pan and zoom keys",
+      "2D map cards move by drag or Alt+Arrow only with a move option, once per drop, without ticking or changing the definition; a click still selects and Escape cancels a drag",
+      "Outcome badges sit inside numbered and zoomed-out cards, clear of the number, the title and other cards, with a 12px glyph"
     ],
     "process-lenses-browser": [
       "Random view helpers describe distributions, draws, chance routes and arrival streams in plain language",
@@ -2900,7 +2910,9 @@
       "Step editor explains an empty or too long step name in plain language",
       "Process readability browser lifecycle emits no runtime errors or network requests",
       "2D map titles break only between words or at a hyphen, and the hovered or focused card shows its full name and counts",
-      "Map zoom controls never cover a fitted card, Zoom in reaches names, and map text follows the root font size"
+      "Map zoom controls never cover a fitted card, Zoom in reaches names, and map text follows the root font size",
+      "Process 7 at 1366x768 keeps 2D card labels apart and readable: no overlapping labels or cards, no label under the minimum size and no short word cut, at fit and after Zoom in for names, also in DejaVu Sans",
+      "At a 24px root font the legend folds into a Legend disclosure and the agency map keeps its names at 1440x1060; the default size keeps the complete legend"
     ],
     "process-present-browser": [
       "Present pages with Right, Left, PageDown, PageUp, Home and End, announces each slide and disables Previous and Next at the ends",

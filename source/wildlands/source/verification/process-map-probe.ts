@@ -26,6 +26,22 @@ export const encoding = (page: Page) => page.evaluate(() => {
   .map(c => ({dash: c.strokeDasharray, stroke: c.stroke}));
  return {key, cards, conditional, hint: !(document.getElementById('map-zoom-hint') as HTMLElement).hidden};
 });
+/**
+ * Outcome badges of the studio map: their on-screen height, whether the badge box stays inside its card, overlaps its own title or
+ * list number, or overlaps any other card, and whether the card shows a list number.
+ */
+export const badges = (page: Page) => page.evaluate(() => {
+ const hit = (p: DOMRect, q: DOMRect) => p.left < q.right - .5 && q.left < p.right - .5 && p.top < q.bottom - .5 && q.top < p.bottom - .5;
+ const cards = [...document.querySelectorAll<SVGGElement>('#map svg g[role=button]')];
+ return cards.filter(g => g.querySelector('.pm-outcome')).map(g => {
+  const b = g.querySelector('.pm-outcome')!.getBoundingClientRect(), card = g.querySelector('.pm-card')!.getBoundingClientRect();
+  const title = g.querySelector('.pm-title')!;
+  const inside = b.left >= card.left - .5 && b.right <= card.right + .5 && b.top >= card.top - .5 && b.bottom <= card.bottom + .5;
+  const others = cards.filter(o => o !== g && hit(b, o.querySelector('.pm-card')!.getBoundingClientRect())).map(o => o.id);
+  return {id: g.id.slice('process-map-'.length), h: b.height, inside, onTitle: hit(b, title.getBoundingClientRect()), onOthers: others,
+   numbered: /^\d+$/.test(title.textContent ?? '')};
+ });
+});
 export const STATE = {active: 'Working', queued: 'Waiting', timer: 'Timer', backlog: 'Backlog', held: 'Blocked'} as const;
 const OTHER = ['active', 'timer', 'backlog', 'held'];
 export const waitingAt = (q: LWProcess.Snapshot, id: string) => q.tokens.filter(t => t.stepId === id && !OTHER.includes(t.status)).length;
