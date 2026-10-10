@@ -106,7 +106,14 @@ export function poissonDisk(bounds: Bounds2, minDistance: number, random: Random
   const cell = r / Math.SQRT2,
     columns = Math.floor(width / cell) + 1,
     rows = Math.floor(depth / cell) + 1;
-  const grid = new Int32Array(columns * rows).fill(-1);
+  // A sparse cell map: memory follows the (budgeted) point count, never the bounds' cell
+  // count, which a long thin area makes arbitrarily large. Cell keys must stay exact.
+  if (!(columns * rows <= Number.MAX_SAFE_INTEGER))
+    fail('PROCEDURAL_BUDGET', 'Poisson sampling bounds are too large for the spacing.', {
+      limit: PROCEDURAL_MAX_CANDIDATES,
+      hint: 'Increase the spacing (minDistance) or shrink the area.',
+    });
+  const grid = new Map<number, number>();
   const points: Point2[] = [],
     active: number[] = [];
   const cellOf = (p: Point2): [number, number] => [
@@ -117,8 +124,8 @@ export function poissonDisk(bounds: Bounds2, minDistance: number, random: Random
     const [cx, cz] = cellOf(p);
     for (let z = Math.max(0, cz - 2); z <= Math.min(rows - 1, cz + 2); z++)
       for (let x = Math.max(0, cx - 2); x <= Math.min(columns - 1, cx + 2); x++) {
-        const index = grid[z * columns + x];
-        if (index < 0) continue;
+        const index = grid.get(z * columns + x);
+        if (index === undefined) continue;
         const dx = points[index][0] - p[0],
           dz = points[index][1] - p[1];
         if (dx * dx + dz * dz < r2) return false;
@@ -128,7 +135,7 @@ export function poissonDisk(bounds: Bounds2, minDistance: number, random: Random
   const add = (p: Point2) => {
     budget(points.length + 1, 'Poisson sampling');
     const [cx, cz] = cellOf(p);
-    grid[cz * columns + cx] = points.length;
+    grid.set(cz * columns + cx, points.length);
     active.push(points.length);
     points.push(p);
   };
@@ -183,6 +190,30 @@ export function gridLayout(
   return points;
 }
 
+/**
+ * The rect whose centered grid of spacing step holds exactly columns x rows points about
+ * center: the outer points sit just under half a step inside it, so jitter stays inside.
+ * Bounds are multiples of 1e-4, symmetric about the center rounded to 1e-4, and round
+ * inward, so float noise never admits an extra row or column (steps below 0.0002 m leave
+ * an empty rect, which the scatter schema refuses).
+ */
+export function gridArea(
+  columns: number,
+  rows: number,
+  step: number,
+  center: Point2 = [0, 0],
+): Extract<Area, { type: 'rect' }> {
+  const half = (count: number) =>
+    Math.floor((((count - 1) * step) / 2 + step * 0.4999) * 1e4 + 1e-6);
+  const [cx, cz] = center.map((v) => Math.round(v * 1e4));
+  const at = (units: number) => units / 1e4 + 0;
+  return {
+    type: 'rect',
+    min: [at(cx - half(columns)), at(cz - half(rows))],
+    max: [at(cx + half(columns)), at(cz + half(rows))],
+  };
+}
+
 export interface PathPoint {
   point: Point2;
   /** Degrees about +Y that turn +Z to the local path direction. */
@@ -222,8 +253,9 @@ export function pathLayout(points: readonly Point2[], spacing: number): PathPoin
 }
 
 /**
- * Uniform points in bounds until count of them lie inside the area (or 64 attempts per
- * point were spent). Returns every attempt; the caller counts the outside ones.
+ * Uniform points in bounds until count of them lie inside the area, or 64 attempts per
+ * point or the PROCEDURAL_MAX_CANDIDATES budget of attempts were spent. Returns every
+ * attempt (never more than the budget); the caller counts the outside ones.
  */
 export function uniformRandom(
   area: Area,
@@ -235,7 +267,8 @@ export function uniformRandom(
     depth = bounds.max[1] - bounds.min[1];
   const points: Point2[] = [];
   let inside = 0;
-  for (let attempt = 0; attempt < count * 64 && inside < count; attempt++) {
+  const attempts = Math.min(count * 64, PROCEDURAL_MAX_CANDIDATES);
+  for (let attempt = 0; attempt < attempts && inside < count; attempt++) {
     const p = point(bounds.min[0] + random.next() * width, bounds.min[1] + random.next() * depth);
     points.push(p);
     if (insideArea(area, p)) inside++;

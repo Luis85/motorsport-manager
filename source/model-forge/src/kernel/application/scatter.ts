@@ -34,7 +34,7 @@ const MAX_NODES = 10000;
 export interface ScatterOptions {
   /** Return a plan with only the group node when nothing could be placed. */
   allowEmpty?: boolean;
-  /** Remove an existing group of the same ID (and its subtree) first. */
+  /** Remove an existing scatter group (tagged `scatter`) of the same ID and its subtree first. */
   replace?: boolean;
 }
 export interface ScatterPlacement {
@@ -153,12 +153,24 @@ export function planScatter(
   const recipe = parse(ScatterRecipeSchema, input);
   const recipeHash = sha256Hex(canonical(recipe));
   const tag = `scatter:${recipeHash.slice(0, 8)}`;
-  const existing = scene.nodes.some((n) => n.id === recipe.group);
-  if (existing && !options.replace)
-    fail('DUPLICATE_ID', `Node ${recipe.group} already exists.`, {
-      id: recipe.group,
-      hint: 'Choose another group ID, or replace the existing scatter group (replace: true / --replace) with the write guards.',
-    });
+  const current = scene.nodes.find((n) => n.id === recipe.group);
+  const existing = !!current;
+  // Replace only ever removes a scatter group; any other node of that ID is refused, so a
+  // mistyped --group can never delete a terrain, a model instance or authored content.
+  if (current && (!options.replace || !current.tags?.includes('scatter')))
+    fail(
+      'DUPLICATE_ID',
+      options.replace
+        ? `Node ${recipe.group} exists but is not a scatter group, so it cannot be replaced.`
+        : `Node ${recipe.group} already exists.`,
+      {
+        id: recipe.group,
+        ...(options.replace ? { type: current.type, tags: current.tags ?? [] } : {}),
+        hint: options.replace
+          ? 'Choose another group ID (--group); replace only removes a group tagged scatter that an earlier scatter or layout created.'
+          : 'Choose another group ID, or replace the existing scatter group (replace: true / --replace) with the write guards.',
+      },
+    );
   const removed = existing ? subtreeIds(scene, recipe.group) : new Set<string>();
   const working: SceneDocument = { ...scene, nodes: scene.nodes.filter((n) => !removed.has(n.id)) };
   if (recipe.parent && !working.nodes.some((n) => n.id === recipe.parent))
