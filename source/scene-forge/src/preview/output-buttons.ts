@@ -1,10 +1,7 @@
-import { gltfScene } from '../application/gltf-scene.js';
+import { gltfScene, rigClips, errorMessage, type SceneDocument } from '../kernel-render.js';
 import type * as THREE from 'three';
 import type { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
-import { rigClips } from '../application/rigging.js';
-import { errorMessage } from '../domain/errors.js';
-import type { SceneDocument } from '../domain/schema.js';
 import { button } from './dom.js';
 import { download } from './project-controls.js';
 export function setupOutputButtons({

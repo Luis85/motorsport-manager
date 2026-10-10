@@ -9,18 +9,23 @@ const files = (await readdir('src', { recursive: true }))
 const errors = [];
 const graph = new Map();
 const builtins = new Set(builtinModules.map((name) => name.replace(/^node:/, '')));
+// The model recipe kernel lives in ../model-forge/src/kernel. Scene Forge reaches it only
+// through two bridges: src/kernel.ts (Node) and src/kernel-render.ts (browser-safe subset).
+const bridges = {
+  'src/kernel.ts': '../model-forge/src/kernel/index.ts',
+  'src/kernel-render.ts': '../model-forge/src/kernel/render/index.ts',
+};
 const layers = {
-  domain: new Set(['domain']),
-  application: new Set(['domain', 'application']),
-  infra: new Set(['domain', 'application', 'infra', 'preview', 'version.ts']),
-  commands: new Set(['domain', 'application', 'infra', 'commands', 'version.ts']),
-  preview: new Set(['domain', 'application', 'preview']),
+  domain: new Set(['domain', 'kernel.ts']),
+  infra: new Set(['domain', 'infra', 'preview', 'kernel.ts', 'version.ts']),
+  commands: new Set(['domain', 'infra', 'commands', 'kernel.ts', 'version.ts']),
+  preview: new Set(['preview', 'kernel-render.ts']),
 };
 for (const file of files) {
   const text = await readFile(file, 'utf8');
   const tree = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const layer = file.split('/')[1];
-  const inner = layer === 'domain' || layer === 'application';
+  const inner = layer === 'domain';
   const browser = layer === 'preview';
   const dependencies = [];
   const report = (message) => errors.push(`${file}: ${message}`);
@@ -34,6 +39,12 @@ for (const file of files) {
     const target = path.posix
       .normalize(path.posix.join(path.posix.dirname(file), specifier))
       .replace(/\.js$/, '.ts');
+    if (bridges[file] !== undefined) {
+      if (target !== bridges[file]) report(`kernel bridge may re-export only ${bridges[file]}`);
+      return;
+    }
+    if (!target.startsWith('src/'))
+      return report(`${target} is outside Scene Forge; import the kernel through src/kernel.ts`);
     const targetLayer = target.split('/')[1];
     if (layers[layer] && !layers[layer].has(targetLayer)) report(`invalid dependency on ${target}`);
     if (
@@ -43,22 +54,8 @@ for (const file of files) {
       target !== 'src/preview/template.ts'
     )
       report('infrastructure may import preview types and HTML template, not browser runtime');
-    if (
-      browser &&
-      !typeOnly &&
-      targetLayer !== 'preview' &&
-      ![
-        'src/application/camera.ts',
-        'src/application/lights.ts',
-        'src/application/rigging.ts',
-        'src/application/gltf-scene.ts',
-        'src/application/materials.ts',
-        'src/application/surfaces.ts',
-        'src/domain/scalar.ts',
-        'src/domain/errors.ts',
-        'src/domain/identity.ts',
-      ].includes(target)
-    )
+    // The render bridge is the browser-safe kernel subset; it never loads the compiler or Zod.
+    if (browser && !typeOnly && targetLayer !== 'preview' && target !== 'src/kernel-render.ts')
       report(`browser must consume compiled scenes, not import ${target}`);
     if (!typeOnly) dependencies.push(target);
   }
@@ -120,5 +117,5 @@ if (errors.length) {
   process.exitCode = 1;
 } else
   console.log(
-    `Architecture passed: ${files.length} modules, inward core dependencies, no runtime cycles or explicit any.`,
+    `Architecture passed: ${files.length} modules, kernel only through its bridges, inward dependencies, no runtime cycles or explicit any.`,
   );

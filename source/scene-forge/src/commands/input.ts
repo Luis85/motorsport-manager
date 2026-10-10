@@ -1,7 +1,6 @@
 import { z } from 'zod';
-import { Id, NumberValue, parse } from '../domain/schema.js';
+import { Id, NumberValue, parse, fail } from '../kernel.js';
 import path from 'node:path';
-import { fail } from '../domain/errors.js';
 import { readJson } from '../infra/files.js';
 import type { CliRuntime } from './context.js';
 export const parseJson = (value: string): unknown => {

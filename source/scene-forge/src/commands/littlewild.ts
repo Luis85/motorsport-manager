@@ -1,8 +1,8 @@
 import path from 'node:path';
 import { Option } from 'commander';
-import { fail, parse, LittlewildExportSchema, LittlewildAssetSchema } from '../domain/schema.js';
+import { fail, parse, LittlewildAssetSchema, writeLittlewildAsset } from '../kernel.js';
+import { LittlewildExportSchema } from '../domain/schema.js';
 import { readJson } from '../infra/files.js';
-import { writeLittlewildAsset } from '../infra/littlewild.js';
 import { importLittlewildDefinition } from '../infra/littlewild-import.js';
 import { parseJson } from './input.js';
 import type { CommandContext } from './context.js';

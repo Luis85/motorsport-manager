@@ -6,24 +6,26 @@ import {
   SceneSchema,
   ModelSchema,
   ModelBundleSchema,
-  ProjectSchema,
   Id,
   type SceneDocument,
   type ModelLibrary,
-  type ProjectDocument,
   type Operation,
-} from '../domain/schema.js';
-import { canonical } from '../domain/canonical.js';
-import { errorCode, ForgeError } from '../domain/errors.js';
-import { checkGuards, prepareSceneEdit, type EditOptions } from '../application/edit.js';
-import { stateHash } from './state-hash.js';
+  canonical,
+  errorCode,
+  ForgeError,
+  checkGuards,
+  prepareSceneEdit,
+  type EditOptions,
+  stateHash,
+  compileScene,
+  captureModel,
+  modelDependencies,
+} from '../kernel.js';
+import { ProjectSchema, type ProjectDocument } from '../domain/schema.js';
 import { readJson, writeJson, atomicWrite, inside, findProject, withLock } from './files.js';
 // Compatibility exports for the original library API.
 export { readJson, writeJson, atomicWrite, findProject, withLock } from './files.js';
-export { stateHash } from './state-hash.js';
-export type { EditOptions } from '../application/edit.js';
-import { compileScene } from '../application/compiler.js';
-import { captureModel, modelDependencies } from '../application/composition.js';
+export { stateHash, type EditOptions } from '../kernel.js';
 
 export interface Snapshot {
   root: string;

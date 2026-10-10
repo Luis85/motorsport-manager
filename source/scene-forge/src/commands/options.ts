@@ -1,5 +1,5 @@
 import type { Command } from 'commander';
-import { fail } from '../domain/errors.js';
+import { fail } from '../kernel.js';
 export const integer = (value: string) => {
   if (!/^\d+$/.test(value))
     return fail('INVALID_OPTION', `Expected a nonnegative integer, got ${value}.`);

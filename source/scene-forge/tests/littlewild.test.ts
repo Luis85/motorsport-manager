@@ -5,8 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { Readable } from 'node:stream';
 import { createCli } from '../src/commands/create-cli.js';
-import { definitionText } from '../src/infra/littlewild.js';
-import { littlewildId } from '../src/application/littlewild.js';
+import { definitionText, littlewildId } from '../src/kernel.js';
 
 async function workspace() {
   const cwd = await fs.mkdtemp(path.join(os.tmpdir(), 'forge-littlewild-'));

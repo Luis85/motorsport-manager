@@ -1,4 +1,4 @@
-import type { SceneDocument, NodeSpec, MaterialSpec, ModelLibrary } from '../domain/schema.js';
+import type { SceneDocument, NodeSpec, MaterialSpec, ModelLibrary } from '../kernel-render.js';
 
 export interface EditorInspection {
   bounds: { min: number[]; max: number[] };

@@ -1,7 +1,11 @@
 import * as THREE from 'three';
-import { createLight } from '../application/lights.js';
-import { scalar } from '../domain/scalar.js';
-import type { SceneDocument, NodeSpec, ScalarValue } from '../domain/schema.js';
+import {
+  createLight,
+  scalar,
+  type SceneDocument,
+  type NodeSpec,
+  type ScalarValue,
+} from '../kernel-render.js';
 import type { LibraryItem } from './contracts.js';
 
 /** Rebuild only authored placement using compiled prototypes and their shared resources. */

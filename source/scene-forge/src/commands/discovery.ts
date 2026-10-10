@@ -1,8 +1,13 @@
 import { Option } from 'commander';
-import { jsonSchema, schemaKinds, viewNames, expressionOperators } from '../domain/schema.js';
-import { exportFormats } from '../infra/export.js';
-import { littlewildFamilies } from '../domain/schema.js';
-import { littlewildLimits, littlewildPetRoles } from '../application/littlewild.js';
+import { jsonSchema, schemaKinds } from '../domain/schema.js';
+import {
+  viewNames,
+  expressionOperators,
+  exportFormats,
+  littlewildFamilies,
+  littlewildLimits,
+  littlewildPetRoles,
+} from '../kernel.js';
 import { VERSION } from '../version.js';
 import type { CommandContext } from './context.js';
 export function registerDiscoveryCommands(c: CommandContext) {

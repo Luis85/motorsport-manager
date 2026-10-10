@@ -1,5 +1,5 @@
 import { CommanderError } from 'commander';
-import { ForgeError, errorMessage } from '../domain/errors.js';
+import { ForgeError, errorMessage } from '../kernel.js';
 export function formatCliError(error: unknown): string {
   const forge =
     error instanceof ForgeError

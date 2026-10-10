@@ -8,7 +8,7 @@ import { execFileSync } from 'node:child_process';
 import { initProject, loadProject } from '../../src/infra/project.js';
 import { createServer } from 'node:http';
 import { chromium } from 'playwright';
-import { parse, SceneSchema } from '../../src/domain/schema.js';
+import { parse, SceneSchema } from '../../src/kernel.js';
 import { createPreview } from '../../src/infra/preview.js';
 
 test(

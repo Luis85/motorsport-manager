@@ -409,7 +409,7 @@ npm run verify
 npm run release:examples
 ```
 
-`src/domain/` owns schemas and semantic validation. `src/application/` owns operations and scene compilation. `src/infra/` owns files, exports, HTML generation and screenshots. `src/preview/` owns the browser viewer. `src/commands/` owns the CLI adapters and factory; `src/cli.ts` only starts one invocation. `src/index.ts` exports the programmatic API. The browser consumes serialized compiled geometry, so it does not need the procedural/CSG engine.
+The shared model recipe kernel in `../model-forge/src/kernel` owns schemas and semantic validation, operations, scene compilation, exports, capture and review; Scene Forge reaches it only through `src/kernel.ts` and the browser-safe `src/kernel-render.ts`. `src/domain/` owns Scene Forge project, composition and bundle contracts. `src/infra/` owns project files, HTML generation and screenshots. `src/preview/` owns the browser viewer. `src/commands/` owns the CLI adapters and factory; `src/cli.ts` only starts one invocation. `src/index.ts` exports the programmatic API. The browser consumes serialized compiled geometry, so it does not need the procedural/CSG engine.
 
 The package is private by default. Publishing, licensing, signed releases and cross-platform packaging are decisions for a subsequent release.
 

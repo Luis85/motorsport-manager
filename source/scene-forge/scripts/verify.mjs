@@ -38,7 +38,7 @@ run('formatting', [
   ...docs,
 ]);
 run('architecture', ['scripts/check-architecture.mjs']);
-run('typecheck', ['node_modules/typescript/bin/tsc', '--noEmit']);
+run('typecheck', ['node_modules/typescript/bin/tsc', '--noEmit', '-p', 'tsconfig.check.json']);
 run('build', ['scripts/build.mjs']);
 for (const [name, folder] of [
   ['core', 'tests'],
@@ -48,7 +48,15 @@ for (const [name, folder] of [
     .filter((f) => f.endsWith('.test.ts'))
     .sort()
     .map((f) => `${folder}/${f}`);
-  run(name, ['--import', 'tsx', '--test', '--test-reporter=tap', ...files]);
+  run(name, [
+    '--import',
+    'tsx',
+    '--import',
+    './scripts/kernel-deps.mjs',
+    '--test',
+    '--test-reporter=tap',
+    ...files,
+  ]);
 }
 const { version } = JSON.parse(await readFile('package.json', 'utf8'));
 await writeFile(

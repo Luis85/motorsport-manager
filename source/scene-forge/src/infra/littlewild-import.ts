@@ -1,5 +1,4 @@
-import { fail } from '../domain/errors.js';
-import { littlewildImportPlan } from '../application/littlewild-import.js';
+import { fail, littlewildImportPlan } from '../kernel.js';
 import { importModel } from './project.js';
 import type { EditOptions } from './project.js';
 import { readJson } from './files.js';
