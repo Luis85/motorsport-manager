@@ -122,6 +122,8 @@
     {"name": "business-process-readmodel", "kind": "node", "tier": "full", "entry": ".generated/test-process-sweeps.cjs", "result": ".generated/process-readmodel-results.json", "timeout": 180, "cost": 12},
     {"name": "process-draft-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-draft-browser.js", "result": "verification/v15/process-draft-browser-results.json", "timeout": 300, "cost": 70},
     {"name": "process-present-brief-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-present-brief-browser.js", "result": "verification/v15/process-present-brief-browser-results.json", "timeout": 120, "cost": 30},
-    {"name": "process-dashboard-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-dashboard-browser.js", "result": "verification/v15/process-dashboard-browser-results.json", "timeout": 300, "cost": 70}
+    {"name": "process-dashboard-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-dashboard-browser.js", "result": "verification/v15/process-dashboard-browser-results.json", "timeout": 300, "cost": 70},
+    {"name": "process-hostile-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-hostile-browser.js", "result": "verification/v15/process-hostile-browser-results.json", "timeout": 300, "cost": 70},
+    {"name": "process-hostile-editors-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-hostile-editors-browser.js", "result": "verification/v15/process-hostile-editors-browser-results.json", "timeout": 300, "cost": 70}
   ]
 }
