@@ -51,6 +51,27 @@ function forgeId(value: string, fallback: string) {
   const id = value.replace(/[^A-Za-z0-9_-]/g, '-').slice(0, 64);
   return /^[A-Za-z]/.test(id) ? id : `n${id}`.slice(0, 64) || fallback;
 }
+/**
+ * The Forge node ID import gives every node of one variant, in its depth-first walk: the
+ * Littlewild `id` when present, else a synthetic `<primitive><n>`, made unique. The
+ * lossless writer uses the same IDs to find the source node of an id-less exported node.
+ */
+export function importedNodeIds(roots: readonly unknown[]): Map<Plain, string> {
+  const result = new Map<Plain, string>(),
+    ids = new Set<string>();
+  let counter = 0;
+  const visit = (input: unknown) => {
+    if (!plain(input)) return;
+    const lwId = typeof input.id === 'string' ? input.id : undefined;
+    let nodeId = forgeId(lwId ?? `${String(input.primitive)}${++counter}`, `node${++counter}`);
+    while (ids.has(nodeId)) nodeId = `${nodeId.slice(0, 58)}${++counter}`;
+    ids.add(nodeId);
+    result.set(input, nodeId);
+    for (const child of Array.isArray(input.children) ? input.children : []) visit(child);
+  };
+  for (const node of roots) visit(node);
+  return result;
+}
 const camel = (value: string) =>
   value.replace(/[-_]+([a-z0-9])/g, (_, c: string) => c.toUpperCase()).replace(/[^A-Za-z0-9]/g, '');
 export function littlewildModels(asset: Plain, prefix?: string) {
@@ -81,21 +102,18 @@ export function littlewildImportPlan(asset: Plain, prefix?: string) {
     const geometries: Plain = { box: { type: 'box', size: [1, 1, 1] } },
       usedMaterials: Plain = {},
       nodes: Plain[] = [],
-      ids = new Set<string>(),
       tags = new Map<string, string[]>();
     for (const [role, refs] of Object.entries(plain(rig[variant]) ? rig[variant] : {}))
       if (roles.has(role))
         for (const ref of Array.isArray(refs) ? refs : [refs])
           tags.set(String(ref), [...(tags.get(String(ref)) ?? []), `rig:${role}`]);
     const resolveMaterial = importedMaterials(materials, usedMaterials);
-    let counter = 0;
+    const nodeIds = importedNodeIds(model.nodes);
     const visit = (input: unknown, parent?: string) => {
       if (!plain(input)) return;
       const primitive = String(input.primitive),
         lwId = typeof input.id === 'string' ? input.id : undefined;
-      let nodeId = forgeId(lwId ?? `${primitive}${++counter}`, `node${++counter}`);
-      while (ids.has(nodeId)) nodeId = `${nodeId.slice(0, 58)}${++counter}`;
-      ids.add(nodeId);
+      const nodeId = nodeIds.get(input)!;
       const vec = (key: string) =>
         Array.isArray(input[key]) ? (input[key] as number[]) : undefined;
       const position = vec('position'),

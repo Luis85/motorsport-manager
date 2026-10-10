@@ -22,7 +22,11 @@ import {
   type LittlewildMaterial,
   type LittlewildMesh,
 } from '../application/littlewild.js';
-import { preserveExported, preserveTables } from '../application/littlewild-preserve.js';
+import {
+  preserveExported,
+  preserveTables,
+  referencedResources,
+} from '../application/littlewild-preserve.js';
 import { atomicWrite, readJson } from './files.js';
 
 type Plain = Record<string, unknown>;
@@ -199,6 +203,16 @@ export function littlewildVisual(asset: LittlewildAsset, models: ModelLibrary, e
   };
   const result = existing ? preserveTables(visual, previous) : visual;
   assertLittlewildComplexity(result);
+  // Source meshes no variant references (hand-authored extras) are kept byte for byte;
+  // name them so a reviewer does not mistake them for geometry the export still uses.
+  const referenced = referencedResources(result.models).meshes;
+  const unused = Object.keys(plain(result.meshes) ? result.meshes : {}).filter(
+    (id) => !referenced.has(id),
+  );
+  if (unused.length)
+    warnings.add(
+      `Kept ${unused.length} source mesh${unused.length === 1 ? '' : 'es'} that no variant references: ${unused.join(', ')}. Delete them from the definition by hand if nothing else needs them.`,
+    );
   return { visual: result, report, warnings: [...warnings] };
 }
 export async function readDefinition(file: string) {

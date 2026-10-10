@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { canonical } from '../domain/canonical.js';
 import { sphereUVs } from './surface-pattern.js';
-import type { LittlewildNode } from './littlewild.js';
+import { littlewildId, type LittlewildNode } from './littlewild.js';
+import { importedNodeIds } from './littlewild-import.js';
 
 /**
  * Source-preserving Littlewild maintenance, the one contract of every writer (Model Forge's
@@ -140,15 +141,21 @@ export function preserveVariantNodes(
   tables: { previous: Plain; previousMeshes: Plain; materials: Plain; meshes: Plain },
   kept: PreservedVariants,
 ): LittlewildNode[] {
+  // An id-less source node is matched only through the ID import gave it, never by
+  // position: after a node is removed or reordered, a position names another node.
+  const imported = importedNodeIds(source);
   const merge = (nodes: LittlewildNode[], previous: unknown[]): Node[] => {
-    const byId = new Map<string, Plain>();
+    const byId = new Map<string, Plain>(),
+      bySynthetic = new Map<string, Plain>();
     for (const node of previous)
       if (plain(node) && typeof node.id === 'string' && !byId.has(node.id)) byId.set(node.id, node);
-    return nodes.map((node, index) => {
-      const positional = previous[index];
-      const match =
-        byId.get(node.id) ??
-        (plain(positional) && positional.id === undefined ? positional : undefined);
+    for (const node of previous)
+      if (plain(node) && node.id === undefined && imported.has(node)) {
+        const id = littlewildId(imported.get(node)!);
+        if (!byId.has(id) && !bySynthetic.has(id)) bySynthetic.set(id, node);
+      }
+    return nodes.map((node) => {
+      const match = byId.get(node.id) ?? bySynthetic.get(node.id);
       return match && match.primitive === node.primitive
         ? mergeNode(node as Node, match)
         : track(node as Node);
