@@ -3,8 +3,9 @@
  * Process clock systems (LWProcessSystems), owned by the process-definition context: lazy arrival streams and admission, atomic
  * pool allocation when work starts, the settle loop, the per-minute work step with completions, multi-instance items and
  * deadlines, and the bulk fast-forward over quiet minutes. Token, case and receipt primitives live in LWProcessKernel, routing
- * and joins in LWProcessRouting, and read-model-only aggregates (per-step work cost, starts, cycle histogram) in LWProcessLedger,
- * which this module charges at the same points it charges pools so the totals stay exact and chunk-invariant.
+ * and joins in LWProcessRouting, and read-model-only aggregates (per-step work cost, starts, minutes by status, distributions,
+ * per-case books) in LWProcessLedger, which this module charges at the same points it charges pools so the totals stay exact and
+ * chunk-invariant. Every settle ends with `LWProcessLedger.settled`, so the ledger's token profile always describes the settled state.
  */
 (function(inputRoot: unknown) {
  'use strict';
@@ -86,7 +87,7 @@
    }
    k.station(s, step.id).waitMinutes += s.clock.minute - t.entered;
    s.clock.cost += step.cost ?? 0;
-   if (s.ledger) ledger.started(s.ledger, step);
+   if (s.ledger) ledger.started(s.ledger, step, t.caseId, s.clock.minute - t.entered);
    if (group) k.station(s, step.id).items!.started++;
    k.event(s, 'started', t.caseId, step.id, group ? 'item ' + t.item + ' of ' + t.items : '');
   }
@@ -95,7 +96,7 @@
  function settle(s: State): void {
   for (const f of s.failures.splice(0)) {
    const c = s.world.get<LWProcess.Case>(f.caseId, 'process-case')!;
-   if (c.status === 'active') k.fail(s, c, f.message);
+   if (c.status === 'active') k.fail(s, c, f.message, f.stepId);
   }
   // Cancelled or surplus multi-instance items are removed here because the clock may not change structure; escalations are spawned here for the same reason.
   for (const t of k.tokens(s).filter(t => t.status === 'spent')) k.destroyToken(s, t.id);
@@ -103,11 +104,12 @@
    const c = s.world.get<LWProcess.Case>(sp.caseId, 'process-case');
    if (!c || c.status !== 'active') continue;
    k.reserve(s, 1);
+   const target = s.definition.flows.find(f => f.id === sp.flow)!.to;
    if (k.visitOf(s, c.id, '#escalations') > MAX_ESCALATIONS) {
-    k.fail(s, c, 'Case spawned more than ' + MAX_ESCALATIONS + ' escalations.');
+    k.fail(s, c, 'Case spawned more than ' + MAX_ESCALATIONS + ' escalations.', target);
     continue;
    }
-   k.spawn(s, c.id, s.definition.flows.find(f => f.id === sp.flow)!.to, null, null, {escalated: true});
+   k.spawn(s, c.id, target, null, null, {escalated: true});
   }
   // Control-only cycles cannot monopolize a browser frame: each case has a transition budget.
   while (true) {
@@ -119,6 +121,7 @@
    if (routing.join(s) || routing.pull(s) || start(s)) continue;
    break;
   }
+  if (s.ledger) ledger.settled(s.ledger);
  }
  const pools = (s: State) => s.poolList ??= s.world.query(['process-pool']).map(id => s.world.get<LWProcess.Pool>(id, 'process-pool')!);
  /** Charges `minutes` of the pools' current occupation to busy minutes and work cost (and the ledger's per-step rates). */
@@ -127,7 +130,7 @@
    p.busyMinutes += p.busy * minutes;
    s.clock.cost += p.busy * p.costPerMinute * minutes;
   }
-  if (s.ledger) ledger.charge(s.ledger, minutes);
+  if (s.ledger) ledger.charge(s.ledger, minutes, k.tokens(s), s.clock.arrived - s.clock.completed - s.clock.failed);
  }
  /**
   * Jumps over minutes in which nothing can change: after a settle, state moves only at an arrival, a task completion or a timer due minute.

@@ -8,6 +8,9 @@
  * Event sink: when the state carries `sink`, every event is passed to it in engine order as a detached copy right after it joins
  * the bounded history, so a consumer sees every event, not only the latest `limits.events`. The sink never changes the history,
  * a decision or a draw; without one the only cost is a property check.
+ *
+ * Read-model hooks (LWProcessLedger, write-only): pool release, case failure (with the step it names, when known), retirement,
+ * repeat entries at non-join steps, and each concluded visit's service time and exit age. Nothing here reads them back.
  */
 declare namespace LWProcessKernel {
  type State = LWProcess.State; type Token = LWProcess.Token; type Step = LWProcess.Step;
@@ -30,7 +33,8 @@ declare namespace LWProcessKernel {
   event(s: State, kind: string, caseId: string, stepId: string, detail?: string): void;
   /** Returns the token's pool units (and its step's ledger rate). */
   release(s: State, t: Token): void;
-  fail(s: State, c: LWProcess.Case, message: string): void;
+  /** Fails an active case; `stepId` names the step the failure is attributed to in the read model (LWProcessLedger). */
+  fail(s: State, c: LWProcess.Case, message: string, stepId?: string): void;
   /** Tasks, touchpoints, machine steps and system steps execute identically. */
   works(step: Step): boolean;
   /** Work waiting at a step: a task's queue or a join's backlog. */
@@ -107,9 +111,9 @@ declare namespace LWProcessKernel {
  }
  function release(s: State, t: Token): void {
   for (const [id, quantity] of Object.entries(s.steps.get(t.stepId)!.resources ?? {})) pool(s, id).busy -= quantity;
-  if (s.ledger) ledger.released(s.ledger, t.stepId);
+  if (s.ledger) ledger.released(s.ledger, t.stepId, t.caseId);
  }
- function fail(s: State, c: LWProcess.Case, message: string): void {
+ function fail(s: State, c: LWProcess.Case, message: string, stepId?: string): void {
   if (c.status !== 'active') return;
   c.status = 'failed';
   c.error = message;
@@ -120,6 +124,7 @@ declare namespace LWProcessKernel {
    if (t.group) s.groups.delete(t.group);
    destroyToken(s, t.id);
   }
+  if (s.ledger) ledger.failed(s.ledger, c, stepId ?? null);
   event(s, 'failed', c.id, '', message);
   retire(s, c.id);
  }
@@ -128,6 +133,7 @@ declare namespace LWProcessKernel {
   s.visits.delete(caseId);
   s.seen.delete(caseId);
   s.outcomes.delete(caseId);
+  if (s.ledger) ledger.retired(s.ledger, caseId);
   s.finished.push(caseId);
   while (s.finished.length > s.retained) {
    s.world.destroy(s.finished.shift()!);
@@ -159,7 +165,7 @@ declare namespace LWProcessKernel {
  const unmet = (s: State, c: LWProcess.Case, step: Step) => (step.needs ?? []).find(n => !root.LWProcessNeeds.holds(n, c.data));
  function failNeed(s: State, c: LWProcess.Case, step: Step, need: LWProcess.Need): void {
   const label = need.label ? ' (' + need.label + ')' : '';
-  fail(s, c, 'Step "' + step.name + '" needs ' + root.LWProcessNeeds.describe(need) + label + ' but earlier steps did not deliver it.');
+  fail(s, c, 'Step "' + step.name + '" needs ' + root.LWProcessNeeds.describe(need) + label + ' but earlier steps did not deliver it.', step.id);
  }
  /** Adds one value to a running aggregate; non-numbers and non-finite numbers are ignored. */
  function note(map: Map<string, LWProcess.Aggregate>, key: string, value: unknown): void {
@@ -184,7 +190,7 @@ declare namespace LWProcessKernel {
   if (!seen.has(stepId)) {
    seen.add(stepId);
    station(s, stepId).reached++;
-  }
+  } else if (s.ledger && s.steps.get(stepId)!.kind !== 'join') ledger.repeated(s.ledger, t.caseId);
   const data = caseOf(s, t).data;
   for (const track of s.definition.track ?? []) note(s.entryAgg, stepId + '|' + track.field, data[track.field]);
  }
@@ -220,8 +226,8 @@ declare namespace LWProcessKernel {
   for (const draw of step.draws ?? []) changes[draw.field] = drawn(s, draw, 'draw|' + c.id + '|' + step.id + '|' + t.visit + '|' + draw.field);
   // The scheduler forbids structural changes while it runs, so clock-driven failures wait for the next settle.
   const reject = (message: string) => {
-   if (deferred) s.failures.push({caseId: c.id, message});
-   else fail(s, c, message);
+   if (deferred) s.failures.push({caseId: c.id, message, stepId: step.id});
+   else fail(s, c, message, step.id);
    return false;
   };
   for (const [field, delta] of Object.entries(step.add ?? {})) {
@@ -238,6 +244,7 @@ declare namespace LWProcessKernel {
   station(s, step.id).completed++;
   // A multi-instance visit records one receipt: first item start, last item end, the first item's input.
   const began = group ? group.started! : t.started!;
+  if (s.ledger) ledger.concluded(s.ledger, step.id, works(step) ? s.clock.minute - began : null, s.clock.minute - c.entered);
   s.receipts.push({id, caseId: c.id, stepId: step.id, started: began, finished: s.clock.minute, input: {...group ? group.input! : t.input!},
    output: {...c.data}, changes, ...step.timing ? {duration: s.clock.minute - began} : {}, ...group ? {instances: group.count} : {}});
   if (s.receipts.length > limits.receipts) {

@@ -3,6 +3,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {results} from './test-process-helpers.cjs';
+// The studio's escaping module, loaded before the checks that render inspector markup (as the studio page loads it first).
+import './process-html.js';
 import './test-process-engine.cjs';
 import './test-process-authoring.cjs';
 import './test-process-steps.cjs';

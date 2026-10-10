@@ -6,6 +6,7 @@ import path from 'node:path';
 import {nextFrames} from './browser-harness';
 import {query, OUT, runSuite} from './process-browser-fixture';
 import {calendarChecks} from './process-definition-calendar-checks';
+import {inspectorChecks} from './process-definition-inspector-checks';
 runSuite('process definition editor browser harness', 'process-definition-browser-results.json', async studio => {
  const {page, diagnostics, dir, check, checkLifecycle, freshStudio, defOpen, openDef, closeDef, restoreDef, applyDef, draftText, defOf, inSync, dialogOpen, activeId, importFeed, importRandom, openRandom, savedStep, importJourney, pasteDraft} = studio;
  await check('Definition editor opens as a modal from the header, pauses the run and applies a fresh paused run', async () => {
@@ -403,10 +404,23 @@ runSuite('process definition editor browser harness', 'process-definition-browse
   const payload = '"><img src=x onerror="globalThis.__pwned = (globalThis.__pwned || 0) + 1">';
   const poisoned = await defOf() as unknown as Record<string, any>;
   poisoned.resources[0].capacity = payload; poisoned.arrivals[0].at = payload; poisoned.seed = payload;
+  // Names, descriptions, field names, pool names and arrival data hold the same text; every view must show it as text.
+  poisoned.name = payload; poisoned.description = payload; poisoned.resources[0].name = payload; poisoned.arrivals[0].data[payload] = 1;
+  poisoned.arrivals[0].data.note = payload; poisoned.arrivals[0].draws = [{field: payload, kind: 'chance', percent: 50}];
+  poisoned.track = [{field: payload, label: payload}]; poisoned.sipoc = {suppliers: [{name: payload, supplies: payload}]};
   await pasteDraft(JSON.stringify(poisoned, null, 2)); await inSync();
   const dialogImages = () => page.locator('dialog.pd-dialog img').count(), pwned = () => page.evaluate(() => (globalThis as any).__pwned);
   assert.equal(await dialogImages(), 0); assert.equal(await pwned(), undefined);
   for (const id of ['tune-res-0-cap', 'tune-arr-0-at', 'tune-seed']) assert.equal(await page.locator('#' + id).inputValue(), '', id + ' shows no value');
+  const named = ['tune-name', 'tune-desc', 'tune-res-0-name', 'tune-arr-0-draw-0-field', 'tune-track-0-field', 'tune-track-0-label',
+   'tune-sipoc-suppliers-0-name'];
+  for (const id of named) {
+   assert.equal(await page.locator('#' + id).inputValue(), payload, id + ' holds the pasted text as its value');
+  }
+  assert.equal(await page.locator('#tune-res-0 legend').innerText(), `${payload} ${poisoned.resources[0].id}`);
+  const badName = /Field "".*<img src=x onerror=.*" has characters the form cannot edit/;
+  assert.match(await page.locator('#tune-arr-0').innerText(), badName, 'a bad field name is shown as text');
+  assert.equal(await page.locator('[data-act="data-remove"][data-name="note"]').count(), 1, 'the value of a field is a control value, not markup');
   assert.equal(await page.locator('#tune-res-0-cap').getAttribute('max'), '1000');
   assert.match(await page.locator('#diagnostics').innerText(), /Expected integer/);
   await closeDef(); await page.locator('[data-step="discovery"]').click(); await page.locator('#edit-step').click(); await page.locator('#se-name').waitFor();
@@ -415,5 +429,6 @@ runSuite('process definition editor browser harness', 'process-definition-browse
   await page.locator('#se-close').click(); await openDef(); await restoreDef(); await closeDef();
  });
  await calendarChecks(studio);
+ await inspectorChecks(studio);
  await checkLifecycle('Process definition editor browser lifecycle emits no runtime errors or network requests');
 });

@@ -27,11 +27,21 @@
  *
  * Incremental use: `replications` and `comparison` return a runner whose `step()` performs one replication (one seed; both
  * definitions for a comparison), so a page can spread the work over frames; `report()` summarises the rows so far and says
- * whether the plan is `complete`.
+ * whether the plan is `complete`. `advance(budget)` is the sliced form: it requests at most `budget` simulated minutes per call,
+ * keeps the open replication's session between calls (finishing replications on the way) and gives exactly the rows of `step()`,
+ * because a session advanced in any chunks equals one advance. `dispose()` closes the open session (cancel, process switch);
+ * the runner then refuses `step` and `advance` but still reports its rows. Replication sessions run with `series: false`.
+ *
+ * Warm-up (`warmup`, a whole number from 0 to minutes − 1, optional): each run snapshots at minute W and reports, besides the
+ * whole-run KPIs, windowed KPIs labelled "after minute W" from differences of cumulative totals over (W, end]: completed,
+ * failed, dropped, work and capacity cost, mean cycle of the cases finished in the window (Δ cycleSum / Δ completed), mean work in
+ * progress (Δ wipArea / window minutes), throughput per hour and per-pool utilisation (Δ busyMinutes / (window × capacity)).
+ * A run that stops before W takes its warm-up snapshot where it stopped (an empty window: per-minute KPIs are `null`). Without
+ * `warmup`, plans, reports and KPIs are exactly as before.
  */
 declare namespace LWProcessReplicate {
- interface Options { minutes: number; runs: number; seed?: number; horizon?: number | null; }
- interface Plan { minutes: number; horizon: number | null; seeds: number[]; }
+ interface Options { minutes: number; runs: number; seed?: number; horizon?: number | null; warmup?: number; }
+ interface Plan { minutes: number; horizon: number | null; seeds: number[]; warmup?: number; }
  interface Kpi { id: string; label: string; }
  interface Stats {
   n: number; mean: number | null; sd: number | null; ci95: [number, number] | null; p10: number | null; p50: number | null; p90: number | null;
@@ -41,13 +51,13 @@ declare namespace LWProcessReplicate {
  interface Row extends Outcome { seed: number; }
  interface Identity { id: string; name: string; revision: number; fingerprint: string; }
  interface Report {
-  format: 'wildlands-process-replications'; schemaVersion: 1; definition: Identity; minutes: number; horizon: number | null;
+  format: 'wildlands-process-replications'; schemaVersion: 1; definition: Identity; minutes: number; horizon: number | null; warmup?: number;
   runs: number; complete: boolean; seeds: number[]; kpis: Summary[]; rows: Row[];
  }
  interface Difference { id: string; label: string; a: Stats; b: Stats; difference: Stats; }
  interface PairRow { seed: number; a: Outcome; b: Outcome; difference: Record<string, number | null>; }
  interface Comparison {
-  format: 'wildlands-process-comparison'; schemaVersion: 1; a: Identity; b: Identity; minutes: number; horizon: number | null;
+  format: 'wildlands-process-comparison'; schemaVersion: 1; a: Identity; b: Identity; minutes: number; horizon: number | null; warmup?: number;
   runs: number; complete: boolean; seeds: number[]; kpis: Difference[]; rows: PairRow[];
  }
  interface Runner<R> {
@@ -55,8 +65,15 @@ declare namespace LWProcessReplicate {
   readonly total: number;
   /** Replications done so far. */
   done(): number;
-  /** Runs the next replication; false (doing nothing) once all are done. */
+  /** Runs (or finishes the open) replication; false (doing nothing) once all are done. */
   step(): boolean;
+  /**
+   * Requests at most `budgetMinutes` (a whole number, 1 or more) simulated minutes, keeping the open replication's session between
+   * calls; false (doing nothing) once all are done.
+   */
+  advance(budgetMinutes: number): boolean;
+  /** Closes the open session; later `step` and `advance` calls throw. */
+  dispose(): void;
   /** A detached report of the rows so far. */
   report(): R;
  }
@@ -68,7 +85,8 @@ declare namespace LWProcessReplicate {
   summarize(values: readonly (number | null)[]): Stats;
   /** Validates options and expands the seeds; `work` is the simulated minutes per replication factor (2 for a comparison). */
   plan(options: Options, definitionSeed?: number, work?: number): Plan;
-  kpis(definition: LWProcess.Definition): Kpi[];
+  /** The KPIs of a plan; with `warmup` the windowed `window.*` KPIs follow the whole-run ones. */
+  kpis(definition: LWProcess.Definition, warmup?: number): Kpi[];
   measure(definition: LWProcess.Definition, snapshot: LWProcess.Snapshot): Record<string, number | null>;
   replications(input: unknown, options: Options): Runner<Report>;
   replicate(input: unknown, options: Options): Report;
@@ -113,15 +131,29 @@ declare namespace LWProcessReplicate {
   const seed = options.seed ?? definitionSeed ?? 1;
   if (!whole(seed, 0, MAX_SEED)) throw Error('Seed must be a whole number from 0 to ' + MAX_SEED + '.');
   if (seed + runs - 1 > MAX_SEED) throw Error('Seeds ' + seed + ' to ' + (seed + runs - 1) + ' pass the largest seed, ' + MAX_SEED + '.');
-  return {minutes, horizon, seeds: Array.from({length: runs}, (_, i) => seed + i)};
+  const warmup = options.warmup;
+  if (warmup !== undefined && !whole(warmup, 0, minutes - 1)) throw Error('Warm-up must be a whole number of minutes from 0 to ' + (minutes - 1) + '.');
+  return {minutes, horizon, seeds: Array.from({length: runs}, (_, i) => seed + i), ...warmup === undefined ? {} : {warmup}};
  }
  const outcomes = (d: LWProcess.Definition) => d.steps.some(s => s.kind === 'end' && s.outcome !== undefined);
- function kpis(d: LWProcess.Definition): Kpi[] {
+ /** Windowed KPIs over (W, end] of a plan with a warm-up of W minutes. */
+ function windowed(d: LWProcess.Definition, warmup: number): Kpi[] {
+  const after = ' after minute ' + warmup;
+  return [{id: 'window.completed', label: 'Completed cases' + after}, {id: 'window.failed', label: 'Failed cases' + after},
+   {id: 'window.dropped', label: 'Dropped arrivals' + after}, {id: 'window.workCost', label: 'Work cost' + after},
+   {id: 'window.capacityCost', label: 'Capacity cost' + after},
+   {id: 'window.meanCycleMinutes', label: 'Mean cycle of cases finished' + after + ' (minutes)'},
+   {id: 'window.meanWip', label: 'Mean work in progress' + after},
+   {id: 'window.throughputPerHour', label: 'Throughput' + after + ' (completed per hour)'},
+   ...d.resources.map(r => ({id: 'window.utilization.' + r.id, label: 'Utilisation of ' + r.name + after}))];
+ }
+ function kpis(d: LWProcess.Definition, warmup?: number): Kpi[] {
   return [{id: 'completed', label: 'Completed cases'}, {id: 'failed', label: 'Failed cases'}, {id: 'dropped', label: 'Dropped arrivals'},
    {id: 'workCost', label: 'Work cost'}, {id: 'capacityCost', label: 'Capacity cost'}, {id: 'meanCycleMinutes', label: 'Mean cycle (minutes)'},
    {id: 'meanAgeMinutes', label: 'Mean age in progress (minutes)'}, {id: 'throughputPerHour', label: 'Throughput (completed per hour)'},
    ...d.resources.map(r => ({id: 'utilization.' + r.id, label: 'Utilisation of ' + r.name})),
-   ...outcomes(d) ? [{id: 'goals', label: 'Goals'}, {id: 'lost', label: 'Lost'}, {id: 'conversion', label: 'Conversion (permille)'}] : []];
+   ...outcomes(d) ? [{id: 'goals', label: 'Goals'}, {id: 'lost', label: 'Lost'}, {id: 'conversion', label: 'Conversion (permille)'}] : [],
+   ...warmup === undefined ? [] : windowed(d, warmup)];
  }
  function measure(d: LWProcess.Definition, q: LWProcess.Snapshot): Record<string, number | null> {
   const m = q.metrics, values: Record<string, number | null> = {completed: m.completed, failed: m.failed, dropped: m.dropped, workCost: m.cost,
@@ -133,47 +165,129 @@ declare namespace LWProcessReplicate {
  }
  const identity = (d: LWProcess.Definition): LWProcessReplicate.Identity =>
   ({id: d.id, name: d.name, revision: d.revision, fingerprint: root.LWProcessCatalog.fingerprint(d)});
- function runOne(d: LWProcess.Definition, seed: number, p: LWProcessReplicate.Plan): LWProcessReplicate.Outcome {
-  const session = root.LWProcessRuntime.create(d, {seed, horizon: p.horizon});
-  try {
-   const q = session.advance(p.minutes);
-   return {minute: q.minute, status: q.status, values: measure(d, q)};
-  } finally { session.dispose(); }
+ /** Differences of cumulative totals between the warm-up snapshot `w` and the end snapshot `q`. */
+ function measureWindow(w: LWProcess.Snapshot, q: LWProcess.Snapshot): Record<string, number | null> {
+  const a = w.metrics, b = q.metrics, span = q.minute - w.minute, completed = b.completed - a.completed;
+  const values: Record<string, number | null> = {'window.completed': completed, 'window.failed': b.failed - a.failed,
+   'window.dropped': b.dropped - a.dropped, 'window.workCost': b.cost - a.cost, 'window.capacityCost': b.capacityCost - a.capacityCost,
+   'window.meanCycleMinutes': completed ? (b.cycleSum! - a.cycleSum!) / completed : null,
+   'window.meanWip': span ? (b.wipArea! - a.wipArea!) / span : null, 'window.throughputPerHour': span ? completed * 60 / span : null};
+  q.resources.forEach((pool, i) => {
+   values['window.utilization.' + pool.id] = span ? (pool.busyMinutes - w.resources[i]!.busyMinutes) / (span * pool.capacity) : null;
+  });
+  return values;
+ }
+ /** One replication's run of one definition: its session, minute, warm-up snapshot and, once done, its outcome. */
+ interface Job {
+  d: LWProcess.Definition; session: LWProcess.Session; minute: number; stopped: boolean; last: LWProcess.Snapshot | null;
+  warm: LWProcess.Snapshot | null; outcome: LWProcessReplicate.Outcome | null;
+ }
+ const open = (d: LWProcess.Definition, seed: number, p: LWProcessReplicate.Plan): Job => ({d, minute: 0, stopped: false, last: null, warm: null,
+  outcome: null, session: root.LWProcessRuntime.create(d, {seed, horizon: p.horizon, series: false})});
+ /**
+  * Advances a job by at most `budget` requested minutes: to the warm-up minute (snapshot), then to the run minutes (outcome, session
+  * disposed). A session that stops early (no arrivals and no work left) cannot move further, so its last snapshot is final.
+  * Returns the minutes requested.
+  */
+ function drive(job: Job, p: LWProcessReplicate.Plan, budget: number): number {
+  let used = 0;
+  while (true) {
+   const warming = p.warmup !== undefined && job.warm === null, stop = warming ? p.warmup! : p.minutes;
+   if (job.stopped || job.minute >= stop) {
+    const q = job.last ?? job.session.query();
+    if (warming) {
+     job.warm = q;
+     continue;
+    }
+    job.outcome = {minute: q.minute, status: q.status, values: {...measure(job.d, q), ...job.warm ? measureWindow(job.warm, q) : {}}};
+    job.session.dispose();
+    return used;
+   }
+   if (used >= budget) return used;
+   const n = Math.min(budget - used, stop - job.minute), q = job.session.advance(n);
+   used += n;
+   job.stopped = q.minute < job.minute + n;
+   job.minute = q.minute;
+   job.last = q;
+  }
+ }
+ /**
+  * The incremental runner shared by replications and comparisons: each seed runs `definitions` in order, and `push` receives the
+  * seed's outcomes when the last one is done. `step` finishes one replication; `advance` spends a minute budget across them.
+  */
+ function runner<R>(definitions: LWProcess.Definition[], p: LWProcessReplicate.Plan, count: () => number,
+  push: (seed: number, outcomes: LWProcessReplicate.Outcome[]) => void, report: () => R): LWProcessReplicate.Runner<R> {
+  let job: Job | null = null, outcomes: LWProcessReplicate.Outcome[] = [], disposed = false;
+  const total = p.seeds.length;
+  function spend(budget: number, single: boolean): void {
+   let left = budget;
+   try {
+    while (count() < total) {
+     const seed = p.seeds[count()]!;
+     job ??= open(definitions[outcomes.length]!, seed, p);
+     left -= drive(job, p, left);
+     if (!job.outcome) return;
+     outcomes.push(job.outcome);
+     job = null;
+     if (outcomes.length < definitions.length) continue;
+     push(seed, outcomes);
+     outcomes = [];
+     if (single || left <= 0) return;
+    }
+   } catch (error) {
+    job?.session.dispose();
+    job = null;
+    outcomes = [];
+    throw error;
+   }
+  }
+  const usable = () => { if (disposed) throw Error('The replication runner is disposed.'); };
+  return {total, done: count, report,
+   step() {
+    usable();
+    if (count() >= total) return false;
+    spend(Infinity, true);
+    return true;
+   },
+   advance(budgetMinutes) {
+    usable();
+    if (!whole(budgetMinutes, 1, Number.MAX_SAFE_INTEGER)) throw Error('The minute budget must be a whole number (1 or more).');
+    if (count() >= total) return false;
+    spend(budgetMinutes, false);
+    return true;
+   },
+   dispose() {
+    disposed = true;
+    job?.session.dispose();
+    job = null;
+   }};
  }
  const copy = <T,>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
+ const warmupOf = (p: LWProcessReplicate.Plan) => p.warmup === undefined ? {} : {warmup: p.warmup};
  function replications(input: unknown, options: Options): LWProcessReplicate.Runner<LWProcessReplicate.Report> {
-  const d = root.LWProcessCatalog.admit(input), p = plan(options, d.seed), rows: LWProcessReplicate.Row[] = [], list = kpis(d);
+  const d = root.LWProcessCatalog.admit(input), p = plan(options, d.seed), rows: LWProcessReplicate.Row[] = [], list = kpis(d, p.warmup);
   const report = (): LWProcessReplicate.Report => copy({format: 'wildlands-process-replications', schemaVersion: 1, definition: identity(d),
-   minutes: p.minutes, horizon: p.horizon, runs: p.seeds.length, complete: rows.length === p.seeds.length, seeds: p.seeds,
+   minutes: p.minutes, horizon: p.horizon, ...warmupOf(p), runs: p.seeds.length, complete: rows.length === p.seeds.length, seeds: p.seeds,
    kpis: list.map(k => ({id: k.id, label: k.label, ...summarize(rows.map(r => r.values[k.id] ?? null))})), rows});
-  return {total: p.seeds.length, done: () => rows.length, report,
-   step() {
-    if (rows.length >= p.seeds.length) return false;
-    const seed = p.seeds[rows.length]!;
-    rows.push({seed, ...runOne(d, seed, p)});
-    return true;
-   }};
+  return runner([d], p, () => rows.length, (seed, [run]) => { rows.push({seed, ...run!}); }, report);
  }
  function comparison(inputA: unknown, inputB: unknown, options: Options): LWProcessReplicate.Runner<LWProcessReplicate.Comparison> {
   const a = root.LWProcessCatalog.admit(inputA), b = root.LWProcessCatalog.admit(inputB), p = plan(options, a.seed, 2);
   const rows: LWProcessReplicate.PairRow[] = [], seen = new Set<string>(), list: Kpi[] = [];
-  for (const k of [...kpis(a), ...kpis(b)]) if (!seen.has(k.id)) { seen.add(k.id); list.push(k); }
+  for (const k of [...kpis(a, p.warmup), ...kpis(b, p.warmup)]) if (!seen.has(k.id)) { seen.add(k.id); list.push(k); }
   const value = (o: LWProcessReplicate.Outcome, id: string) => o.values[id] ?? null;
   const report = (): LWProcessReplicate.Comparison => copy({format: 'wildlands-process-comparison', schemaVersion: 1, a: identity(a), b: identity(b),
-   minutes: p.minutes, horizon: p.horizon, runs: p.seeds.length, complete: rows.length === p.seeds.length, seeds: p.seeds,
+   minutes: p.minutes, horizon: p.horizon, ...warmupOf(p), runs: p.seeds.length, complete: rows.length === p.seeds.length, seeds: p.seeds,
    kpis: list.map(k => ({id: k.id, label: k.label, a: summarize(rows.map(r => value(r.a, k.id))), b: summarize(rows.map(r => value(r.b, k.id))),
     difference: summarize(rows.map(r => r.difference[k.id] ?? null))})), rows});
-  return {total: p.seeds.length, done: () => rows.length, report,
-   step() {
-    if (rows.length >= p.seeds.length) return false;
-    const seed = p.seeds[rows.length]!, runA = runOne(a, seed, p), runB = runOne(b, seed, p), difference: Record<string, number | null> = {};
-    for (const k of list) {
-     const x = value(runA, k.id), y = value(runB, k.id);
-     difference[k.id] = x === null || y === null ? null : x - y;
-    }
-    rows.push({seed, a: runA, b: runB, difference});
-    return true;
-   }};
+  return runner([a, b], p, () => rows.length, (seed, [runA, runB]) => {
+   const difference: Record<string, number | null> = {};
+   for (const k of list) {
+    const x = value(runA!, k.id), y = value(runB!, k.id);
+    difference[k.id] = x === null || y === null ? null : x - y;
+   }
+   rows.push({seed, a: runA!, b: runB!, difference});
+  }, report);
  }
  function drain<R>(runner: LWProcessReplicate.Runner<R>): R {
   while (runner.step()) { /* one replication per step */ }

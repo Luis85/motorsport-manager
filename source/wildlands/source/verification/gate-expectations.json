@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
-  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-bpmn", "business-process-analysis", "business-process-browser", "process-layout-browser", "process-step-editor-browser", "process-definition-browser", "process-renderers-browser", "process-lenses-browser", "process-bpmn-import-browser", "process-readability-browser", "process-present-browser", "process-shell-browser"],
-  "totalChecks": 2151,
+  "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-bpmn", "business-process-analysis", "business-process-browser", "process-layout-browser", "process-step-editor-browser", "process-definition-browser", "process-renderers-browser", "process-lenses-browser", "process-bpmn-import-browser", "process-readability-browser", "process-present-browser", "process-shell-browser", "business-process-readmodel"],
+  "totalChecks": 2174,
   "reviewedAdditions": [
     {"suite": "creatures", "name": "Forced world paints reuse rigs and invalidate each authored visual identity exactly once"},
     {"suite": "animations", "name": "Owned p5 focus hooks release by identity across concurrent, reentrant, rejected and failed construction lifecycles"},
@@ -612,7 +612,30 @@
     {"suite": "process-step-editor-browser", "name": "Apply over a run offers Export report first, which exports and keeps the run on the same Back-first confirm"},
     {"suite": "process-step-editor-browser", "name": "Definition editor adds a step and tidies the layout from Tune values, each undoable and never applied"},
     {"suite": "process-step-editor-browser", "name": "Definition editor opened from the step editor offers Back to the step, which reopens the step editor on it"},
-    {"suite": "process-step-editor-browser", "name": "Step editor and Definition editor sheet chrome stays within about 30% of a 390 by 844 phone screen without overflow"}
+    {"suite": "process-step-editor-browser", "name": "Step editor and Definition editor sheet chrome stays within about 30% of a 390 by 844 phone screen without overflow"},
+    {"suite": "business-process-analysis", "name": "LWProcessHtml escapes the five HTML characters exactly as the local escapers it replaces"},
+    {"suite": "business-process-analysis", "name": "LWProcessHtml html escapes every interpolation and trusts only Safe values made by html, raw or join"},
+    {"suite": "business-process-analysis", "name": "LWProcessHtml num admits only finite numbers for value, min and max attributes"},
+    {"suite": "business-process-analysis", "name": "Tune values and the inspector carry no local escaper; the remaining escapers are listed"},
+    {"suite": "business-process-analysis", "name": "The inspector shows mean wait, the work cost split, pool idle cost, throughput and notes from the read model"},
+    {"suite": "business-process-analysis", "name": "Inspector and KPI times use the display calendar: business days and weeks beside minutes"},
+    {"suite": "process-definition-browser", "name": "The inspector shows mean wait, work cost, idle cost and throughput at minute 120 of the agency demo without ticking"},
+    {"suite": "process-definition-browser", "name": "The inspector lists modelling notes and shows the rounding note beside Random timing in the inspector and the step editor"},
+    {"suite": "process-definition-browser", "name": "The inspector and the KPI strip word durations with the display calendar"},
+    {"suite": "process-definition-browser", "name": "A hostile definition renders as text in the inspector, the pools, the KPI strip and Inputs & outputs and runs no handler"},
+    {"suite": "business-process-analysis", "name": "Read model pins minutes by status, dominant-state lead time, flow efficiency, attributed cost and recent cases for a FIFO queue"},
+    {"suite": "business-process-analysis", "name": "Read model counts repeat entries at non-join steps only and attributes a failure with its lifetime and cost to its step"},
+    {"suite": "business-process-readmodel", "name": "Every demo satisfies the read-model identities: WIP area, lead time, cost, failures, repeats and recent cases"},
+    {"suite": "business-process-readmodel", "name": "Read-model values, distributions, series and recent cases are identical under random chunkings, one-minute advances and pruning"},
+    {"suite": "business-process-analysis", "name": "Series fill quiet minutes exactly: a two-case FIFO queue sampled every minute matches the hand-computed run"},
+    {"suite": "business-process-readmodel", "name": "Every demo samples the state at the end of each grid minute, with monotone cumulatives and areas equal to minutes by status"},
+    {"suite": "business-process-analysis", "name": "Series decimate at K + 1 samples by doubling with merged peaks, and a 100,000-minute open stream stays within K"},
+    {"suite": "business-process-analysis", "name": "Series options are validated, bounded by 400,000 values, and false turns the series off without changing the run"},
+    {"suite": "business-process-readmodel", "name": "Fine distributions use 54 edges whose sums reproduce the coarse histogram, count every start, visit, timer and finish"},
+    {"suite": "business-process-analysis", "name": "The application controller reads series, distributions and recent cases detached, while playing, without ticking"},
+    {"suite": "business-process-analysis", "name": "Replication warm-up adds windowed KPIs after minute W from differences of cumulative totals, and leaves plans without it unchanged"},
+    {"suite": "business-process-analysis", "name": "Sliced replication runners advance within a minute budget and report exactly what step() reports, then dispose their session"},
+    {"suite": "business-process-analysis", "name": "CLI process replicate and compare accept --warmup, match the pure module and name the flag in their errors"}
   ],
   "renames": [
     {"suite": "wildlands-acceptance", "from": "Every discovered built-in scenario compiles complete resources with verified manifest hashes", "to": "Every discovered game folder scenario compiles complete resources with verified manifest hashes", "reason": "Phase 4A (decision D1): the engine CLI has no built-in scenarios. The check now compiles every scenario of every colony game folder (scenarios --game DIR) instead of the three former built-in packs; its assertions on complete resources and manifest hashes are unchanged."},
@@ -2847,7 +2870,22 @@
       "Structure deletes a step with its paths, reconnects predecessors to the single target and refuses the start step",
       "Structure changes a step kind, keeps valid fields and lists the dropped fields in plain words",
       "Layout tidy is deterministic, one step per cell, left to right along the main route, with loops, forks and deadline branches below",
-      "Layout lays out a 128-step process in bounded time and move rounds a dragged step to 0.5 within the bounds"
+      "Layout lays out a 128-step process in bounded time and move rounds a dragged step to 0.5 within the bounds",
+      "LWProcessHtml escapes the five HTML characters exactly as the local escapers it replaces",
+      "LWProcessHtml html escapes every interpolation and trusts only Safe values made by html, raw or join",
+      "LWProcessHtml num admits only finite numbers for value, min and max attributes",
+      "Tune values and the inspector carry no local escaper; the remaining escapers are listed",
+      "The inspector shows mean wait, the work cost split, pool idle cost, throughput and notes from the read model",
+      "Inspector and KPI times use the display calendar: business days and weeks beside minutes",
+      "Read model pins minutes by status, dominant-state lead time, flow efficiency, attributed cost and recent cases for a FIFO queue",
+      "Read model counts repeat entries at non-join steps only and attributes a failure with its lifetime and cost to its step",
+      "Series fill quiet minutes exactly: a two-case FIFO queue sampled every minute matches the hand-computed run",
+      "Series decimate at K + 1 samples by doubling with merged peaks, and a 100,000-minute open stream stays within K",
+      "Series options are validated, bounded by 400,000 values, and false turns the series off without changing the run",
+      "The application controller reads series, distributions and recent cases detached, while playing, without ticking",
+      "Replication warm-up adds windowed KPIs after minute W from differences of cumulative totals, and leaves plans without it unchanged",
+      "Sliced replication runners advance within a minute budget and report exactly what step() reports, then dispose their session",
+      "CLI process replicate and compare accept --warmup, match the pure module and name the flag in their errors"
     ],
     "business-process-browser": [
       "Process artifact starts paused with one selectable scene per step and real WebGL",
@@ -2921,7 +2959,11 @@
       "Process definition editor browser lifecycle emits no runtime errors or network requests",
       "Definition editor undoes and redoes draft edits with Ctrl+Z and offers Undo after a removed row",
       "A poisoned draft opened in Tune values or the step editor creates no element and runs no handler",
-      "Tune values sets, checks and clears the display calendar, and applying it leaves the run unchanged"
+      "Tune values sets, checks and clears the display calendar, and applying it leaves the run unchanged",
+      "The inspector shows mean wait, work cost, idle cost and throughput at minute 120 of the agency demo without ticking",
+      "The inspector lists modelling notes and shows the rounding note beside Random timing in the inspector and the step editor",
+      "The inspector and the KPI strip word durations with the display calendar",
+      "A hostile definition renders as text in the inspector, the pools, the KPI strip and Inputs & outputs and runs no handler"
     ],
     "process-renderers-browser": [
       "Actor joints animate only during playback, respect reduced motion, and do not tick the process",
@@ -3007,6 +3049,12 @@
       "A draft kept in this browser survives a reload and is offered on load and after a switch; Not now keeps it and Discard removes it",
       "Recover draft restores the saved draft without applying it; copies for another definition are ignored and blocked or full storage changes nothing else",
       "Process shell browser lifecycle emits no runtime errors or network requests"
+    ],
+    "business-process-readmodel": [
+      "Every demo satisfies the read-model identities: WIP area, lead time, cost, failures, repeats and recent cases",
+      "Read-model values, distributions, series and recent cases are identical under random chunkings, one-minute advances and pruning",
+      "Every demo samples the state at the end of each grid minute, with monotone cumulatives and areas equal to minutes by status",
+      "Fine distributions use 54 edges whose sums reproduce the coarse histogram, count every start, visit, timer and finish"
     ]
   }
 }
