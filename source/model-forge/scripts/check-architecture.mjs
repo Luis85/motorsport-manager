@@ -1,5 +1,6 @@
-// Enforces the boundaries of the model recipe kernel (src/kernel) and how the rest of
-// Model Forge reaches it. Scene Forge imports the same kernel source through its bridges,
+// Enforces the boundaries of the model recipe kernel (src/kernel), the one-model editor
+// layers around it (domain -> application -> infra -> commands; browser-only preview) and
+// the size budgets: 400 code lines per source file, 450 per test file. Scene Forge imports the same kernel source through its bridges,
 // so the kernel must stay self-contained and limited to the shared dependency set that
 // Scene Forge resolves from its own node_modules (scripts/kernel-deps.mjs, kernel-resolve.mjs).
 import ts from 'typescript';
@@ -32,6 +33,22 @@ const layers = {
   io: new Set(['domain', 'application', 'io']),
   render: new Set(['domain', 'application', 'render']),
 };
+/** Editor layers outside the kernel and the project-internal targets each may import. */
+const editorLayers = {
+  domain: new Set(['domain']),
+  application: new Set(['domain', 'application']),
+  infra: new Set(['domain', 'application', 'infra', 'version.ts']),
+  commands: new Set(['domain', 'application', 'infra', 'commands', 'version.ts']),
+  preview: new Set(['preview']),
+};
+/** Bare packages each editor layer may import at runtime. */
+const editorPackages = {
+  domain: [/^zod$/],
+  application: [/^zod$/, /^three$/],
+  infra: [/^zod$/],
+  commands: [/^zod$/, /^commander$/, /^three$/],
+  preview: [/^three$/, /^three\/addons\/.+\.js$/],
+};
 const codeLines = (text) =>
   text
     .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -43,20 +60,26 @@ for (const file of files) {
   const tree = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   const inKernel = file.startsWith(kernel);
   const layer = inKernel ? file.slice(kernel.length).split('/')[0] : undefined;
-  const pure = layer === 'domain' || layer === 'application' || layer === 'render';
+  const editorLayer = inKernel ? undefined : file.slice('src/'.length).split('/')[0];
+  const editor = editorLayers[editorLayer] ? editorLayer : undefined;
+  const pure = inKernel
+    ? layer === 'domain' || layer === 'application' || layer === 'render'
+    : editor === 'domain' || editor === 'application' || editor === 'preview';
   const dependencies = [];
   const report = (message) => errors.push(`${file}: ${message}`);
   bareImports.set(file, []);
-  if (inKernel && codeLines(text) > 400)
-    report('kernel module exceeds 400 code lines; separate responsibilities');
+  if (codeLines(text) > 400) report('module exceeds 400 code lines; separate responsibilities');
   function dependency(specifier, typeOnly = false) {
     if (!specifier) return;
     const builtin = specifier.startsWith('node:') || builtins.has(specifier);
-    if (pure && builtin) report(`environment dependency ${specifier} is forbidden in ${layer}`);
+    if (pure && builtin)
+      report(`environment dependency ${specifier} is forbidden in ${layer ?? editor}`);
     if (!specifier.startsWith('.')) {
       if (!builtin && !typeOnly) bareImports.get(file).push(specifier);
       if (inKernel && !builtin && !sharedPackages.some((pattern) => pattern.test(specifier)))
         report(`kernel may import only shared packages, not ${specifier}`);
+      if (editor && !builtin && !typeOnly && !editorPackages[editor].some((p) => p.test(specifier)))
+        report(`${editor} may not import package ${specifier}`);
       return;
     }
     const target = path.posix
@@ -66,6 +89,20 @@ for (const file of files) {
       report(`kernel imports nothing outside src/kernel: ${target}`);
     if (!inKernel && target.startsWith(kernel) && !entries.has(target))
       report(`import the kernel through src/kernel/index.ts or render/index.ts, not ${target}`);
+    if (
+      editor === 'preview' &&
+      target.startsWith(kernel) &&
+      target !== 'src/kernel/render/index.ts'
+    )
+      report('preview is browser-only and imports the kernel only through render/index.ts');
+    if (editor && editor !== 'preview' && target === 'src/kernel/render/index.ts')
+      report('Node layers import the kernel through src/kernel/index.ts');
+    if (editor && !target.startsWith(kernel)) {
+      const targetLayer = target.slice('src/'.length).split('/')[0];
+      const typePreview = typeOnly && targetLayer === 'preview';
+      if (!editorLayers[editor].has(targetLayer) && !typePreview)
+        report(`invalid ${editor} dependency on ${target}`);
+    }
     if (inKernel && target.startsWith(kernel) && layers[layer]) {
       const targetLayer = target.slice(kernel.length).split('/')[0];
       const allowed = layers[layer].has(targetLayer) || (typeOnly && targetLayer === 'render');
@@ -99,11 +136,14 @@ for (const file of files) {
     )
       dependency(node.arguments[0].text);
     if (
-      (layer === 'domain' || layer === 'application') &&
+      (layer === 'domain' ||
+        layer === 'application' ||
+        editor === 'domain' ||
+        editor === 'application') &&
       ts.isIdentifier(node) &&
       ['process', 'window', 'localStorage', 'fetch'].includes(node.text)
     )
-      report(`ambient environment access ${node.text} is forbidden in the kernel core`);
+      report(`ambient environment access ${node.text} is forbidden in a pure layer`);
     ts.forEachChild(node, visit);
   }
   visit(tree);
@@ -142,11 +182,22 @@ for (const file of reachable) {
     errors.push(`${browserEntry} reaches ${file}; the browser consumes compiled scenes`);
 }
 
+// Test files have a 450 code-line budget; the package version matches src/version.ts.
+for (const file of (await readdir('tests', { recursive: true })).filter((f) => f.endsWith('.ts'))) {
+  const text = await readFile(path.join('tests', file), 'utf8');
+  if (codeLines(text) > 450) errors.push(`tests/${file}: test exceeds 450 code lines`);
+}
+const { version } = JSON.parse(await readFile('package.json', 'utf8'));
+if (!(await readFile('src/version.ts', 'utf8')).includes(`'${version}'`))
+  errors.push(`src/version.ts does not declare package version ${version}`);
+
 if (errors.length) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else
   console.log(
     `Architecture passed: ${files.length} modules; self-contained kernel with shared packages only, ` +
-      `browser-safe render entry (${reachable.size} modules), no runtime cycles or explicit any.`,
+      `browser-safe render entry (${reachable.size} modules), layered editor ` +
+      `(domain -> application -> infra -> commands, browser-only preview), size budgets, ` +
+      `no runtime cycles or explicit any.`,
   );

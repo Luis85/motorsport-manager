@@ -11,11 +11,17 @@
     "model-forge": "dist/cli.js"
   },
   "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:cli": "node scripts/standalone.mjs",
+    "check:cli": "node scripts/standalone.mjs --check",
     "check": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
-    "format": "prettier --write src tests scripts *.json",
-    "format:check": "prettier --check src tests scripts *.json",
-    "architecture:check": "node scripts/check-architecture.mjs"
+    "test:e2e": "node scripts/build.mjs --preview && node --import tsx --test tests/e2e/*.test.ts",
+    "cli": "node --import tsx src/cli.ts",
+    "format": "prettier --write src tests scripts examples *.json *.md",
+    "format:check": "prettier --check src tests scripts examples *.json *.md",
+    "architecture:check": "node scripts/check-architecture.mjs",
+    "verify": "node scripts/verify.mjs"
   },
   "dependencies": {
     "commander": "^14.0.0",
