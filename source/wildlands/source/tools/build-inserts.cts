@@ -307,6 +307,8 @@ export const INSERTS: readonly Insert[] = [
   ["PROCESS_SYSTEMS", "process-systems.js", "script", "template-process"],
   ["PROCESS_SESSION", "process-session.js", "script", "template-process"],
   ["PROCESS_AUTHORING", "process-authoring.js", "script", "template-process"],
+  ["PROCESS_STRUCTURE", "process-structure.js", "script", "template-process"],
+  ["PROCESS_LAYOUT", "process-layout.js", "script", "template-process"],
   ["PROCESS_APPLICATION", "process-application.js", "script", "template-process"],
   ["PROCESS_ROOMS", "process-rooms.js", "script", "template-process"],
   ["PROCESS_ROOMS_TOUCHPOINT", "process-rooms-touchpoint.js", "script", "template-process"],

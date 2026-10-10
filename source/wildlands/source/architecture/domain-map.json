@@ -408,6 +408,8 @@
       "files": [
         "process-session.ts",
         "process-authoring.ts",
+        "process-structure.ts",
+        "process-layout.ts",
         "process-application.ts"
       ]
     },
