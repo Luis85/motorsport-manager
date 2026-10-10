@@ -86,17 +86,22 @@ declare namespace LWProcessIO {
   const detail = first ? clip((first.path ? first.path + ': ' : '') + first.message) : '';
   return `Import rejected: this process has ${count}${detail ? '; first, ' + detail : ''}. Fix the file, then import it again.`;
  }
- /** Download HTML: every applied definition in list order, the first one also as the single-definition global. */
+ /**
+  * Download HTML: every applied definition in list order, the first one also as the single-definition global. The data globals are
+  * whole lines of the page's data script, so the patterns are anchored to a line: the same words inside this module's own inlined
+  * source never match.
+  */
+ const ONE = /^window\.LWProcessDefinition = [^\n]*;$/m, LIST = /^window\.LWProcessDefinitions = [^\n]*;$/m;
  function offlineHtml(pristine: string, defs: LWProcess.Definition[]): string {
   const safe = (value: unknown) => JSON.stringify(value).replaceAll('<', '\\u003c').replaceAll('>', '\\u003e').replaceAll('&', '\\u0026');
   const many = defs.length > 1, list = 'window.LWProcessDefinitions = ' + safe(defs) + ';';
   // The first list entry stays the single-definition global, so a multi-process page reopens on its first process.
-  let html = pristine.replace(/window\.LWProcessDefinition = [^\n]*;/, () => 'window.LWProcessDefinition = ' + safe(defs[0]) + ';')
+  let html = pristine.replace(ONE, () => 'window.LWProcessDefinition = ' + safe(defs[0]) + ';')
    .replace(/<meta name="wildlands-game-digest"[^>]*>/g, '');
   if (!many) return html.replace(/<title>[^<]*<\/title>/, () => '<title>' + esc(defs[0]!.name) + '</title>');
   // A page built for one process has no list yet: it gains one right after the single-definition global.
-  if (/window\.LWProcessDefinitions = [^\n]*;/.test(html)) return html.replace(/window\.LWProcessDefinitions = [^\n]*;/, () => list);
-  return html.replace(/(window\.LWProcessDefinition = [^\n]*;)/, (line: string) => line + '\n' + list);
+  if (LIST.test(html)) return html.replace(LIST, () => list);
+  return html.replace(ONE, (line: string) => line + '\n' + list);
  }
  function create(env: LWProcessIO.Env): LWProcessIO.Surface {
   const save = (name: string, data: string, type: string, message: string) => { env.download(name, data, type); env.status(message); };
