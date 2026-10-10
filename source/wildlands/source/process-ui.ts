@@ -38,7 +38,7 @@
  <div id="feed-announcer" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>`;
  const get = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
  const setHtml = (id: string, html: string): boolean => {const node = get(id); if (node.dataset.html === html) return false; node.dataset.html = html; node.innerHTML = html; return true;};
- let view = app.query(), three: LWProcess3D.Surface | null = null;
+ let view = app.query(), three: LWProcess3D.Surface | null = null, stage: LWProcess3D.Stage | null = null;
  const newMap = () => root.LWProcess2D.create(get('map'), id => command(() => app.select(id)));
  let svg = newMap();
  /** The SIPOC grid or Journey map, built on demand for the process type and drawn only while it is the chosen view. */
@@ -82,9 +82,11 @@
  draft.subscribe(draftChip);
  function rebuild(): void {
   three?.dispose(); three = null; unavailable = ''; dataView.reset(); activity.reset(); lens.reset();
-  // A disposed renderer force-loses its context for good, so every rebuild draws on a fresh canvas element.
-  const stale = get('canvas'); stale.replaceWith(stale.cloneNode(false));
-  try {three = root.LWProcess3D.create(get<HTMLCanvasElement>('canvas'), app.query().definition, id => command(() => app.select(id)));}
+  // One WebGL renderer and canvas serve the page's lifetime; a rebuild replaces only the 3D scene.
+  try {
+   stage ??= root.LWProcess3D.stage(get<HTMLCanvasElement>('canvas'));
+   three = root.LWProcess3D.create(stage, app.query().definition, id => command(() => app.select(id)));
+  }
   catch (e) {unavailable = '3D unavailable in this browser. The complete simulation is available in 2D.'; if (app.query().mode === '3d') app.mode('2d'); status(unavailable, true);}
   draft.enter(app.query().active, app.query().definition);
  }
@@ -297,5 +299,5 @@
  root.__wildlandsReady = true;
  document.documentElement.dataset.wildlandsReady = 'process'; dispatchEvent(new CustomEvent('wildlands:ready', {detail: {host: 'process'}}));
  frameId = requestAnimationFrame(animate);
- window.addEventListener('pagehide', () => {disposed = true; cancelAnimationFrame(frameId); present.dispose(); three?.dispose(); svg.dispose(); lens.dispose(); definitionEditor.dispose(); stepEditor.dispose(); bpmnImport.dispose(); activity.dispose(); menu.dispose(); app.dispose();}, {once: true});
+ window.addEventListener('pagehide', () => {disposed = true; cancelAnimationFrame(frameId); present.dispose(); three?.dispose(); stage?.dispose(); svg.dispose(); lens.dispose(); definitionEditor.dispose(); stepEditor.dispose(); bpmnImport.dispose(); activity.dispose(); menu.dispose(); app.dispose();}, {once: true});
 })(globalThis);

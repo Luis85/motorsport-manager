@@ -12,7 +12,11 @@ declare namespace LWProcessRooms {
   sign(parent: any, text: string, x: number, y: number, z: number, width: number, height: number, accent: string): any;
   /** Floating mood face sprite for an `emotion` level; the renderer places it above the room caption. */
   mood(parent: any, level: number): any;}
- interface Room {setActive(active: boolean): void; setQueued(items: number): void; setBacklog(items: number): void; animate(t: number, progress: number): void;}
+ /** `moving` is true when `animate` moves any prop, so a renderer can skip redrawing rooms that stay still. */
+ interface Room {
+  setActive(active: boolean): void; setQueued(items: number): void; setBacklog(items: number): void; animate(t: number, progress: number): void;
+  readonly moving: boolean;
+ }
  /** Builder context: furniture goes in `live.parent` (always visible), `live` (working only) and `idle` (standby only). */
  interface Ctx {G(parent: any): any; P(parent: any, kind: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string, extra?: Record<string, unknown>): any;
   live: any; idle: any; step: LWProcess.Step; readonly on: boolean; mat: Kit['mat']; sign(parent: any, text: string, x: number, y: number, z: number, width: number, height: number): any;
@@ -259,6 +263,7 @@ declare namespace LWProcessRooms {
    setActive(active) {on = active; live.visible = active; idle.visible = !active; for (const s of states) s(active, waiting);},
    setQueued(items) {waiting = items; for (const s of states) s(on, items);},
    animate(t, progress) {for (const s of swings) s(t, progress);},
+   get moving() {return swings.length > 0;},
   };
  }
  const api: LWProcessRooms.Api = {theme, build, builders: BUILDERS, channels: {}, moods: [], fallbackTheme: T('journey', 'Touchpoint', '#2f4a47', '#3b5f5a', '#7fd0c4', 'Serving customers')};

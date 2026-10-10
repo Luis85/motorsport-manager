@@ -38,8 +38,9 @@ declare namespace LWProcessApp {
   };
   const options = () => ({horizon, ...seedOverride === undefined ? {} : {seed: seedOverride}});
   const alive = () => { if (disposed) throw Error('Process controller is disposed.'); };
-  const terminal = () => ['completed', 'blocked', 'limit'].includes(session.query().status);
-  const advance = (minutes: number) => { session.advance(minutes); if (terminal()) playing = false; };
+  const stopped = (s: LWProcess.Snapshot) => ['completed', 'blocked', 'limit'].includes(s.status), terminal = () => stopped(session.query());
+  // `advance` already returns the snapshot `terminal` would build again, so a pulse makes one copy fewer.
+  const advance = (minutes: number) => { if (stopped(session.advance(minutes))) playing = false; };
   return {
    query: () => ({definition: JSON.parse(JSON.stringify(definition)) as LWProcess.Definition, snapshot: session.query(), selected, mode, lens: lensOf(definition), playing, horizon, processes: slots.map(d => ({id: d.id, name: d.name})), active}),
    select(id) { if (id !== null && !definition.steps.some(s => s.id === id)) throw Error('Unknown step: ' + id); selected = id; },

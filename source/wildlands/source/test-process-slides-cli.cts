@@ -97,9 +97,25 @@ test('CLI process diff reports changed steps, flows, resources, arrivals and set
  const report = call(['diff', '--input', 'b.json', '--against', 'a.json']);
  assert.deepEqual(report, {ok: true, protocolVersion: 1, input: {file: 'b.json', id: 'small-claims', revision: 7, fingerprint: catalog.fingerprint(b)}, against: {file: 'a.json', id: 'small-claims', revision: 1, fingerprint: catalog.fingerprint(a)},
   identical: false, revisionChanged: true, summary: 'Changes: 3 steps, 2 flows, 1 resource, 1 arrival rule, 3 process settings changed', changes: {steps: 3, flows: 2, resources: 1, arrivals: 1, settings: 3},
-  changedSteps: [{id: 'check', name: 'Check the claim', change: 'changed'}, {id: 'pay', name: 'Pay the claim', change: 'changed'}, {id: 'supervisor', name: 'Supervisor review', change: 'removed'}], changedSettings: ['description', 'name', 'seed']});
+  changedSteps: [{id: 'check', name: 'Check the claim', change: 'changed'}, {id: 'pay', name: 'Pay the claim', change: 'changed'}, {id: 'supervisor', name: 'Supervisor review', change: 'removed'}],
+  changedSettings: ['description', 'name', 'seed'],
+  // Resources, flows and arrival rules are itemised like steps, and every changed scalar value carries its path, before and after.
+  changedResources: [{id: 'clerks', name: 'Claims clerks', change: 'changed'}],
+  changedFlows: [{id: 'check-late', name: 'check → supervisor', change: 'removed'},
+   {id: 'supervisor-decide', name: 'supervisor → decide', change: 'removed'}],
+  changedArrivals: [{index: 0, name: 'Arrival rule 1', change: 'changed'}],
+  fields: [{path: '/description', before: a.description, after: 'Changed.'}, {path: '/name', before: 'Small claims', after: 'Claims desk'},
+   {path: '/seed', before: 3, after: 4}, {path: '/steps/pay/duration', before: 4, after: 6}, {path: '/resources/clerks/capacity', before: 2, after: 3},
+   {path: '/arrivals/0/count', before: 3, after: 5}]});
  const same = call(['diff', '--input', 'a.json', '--against', 'a.json']);
  assert.deepEqual([same.identical, same.summary, same.changes, same.changedSteps, same.changedSettings], [true, 'Changes: none', {steps: 0, flows: 0, resources: 0, arrivals: 0, settings: 0}, [], []]);
+ assert.deepEqual([same.changedResources, same.changedFlows, same.changedArrivals, same.fields], [[], [], [], []]);
+ // An added value has no `before`, a removed one no `after`; values inside lists are addressed by index.
+ const grown = copy(a), [x, y] = a.steps.find(s => s.id === 'pay')!.scene.position; grown.arrivals[0]!.data = {priority: 2};
+ grown.steps.find(s => s.id === 'pay')!.scene.position = [-500, -500];
+ assert.deepEqual(diff.detail(a, grown).fields, [{path: '/steps/pay/scene/position/0', before: x, after: -500},
+  {path: '/steps/pay/scene/position/1', before: y, after: -500}, {path: '/arrivals/0/data/priority', after: 2}]);
+ assert.deepEqual(diff.detail(grown, a).fields.at(-1), {path: '/arrivals/0/data/priority', before: 2});
  // Key order is not a change (the fingerprint ignores it too); a revision-only bump is reported as such, never as "formatting only".
  const reordered = copy(a), first = reordered.steps[1]!; reordered.steps[1] = Object.fromEntries(Object.entries(first).reverse()) as typeof first; reordered.revision = 2;
  fs.writeFileSync(path.join(dir, 'c.json'), JSON.stringify(reordered));
