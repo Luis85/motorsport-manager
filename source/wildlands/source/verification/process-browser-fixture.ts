@@ -126,7 +126,7 @@ export function runSuite(harness: string, resultFile: string, suite: (studio: St
   try {
    const file = path.join(dir, 'process.html'); buildGame(GAME_DIR, file);
    const gameDefinitions = (JSON.parse(fs.readFileSync(path.join(GAME_DIR, 'game.json'), 'utf8')) as {content: {definitions: string[]}}).content.definitions, COUNT = gameDefinitions.length;
-   assert(COUNT >= 5, 'the agency game holds three business processes and two journeys');
+   assert(COUNT >= 5, `the agency game holds at least five process definitions (game.json lists ${COUNT})`);
    const browser = await launchBrowser();
    try {
     const context = await browser.newContext({viewport: {...DESKTOP}}), diagnostics = monitorContext(context, {fixtureUrls: FIXTURE_URLS}), page = await context.newPage();

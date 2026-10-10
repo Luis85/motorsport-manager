@@ -19,8 +19,8 @@ a tool; each documents its JSON protocol, exit codes and limits.
   Chromium build; `bin/scene-forge doctor` reports their status.
 - `bin/wildlands` builds and plays only the games you point it at with
   `--game DIR` (for example `docs/concepts/littlewild`); it has no built-in game.
-  The HTML files it builds run in a desktop browser from `file://`; the five
-  published ones are in [`demos/`](../demos/README.md).
+  The HTML files it builds run in a desktop browser from `file://`; the
+  published ones are listed in [`demos/`](../demos/README.md).
 - Projects written by `bin/wildlands compile` or `export` need Godot to run.
 - Where the executable bit or `#!/usr/bin/env node` line is not honored (for
   example on Windows), run `node bin/<tool> …`.
@@ -38,8 +38,9 @@ bin/wildlands build-game --game docs/concepts/littlewild --check demos/littlewil
 for folder in docs/concepts/*/; do [ -f "$folder/game.json" ] && bin/wildlands validate-game --game "$folder"; done
 ```
 
-`bin/wildlands` always prints one JSON object. `bin/scene-forge` prints JSON for
-its commands; add `--compact` for smaller responses.
+`bin/wildlands` prints one JSON object, except `process slides --format md`
+without `--output`, which prints the Markdown deck itself. `bin/scene-forge` prints
+JSON for its commands; add `--compact` for smaller responses.
 
 ## Generated files: never edit by hand
 
