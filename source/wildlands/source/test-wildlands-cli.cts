@@ -10,6 +10,7 @@ import {gameDirectory} from './tools/game-folder.cjs';
 import {engineOnlySources} from './tools/engine-sources.cjs';
 import {colonyGame,gamesFixtureRoot,templateGame} from './test-support/game-fixtures.cjs';
 import {creatureChecks} from './test-support/creature-cli-checks.cjs';
+import {storyboardChecks} from './test-support/storyboard-cli-checks.cjs';
 const cli=path.join(__dirname,'tools/wildlands-cli.cjs'),directory=fs.mkdtempSync(path.join(os.tmpdir(),'wildlands-cli-')),results:{name:string;passed:boolean;error?:string}[]=[];
 function test(name:string,work:()=>void):void{try{work();results.push({name,passed:true});}catch(error){results.push({name,passed:false,error:String(error)});console.error(name,error);}}
 function run(args:string[],entry=cli):{status:number|null;out:Record<string,unknown>}{const child=spawnSync(process.execPath,[entry,...args],{encoding:'utf8',timeout:120000,maxBuffer:16*1024*1024});if(child.error)throw child.error;assert.equal(child.stderr,'');return {status:child.status,out:JSON.parse(child.stdout) as Record<string,unknown>};}
@@ -209,4 +210,5 @@ test('build-game builds the studio on demand with editors and export payloads; P
  assert(!fs.existsSync(path.join(directory,'pet-studio.html')));
 });
 creatureChecks(test,run,directory,project);
+storyboardChecks(test,run,directory,project);
 const report={suite:'wildlands-cli',passed:results.filter(value=>value.passed).length,total:results.length,results};fs.writeFileSync(path.join(__dirname,'wildlands-cli-results.json'),JSON.stringify(report,null,2));fs.rmSync(directory,{recursive:true,force:true});fs.rmSync(games,{recursive:true,force:true});console.log(JSON.stringify(report));if(results.some(value=>!value.passed))process.exitCode=1;

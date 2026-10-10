@@ -1,5 +1,8 @@
 # Character Studio CLI
 
+See the [generated editor showcase and replay inputs](../_archive/verification/character-studio-showcase-2026-10-10/README.md)
+for a captured walkthrough built with the engine's HTML storyboard command.
+
 `bin/character-studio` is one generated Node.js 22+ executable containing a local
 browser editor, JSON agent CLI, HTTP API, Littlewild content and Three.js preview.
 Authoring commands and the editor need no installation, network connection or

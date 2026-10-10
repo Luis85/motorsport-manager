@@ -26,7 +26,7 @@
     if(!schema)throw Error('Content schema is missing.');
     return installed={library,schema};
   }
-  const MAX_BYTES = 1024 * 1024, MAX_DEPTH = 24, MAX_NODES = 60000;
+  const MAX_BYTES = 1024 * 1024, MAX_DEPTH = 24, MAX_NODES = 60000, MAX_MESH_VALUES = 400000;
   const FORBIDDEN = new Set(['__proto__', 'constructor', 'prototype']);
   const CATEGORIES = {
     items: 'Items', recipes: 'Recipes', skills: 'Skills & lessons', buildings: 'Buildings',
@@ -89,11 +89,16 @@
     }
   }
   function inspectJson<T>(value:T, detach=false, maxNodes=MAX_NODES):T {
-    let count = 0;
+    let count = 0, meshValues = 0;
+    type MeshScope='meshes'|'mesh'|'array'|'number'|undefined;
     const ancestors = new Set<unknown>();
     function invalid(path:string, message:string):never { throw new ContentError([diagnostic('JSON_ONLY', path, message)]); }
-    function walk(v:unknown, path:string, depth:number):unknown {
-      if (++count > maxNodes || depth > MAX_DEPTH) throw new ContentError([diagnostic('COMPLEXITY_LIMIT', path, 'This file is too deeply nested or contains too many values.')]);
+    function walk(v:unknown, path:string, depth:number, meshScope:MeshScope=undefined):unknown {
+      // Typed geometry has a separate aggregate scalar budget, not an unbounded JSON exception.
+      // Every scalar still passes finite-number and descriptor checks; asset admission owns topology.
+      const meshNumber=meshScope==='number'&&typeof v==='number';
+      if(meshNumber&&++meshValues>MAX_MESH_VALUES)throw new ContentError([diagnostic('MESH_COMPLEXITY_LIMIT',path,'Baked mesh data exceeds 400,000 numeric values in this document. Reuse meshes or reduce geometry detail.')]);
+      if ((!meshNumber&&++count > maxNodes) || depth > MAX_DEPTH) throw new ContentError([diagnostic('COMPLEXITY_LIMIT', path, 'This file is too deeply nested or contains too many values.')]);
       if (v === null || typeof v === 'boolean') return v;
       if (typeof v === 'number') { if (!Number.isFinite(v)) throw new ContentError([diagnostic('FINITE_NUMBER', path, 'Numbers must be finite.')]); return v; }
       if (typeof v === 'string') { if (v.length > 10000 && [...v].length > 10000) throw new ContentError([diagnostic('TEXT_LIMIT', path, 'This text exceeds 10,000 characters.')]); return v; }
@@ -111,19 +116,22 @@
             const descriptor = Object.getOwnPropertyDescriptor(v, String(i));
             if (!descriptor || !descriptor.enumerable || descriptor.get || descriptor.set)
               invalid(path + '/' + i, 'Accessors and hidden array values are not JSON content.');
-            const child=walk(descriptor!.value, path + '/' + i, depth + 1);
+            const child=walk(descriptor!.value, path + '/' + i, depth + 1,meshScope==='array'?'number':undefined);
             if(detach)result.push(child);
           }
           // Retain Array species only after every own descriptor has been checked.
           return detach?v.map((_child,i)=>result[i]):v;
         }
         const result:Record<string,unknown>=detach?Object.create(Object.getPrototypeOf(v)) : v as Record<string,unknown>;
+        // Descriptor reads never invoke an authored getter, even on format/schemaVersion.
+        const asset=Object.getOwnPropertyDescriptor(v,'format')?.value==='littlewild-3d-asset'&&Object.getOwnPropertyDescriptor(v,'schemaVersion')?.value===1;
         for (const k of Object.getOwnPropertyNames(v)) {
           const descriptor = Object.getOwnPropertyDescriptor(v, k), childPath = path + '/' + pointer(k);
           if (FORBIDDEN.has(k)) throw new ContentError([diagnostic('UNSAFE_KEY', childPath, 'Reserved object property is not allowed.')]);
           if (!descriptor || !descriptor.enumerable || descriptor.get || descriptor.set)
             invalid(childPath, 'Accessors and hidden properties are not JSON content.');
-          const child=walk(descriptor!.value, childPath, depth + 1);
+          const nextScope:MeshScope=asset&&k==='meshes'?'meshes':meshScope==='meshes'?'mesh':meshScope==='mesh'&&['positions','normals','indices'].includes(k)?'array':undefined;
+          const child=walk(descriptor!.value, childPath, depth + 1,nextScope);
           if(detach)result[k]=child;
         }
         return result;

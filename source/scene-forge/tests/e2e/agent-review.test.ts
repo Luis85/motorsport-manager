@@ -96,7 +96,7 @@ test('agent discovers, imports procedural recipes, edits a selection and transfe
     await fs.rm(root, { recursive: true, force: true });
   }
 });
-test('one review yields labeled views, exact frame sizes, camera metadata and an immutable source', async () => {
+test('inline HTML review yields labeled views, exact frame sizes, camera metadata and an immutable source', async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'forge-review-test-'));
   try {
     const project = path.join(root, 'project');
@@ -133,6 +133,7 @@ test('one review yields labeled views, exact frame sizes, camera metadata and an
     }
     const manifest = JSON.parse(await fs.readFile(result.manifest, 'utf8'));
     assert.equal(manifest.sourceStateHash, before.stateHash);
+    assert.equal(manifest.provenance.documentTransport, 'inline-html');
     assert.equal(manifest.target.model, 'rack');
     assert.equal(manifest.frames[1].camera.projection, 'orthographic');
     const sheet = await fs.readFile(result.contactSheet);

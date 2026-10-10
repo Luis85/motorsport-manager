@@ -3513,7 +3513,6 @@ import { createServer } from "node:http";
 import { promises as fs5 } from "node:fs";
 import path6 from "node:path";
 import os from "node:os";
-import { pathToFileURL } from "node:url";
 
 // src/infra/playwright.ts
 import { createRequire } from "node:module";
@@ -3595,8 +3594,6 @@ async function withCaptureSession(html, options, action, ports = dependencies) {
   let browser;
   let failed = false;
   try {
-    const file = path6.join(temp, "scene.html");
-    await fs5.writeFile(file, html);
     try {
       browser = await ports.launch();
     } catch (error) {
@@ -3618,7 +3615,11 @@ async function withCaptureSession(html, options, action, ports = dependencies) {
       if (error || pageErrors.length)
         fail("RENDER_FAILED", "Scene preview failed to render.", { error, pageErrors });
     };
-    await page.goto(pathToFileURL(file).href + (options.ui ? "" : "?capture=1"));
+    await page.setContent(html, { waitUntil: "load" });
+    await page.evaluate(
+      (capture) => document.body.classList.toggle("capture", capture),
+      !options.ui
+    );
     await page.waitForFunction(
       () => window.forgeReady || window.forgeError,
       {},
@@ -4362,7 +4363,8 @@ async function reviewScene(scene, models, output, input, options = {}) {
         platform: process.platform,
         arch: process.arch,
         chromium: browser.version(),
-        rendererRequested: "ANGLE SwiftShader"
+        rendererRequested: "ANGLE SwiftShader",
+        documentTransport: "inline-html"
       },
       scene: scene.id,
       revision: scene.revision,

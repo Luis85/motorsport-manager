@@ -681,7 +681,9 @@ scene-forge -p motion export --validate --out motion/exports/animated.glb
 without it they fail with `PLAYWRIGHT_UNAVAILABLE` and `details.remedies`. A
 review writes one PNG per frame, `contact-sheet.png`, `review.json` (cameras,
 source/render hashes, environment) and `replay-plan.json` for fixed-camera
-comparisons. Rendering never changes the source or its revision.
+comparisons. Rendering never changes the source or its revision. Capture loads the self-contained
+viewer as inline HTML, so browser restrictions on `file://` URLs do not prevent
+`screenshot` or `review`, and no local HTTP server is needed.
 
 ```sh
 cat > review.plan.json <<'EOF'

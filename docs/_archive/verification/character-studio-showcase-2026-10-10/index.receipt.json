@@ -1,0 +1,411 @@
+{
+  "format": "wildlands-storyboard-receipt",
+  "schemaVersion": 1,
+  "title": "Littlewild Character Studio",
+  "layout": "grid",
+  "sectionCount": 4,
+  "cardCount": 6,
+  "cards": [
+    {
+      "id": "desktop",
+      "sourceKind": "littlewild-character",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "littlewild-character"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "ID",
+          "value": "pip"
+        },
+        {
+          "label": "Name",
+          "value": "Pip"
+        },
+        {
+          "label": "Personality",
+          "value": "curious"
+        },
+        {
+          "label": "Preset",
+          "value": "pip"
+        },
+        {
+          "label": "Body",
+          "value": "balanced"
+        },
+        {
+          "label": "Coat",
+          "value": "#caa273"
+        },
+        {
+          "label": "Status",
+          "value": "draft"
+        }
+      ],
+      "images": [
+        {
+          "path": "screens/editor-desktop.png",
+          "sha256": "ee81371a852554665decc469268857c48cc6026011e0350fb66898c6976f2a9b",
+          "hashVerified": false,
+          "width": 1440,
+          "height": 1059
+        }
+      ]
+    },
+    {
+      "id": "mobile",
+      "sourceKind": null,
+      "facts": [],
+      "images": [
+        {
+          "path": "screens/editor-mobile.png",
+          "sha256": "8d57397d08962af6537e97c08a866e3abd2e5a7c09416bf1bbee1212b5c84cdf",
+          "hashVerified": false,
+          "width": 390,
+          "height": 2232
+        }
+      ]
+    },
+    {
+      "id": "appearance",
+      "sourceKind": "littlewild-creature-package",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "littlewild-creature-package"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Archetype",
+          "value": "pip"
+        },
+        {
+          "label": "Name",
+          "value": "Pip"
+        },
+        {
+          "label": "Visual",
+          "value": "pip"
+        },
+        {
+          "label": "Variants",
+          "value": "4"
+        },
+        {
+          "label": "Asset references",
+          "value": "0"
+        }
+      ],
+      "images": [
+        {
+          "path": "screens/editor-back-view.png",
+          "sha256": "d7d969cfc94d5d8700e870103dfebff09da5a1f50f457a8665df92dbdf0faddf",
+          "hashVerified": false,
+          "width": 1440,
+          "height": 1059
+        }
+      ]
+    },
+    {
+      "id": "studio-review",
+      "sourceKind": "character-studio-review",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "character-studio-review"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Character",
+          "value": "pip"
+        },
+        {
+          "label": "Recipe hash (reported)",
+          "value": "b7fda6fe6b9ad625da2d19e592328fd9eb8394e74502e94f26cac9282b800090"
+        },
+        {
+          "label": "Visual hash (reported)",
+          "value": "26878ce24f61cbf8a381b155f648fd893591525a7cc1e08f8092e48253207280"
+        },
+        {
+          "label": "Compiler revision",
+          "value": "2"
+        },
+        {
+          "label": "Frames",
+          "value": "6"
+        }
+      ],
+      "images": [
+        {
+          "path": "review/contact-sheet.png",
+          "sha256": "326d376077ecb0c390992411a262e551f101d634cc48a3a8598e1b794690670c",
+          "hashVerified": true,
+          "width": 1152,
+          "height": 864
+        },
+        {
+          "path": "review/frames/front.png",
+          "sha256": "38542115a0e766d739e5ebb4cf6f936a19c0f8378737f86b27c30f18e46bff3b",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "review/frames/side.png",
+          "sha256": "53b35b0db8c5e906da5c64e7f94c9c39fc21f684ac73f6ad267c15db3b971b89",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "review/frames/back.png",
+          "sha256": "64fb9d888d027bc7bf928a01e1b80eacf4360fece408b8383236340ef453cfaf",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "review/frames/portrait.png",
+          "sha256": "4ad4cd2d48c9776b4b9a511d18a764ab163354af49b7ee5644107fd3e7ff8885",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "review/frames/world.png",
+          "sha256": "702c887dbda364bda9e665ac39fbeff532caa64d4a62d225351a93017e49822b",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "review/frames/night.png",
+          "sha256": "036e3b39e754f3d188f1363ac707525f9a6ba5030f995218fb32b36746973939",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "forge-review",
+      "sourceKind": "review-result",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "review-result"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Scene",
+          "value": "model"
+        },
+        {
+          "label": "Source state (reported)",
+          "value": "b160c40f2d5b3256d3867df2b96ac8c1cfa73d58b164e96359799e8af82f894a"
+        },
+        {
+          "label": "Render state (reported)",
+          "value": "860136c269742e31471db63518fa0fcbc70465d5a9940a2166c46c962570af6a"
+        },
+        {
+          "label": "Frames",
+          "value": "2"
+        }
+      ],
+      "images": [
+        {
+          "path": "forge-review/contact-sheet.png",
+          "sha256": "94a714457a482b55d3162066680e0eb4acb599ff1742d877807e57e696150466",
+          "hashVerified": false,
+          "width": 960,
+          "height": 512
+        },
+        {
+          "path": "forge-review/front.png",
+          "sha256": "d0baee7b51723460c66ce545376c5623b551596e84da9510f5a918c724f81d07",
+          "hashVerified": true,
+          "width": 512,
+          "height": 512
+        },
+        {
+          "path": "forge-review/back.png",
+          "sha256": "b84554e6bb5911293e641c455fd32957cba9ddbe8bb70d32c93a5d6f17f6a3db",
+          "hashVerified": true,
+          "width": 512,
+          "height": 512
+        }
+      ]
+    },
+    {
+      "id": "workflow",
+      "sourceKind": "character-studio-showcase-workflow",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "character-studio-showcase-workflow"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Root type",
+          "value": "object"
+        },
+        {
+          "label": "Fields",
+          "value": "format, schemaVersion, scope, sourceProjectObservation, workflow, boundaries"
+        }
+      ],
+      "images": [
+        {
+          "path": "review/frames/portrait.png",
+          "sha256": "4ad4cd2d48c9776b4b9a511d18a764ab163354af49b7ee5644107fd3e7ff8885",
+          "hashVerified": false,
+          "width": 768,
+          "height": 768
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "path": "storyboard.json",
+      "kind": "manifest",
+      "sha256": "df9589c523b3f2fd3cb1baaa1089436a2e873fb90d3acba14ec727af21e72519",
+      "bytes": 3941
+    },
+    {
+      "path": "pip.recipe.json",
+      "kind": "json",
+      "sha256": "5787b5bf04af47ef23166ed3cefef88025e8225dd23fdc3461ee1f7276d8cdcf",
+      "bytes": 653
+    },
+    {
+      "path": "screens/editor-desktop.png",
+      "kind": "image",
+      "sha256": "ee81371a852554665decc469268857c48cc6026011e0350fb66898c6976f2a9b",
+      "bytes": 375174
+    },
+    {
+      "path": "screens/editor-mobile.png",
+      "kind": "image",
+      "sha256": "8d57397d08962af6537e97c08a866e3abd2e5a7c09416bf1bbee1212b5c84cdf",
+      "bytes": 192934
+    },
+    {
+      "path": "pip.package.json",
+      "kind": "json",
+      "sha256": "3724786f2f27aac9f104b7ebbf9441c9c4d01246839cc3b537eb63a2433aa6c1",
+      "bytes": 476732
+    },
+    {
+      "path": "screens/editor-back-view.png",
+      "kind": "image",
+      "sha256": "d7d969cfc94d5d8700e870103dfebff09da5a1f50f457a8665df92dbdf0faddf",
+      "bytes": 366403
+    },
+    {
+      "path": "review/manifest.json",
+      "kind": "json",
+      "sha256": "e673ae5cc4be10ef320d3f6385cb6eebd3cda0514906f1a6af16d9178331f415",
+      "bytes": 2798
+    },
+    {
+      "path": "review/contact-sheet.png",
+      "kind": "image",
+      "sha256": "326d376077ecb0c390992411a262e551f101d634cc48a3a8598e1b794690670c",
+      "bytes": 669264
+    },
+    {
+      "path": "review/frames/front.png",
+      "kind": "image",
+      "sha256": "38542115a0e766d739e5ebb4cf6f936a19c0f8378737f86b27c30f18e46bff3b",
+      "bytes": 328783
+    },
+    {
+      "path": "review/frames/side.png",
+      "kind": "image",
+      "sha256": "53b35b0db8c5e906da5c64e7f94c9c39fc21f684ac73f6ad267c15db3b971b89",
+      "bytes": 318610
+    },
+    {
+      "path": "review/frames/back.png",
+      "kind": "image",
+      "sha256": "64fb9d888d027bc7bf928a01e1b80eacf4360fece408b8383236340ef453cfaf",
+      "bytes": 337462
+    },
+    {
+      "path": "review/frames/portrait.png",
+      "kind": "image",
+      "sha256": "4ad4cd2d48c9776b4b9a511d18a764ab163354af49b7ee5644107fd3e7ff8885",
+      "bytes": 316050
+    },
+    {
+      "path": "review/frames/world.png",
+      "kind": "image",
+      "sha256": "702c887dbda364bda9e665ac39fbeff532caa64d4a62d225351a93017e49822b",
+      "bytes": 315145
+    },
+    {
+      "path": "review/frames/night.png",
+      "kind": "image",
+      "sha256": "036e3b39e754f3d188f1363ac707525f9a6ba5030f995218fb32b36746973939",
+      "bytes": 279257
+    },
+    {
+      "path": "forge-review/review.json",
+      "kind": "json",
+      "sha256": "49974cfee4b221d41e7fe6540afa4ab9c33670fb83bf78cbfd40b9ae93aba772",
+      "bytes": 3620
+    },
+    {
+      "path": "forge-review/contact-sheet.png",
+      "kind": "image",
+      "sha256": "94a714457a482b55d3162066680e0eb4acb599ff1742d877807e57e696150466",
+      "bytes": 255284
+    },
+    {
+      "path": "forge-review/front.png",
+      "kind": "image",
+      "sha256": "d0baee7b51723460c66ce545376c5623b551596e84da9510f5a918c724f81d07",
+      "bytes": 85556
+    },
+    {
+      "path": "forge-review/back.png",
+      "kind": "image",
+      "sha256": "b84554e6bb5911293e641c455fd32957cba9ddbe8bb70d32c93a5d6f17f6a3db",
+      "bytes": 70029
+    },
+    {
+      "path": "workflow.json",
+      "kind": "json",
+      "sha256": "18325b445fd53610008e3fd34834f597e783b196101bd4e2d220aac6bcbe6049",
+      "bytes": 3077
+    }
+  ],
+  "html": {
+    "sha256": "aee08835bbe118eff8347c3e2449481cb7336ee45fd7f0bfb18c09a4a6ab6280",
+    "bytes": 5857095
+  },
+  "validation": "presentation-only",
+  "warnings": [
+    "Some review images have no declared SHA-256. Their observed hashes are recorded, but the review did not bind them."
+  ]
+}

@@ -119,6 +119,42 @@ the latest `--expected-fingerprint`. Dry-run, then publish to
 use `creature export` to archive the maintained package. This handoff changes
 appearance while retaining gameplay and companion state.
 
+## Publish a reviewable storyboard
+
+Keep the recipe, engine project and visual review beneath one delivery
+directory. Create the actual images first:
+
+```sh
+bin/character-studio review --project work/character-workflow/characters --id moss --out work/character-workflow/review-v1
+bin/wildlands storyboard discover
+bin/wildlands storyboard schema
+```
+
+Save this as `work/character-workflow/storyboard.json`:
+
+```json
+{"format":"wildlands-storyboard","schemaVersion":1,"title":"Moss delivery","layout":"comparison","intent":"A gentle companion with preserved gameplay and a softer appearance.","sections":[{"id":"delivery","title":"Source, appearance and integration","cards":[
+  {"id":"recipe","title":"Editable character","source":"moss.recipe.json","intent":"Retain the authored recipe for future Studio edits."},
+  {"id":"appearance","title":"Visual evidence","source":"review-v1/manifest.json","caption":"Captured from the actual Studio model; advanced Forge changes require a fresh Forge review."},
+  {"id":"installed","title":"Engine handoff","source":"moss-v2.project.json","intent":"Keep gameplay and companion state while replacing the appearance."}
+]}]}
+```
+
+Build with `bin/wildlands storyboard build --input
+work/character-workflow/storyboard.json --dry-run`, then repeat with `--output
+work/character-workflow/storyboard-v1.html` instead of `--dry-run`. The HTML
+embeds review captures, separates supplied intent from derived source facts,
+and needs no server. Its receipt binds the input files and rendered page to
+SHA-256 hashes. Reuse the same inputs and layout for deterministic comparison;
+use a new output name for every published version.
+
+A storyboard does not certify an image matches the final engine project.
+Use the correct tool's fresh review manifest for each artifact, retain the
+export/validation receipts, and label source versus refined views explicitly.
+Paths are confined beneath the storyboard plan directory. See the
+[storyboard protocol](../reference/wildlands-cli.md#storyboard) for limits,
+capture handling and a quick `--project` structural overview.
+
 ## Maintain and recover
 
 Keep Studio recipes, exported model bundles, engine project versions and review

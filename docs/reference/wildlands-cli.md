@@ -248,8 +248,88 @@ Arguments in `[brackets]` are optional.
 | `validate-game --game DIR` | Validate a game folder with the engine's validators. |
 | `inspect-game --game DIR` | Manifest summary, inventory, digest and profile sizes of a game folder. |
 | `build-game --game DIR (--output FILE.html \| --check FILE.html) [--profile play\|studio]` | Build a game's self-contained HTML, or check one for freshness. |
+| `storyboard discover` or `storyboard schema` | Discover the presentation protocol and bounded JSON input schema. |
+| `storyboard build (--input PLAN.json \| --project PROJECT.json) (--output NEW.html \| --dry-run)` | Compose a deterministic, self-contained review page from authored intent, source facts and supplied captures. |
 
 `--game DIR` on project commands is accepted only for schemaVersion 1 projects.
+
+### `storyboard`
+
+Storyboards explain what an agent built, its declared purpose, and the supplied
+visual evidence. They do not run or validate gameplay. `storyboard discover` and
+`storyboard schema` work without installing a game or starting a browser.
+
+```sh
+bin/wildlands storyboard discover
+bin/wildlands storyboard schema
+bin/wildlands storyboard build --input work/delivery/storyboard.json --dry-run
+bin/wildlands storyboard build --input work/delivery/storyboard.json --output work/delivery/storyboard-v1.html
+```
+
+The plan explicitly supplies intent; the builder does not infer purpose from
+names or pretend that a source inventory proves visual correctness. Recognized
+Wildlands projects, Character Studio recipes/packages/reviews and Scene Forge
+models/scenes/reviews contribute structural facts. Other JSON contributes
+generic field summaries. Cards without an image say **No capture supplied**.
+Use the tools' `capture` or `review` commands to supply actual visual evidence.
+
+Paths in this example are relative to `storyboard.json`:
+
+```json
+{
+  "format": "wildlands-storyboard",
+  "schemaVersion": 1,
+  "title": "Moss: character delivery",
+  "intent": "A gentle woodland companion with a readable silhouette.",
+  "layout": "sequence",
+  "sections": [{
+    "id": "delivery",
+    "title": "Author, refine, install",
+    "cards": [
+      {"id": "recipe", "title": "Character recipe", "source": "moss.recipe.json", "intent": "Keep the authored body and coat choices editable."},
+      {"id": "look", "title": "Captured appearance", "source": "review-v1/manifest.json", "caption": "Front, side and back from the retained review plan."},
+      {"id": "engine", "title": "Installed project", "source": "moss-v2.project.json", "intent": "Preserve gameplay while refining the appearance."}
+    ]
+  }]
+}
+```
+
+Layouts are `grid`, `sequence` and `comparison`; the default is `grid`. Input
+section/card order is retained. Each card needs a source, image, declared
+intent or caption. A card can also supply `image: "captures/front.png"`. Recognized review
+manifests automatically contribute their contact sheet and frame images;
+declared image SHA-256 values must match the actual bytes. Claimed recipe or
+source identities remain attributed to the supplied review manifest.
+
+All referenced files must stay beneath the plan directory. Absolute paths,
+parent-directory traversal, URLs and symlinks escaping that directory fail.
+PNG and JPEG captures are embedded; arbitrary HTML, SVG and scripts are not
+accepted as visual inputs. Authored strings and source details are escaped.
+The resulting page has no JavaScript, remote resources or external dependency.
+
+The input limits are 1 MiB per plan, 10 MiB per source JSON, 8 MiB per image,
+24 MiB total input and 48 MiB output HTML, with at most 12 sections, 48 cards
+and 96 embedded images. Each review can contribute at most 36 frame images.
+Read `schema` for text and identity bounds and current required fields.
+
+Successful stdout includes `receipt`: input paths, byte counts and SHA-256
+hashes; derived card facts and image verification; layout; section/card counts;
+and the HTML hash and size. Receipts label validation **presentation-only**.
+Identical inputs produce identical HTML bytes: no timestamp, random layout or
+simulation step enters the page. `--dry-run` returns the proposal without
+publishing. `--output` only accepts a new `.html` destination and publishes the
+complete page atomically; existing outputs and input files are retained.
+
+For a quick structural overview without a plan:
+
+```sh
+bin/wildlands storyboard build --project work/delivery/moss-v2.project.json --output work/delivery/project-overview.html
+```
+
+This derives one overview card, including scene facts, from the project's JSON. It neither invents
+intent nor renders scene screenshots. Add a plan and captured images for a
+visual review. Invalid input returns one structured diagnostic with
+`code: "storyboard-operation-failed"` and exit status 2.
 
 ### `--help` and `--version`
 
@@ -849,3 +929,14 @@ Native and browser surfaces are not pixel-identical. Kit authors may use
 `LWAssetRenderer.createMaterial(THREE, color, properties, defaults)` and must call
 `LWAssetRenderer.disposeKit(kit)` when retiring a view to release owned baked
 geometry without invalidating another renderer's cache.
+
+
+Geometry admission keeps the usual 60,000 general JSON values, depth 24, and each
+operation's byte limit. Numeric `positions`, `normals` and `indices` inside declared
+version-1 `littlewild-3d-asset` meshes have a separate **400,000-value aggregate
+budget per document**, including repeated occurrences. This allows detailed
+imported characters to survive project editing, copies and fingerprints without
+increasing gameplay-data limits. Non-finite numbers, accessors, sparse arrays and
+invalid topology remain rejected. A `MESH_COMPLEXITY_LIMIT` diagnostic means to
+reuse meshes or reduce geometry detail; dividing the same data across assets does
+not evade the aggregate limit.

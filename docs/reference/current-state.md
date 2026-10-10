@@ -16,6 +16,10 @@ Its smooth character compiler, physical materials and reproducible multi-view
 reviews share authored data with both tools. The [complete agent workflow](../how-to/character-agent-workflow.md)
 now uses guarded CLI commands for engine creature installation, companion edits
 and Scene Forge visual updates into new immutable project versions.
+The engine's `storyboard` CLI composes supplied artifact facts, explicit intent
+and captured images into deterministic, self-contained HTML. Grid, sequence and
+comparison layouts preserve authored order; review images retain verified hashes.
+Storyboards present evidence without running a simulation or inventing intent.
 
 ## Shipping player experience
 

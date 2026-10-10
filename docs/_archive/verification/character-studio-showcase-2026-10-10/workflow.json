@@ -1,0 +1,57 @@
+{
+  "format": "character-studio-showcase-workflow",
+  "schemaVersion": 1,
+  "scope": "Illustrative command sequence, not an execution receipt. Replace guards using fresh inspection; outputs must be new paths.",
+  "sourceProjectObservation": {
+    "originalFile": "littlewild.project.json",
+    "sha256": "11674af5bd2988d99dacd33e74eedf392790994ec0cf1796656475f7400bb291",
+    "bytes": 1576230,
+    "format": "wildlands-project",
+    "schemaVersion": 2,
+    "id": "wildlands-prototype",
+    "name": "Littlewild",
+    "sceneId": "first-morning",
+    "scenarioId": "littlewild",
+    "gameId": "littlewild"
+  },
+  "workflow": [
+    {
+      "tool": "Character Studio",
+      "purpose": "Author and export one canonical recipe and native creature package.",
+      "commands": [
+        "bin/character-studio discover",
+        "bin/character-studio inspect --project ./characters --id pip",
+        "bin/character-studio export --project ./characters --id pip --format package --out ./pip.package.json",
+        "bin/character-studio review --project ./characters --id pip --out ./review-v1"
+      ],
+      "guard": "Recipe edits require observed revision and stateHash. The preview and package use the same compiler."
+    },
+    {
+      "tool": "Scene Forge",
+      "purpose": "Refine portable visual geometry and materials while retaining gameplay in the original package.",
+      "commands": [
+        "bin/scene-forge --project ./models littlewild import --definition ./pip.package.json --dry-run",
+        "bin/scene-forge --project ./models littlewild import --definition ./pip.package.json"
+      ],
+      "guard": "Use expected revision/state guards for existing project edits. Review material and geometry changes before exporting a visual definition."
+    },
+    {
+      "tool": "Wildlands engine",
+      "purpose": "Inspect and install the validated character package into a new portable project version.",
+      "commands": [
+        "bin/wildlands creature discover",
+        "bin/wildlands creature list --project ./littlewild.project.json",
+        "bin/wildlands creature import --project ./littlewild.project.json --file ./pip.package.json --expected-fingerprint HEX --dry-run",
+        "bin/wildlands creature import --project ./littlewild.project.json --file ./pip.package.json --expected-fingerprint HEX --output ./littlewild-v2.project.json"
+      ],
+      "guard": "Replace HEX with the observed project fingerprint. On conflict inspect again; do not retry blindly. Use creature attach-visual when replacing only a refined visual."
+    }
+  ],
+  "boundaries": [
+    "Cosmetic outfits grant no equipment bonuses.",
+    "Identity and personality do not silently alter authored appearance.",
+    "Presentation scenes and screenshots do not advance or validate gameplay.",
+    "Unmodified Studio exports recover their recipe. Advanced external visual changes require Scene Forge or engine authoring to preserve them.",
+    "The complete 1.6 MiB portable project is intentionally omitted from this presentation bundle; its observed identity is recorded above."
+  ]
+}
