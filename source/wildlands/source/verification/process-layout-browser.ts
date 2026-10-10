@@ -169,7 +169,8 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   const trigger = page.locator('#export-menu'); assert.deepEqual([await trigger.getAttribute('aria-haspopup'), await trigger.getAttribute('aria-expanded'), await page.locator('#import').innerText()], ['menu', 'false', 'Import…']);
   await trigger.click(); assert.equal(await trigger.getAttribute('aria-expanded'), 'true'); assert.equal(await activeId(), 'json'); assert.match(await page.locator('#export-hint').innerText(), /use this process\. Download HTML keeps all \d+ processes/);
   assert.deepEqual(await page.locator('#export-items [role=menuitem]:visible').allInnerTexts(),
-   ['Export JSON', 'Export BPMN', 'Export BPMN with BPSim', 'Export run report', 'Download HTML', 'New process…', 'Import as a new process…']);
+   ['Export JSON', 'Export BPMN', 'Export BPMN with BPSim', 'Export run report', 'Export run checkpoint…', 'Load checkpoint…', 'Download HTML',
+    'New process…', 'Import as a new process…']);
   const focusAfter = async (key: string) => { await page.keyboard.press(key); return activeId(); };
   const keyed = [await focusAfter('ArrowDown'), await focusAfter('End'), await focusAfter('ArrowDown'), await focusAfter('Home'), await focusAfter('ArrowUp')];
   assert.deepEqual(keyed, ['bpmn', 'import-new', 'json', 'json', 'import-new']);
@@ -240,8 +241,8 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
   assert.equal(await page.locator('#export-menu').isHidden(), true); assert.equal(await page.locator('#import').isHidden(), true);
   await page.locator('#more-menu').click();
   assert.deepEqual(await page.locator('#export-items [role=menuitem]:visible').allInnerTexts(), ['Import JSON or BPMN…', 'Present slides', 'Dashboard',
-   'Add step…', 'Tidy layout', 'Export JSON', 'Export BPMN', 'Export BPMN with BPSim', 'Export run report', 'Download HTML',
-   'New process…', 'Import as a new process…']);
+   'Add step…', 'Tidy layout', 'Export JSON', 'Export BPMN', 'Export BPMN with BPSim', 'Export run report', 'Export run checkpoint…',
+   'Load checkpoint…', 'Download HTML', 'New process…', 'Import as a new process…']);
   const menuBox = (await page.locator('#export-popup').boundingBox())!; assert(menuBox.x >= 0 && menuBox.x + menuBox.width <= 390, 'the menu stays on screen'); await page.keyboard.press('Escape'); assert.equal(await activeId(), 'more-menu');
   // Steps are a horizontal scroller above the stage; the stage is about 45vh; the inspector and Inputs & outputs collapse.
   const layout = await page.evaluate(() => { const nav = document.querySelector('.process-nav')!.getBoundingClientRect(), view = document.getElementById('viewport')!.getBoundingClientRect(), steps = document.getElementById('steps')!;

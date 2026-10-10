@@ -561,6 +561,8 @@
     "source/test-process-bpmn-conformance.cts",
     "source/test-process-bpmn-schema.cts",
     "source/verification/process-browser.ts",
+    "source/verification/process-checkpoint-browser.ts",
+    "source/verification/process-hostile-checkpoint-checks.ts",
     "source/verification/process-bpmn-import-browser.ts",
     "source/verification/process-browser-fixture.ts",
     "source/verification/process-browser-models.ts",

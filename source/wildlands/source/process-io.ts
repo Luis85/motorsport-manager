@@ -23,7 +23,16 @@
  *  - A BPMN or XML file opens the BPMN import dialog, which applies through the same replace (or add) path.
  *  - Download HTML writes every applied definition, including processes added in this page; a page built for one process gains the
  *    `LWProcessDefinitions` list when a second process exists, so it reopens with all of them.
- * Nothing here ticks or retains the simulation; `env.replace` and `env.add` are the studio's commands that start a fresh paused run.
+ *  - Run checkpoints (LWProcessCheckpoint): Export run checkpoint… (`#checkpoint-export`) downloads the active run as
+ *    `<id>.minute-<M>.checkpoint.json` (the applied definition's fingerprint, the run seed, the minute, the run length and the
+ *    complete run state); it is disabled, with its reason, at minute 0. Load checkpoint… (`#checkpoint-load`) picks a file with its
+ *    own chooser (`#checkpoint-file`), reads it strictly, and refuses with a plain reason a checkpoint of another process (naming
+ *    it, and saying to switch to it or import its definition first) or of another definition (naming both fingerprints and saying
+ *    to import or apply the matching definition first). A checkpoint that passes is restored only after a question that starts on
+ *    Cancel and names the current minute and the checkpoint's minute; Cancel keeps everything and returns focus to the menu
+ *    button. Loading replaces only the run: the definition and an unapplied draft stay. Nothing goes to browser storage.
+ * Nothing here ticks or retains the simulation; `env.replace` and `env.add` are the studio's commands that start a fresh paused run,
+ * and `env.restore` replaces the run with a checked checkpoint's run, paused at its minute.
  */
 declare namespace LWProcessIO {
  interface Env {
@@ -46,6 +55,10 @@ declare namespace LWProcessIO {
   canAdd(): string;
   ask(options: LWProcessGuard.AskOptions): Promise<boolean>;
   choose(options: LWProcessGuard.ChooseOptions): Promise<string>;
+  /** A detached checkpoint of the active run (LWProcessApp.Controller.checkpoint); never ticks. */
+  checkpoint(): LWProcessCheckpoint.Checkpoint;
+  /** Replaces the active run with a checked checkpoint's run (paused, never ticks) and refreshes; the draft is untouched. Throws when refused. */
+  restore(checkpoint: LWProcessCheckpoint.Checkpoint): void;
  }
  interface Surface {
   /** Updates the menu hint and the Export draft JSON item from the view and the draft. */
@@ -62,7 +75,7 @@ declare namespace LWProcessIO {
  'use strict';
  const root = inputRoot as {LWProcessCatalog: LWProcess.Catalog; LWProcessBpmn: LWProcessBpmn.Api; LWProcessBpmnDialog: LWProcessBpmnDialog.Api;
   LWProcessRunBar: LWProcessRunBar.Api; LWProcessDialog: LWProcessDialog.Api; LWProcessDom: LWProcessDom.Api; LWProcessIO?: LWProcessIO.Api;
-  LWProcessHtml: LWProcessHtml.Api};
+  LWProcessHtml: LWProcessHtml.Api; LWProcessCheckpoint: LWProcessCheckpoint.Api};
  const get = <T extends HTMLElement = HTMLElement>(id: string) => root.LWProcessDom.must<T>(id);
  // Text for markup (the export notes and the offline page title) is escaped by the studio's one escaping module.
  const {esc, html} = root.LWProcessHtml;
@@ -204,6 +217,45 @@ declare namespace LWProcessIO {
    } catch (e) { env.status('Import rejected: ' + root.LWProcessRunBar.plain(e), true); }
    input.value = '';
   };
+  const NO_RUN = 'Run the process first: a run checkpoint saves a run that has started (past minute 0).';
+  on('checkpoint-export', () => {
+   const v = env.view();
+   if (v.snapshot.minute === 0) { env.status(NO_RUN, true); return; }
+   const c = env.checkpoint(), name = `${v.definition.id}.minute-${c.minute}.checkpoint.json`;
+   save(name, JSON.stringify(c), 'application/json',
+    `Exported ${name}: a run checkpoint of ${v.definition.name} at minute ${c.minute.toLocaleString()} (seed ${c.seed}). Load checkpoint… restores it.`);
+  });
+  /** The control that opened the checkpoint chooser: the menu button the Load checkpoint… item belongs to. */
+  let loadFrom: HTMLElement | null = null;
+  const loadOpener = () => [loadFrom, get('export-menu'), get('more-menu')].find(shown) ?? null;
+  get('checkpoint-load').onclick = () => { loadFrom = trigger(); get<HTMLInputElement>('checkpoint-file').click(); };
+  get<HTMLInputElement>('checkpoint-file').onchange = async () => {
+   const input = get<HTMLInputElement>('checkpoint-file'), file = input.files?.[0]; if (!file) return;
+   try {
+    if (file.size > root.LWProcessCheckpoint.MAX_BYTES) throw Error('the file is larger than 16 MiB, the largest run checkpoint that is read.');
+    await loadCheckpoint(file.name, await file.text());
+   } catch (e) { env.status('Load checkpoint refused: ' + root.LWProcessRunBar.plain(e), true); }
+   input.value = '';
+  };
+  /** Reads, checks and (after the Cancel-first question) restores a checkpoint of the active process. */
+  async function loadCheckpoint(name: string, text: string): Promise<void> {
+   const parsed = root.LWProcessCheckpoint.parse(text), v = env.view(), here = v.definition;
+   if (parsed.process !== here.id) {
+    const open = v.processes.find(p => p.id === parsed.process);
+    throw Error(open ? `${name} belongs to ${open.name}. Switch to ${open.name} with the Process selector, then load the checkpoint again.`
+     : `${name} belongs to the process ${parsed.process}, which is not open. Import its definition first (Import JSON or BPMN… or Import as`
+      + ' a new process…), then load the checkpoint again.');
+   }
+   const checked = root.LWProcessCheckpoint.verify(parsed, here), current = v.snapshot.minute.toLocaleString();
+   const length = checked.runLength === null ? 'no run length' : `run length ${checked.runLength.toLocaleString()} minutes`;
+   const loaded = await env.ask({title: `Load checkpoint into ${here.name}?`, confirm: 'Load checkpoint', invoker: loadOpener(), focusFallback: loadOpener,
+    message: `Loading ${name} replaces the current run of ${here.name}, now at minute ${current}, with the checkpoint's run at minute`
+     + ` ${checked.minute.toLocaleString()} (seed ${checked.seed}, ${length}). The definition and any unapplied draft stay as they are.`
+     + ' Export a run checkpoint first if you need the current run.'});
+   if (!loaded) { env.status(`Load of ${name} cancelled. The run of ${here.name} is unchanged at minute ${current}.`); return; }
+   env.restore(checked);
+   env.status(`Loaded ${name}: ${here.name} is paused at minute ${checked.minute.toLocaleString()} (seed ${checked.seed}).`);
+  }
   /** True while the BPMN dialog was opened by Import as a new process: its hand-off adds instead of replacing. */
   let bpmnAdds = false;
   function openBpmn(name: string, text: string, add: boolean): void {
@@ -237,6 +289,9 @@ declare namespace LWProcessIO {
    const hint = base + (draft ? ' Your unapplied draft is not included; Export draft JSON saves it as written.' : '') + (full ? ' ' + full : '');
    if (get('export-hint').textContent !== hint) get('export-hint').textContent = hint;
    get('draft-json').hidden = !draft;
+   const exportable = v.snapshot.minute > 0, item = get('checkpoint-export');
+   if (exportable) item.removeAttribute('aria-disabled'); else item.setAttribute('aria-disabled', 'true');
+   item.title = exportable ? '' : NO_RUN;
   }
   return {sync, dispose() { bpmnImport.dispose(); notesDialog?.dispose(); notesDialog = null; }};
  }
