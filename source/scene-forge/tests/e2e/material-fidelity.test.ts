@@ -68,6 +68,7 @@ test(
       await page.getByLabel('Sheen color', { exact: true }).fill('#ffe3bc');
       await page.getByLabel('Clearcoat amount', { exact: true }).fill('0.2');
       await page.getByLabel('Surface detail', { exact: true }).selectOption('fur');
+      await page.getByLabel('Detail style', { exact: true }).selectOption('2');
       await page.getByLabel('Detail seed', { exact: true }).fill('7');
       await page.getByLabel('Detail repeat', { exact: true }).fill('3');
       await page.getByLabel('Detail strength', { exact: true }).fill('0.4');
@@ -79,6 +80,7 @@ test(
       assert.equal(painted.materials[node.material].clearcoat, 0.2);
       assert.deepEqual(painted.materials[node.material].surface, {
         kind: 'fur',
+        version: 2,
         seed: 7,
         scale: 3,
         strength: 0.4,
@@ -143,6 +145,7 @@ test(
       assert.ok(savedNode.type === 'mesh');
       assert.deepEqual(saved.materials[savedNode.material].surface, {
         kind: 'fur',
+        version: 2,
         seed: 7,
         scale: 3,
         strength: 0.4,

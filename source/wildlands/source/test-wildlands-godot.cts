@@ -18,10 +18,11 @@ const resources={bundle:read('wildlands-runtime-bundle.json'),templates:read('wi
 async function main():Promise<void>{
  try{
   const project=P.create() as {pack:{resources?:{assets:{materials:Record<string,unknown>}[];creatures:unknown};scenes:{initialState:{scenarioResources?:unknown}}[]};game:{profile:{assets:{materials:Record<string,unknown>}[];creatures:unknown}}};
-  const descriptor:LWAssetSurfaceContract.Surface={kind:'fur',seed:17,scale:7,strength:.24};
+  const descriptor:LWAssetSurfaceContract.Surface={version:2,kind:'fur',seed:17,scale:7,strength:.24};
   project.pack.resources??=require('./scenario-resources.js').snapshot();
   const material=project.pack.resources!.assets[0]!.materials,role=Object.keys(material)[0]!,old=material[role];
   material[role]={...(typeof old==='string'?{color:old}:old as Record<string,unknown>),surface:descriptor};
+  material.legacySurface={color:'#ffffff',surface:{kind:'fur',seed:17,scale:7,strength:.24}};
   for(const scene of project.pack.scenes)if(scene.initialState.scenarioResources)scene.initialState.scenarioResources=JSON.parse(JSON.stringify(project.pack.resources));
   const compiled=await G.compile(project,resources);
   assert.equal(compiled.manifest.runtime,'typescript-node-bridge');
@@ -29,8 +30,8 @@ async function main():Promise<void>{
   assert(compiled.manifest.limitations.some(value=>value.includes('sheenColor')&&value.includes('approximate')));
   const files=new Map(compiled.files.map(file=>[file.path,file]));
   for(const identity of compiled.manifest.files){const file=files.get(identity.path)!;assert(file);const bytes=Buffer.from(file.content,file.encoding==='base64'?'base64':'utf8');assert.equal(bytes.length,identity.bytes);assert.equal(createHash('sha256').update(bytes).digest('hex'),identity.sha256);}
-  const surfaces=JSON.parse(files.get('surfaces/index.json')!.content) as {surface:LWAssetSurfaceContract.Surface;color:string;normal:string}[];
-  assert.equal(surfaces.length,1);assert.deepEqual(surfaces[0]!.surface,descriptor);
+  const surfaces=JSON.parse(files.get('surfaces/index.json')!.content) as {surface:LWAssetSurfaceContract.Surface;color:string;normal:string;algorithm:string}[];
+  assert.equal(surfaces.length,2);assert.equal(surfaces[0]!.algorithm,'littlewild-surface-v2');assert.equal(surfaces[1]!.algorithm,'littlewild-surface-v1');assert.deepEqual(surfaces[0]!.surface,descriptor);
   const pixels=Surface.generate(descriptor);assert.deepEqual(Buffer.from(files.get(surfaces[0]!.normal)!.content,'base64'),Buffer.from(Surface.png(pixels.normal,128,128)));
   // Default payload policy: the runnable project carries the runtime closure only, never the inert engine sources.
   assert(!files.has('runtime/engine-source-bundle.json'));assert(files.has('runtime/tools/wildlands-runtime.cjs'));assert.deepEqual(JSON.parse(files.get('wildlands.project.json')!.content),project);

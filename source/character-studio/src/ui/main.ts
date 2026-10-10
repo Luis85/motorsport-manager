@@ -2,7 +2,7 @@ import { catalog } from '../domain/catalog.js';
 import { createCharacter, validateCharacter, type Character } from '../domain/character.js';
 import { compilePackage, compileVisual, importCharacter } from '../application/compiler.js';
 import { createViewport } from './viewport.js';
-import { validatePreviewConfiguration } from './preview-configuration.js';
+import { validatePreviewConfiguration, previewValues, previewNumbers, cameraYaw } from './preview-configuration.js';
 import { StudioState } from './state.js';
 import { Dialogs } from './dialogs.js';
 import { fields, chapters } from './fields.js';
@@ -14,8 +14,9 @@ const dialogs = new Dialogs();
 let chapter = 0, face = false, collection = !window.__STUDIO__?.initial;
 const preview = window.__STUDIO__?.preview;
 let mode = preview?.mode || 'studio', light = preview?.light || 'studio';
-let pose = preview?.pose || 'idle', camera = preview?.camera || 'front';
-let paused = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let pose = preview?.pose || 'idle';
+let camera: string = preview?.camera || 'three-quarter';
+let paused = preview?.paused ?? (preview?.time !== undefined || matchMedia('(prefers-reduced-motion: reduce)').matches);
 let pendingImport: Character | null = null;
 let pendingLook: { appearance: Character['appearance']; outfits: Character['outfits'] } | null = null;
 let viewport: ReturnType<typeof createViewport> | undefined;
@@ -24,7 +25,9 @@ app.innerHTML = `<header class="app-header"><a href="#" class="brand" data-actio
 try {
   viewport = createViewport(document.querySelector<HTMLCanvasElement>('#viewport')!);
   dialogs.portrait = character => viewport?.portrait(character);
-  viewport.configure({mode, light, pose, camera, paused});
+  viewport.configure({mode, light, pose, camera, ...preview, paused});
+  const configured = viewport.inspect();
+  if (configured.yaw !== cameraYaw[camera as keyof typeof cameraYaw] || configured.elevation !== .08) camera = 'custom';
 } catch (error) {
   const notice = document.createElement('p');
   notice.className = 'viewport-error';
@@ -33,14 +36,14 @@ try {
 }
 function status(): void { document.querySelector('#save-status')!.textContent = state.savedStatus; }
 function segmented(id: string, values: [string, string][], current: string, action: string): void {
-  document.querySelector(id)!.innerHTML = values.map(([value, label]) => button(label, `${action}:${value}`, value === current ? 'active' : '', `aria-pressed="${value === current}"`)).join('');
+  document.querySelector(id)!.innerHTML = values.map(([value, label]) => button(label, `${action}:${value}`, value === current ? 'active' : '', `aria-pressed="${value === current}" ${action === 'camera' && value === 'three-quarter' ? 'aria-label="Three-quarter view" title="Three-quarter view"' : ''}`)).join('');
 }
 function previewControls(): void {
   const focused = document.activeElement as HTMLElement;
   const restore = focused?.closest('.preview') ? focused.dataset.action : undefined;
   segmented('#preview-modes', [['studio', '3D Studio'], ['world', 'In-world'], ['portrait', 'Portrait']], mode, 'mode');
   segmented('#preview-lights', [['studio', 'Studio'], ['daylight', 'Daylight'], ['night', 'Night']], light, 'light');
-  segmented('#preview-cameras', [['front', 'Front'], ['side', 'Side'], ['back', 'Back']], camera, 'camera');
+  segmented('#preview-cameras', [['front', 'Front'], ['three-quarter', '3/4'], ['side', 'Side'], ['back', 'Back']], camera, 'camera');
   segmented('#preview-poses', [['idle', 'Idle'], ['walk', 'Walk'], ['work', 'Work'], ['celebrate', 'Celebrate']], pose, 'pose');
   document.querySelector('#preview-poses')!.insertAdjacentHTML('afterbegin', button(paused ? 'Play' : 'Pause', 'pause', '', `aria-label="${paused ? 'Play' : 'Pause'} character animation"`));
   document.querySelector('#portrait-action')!.innerHTML = mode === 'portrait' ? button('Use this thumbnail', 'thumbnail', 'secondary') : '';
@@ -104,8 +107,8 @@ function chirp(): void {
 }
 async function action(value: string): Promise<void> {
   const [name, arg, extra] = value.split(':');
-  const previewValues: Record<string, string[]> = {mode:['studio','world','portrait'], light:['studio','daylight','night'], pose:['idle','walk','work','celebrate'], camera:['front','side','back']};
-  if (previewValues[name] && (!previewValues[name].includes(arg) || extra !== undefined)) throw new Error(`Unknown ${name}: ${arg}. Choose ${previewValues[name].join(', ')}.`);
+  const allowed = (previewValues as Record<string, readonly string[]>)[name];
+  if (allowed && (!allowed.includes(arg) || extra !== undefined)) throw new Error(`Unknown ${name}: ${arg}. Choose ${allowed.join(', ')}.`);
   if (name === 'close') return;
   if (name === 'collection') { collection = true; render(true); }
   else if (name === 'new') { state.newCharacter(arg); collection = false; chapter = 0; render(true); }
@@ -216,11 +219,11 @@ window.addEventListener('beforeunload', event => {
   if (!state.storageAvailable && state.changed) { event.preventDefault(); event.returnValue = ''; }
 });
 window.characterStudio = Object.freeze({
-  discover: () => ({
+  discover: () => structuredClone({
     format:'character-studio-browser-api', version:1,
     methods: {inspect:'Detached current character, history availability and persistence status',catalog:'Available looks, slots, equipment, personalities and engine skills',apply:'Atomic operation array; updates the local working draft only',preview:'Preview-only controls; never modifies the character'},
     operations: ['set','add','remove','preset','randomize','look','reset'],
-    preview: {configure:{description:'Atomic preview configuration; validates every field before rendering once. Reset restores zoom, orbit and time zero.',optional:{mode:['studio','world','portrait'],light:['studio','daylight','night'],pose:['idle','walk','work','celebrate'],camera:['front','side','back'],paused:'boolean',reset:'boolean'}},setMode:['studio','world','portrait'],setLight:['studio','daylight','night'],setPose:['idle','walk','work','celebrate'],setCamera:['front','side','back'],zoom:'Finite numeric delta',reset:'Restore front framing',pause:'Boolean',capture:'PNG data URL',inspect:'Detached presentation state and live renderer resource counts'},
+    preview: {configure:{description:'Atomic preview configuration; validates every field before rendering once. Reset restores zoom, orbit and time zero; named camera and pose apply next; explicit yaw, elevation, zoom and time apply last. Use paused:true to hold a phase.',optional:{...previewValues,...previewNumbers,paused:'boolean',reset:'boolean'}},setMode:['studio','world','portrait'],setLight:['studio','daylight','night'],setPose:['idle','walk','work','celebrate'],setCamera:previewValues.camera,zoom:'Finite numeric delta',reset:'Restore front framing',pause:'Boolean',capture:'PNG data URL',inspect:'Detached presentation state and live renderer resource counts'},
     persistence:'Use the guarded local HTTP API or CLI to save to disk; browser apply edits only the working draft.',
   }),
   inspect: () => ({ character: state.character, canUndo: state.session.canUndo, canRedo: state.session.canRedo, persistence: state.savedStatus }),
@@ -231,7 +234,10 @@ window.characterStudio = Object.freeze({
       const config = validatePreviewConfiguration(input);
       viewport?.configure(config);
       mode = config.mode ?? mode; light = config.light ?? light; pose = config.pose ?? pose;
-      camera = config.camera ?? (config.reset ? 'front' : camera); paused = config.paused ?? paused;
+      camera = config.camera ?? (config.reset ? 'front' : camera);
+      if ((config.yaw !== undefined && config.yaw !== cameraYaw[camera as keyof typeof cameraYaw]) ||
+        (config.elevation !== undefined && config.elevation !== .08)) camera = 'custom';
+      paused = config.paused ?? paused;
       previewControls();
       return viewport?.inspect();
     },

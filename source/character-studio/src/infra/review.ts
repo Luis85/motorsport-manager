@@ -5,18 +5,20 @@ import {assertCharacter, type Character} from '../domain/character.js';
 import {compileVisual} from '../application/compiler.js';
 import {stateHash} from './store.js';
 import {StudioError} from './files.js';
+import {previewValues, previewNumbers} from '../application/preview-configuration.js';
 import {captureOptions, captureSession, type CaptureOptions} from './capture.js';
 
 type View = Required<CaptureOptions> & {id: string};
 export interface ReviewPlan { format: 'character-studio-review-plan'; schemaVersion: 1; views: View[] }
-const choices = {mode:['studio','world','portrait'],light:['studio','daylight','night'],pose:['idle','walk','work','celebrate'],camera:['front','side','back']};
+
 export const reviewPlanSchema = {
   $schema:'https://json-schema.org/draft/2020-12/schema', title:'Character Studio reproducible review plan',
   type:'object',additionalProperties:false,required:['format','schemaVersion','views'],properties:{
     format:{const:'character-studio-review-plan'},schemaVersion:{const:1},views:{type:'array',minItems:1,maxItems:12,items:{
       type:'object',additionalProperties:false,required:['id'],properties:{
         id:{type:'string',pattern:'^[a-z][a-z0-9-]{0,39}$'},
-        ...Object.fromEntries(Object.entries(choices).map(([key,values])=>[key,{enum:values,default:values[0]}])),
+        ...Object.fromEntries(Object.entries(previewValues).map(([key,values])=>[key,{enum:values,default:values[0]}])),
+        ...previewNumbers,
         width:{type:'integer',minimum:256,maximum:2048,default:768},height:{type:'integer',minimum:256,maximum:2048,default:768},
       },
     }},
@@ -27,7 +29,7 @@ function object(value: unknown): value is Record<string, unknown> {
 }
 export function reviewPlan(input?: unknown): ReviewPlan {
   const defaults = [
-    {id:'front',camera:'front'}, {id:'side',camera:'side'}, {id:'back',camera:'back'},
+    {id:'front',camera:'front'}, {id:'three-quarter',camera:'three-quarter'}, {id:'side',camera:'side'}, {id:'back',camera:'back'},
     {id:'portrait',mode:'portrait'}, {id:'world',mode:'world',light:'daylight'}, {id:'night',mode:'world',light:'night'},
   ];
   const value = input === undefined ? {format:'character-studio-review-plan',schemaVersion:1,views:defaults} : input;
@@ -86,7 +88,7 @@ export async function reviewCharacter(input: Character, destination: string, inp
           ctx.drawImage(picture,x+(tile-w)/2,y+(tile-h)/2,w,h);
           ctx.fillStyle = '#202d23'; ctx.font = '16px sans-serif';
           ctx.fillText(frame.id,x+12,y+tile+20);
-          ctx.font = '12px sans-serif'; ctx.fillText(`${frame.preview.mode} · ${frame.preview.light} · ${frame.preview.camera}`,x+12,y+tile+38);
+          ctx.font = '12px sans-serif'; ctx.fillText(`${frame.preview.mode} · ${frame.preview.light} · yaw ${frame.preview.yaw.toFixed(2)} · t ${frame.preview.time.toFixed(2)}`,x+12,y+tile+38);
         }
         return canvas.toDataURL('image/png');
       },frames);
@@ -97,7 +99,8 @@ export async function reviewCharacter(input: Character, destination: string, inp
       const manifest = {
         format:'character-studio-review',schemaVersion:1,characterId:character.id,recipeHash:stateHash(character),
         visualHash:hash(JSON.stringify(visual)),compilerRevision:visual.metadata?.characterStudio?.compilerRevision ?? 1,
-        renderer:'wildlands-three',paused:true,time:0,plan:'replay-plan.json',
+        renderer:'wildlands-three',paused:true,plan:'replay-plan.json',
+        ...(plan.views.every(view=>view.time===plan.views[0].time) ? {time:plan.views[0].time} : {}),
         contactSheet:{file:'contact-sheet.png',sha256:hash(sheet)},
         frames:frames.map(({data,...frame})=>frame),
         limits:['Presentation stage is not gameplay state.','Compare using the same replay plan, tool build and browser for reproducible visual review.'],

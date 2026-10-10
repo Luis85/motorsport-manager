@@ -54,6 +54,22 @@ export function registerDiscoveryCommands(c: CommandContext) {
             bend: [-0.75, 0.75],
             segments: [12, 96],
           },
+          profile: {
+            stations: [2, 12],
+            at: [-1, 1],
+            minimumHeightGap: 0.02,
+            width: [0.1, 2],
+            depth: [0.1, 2],
+            offset: [-0.75, 0.75],
+            meaning:
+              'Optional profile stations start at -1 and end at 1. Width/depth multiply each crosssection; offset [X,Z] moves its center in half-size units. Smoothstep interpolation never overshoots; every station is sampled exactly.',
+            example: [
+              { at: -1, width: 1, depth: 1, offset: [0, 0] },
+              { at: -0.35, width: 1.12, depth: 1.15, offset: [0, 0.12] },
+              { at: 0.35, width: 0.75, depth: 0.8, offset: [0, 0] },
+              { at: 1, width: 0.65, depth: 0.7, offset: [0.1, -0.08] },
+            ],
+          },
           meaning:
             'roundness 1 is ellipsoidal, below 1 is fuller; positive taper narrows the top; bend offsets both ends along +X',
           example: {
@@ -71,15 +87,20 @@ export function registerDiscoveryCommands(c: CommandContext) {
           export:
             'Closed smooth mesh with seam-aware UVs. Littlewild receives baked mesh; GLB retains mesh and UVs.',
           workflow:
-            'inspect --source, apply --dry-run with revision/state guards, apply same batch with guards, review --plan previous/replay-plan.json',
+            'inspect --source, apply --dry-run with revision/state guards, apply same batch with guards, review --file previous/replay-plan.json',
         },
         surfaceDetails: {
           algorithm: 'littlewild-surface-v1',
+          versions: {
+            1: 'Original detail, default when omitted; exact replay compatibility',
+            2: 'Fine directional fur fibres, woven yarn and subtle leather grain',
+          },
           uniqueRecipesPerScene: 256,
           pooling:
-            'Identical kind/seed/scale/strength share maps across material colors; each compilation owns and disposes its pool.',
+            'Identical version/kind/seed/scale/strength share maps across material colors; each compilation owns and disposes its pool.',
           fields: {
             kind: ['fur', 'cloth', 'leather'],
+            version: [1, 2],
             seed: [0, 65535],
             scale: [1, 16],
             strength: [0, 1],

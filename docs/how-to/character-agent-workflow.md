@@ -216,3 +216,8 @@ step when judging fidelity. Reference: [Character Studio](../reference/character
 
 See the [historical fidelity comparison](../_archive/verification/character-fidelity-2026-10-10/README.md)
 for the supplied concept and actual Studio, Forge and native captures.
+
+The [second artboard refinement](../_archive/verification/character-artboard-2026-10-10/README.md)
+records revision-4 geometry, fitted clothing, explicit animation-phase review and
+the executed profile authoring workflow. Retain exact camera and time settings
+when comparing a refined asset; a front-only screenshot can hide attachment gaps.

@@ -30,6 +30,12 @@ export declare function importLittlewildDefinition(project: string, file: string
             taper: import("../index.js").ScalarValue;
             bend: import("../index.js").ScalarValue;
             segments: number;
+            profile?: {
+                at: import("../index.js").ScalarValue;
+                width: import("../index.js").ScalarValue;
+                depth: import("../index.js").ScalarValue;
+                offset: [import("../index.js").ScalarValue, import("../index.js").ScalarValue];
+            }[] | undefined;
         } | {
             type: "cylinder";
             radiusTop: import("../index.js").ScalarValue;
@@ -108,6 +114,7 @@ export declare function importLittlewildDefinition(project: string, file: string
                 seed: number;
                 scale: number;
                 strength: number;
+                version?: 1 | 2 | undefined;
             } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;

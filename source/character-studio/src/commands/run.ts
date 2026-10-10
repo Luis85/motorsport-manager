@@ -1,4 +1,5 @@
 import { resolve } from 'node:path';
+import {previewNumbers, validatePreviewConfiguration} from '../application/preview-configuration.js';
 import { catalog } from '../domain/catalog.js';
 import { createCharacter, validateCharacter, assertCharacter } from '../domain/character.js';
 import { characterSchema } from '../domain/schema.js';
@@ -19,13 +20,20 @@ function guards(flags: Flags) {
 }
 
 function previewOptions(flags: Flags) {
-  const result: Record<string, string> = {};
+  const result: Record<string, string | number> = {};
   for (const [key, allowed] of Object.entries(previewValues)) {
     const value = stringFlag(flags, key, allowed[0]);
     if (!(allowed as readonly string[]).includes(value)) throw new CommandError('INVALID_ARGUMENT', `--${key} must be ${allowed.join(', ')}.`);
     result[key] = value;
   }
-  return result as {mode: 'studio' | 'world' | 'portrait'; light: 'studio' | 'daylight' | 'night'; pose: 'idle' | 'walk' | 'work' | 'celebrate'; camera: 'front' | 'side' | 'back'};
+  for (const key of Object.keys(previewNumbers)) if (flags[key] !== undefined) {
+    const raw = stringFlag(flags, key);
+    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(raw))
+      throw new CommandError('INVALID_ARGUMENT', `--${key} requires a finite decimal number.`);
+    result[key] = Number(raw);
+  }
+  try { return validatePreviewConfiguration(result); }
+  catch (error) { throw new CommandError('INVALID_ARGUMENT', (error as Error).message); }
 }
 
 async function execute(command: string, flags: Flags): Promise<unknown> {
@@ -87,7 +95,7 @@ async function execute(command: string, flags: Flags): Promise<unknown> {
     return {ok: true, format, value};
   }
   if (command === 'preview') {
-    const preview = previewOptions(flags);
+    const preview = {...previewOptions(flags), ...(flags.time !== undefined ? {paused:true} : {})};
     const character = (await store.read(project, id)).character;
     return {ok: true, preview, path: await writeOutput(stringFlag(flags, 'out'), renderHtml({initial: character, preview}), true)};
   }

@@ -12,10 +12,16 @@ type Plain = Record<string, unknown>;
 const plain = (value: unknown): value is Plain =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 const degrees = (value: number) => Number(THREE.MathUtils.radToDeg(value).toFixed(4));
-const triples = (values: ArrayLike<number>, step: number) => {
+const triples = (values: ArrayLike<number>, step?: number) => {
   const out: number[][] = [];
   for (let i = 0; i < values.length; i += 3)
-    out.push([0, 1, 2].map((k) => Number((Math.round(values[i + k] / step) * step).toFixed(5))));
+    out.push(
+      [0, 1, 2].map((k) =>
+        step === undefined
+          ? values[i + k]
+          : Number((Math.round(values[i + k] / step) * step).toFixed(5)),
+      ),
+    );
   return out;
 };
 function bake(geometry: THREE.BufferGeometry) {
@@ -138,7 +144,7 @@ export function littlewildImportPlan(asset: Plain, prefix?: string) {
               );
             geometries[geometryId] = {
               type: 'mesh',
-              positions: triples(positions, 1e-5),
+              positions: triples(positions),
               indices: Array.isArray(data.indices)
                 ? data.indices
                 : Array.from({ length: positions.length / 3 }, (_, i) => i),
@@ -151,7 +157,7 @@ export function littlewildImportPlan(asset: Plain, prefix?: string) {
                   }
                 : {}),
               ...(Array.isArray(data.normals)
-                ? { normals: triples(data.normals as number[], 1e-4) }
+                ? { normals: triples(data.normals as number[]) }
                 : {}),
             };
           } else geometries[geometryId] = bake(primitiveGeometry(primitive));

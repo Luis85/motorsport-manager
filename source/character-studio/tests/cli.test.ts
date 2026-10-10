@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile, access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { Script } from 'node:vm';
@@ -113,4 +113,33 @@ test('strict machine discovery and errors reject typos, unsafe paths and malform
     assert.equal((await command(['validate', '--file', invalidFile])).error.code, 'INVALID_JSON');
     assert.equal((await command(['validate', '--file', invalidFile, '--id', 'safe'])).status, 2);
   } finally { await rm(project, {recursive: true, force: true}); }
+});
+
+
+test('CLI camera and phase controls are discoverable, deterministic and reject malformed numbers before output',async()=>{
+  const project=await mkdtemp(join(tmpdir(),'character-camera-'));
+  try {
+    const identity=['--project',project,'--id','moss'];
+    await command(['create',...identity]);
+    const description=await command(['describe','--command','capture']);
+    assert.ok(description.arguments.properties.camera.enum.includes('three-quarter'));
+    assert.equal(description.arguments.properties.time.maximum,3600);
+    assert.equal(description.arguments.properties.yaw.minimum,-Math.PI);
+    const output=join(project,'phase.html');
+    const args=['preview',...identity,'--out',output,'--camera','three-quarter','--yaw','-.4','--elevation','.2','--zoom','+1.25','--time','3.5e-1'];
+    const result=await command(args);
+    assert.equal(result.status,0,JSON.stringify(result));
+    assert.deepEqual([result.preview.yaw,result.preview.elevation,result.preview.zoom,result.preview.time],[-.4,.2,1.25,.35]);
+    const html=await readFile(output,'utf8');
+    const config=JSON.parse(html.match(/window\.__STUDIO__=([^<]+);<\/script>/)![1]);
+    assert.deepEqual(config.preview,{...result.preview,paused:true});
+    for(const value of ['NaN','Infinity','0x10','1px',' 0.4','3601']) {
+      const rejected=await command(['preview',...identity,'--out',output,'--time',value]);
+      assert.equal(rejected.status,2,JSON.stringify(rejected));
+      assert.equal(await readFile(output,'utf8'),html);
+    }
+    const absent=join(project,'absent.html');
+    assert.equal((await command(['preview',...identity,'--out',absent,'--yaw','4'])).status,2);
+    await assert.rejects(access(absent));
+  } finally {await rm(project,{recursive:true,force:true});}
 });

@@ -1,3 +1,4 @@
+import { rememberMeshSource } from './mesh-source.js';
 import { createSurfacePool } from './surfaces.js';
 import { createMaterial } from './materials.js';
 import { sphereUVs } from './surface-pattern.js';
@@ -242,6 +243,7 @@ export function createResourcePool(warnings: Set<string>) {
       geometries.delete(result);
       result.dispose();
       result = baked;
+      if (g.type === 'mesh') rememberMeshSource(result, g);
       geometries.add(result);
       geometryCache.set(id, result);
       geometryPool.set(key, result);

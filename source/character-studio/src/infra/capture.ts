@@ -6,22 +6,27 @@ import {assertCharacter, type Character} from '../domain/character.js';
 import {stateHash} from './store.js';
 import {StudioError} from './files.js';
 import {renderHtml} from './html.js';
+import {cameraYaw, validatePreviewConfiguration, type PreviewConfiguration} from '../application/preview-configuration.js';
 
-export interface CaptureOptions {
-  mode?: 'studio' | 'world' | 'portrait';
-  light?: 'studio' | 'daylight' | 'night';
-  pose?: 'idle' | 'walk' | 'work' | 'celebrate';
-  camera?: 'front' | 'side' | 'back';
+export interface CaptureOptions extends Omit<PreviewConfiguration, 'paused' | 'reset'> {
   width?: number;
   height?: number;
 }
 export function captureOptions(input: CaptureOptions = {}): Required<CaptureOptions> {
-  const options = {mode:'studio',light:'studio',pose:'idle',camera:'front',width:1024,height:1024,...input} as Required<CaptureOptions>;
-  const choices = {mode:['studio','world','portrait'],light:['studio','daylight','night'],pose:['idle','walk','work','celebrate'],camera:['front','side','back']};
-  for (const key of Object.keys(input)) if (!(key in options) || ![...Object.keys(choices),'width','height'].includes(key)) throw new StudioError('INVALID_ARGUMENT',`Unknown capture option: ${key}.`);
-  for (const key of Object.keys(choices) as (keyof typeof choices)[]) {
-    if (!choices[key].includes(options[key])) throw new StudioError('INVALID_ARGUMENT',`Invalid ${key}: choose ${choices[key].join(', ')}.`);
+  if (!input || typeof input !== 'object' || Object.getPrototypeOf(input) !== Object.prototype || Object.getOwnPropertySymbols(input).length)
+    throw new StudioError('INVALID_ARGUMENT','Capture options require a plain object.');
+  for (const [key, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(input))) {
+    if (!descriptor.enumerable || descriptor.get || descriptor.set || ['paused','reset'].includes(key))
+      throw new StudioError('INVALID_ARGUMENT',`Invalid capture option: ${key}.`);
   }
+  const {width: suppliedWidth, height: suppliedHeight, ...preview} = input;
+  const width = Object.hasOwn(input,'width') ? suppliedWidth : 1024;
+  const height = Object.hasOwn(input,'height') ? suppliedHeight : 1024;
+  let config: PreviewConfiguration;
+  try { config = validatePreviewConfiguration(preview); }
+  catch (error) { throw new StudioError('INVALID_ARGUMENT',(error as Error).message); }
+  const options = {mode:'studio',light:'studio',pose:'idle',camera:'front',
+    yaw:cameraYaw[config.camera || 'front'],elevation:.08,zoom:1,time:0,...config,width,height} as Required<CaptureOptions>;
   for (const key of ['width','height'] as const) {
     if (!Number.isInteger(options[key]) || options[key] < 256 || options[key] > 4096) throw new StudioError('INVALID_ARGUMENT',`Capture ${key} must be an integer from 256 through 4096.`);
   }
@@ -91,7 +96,7 @@ export async function captureSession(input: Character) {
       const canvas = document.querySelector<HTMLCanvasElement>('#viewport')!;
       if (canvas.dataset.renderer !== 'three-engine') throw new Error('WebGL character rendering is unavailable.');
       canvas.style.cssText = `position:fixed!important;inset:0!important;width:${config.width}px!important;height:${config.height}px!important;max-width:none!important;max-height:none!important;`;
-      api.configure({mode:config.mode,light:config.light,pose:config.pose,camera:config.camera,paused:true,reset:true});
+      api.configure({mode:config.mode,light:config.light,pose:config.pose,camera:config.camera,yaw:config.yaw,elevation:config.elevation,zoom:config.zoom,time:config.time,paused:true,reset:true});
       return api.capture();
     },options);
     if (typeof data !== 'string' || !data.startsWith('data:image/png;base64,')) throw new StudioError('RENDER_FAILED','The preview did not return a PNG.');
@@ -120,5 +125,5 @@ export async function captureCharacter(input: Character, destination: string, in
   try { await handle.writeFile(bytes); await handle.sync(); }
   catch (error) { await handle.close(); await rm(output,{force:true}); throw error; }
   finally { await handle.close().catch(() => {}); }
-  return {output,bytes:bytes.length,recipeHash:stateHash(character),preview:{...options,paused:true,time:0},renderer:'wildlands-three',format:'png'};
+  return {output,bytes:bytes.length,recipeHash:stateHash(character),preview:{...options,paused:true},renderer:'wildlands-three',format:'png'};
 }

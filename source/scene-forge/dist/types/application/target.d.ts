@@ -27,6 +27,12 @@ export declare function authoringTarget(scene: SceneDocument, models: ModelLibra
         taper: import("../domain/schema.js").ScalarValue;
         bend: import("../domain/schema.js").ScalarValue;
         segments: number;
+        profile?: {
+            at: import("../domain/schema.js").ScalarValue;
+            width: import("../domain/schema.js").ScalarValue;
+            depth: import("../domain/schema.js").ScalarValue;
+            offset: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        }[] | undefined;
     } | {
         type: "cylinder";
         radiusTop: import("../domain/schema.js").ScalarValue;
@@ -105,6 +111,7 @@ export declare function authoringTarget(scene: SceneDocument, models: ModelLibra
             seed: number;
             scale: number;
             strength: number;
+            version?: 1 | 2 | undefined;
         } | undefined;
         sheen?: number | undefined;
         sheenColor?: string | undefined;

@@ -1,0 +1,648 @@
+{
+  "format": "wildlands-storyboard-receipt",
+  "schemaVersion": 1,
+  "title": "Littlewild · Shape, expression and craft",
+  "layout": "comparison",
+  "sectionCount": 4,
+  "cardCount": 15,
+  "cards": [
+    {
+      "id": "reference",
+      "sourceKind": null,
+      "facts": [],
+      "images": [
+        {
+          "path": "evidence/supplied-concept.png",
+          "sha256": "ae8c65d2bd8309dd0868feb62e83a94bfdf9f47e000e28089d0480f3ae71c913",
+          "hashVerified": false,
+          "width": 1800,
+          "height": 1273
+        }
+      ]
+    },
+    {
+      "id": "hero",
+      "sourceKind": "littlewild-character",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "littlewild-character"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "ID",
+          "value": "pip-artboard"
+        },
+        {
+          "label": "Name",
+          "value": "Pip"
+        },
+        {
+          "label": "Personality",
+          "value": "curious"
+        },
+        {
+          "label": "Preset",
+          "value": "pip"
+        },
+        {
+          "label": "Body",
+          "value": "balanced"
+        },
+        {
+          "label": "Coat",
+          "value": "#c99055"
+        },
+        {
+          "label": "Status",
+          "value": "draft"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/hero.png",
+          "sha256": "82039f907d4274b72dcd79606617b8ade19916345c46b0d8fd15e0f41e3f9ebb",
+          "hashVerified": false,
+          "width": 768,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "before",
+      "sourceKind": null,
+      "facts": [],
+      "images": [
+        {
+          "path": "evidence/previous-portrait.png",
+          "sha256": "be7ef90136bcbaecc4db698a848fd2222850e517c413614ffc6e04d538f34de0",
+          "hashVerified": false,
+          "width": 768,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "reference-bare",
+      "sourceKind": null,
+      "facts": [],
+      "images": [
+        {
+          "path": "evidence/supplied-unclothed-concept.png",
+          "sha256": "bf215c443e45140154f96e5444d8844deab223a0c0754c7a5e6c051a71e5c6cb",
+          "hashVerified": false,
+          "width": 1800,
+          "height": 1273
+        }
+      ]
+    },
+    {
+      "id": "bare",
+      "sourceKind": null,
+      "facts": [],
+      "images": [
+        {
+          "path": "evidence/bare.png",
+          "sha256": "bb6e5d4092426a0a4f80a0d10286325a300f25cf6611ca01f658894216f890ca",
+          "hashVerified": false,
+          "width": 1024,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "id": "desktop",
+      "sourceKind": "generic-json",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "generic-json"
+        },
+        {
+          "label": "Root type",
+          "value": "object"
+        },
+        {
+          "label": "Fields",
+          "value": "desktop, mobile, errors"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/after-editor-desktop.png",
+          "sha256": "31c53eba75f3e742ec0cd9bf977669fa575e020ffd6dbdf69a8c27d130cdeac0",
+          "hashVerified": false,
+          "width": 1440,
+          "height": 1059
+        }
+      ]
+    },
+    {
+      "id": "mobile",
+      "sourceKind": null,
+      "facts": [],
+      "images": [
+        {
+          "path": "evidence/after-editor-mobile.png",
+          "sha256": "c8c44899d3d6e9380be387ebaeda475f0f4400c990d4dc1a4443d958c94804a9",
+          "hashVerified": false,
+          "width": 390,
+          "height": 2232
+        }
+      ]
+    },
+    {
+      "id": "studio-review",
+      "sourceKind": "character-studio-review",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "character-studio-review"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Character",
+          "value": "pip-artboard"
+        },
+        {
+          "label": "Recipe hash (reported)",
+          "value": "7db46c9d907c878e082dcaf603e6f2c13f2d844ec680bdf9c95dd3e9e1dd8c31"
+        },
+        {
+          "label": "Visual hash (reported)",
+          "value": "8bb18a92d6a38c73cb3aee7c7eb6c19042090799d08197d6716960d98c2c6af0"
+        },
+        {
+          "label": "Compiler revision",
+          "value": "4"
+        },
+        {
+          "label": "Frames",
+          "value": "9"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/review/contact-sheet.png",
+          "sha256": "258a2c6d310934490d7bd1b4c50254d81f88d77c1feec08a1d900606dc1078d4",
+          "hashVerified": true,
+          "width": 1152,
+          "height": 1296
+        },
+        {
+          "path": "evidence/review/frames/front.png",
+          "sha256": "6bdcfbd54fb0a9446a82e8314b1e368f532ebb1dec12f76b0e97ebe39b1cfd5f",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/review/frames/three-quarter.png",
+          "sha256": "82039f907d4274b72dcd79606617b8ade19916345c46b0d8fd15e0f41e3f9ebb",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/review/frames/side.png",
+          "sha256": "5652153f990475b64aeeef5eaaf1857a8ce0ef66fcd12da1303e2e92e44d33c4",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/review/frames/back.png",
+          "sha256": "81852f267a855f42ef5d0649d632945de9cd89af4e71cbd21546f91ce2f24ca7",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/review/frames/portrait.png",
+          "sha256": "9c6d9c906441f0bbd59a5736452e1878047ed924c282f7e81f4b0841e80c11e1",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/review/frames/world.png",
+          "sha256": "0d065bc0fc2a9d20bd5bce2c460e9f0378864a4d599f33060413a916b9de36b8",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/review/frames/night.png",
+          "sha256": "e53c9ba2656e1afbee959d84a4267f2ddc642c2d02958d0029cb4b132e843d5a",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/review/frames/walk.png",
+          "sha256": "f480933072a1f6215ed85b2d050a842980bb2c483ef6eedf88e41aa61d8b46f9",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/review/frames/work.png",
+          "sha256": "f49fcdb9d919105e46b507e2563622c6430067ace57c4537d07dc52955138619",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "forge",
+      "sourceKind": "review-result",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "review-result"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Scene",
+          "value": "model"
+        },
+        {
+          "label": "Source state (reported)",
+          "value": "c06931bff9213d69a9c873bb44380a117ba4d1295129ecb40710d04000c7dd18"
+        },
+        {
+          "label": "Render state (reported)",
+          "value": "636b4f3a2bd3c6b5827d7f4c2508fda88ce9cadcb9db575a9add68f851852b08"
+        },
+        {
+          "label": "Frames",
+          "value": "3"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/forge-review/contact-sheet.png",
+          "sha256": "d83dfb1707ddce192d434bfa1e226cf5ad4766bd34145ba5b5c2d44e7213442b",
+          "hashVerified": false,
+          "width": 864,
+          "height": 1024
+        },
+        {
+          "path": "evidence/forge-review/front.png",
+          "sha256": "a9f91710bcc2c8baa707274b64d173158ea279567bea4172b5d7e22ea83d667a",
+          "hashVerified": true,
+          "width": 720,
+          "height": 800
+        },
+        {
+          "path": "evidence/forge-review/three-quarter.png",
+          "sha256": "f8b6a912044701167bc1db5fd15a400b8da1b10900c14dba3f96e1313f558f13",
+          "hashVerified": true,
+          "width": 720,
+          "height": 800
+        },
+        {
+          "path": "evidence/forge-review/right.png",
+          "sha256": "bf264de4aa37413ec20c52fedcc7e51ac59834e91487f3995377ace6f8e3b463",
+          "hashVerified": true,
+          "width": 720,
+          "height": 800
+        }
+      ]
+    },
+    {
+      "id": "native",
+      "sourceKind": "littlewild-native-visual-evidence",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "littlewild-native-visual-evidence"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Root type",
+          "value": "object"
+        },
+        {
+          "label": "Fields",
+          "value": "format, schemaVersion, asset, capture, renderer, nativeAssetFactorySha256, captureScriptSha256, model, camera, lighting, limitations, captureScript, engineExecutableSha256, surfaceIndexSha256, surfaceAlgorithms, installedProjectFingerprint, sourceNativeAssetFactoryMatches"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/pip-artboard-godot.png",
+          "sha256": "aae503b642a9748f1f8edd3fddcaa6512a87c7dc7274832fbc86848bc5bcf0a2",
+          "hashVerified": false,
+          "width": 960,
+          "height": 1100
+        }
+      ]
+    },
+    {
+      "id": "handoff",
+      "sourceKind": "generic-json",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "generic-json"
+        },
+        {
+          "label": "Root type",
+          "value": "object"
+        },
+        {
+          "label": "Fields",
+          "value": "ok, executableHashes, reports"
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": "refinement",
+      "sourceKind": "littlewild-cape-refinement-evidence",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "littlewild-cape-refinement-evidence"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Root type",
+          "value": "object"
+        },
+        {
+          "label": "Fields",
+          "value": "ok, format, schemaVersion, engineExecutableSha256, sourceProjectSha256, sourceFingerprint, refinedFingerprint, definitionSha256, sourceMeshValues, refinedMeshValues, sourceMeshes, refinedMeshes, dryRunMatchesPublished, sourceInputsUnchanged, preserved, publishedProjectBytes, exportedPackageSha256, jsonValueLimit, sourceJsonValues, refinedJsonValues"
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": "installed",
+      "sourceKind": "generic-json",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "generic-json"
+        },
+        {
+          "label": "Root type",
+          "value": "object"
+        },
+        {
+          "label": "Fields",
+          "value": "ok, protocolVersion, projectId, fingerprint, selection, visual, next"
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": "profiles",
+      "sourceKind": "generic-json",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "generic-json"
+        },
+        {
+          "label": "Root type",
+          "value": "object"
+        },
+        {
+          "label": "Fields",
+          "value": "executableSha256, nodeVersion, beforeBounds, afterBounds, steps"
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": "limits",
+      "sourceKind": null,
+      "facts": [],
+      "images": []
+    }
+  ],
+  "inputs": [
+    {
+      "path": "storyboard.json",
+      "kind": "manifest",
+      "sha256": "d8c9ded75bd6b0a3fa7b330b6652afc11e190418c55246a848e558638771f3a8",
+      "bytes": 6467
+    },
+    {
+      "path": "evidence/supplied-concept.png",
+      "kind": "image",
+      "sha256": "ae8c65d2bd8309dd0868feb62e83a94bfdf9f47e000e28089d0480f3ae71c913",
+      "bytes": 1047509
+    },
+    {
+      "path": "evidence/pip-artboard.recipe.json",
+      "kind": "json",
+      "sha256": "aa4d4ab1070551dd73c16f23b49ed7e8e4763ab229860e6a08a0e87ebbed885f",
+      "bytes": 698
+    },
+    {
+      "path": "evidence/hero.png",
+      "kind": "image",
+      "sha256": "82039f907d4274b72dcd79606617b8ade19916345c46b0d8fd15e0f41e3f9ebb",
+      "bytes": 284882
+    },
+    {
+      "path": "evidence/previous-portrait.png",
+      "kind": "image",
+      "sha256": "be7ef90136bcbaecc4db698a848fd2222850e517c413614ffc6e04d538f34de0",
+      "bytes": 383351
+    },
+    {
+      "path": "evidence/supplied-unclothed-concept.png",
+      "kind": "image",
+      "sha256": "bf215c443e45140154f96e5444d8844deab223a0c0754c7a5e6c051a71e5c6cb",
+      "bytes": 1685889
+    },
+    {
+      "path": "evidence/bare.png",
+      "kind": "image",
+      "sha256": "bb6e5d4092426a0a4f80a0d10286325a300f25cf6611ca01f658894216f890ca",
+      "bytes": 358735
+    },
+    {
+      "path": "ui-evidence.json",
+      "kind": "json",
+      "sha256": "0d3b27b7de5e29ecb569ba3ab997a6300f7b5377f5cb59d337465f7255be39cb",
+      "bytes": 940
+    },
+    {
+      "path": "evidence/after-editor-desktop.png",
+      "kind": "image",
+      "sha256": "31c53eba75f3e742ec0cd9bf977669fa575e020ffd6dbdf69a8c27d130cdeac0",
+      "bytes": 328494
+    },
+    {
+      "path": "evidence/after-editor-mobile.png",
+      "kind": "image",
+      "sha256": "c8c44899d3d6e9380be387ebaeda475f0f4400c990d4dc1a4443d958c94804a9",
+      "bytes": 175020
+    },
+    {
+      "path": "evidence/review/manifest.json",
+      "kind": "json",
+      "sha256": "0eacc6621b4188a38e219957fc38f91c9da24599a29214a41730a32461ecbd82",
+      "bytes": 4708
+    },
+    {
+      "path": "evidence/review/contact-sheet.png",
+      "kind": "image",
+      "sha256": "258a2c6d310934490d7bd1b4c50254d81f88d77c1feec08a1d900606dc1078d4",
+      "bytes": 800282
+    },
+    {
+      "path": "evidence/review/frames/front.png",
+      "kind": "image",
+      "sha256": "6bdcfbd54fb0a9446a82e8314b1e368f532ebb1dec12f76b0e97ebe39b1cfd5f",
+      "bytes": 277690
+    },
+    {
+      "path": "evidence/review/frames/three-quarter.png",
+      "kind": "image",
+      "sha256": "82039f907d4274b72dcd79606617b8ade19916345c46b0d8fd15e0f41e3f9ebb",
+      "bytes": 284882
+    },
+    {
+      "path": "evidence/review/frames/side.png",
+      "kind": "image",
+      "sha256": "5652153f990475b64aeeef5eaaf1857a8ce0ef66fcd12da1303e2e92e44d33c4",
+      "bytes": 211450
+    },
+    {
+      "path": "evidence/review/frames/back.png",
+      "kind": "image",
+      "sha256": "81852f267a855f42ef5d0649d632945de9cd89af4e71cbd21546f91ce2f24ca7",
+      "bytes": 226939
+    },
+    {
+      "path": "evidence/review/frames/portrait.png",
+      "kind": "image",
+      "sha256": "9c6d9c906441f0bbd59a5736452e1878047ed924c282f7e81f4b0841e80c11e1",
+      "bytes": 389283
+    },
+    {
+      "path": "evidence/review/frames/world.png",
+      "kind": "image",
+      "sha256": "0d065bc0fc2a9d20bd5bce2c460e9f0378864a4d599f33060413a916b9de36b8",
+      "bytes": 340406
+    },
+    {
+      "path": "evidence/review/frames/night.png",
+      "kind": "image",
+      "sha256": "e53c9ba2656e1afbee959d84a4267f2ddc642c2d02958d0029cb4b132e843d5a",
+      "bytes": 321825
+    },
+    {
+      "path": "evidence/review/frames/walk.png",
+      "kind": "image",
+      "sha256": "f480933072a1f6215ed85b2d050a842980bb2c483ef6eedf88e41aa61d8b46f9",
+      "bytes": 284381
+    },
+    {
+      "path": "evidence/review/frames/work.png",
+      "kind": "image",
+      "sha256": "f49fcdb9d919105e46b507e2563622c6430067ace57c4537d07dc52955138619",
+      "bytes": 211033
+    },
+    {
+      "path": "evidence/forge-review/review.json",
+      "kind": "json",
+      "sha256": "63dec406011321ae12df0172fff09583d4cb0c905fb10ba59db0f694cdfdf604",
+      "bytes": 6813
+    },
+    {
+      "path": "evidence/forge-review/contact-sheet.png",
+      "kind": "image",
+      "sha256": "d83dfb1707ddce192d434bfa1e226cf5ad4766bd34145ba5b5c2d44e7213442b",
+      "bytes": 456460
+    },
+    {
+      "path": "evidence/forge-review/front.png",
+      "kind": "image",
+      "sha256": "a9f91710bcc2c8baa707274b64d173158ea279567bea4172b5d7e22ea83d667a",
+      "bytes": 247337
+    },
+    {
+      "path": "evidence/forge-review/three-quarter.png",
+      "kind": "image",
+      "sha256": "f8b6a912044701167bc1db5fd15a400b8da1b10900c14dba3f96e1313f558f13",
+      "bytes": 213905
+    },
+    {
+      "path": "evidence/forge-review/right.png",
+      "kind": "image",
+      "sha256": "bf264de4aa37413ec20c52fedcc7e51ac59834e91487f3995377ace6f8e3b463",
+      "bytes": 191132
+    },
+    {
+      "path": "evidence/pip-artboard-godot.receipt.json",
+      "kind": "json",
+      "sha256": "4af3220b4258f36b3b3648bd365129821e33d050cf978034d8511b4078228ae1",
+      "bytes": 1673
+    },
+    {
+      "path": "evidence/pip-artboard-godot.png",
+      "kind": "image",
+      "sha256": "aae503b642a9748f1f8edd3fddcaa6512a87c7dc7274832fbc86848bc5bcf0a2",
+      "bytes": 341709
+    },
+    {
+      "path": "handoff-receipt.json",
+      "kind": "json",
+      "sha256": "5e429d358d3f2ba34554d1a0b0cbf6b31a58fe84dd944beca681264543fe9ff3",
+      "bytes": 3306
+    },
+    {
+      "path": "evidence/cape-refinement.receipt.json",
+      "kind": "json",
+      "sha256": "60a738481e46ca3470e8f9d685c82842166a08f4c8f9d2910b7f7c0c165d607c",
+      "bytes": 920
+    },
+    {
+      "path": "evidence/pip-artboard-engine-summary.json",
+      "kind": "json",
+      "sha256": "bfe78068fba3d86d509135ab5d4650d0db079aff965aefa7aca45cd4e7f83835",
+      "bytes": 114934
+    },
+    {
+      "path": "evidence/profile-workflow.json",
+      "kind": "json",
+      "sha256": "e52757a2853d15aa23b06d492a34ae8f2dd9bd552e59c8aa489118a07aef4508",
+      "bytes": 33143
+    }
+  ],
+  "html": {
+    "sha256": "14c3e1c62e953666722788433d87ae8a2705e8eb2d6de020195b589198b8014b",
+    "bytes": 12254445
+  },
+  "validation": "presentation-only",
+  "warnings": [
+    "Some review images have no declared SHA-256. Their observed hashes are recorded, but the review did not bind them.",
+    "No capture supplied for handoff. Add image or a Character Studio/Scene Forge review manifest as source to show the actual appearance.",
+    "No capture supplied for refinement. Add image or a Character Studio/Scene Forge review manifest as source to show the actual appearance.",
+    "No capture supplied for installed. Add image or a Character Studio/Scene Forge review manifest as source to show the actual appearance.",
+    "No capture supplied for profiles. Add image or a Character Studio/Scene Forge review manifest as source to show the actual appearance.",
+    "No capture supplied for limits. Add image or a Character Studio/Scene Forge review manifest as source to show the actual appearance."
+  ]
+}

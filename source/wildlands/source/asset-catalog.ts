@@ -84,8 +84,8 @@
   for(const key of ['transparent','depthWrite','flatShading','doubleSided'])if(value[key]!==undefined&&typeof value[key]!=='boolean')fail(path+' invalid '+key);
   for(const key of ['opacity','roughness','metalness','sheen','sheenRoughness','clearcoat','clearcoatRoughness']){const amount=value[key];if(amount!==undefined&&(!finite(amount)||amount<0||amount>1))fail(path+' invalid '+key);}
   if(value.surface!==undefined){
-   const surface=fields(value.surface,['kind','seed','scale','strength'],path+' surface');
-   if(typeof surface.kind!=='string'||!['fur','cloth','leather'].includes(surface.kind)||!Number.isInteger(surface.seed)||!finite(surface.seed)||surface.seed<0||surface.seed>65535||!finite(surface.scale)||surface.scale<1||surface.scale>16||!finite(surface.strength)||surface.strength<0||surface.strength>1)fail(path+' invalid bounded surface');
+   const surface=fields(value.surface,['kind','seed','scale','strength','version'],path+' surface');
+   if((surface.version!==undefined&&surface.version!==1&&surface.version!==2)||typeof surface.kind!=='string'||!['fur','cloth','leather'].includes(surface.kind)||!Number.isInteger(surface.seed)||!finite(surface.seed)||surface.seed<0||surface.seed>65535||!finite(surface.scale)||surface.scale<1||surface.scale>16||!finite(surface.strength)||surface.strength<0||surface.strength>1)fail(path+' invalid bounded surface');
   }
   const emissive=value.emissiveIntensity;
   if(emissive!==undefined&&(!finite(emissive)||emissive<0))fail(path+' invalid emissive intensity');

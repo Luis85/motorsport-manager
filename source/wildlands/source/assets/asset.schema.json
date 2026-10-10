@@ -393,6 +393,15 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1
+        },
+        "version": {
+          "type": "integer",
+          "enum": [
+            1,
+            2
+          ],
+          "default": 1,
+          "description": "Replay algorithm version. Omitted or 1 retains the original grain; 2 uses fine tapered fur fibres, interlaced cloth and soft leather grain."
         }
       }
     }

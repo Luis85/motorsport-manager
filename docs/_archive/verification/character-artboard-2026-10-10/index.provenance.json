@@ -1,0 +1,13 @@
+{
+  "format": "character-artboard-showcase-build",
+  "schemaVersion": 1,
+  "historicalDate": "2026-10-10",
+  "executable": "bin/wildlands",
+  "executableSha256": "bb11f00ce951734ac4393d41fcf1dbaced51c61b965d40822e0d34be203b586c",
+  "nodeVersion": "v24.19.0",
+  "manifest": "storyboard.json",
+  "manifestSha256": "d8c9ded75bd6b0a3fa7b330b6652afc11e190418c55246a848e558638771f3a8",
+  "output": "index.html",
+  "outputSha256": "14c3e1c62e953666722788433d87ae8a2705e8eb2d6de020195b589198b8014b",
+  "validation": "Presentation composition only; supplied review images are hash checked when declared."
+}

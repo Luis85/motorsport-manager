@@ -16,11 +16,14 @@ Its smooth character compiler, physical materials and reproducible multi-view
 reviews share authored data with both tools. The [complete agent workflow](../how-to/character-agent-workflow.md)
 now uses guarded CLI commands for engine creature installation, companion edits
 and Scene Forge visual updates into new immutable project versions.
-Revision-3 character shapes soften facial proportions and preserve earlier
-Studio export imports. Deterministic fur, cloth and leather surface maps and
+Revision-4 character shapes add recessed eyes, a shaped jaw, distinct legs and
+fitted garments while preserving exact revision 1–3 Studio export imports. Deterministic fur, cloth and leather surface maps and
 authored mesh UVs travel through browser rendering, Scene Forge GLB and native
-engine export. Scene Forge adds a bounded organic shape primitive, and engine
-creature inspection can return compact material/geometry facts for agents.
+engine export. Scene Forge adds bounded organic profile stations for authored silhouettes, and
+engine creature inspection can return compact material/geometry facts for agents.
+Versioned surface recipes retain earlier texture bytes; explicit version 2 adds
+finer directional coat detail. Agent captures expose repeatable three-quarter
+views, orbit, zoom and animation phase.
 Surface detail does not replace silhouette authoring or visual review.
 The engine's `storyboard` CLI composes supplied artifact facts, explicit intent
 and captured images into deterministic, self-contained HTML. Grid, sequence and

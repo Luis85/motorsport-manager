@@ -1,0 +1,1173 @@
+{
+  "executableSha256": "9f8586747129b4ed502be80fccc4a566e2c9aff4759e27681ae0dd0caa051ee6",
+  "nodeVersion": "v24.19.0",
+  "beforeBounds": {
+    "min": [
+      -0.46455979347229004,
+      -0.550000011920929,
+      -0.37164783477783203
+    ],
+    "max": [
+      0.46455979347229004,
+      0.550000011920929,
+      0.37164783477783203
+    ],
+    "size": [
+      0.9291195869445801,
+      1.100000023841858,
+      0.7432956695556641
+    ]
+  },
+  "afterBounds": {
+    "min": [
+      -0.5184459686279297,
+      -0.550000011920929,
+      -0.38266631960868835
+    ],
+    "max": [
+      0.5184459686279297,
+      0.550000011920929,
+      0.469066321849823
+    ],
+    "size": [
+      1.0368919372558594,
+      1.100000023841858,
+      0.8517326414585114
+    ]
+  },
+  "steps": [
+    {
+      "command": [
+        "scene-forge",
+        "init",
+        "/workspace/work/artboard-pass2-final/forge-profile/project",
+        "--name",
+        "Sculpted profile verification"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "project": "/workspace/work/artboard-pass2-final/forge-profile/project",
+          "manifest": {
+            "schemaVersion": 1,
+            "name": "Sculpted profile verification",
+            "activeScene": "main",
+            "scenes": {
+              "main": "scenes/main.scene.json"
+            },
+            "models": {}
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "catalog"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "version": "0.6.0",
+          "workflow": [
+            "init",
+            "apply",
+            "model capture",
+            "scene compose",
+            "node transform",
+            "validate",
+            "inspect",
+            "preview",
+            "screenshot",
+            "review",
+            "audit",
+            "scene pack",
+            "export"
+          ],
+          "schemas": [
+            "scene",
+            "model",
+            "project",
+            "batch",
+            "node",
+            "geometry",
+            "material",
+            "composition",
+            "model-bundle",
+            "scene-bundle",
+            "selector",
+            "scalar",
+            "review",
+            "camera",
+            "camera-snapshot",
+            "quality-policy",
+            "pattern",
+            "rig",
+            "littlewild-export"
+          ],
+          "geometryTypes": [
+            "box",
+            "sphere",
+            "organic",
+            "cylinder",
+            "cone",
+            "torus",
+            "capsule",
+            "plane",
+            "lathe",
+            "extrude",
+            "mesh",
+            "boolean",
+            "tube"
+          ],
+          "organicForms": {
+            "type": "organic",
+            "units": "size is the untapered diameter on X/Y/Z in meters; taper and bend can extend X/Z bounds",
+            "parameters": {
+              "roundness": [
+                0.65,
+                1.5
+              ],
+              "taper": [
+                -0.65,
+                0.65
+              ],
+              "bend": [
+                -0.75,
+                0.75
+              ],
+              "segments": [
+                12,
+                96
+              ]
+            },
+            "profile": {
+              "stations": [
+                2,
+                12
+              ],
+              "at": [
+                -1,
+                1
+              ],
+              "minimumHeightGap": 0.02,
+              "width": [
+                0.1,
+                2
+              ],
+              "depth": [
+                0.1,
+                2
+              ],
+              "offset": [
+                -0.75,
+                0.75
+              ],
+              "meaning": "Optional profile stations start at -1 and end at 1. Width/depth multiply each crosssection; offset [X,Z] moves its center in half-size units. Smoothstep interpolation never overshoots; every station is sampled exactly.",
+              "example": [
+                {
+                  "at": -1,
+                  "width": 1,
+                  "depth": 1,
+                  "offset": [
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "at": -0.35,
+                  "width": 1.12,
+                  "depth": 1.15,
+                  "offset": [
+                    0,
+                    0.12
+                  ]
+                },
+                {
+                  "at": 0.35,
+                  "width": 0.75,
+                  "depth": 0.8,
+                  "offset": [
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "at": 1,
+                  "width": 0.65,
+                  "depth": 0.7,
+                  "offset": [
+                    0.1,
+                    -0.08
+                  ]
+                }
+              ]
+            },
+            "meaning": "roundness 1 is ellipsoidal, below 1 is fuller; positive taper narrows the top; bend offsets both ends along +X",
+            "example": {
+              "op": "putGeometry",
+              "id": "plushBody",
+              "geometry": {
+                "type": "organic",
+                "size": [
+                  0.9,
+                  1.1,
+                  0.72
+                ],
+                "roundness": 0.9,
+                "taper": 0.22,
+                "bend": 0,
+                "segments": 32
+              }
+            },
+            "export": "Closed smooth mesh with seam-aware UVs. Littlewild receives baked mesh; GLB retains mesh and UVs.",
+            "workflow": "inspect --source, apply --dry-run with revision/state guards, apply same batch with guards, review --file previous/replay-plan.json"
+          },
+          "surfaceDetails": {
+            "algorithm": "littlewild-surface-v1",
+            "versions": {
+              "1": "Original detail, default when omitted; exact replay compatibility",
+              "2": "Fine directional fur fibres, woven yarn and subtle leather grain"
+            },
+            "uniqueRecipesPerScene": 256,
+            "pooling": "Identical version/kind/seed/scale/strength share maps across material colors; each compilation owns and disposes its pool.",
+            "fields": {
+              "kind": [
+                "fur",
+                "cloth",
+                "leather"
+              ],
+              "version": [
+                1,
+                2
+              ],
+              "seed": [
+                0,
+                65535
+              ],
+              "scale": [
+                1,
+                16
+              ],
+              "strength": [
+                0,
+                1
+              ]
+            },
+            "required": [
+              "kind",
+              "seed",
+              "scale",
+              "strength"
+            ],
+            "example": {
+              "op": "putMaterial",
+              "id": "plushFur",
+              "material": {
+                "color": "#c89059",
+                "roughness": 0.9,
+                "sheen": 0.65,
+                "sheenColor": "#ffe4bd",
+                "surface": {
+                  "kind": "fur",
+                  "seed": 7,
+                  "scale": 3,
+                  "strength": 0.4
+                }
+              }
+            },
+            "outputs": "Deterministic 128\u00d7128 color and tangent normal maps; no image files, browser, shader scripts or network needed for GLB export",
+            "compatibility": "Standard PBR only. Littlewild preserves recipe and UVs; GLB embeds PNGs with KHR_texture_transform repeat and recipe in material extras.",
+            "limits": "Surface detail shades existing geometry; use organic forms or authored meshes for a fluffy silhouette. Not strand fur or cloth simulation.",
+            "uvFallback": "Legacy baked meshes without UVs receive local spherical projection; supply seam-aware UVs for precise placement."
+          },
+          "composition": [
+            "model capture",
+            "model bundle import/export",
+            "scene compose",
+            "scene clone",
+            "node patch/transform/duplicate/group/reparent/ground/place",
+            "offline composer with guarded edit download"
+          ],
+          "rigging": {
+            "commands": [
+              "rig inspect",
+              "rig bind",
+              "rig pose",
+              "rig remove"
+            ],
+            "scope": "model instance",
+            "joints": 64,
+            "clips": 16,
+            "interpolation": "quaternion linear",
+            "bindings": [
+              "nearest joint",
+              "two-joint blend",
+              "explicit mesh to joint"
+            ],
+            "export": "glTF skins and rotation clips"
+          },
+          "littlewild": {
+            "commands": [
+              "littlewild sync",
+              "littlewild export",
+              "littlewild import"
+            ],
+            "manifest": "littlewild-export (schema --kind littlewild-export)",
+            "importFormats": [
+              "littlewild-definition",
+              "littlewild-3d-asset",
+              "littlewild-creature-package"
+            ],
+            "importScope": "Visual models only; creature gameplay and companion state stay in the source package",
+            "importGuards": [
+              "--expected-revision",
+              "--expected-state"
+            ],
+            "importOutputs": {
+              "variants": "Array of imported model IDs (retained compatibility field)",
+              "variantModels": "Map of original source variant names to model IDs; use this instead of inferring capitalization or suffixes",
+              "example": {
+                "world-round": "pipTrailWorldRound"
+              }
+            },
+            "families": [
+              "items",
+              "buildings",
+              "creatures",
+              "pets"
+            ],
+            "output": "<target>/<family>/<id>/definition.json visual facet; other facets are preserved",
+            "geometry": "boxes and unchanged lw-<primitive> geometries stay native; other meshes are baked",
+            "rig": "pets only: tag nodes rig:<role>",
+            "rigRoles": [
+              "body",
+              "head",
+              "eyes",
+              "ears",
+              "tail",
+              "arms",
+              "feet",
+              "mouth",
+              "cheeks",
+              "sprout",
+              "shell",
+              "hat",
+              "face",
+              "neck",
+              "back"
+            ],
+            "limits": {
+              "meshVertices": 8192,
+              "meshTriangles": 16384,
+              "definitionVertices": 40000,
+              "definitionValues": 400000,
+              "definitionDepth": 32
+            },
+            "check": "littlewild sync --check fails when a definition is stale"
+          },
+          "lights": [
+            "point",
+            "spot",
+            "directional"
+          ],
+          "materialShading": [
+            "standard",
+            "unlit"
+          ],
+          "materialDepthWrite": "Optional boolean. Use false for alpha-blended shadow decals (opacity < 1); GLB uses alphaMode BLEND.",
+          "physicalMaterials": {
+            "fields": [
+              "sheen",
+              "sheenColor",
+              "sheenRoughness",
+              "clearcoat",
+              "clearcoatRoughness"
+            ],
+            "range": "Scalar fields 0..1; sheenColor #RRGGBB. Standard PBR shading only.",
+            "authoring": "putMaterial in apply; schema --kind material --raw",
+            "exports": [
+              "GLB/glTF KHR_materials_sheen and KHR_materials_clearcoat",
+              "Littlewild visual"
+            ]
+          },
+          "previewPresentation": {
+            "values": [
+              "inspection",
+              "portrait"
+            ],
+            "authoring": "setEnvironment in apply; environment.presentation in scene schema",
+            "scope": "Preview-only light rig and portrait shadow floor; source geometry unchanged"
+          },
+          "previewLooks": [
+            "filmic",
+            "neutral",
+            "linear"
+          ],
+          "patterns": [
+            "linear",
+            "radial",
+            "grid",
+            "path"
+          ],
+          "expressions": {
+            "operators": [
+              "add",
+              "sub",
+              "mul",
+              "div",
+              "min",
+              "max",
+              "abs",
+              "neg",
+              "sin",
+              "cos",
+              "clamp"
+            ],
+            "maxDepth": 16,
+            "trigonometry": "degrees",
+            "execution": "bounded data AST; no executable code"
+          },
+          "review": {
+            "command": "review",
+            "views": [
+              "iso",
+              "front",
+              "back",
+              "right",
+              "left",
+              "side",
+              "top",
+              "bottom",
+              "authored",
+              "orbit"
+            ],
+            "outputs": [
+              "individual PNGs",
+              "contact-sheet.png",
+              "review.json with camera settings and source hash",
+              "replay-plan.json with fixed cameras"
+            ],
+            "browserSessions": 1
+          },
+          "examples": "example list, example show <id>, example create <id> <directory>",
+          "discovery": "describe [command path...] for machine-readable options and defaults",
+          "exports": [
+            "glb",
+            "gltf",
+            "obj",
+            "stl",
+            "three"
+          ],
+          "conventions": {
+            "units": "meters",
+            "up": "Y",
+            "handedness": "right",
+            "rotation": "degrees, local XYZ Euler",
+            "defaultFacing": "+Z",
+            "profiles": "XY, extruded along +Z",
+            "lathe": "radius/Y profile revolved about Y"
+          },
+          "agentContract": {
+            "success": "stdout: {ok:true,data}",
+            "error": "stderr: {ok:false,error:{code,message,details?}}; exit 1",
+            "input": "--file path, --file - (stdin), or --data JSON",
+            "mutations": "Atomic scene batches with revision and scene/library state guards; put replaces, patch merges named fields",
+            "idempotency": "Reapplying identical put operations does not increment revision",
+            "discovery": "scene-forge schema --kind batch --raw"
+          },
+          "limits": {
+            "expandedObjects": 20000,
+            "expandedTriangles": 2000000,
+            "patternCopies": 256,
+            "modelDepth": 16,
+            "authoredLights": 32,
+            "shadowLights": 4,
+            "inputBytes": 16777216
+          },
+          "unsupported": [
+            "inverse kinematics and weight painting",
+            "arbitrary GLSL shaders",
+            "sculpting",
+            "external texture image import and automatic UV unwrapping",
+            "physics",
+            "native .blend authoring",
+            "native .tscn authoring",
+            "mesh import",
+            "arbitrary JavaScript in recipes"
+          ]
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-profile/project",
+        "inspect",
+        "--source"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "project": "Sculpted profile verification",
+          "scene": "main",
+          "revision": 0,
+          "stateHash": "bdcf1ce3a710d52cb37010113647a4e60f36b3b165abbe6a08cd1e2d80ac7db1",
+          "stats": {
+            "nodes": 0,
+            "meshes": 0,
+            "triangles": 0,
+            "materials": 0,
+            "geometries": 0,
+            "bounds": {
+              "min": [
+                0,
+                0,
+                0
+              ],
+              "max": [
+                0,
+                0,
+                0
+              ],
+              "size": [
+                0,
+                0,
+                0
+              ]
+            },
+            "warnings": [
+              "Scene has no meshes. Add mesh or model nodes before exporting."
+            ]
+          },
+          "source": {
+            "schemaVersion": 1,
+            "kind": "scene",
+            "id": "main",
+            "name": "Main scene",
+            "revision": 0,
+            "units": "meters",
+            "parameters": {},
+            "geometries": {},
+            "materials": {},
+            "nodes": [],
+            "environment": {
+              "background": "#171d25",
+              "ambient": 1.8,
+              "keyIntensity": 3.5,
+              "keyPosition": [
+                5,
+                10,
+                7
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-profile/project",
+        "apply",
+        "--file",
+        "/workspace/work/artboard-pass2-final/forge-profile/create.batch.json"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "scene": "main",
+          "revision": 1,
+          "stateHash": "2c0da08e78a412c66e1077ac737367b2355b7db2a356b1b18ac30ad859131c92",
+          "proposedStateHash": "2c0da08e78a412c66e1077ac737367b2355b7db2a356b1b18ac30ad859131c92",
+          "proposedRevision": 1,
+          "changes": {
+            "nodes": {
+              "added": [
+                "torso"
+              ],
+              "updated": [],
+              "removed": []
+            },
+            "geometries": {
+              "added": [
+                "body"
+              ],
+              "updated": [],
+              "removed": []
+            },
+            "materials": {
+              "added": [
+                "coat"
+              ],
+              "updated": [],
+              "removed": []
+            },
+            "parameters": {
+              "added": [],
+              "updated": [],
+              "removed": []
+            },
+            "settings": []
+          },
+          "changed": true,
+          "dryRun": false,
+          "operations": 3,
+          "stats": {
+            "nodes": 1,
+            "meshes": 1,
+            "triangles": 960,
+            "materials": 1,
+            "geometries": 1,
+            "bounds": {
+              "min": [
+                -0.46455979347229004,
+                -0.550000011920929,
+                -0.37164783477783203
+              ],
+              "max": [
+                0.46455979347229004,
+                0.550000011920929,
+                0.37164783477783203
+              ],
+              "size": [
+                0.9291195869445801,
+                1.100000023841858,
+                0.7432956695556641
+              ]
+            },
+            "warnings": []
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-profile/project",
+        "inspect",
+        "--source"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "project": "Sculpted profile verification",
+          "scene": "main",
+          "revision": 1,
+          "stateHash": "2c0da08e78a412c66e1077ac737367b2355b7db2a356b1b18ac30ad859131c92",
+          "stats": {
+            "nodes": 1,
+            "meshes": 1,
+            "triangles": 960,
+            "materials": 1,
+            "geometries": 1,
+            "bounds": {
+              "min": [
+                -0.46455979347229004,
+                -0.550000011920929,
+                -0.37164783477783203
+              ],
+              "max": [
+                0.46455979347229004,
+                0.550000011920929,
+                0.37164783477783203
+              ],
+              "size": [
+                0.9291195869445801,
+                1.100000023841858,
+                0.7432956695556641
+              ]
+            },
+            "warnings": []
+          },
+          "source": {
+            "schemaVersion": 1,
+            "kind": "scene",
+            "id": "main",
+            "name": "Main scene",
+            "revision": 1,
+            "units": "meters",
+            "parameters": {},
+            "geometries": {
+              "body": {
+                "type": "organic",
+                "size": [
+                  0.9,
+                  1.1,
+                  0.72
+                ],
+                "roundness": 0.9,
+                "taper": 0.22,
+                "bend": 0,
+                "segments": 32
+              }
+            },
+            "materials": {
+              "coat": {
+                "color": "#78885f",
+                "metalness": 0,
+                "roughness": 0.9,
+                "surface": {
+                  "kind": "cloth",
+                  "version": 2,
+                  "seed": 9,
+                  "scale": 3,
+                  "strength": 0.4
+                },
+                "opacity": 1,
+                "doubleSided": false,
+                "flatShading": false
+              }
+            },
+            "nodes": [
+              {
+                "id": "torso",
+                "visible": true,
+                "tags": [
+                  "rig:body"
+                ],
+                "type": "mesh",
+                "geometry": "body",
+                "material": "coat"
+              }
+            ],
+            "environment": {
+              "background": "#171d25",
+              "ambient": 1.8,
+              "keyIntensity": 3.5,
+              "keyPosition": [
+                5,
+                10,
+                7
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-profile/project",
+        "apply",
+        "--file",
+        "/workspace/work/artboard-pass2-final/forge-profile/profile-edit.batch.json",
+        "--dry-run"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "scene": "main",
+          "revision": 1,
+          "stateHash": "2c0da08e78a412c66e1077ac737367b2355b7db2a356b1b18ac30ad859131c92",
+          "proposedStateHash": "1d2184aa57a17f76c37ab766b5487459922b05fa2ff5c73baa8eff9376290e1d",
+          "proposedRevision": 2,
+          "changes": {
+            "nodes": {
+              "added": [],
+              "updated": [],
+              "removed": []
+            },
+            "geometries": {
+              "added": [],
+              "updated": [
+                "body"
+              ],
+              "removed": []
+            },
+            "materials": {
+              "added": [],
+              "updated": [],
+              "removed": []
+            },
+            "parameters": {
+              "added": [],
+              "updated": [],
+              "removed": []
+            },
+            "settings": []
+          },
+          "changed": true,
+          "dryRun": true,
+          "operations": 1,
+          "stats": {
+            "nodes": 1,
+            "meshes": 1,
+            "triangles": 1088,
+            "materials": 1,
+            "geometries": 1,
+            "bounds": {
+              "min": [
+                -0.5184459686279297,
+                -0.550000011920929,
+                -0.38266631960868835
+              ],
+              "max": [
+                0.5184459686279297,
+                0.550000011920929,
+                0.469066321849823
+              ],
+              "size": [
+                1.0368919372558594,
+                1.100000023841858,
+                0.8517326414585114
+              ]
+            },
+            "warnings": []
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-profile/project",
+        "inspect"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "project": "Sculpted profile verification",
+          "scene": "main",
+          "revision": 1,
+          "stateHash": "2c0da08e78a412c66e1077ac737367b2355b7db2a356b1b18ac30ad859131c92",
+          "stats": {
+            "nodes": 1,
+            "meshes": 1,
+            "triangles": 960,
+            "materials": 1,
+            "geometries": 1,
+            "bounds": {
+              "min": [
+                -0.46455979347229004,
+                -0.550000011920929,
+                -0.37164783477783203
+              ],
+              "max": [
+                0.46455979347229004,
+                0.550000011920929,
+                0.37164783477783203
+              ],
+              "size": [
+                0.9291195869445801,
+                1.100000023841858,
+                0.7432956695556641
+              ]
+            },
+            "warnings": []
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-profile/project",
+        "apply",
+        "--file",
+        "/workspace/work/artboard-pass2-final/forge-profile/profile-edit.batch.json"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "scene": "main",
+          "revision": 2,
+          "stateHash": "1d2184aa57a17f76c37ab766b5487459922b05fa2ff5c73baa8eff9376290e1d",
+          "proposedStateHash": "1d2184aa57a17f76c37ab766b5487459922b05fa2ff5c73baa8eff9376290e1d",
+          "proposedRevision": 2,
+          "changes": {
+            "nodes": {
+              "added": [],
+              "updated": [],
+              "removed": []
+            },
+            "geometries": {
+              "added": [],
+              "updated": [
+                "body"
+              ],
+              "removed": []
+            },
+            "materials": {
+              "added": [],
+              "updated": [],
+              "removed": []
+            },
+            "parameters": {
+              "added": [],
+              "updated": [],
+              "removed": []
+            },
+            "settings": []
+          },
+          "changed": true,
+          "dryRun": false,
+          "operations": 1,
+          "stats": {
+            "nodes": 1,
+            "meshes": 1,
+            "triangles": 1088,
+            "materials": 1,
+            "geometries": 1,
+            "bounds": {
+              "min": [
+                -0.5184459686279297,
+                -0.550000011920929,
+                -0.38266631960868835
+              ],
+              "max": [
+                0.5184459686279297,
+                0.550000011920929,
+                0.469066321849823
+              ],
+              "size": [
+                1.0368919372558594,
+                1.100000023841858,
+                0.8517326414585114
+              ]
+            },
+            "warnings": []
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-profile/project",
+        "apply",
+        "--file",
+        "/workspace/work/artboard-pass2-final/forge-profile/profile-edit.batch.json"
+      ],
+      "exitCode": 1,
+      "result": {
+        "ok": false,
+        "error": {
+          "code": "REVISION_CONFLICT",
+          "message": "Scene changed since it was read. Inspect and reapply against its current revision.",
+          "hint": "Inspect the latest source and rebase the edit; do not drop the guard blindly.",
+          "details": {
+            "expected": 1,
+            "actual": 2
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-profile/project",
+        "inspect",
+        "--source"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "project": "Sculpted profile verification",
+          "scene": "main",
+          "revision": 2,
+          "stateHash": "1d2184aa57a17f76c37ab766b5487459922b05fa2ff5c73baa8eff9376290e1d",
+          "stats": {
+            "nodes": 1,
+            "meshes": 1,
+            "triangles": 1088,
+            "materials": 1,
+            "geometries": 1,
+            "bounds": {
+              "min": [
+                -0.5184459686279297,
+                -0.550000011920929,
+                -0.38266631960868835
+              ],
+              "max": [
+                0.5184459686279297,
+                0.550000011920929,
+                0.469066321849823
+              ],
+              "size": [
+                1.0368919372558594,
+                1.100000023841858,
+                0.8517326414585114
+              ]
+            },
+            "warnings": []
+          },
+          "source": {
+            "schemaVersion": 1,
+            "kind": "scene",
+            "id": "main",
+            "name": "Main scene",
+            "revision": 2,
+            "units": "meters",
+            "parameters": {},
+            "geometries": {
+              "body": {
+                "type": "organic",
+                "size": [
+                  0.9,
+                  1.1,
+                  0.72
+                ],
+                "roundness": 0.9,
+                "taper": 0.22,
+                "bend": 0,
+                "segments": 32,
+                "profile": [
+                  {
+                    "at": -1,
+                    "width": 1,
+                    "depth": 1,
+                    "offset": [
+                      0,
+                      0
+                    ]
+                  },
+                  {
+                    "at": -0.35,
+                    "width": 1.12,
+                    "depth": 1.15,
+                    "offset": [
+                      0,
+                      0.12
+                    ]
+                  },
+                  {
+                    "at": 0.35,
+                    "width": 0.75,
+                    "depth": 0.8,
+                    "offset": [
+                      0,
+                      0
+                    ]
+                  },
+                  {
+                    "at": 1,
+                    "width": 0.65,
+                    "depth": 0.7,
+                    "offset": [
+                      0.1,
+                      -0.08
+                    ]
+                  }
+                ]
+              }
+            },
+            "materials": {
+              "coat": {
+                "color": "#78885f",
+                "metalness": 0,
+                "roughness": 0.9,
+                "surface": {
+                  "kind": "cloth",
+                  "version": 2,
+                  "seed": 9,
+                  "scale": 3,
+                  "strength": 0.4
+                },
+                "opacity": 1,
+                "doubleSided": false,
+                "flatShading": false
+              }
+            },
+            "nodes": [
+              {
+                "id": "torso",
+                "visible": true,
+                "tags": [
+                  "rig:body"
+                ],
+                "type": "mesh",
+                "geometry": "body",
+                "material": "coat"
+              }
+            ],
+            "environment": {
+              "background": "#171d25",
+              "ambient": 1.8,
+              "keyIntensity": 3.5,
+              "keyPosition": [
+                5,
+                10,
+                7
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "command": [
+        "scene-forge",
+        "-p",
+        "/workspace/work/artboard-pass2-final/forge-profile/project",
+        "export",
+        "--format",
+        "glb",
+        "--validate",
+        "--out",
+        "/workspace/work/artboard-pass2-final/forge-profile/profile.glb"
+      ],
+      "exitCode": 0,
+      "result": {
+        "ok": true,
+        "data": {
+          "path": "/workspace/work/artboard-pass2-final/forge-profile/profile.glb",
+          "format": "glb",
+          "bytes": 47788,
+          "stats": {
+            "nodes": 1,
+            "meshes": 1,
+            "triangles": 1088,
+            "materials": 1,
+            "geometries": 1,
+            "bounds": {
+              "min": [
+                -0.5184459686279297,
+                -0.550000011920929,
+                -0.38266631960868835
+              ],
+              "max": [
+                0.5184459686279297,
+                0.550000011920929,
+                0.469066321849823
+              ],
+              "size": [
+                1.0368919372558594,
+                1.100000023841858,
+                0.8517326414585114
+              ]
+            },
+            "warnings": []
+          },
+          "warnings": [],
+          "validation": {
+            "validator": "Khronos glTF-Validator",
+            "numErrors": 0,
+            "numWarnings": 0,
+            "numInfos": 0,
+            "numHints": 0,
+            "messages": [],
+            "truncated": false
+          }
+        }
+      }
+    }
+  ]
+}

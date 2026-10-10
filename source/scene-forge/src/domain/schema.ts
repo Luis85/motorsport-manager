@@ -45,6 +45,18 @@ export const GeometrySchema = z.discriminatedUnion('type', [
     taper: Scalar.default(0),
     bend: Scalar.default(0),
     segments: z.number().int().min(12).max(96).default(32),
+    profile: z
+      .array(
+        z.strictObject({
+          at: Scalar,
+          width: Scalar,
+          depth: Scalar,
+          offset: Vec2.default([0, 0]),
+        }),
+      )
+      .min(2)
+      .max(12)
+      .optional(),
   }),
   z.strictObject({
     type: z.literal('cylinder'),
@@ -119,6 +131,7 @@ export type Geometry = z.infer<typeof GeometrySchema>;
 
 export const SurfaceSchema = z.strictObject({
   kind: z.enum(['fur', 'cloth', 'leather']),
+  version: z.union([z.literal(1), z.literal(2)]).optional(),
   seed: z.number().int().min(0).max(65535),
   scale: z.number().min(1).max(16),
   strength: z.number().min(0).max(1),

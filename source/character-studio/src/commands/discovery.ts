@@ -2,11 +2,9 @@ import type { Descriptor } from './protocol.js';
 
 const identity = ['project', 'id'];
 const guards = ['expected-revision', 'expected-state'];
-export const previewValues = {
-  mode: ['studio', 'world', 'portrait'], light: ['studio', 'daylight', 'night'],
-  pose: ['idle', 'walk', 'work', 'celebrate'], camera: ['front', 'side', 'back'],
-} as const;
-const previewFlags = Object.keys(previewValues);
+export {previewValues} from '../application/preview-configuration.js';
+import {previewValues, previewNumbers} from '../application/preview-configuration.js';
+const previewFlags = [...Object.keys(previewValues), ...Object.keys(previewNumbers)];
 export const commands: Record<string, Descriptor> = {
   help: { description: 'Discover the machine-readable command protocol.', example: 'character-studio help' },
   version: { description: 'Read tool and protocol version.', example: 'character-studio version' },
@@ -27,7 +25,7 @@ export const commands: Record<string, Descriptor> = {
   export: { description: 'Compile recipe, engine package, definition, visual, or the current look. Output files never overwrite.', required: identity, optional: ['format', 'out'], example: 'character-studio export --project ./characters --id moss --format package --out moss.package.json' },
   preview: { description: 'Generate a self-contained offline editor HTML with the current character and reproducible preview settings.', required: [...identity, 'out'], optional: previewFlags, example: 'character-studio preview --project ./characters --id moss --out moss.html --mode world --pose walk' },
   capture: { description: 'Render a PNG for agent visual review. Requires external Playwright and Chromium; output never overwrites.', required: [...identity, 'out'], optional: [...previewFlags, 'width', 'height'], example: 'character-studio capture --project ./characters --id moss --out moss.png --camera front --light daylight' },
-  review: { description: 'Render six useful views, a labeled contact sheet, recipe/visual hashes and a replay plan in a new directory. Optional --plan uses schema --kind review. Requires optional capture dependencies.', required:[...identity,'out'],optional:['plan'],example:'character-studio review --project ./characters --id moss --out ./review-v1' },
+  review: { description: 'Render seven useful views, a labeled contact sheet, recipe/visual hashes and a replay plan in a new directory. Optional --plan uses schema --kind review. Requires optional capture dependencies.', required:[...identity,'out'],optional:['plan'],example:'character-studio review --project ./characters --id moss --out ./review-v1' },
   serve: { description: 'Run the local UI and token-protected agent HTTP API; stays active until interrupted.', required: ['project'], optional: ['port'], example: 'character-studio serve --project ./characters --port 4317' },
 };
 
@@ -65,6 +63,7 @@ export function argumentSchema(command: string) {
   if (properties.preset) properties.preset = {enum: ['pip', 'fern', 'mochi', 'bramble'], default: 'pip'};
   if (properties.command) properties.command = {enum: Object.keys(commands)};
   for (const [key, values] of Object.entries(previewValues)) if (properties[key]) properties[key] = {enum: values, default: values[0]};
+  for (const [key, value] of Object.entries(previewNumbers)) if (properties[key]) properties[key] = value;
   for (const key of ['width', 'height']) if (properties[key]) properties[key] = {type: 'integer', minimum: 256, maximum: 4096, default: 1024};
   return {type: 'object', additionalProperties: false, properties, required: descriptor.required || []};
 }

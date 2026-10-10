@@ -3,8 +3,10 @@
   "description": "Reviewed expectations for the complete Littlewild/Wildlands gate. verify.ts and CI accept a complete run only when the observed suites match suites (order included), every suite emits exactly its inventory of uniquely named passing checks, and the total equals totalChecks. totalChecks = historicalBaseline.checks + reviewedAdditions - retirements. A new check must be added to its suite inventory and to reviewedAdditions; a renamed check needs a renames entry (suite/from/to/reason); a removed check needs a retirements entry (suite/name/reason). Never edit historicalBaseline.",
   "historicalBaseline": {"suites": 75, "checks": 1543, "note": "Original 75 registrations and 1,543 named checks; immutable."},
   "suites": ["skill-trees", "rts-mission-editor", "rts-catalog", "rts-economy", "rts-production", "rts-runtime", "rts-tools", "rts-application", "pet-catalog", "pet-runtime", "pet-application", "pet-wardrobe", "wildlands-runtime", "wildlands-project", "wildlands-cli", "wildlands-acceptance", "engine-export-cli", "engine-export", "animations", "balancing-cli", "cold-balancing", "balancing", "storytelling", "external-editor-cli", "external-canvas", "creature-editor", "external-editors", "renderer-scene-2d", "scene-editor", "scene-navigation", "scene-journeys", "architecture-extensions", "building-interiors", "construction", "terraform", "renderers", "canvas-renderer", "architecture-policy", "storage-clock", "gate-integrity", "cli-contracts", "typescript-architecture", "behavior-tree", "content-boundary", "definition-source", "assets", "creatures", "ecs-core", "simulation-profile", "simulation-profile-integration", "scene-environment", "office-scenario", "game-settings", "game-settings-ui", "creature-interactions", "interaction-ui", "developer-toolbox", "engine-composition", "ecs-activity", "ecs-world", "ecs-economy", "ecs-integration", "ecs-world-integration", "ecs-economy-integration", "scenario-domain", "presentation", "pause-policy", "cartography", "domain", "growth-stress", "earned-progression", "scenario-schema-cli", "release", "skill-tree-browser", "rts-mission-editor-browser", "rts-browser", "pet-browser", "wildlands-browser", "external-editors-browser", "external-canvas-browser", "creature-editor-browser", "balancing-defaults-browser", "balancing-browser", "storytelling-browser", "engine-export-browser", "renderer-storytelling", "storytelling-player-browser", "renderer-libraries", "scene-editor-browser", "building-interiors-browser", "construction-editor-browser", "terraform-browser", "renderers-browser", "office-browser", "game-settings-browser", "browser", "interactions-browser", "browser-contracts", "runtime-optionality", "content-provider", "game-folders", "runtime-optionality-browser", "artifact-play-browser", "game-demos-browser", "business-process", "business-process-bpmn", "business-process-browser", "process-layout-browser", "process-step-editor-browser", "process-definition-browser", "process-renderers-browser", "process-lenses-browser", "process-bpmn-import-browser", "process-readability-browser", "process-present-browser"],
-  "totalChecks": 2096,
+  "totalChecks": 2098,
   "reviewedAdditions": [
+    {"suite": "wildlands-cli", "name": "Creature CLI admits bounded large mesh packages and visuals without widening recipe or generic JSON limits"},
+    {"suite": "assets", "name": "Versioned fine surfaces retain legacy replay and deterministic directional detail"},
     {"suite": "assets", "name": "Portable surface budgets reject atomically before any renderer allocation"},
     {"suite": "assets", "name": "Portable surface metadata and authored UVs validate before rendering"},
     {"suite": "assets", "name": "Portable surface pixels and PNGs replay exactly with bounded deterministic detail"},
@@ -745,6 +747,7 @@
       "Storyboard CLI dry runs and new-only atomic publication preserve inputs and existing outputs",
       "Creature CLI lifecycle discovers, authors, imports and refines visuals without ticking or losing gameplay",
       "Creature CLI rejects stale guards, implicit replacement, invalid batches and occupied outputs atomically",
+      "Creature CLI admits bounded large mesh packages and visuals without widening recipe or generic JSON limits",
       "Cold help and discovery are structured, versioned and machine readable",
       "Create validates a complete default portable project and inspect never ticks",
       "Scenario switching and custom pack authoring stay portable",
@@ -1346,7 +1349,8 @@
       "Portable surface metadata and authored UVs validate before rendering",
       "Portable surface pixels and PNGs replay exactly with bounded deterministic detail",
       "Portable surface textures share live ownership preserve UVs and release once",
-      "Portable surface budgets reject atomically before any renderer allocation"
+      "Portable surface budgets reject atomically before any renderer allocation",
+      "Versioned fine surfaces retain legacy replay and deterministic directional detail"
     ],
     "creatures": [
       "Creature catalog loads every isolated definition folder",

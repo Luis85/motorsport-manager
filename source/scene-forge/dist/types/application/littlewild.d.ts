@@ -59,6 +59,8 @@ export declare const littlewildLimits: {
     meshVertices: number;
     meshTriangles: number;
     definitionVertices: number;
+    definitionValues: number;
+    definitionDepth: number;
 };
 /** Presentation roles the Littlewild pet renderer understands. Tag a node `rig:<role>` to bind it. */
 export declare const littlewildPetRoles: readonly ["body", "head", "eyes", "ears", "tail", "arms", "feet", "mouth", "cheeks", "sprout", "shell", "hat", "face", "neck", "back"];

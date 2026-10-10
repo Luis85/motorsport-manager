@@ -228,15 +228,13 @@ editing.
 
 ## Authored preview surfaces
 
-Compiler revision 3 uses smooth portable meshes with explicit UVs and deterministic
-fur, cloth and leather surface recipes. Eye whites remain visible around a warm
-iris, the small pupil carries one restrained catchlight, and the face uses a
-shallow muzzle patch with a compact smile. Soft cap, open vest and rounded boots
-retain the engine socket contract. Revision 1 and 2 exports keep exact import
-verification. Surface detail is an authored material effect, not hair geometry.
-Preset and ear choices show cached renders of actual recipes instead of colored
-placeholders. Collection, review and import use the same portrait renderer. The
-cache holds at most 24 images and releases temporary GPU geometry and materials.
+Compiler revision 4 sculpts the cheek and jaw surface, recesses the eyes beneath
+curved lids, separates legs from the torso and adds bounded short-fibre geometry.
+Fitted cap panels, a draped cape, connected boots and a detailed satchel retain
+the engine socket contract. Authored UVs and explicit version-2 surface recipes
+travel with the meshes into Forge and the engine. Revisions 1–3 retain exact
+import verification. These are portable stylized meshes, not an illustration
+substituted for the live model or a strand-hair simulation.
 
 The presentation garden uses deterministic batched plants, stones, lanterns and a
 fogged woodland backdrop. Warm directional light, restrained ambient fill and a

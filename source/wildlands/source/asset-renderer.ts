@@ -27,7 +27,7 @@
   if(!Material)throw Error('This Three renderer does not support authored physical materials');
   const surface=options.surface;delete options.surface;const maps=surface?surfaceMaps(T,surface):null;
   let material;try{material=new Material({...options,...(maps?{map:maps.map,normalMap:maps.normalMap}: {})});}catch(error){maps?.release();throw error;}
-  if(maps){let released=false;material.addEventListener('dispose',()=>{if(!released){released=true;maps.release();}});material.userData.surface={...surface};material.userData.surfaceAlgorithm=root.LWAssetSurface.algorithmVersion;}
+  if(maps){let released=false;material.addEventListener('dispose',()=>{if(!released){released=true;maps.release();}});material.userData.surface={...surface};material.userData.surfaceAlgorithm=root.LWAssetSurface.algorithm(surface);}
   return material;
  }
  /* Data names a portable doubleSided flag; Three expects its side constant. */

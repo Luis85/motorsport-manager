@@ -30,6 +30,12 @@ export declare const GeometrySchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
     taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
     bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
     segments: z.ZodDefault<z.ZodNumber>;
+    profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+        width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+        depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+        offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+    }, z.core.$strict>>>;
 }, z.core.$strict>, z.ZodObject<{
     type: z.ZodLiteral<"cylinder">;
     radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -110,6 +116,7 @@ export declare const SurfaceSchema: z.ZodObject<{
         cloth: "cloth";
         leather: "leather";
     }>;
+    version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
     seed: z.ZodNumber;
     scale: z.ZodNumber;
     strength: z.ZodNumber;
@@ -125,6 +132,7 @@ export declare const MaterialSchema: z.ZodObject<{
             cloth: "cloth";
             leather: "leather";
         }>;
+        version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
         seed: z.ZodNumber;
         scale: z.ZodNumber;
         strength: z.ZodNumber;
@@ -438,6 +446,12 @@ export declare const SceneSchema: z.ZodObject<{
         taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
         bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
         segments: z.ZodDefault<z.ZodNumber>;
+        profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+        }, z.core.$strict>>>;
     }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"cylinder">;
         radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -518,6 +532,7 @@ export declare const SceneSchema: z.ZodObject<{
                 cloth: "cloth";
                 leather: "leather";
             }>;
+            version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
             seed: z.ZodNumber;
             scale: z.ZodNumber;
             strength: z.ZodNumber;
@@ -747,6 +762,12 @@ export declare const ModelSchema: z.ZodObject<{
         taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
         bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
         segments: z.ZodDefault<z.ZodNumber>;
+        profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+        }, z.core.$strict>>>;
     }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"cylinder">;
         radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -827,6 +848,7 @@ export declare const ModelSchema: z.ZodObject<{
                 cloth: "cloth";
                 leather: "leather";
             }>;
+            version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
             seed: z.ZodNumber;
             scale: z.ZodNumber;
             strength: z.ZodNumber;
@@ -1423,6 +1445,12 @@ export declare const OperationSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
         taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
         bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
         segments: z.ZodDefault<z.ZodNumber>;
+        profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+        }, z.core.$strict>>>;
     }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"cylinder">;
         radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -1509,6 +1537,7 @@ export declare const OperationSchema: z.ZodDiscriminatedUnion<[z.ZodObject<{
                 cloth: "cloth";
                 leather: "leather";
             }>;
+            version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
             seed: z.ZodNumber;
             scale: z.ZodNumber;
             strength: z.ZodNumber;
@@ -1956,6 +1985,12 @@ export declare const BatchSchema: z.ZodObject<{
             taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
         }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -2042,6 +2077,7 @@ export declare const BatchSchema: z.ZodObject<{
                     cloth: "cloth";
                     leather: "leather";
                 }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
@@ -2305,6 +2341,12 @@ export declare const ModelBundleSchema: z.ZodObject<{
             taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
         }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -2385,6 +2427,7 @@ export declare const ModelBundleSchema: z.ZodObject<{
                     cloth: "cloth";
                     leather: "leather";
                 }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
@@ -2645,6 +2688,12 @@ export declare const SceneBundleSchema: z.ZodObject<{
             taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
         }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -2725,6 +2774,7 @@ export declare const SceneBundleSchema: z.ZodObject<{
                     cloth: "cloth";
                     leather: "leather";
                 }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
@@ -2954,6 +3004,12 @@ export declare const SceneBundleSchema: z.ZodObject<{
             taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
         }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -3034,6 +3090,7 @@ export declare const SceneBundleSchema: z.ZodObject<{
                     cloth: "cloth";
                     leather: "leather";
                 }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
@@ -3285,6 +3342,7 @@ export declare const LittlewildAssetSchema: z.ZodObject<{
                     cloth: "cloth";
                     leather: "leather";
                 }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
@@ -3334,6 +3392,7 @@ export declare const LittlewildExportSchema: z.ZodObject<{
                         cloth: "cloth";
                         leather: "leather";
                     }>;
+                    version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                     seed: z.ZodNumber;
                     scale: z.ZodNumber;
                     strength: z.ZodNumber;
@@ -3537,6 +3596,12 @@ export declare const schemas: {
             taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
         }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -3617,6 +3682,7 @@ export declare const schemas: {
                     cloth: "cloth";
                     leather: "leather";
                 }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
@@ -3846,6 +3912,12 @@ export declare const schemas: {
             taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
         }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -3926,6 +3998,7 @@ export declare const schemas: {
                     cloth: "cloth";
                     leather: "leather";
                 }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
@@ -4444,6 +4517,12 @@ export declare const schemas: {
                 taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
                 bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
                 segments: z.ZodDefault<z.ZodNumber>;
+                profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                    at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                    width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                    depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                    offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+                }, z.core.$strict>>>;
             }, z.core.$strict>, z.ZodObject<{
                 type: z.ZodLiteral<"cylinder">;
                 radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -4530,6 +4609,7 @@ export declare const schemas: {
                         cloth: "cloth";
                         leather: "leather";
                     }>;
+                    version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                     seed: z.ZodNumber;
                     scale: z.ZodNumber;
                     strength: z.ZodNumber;
@@ -4890,6 +4970,12 @@ export declare const schemas: {
         taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
         bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
         segments: z.ZodDefault<z.ZodNumber>;
+        profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+        }, z.core.$strict>>>;
     }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"cylinder">;
         radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -4970,6 +5056,7 @@ export declare const schemas: {
                 cloth: "cloth";
                 leather: "leather";
             }>;
+            version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
             seed: z.ZodNumber;
             scale: z.ZodNumber;
             strength: z.ZodNumber;
@@ -5093,6 +5180,12 @@ export declare const schemas: {
                 taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
                 bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
                 segments: z.ZodDefault<z.ZodNumber>;
+                profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                    at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                    width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                    depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                    offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+                }, z.core.$strict>>>;
             }, z.core.$strict>, z.ZodObject<{
                 type: z.ZodLiteral<"cylinder">;
                 radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -5173,6 +5266,7 @@ export declare const schemas: {
                         cloth: "cloth";
                         leather: "leather";
                     }>;
+                    version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                     seed: z.ZodNumber;
                     scale: z.ZodNumber;
                     strength: z.ZodNumber;
@@ -5433,6 +5527,12 @@ export declare const schemas: {
                 taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
                 bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
                 segments: z.ZodDefault<z.ZodNumber>;
+                profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                    at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                    width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                    depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                    offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+                }, z.core.$strict>>>;
             }, z.core.$strict>, z.ZodObject<{
                 type: z.ZodLiteral<"cylinder">;
                 radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -5513,6 +5613,7 @@ export declare const schemas: {
                         cloth: "cloth";
                         leather: "leather";
                     }>;
+                    version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                     seed: z.ZodNumber;
                     scale: z.ZodNumber;
                     strength: z.ZodNumber;
@@ -5742,6 +5843,12 @@ export declare const schemas: {
                 taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
                 bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
                 segments: z.ZodDefault<z.ZodNumber>;
+                profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                    at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                    width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                    depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                    offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+                }, z.core.$strict>>>;
             }, z.core.$strict>, z.ZodObject<{
                 type: z.ZodLiteral<"cylinder">;
                 radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -5822,6 +5929,7 @@ export declare const schemas: {
                         cloth: "cloth";
                         leather: "leather";
                     }>;
+                    version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                     seed: z.ZodNumber;
                     scale: z.ZodNumber;
                     strength: z.ZodNumber;
@@ -6256,6 +6364,7 @@ export declare const schemas: {
                             cloth: "cloth";
                             leather: "leather";
                         }>;
+                        version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                         seed: z.ZodNumber;
                         scale: z.ZodNumber;
                         strength: z.ZodNumber;
@@ -6296,6 +6405,12 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
     taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
     bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
     segments: z.ZodDefault<z.ZodNumber>;
+    profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+        at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+        width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+        depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+        offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+    }, z.core.$strict>>>;
 }, z.core.$strict>, z.ZodObject<{
     type: z.ZodLiteral<"cylinder">;
     radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -6375,6 +6490,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             cloth: "cloth";
             leather: "leather";
         }>;
+        version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
         seed: z.ZodNumber;
         scale: z.ZodNumber;
         strength: z.ZodNumber;
@@ -6662,6 +6778,12 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
         taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
         bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
         segments: z.ZodDefault<z.ZodNumber>;
+        profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+        }, z.core.$strict>>>;
     }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"cylinder">;
         radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -6742,6 +6864,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 cloth: "cloth";
                 leather: "leather";
             }>;
+            version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
             seed: z.ZodNumber;
             scale: z.ZodNumber;
             strength: z.ZodNumber;
@@ -6970,6 +7093,12 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
         taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
         bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
         segments: z.ZodDefault<z.ZodNumber>;
+        profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+            offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+        }, z.core.$strict>>>;
     }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"cylinder">;
         radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -7050,6 +7179,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 cloth: "cloth";
                 leather: "leather";
             }>;
+            version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
             seed: z.ZodNumber;
             scale: z.ZodNumber;
             strength: z.ZodNumber;
@@ -7577,6 +7707,12 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
         }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -7663,6 +7799,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                     cloth: "cloth";
                     leather: "leather";
                 }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
@@ -7924,6 +8061,12 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
         }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -8004,6 +8147,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                     cloth: "cloth";
                     leather: "leather";
                 }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
@@ -8263,6 +8407,12 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
         }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -8343,6 +8493,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                     cloth: "cloth";
                     leather: "leather";
                 }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
@@ -8572,6 +8723,12 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             taper: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             bend: z.ZodDefault<z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>>;
             segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                width: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                depth: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>, z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
         }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<ScalarValue, unknown, z.core.$ZodTypeInternals<ScalarValue, unknown>>;
@@ -8652,6 +8809,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                     cloth: "cloth";
                     leather: "leather";
                 }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
@@ -8898,6 +9056,7 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                         cloth: "cloth";
                         leather: "leather";
                     }>;
+                    version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
                     seed: z.ZodNumber;
                     scale: z.ZodNumber;
                     strength: z.ZodNumber;

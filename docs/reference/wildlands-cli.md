@@ -98,6 +98,12 @@ item asset catalog as package references; re-export can therefore contain extra
 unchanged dependencies. Imported gameplay, appearance and source dependencies
 remain intact.
 
+Creature package and appearance-file imports accept up to **8 MiB**, including
+pretty-printed mesh arrays. This dedicated bound also applies to the browser
+creature-package picker and native package parser. Generic JSON and edit-recipe
+limits are unchanged; mesh topology, geometry-value, depth and project admission
+limits still apply. Discovery reports `maxPackageBytes` for agents.
+
 ```sh
 bin/wildlands creature list --project character-project.json
 bin/wildlands creature import --project character-project.json --file moss.package.json --expected-fingerprint HEX --dry-run
@@ -929,7 +935,12 @@ produces bounded 128×128 color and tangent-space normal maps. These are ordinar
 material textures, so Scene Forge can bake them into GLB and the engine into
 Godot assets. Fur detail is short surface texture; authored geometry still owns
 the silhouette. Strength zero gives neutral detail. Keep seeds fixed when
-comparing shape or lighting edits.
+comparing shape or lighting edits. An optional `version` selects `1` (default)
+or `2`; omission and explicit version 1 retain the original texture bytes.
+Version 2 uses finer directional fur, interlaced cloth and smoother leather.
+Native bake indexes and browser material metadata record the resolved
+`littlewild-surface-v1` or `littlewild-surface-v2` algorithm. Both versions retain
+the same 128×128 map dimensions and 256 distinct active descriptor limit.
 
 Baked meshes accept optional `uvs`, exactly two finite values per vertex.
 Author seam-aware UVs for detailed coat patterns; existing meshes use a spherical

@@ -5,7 +5,8 @@ import {compileVisual} from '../application/compiler.ts';
 import {createRenderKit} from './viewport-kit.ts';
 import {createStage} from './viewport-stage.ts';
 import {createPortraits} from './portraits.ts';
-import {validatePreviewConfiguration} from './preview-configuration.ts';
+import {groundPreviewFoot} from './viewport-grounding.ts';
+import {validatePreviewConfiguration, cameraYaw} from './preview-configuration.ts';
 
 type Mode = 'studio' | 'world' | 'portrait';
 type Light = 'studio' | 'daylight' | 'night';
@@ -23,11 +24,11 @@ export function createViewport(canvas: HTMLCanvasElement) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = .9;
+  renderer.toneMappingExposure = 1.05;
   // One broad softbox gives glossy eyes a coherent highlight instead of a room's
   // many bright reflections. This is lighting only; no image replaces the model.
   const environment = new THREE.Scene();
-  environment.background = new THREE.Color('#40413a');
+  environment.background = new THREE.Color('#77716a');
   const softboxGeometry = new THREE.PlaneGeometry(4, 3);
   const softboxMaterial = new THREE.MeshBasicMaterial({color: new THREE.Color(4, 3.7, 3.2), side: THREE.DoubleSide});
   const softbox = new THREE.Mesh(softboxGeometry, softboxMaterial);
@@ -40,15 +41,15 @@ export function createViewport(canvas: HTMLCanvasElement) {
     if (batching) portraitPending = true; else draw();
   });
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   const stage = createStage();
   scene.add(stage.root);
   const sky = new THREE.HemisphereLight('#fff3dd', '#8d9479', 1.6);
   const sun = new THREE.DirectionalLight('#ffe3b0', 2.7);
   sun.position.set(-3, 5, 5);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.radius = 4;
+  sun.shadow.mapSize.set(1024, 1024);
+  sun.shadow.radius = 5;
   Object.assign(sun.shadow.camera, {left: -3, right: 3, top: 3, bottom: -3, near: .1, far: 15});
   sun.shadow.bias = -.0003;
   sun.shadow.normalBias = .003;
@@ -72,26 +73,26 @@ export function createViewport(canvas: HTMLCanvasElement) {
   function setLight(value: Light) {
     light = value;
     const night = value === 'night', daylight = value === 'daylight';
-    const background = night ? '#263d42' : daylight ? '#d9dfc8' : '#e0deca';
+    const background = night ? '#263d42' : daylight ? '#e5e7d7' : '#eee5d5';
     scene.background = new THREE.Color(background);
     scene.fog = new THREE.Fog(background, 6.5, 13);
     stage.setLight(night);
-    rim.intensity = night ? .35 : .65;
-    scene.environmentIntensity = night ? .18 : .42;
-    sky.color.set(night ? '#8dadd4' : '#fff2d4');
-    sky.groundColor.set(night ? '#46585b' : '#a3a385');
-    sky.intensity = night ? .45 : .95;
-    sun.color.set(night ? '#bed6f6' : daylight ? '#fff4dc' : '#ffe3b0');
-    sun.intensity = night ? .85 : daylight ? 1.8 : 1.6;
+    rim.intensity = night ? .35 : 1.25;
+    scene.environmentIntensity = night ? .18 : .65;
+    sky.color.set(night ? '#8dadd4' : '#fff7ed');
+    sky.groundColor.set(night ? '#46585b' : '#c3b4a4');
+    sky.intensity = night ? .45 : 1.25;
+    sun.color.set(night ? '#bed6f6' : daylight ? '#fff4e4' : '#ffeacc');
+    sun.intensity = night ? .85 : daylight ? 2.5 : 2.3;
     draw();
   }
   function projectCamera() {
     // The presentation backdrop follows the turntable so it cannot obscure rear inspection.
     stage.root.rotation.y = yaw;
     const aspect = width / Math.max(height, 1);
-    const vertical = (mode === 'world' ? Math.max(1.15, characterHeight * .8) :
+    const vertical = (mode === 'world' ? Math.max(.8, characterHeight * .8) :
       mode === 'portrait' ? characterHeight * .53 : characterHeight * (height < 550 ? 1.06 : .72)) / zoom;
-    const halfHeight = Math.max(vertical, (mode === 'world' ? 1.65 : characterHeight * .55) / aspect / zoom);
+    const halfHeight = Math.max(vertical, characterHeight * (mode === 'world' ? .72 : .55) / aspect / zoom);
     camera.left = -halfHeight * aspect; camera.right = halfHeight * aspect;
     camera.top = halfHeight; camera.bottom = -halfHeight;
     const targetY = characterHeight * (mode === 'portrait' ? .68 : mode === 'world' ? .48 : height < 550 ? .42 : .50);
@@ -116,9 +117,11 @@ export function createViewport(canvas: HTMLCanvasElement) {
     } else if (pose === 'walk') {
       limbs('feet').forEach((node, index) => {
         const swing = cycle * .48 * (index ? -1 : 1);
-        if (node) node.rotation.x += swing;
+        const lift = Math.max(0, cycle * (index ? -1 : 1)) * .045;
+        if (node) { node.rotation.x += swing; node.position.y += lift; }
         const socket = figure?.handles.get(footSockets[index]);
-        if (socket) socket.rotation.x += swing;
+        if (socket) { socket.rotation.x += swing; socket.position.y += lift; }
+        if (node) groundPreviewFoot(node, socket);
       });
       limbs('arms').forEach((node, index) => { if (node) node.rotation.x += cycle * .35 * (index ? 1 : -1); });
       if (body) body.position.y += Math.abs(cycle) * .026;
@@ -248,6 +251,10 @@ export function createViewport(canvas: HTMLCanvasElement) {
         if (config.light !== undefined) setLight(config.light);
         if (config.pose !== undefined) controls.setPose(config.pose);
         if (config.camera !== undefined) controls.setCamera(config.camera);
+        if (config.yaw !== undefined) yaw = config.yaw;
+        if (config.elevation !== undefined) elevation = config.elevation;
+        if (config.zoom !== undefined) zoom = config.zoom;
+        if (config.time !== undefined) { time = config.time; previousTime = 0; }
         if (config.paused !== undefined) pause(config.paused);
       } finally { batching = false; draw(); }
     },
@@ -266,8 +273,8 @@ export function createViewport(canvas: HTMLCanvasElement) {
     },
     setMode(value: Mode) { mode = value; stage.setWorld(value === 'world'); draw(); },
     setPose(value: Pose) { pose = value; time = 0; draw(); },
-    setCamera(value: 'front' | 'side' | 'back') {
-      yaw = value === 'front' ? 0 : value === 'side' ? Math.PI / 2 : Math.PI;
+    setCamera(value: keyof typeof cameraYaw) {
+      yaw = cameraYaw[value];
       elevation = .08; draw();
     },
     capture() {

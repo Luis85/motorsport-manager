@@ -19,6 +19,7 @@ import {
   generateSurface,
   sphereUVs,
   surfaceAlgorithm,
+  resolveSurfaceAlgorithm,
 } from '../src/application/surface-pattern.js';
 import { littlewildModel } from '../src/application/littlewild.js';
 import { littlewildModels } from '../src/application/littlewild-import.js';
@@ -111,17 +112,26 @@ test('surface pixels and legacy UV projection stay byte-identical with the engin
     generate: typeof generateSurface;
     sphereUVs: typeof sphereUVs;
     algorithmVersion: string;
+    algorithm: typeof resolveSurfaceAlgorithm;
   };
   assert.equal(engine.algorithmVersion, surfaceAlgorithm);
-  for (const kind of ['fur', 'cloth', 'leather'] as const)
-    for (const seed of [0, 7, 65535])
-      for (const strength of [0, 0.4, 1]) {
-        const recipe = { kind, seed, strength, scale: seed === 7 ? 16 : 1 };
-        const actual = generateSurface(recipe),
-          expected = engine.generate(recipe);
-        assert.deepEqual(Buffer.from(actual.color), Buffer.from(expected.color));
-        assert.deepEqual(Buffer.from(actual.normal), Buffer.from(expected.normal));
-      }
+  for (const version of [undefined, 1, 2] as const)
+    for (const kind of ['fur', 'cloth', 'leather'] as const)
+      for (const seed of [0, 7, 65535])
+        for (const strength of [0, 0.4, 1]) {
+          const recipe = {
+            kind,
+            seed,
+            strength,
+            scale: seed === 7 ? 16 : 1,
+            ...(version ? { version } : {}),
+          };
+          assert.equal(resolveSurfaceAlgorithm(recipe), engine.algorithm(recipe));
+          const actual = generateSurface(recipe),
+            expected = engine.generate(recipe);
+          assert.deepEqual(Buffer.from(actual.color), Buffer.from(expected.color));
+          assert.deepEqual(Buffer.from(actual.normal), Buffer.from(expected.normal));
+        }
   const positions = [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, -1, 0, -1, 0];
   assert.deepEqual(sphereUVs(positions), Array.from(engine.sphereUVs(positions)));
   assert.notDeepEqual(
@@ -132,6 +142,9 @@ test('surface pixels and legacy UV projection stay byte-identical with the engin
 
 test('surface schema rejects unsupported or unbounded data and textures dispose once with their owner', () => {
   for (const change of [
+    { version: 0 },
+    { version: 3 },
+    { version: 1.5 },
     { seed: -1 },
     { seed: 0.5 },
     { seed: 65536 },
@@ -374,9 +387,8 @@ test('custom cube and edited native mesh UVs remain baked through Littlewild exp
       assert.ok(exported.uvs);
       assert.deepEqual(
         exported.uvs,
-        (document.geometries[geometryId] as { uvs: number[][] }).uvs
-          .flat()
-          .map((value) => Math.round(value * 1e5) / 1e5),
+        // Authored UV decimals are now preserved exactly, rather than rounded again during export.
+        (document.geometries[geometryId] as { uvs: number[][] }).uvs.flat(),
       );
     } finally {
       built.dispose();

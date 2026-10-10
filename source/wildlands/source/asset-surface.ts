@@ -1,21 +1,22 @@
 /** Deterministic portable short-surface detail. No shaders, canvas, clocks or network. */
 namespace LWAssetSurfaceContract {
- export interface Surface {kind:'fur'|'cloth'|'leather';seed:number;scale:number;strength:number;}
+ export interface Surface {version?:1|2;kind:'fur'|'cloth'|'leather';seed:number;scale:number;strength:number;}
  export interface Pixels {width:number;height:number;color:Uint8Array;normal:Uint8Array;}
- export interface Api {readonly algorithmVersion:'littlewild-surface-v1';key(surface:Surface):string;generate(surface:Surface):Pixels;sphereUVs(positions:readonly number[]):number[];png(pixels:Uint8Array,width:number,height:number):Uint8Array;}
+ export interface Api {readonly algorithmVersion:'littlewild-surface-v1';algorithm(surface:Surface):'littlewild-surface-v1'|'littlewild-surface-v2';key(surface:Surface):string;generate(surface:Surface):Pixels;sphereUVs(positions:readonly number[]):number[];png(pixels:Uint8Array,width:number,height:number):Uint8Array;}
 }
 (function(inputRoot:unknown){
  'use strict';
  const root=inputRoot as {LWAssetSurface?:LWAssetSurfaceContract.Api};
  type Surface=LWAssetSurfaceContract.Surface;
  const SIZE=128;
- function key(surface:Surface):string{return [surface.kind,surface.seed,surface.scale,surface.strength].join('/');}
+ function algorithm(surface:Surface):'littlewild-surface-v1'|'littlewild-surface-v2'{return surface.version===2?'littlewild-surface-v2':'littlewild-surface-v1';}
+ function key(surface:Surface):string{return [surface.kind,surface.seed,surface.scale,surface.strength].join('/')+(surface.version===2?'/v2':'');}
  function noise(x:number,y:number,seed:number):number{
   let n=Math.imul(x^seed,374761393)^Math.imul(y+seed,668265263);
   n=Math.imul(n^(n>>>13),1274126177);return ((n^(n>>>16))>>>0)/4294967295;
  }
  function generate(surface:Surface):LWAssetSurfaceContract.Pixels{
-  if(!['fur','cloth','leather'].includes(surface.kind)||!Number.isInteger(surface.seed)||surface.seed<0||surface.seed>65535||!Number.isFinite(surface.scale)||surface.scale<1||surface.scale>16||!Number.isFinite(surface.strength)||surface.strength<0||surface.strength>1)throw Error('Invalid bounded asset surface');
+  if((surface.version!==undefined&&surface.version!==1&&surface.version!==2)||!['fur','cloth','leather'].includes(surface.kind)||!Number.isInteger(surface.seed)||surface.seed<0||surface.seed>65535||!Number.isFinite(surface.scale)||surface.scale<1||surface.scale>16||!Number.isFinite(surface.strength)||surface.strength<0||surface.strength>1)throw Error('Invalid bounded asset surface');
   const heights=new Float64Array(SIZE*SIZE),color=new Uint8Array(SIZE*SIZE*4),normal=new Uint8Array(color.length);
   const sample=(x:number,y:number)=>noise((x+SIZE)%SIZE,(y+SIZE)%SIZE,surface.seed);
   for(let y=0;y<SIZE;y++)for(let x=0;x<SIZE;x++){
@@ -29,14 +30,46 @@ namespace LWAssetSurfaceContract {
    }else h=.65*grain+.35*sample(Math.floor(x/3),Math.floor(y/3));
    heights[y*SIZE+x]=h;
   }
+  if(surface.version===2)fineHeights(surface,heights);
   const height=(x:number,y:number)=>heights[((y+SIZE)%SIZE)*SIZE+(x+SIZE)%SIZE]!;
   for(let y=0;y<SIZE;y++)for(let x=0;x<SIZE;x++){
    const i=(y*SIZE+x)*4,h=height(x,y),strength=surface.strength;
-   const dx=(height(x-1,y)-height(x+1,y))*strength*.65,dy=(height(x,y-1)-height(x,y+1))*strength*.65;
-   const length=Math.hypot(dx,dy,1),shade=Math.round(255-(1-h)*strength*(surface.kind==='fur'?26:20));
+   const relief=surface.version===2?.38:.65;
+   const dx=(height(x-1,y)-height(x+1,y))*strength*relief,dy=(height(x,y-1)-height(x,y+1))*strength*relief;
+   const length=Math.hypot(dx,dy,1),shade=Math.round(255-(1-h)*strength*(surface.version===2?18:surface.kind==='fur'?26:20));
    color.set([shade,shade,shade,255],i);normal.set([Math.round((dx/length*.5+.5)*255),Math.round((dy/length*.5+.5)*255),Math.round((1/length*.5+.5)*255),255],i);
   }
   return {width:SIZE,height:SIZE,color,normal};
+ }
+ /** Version 2 uses continuous tapered strands; version 1 above remains byte-for-byte replayable. */
+ function fineHeights(surface:Surface,heights:Float64Array):void{
+  const sample=(x:number,y:number)=>noise((x+SIZE)%SIZE,(y+SIZE)%SIZE,surface.seed);
+  if(surface.kind==='fur'){
+   for(let i=0;i<heights.length;i++)heights[i]=.28+.025*sample(i%SIZE,Math.floor(i/SIZE));
+   for(let strand=0;strand<1800;strand++){
+    const x0=noise(strand,0,surface.seed)*SIZE,y0=Math.floor(noise(strand,1,surface.seed)*SIZE);
+    const length=6+Math.floor(noise(strand,2,surface.seed)*13),lean=(noise(strand,3,surface.seed)-.5)*.6;
+    const width=.45+noise(strand,4,surface.seed)*.35,relief=.25+.3*noise(strand,5,surface.seed);
+    for(let step=0;step<length;step++){
+     const t=step/(length-1),center=x0+lean*step+Math.sin(t*Math.PI)*.65;
+     const envelope=Math.pow(Math.sin(t*Math.PI),.65),y=(y0+step)%SIZE;
+     for(let offset=-1;offset<=1;offset++){
+      const x=Math.floor(center)+offset,distance=Math.abs(x+.5-center)/width;
+      if(distance>=1.5)continue;
+      const h=.28+relief*envelope*Math.exp(-distance*distance*2),index=y*SIZE+((x%SIZE)+SIZE)%SIZE;
+      heights[index]=Math.max(heights[index]!,h);
+     }
+    }
+   }
+   return;
+  }
+  for(let y=0;y<SIZE;y++)for(let x=0;x<SIZE;x++){
+   if(surface.kind==='cloth'){
+    const warp=.5+.5*Math.cos(x*Math.PI/2),weft=.5+.5*Math.cos(y*Math.PI/2);
+    const over=(Math.floor(x/4)+Math.floor(y/4))%2===0;
+    heights[y*SIZE+x]=.3+.25*(over?warp:weft)+.08*(over?weft:warp)+.025*sample(x,y);
+   }else heights[y*SIZE+x]=.4+.08*sample(x,y)+.06*(sample(x-1,y)+sample(x+1,y)+sample(x,y-1)+sample(x,y+1));
+  }
  }
  /** Legacy meshes get a local spherical projection; authored seam-aware UVs take precedence. */
  function sphereUVs(positions:readonly number[]):number[]{
@@ -58,6 +91,6 @@ namespace LWAssetSurfaceContract {
   const parts=[new Uint8Array([137,80,78,71,13,10,26,10]),chunk('IHDR',ihdr),chunk('IDAT',zlib),chunk('IEND',new Uint8Array())];
   const out=new Uint8Array(parts.reduce((n,p)=>n+p.length,0));cursor=0;for(const part of parts){out.set(part,cursor);cursor+=part.length;}return out;
  }
- const api=Object.freeze({algorithmVersion:'littlewild-surface-v1' as const,key,generate,sphereUVs,png});root.LWAssetSurface=api;
+ const api=Object.freeze({algorithmVersion:'littlewild-surface-v1' as const,algorithm,key,generate,sphereUVs,png});root.LWAssetSurface=api;
  if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);

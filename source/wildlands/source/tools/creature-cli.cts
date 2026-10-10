@@ -31,7 +31,7 @@ export function discover(): Record<string, unknown> {
   command: key.replace('-', ' '), description: descriptions[key.slice(9)],
   flags: flags.map(flag => ({flag, type: ['--dry-run', '--replace', '--summary'].includes(flag) ? 'boolean' : 'string'})),
   required: ['--project', ...key === 'creature-import' ? ['--file', '--expected-fingerprint'] : key === 'creature-attach-visual' ? ['--file', '--archetype', '--expected-fingerprint'] : key === 'creature-edit' ? ['--recipe', '--archetype', '--expected-fingerprint'] : key === 'creature-list' ? [] : ['--archetype'], ...key === 'creature-export' ? ['--output'] : []],
- })), packageFormat: 'littlewild-creature-package', schemaVersion: 1,
+ })), maxPackageBytes: 8 * 1024 * 1024, maxVisualBytes: 8 * 1024 * 1024, limits: {recipeBytes: 1024 * 1024, note: 'Creature package/visual inputs use a dedicated limit; asset geometry, depth and aggregate numeric limits remain authoritative.'}, packageFormat: 'littlewild-creature-package', schemaVersion: 1,
   selection: {scene: 'Defaults to the project scene.', archetype: 'Required except list and import; import can select an existing seed automatically.', instance: 'Optional existing companion ID in the selected scene; never creates a live companion.'},
   recipe: {format: 'wildlands-creature-recipe', schemaVersion: 1, maxOperations: 256,
    operations: [{op: 'setField', fields: ['id', 'value']}, ...['updateDefinition', 'updateAppearance', 'updateInstance'].map(op => ({op, fields: ['value']})), {op: 'duplicateArchetype', fields: ['id', 'name']}],
@@ -119,7 +119,7 @@ export function run(command: string, values: Map<string,string>, loaded: Wildlan
  const outputFile = values.get('--output'), dryRun = values.has('--dry-run');
  if (dryRun === Boolean(outputFile)) throw Error('Choose exactly one of --dry-run or --output NEW_PROJECT.json.');
  const file = required(values, command === 'creature-edit' ? '--recipe' : '--file');
- const text = readJsonFile(file, command === 'creature-edit' ? 1024 * 1024 : 2 * 1024 * 1024);
+ const text = readJsonFile(file, command === 'creature-edit' ? 1024 * 1024 : api.MAX_PACKAGE_BYTES);
  const replacements: string[] = [];
  if (command === 'creature-import') {
   const checked = api.validatePackage(text, {pack: loaded.pack, selection: session.selection});
@@ -134,7 +134,7 @@ export function run(command: string, values: Map<string,string>, loaded: Wildlan
   if (replacements.length && !values.has('--replace')) throw Error('Existing resources would change: ' + replacements.join(', ') + '. Review the package and pass --replace to authorize replacement.');
   session.importPackage(value);
  } else if (command === 'creature-attach-visual') {
-  const source = record(root.LWContent.parse(text, 2 * 1024 * 1024));
+  const source = record(root.LWContent.parse(text, api.MAX_PACKAGE_BYTES));
   const visual = source.format === 'littlewild-definition' && source.schemaVersion === 1 ? record(source.visual) : source;
   const current = session.exportPackage();
   if (visual.format !== 'littlewild-3d-asset' || visual.id !== current.appearanceManifest.id) throw Error('Attach a Littlewild actor visual with the selected visual asset ID ' + current.appearanceManifest.id + '. Export Scene Forge changes into the original definition to retain all variants and rig bindings.');

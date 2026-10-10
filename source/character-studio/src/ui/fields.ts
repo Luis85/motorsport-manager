@@ -11,7 +11,7 @@ const descriptions = [
   'Ready for the everyday adventure.',
 ];
 export const palettes = [
-  ['Honey', '#c89b63'], ['Cream', '#e9ddbf'], ['Moss', '#8d9b78'],
+  ['Honey', '#c99055'], ['Cream', '#e9ddbf'], ['Moss', '#8d9b78'],
   ['Chestnut', '#8e6048'], ['Cloud', '#d8d9d2'], ['Rose', '#c98980'],
   ['Walnut', '#40382f'], ['Forest', '#405d48'],
 ];

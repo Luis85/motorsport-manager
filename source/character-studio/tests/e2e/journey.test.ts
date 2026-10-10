@@ -76,8 +76,16 @@ test('real browser creates, edits, imports, guards conflicts and reflows the com
       try { api.configure({mode:'world',light:'invalid'}); } catch { rejected = true; }
       const afterInvalid = api.inspect();
       const result = api.configure({mode:'world',light:'night',pose:'walk',camera:'side',paused:true,reset:true});
+      const angled = api.configure({camera:'three-quarter',pose:'walk',yaw:-.4,elevation:.2,zoom:1.25,time:.35,paused:true,reset:true});
+      const invalid = [];
+      for (const options of [{camera:'front',time:NaN},{pose:'idle',zoom:3},{light:'studio',elevation:.9}]) {
+        let failed = false;
+        try { api.configure(options); } catch { failed = true; }
+        invalid.push({failed,state:api.inspect()});
+      }
+      const preset = api.configure({camera:'three-quarter'});
       api.configure({mode:'studio',light:'studio',pose:'idle',camera:'front',paused:true,reset:true});
-      return {before,afterInvalid,result,rejected};
+      return {before,afterInvalid,result,rejected,angled,invalid,preset};
     });
     assert.equal(configured.rejected, true);
     assert.deepEqual(configured.afterInvalid, configured.before, 'invalid config cannot partially change state or render');
@@ -89,6 +97,15 @@ test('real browser creates, edits, imports, guards conflicts and reflows the com
     assert.equal(configured.result.time, 0);
     assert.equal(configured.result.zoom, 1);
     assert.equal(configured.result.paused, true);
+    assert.deepEqual([configured.angled.yaw,configured.angled.elevation,configured.angled.zoom,configured.angled.time],[-.4,.2,1.25,.35]);
+    assert.equal(configured.angled.renderer.frame,configured.result.renderer.frame+1);
+    for (const invalid of configured.invalid) {
+      assert.equal(invalid.failed,true);
+      assert.deepEqual(invalid.state,configured.angled,'invalid numeric configuration is atomic including rendering');
+    }
+    assert.equal(configured.preset.yaw,.4);
+    assert.equal(configured.preset.elevation,.08);
+    assert.equal(configured.preset.time,.35,'changing camera preserves presentation phase');
     const numeric = page.locator('[data-range="appearance.headSize"][type="number"]');
     await numeric.focus(); await numeric.press('ArrowUp'); await numeric.press('Tab');
     await click(page, 'mode:portrait');

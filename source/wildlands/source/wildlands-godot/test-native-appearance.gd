@@ -77,9 +77,17 @@ static func _materials(host: Object) -> bool:
 	var material: StandardMaterial3D = assets.material(
 		{"materials": {"skin": surface}}, {"material": "skin"}, {"skin": "#abcdef"}
 	)
+	var fine_surface: Dictionary = surface.duplicate(true)
+	fine_surface.surface.version = 2
+	var fine: StandardMaterial3D = assets.material(
+		{"materials": {"skin": fine_surface}}, {"material": "skin"}
+	)
 	return host._check(
 		(
-			material.normal_enabled
+			fine.get_meta("surface_algorithm") == "littlewild-surface-v2"
+			and material.get_meta("surface_algorithm") == "littlewild-surface-v1"
+			and fine.normal_texture != material.normal_texture
+			and material.normal_enabled
 			and material.normal_texture != null
 			and material.albedo_texture != null
 			and material.normal_texture.get_width() == 128

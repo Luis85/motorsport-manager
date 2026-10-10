@@ -124,23 +124,26 @@ write back to disk without the local server.
 
 ## Visual verification for agents
 
-Compiler revision 3 produces smooth portable meshes, warm readable irises,
-shallow facial features and deterministic short coat, cloth and leather detail.
-The same rigged geometry and surface descriptors travel through the engine and Scene
-Forge; render lighting is presentation. Original revision-1 and revision-2 Studio exports remain
-importable. Unknown future compiler revisions and externally modified exports
-are rejected with explicit guidance. Native Godot exports approximate sheen with
-rim lighting and report that limitation; WebGL and GLB retain the physical fields.
+Compiler revision 4 produces a shaped head and jaw with recessed eyes, lids, a cream lower face, a small open mouth and tongue, and a pear-shaped body
+with leg shafts and bent paws. Directional fur and baked short tapered fibres add
+coat detail to the head, body and round ears. The same rigged geometry and surface
+descriptors travel through the engine and Scene Forge; lighting is presentation.
+Original revision-1, revision-2 and revision-3 Studio exports remain importable.
+Unknown future compiler revisions and externally modified exports are rejected
+with explicit guidance. Native Godot exports approximate sheen with rim lighting
+and report that limitation; WebGL and GLB retain the physical fields.
 
 `doctor --project DIR --capture` checks optional Playwright, Chromium and WebGL2
 without installing anything. Inspect `capture.ready`; ordinary `doctor` only
 checks project/lock diagnostics and does not launch a browser.
 
-`review --project DIR --id ID --out NEW_DIRECTORY` captures front, side, back,
+`review --project DIR --id ID --out NEW_DIRECTORY` captures front, three-quarter, side, back,
 portrait, daylight world and night world views in one browser session. It writes
 `frames/*.png`, `contact-sheet.png`, `manifest.json`, and `replay-plan.json`.
 The manifest binds each image to its SHA-256, recipe hash, compiled visual hash,
-compiler revision and explicit camera/light/pose at time zero. The manifest is
+compiler revision and explicit camera/light/pose, orbit, zoom and animation time.
+Default views use time zero; each frame records its own phase. A common top-level
+`time` is included only when all frames share that phase. The manifest is
 written last; a failed render removes only the new directory that command created.
 
 Use `--plan previous-review/replay-plan.json` after edits to hold views fixed.
@@ -158,10 +161,26 @@ bin/character-studio review --project ./characters --id moss --out ./review-v2 -
 
 `capture --project DIR --id ID --out NEW.png` renders the actual compiled model.
 Optional `--mode studio|world|portrait`, `--light studio|daylight|night`,
-`--pose idle|walk|work|celebrate`, `--camera front|side|back`, `--width` and
+`--pose idle|walk|work|celebrate`, `--camera front|three-quarter|side|back`, `--width` and
 `--height` make camera and lighting explicit. The result reports the recipe hash,
 view configuration and fixed pose time. PNG destinations are new-only. `preview`
-also accepts the four view flags when creating interactive HTML.
+also accepts the view and numeric flags when creating interactive HTML.
+
+`--yaw` accepts radians from −π through π, `--elevation` radians from −0.3
+through 0.8, `--zoom` an absolute multiplier from 0.5 through 2.5, and `--time`
+presentation animation seconds from 0 through 3600. All values must be finite
+decimal numbers. Named cameras set yaw (front 0, three-quarter 0.4, side π/2,
+back π) and elevation 0.08; explicit numbers override the preset. Capture defaults
+to front, elevation 0.08, zoom 1 and time 0. Capture and review always pause at
+the specified phase. An explicit `preview --time` starts the interactive HTML
+paused; without it, normal reduced-motion preferences control playback. The served
+editor starts in three-quarter view. These controls never advance game simulation.
+Review-plan views accept the same numeric fields; normalized replay plans record
+all four numbers so later views cannot inherit state from earlier frames.
+
+```sh
+bin/character-studio capture --project ./characters --id moss --out ./moss-walk.png --camera three-quarter --pose walk --yaw -0.4 --elevation 0.2 --zoom 1.1 --time 0.35
+```
 
 Capture alone needs optional Playwright and Chromium. For a source checkout,
 run `npm ci` in `source/character-studio` and `npx playwright install chromium`.
@@ -193,12 +212,12 @@ interface exposed by both the served and offline page:
 | `preview.setMode(value)` | Select `studio`, `world` or `portrait` |
 | `preview.setLight(value)` | Select `studio`, `daylight` or `night` |
 | `preview.setPose(value)` | Select `idle`, `walk`, `work` or `celebrate` |
-| `preview.setCamera(value)` | Select `front`, `side` or `back` |
+| `preview.setCamera(value)` | Select `front`, `three-quarter`, `side` or `back` |
 | `preview.zoom(delta)` | Adjust the presentation camera |
 | `preview.reset()` | Reset the view |
 | `preview.pause(boolean)` | Pause or resume presentation animation |
 | `preview.inspect()` | Return current mode, lighting, pose, camera, time, pause state and live renderer budgets; `modelRevision` counts geometry rebuilds and `renderer.frame` counts rendered frames |
-| `preview.configure(options)` | Validate and apply mode, light, pose, camera, paused and reset together with one render; invalid configuration changes nothing |
+| `preview.configure(options)` | Validate and apply mode, light, pose, camera, yaw, elevation, zoom, time, paused and reset together with one render; invalid configuration changes nothing |
 | `preview.capture()` | Return the current canvas as a PNG data URL when the renderer is available |
 
 Browser `apply` changes the current working session; it is not a guarded disk
@@ -206,6 +225,11 @@ write. Use the editor's save action or the HTTP contract for persistence. Previe
 methods do not edit the recipe or advance gameplay. Use `window.characterStudio.discover()` before browser automation. Full command
 and JSON Schema discovery live in the CLI and `/api/discover`. Preview methods
 reject unsupported choices; zoom requires a finite number and pause a boolean.
+`preview.configure` validates the entire request before changing state. It applies
+reset first (front, elevation 0.12, zoom 1, time 0), then named camera and pose,
+then explicit numeric settings. Pass `paused:true` with `time` to hold a phase;
+`time` alone seeks without changing playback. `preview.inspect()` reports the
+actual yaw, elevation, zoom and time rather than only a preset name.
 
 ## Failure and compatibility contract
 

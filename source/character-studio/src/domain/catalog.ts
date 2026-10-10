@@ -45,7 +45,7 @@ export const presets = [
     appearance: {
       body: "balanced",
       ears: "round",
-      coat: "#caa273",
+      coat: "#c99055",
       belly: "#eed8b4",
       inner: "#c98f79",
       tail: "short",

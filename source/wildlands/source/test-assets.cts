@@ -157,7 +157,7 @@ test('Portable surface metadata and authored UVs validate before rendering',()=>
  const schema=JSON.parse(fs.readFileSync(path.join(schemaRoot,'asset.schema.json'))),Ajv=require('ajv/dist/2020').default,validate=new Ajv({strict:false}).compile(schema);
  const input=bakedPet();input.materials.skin.surface={kind:'fur',seed:17,scale:7,strength:.24};input.meshes.tri.uvs=[0,0,1,0,0,1];
  assert(validate(input));assert.deepEqual(A.validate(input).meshes.tri.uvs,input.meshes.tri.uvs);
- for(const edit of [d=>d.materials.skin.surface.kind='hair',d=>d.materials.skin.surface.kind=['fur'],d=>d.materials.skin.surface.seed=65536,d=>d.materials.skin.surface.seed=.1,d=>delete d.materials.skin.surface.scale,d=>d.materials.skin.surface.scale=0,d=>d.materials.skin.surface.strength=1.1,d=>d.materials.skin.surface.callback='code',d=>d.meshes.tri.uvs=[0,0,1,0,0],d=>d.meshes.tri.uvs[0]=Infinity]){
+ for(const edit of [d=>d.materials.skin.surface.version=0,d=>d.materials.skin.surface.version=3,d=>d.materials.skin.surface.version='2',d=>d.materials.skin.surface.kind='hair',d=>d.materials.skin.surface.kind=['fur'],d=>d.materials.skin.surface.seed=65536,d=>d.materials.skin.surface.seed=.1,d=>delete d.materials.skin.surface.scale,d=>d.materials.skin.surface.scale=0,d=>d.materials.skin.surface.strength=1.1,d=>d.materials.skin.surface.callback='code',d=>d.meshes.tri.uvs=[0,0,1,0,0],d=>d.meshes.tri.uvs[0]=Infinity]){
   const invalid=JSON.parse(JSON.stringify(input));edit(invalid);assert.throws(()=>A.validate(invalid),/3D asset:/);
  }
 });
@@ -171,11 +171,27 @@ test('Portable surface pixels and PNGs replay exactly with bounded deterministic
  assert.throws(()=>S.generate({...descriptor,scale:17}),/bounded/);assert.throws(()=>S.png(new Uint8Array(4),129,1),/dimensions/);
  assert.deepEqual(S.sphereUVs([0,0,0]),[.5,.5]);assert(S.sphereUVs([1,0,0,0,1,0]).every(Number.isFinite));
 });
+test('Versioned fine surfaces retain legacy replay and deterministic directional detail',()=>{
+ const S=require('./asset-surface.js'),hash=bytes=>require('node:crypto').createHash('sha256').update(bytes).digest('hex'),descriptor={kind:'fur',seed:17,scale:7,strength:.24};
+ const legacy={fur:['b5c918c9d072c4ea01db5f318488a556c5eed0a0c2f6233d7315f76b82aba6ca','b3f742b99f620e4f3173804753fe7b36aaab9342b806f35e1f50c8b22bfbaa77'],cloth:['9ffab49e1637ce3afc481b06bb61f13e40abf1a28964ae0df1cc0cf8e6d2c33c','edf0a377811c26d6e817a2eeac060f3ee2ea1d605424c64acdf28a62ff066a2d'],leather:['a8b24f7455efb25802379d696bc6abf5e37fd201ce11153206c7cd9b12173e8c','9ad0c4b2490ac072cf49fcecb902b880e1b57839636e88cecf6ca95fc977b3ae']};
+ const fineReplay={fur:['e91b82e28bc5864df98e0aa3ad2a4ecb0d4a7e41c8bd8d7e99ecbaabdb5eb4b3','5a4f1d18607642f6d290173bda1ecedf8f5505d0bcbe14b4cb8541e989b14061'],cloth:['400b9f2b9e3a80fb5a5e308cb09386eeb9135be0b0ea31f9b75158a5b1884108','f2551b69e90c99e600e99a9922004badf698086c1f48b6b3af5f2b691180706c'],leather:['055e1e8a6aa0523087ea7799c0294f4a1675c2dc09300ea9c2b15647e25bbb2a','b7d3851ead6eb4bd16d9884a32acd26f168b03e898377e3f301dcff7ea8b83c8']};
+ for(const [kind,expected] of Object.entries(legacy)){
+  const old={...descriptor,kind},v1=S.generate(old),next={...old,version:2},v2=S.generate(next);
+  assert.deepEqual([hash(v1.normal),hash(v1.color)],expected);assert.deepEqual(S.generate({...old,version:1}),v1);
+  assert.equal(S.key(old),S.key({...old,version:1}));assert.notEqual(S.key(old),S.key(next));assert.equal(S.algorithm(next),'littlewild-surface-v2');
+  assert.deepEqual([hash(v2.normal),hash(v2.color)],fineReplay[kind]);assert.deepEqual(v2,S.generate(next));assert.notDeepEqual(v2.normal,v1.normal);assert.notDeepEqual(v2.normal,S.generate({...next,seed:18}).normal);
+  const asset=bakedPet();asset.materials.skin.surface=next;assert.equal(A.validate(asset).materials.skin.surface.version,2);
+ }
+ const slopes=version=>{const p=S.generate({...descriptor,version,strength:.55}),n={x:0,y:0};for(let i=0;i<p.normal.length;i+=4){n.x+=(p.normal[i]-128)**2;n.y+=(p.normal[i+1]-128)**2;}return n;};
+ const old=slopes(1),fine=slopes(2);assert(fine.x>fine.y*1.8,'Fur strands must retain directional relief');assert(fine.x+fine.y<(old.x+old.y)*.3,'Fine coat must reduce coarse normal relief');
+ assert.throws(()=>S.generate({...descriptor,version:3}),/bounded/);
+});
 test('Portable surface textures share live ownership preserve UVs and release once',()=>{
  const vm=require('node:vm'),realm={};realm.window=realm;vm.runInNewContext(fs.readFileSync(path.resolve(__dirname,'../vendor/three.js'),'utf8'),realm);
  const sandbox={};vm.runInNewContext('globalThis.LWAssetDefinitions=JSON.parse('+JSON.stringify(JSON.stringify([bakedPet()]))+');\n'+catalogScript()+'\n'+fs.readFileSync(__dirname+'/asset-surface.js','utf8')+'\n'+fs.readFileSync(__dirname+'/asset-renderer.js','utf8'),sandbox);
  const T=realm.THREE,R=sandbox.LWAssetRenderer,surface={kind:'fur',seed:17,scale:7,strength:.24};
- const first=R.createMaterial(T,'#abcdef',{surface}),second=R.createMaterial(T,'#123456',{surface});assert.equal(first.map,second.map);assert.equal(first.normalMap,second.normalMap);assert.equal(second.color.getHexString(),'123456');assert.equal(first.map.colorSpace,T.SRGBColorSpace);assert.equal(first.map.repeat.x,7);assert.equal(first.normalMap.image.data.length,128*128*4);
+ const fine=R.createMaterial(T,'#abcdef',{surface:{...surface,version:2}});assert.equal(fine.userData.surfaceAlgorithm,'littlewild-surface-v2');
+ const first=R.createMaterial(T,'#abcdef',{surface});assert.notEqual(fine.map,first.map);fine.dispose();const second=R.createMaterial(T,'#123456',{surface});assert.equal(first.map,second.map);assert.equal(first.normalMap,second.normalMap);assert.equal(second.color.getHexString(),'123456');assert.equal(first.map.colorSpace,T.SRGBColorSpace);assert.equal(first.map.repeat.x,7);assert.equal(first.normalMap.image.data.length,128*128*4);
  let releases=0;first.map.addEventListener('dispose',()=>releases++);first.normalMap.addEventListener('dispose',()=>releases++);first.dispose();first.dispose();assert.equal(releases,0);second.dispose();assert.equal(releases,2);second.dispose();assert.equal(releases,2);const fresh=R.createMaterial(T,'#abcdef',{surface});assert.notEqual(fresh.map,first.map);fresh.dispose();
  const input=bakedPet();input.meshes.tri.uvs=[.1,.2,.3,.4,.5,.6];sandbox.serialized=JSON.stringify(input);vm.runInNewContext('globalThis.authored=JSON.parse(serialized)',sandbox);const kit={T,mat:(color,extra)=>R.createMaterial(T,color,extra),group(parent){const g=new T.Group();parent.add(g);return g;}};
  const made=R.createFromDefinition(kit,new T.Group(),sandbox.authored,'baby'),g=made.handles.get('head').geometry;assert.equal(g.getAttribute('uv').count,3);assert(Math.abs(g.getAttribute('uv').getX(0)-.1)<1e-6);R.disposeKit(kit);

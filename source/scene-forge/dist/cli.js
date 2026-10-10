@@ -57,7 +57,15 @@ var GeometrySchema = z.discriminatedUnion("type", [
     roundness: Scalar.default(1),
     taper: Scalar.default(0),
     bend: Scalar.default(0),
-    segments: z.number().int().min(12).max(96).default(32)
+    segments: z.number().int().min(12).max(96).default(32),
+    profile: z.array(
+      z.strictObject({
+        at: Scalar,
+        width: Scalar,
+        depth: Scalar,
+        offset: Vec2.default([0, 0])
+      })
+    ).min(2).max(12).optional()
   }),
   z.strictObject({
     type: z.literal("cylinder"),
@@ -126,6 +134,7 @@ var GeometrySchema = z.discriminatedUnion("type", [
 ]);
 var SurfaceSchema = z.strictObject({
   kind: z.enum(["fur", "cloth", "leather"]),
+  version: z.union([z.literal(1), z.literal(2)]).optional(),
   seed: z.number().int().min(0).max(65535),
   scale: z.number().min(1).max(16),
   strength: z.number().min(0).max(1)
@@ -585,15 +594,17 @@ function uuid(key) {
 }
 
 // src/application/surface-pattern.ts
-var surfaceAlgorithm = "littlewild-surface-v1";
 var SIZE = 128;
+function resolveSurfaceAlgorithm(surface) {
+  return surface.version === 2 ? "littlewild-surface-v2" : "littlewild-surface-v1";
+}
 function noise(x, y, seed) {
   let n = Math.imul(x ^ seed, 374761393) ^ Math.imul(y + seed, 668265263);
   n = Math.imul(n ^ n >>> 13, 1274126177);
   return ((n ^ n >>> 16) >>> 0) / 4294967295;
 }
 function generateSurface(surface) {
-  if (!["fur", "cloth", "leather"].includes(surface.kind) || !Number.isInteger(surface.seed) || surface.seed < 0 || surface.seed > 65535 || !Number.isFinite(surface.scale) || surface.scale < 1 || surface.scale > 16 || !Number.isFinite(surface.strength) || surface.strength < 0 || surface.strength > 1)
+  if (surface.version !== void 0 && surface.version !== 1 && surface.version !== 2 || !["fur", "cloth", "leather"].includes(surface.kind) || !Number.isInteger(surface.seed) || surface.seed < 0 || surface.seed > 65535 || !Number.isFinite(surface.scale) || surface.scale < 1 || surface.scale > 16 || !Number.isFinite(surface.strength) || surface.strength < 0 || surface.strength > 1)
     throw Error("Invalid bounded asset surface");
   const heights = new Float64Array(SIZE * SIZE), color = new Uint8Array(SIZE * SIZE * 4), normal = new Uint8Array(color.length);
   const sample = (x, y) => noise((x + SIZE) % SIZE, (y + SIZE) % SIZE, surface.seed);
@@ -609,12 +620,16 @@ function generateSurface(surface) {
       } else h = 0.65 * grain + 0.35 * sample(Math.floor(x / 3), Math.floor(y / 3));
       heights[y * SIZE + x] = h;
     }
+  if (surface.version === 2) fineHeights(surface, heights);
   const height = (x, y) => heights[(y + SIZE) % SIZE * SIZE + (x + SIZE) % SIZE];
   for (let y = 0; y < SIZE; y++)
     for (let x = 0; x < SIZE; x++) {
       const i = (y * SIZE + x) * 4, h = height(x, y), strength = surface.strength;
-      const dx = (height(x - 1, y) - height(x + 1, y)) * strength * 0.65, dy = (height(x, y - 1) - height(x, y + 1)) * strength * 0.65;
-      const length = Math.hypot(dx, dy, 1), shade = Math.round(255 - (1 - h) * strength * (surface.kind === "fur" ? 26 : 20));
+      const relief = surface.version === 2 ? 0.38 : 0.65;
+      const dx = (height(x - 1, y) - height(x + 1, y)) * strength * relief, dy = (height(x, y - 1) - height(x, y + 1)) * strength * relief;
+      const length = Math.hypot(dx, dy, 1), shade = Math.round(
+        255 - (1 - h) * strength * (surface.version === 2 ? 18 : surface.kind === "fur" ? 26 : 20)
+      );
       color.set([shade, shade, shade, 255], i);
       normal.set(
         [
@@ -627,6 +642,38 @@ function generateSurface(surface) {
       );
     }
   return { width: SIZE, height: SIZE, color, normal };
+}
+function fineHeights(surface, heights) {
+  const sample = (x, y) => noise((x + SIZE) % SIZE, (y + SIZE) % SIZE, surface.seed);
+  if (surface.kind === "fur") {
+    for (let i = 0; i < heights.length; i++)
+      heights[i] = 0.28 + 0.025 * sample(i % SIZE, Math.floor(i / SIZE));
+    for (let strand = 0; strand < 1800; strand++) {
+      const x0 = noise(strand, 0, surface.seed) * SIZE, y0 = Math.floor(noise(strand, 1, surface.seed) * SIZE);
+      const length = 6 + Math.floor(noise(strand, 2, surface.seed) * 13), lean = (noise(strand, 3, surface.seed) - 0.5) * 0.6;
+      const width = 0.45 + noise(strand, 4, surface.seed) * 0.35, relief = 0.25 + 0.3 * noise(strand, 5, surface.seed);
+      for (let step = 0; step < length; step++) {
+        const t = step / (length - 1), center = x0 + lean * step + Math.sin(t * Math.PI) * 0.65;
+        const envelope = Math.pow(Math.sin(t * Math.PI), 0.65), y = (y0 + step) % SIZE;
+        for (let offset = -1; offset <= 1; offset++) {
+          const x = Math.floor(center) + offset, distance = Math.abs(x + 0.5 - center) / width;
+          if (distance >= 1.5) continue;
+          const h = 0.28 + relief * envelope * Math.exp(-distance * distance * 2), index = y * SIZE + (x % SIZE + SIZE) % SIZE;
+          heights[index] = Math.max(heights[index], h);
+        }
+      }
+    }
+    return;
+  }
+  for (let y = 0; y < SIZE; y++)
+    for (let x = 0; x < SIZE; x++) {
+      if (surface.kind === "cloth") {
+        const warp = 0.5 + 0.5 * Math.cos(x * Math.PI / 2), weft = 0.5 + 0.5 * Math.cos(y * Math.PI / 2);
+        const over = (Math.floor(x / 4) + Math.floor(y / 4)) % 2 === 0;
+        heights[y * SIZE + x] = 0.3 + 0.25 * (over ? warp : weft) + 0.08 * (over ? weft : warp) + 0.025 * sample(x, y);
+      } else
+        heights[y * SIZE + x] = 0.4 + 0.08 * sample(x, y) + 0.06 * (sample(x - 1, y) + sample(x + 1, y) + sample(x, y - 1) + sample(x, y + 1));
+    }
 }
 function sphereUVs(positions) {
   const out = [];
@@ -645,7 +692,9 @@ var maxSurfaceRecipes = 256;
 function createSurfacePool() {
   const recipes = /* @__PURE__ */ new Map();
   function apply(material, surface) {
-    const key = `${surfaceAlgorithm}/${canonical(surface)}`;
+    const { version, ...legacy } = surface;
+    const surfaceAlgorithm = resolveSurfaceAlgorithm(surface);
+    const key = `${surfaceAlgorithm}/${canonical(version === 1 ? legacy : surface)}`;
     let maps = recipes.get(key);
     if (!maps) {
       if (recipes.size >= maxSurfaceRecipes)
@@ -1031,7 +1080,7 @@ function validateDocument(document2, models = {}, stack = []) {
     if (ids.has(n.id)) fail("DUPLICATE_ID", `Duplicate node ${n.id}.`);
     ids.add(n.id);
   }
-  const nodes = new Map(d.nodes.map((n) => [n.id, n]));
+  const nodes2 = new Map(d.nodes.map((n) => [n.id, n]));
   for (const n of d.nodes) {
     validTransform(n.transform);
     if (n.pattern) {
@@ -1065,7 +1114,7 @@ function validateDocument(document2, models = {}, stack = []) {
       if (visited.size > 64) fail("DEPTH_LIMIT", "Node hierarchy exceeds 64 levels.");
       if (visited.has(current)) fail("CYCLE", `Parent cycle includes ${n.id}.`);
       visited.add(current);
-      current = nodes.get(current)?.parent;
+      current = nodes2.get(current)?.parent;
     }
     if (n.pattern && d.nodes.some((child) => child.parent === n.id))
       fail(
@@ -1135,6 +1184,21 @@ function validateDocument(document2, models = {}, stack = []) {
       ])
         if (g[field] < min || g[field] > max)
           fail("INVALID_GEOMETRY", `${id}.${field} must be between ${min} and ${max}.`);
+      if (g.profile) {
+        if (g.profile[0].at !== -1 || g.profile.at(-1).at !== 1)
+          fail("INVALID_GEOMETRY", `${id}.profile must start at -1 and end at 1.`);
+        for (const [index, station] of g.profile.entries()) {
+          if (station.at < -1 || station.at > 1 || index > 0 && station.at - g.profile[index - 1].at < 0.02 - 1e-12)
+            fail(
+              "INVALID_GEOMETRY",
+              `${id}.profile heights must increase by at least 0.02 within -1..1.`
+            );
+          if ([station.width, station.depth].some((value) => value < 0.1 || value > 2))
+            fail("INVALID_GEOMETRY", `${id}.profile width/depth must be between 0.1 and 2.`);
+          if (station.offset.some((value) => value < -0.75 || value > 0.75))
+            fail("INVALID_GEOMETRY", `${id}.profile offset must be between -0.75 and 0.75.`);
+        }
+      }
     }
     if (g.type === "tube") {
       if (g.closed && g.points.length < 3)
@@ -1182,6 +1246,45 @@ function validateDocument(document2, models = {}, stack = []) {
   Object.keys(d.geometries).forEach(checkGeometry);
 }
 
+// src/application/mesh-source.ts
+var sources = /* @__PURE__ */ new WeakMap();
+function rememberMeshSource(geometry, source) {
+  const attributes = ["position", "normal", "uv"].filter((name) => geometry.getAttribute(name)).map((name) => {
+    const attribute = geometry.getAttribute(name);
+    return {
+      name,
+      size: attribute.itemSize,
+      normalized: attribute.normalized,
+      attributeType: attribute.constructor,
+      arrayType: attribute.array.constructor,
+      values: attribute.array.slice()
+    };
+  });
+  sources.set(geometry, { source, attributes, indices: geometry.index.array.slice() });
+  geometry.addEventListener("dispose", () => sources.delete(geometry));
+}
+function authoredMeshBuffers(geometry) {
+  const snapshot = sources.get(geometry);
+  if (!snapshot) return void 0;
+  const matches = (current, original) => {
+    if (current.length !== original.length) return false;
+    for (let i = 0; i < current.length; i++) if (current[i] !== original[i]) return false;
+    return true;
+  };
+  if (snapshot.attributes.some(({ name, size, normalized, attributeType, arrayType, values }) => {
+    const attribute = geometry.getAttribute(name);
+    return !attribute || attribute.itemSize !== size || attribute.normalized !== normalized || attribute.constructor !== attributeType || attribute.array.constructor !== arrayType || !matches(attribute.array, values);
+  }) || !geometry.index || !matches(geometry.index.array, snapshot.indices))
+    return void 0;
+  const { source } = snapshot;
+  return {
+    positions: source.positions.flat(),
+    indices: [...source.indices],
+    ...source.normals ? { normals: source.normals.flat() } : {},
+    ...source.uvs ? { uvs: source.uvs.flat() } : {}
+  };
+}
+
 // src/application/materials.ts
 import * as THREE5 from "three";
 function createMaterial(m, surfaces) {
@@ -1226,23 +1329,45 @@ function createMaterial(m, surfaces) {
 
 // src/application/organic.ts
 import * as THREE6 from "three";
+function section(profile, y) {
+  if (!profile) return { width: 1, depth: 1, offset: [0, 0] };
+  let index = 1;
+  while (index < profile.length - 1 && profile[index].at < y) index++;
+  const a = profile[index - 1], b = profile[index];
+  const t = Math.max(0, Math.min(1, (y - a.at) / (b.at - a.at))), blend = t * t * (3 - 2 * t);
+  const mix = (start, end) => start + (end - start) * blend;
+  return {
+    width: mix(a.width, b.width),
+    depth: mix(a.depth, b.depth),
+    offset: a.offset.map((value, axis) => mix(value, b.offset[axis]))
+  };
+}
 function organicGeometry(g) {
   const around = g.segments;
-  const rows = Math.max(8, Math.floor(around / 2));
+  const baseRows = Math.max(8, Math.floor(around / 2));
   const positions = [], uvs = [], indices = [];
   const power = (v) => Math.sign(v) * Math.pow(Math.abs(v), g.roundness);
+  const heights = Array.from(
+    { length: baseRows + 1 },
+    (_, row) => power(Math.cos(Math.PI * row / baseRows))
+  );
+  for (const station of g.profile ?? [])
+    if (!heights.some((y) => Math.abs(y - station.at) < 1e-10)) heights.push(station.at);
+  heights.sort((a, b) => b - a);
+  const rows = heights.length - 1;
   for (let row = 0; row <= rows; row++) {
-    const latitude = Math.PI * row / rows;
-    const y = power(Math.cos(latitude));
+    const y = heights[row];
+    const latitude = g.profile ? Math.acos(Math.sign(y) * Math.pow(Math.abs(y), 1 / g.roundness)) : Math.PI * row / rows;
+    const shape = section(g.profile, y);
     const radius = Math.pow(Math.sin(latitude), g.roundness) * (1 - g.taper * y);
     for (let column = 0; column <= around; column++) {
       const longitude = Math.PI * 2 * column / around;
       positions.push(
-        (radius * power(Math.cos(longitude)) + g.bend * y * y) * g.size[0] / 2,
+        (radius * power(Math.cos(longitude)) * shape.width + g.bend * y * y + shape.offset[0]) * g.size[0] / 2,
         y * g.size[1] / 2,
-        radius * power(Math.sin(longitude)) * g.size[2] / 2
+        (radius * power(Math.sin(longitude)) * shape.depth + shape.offset[1]) * g.size[2] / 2
       );
-      uvs.push(column / around, 1 - row / rows);
+      uvs.push(column / around, g.profile ? 1 - latitude / Math.PI : 1 - row / rows);
       if (row < rows && column < around) {
         const a = row * (around + 1) + column, b = a + around + 1;
         if (row > 0) indices.push(a, a + 1, b);
@@ -1521,6 +1646,7 @@ function createResourcePool(warnings) {
       geometries.delete(result);
       result.dispose();
       result = baked;
+      if (g.type === "mesh") rememberMeshSource(result, g);
       geometries.add(result);
       geometryCache.set(id, result);
       geometryPool.set(key, result);
@@ -1756,9 +1882,9 @@ function selectNodes(scene, selector2) {
   );
 }
 function inspectNodes(scene, models, selector2 = {}, detailed = false) {
-  const nodes = selectNodes(scene, selector2);
+  const nodes2 = selectNodes(scene, selector2);
   if (!detailed)
-    return nodes.map((n) => ({
+    return nodes2.map((n) => ({
       id: n.id,
       name: n.name,
       type: n.type,
@@ -1770,7 +1896,7 @@ function inspectNodes(scene, models, selector2 = {}, detailed = false) {
     }));
   const built = compileScene(scene, models);
   try {
-    return nodes.map((node) => {
+    return nodes2.map((node) => {
       const object = built.content.getObjectByName(`${scene.id}/${node.id}`);
       const box = new Box32().setFromObject(object);
       let meshes = 0, triangles2 = 0;
@@ -2004,11 +2130,11 @@ function captureModel(scene, rootIds, id, name = id) {
       fail("OVERLAPPING_SELECTION", "Select a parent or its child, not both.");
     subtreeIds(scene, root).forEach((n) => selected.add(n));
   }
-  const nodes = resolveData(
+  const nodes2 = resolveData(
     structuredClone(scene.nodes.filter((n) => selected.has(n.id))),
     scene.parameters
   );
-  for (const node of nodes)
+  for (const node of nodes2)
     if (roots.includes(node.id)) {
       delete node.parent;
       if (roots.length === 1) node.transform = { ...node.transform, position: [0, 0, 0] };
@@ -2024,7 +2150,7 @@ function captureModel(scene, rootIds, id, name = id) {
       collectGeometry(geometry.right);
     }
   };
-  for (const node of nodes) {
+  for (const node of nodes2) {
     if (node.type === "mesh") {
       collectGeometry(node.geometry);
       materialIds.add(node.material);
@@ -2038,7 +2164,7 @@ function captureModel(scene, rootIds, id, name = id) {
     id,
     name,
     parameters: {},
-    nodes,
+    nodes: nodes2,
     geometries: resolveData(
       Object.fromEntries([...geometryIds].map((gid) => [gid, scene.geometries[gid]])),
       scene.parameters
@@ -3121,9 +3247,9 @@ async function exportScene(document2, models, format, nodeId) {
     const bounds = new Box34().setFromObject(built.scene);
     const usedMaterials = /* @__PURE__ */ new Set();
     const usedGeometries = /* @__PURE__ */ new Set();
-    let nodes = 0, meshes = 0, triangles2 = 0;
+    let nodes2 = 0, meshes = 0, triangles2 = 0;
     built.scene.traverse((object) => {
-      if (object.userData.forgeId) nodes++;
+      if (object.userData.forgeId) nodes2++;
       if (object instanceof Mesh5) {
         usedGeometries.add(object.geometry);
         meshes++;
@@ -3135,7 +3261,7 @@ async function exportScene(document2, models, format, nodeId) {
     });
     const stats = {
       ...built.stats,
-      nodes,
+      nodes: nodes2,
       meshes,
       triangles: triangles2,
       materials: usedMaterials.size,
@@ -3221,7 +3347,9 @@ function unchangedNative(kind, geometry, create) {
 var littlewildLimits = {
   meshVertices: 8192,
   meshTriangles: 16384,
-  definitionVertices: 4e4
+  definitionVertices: 4e4,
+  definitionValues: 4e5,
+  definitionDepth: 32
 };
 var littlewildPetRoles = [
   "body",
@@ -3361,7 +3489,7 @@ function meshData(geometry, label) {
     for (let i = 0; i < vertices; i++) result.uvs.push(...vector([uv.getX(i), uv.getY(i)], 1e-5));
   }
   if (geometry.index) result.indices = Array.from(geometry.index.array);
-  return result;
+  return { ...result, ...authoredMeshBuffers(geometry) };
 }
 function boxSize(geometry) {
   const position = geometry.getAttribute("position");
@@ -3435,7 +3563,10 @@ function littlewildModel(root, options) {
         let meshId = meshIds.get(geometry);
         if (!meshId) {
           const data = meshData(geometry, String(object.userData.forgePath ?? id));
-          meshId = `m-${hash(JSON.stringify(data))}`;
+          const content2 = JSON.stringify(data), base = `m-${hash(content2)}`;
+          meshId = base;
+          for (let collision = 2; meshes[meshId] && JSON.stringify(meshes[meshId]) !== content2; collision++)
+            meshId = `${base}-${collision}`;
           meshIds.set(geometry, meshId);
           if (!meshes[meshId]) {
             meshes[meshId] = data;
@@ -3460,7 +3591,7 @@ function littlewildModel(root, options) {
     if (children.length) node.children = children;
     return node;
   }
-  const nodes = root.children.flatMap((child) => convert(child, "asset") ?? []);
+  const nodes2 = root.children.flatMap((child) => convert(child, "asset") ?? []);
   if (!stats.primitives && !stats.meshes)
     fail("LITTLEWILD_EXPORT", "The model has no visible geometry.");
   if (stats.vertices > littlewildLimits.definitionVertices)
@@ -3469,7 +3600,7 @@ function littlewildModel(root, options) {
       `Model bakes ${stats.vertices} vertices; Littlewild allows ${littlewildLimits.definitionVertices}.`
     );
   return {
-    nodes,
+    nodes: nodes2,
     materials,
     meshes,
     rig: Object.fromEntries(
@@ -3530,6 +3661,21 @@ function registerDiscoveryCommands(c) {
           bend: [-0.75, 0.75],
           segments: [12, 96]
         },
+        profile: {
+          stations: [2, 12],
+          at: [-1, 1],
+          minimumHeightGap: 0.02,
+          width: [0.1, 2],
+          depth: [0.1, 2],
+          offset: [-0.75, 0.75],
+          meaning: "Optional profile stations start at -1 and end at 1. Width/depth multiply each crosssection; offset [X,Z] moves its center in half-size units. Smoothstep interpolation never overshoots; every station is sampled exactly.",
+          example: [
+            { at: -1, width: 1, depth: 1, offset: [0, 0] },
+            { at: -0.35, width: 1.12, depth: 1.15, offset: [0, 0.12] },
+            { at: 0.35, width: 0.75, depth: 0.8, offset: [0, 0] },
+            { at: 1, width: 0.65, depth: 0.7, offset: [0.1, -0.08] }
+          ]
+        },
         meaning: "roundness 1 is ellipsoidal, below 1 is fuller; positive taper narrows the top; bend offsets both ends along +X",
         example: {
           op: "putGeometry",
@@ -3544,14 +3690,19 @@ function registerDiscoveryCommands(c) {
           }
         },
         export: "Closed smooth mesh with seam-aware UVs. Littlewild receives baked mesh; GLB retains mesh and UVs.",
-        workflow: "inspect --source, apply --dry-run with revision/state guards, apply same batch with guards, review --plan previous/replay-plan.json"
+        workflow: "inspect --source, apply --dry-run with revision/state guards, apply same batch with guards, review --file previous/replay-plan.json"
       },
       surfaceDetails: {
         algorithm: "littlewild-surface-v1",
+        versions: {
+          1: "Original detail, default when omitted; exact replay compatibility",
+          2: "Fine directional fur fibres, woven yarn and subtle leather grain"
+        },
         uniqueRecipesPerScene: 256,
-        pooling: "Identical kind/seed/scale/strength share maps across material colors; each compilation owns and disposes its pool.",
+        pooling: "Identical version/kind/seed/scale/strength share maps across material colors; each compilation owns and disposes its pool.",
         fields: {
           kind: ["fur", "cloth", "leather"],
+          version: [1, 2],
           seed: [0, 65535],
           scale: [1, 16],
           strength: [0, 1]
@@ -4535,9 +4686,9 @@ function auditScene(scene, models = {}, input = {}) {
     const degenerate = /* @__PURE__ */ new Map();
     const bounds = new Box35();
     const a = new Vector311(), b = new Vector311(), c = new Vector311(), ab = new Vector311(), ac = new Vector311();
-    let meshes = 0, triangles2 = 0, geometryBytes = 0, nodes = 0;
+    let meshes = 0, triangles2 = 0, geometryBytes = 0, nodes2 = 0;
     built.content.traverseVisible((object) => {
-      if (object.userData.forgeId) nodes++;
+      if (object.userData.forgeId) nodes2++;
       if (!(object instanceof Mesh7)) return;
       meshes++;
       const g = object.geometry;
@@ -4625,7 +4776,7 @@ function auditScene(scene, models = {}, input = {}) {
       );
     const size = bounds.isEmpty() ? [0, 0, 0] : bounds.getSize(new Vector311()).toArray();
     const metrics = {
-      nodes,
+      nodes: nodes2,
       meshes,
       triangles: triangles2,
       geometries: geometries.size,
@@ -4868,15 +5019,15 @@ function registerAgentCommands(c) {
   ).option("--details", "Include source, world matrix, bounds and subtree statistics").option("--limit <n>", "Maximum rows (1\u20131000)", Number, 100).option("--offset <n>", "Start row", Number, 0).action(async (opts) => {
     if (!Number.isInteger(opts.limit) || opts.limit < 1 || opts.limit > 1e3 || !Number.isInteger(opts.offset) || opts.offset < 0)
       fail("INVALID_OPTION", "Use limit 1\u20131000 and a nonnegative integer offset.");
-    const s = await snapshot(), nodes = inspectNodes(s.scene, s.models, selector(opts), !!opts.details);
+    const s = await snapshot(), nodes2 = inspectNodes(s.scene, s.models, selector(opts), !!opts.details);
     output({
       scene: s.scene.id,
       revision: s.scene.revision,
       stateHash: s.stateHash,
-      total: nodes.length,
+      total: nodes2.length,
       offset: opts.offset,
-      nodes: nodes.slice(opts.offset, opts.offset + opts.limit),
-      nextOffset: opts.offset + opts.limit < nodes.length ? opts.offset + opts.limit : null
+      nodes: nodes2.slice(opts.offset, opts.offset + opts.limit),
+      nextOffset: opts.offset + opts.limit < nodes2.length ? opts.offset + opts.limit : null
     });
   });
   editOptions2(
@@ -5016,32 +5167,79 @@ function registerAgentCommands(c) {
 import path10 from "node:path";
 import { Option as Option5 } from "commander";
 
+// src/application/littlewild-resources.ts
+var plain = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+function nodes(models, visit) {
+  const walk = (values) => {
+    for (const node of values)
+      if (plain(node)) {
+        visit(node);
+        if (Array.isArray(node.children)) walk(node.children);
+      }
+  };
+  for (const model of Object.values(models))
+    if (plain(model) && Array.isArray(model.nodes)) walk(model.nodes);
+}
+function reuseLittlewildMeshes(models, meshes, preferred) {
+  const used = /* @__PURE__ */ new Set();
+  nodes(models, (node) => {
+    if (typeof node.mesh === "string") used.add(node.mesh);
+  });
+  const byContent = /* @__PURE__ */ new Map(), names = /* @__PURE__ */ new Map(), output = {};
+  for (const id of /* @__PURE__ */ new Set([...preferred, ...Object.keys(meshes)])) {
+    if (!used.has(id) || !Object.hasOwn(meshes, id)) continue;
+    const key = canonical(meshes[id]), existing = byContent.get(key);
+    if (existing) names.set(id, existing);
+    else {
+      byContent.set(key, id);
+      output[id] = meshes[id];
+    }
+  }
+  nodes(models, (node) => {
+    if (typeof node.mesh === "string" && names.has(node.mesh)) node.mesh = names.get(node.mesh);
+  });
+  return output;
+}
+function assertLittlewildComplexity(visual) {
+  let count = 0;
+  const visit = (value, depth) => {
+    if (++count > 4e5 || depth > 32)
+      fail(
+        "LITTLEWILD_BUDGET",
+        "Visual exceeds Littlewild\u2019s 400,000 JSON values or depth 32. Reuse mesh resources, reduce segments, or remove unused variants."
+      );
+    if (value && typeof value === "object")
+      for (const child of Object.values(value)) visit(child, depth + 1);
+  };
+  visit(visual, 0);
+}
+
 // src/infra/littlewild.ts
 import path9 from "node:path";
 import { promises as fs8 } from "node:fs";
-var plain = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+var plain2 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
 function definitionText(value) {
   return JSON.stringify(value, null, 2).replace(
     /\[\s+(-?[\d.e+-]+(?:,\s+-?[\d.e+-]+)*)\s+\]/g,
     (_, body) => `[${String(body).replace(/,\s+/g, ", ")}]`
   ) + "\n";
 }
-function renameMaterials(nodes, names) {
-  for (const node of nodes) {
-    if (node.material && names.has(node.material)) node.material = names.get(node.material);
-    if (node.children) renameMaterials(node.children, names);
+function renameMaterials(nodes2, names, field = "material") {
+  for (const node of nodes2) {
+    if (node[field] && names.has(node[field])) node[field] = names.get(node[field]);
+    if (node.children) renameMaterials(node.children, names, field);
   }
 }
-function collect(nodes, key, into) {
-  for (const node of nodes) {
-    if (!plain(node)) continue;
+function collect(nodes2, key, into) {
+  for (const node of nodes2) {
+    if (!plain2(node)) continue;
     if (typeof node[key] === "string") into.add(node[key]);
     if (Array.isArray(node.children)) collect(node.children, key, into);
   }
   return into;
 }
 function littlewildVisual(asset, models, existing) {
-  const category = littlewildFamilies[asset.family], previous = plain(existing?.visual) ? existing.visual : {}, previousModels = plain(previous.models) ? previous.models : {}, previousMaterials = plain(previous.materials) ? previous.materials : {}, previousMeshes = plain(previous.meshes) ? previous.meshes : {};
+  const category = littlewildFamilies[asset.family], previous = plain2(existing?.visual) ? existing.visual : {}, previousModels = plain2(previous.models) ? previous.models : {}, previousMaterials = plain2(previous.materials) ? previous.materials : {}, previousMeshes = plain2(previous.meshes) ? previous.meshes : {};
   const materials = {}, meshes = {}, exported = {}, rig = {}, report = [], warnings = /* @__PURE__ */ new Set();
   for (const [variant, spec] of Object.entries(asset.models)) {
     const model = models[spec.model];
@@ -5078,7 +5276,15 @@ function littlewildVisual(asset, models, existing) {
         if (name !== role) names.set(role, name);
       }
       renameMaterials(result.nodes, names);
-      Object.assign(meshes, result.meshes);
+      const meshNames = /* @__PURE__ */ new Map();
+      for (const [id, data] of Object.entries(result.meshes)) {
+        let name = id, suffix = 1;
+        while (Object.hasOwn(meshes, name) && canonical(meshes[name]) !== canonical(data) || Object.hasOwn(previousMeshes, name) && canonical(previousMeshes[name]) !== canonical(data))
+          name = `${id.slice(0, 64)}-${suffix++}`;
+        meshes[name] = data;
+        if (name !== id) meshNames.set(id, name);
+      }
+      renameMaterials(result.nodes, meshNames, "mesh");
       exported[variant] = { nodes: result.nodes };
       if (Object.keys(result.rig).length) rig[variant] = result.rig;
       result.warnings.forEach((w) => warnings.add(w));
@@ -5087,9 +5293,9 @@ function littlewildVisual(asset, models, existing) {
       built.dispose();
     }
   }
-  const finalModels = { ...previousModels, ...exported };
+  const finalModels = structuredClone({ ...previousModels, ...exported });
   for (const [name, model] of Object.entries(previousModels)) {
-    if (Object.hasOwn(exported, name) || !plain(model) || !Array.isArray(model.nodes)) continue;
+    if (Object.hasOwn(exported, name) || !plain2(model) || !Array.isArray(model.nodes)) continue;
     for (const role of collect(model.nodes, "material", /* @__PURE__ */ new Set()))
       if (Object.hasOwn(previousMaterials, role)) {
         if (materials[role] && JSON.stringify(materials[role]) !== JSON.stringify(previousMaterials[role]))
@@ -5099,8 +5305,9 @@ function littlewildVisual(asset, models, existing) {
     for (const id of collect(model.nodes, "mesh", /* @__PURE__ */ new Set()))
       if (Object.hasOwn(previousMeshes, id)) meshes[id] ??= previousMeshes[id];
   }
-  const vertices = Object.values(meshes).reduce(
-    (sum, mesh) => sum + (plain(mesh) && Array.isArray(mesh.positions) ? mesh.positions.length / 3 : 0),
+  const finalMeshes = reuseLittlewildMeshes(finalModels, meshes, Object.keys(previousMeshes));
+  const vertices = Object.values(finalMeshes).reduce(
+    (sum, mesh) => sum + (plain2(mesh) && Array.isArray(mesh.positions) ? mesh.positions.length / 3 : 0),
     0
   );
   if (vertices > littlewildLimits.definitionVertices)
@@ -5108,14 +5315,14 @@ function littlewildVisual(asset, models, existing) {
       "LITTLEWILD_BUDGET",
       `${asset.id} bakes ${vertices} vertices; Littlewild allows ${littlewildLimits.definitionVertices}.`
     );
-  const previousRig = asset.family === "pets" && plain(previous.rig) ? previous.rig : {};
+  const previousRig = asset.family === "pets" && plain2(previous.rig) ? previous.rig : {};
   const finalRig = asset.family === "pets" ? Object.fromEntries(
     Object.entries({ ...previousRig, ...rig }).filter(
       ([name]) => Object.hasOwn(finalModels, name) && (Object.hasOwn(rig, name) || !Object.hasOwn(exported, name))
     )
   ) : previous.rig;
   const metadata = {
-    ...plain(previous.metadata) ? previous.metadata : {},
+    ...plain2(previous.metadata) ? previous.metadata : {},
     ...asset.metadata
   };
   const visual = {
@@ -5128,9 +5335,10 @@ function littlewildVisual(asset, models, existing) {
     models: finalModels,
     metadata,
     ...previous.behaviors === void 0 ? {} : { behaviors: previous.behaviors },
-    ...finalRig === void 0 || plain(finalRig) && !Object.keys(finalRig).length ? {} : { rig: finalRig },
-    ...Object.keys(meshes).length ? { meshes } : {}
+    ...finalRig === void 0 || plain2(finalRig) && !Object.keys(finalRig).length ? {} : { rig: finalRig },
+    ...Object.keys(finalMeshes).length ? { meshes: finalMeshes } : {}
   };
+  assertLittlewildComplexity(visual);
   return { visual, report, warnings: [...warnings] };
 }
 async function readDefinition(file) {
@@ -5141,7 +5349,7 @@ async function readDefinition(file) {
     throw error;
   }
   const value = await readJson(file);
-  if (!plain(value)) fail("LITTLEWILD_EXPORT", `${file} is not a Littlewild definition.`);
+  if (!plain2(value)) fail("LITTLEWILD_EXPORT", `${file} is not a Littlewild definition.`);
   return value;
 }
 async function writeLittlewildAsset(asset, models, file, options = {}) {
@@ -5194,7 +5402,7 @@ async function writeLittlewildAsset(asset, models, file, options = {}) {
 import * as THREE12 from "three";
 
 // src/application/littlewild-materials.ts
-var plain2 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+var plain3 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
 var fields = /* @__PURE__ */ new Set([
   "color",
   "roughness",
@@ -5217,11 +5425,11 @@ function importedMaterials(materials, used) {
   const byValue = /* @__PURE__ */ new Map();
   return (role, props, nodeId, mesh) => {
     const base = Object.hasOwn(materials, role) ? materials[role] : role;
-    if (props !== void 0 && !plain2(props))
+    if (props !== void 0 && !plain3(props))
       fail("LITTLEWILD_IMPORT", `Node ${nodeId} materialProps must be an object.`);
     const data = {
-      ...typeof base === "string" ? { color: base } : plain2(base) ? base : {},
-      ...plain2(props) ? props : {}
+      ...typeof base === "string" ? { color: base } : plain3(base) ? base : {},
+      ...plain3(props) ? props : {}
     };
     const unsupported = (field, reason) => fail(
       "LITTLEWILD_MATERIAL_UNSUPPORTED",
@@ -5259,7 +5467,7 @@ function importedMaterials(materials, used) {
       "-"
     );
     const prefix = /^[A-Za-z]/.test(stem) ? stem : `m${stem}`;
-    const hasOverride = plain2(props) && Object.keys(props).length > 0;
+    const hasOverride = plain3(props) && Object.keys(props).length > 0;
     let id = `${prefix.slice(0, hasOverride ? 32 : 64)}${hasOverride ? `-${nodeId.slice(0, 30)}` : ""}`;
     const start = id;
     let collision = 1;
@@ -5271,12 +5479,16 @@ function importedMaterials(materials, used) {
 }
 
 // src/application/littlewild-import.ts
-var plain3 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+var plain4 = (value) => !!value && typeof value === "object" && !Array.isArray(value);
 var degrees = (value) => Number(THREE12.MathUtils.radToDeg(value).toFixed(4));
 var triples = (values, step) => {
   const out = [];
   for (let i = 0; i < values.length; i += 3)
-    out.push([0, 1, 2].map((k) => Number((Math.round(values[i + k] / step) * step).toFixed(5))));
+    out.push(
+      [0, 1, 2].map(
+        (k) => step === void 0 ? values[i + k] : Number((Math.round(values[i + k] / step) * step).toFixed(5))
+      )
+    );
   return out;
 };
 function bake(geometry) {
@@ -5302,14 +5514,14 @@ function forgeId(value, fallback) {
 }
 var camel = (value) => value.replace(/[-_]+([a-z0-9])/g, (_, c) => c.toUpperCase()).replace(/[^A-Za-z0-9]/g, "");
 function littlewildImportPlan(asset, prefix) {
-  if (asset.format !== "littlewild-3d-asset" || asset.schemaVersion !== 1 || !plain3(asset.models))
+  if (asset.format !== "littlewild-3d-asset" || asset.schemaVersion !== 1 || !plain4(asset.models))
     fail("LITTLEWILD_IMPORT", "Expected a littlewild-3d-asset visual definition.");
-  const base = forgeId(prefix ?? camel(String(asset.id)), "littlewild"), meshes = plain3(asset.meshes) ? asset.meshes : {}, materials = plain3(asset.materials) ? asset.materials : {}, rig = asset.category === "pet" && plain3(asset.rig) ? asset.rig : {};
+  const base = forgeId(prefix ?? camel(String(asset.id)), "littlewild"), meshes = plain4(asset.meshes) ? asset.meshes : {}, materials = plain4(asset.materials) ? asset.materials : {}, rig = asset.category === "pet" && plain4(asset.rig) ? asset.rig : {};
   const roles = new Set(littlewildPetRoles);
   const models = {};
   const variantModels = [];
   for (const [variant, model] of Object.entries(asset.models)) {
-    if (!plain3(model) || !Array.isArray(model.nodes))
+    if (!plain4(model) || !Array.isArray(model.nodes))
       fail("LITTLEWILD_IMPORT", `Variant ${variant} has no nodes.`);
     const suffix = camel(`-${variant}`);
     const id = `${base.slice(0, Math.max(1, 64 - suffix.length))}${suffix}`.slice(0, 64);
@@ -5319,15 +5531,15 @@ function littlewildImportPlan(asset, prefix) {
         `Variants collide at model ID ${id}. Choose distinct variant names or a shorter prefix.`
       );
     variantModels.push([variant, id]);
-    const geometries = { box: { type: "box", size: [1, 1, 1] } }, usedMaterials = {}, nodes = [], ids = /* @__PURE__ */ new Set(), tags = /* @__PURE__ */ new Map();
-    for (const [role, refs] of Object.entries(plain3(rig[variant]) ? rig[variant] : {}))
+    const geometries = { box: { type: "box", size: [1, 1, 1] } }, usedMaterials = {}, nodes2 = [], ids = /* @__PURE__ */ new Set(), tags = /* @__PURE__ */ new Map();
+    for (const [role, refs] of Object.entries(plain4(rig[variant]) ? rig[variant] : {}))
       if (roles.has(role))
         for (const ref of Array.isArray(refs) ? refs : [refs])
           tags.set(String(ref), [...tags.get(String(ref)) ?? [], `rig:${role}`]);
     const resolveMaterial = importedMaterials(materials, usedMaterials);
     let counter = 0;
     const visit = (input, parent) => {
-      if (!plain3(input)) return;
+      if (!plain4(input)) return;
       const primitive = String(input.primitive), lwId = typeof input.id === "string" ? input.id : void 0;
       let nodeId = forgeId(lwId ?? `${primitive}${++counter}`, `node${++counter}`);
       while (ids.has(nodeId)) nodeId = `${nodeId.slice(0, 58)}${++counter}`;
@@ -5353,7 +5565,7 @@ function littlewildImportPlan(asset, prefix) {
         if (!geometries[geometryId]) {
           if (primitive === "mesh") {
             const data = meshes[String(input.mesh)];
-            if (!plain3(data) || !Array.isArray(data.positions))
+            if (!plain4(data) || !Array.isArray(data.positions))
               fail("LITTLEWILD_IMPORT", `Missing mesh ${String(input.mesh)}.`);
             const positions = data.positions;
             if (data.uvs !== void 0 && (!Array.isArray(data.uvs) || data.uvs.length !== positions.length / 3 * 2 || data.uvs.some(
@@ -5365,7 +5577,7 @@ function littlewildImportPlan(asset, prefix) {
               );
             geometries[geometryId] = {
               type: "mesh",
-              positions: triples(positions, 1e-5),
+              positions: triples(positions),
               indices: Array.isArray(data.indices) ? data.indices : Array.from({ length: positions.length / 3 }, (_, i) => i),
               ...Array.isArray(data.uvs) ? {
                 uvs: Array.from({ length: positions.length / 3 }, (_, i) => [
@@ -5373,7 +5585,7 @@ function littlewildImportPlan(asset, prefix) {
                   data.uvs[i * 2 + 1]
                 ])
               } : {},
-              ...Array.isArray(data.normals) ? { normals: triples(data.normals, 1e-4) } : {}
+              ...Array.isArray(data.normals) ? { normals: triples(data.normals) } : {}
             };
           } else geometries[geometryId] = bake(primitiveGeometry(primitive));
         }
@@ -5381,13 +5593,13 @@ function littlewildImportPlan(asset, prefix) {
         const materialId = resolveMaterial(role, input.materialProps, nodeId, primitive === "mesh");
         Object.assign(node, { geometry: geometryId, material: materialId });
       }
-      nodes.push(node);
+      nodes2.push(node);
       for (const child of Array.isArray(input.children) ? input.children : []) visit(child, nodeId);
     };
     for (const node of model.nodes) visit(node);
     if (!Object.values(usedMaterials).length)
       fail("LITTLEWILD_IMPORT", `Variant ${variant} has no geometry.`);
-    const used = new Set(nodes.map((n) => n.geometry).filter(Boolean));
+    const used = new Set(nodes2.map((n) => n.geometry).filter(Boolean));
     models[id] = {
       schemaVersion: 1,
       kind: "model",
@@ -5397,7 +5609,7 @@ function littlewildImportPlan(asset, prefix) {
       description: `Imported from Littlewild ${String(asset.category)}:${String(asset.id)}/${variant}.`,
       geometries: Object.fromEntries(Object.entries(geometries).filter(([k]) => used.has(k))),
       materials: usedMaterials,
-      nodes
+      nodes: nodes2
     };
   }
   return { models, variantModels: Object.fromEntries(variantModels) };

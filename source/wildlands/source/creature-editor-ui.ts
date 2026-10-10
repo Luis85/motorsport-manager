@@ -30,7 +30,7 @@
   document.addEventListener('submit',submit,{signal:lifecycle.signal});document.addEventListener('click',click,{signal:lifecycle.signal});document.addEventListener('change',change,{signal:lifecycle.signal});
   input.addEventListener('change',async()=>{const file=input.files?.[0];if(!file||!session)return;const token=++readId,owner=session,revision=owner.revision;
    const current=():boolean=>token===readId&&session===owner&&owner.revision===revision&&ctx.modal()==='creature-editor';
-   try{if(file.size>2*1024*1024)throw Error('Creature packages must be smaller than 2 MiB.');const value=await file.text();if(!current())return;owner.importPackage(value);errors=[];nodeId='';redraw('Imported a validated creature package. The active story is unchanged.');}catch(error){if(current())fail(error);}finally{if(token===readId)input.value='';}
+   try{if(file.size>root.LWCreatureEditor.MAX_PACKAGE_BYTES)throw Error('Creature packages must be at most 8 MiB.');const value=await file.text();if(!current())return;owner.importPackage(value);errors=[];nodeId='';redraw('Imported a validated creature package. The active story is unchanged.');}catch(error){if(current())fail(error);}finally{if(token===readId)input.value='';}
   },{signal:lifecycle.signal});
   return {get session(){return session;},open,render,draw,cancelRead(){readId++;disposePreview();},reset(){readId++;disposePreview();session=null;errors=[];notice='';},dispose(){readId++;disposePreview();lifecycle.abort();input.remove();session=null;}};
  }

@@ -1,3 +1,4 @@
+import { authoredMeshBuffers } from './mesh-source.js';
 import * as THREE from 'three';
 import { unchangedNative } from './littlewild-native.js';
 import type { SurfaceSpec } from '../domain/schema.js';
@@ -56,6 +57,8 @@ export const littlewildLimits = {
   meshVertices: 8192,
   meshTriangles: 16384,
   definitionVertices: 40000,
+  definitionValues: 400000,
+  definitionDepth: 32,
 };
 /** Presentation roles the Littlewild pet renderer understands. Tag a node `rig:<role>` to bind it. */
 export const littlewildPetRoles = [
@@ -206,7 +209,7 @@ function meshData(geometry: THREE.BufferGeometry, label: string): LittlewildMesh
     for (let i = 0; i < vertices; i++) result.uvs.push(...vector([uv.getX(i), uv.getY(i)], 1e-5));
   }
   if (geometry.index) result.indices = Array.from(geometry.index.array as ArrayLike<number>);
-  return result;
+  return { ...result, ...authoredMeshBuffers(geometry) };
 }
 /** Compiled geometries are plain buffers, so a box is recognised by its exact centered corners. */
 function boxSize(geometry: THREE.BufferGeometry): number[] | null {
@@ -299,7 +302,15 @@ export function littlewildModel(root: THREE.Object3D, options: { rig: boolean })
         let meshId = meshIds.get(geometry);
         if (!meshId) {
           const data = meshData(geometry, String(object.userData.forgePath ?? id));
-          meshId = `m-${hash(JSON.stringify(data))}`;
+          const content = JSON.stringify(data),
+            base = `m-${hash(content)}`;
+          meshId = base;
+          for (
+            let collision = 2;
+            meshes[meshId] && JSON.stringify(meshes[meshId]) !== content;
+            collision++
+          )
+            meshId = `${base}-${collision}`;
           meshIds.set(geometry, meshId);
           if (!meshes[meshId]) {
             meshes[meshId] = data;

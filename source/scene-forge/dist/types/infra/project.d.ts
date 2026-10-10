@@ -34,6 +34,12 @@ export declare const newScene: (id: string, name?: string) => {
         taper: import("../domain/schema.js").ScalarValue;
         bend: import("../domain/schema.js").ScalarValue;
         segments: number;
+        profile?: {
+            at: import("../domain/schema.js").ScalarValue;
+            width: import("../domain/schema.js").ScalarValue;
+            depth: import("../domain/schema.js").ScalarValue;
+            offset: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        }[] | undefined;
     } | {
         type: "cylinder";
         radiusTop: import("../domain/schema.js").ScalarValue;
@@ -112,6 +118,7 @@ export declare const newScene: (id: string, name?: string) => {
             seed: number;
             scale: number;
             strength: number;
+            version?: 1 | 2 | undefined;
         } | undefined;
         sheen?: number | undefined;
         sheenColor?: string | undefined;
@@ -339,6 +346,12 @@ export declare function loadProjectScenes(start: string): Promise<{
             taper: import("../domain/schema.js").ScalarValue;
             bend: import("../domain/schema.js").ScalarValue;
             segments: number;
+            profile?: {
+                at: import("../domain/schema.js").ScalarValue;
+                width: import("../domain/schema.js").ScalarValue;
+                depth: import("../domain/schema.js").ScalarValue;
+                offset: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            }[] | undefined;
         } | {
             type: "cylinder";
             radiusTop: import("../domain/schema.js").ScalarValue;
@@ -417,6 +430,7 @@ export declare function loadProjectScenes(start: string): Promise<{
                 seed: number;
                 scale: number;
                 strength: number;
+                version?: 1 | 2 | undefined;
             } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;
@@ -679,6 +693,12 @@ export declare function importModel(start: string, input: unknown, replace?: boo
             taper: import("../domain/schema.js").ScalarValue;
             bend: import("../domain/schema.js").ScalarValue;
             segments: number;
+            profile?: {
+                at: import("../domain/schema.js").ScalarValue;
+                width: import("../domain/schema.js").ScalarValue;
+                depth: import("../domain/schema.js").ScalarValue;
+                offset: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            }[] | undefined;
         } | {
             type: "cylinder";
             radiusTop: import("../domain/schema.js").ScalarValue;
@@ -757,6 +777,7 @@ export declare function importModel(start: string, input: unknown, replace?: boo
                 seed: number;
                 scale: number;
                 strength: number;
+                version?: 1 | 2 | undefined;
             } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;
@@ -986,6 +1007,12 @@ export declare function captureProjectModel(start: string, sceneId: string | und
             taper: import("../domain/schema.js").ScalarValue;
             bend: import("../domain/schema.js").ScalarValue;
             segments: number;
+            profile?: {
+                at: import("../domain/schema.js").ScalarValue;
+                width: import("../domain/schema.js").ScalarValue;
+                depth: import("../domain/schema.js").ScalarValue;
+                offset: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            }[] | undefined;
         } | {
             type: "cylinder";
             radiusTop: import("../domain/schema.js").ScalarValue;
@@ -1064,6 +1091,7 @@ export declare function captureProjectModel(start: string, sceneId: string | und
                 seed: number;
                 scale: number;
                 strength: number;
+                version?: 1 | 2 | undefined;
             } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;

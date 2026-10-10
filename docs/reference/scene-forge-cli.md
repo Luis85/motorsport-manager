@@ -324,6 +324,35 @@ lower values fill out the form), `taper` is −0.65–0.65 (positive narrows the
 The default has 561 vertices; the maximum has 4,753. Organic forms export as
 baked Littlewild meshes and ordinary GLB meshes.
 
+An optional `profile` gives agents editable crosssections for a belly, waist,
+cheek, ear or closed garment form. Supply 2–12 stations ordered from `at: -1`
+(bottom) to `at: 1` (top), separated by at least 0.02. Each station has `width`
+and `depth` multipliers (0.1–2) and optional `offset: [x,z]` (−0.75–0.75,
+default `[0,0]`). Offsets use half the corresponding size; the profile composes
+with taper and bend. Smoothstep interpolation never overshoots these values,
+and each station gets an exact mesh ring. Width/depth multiply the closed
+base shape, so the endpoints remain poles. Profiles use at most 5,723 vertices.
+This is a closed sculpted form, not an open cloth sheet or a boolean eye socket.
+
+```json
+{
+"type": "organic", "size": [1, 2, 1],
+"profile": [
+  {"at": -1, "width": 1, "depth": 1},
+  {"at": -0.35, "width": 1.12, "depth": 1.15, "offset": [0, 0.12]},
+  {"at": 0.35, "width": 0.75, "depth": 0.8},
+  {"at": 1, "width": 0.65, "depth": 0.7, "offset": [0.1, -0.08]}
+]
+}
+```
+
+Use a complete `putGeometry` to update the existing geometry ID while retaining
+its nodes, rig tags and material roles. `putGeometry` replaces the full definition:
+start from `inspect --source`, preserve other fields, dry-run with revision/state
+guards, inspect bounds, then compare a fixed `review --file` across edits.
+Littlewild/GLB preserve the resulting silhouette and UVs as baked geometry;
+retain the Forge recipe to edit profile stations again.
+
 Standard PBR materials accept a versioned deterministic surface recipe:
 
 ```json
@@ -339,6 +368,9 @@ Standard PBR materials accept a versioned deterministic surface recipe:
 All four surface fields are required. Kinds are `fur`, `cloth`, `leather`; seed
 is an integer 0–65535, scale is UV repeat 1–16, and strength is 0–1. The
 `littlewild-surface-v1` algorithm creates 128×128 color and tangent normal maps.
+Optional `version: 2` chooses fine directional fur fibres, woven yarn and subtle
+leather grain (`littlewild-surface-v2`). Omitted version or `version: 1` retains
+the original pixels exactly. The inspector exposes this as Detail style.
 GLB/glTF embeds PNGs, mesh tangents, UV transforms and recipe metadata without
 requiring Chromium. Littlewild retains the recipe, per-node effective material
 roles and mesh UVs. Unlit surfaces reject this detail instead of silently ignoring
@@ -348,10 +380,10 @@ spherical projection; authored seam-aware UVs give precise placement.
 These maps shade short fur and fabric detail. Silhouette volume, tufts, eyelids,
 clothing thickness and facial proportions still require geometry. Use a complete
 batch with revision/state guards, inspect the dry run, apply the same batch, and
-compare `review --plan previous/replay-plan.json` captures. The material inspector
+compare `review --file previous/replay-plan.json` captures. The material inspector
 edits the same fields and downloads guarded recipe changes.
 
-Surface maps are shared across colors with the same kind/seed/scale/strength. A
+Surface maps are shared across colors with the same version/kind/seed/scale/strength. A
 scene allows at most 256 distinct surface recipes; exceeding it fails with
 `SCENE_BUDGET` before publication. Reuse seeds and scales when changing only color.
 
@@ -936,3 +968,21 @@ and notice texts of every bundled package. For development without rebuilding,
   [code quality map](../../source/scene-forge/docs/CODE_QUALITY.md).
 - [Contributor instructions](../../source/scene-forge/AGENTS.md) and
   [third-party notices](../../source/scene-forge/THIRD_PARTY_NOTICES.md).
+
+
+### Maintaining shared Littlewild meshes
+
+A material-only refinement preserves the exact authored mesh buffers, including
+positions, normals, UVs and indices. Export reuses equal buffers across retained
+variants and removes unreferenced mesh resources. Equality includes all buffers:
+small shape changes or different UV placement remain distinct. Mesh names are
+collision-safe; an existing ID never silently replaces a different retained mesh.
+Keep the original definition wrapper when replacing one variant so gameplay,
+rig bindings and other variants remain available.
+
+The complete exported visual is checked against the engine's **400,000 JSON
+values and depth 32** limits, in addition to per-mesh and total vertex budgets.
+This counts every JSON value, not only mesh numbers. An over-budget export fails
+with `LITTLEWILD_BUDGET` before writing; reduce segments, reuse geometry or remove
+unneeded variants. Dry-run and then export the same source. Repeated material
+refinements do not accumulate copies of unchanged authored mesh data.

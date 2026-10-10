@@ -141,6 +141,7 @@ func _surface(result: StandardMaterial3D, descriptor: Dictionary) -> void:
 			or int(entry.surface.seed) != int(descriptor.seed)
 			or float(entry.surface.scale) != float(descriptor.scale)
 			or float(entry.surface.strength) != float(descriptor.strength)
+			or int(entry.surface.get("version", 1)) != int(descriptor.get("version", 1))
 		):
 			continue
 		for role in ["color", "normal"]:
@@ -152,6 +153,7 @@ func _surface(result: StandardMaterial3D, descriptor: Dictionary) -> void:
 					return
 				image.generate_mipmaps()
 				surface_textures[path] = ImageTexture.create_from_image(image)
+		result.set_meta("surface_algorithm", entry.get("algorithm", "littlewild-surface-v1"))
 		result.albedo_texture = surface_textures["res://" + str(entry.color)]
 		result.normal_enabled = true
 		result.normal_texture = surface_textures["res://" + str(entry.normal)]

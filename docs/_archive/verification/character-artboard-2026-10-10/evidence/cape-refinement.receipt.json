@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "format": "littlewild-cape-refinement-evidence",
+  "schemaVersion": 1,
+  "engineExecutableSha256": "bb11f00ce951734ac4393d41fcf1dbaced51c61b965d40822e0d34be203b586c",
+  "sourceProjectSha256": "a430bc5f4764dd4df4e783c1c0132a8497dd59a041f6c3e1130c24e46c2f2eae",
+  "sourceFingerprint": "d0101f50cf32aaf0",
+  "refinedFingerprint": "f4c20202e466d886",
+  "definitionSha256": "e4aac9a5233110c3597bd42f97ea099429a573829d49c7dbf77a4c1fb949bac5",
+  "sourceMeshValues": 288032,
+  "refinedMeshValues": 285368,
+  "sourceMeshes": 48,
+  "refinedMeshes": 47,
+  "dryRunMatchesPublished": true,
+  "sourceInputsUnchanged": true,
+  "preserved": [
+    "gameplay",
+    "assetReferences",
+    "rig"
+  ],
+  "publishedProjectBytes": 9217964,
+  "exportedPackageSha256": "38cbd73914fe6cabe512ad2aaf49ba8233c57a3d06ade49bda44a812667d9ad8",
+  "jsonValueLimit": 400000,
+  "sourceJsonValues": 295052,
+  "refinedJsonValues": 292024
+}

@@ -1,7 +1,8 @@
+import type {PreviewConfiguration} from '../application/preview-configuration.js';
 import { createCharacter, validateCharacter, type Character } from '../domain/character.js';
 import { EditorSession } from '../application/transactions.js';
 
-declare global { interface Window { __STUDIO__?: { server?: boolean; token?: string; storageKey?: string; initial?: Character; preview?: {mode?: 'studio'|'world'|'portrait'; light?: 'studio'|'daylight'|'night'; pose?: 'idle'|'walk'|'work'|'celebrate'; camera?: 'front'|'side'|'back'} }; characterStudio: unknown } }
+declare global { interface Window { __STUDIO__?: { server?: boolean; token?: string; storageKey?: string; initial?: Character; preview?: PreviewConfiguration }; characterStudio: unknown } }
 type Saved = { character: Character; revision: number; stateHash: string };
 type Working = { character: Character; committed: boolean; thumbnail?: string; revision?: number; stateHash?: string; dirty?: boolean };
 export class StudioState {

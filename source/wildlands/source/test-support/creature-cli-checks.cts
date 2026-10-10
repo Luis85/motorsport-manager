@@ -56,6 +56,24 @@ export function creatureChecks(test:Test, run:Run, directory:string, project:str
   assert.deepEqual(authored.pack.scenes,initial.pack.scenes);assert.equal(run(['validate','--project',refined]).status,0);
   assert.deepEqual(fs.readFileSync(project),source);
  });
+ test('Creature CLI admits bounded large mesh packages and visuals without widening recipe or generic JSON limits',()=>{
+  const info=run(['creature','discover']);assert.equal(info.out.maxPackageBytes,8*1024*1024);assert.equal(info.out.maxVisualBytes,8*1024*1024);
+  const inspect=run(['creature','inspect','--project',project,'--archetype','sproutling']);
+  const packaged=inspect.out.package as {appearanceManifest:{meshes?:Record<string,unknown>;materials:Record<string,unknown>;models:Record<string,{nodes:unknown[]}>}};
+  const visual=packaged.appearanceManifest;visual.meshes={};
+  for(let mesh=0;mesh<4;mesh++)visual.meshes['fidelity'+mesh]={positions:Array.from({length:8190*3},(_,i)=>Math.sin(i/7)*.12345678901234567),normals:Array.from({length:8190*3},(_,i)=>i%3===2?1:0),uvs:Array.from({length:8190*2},(_,i)=>i%2===0?.12345678901234567:.9876543210987654)};
+  Object.values(visual.models)[0]!.nodes.push({id:'fidelity-mesh',primitive:'mesh',mesh:'fidelity0',material:Object.keys(visual.materials)[0]});
+  const large=file('large-mesh-package');fs.writeFileSync(large,JSON.stringify(packaged,null,2));assert(fs.statSync(large).size>4*1024*1024);assert(fs.statSync(large).size<8*1024*1024);
+  const imported=file('large-mesh-project'),args=['creature','import','--project',project,'--file',large,'--replace','--expected-fingerprint',String(inspect.out.fingerprint)];
+  assert.equal(run([...args,'--output',imported]).status,0);assert.equal(run(['validate','--project',imported]).status,0);
+  const summary=run(['creature','inspect','--project',imported,'--archetype','sproutling','--summary']);assert.equal(summary.status,0);
+  const raw=file('large-mesh-visual');fs.writeFileSync(raw,JSON.stringify(visual,null,2));assert(fs.statSync(raw).size>2*1024*1024);
+  assert.equal(run(['creature','attach-visual','--project',imported,'--archetype','sproutling','--file',raw,'--expected-fingerprint',String(summary.out.fingerprint),'--dry-run']).status,0);
+  const over=file('oversize-package');fs.writeFileSync(over,' '.repeat(8*1024*1024+1));const destination=file('oversize-output');const rejected=run(args.map(value=>value===large?over:value).concat(['--output',destination]));assert.equal(rejected.status,2);assert.match(String(rejected.out.errors),/8388608/);assert(!fs.existsSync(destination));
+  const recipe=file('oversize-recipe');fs.writeFileSync(recipe,' '.repeat(1024*1024+1));assert.equal(run(['creature','edit','--project',project,'--archetype','sproutling','--recipe',recipe,'--expected-fingerprint',String(inspect.out.fingerprint),'--dry-run']).status,2);
+  const content=require('../content-runtime.js') as {parse(input:unknown,limit:number):unknown};assert.throws(()=>content.parse(fs.readFileSync(large,'utf8'),2*1024*1024),/file size limit/);
+  assert.deepEqual(fs.readFileSync(project),source);
+ });
  test('Creature CLI rejects stale guards, implicit replacement, invalid batches and occupied outputs atomically',()=>{
   const inspected=run(['creature','inspect','--project',project,'--archetype','sproutling']);
   const fingerprint=String(inspected.out.fingerprint),value=inspected.out.package as {gameplayDefinition:{name:string}};

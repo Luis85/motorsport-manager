@@ -25,7 +25,7 @@ export function createStage() {
     mesh.scale.set(...scale as [number, number, number]); mesh.rotation.y = rotation;
     mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh;
   }
-  const ground = piece(root, 'box', '#738057', [0, -6.02, 0], [200, 12, 200]);
+  const ground = piece(root, 'box', '#d9c9ac', [0, -6, 0], [200, 12, 200]);
   ground.castShadow = false;
   // World-only worn stones keep the studio silhouette clear and the path organic.
   for (let row = -12; row <= 5; row++) {
@@ -129,10 +129,14 @@ export function createStage() {
     }
   }
   batch(root); batch(woodland);
+  let world = false, night = false;
+  function groundColor() {
+    (ground.material as THREE.MeshStandardMaterial).color.set(night ? '#52605b' : world ? '#929778' : '#d9c9ac');
+  }
   return {
     root,
-    setWorld(world: boolean) { woodland.visible = world; },
-    setLight(night: boolean) { glow.intensity = night ? .8 : .18; glassMaterial.emissiveIntensity = night ? 2 : .65; },
+    setWorld(value: boolean) { world = value; woodland.visible = world; groundColor(); },
+    setLight(value: boolean) { night = value; groundColor(); glow.intensity = night ? .8 : .18; glassMaterial.emissiveIntensity = night ? 2 : .65; },
     dispose() {
       Object.values(geometry).forEach(value => value.dispose());
       merged.forEach(value => value.dispose());

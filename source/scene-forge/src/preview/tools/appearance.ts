@@ -45,6 +45,10 @@ export const materialTool: EditorTool = {
       ['cloth', 'Woven cloth'],
       ['leather', 'Soft leather'],
     ]);
+    const detailVersion = select(surface, 'Detail style', [
+      ['1', 'Original'],
+      ['2', 'Fine detail'],
+    ]);
     const detailSeed = input(surface, 'Detail seed', 'number', '7', {
       min: '0',
       max: '65535',
@@ -84,6 +88,7 @@ export const materialTool: EditorTool = {
           material[key as keyof MaterialSpec] ?? (key === 'sheenRoughness' ? 1 : 0),
         );
       detail.value = material.surface?.kind ?? 'none';
+      detailVersion.value = String(material.surface?.version ?? 1);
       detailSeed.value = String(material.surface?.seed ?? 7);
       detailScale.value = String(material.surface?.scale ?? 3);
       detailStrength.value = String(material.surface?.strength ?? 0.4);
@@ -119,6 +124,11 @@ export const materialTool: EditorTool = {
           ...(hasDetail
             ? {
                 surface: {
+                  ...(detailVersion.value === '2'
+                    ? { version: 2 as const }
+                    : previousSurface?.version === 1
+                      ? { version: 1 as const }
+                      : {}),
                   kind: detail.value as 'fur' | 'cloth' | 'leather',
                   seed: detailSeed.valueAsNumber,
                   scale: detailScale.valueAsNumber,

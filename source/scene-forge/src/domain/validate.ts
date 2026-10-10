@@ -11,11 +11,13 @@ import {
 } from './schema.js';
 
 /** Resolved recipes contain numeric scalars, while retaining their discriminated unions and tuples. */
-export type Resolved<T> = T extends ScalarValue
-  ? number
-  : T extends object
-    ? { [K in keyof T]: Resolved<T[K]> }
-    : T;
+export type Resolved<T> = T extends number
+  ? T
+  : T extends ScalarValue
+    ? number
+    : T extends object
+      ? { [K in keyof T]: Resolved<T[K]> }
+      : T;
 
 export function resolveData<T>(value: T, params: Record<string, number>): Resolved<T> {
   if (Array.isArray(value)) return value.map((v) => resolveData(v, params)) as Resolved<T>;
@@ -183,6 +185,25 @@ export function validateDocument(
       ] as const)
         if (g[field] < min || g[field] > max)
           fail('INVALID_GEOMETRY', `${id}.${field} must be between ${min} and ${max}.`);
+      if (g.profile) {
+        if (g.profile[0].at !== -1 || g.profile.at(-1)!.at !== 1)
+          fail('INVALID_GEOMETRY', `${id}.profile must start at -1 and end at 1.`);
+        for (const [index, station] of g.profile.entries()) {
+          if (
+            station.at < -1 ||
+            station.at > 1 ||
+            (index > 0 && station.at - g.profile[index - 1].at < 0.02 - 1e-12)
+          )
+            fail(
+              'INVALID_GEOMETRY',
+              `${id}.profile heights must increase by at least 0.02 within -1..1.`,
+            );
+          if ([station.width, station.depth].some((value) => value < 0.1 || value > 2))
+            fail('INVALID_GEOMETRY', `${id}.profile width/depth must be between 0.1 and 2.`);
+          if (station.offset.some((value) => value < -0.75 || value > 0.75))
+            fail('INVALID_GEOMETRY', `${id}.profile offset must be between -0.75 and 0.75.`);
+        }
+      }
     }
     if (g.type === 'tube') {
       if (g.closed && g.points.length < 3)

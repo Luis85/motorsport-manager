@@ -12,7 +12,7 @@ export function createPortraits(renderer: THREE.WebGLRenderer, environment: THRE
     if (cached) { cache.delete(key); cache.set(key, cached); return cached; }
     const scene = new THREE.Scene();
     scene.background = new THREE.Color('#eee9d9');
-    scene.environment = environment; scene.environmentIntensity = .42;
+    scene.environment = environment; scene.environmentIntensity = .65;
     const resources = createRenderKit();
     const visual = compileVisual(character);
     const appearance = Object.values(visual.behaviors.appearances)[0] as {model: string; materials: Record<string, unknown>; scale: number[]};
@@ -31,8 +31,9 @@ export function createPortraits(renderer: THREE.WebGLRenderer, environment: THRE
       const half = height * .47;
       const camera = new THREE.OrthographicCamera(-half, half, half, -half, .01, 20);
       camera.position.set(.25, height * .72, 4); camera.lookAt(0, height * .64, 0);
-      scene.add(new THREE.HemisphereLight('#fff1d6', '#a3a385', .95));
-      const light = new THREE.DirectionalLight('#ffe8ca', 1.6); light.position.set(-3, 5, 5); scene.add(light);
+      scene.add(new THREE.HemisphereLight('#fff7ed', '#c3b4a4', 1.25));
+      const light = new THREE.DirectionalLight('#ffeacc', 2.3); light.position.set(-3, 5, 5); scene.add(light);
+      const rim = new THREE.DirectionalLight('#ffe1a3', 1.25); rim.position.set(2, 3, -3); scene.add(rim);
       renderer.setSize(144, 144, false); renderer.render(scene, camera);
       const png = renderer.domElement.toDataURL('image/png');
       cache.set(key, png);

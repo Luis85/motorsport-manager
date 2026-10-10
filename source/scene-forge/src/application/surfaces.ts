@@ -3,14 +3,16 @@ import type { SurfaceSpec } from '../domain/schema.js';
 import { fail } from '../domain/errors.js';
 import { canonical } from '../domain/canonical.js';
 import { uuid } from '../domain/identity.js';
-import { generateSurface, surfaceAlgorithm } from './surface-pattern.js';
+import { generateSurface, resolveSurfaceAlgorithm } from './surface-pattern.js';
 
 export const maxSurfaceRecipes = 256;
 /** One compilation/view owns a bounded map pool shared across material colors. */
 export function createSurfacePool() {
   const recipes = new Map<string, { color: THREE.DataTexture; normal: THREE.DataTexture }>();
   function apply(material: THREE.MeshStandardMaterial, surface: SurfaceSpec) {
-    const key = `${surfaceAlgorithm}/${canonical(surface)}`;
+    const { version, ...legacy } = surface;
+    const surfaceAlgorithm = resolveSurfaceAlgorithm(surface);
+    const key = `${surfaceAlgorithm}/${canonical(version === 1 ? legacy : surface)}`;
     let maps = recipes.get(key);
     if (!maps) {
       if (recipes.size >= maxSurfaceRecipes)
