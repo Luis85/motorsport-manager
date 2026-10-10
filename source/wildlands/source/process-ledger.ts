@@ -31,7 +31,8 @@
  * Working hours: a definition with `workingHours` adds a seventh state, `closed`. The clock books every minute outside working
  * time with `closed(minutes)` instead of `charge`: no pool rate or cost, the work-in-progress area as usual, each step's tokens to
  * that step's `closed` minutes and each live case's minutes to its `closed` lead minutes, whatever their status. `minutesBy` and
- * `leadTime` report `closed` only for such a definition, so other snapshots keep their exact shape.
+ * `leadTime` report `closed` only for such a definition, so other snapshots keep their exact shape. Lead times (cycles, the fine
+ * distributions and the exact percentiles of LWProcessLedgerExact) stay elapsed minutes from arrival to finish, closed minutes included.
  */
 declare namespace LWProcess {
  /** Read-model extensions of the run ledger (LWProcessLedger); never read by the engine. */

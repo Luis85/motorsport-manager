@@ -2,6 +2,7 @@
 /// <reference path="./process-inspector.ts" />
 /// <reference path="./process-dashboard-model.ts" />
 /// <reference path="./process-dashboard-window.ts" />
+/// <reference path="./process-json-path.ts" />
 /**
  * Working hours in the views (business-process-analysis): the inspector's Working hours row, throughput and pool wording, the slide
  * deck's reading note, the Dashboard's lead-time note, and utilisation over working minutes in the Dashboard window and What-if
@@ -12,7 +13,9 @@ import {replicate, slides} from './process-sdk.cjs';
 import {test, application, copy, build, stepOf, flowOf, startEnd} from './test-process-helpers.cjs';
 import {demo} from './test-process-dashboard.cjs';
 require('./process-inspector.js');
-const root = globalThis as unknown as {LWProcessInspector: LWProcessInspector.Api; LWProcessDashboardModel: LWProcessDashboardModel.Api;
+require('./process-json-path.js');
+const root = globalThis as unknown as {LWProcessInspector: LWProcessInspector.Api; LWProcessJsonPath: LWProcessJsonPath.Api;
+ LWProcessDashboardModel: LWProcessDashboardModel.Api;
  LWProcessDashboardWindow: LWProcessDashboardWindow.Api};
 const OFFICE: LWProcess.WorkingHours = {opensAt: 540, closesAt: 1020, daysPerWeek: 5};
 /** A clerk working 60 minutes on each case of a stream every `every` working minutes, under office hours. */
@@ -50,6 +53,10 @@ test('Inspector, slides and Dashboard say the run uses working hours, and only t
  assert.match(said!, /^This run uses working hours \(09:00–17:00, Monday to Friday\); minutes outside them count as neither work nor waiting: /);
  assert.match(said!, /: finished cases spent \d[\d,.]* min( \(≈ [\d.]+ h\))? on average outside them\.$/);
  assert(!notes(plain).some(n => /working hours/.test(n)));
+ const leadNotes = (input: typeof timed) => root.LWProcessDashboardModel.build(input).sections.flatMap(s => s.panels).find(p => p.id === 'lead')!.notes;
+ assert(leadNotes(timed).includes('With working hours, lead times and their percentiles count every elapsed minute, including the time outside them.'));
+ assert(!leadNotes(plain).some(n => /working hours/.test(n)));
+ assert.equal(root.LWProcessJsonPath.label(desk(), '/workingHours/closesAt'), 'Process › working hours › closesAt');
 });
 
 test('Dashboard and What-if windows count utilisation over working minutes, like the snapshot', () => {

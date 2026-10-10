@@ -86,6 +86,8 @@ declare namespace LWProcessDashboardPanels {
   if (id === 'lead') notes.push(`Mean lead time ${U.minutes(q.metrics.meanCycleMinutes, d)} (arrival to finish). Bins widen with duration.`);
   if (q.metrics.active > 0) notes.push(`${U.plural(q.metrics.active, t.one, t.many)} still in progress ${q.metrics.active === 1 ? 'is' : 'are'} not included.`);
   if (ranks.length) notes.push(kind(input, exact, exactly, n, t.many));
+  // Working hours: lead time (bins, mean and percentiles alike) is elapsed time, closed minutes included (LWProcessHours).
+  if (d.workingHours) notes.push('With working hours, lead times and their percentiles count every elapsed minute, including the time outside them.');
   let cum = 0;
   const rows: (string | number)[][] = counts.slice(first, last + 1).map((c, k) => {
    cum += c;
