@@ -10,6 +10,8 @@
  * Cancel stops after the current slice and keeps the partial results. `reset()` (process switch, apply, import) and `dispose()`
  * cancel a run and drop its results; a draft, definition or run-seed change after a run marks its results out of date.
  * Inputs are bounded (LWProcessDashboardWhatIf) and the Start button names why it is disabled. Nothing is written to storage.
+ * The dashboard's "Measure from minute W" arrives with `sync` and becomes each replication's warm-up (LWProcessReplicate `warmup`);
+ * a result computed with another warm-up is out of date like one computed for another definition.
  */
 declare namespace LWProcessDashboardWhatIfView {
  interface Env {
@@ -20,7 +22,8 @@ declare namespace LWProcessDashboardWhatIfView {
  }
  interface Surface {
   readonly element: HTMLElement;
-  sync(view: LWProcessApp.View, width: number, rem: number): void;
+  /** Follows the view, the panel width, the root font size in px and the dashboard's measuring start (`warmup`, 0 for none). */
+  sync(view: LWProcessApp.View, width: number, rem: number, warmup?: number): void;
   running(): boolean;
   cancel(): void;
   reset(): void;
@@ -40,7 +43,7 @@ declare namespace LWProcessDashboardWhatIfView {
  /** A replication runner; `advance(budget)` and `dispose()` are optional additions of a sliced runner. */
  type Runner = LWProcessReplicate.Runner<Report> & {advance?(budget: number): boolean; dispose?(): void};
  /** What a result was computed from: the applied fingerprint, the draft fingerprint (comparisons) and the run seed. */
- interface Key {a: string; b: string | null; seed: number}
+ interface Key {a: string; b: string | null; seed: number; warmup: number}
  interface Draft {changed: boolean; valid: boolean; definition: LWProcess.Definition | null; fingerprint: string}
  const SLICE_MS = 12, BUDGET = 1440, ANNOUNCE_MS = 2000;
  const STALE = '<p class="db-note db-stale" data-stale hidden>These results are out of date: the definition, the draft or the run seed changed since they ran. '
@@ -68,7 +71,7 @@ declare namespace LWProcessDashboardWhatIfView {
   const seed = $<HTMLInputElement>('#db-seed'), start = $<HTMLButtonElement>('#db-start'), cancel = $<HTMLButtonElement>('#db-cancel');
   const live = $('#db-progress'), bar = $<HTMLProgressElement>('#db-progress-bar'), results = $('#db-results');
   const spread = $<HTMLInputElement>('input[value=spread]'), compare = $<HTMLInputElement>('input[value=compare]');
-  let view: LWProcessApp.View | null = null, width = 600, rem = 16, dirty = new Set<string>(), frame = 0, announced = 0;
+  let view: LWProcessApp.View | null = null, width = 600, rem = 16, warm = 0, dirty = new Set<string>(), frame = 0, announced = 0;
   let job: {runner: Runner; key: Key} | null = null, last: {result: LWProcessDashboardWhatIf.Result; key: Key} | null = null;
   let cached: {text: string; draft: Draft} | null = null;
   /** The draft's state; validation and fingerprint run once per distinct draft text. */
@@ -82,9 +85,9 @@ declare namespace LWProcessDashboardWhatIfView {
    return {...cached.draft, changed: d.changed, valid: d.changed && cached.draft.valid};
   }
   const mode = (): Mode => compare.checked ? 'compare' : 'spread';
-  const read = (): Inputs => ({mode: mode(), runs: Number(runs.value), minutes: Number(minutes.value), seed: Number(seed.value)});
+  const read = (): Inputs => ({mode: mode(), runs: Number(runs.value), minutes: Number(minutes.value), seed: Number(seed.value), warmup: warm});
   const keyOf = (v: LWProcessApp.View, d: Draft, m: Mode): Key =>
-   ({a: root.LWProcessCatalog.fingerprint(v.definition), b: m === 'compare' ? d.fingerprint : null, seed: v.snapshot.seed});
+   ({a: root.LWProcessCatalog.fingerprint(v.definition), b: m === 'compare' ? d.fingerprint : null, seed: v.snapshot.seed, warmup: warm});
   /** Sets a number field's bounds (finite numbers only) and, unless kept, its value. */
   function setNumber(input: HTMLInputElement, value: number, min: number, max: number, keep: boolean): void {
    input.min = String(min);
@@ -155,7 +158,7 @@ declare namespace LWProcessDashboardWhatIfView {
    if (!view || job) return;
    const d = draft(), inputs = read();
    if (!W.check(inputs, view, d).ok) { update(); return; }
-   const options = {minutes: inputs.minutes, runs: inputs.runs, seed: inputs.seed, horizon: view.horizon};
+   const options = {minutes: inputs.minutes, runs: inputs.runs, seed: inputs.seed, horizon: view.horizon, ...warm > 0 ? {warmup: warm} : {}};
    try {
     const R = root.LWProcessReplicate;
     const runner = inputs.mode === 'compare' && d.definition ? R.comparison(view.definition, d.definition, options) : R.replications(view.definition, options);
@@ -185,9 +188,10 @@ declare namespace LWProcessDashboardWhatIfView {
   el.addEventListener('change', e => { if ((e.target as HTMLInputElement).name === 'db-mode') update(); });
   return {
    element: el,
-   sync(v, w, r) {
+   sync(v, w, r, warmup = 0) {
     const resized = Math.abs(w - width) > 1 || r !== rem, d = W.defaults(v), focused = document.activeElement;
     view = v; width = w; rem = r;
+    warm = warmup;
     if (!job) {
      setNumber(runs, d.runs, W.LIMITS.runsMin, W.LIMITS.runsMax, dirty.has(runs.id));
      setNumber(minutes, d.minutes, 1, W.maxMinutes(v), dirty.has(minutes.id) || focused === minutes);

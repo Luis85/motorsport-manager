@@ -10,7 +10,8 @@
  * The funnel follows the main route (LWProcessRoute.walk, the rule the SIPOC view, the Journey map and the slides share); cases
  * still at a step are "in progress", never lost. Drop-off by stretch stays in the Journey map, which the section links to.
  * Measured and authored feeling have different scales, so they appear side by side in a table, never on a dual axis.
- * Conversion over time is listed once 20 outcomes are decided at a sample.
+ * Conversion over time (goals ÷ decided outcomes at each sample, from the series' cumulative goals and lost) is drawn as its own
+ * chart beside the cumulative counts, never on a second axis, and only at samples with at least 20 decided outcomes.
  */
 (function(inputRoot: unknown) {
  'use strict';
@@ -21,6 +22,8 @@
  type Panel = LWProcessDashboardModel.Panel;
  const u = () => root.LWProcessDashboardModel.util;
  const text = (c: string | number) => typeof c === 'number' ? String(c) : c;
+ const NEEDS_TWO = 'Needs at least two sampling intervals of the run history.', DECIDED = 20;
+ const sampled = (input: Input) => input.series && input.series.minutes.length > 1 ? input.series : null;
  function funnel(input: Input): Panel {
   const {definition: d, snapshot: q} = input.view, t = root.LWProcessTerms.of(d), U = u(), metric = new Map(q.steps.map(s => [s.id, s]));
   const notes = ['Drop-off by stretch and alternative paths are in the Journey map.'];
@@ -39,13 +42,13 @@
     list.map(r => [r.s.name, r.reached, U.percent(r.reached, first), r.open]))};
  }
  function outcomes(input: Input): Panel {
-  const t = root.LWProcessTerms.of(input.view.definition), U = u(), s = input.series && input.series.minutes.length > 1 ? input.series : null;
+  const t = root.LWProcessTerms.of(input.view.definition), U = u(), s = sampled(input);
   const base = U.panel('outcomes', 'Outcomes over time', 'Is conversion settling?', {});
-  if (!s) return {...base, empty: 'Needs at least two sampling intervals of the run history.'};
+  if (!s) return {...base, empty: NEEDS_TWO};
   const series: LWProcessChart.Series[] = [{label: 'Goals reached', values: s.run.goals, tone: 'goal'}, {label: 'Lost', values: s.run.lost, tone: 'blocked'}];
   const conversion = (i: number) => {
    const n = s.run.goals[i]! + s.run.lost[i]!;
-   return n >= 20 ? U.percent(s.run.goals[i]!, n) : '—';
+   return n >= DECIDED ? U.percent(s.run.goals[i]!, n) : '—';
   };
   const rows = s.minutes.map((m, i) => [m, s.run.goals[i]!, s.run.lost[i]!, conversion(i)]);
   const caption = `By minute ${U.number(s.minutes.at(-1)!)}, ${U.number(s.run.goals.at(-1)!)} reached a goal and ${U.number(s.run.lost.at(-1)!)} were lost.`;
@@ -53,6 +56,28 @@
    notes: ['Conversion at a sample is shown once 20 outcomes are decided.'], legend: series.map(x => ({label: x.label, tone: x.tone})),
    chart: {kind: 'lines', title: `Cumulative goals and lost ${t.many} by business minute`, axis: t.many, xs: s.minutes, series, step: true, mark: null},
    table: {...U.table('Outcomes at each sample minute', ['Minute', 'Goals', 'Lost', 'Conversion'], rows), tail: true}};
+ }
+ /** Conversion at each sample, in percent of the outcomes decided by then (null below 20 decided outcomes). */
+ function conversion(input: Input): Panel {
+  const t = root.LWProcessTerms.of(input.view.definition), U = u(), s = sampled(input);
+  const base = U.panel('conversion', 'Conversion over time', `What share of the decided ${t.many} had reached a goal at each sample?`, {});
+  if (!s) return {...base, empty: NEEDS_TWO};
+  const decided = s.minutes.map((_, i) => s.run.goals[i]! + s.run.lost[i]!);
+  const values = decided.map((n, i) => n >= DECIDED ? Math.round(s.run.goals[i]! * 1000 / n) / 10 : null);
+  const first = values.findIndex(v => v !== null), last = values.map(v => v !== null).lastIndexOf(true);
+  if (first < 0) return {...base, empty: `Conversion is drawn once ${DECIDED} outcomes are decided at a sample.`};
+  const at = (i: number) => `${values[i]}% at minute ${U.number(s.minutes[i]!)}`;
+  const caption = first === last ? `Conversion was ${at(last)} (${U.number(decided[last]!)} decided).`
+   : `Conversion went from ${at(first)} to ${at(last)} (${U.number(decided[last]!)} decided).`;
+  const rows = s.minutes.map((m, i) => [m, decided[i]!, s.run.goals[i]!, values[i] === null ? '—' : `${values[i]}%`]);
+  const series: LWProcessChart.Series[] = [{label: 'Conversion', values, tone: 'goal'}];
+  const w = input.window ?? 0;
+  return {...base, caption,
+   notes: [`Goals ÷ (goals + lost) among the ${t.many} decided by each sample, drawn from ${DECIDED} decided outcomes; ${t.many} still in `
+    + 'progress are not counted. It describes this run, not a forecast.'],
+   chart: {kind: 'lines', title: 'Conversion at each sample minute, in percent of decided outcomes', axis: '% of decided', xs: s.minutes, series,
+    step: false, mark: w || null},
+   table: {...U.table('Conversion at each sample minute', ['Minute', 'Decided', 'Goals', 'Conversion'], rows), tail: true}};
  }
  function byOutcome(input: Input): Panel[] {
   const b = input.distributions?.byOutcome, edges = input.distributions?.edges ?? [], U = u(), t = root.LWProcessTerms.of(input.view.definition);
@@ -108,7 +133,9 @@
  function sections(input: Input): LWProcessDashboardModel.Section[] {
   const d = input.view.definition, t = root.LWProcessTerms.of(d), outcome = d.steps.some(s => s.kind === 'end' && s.outcome);
   if (!t.journey && !outcome) return [];
-  const panels = [funnel(input), ...outcome ? [outcomes(input), ...byOutcome(input)] : []];
+  // The two time charts are drawn only from a run history of two samples or more, so they are built once per series.
+  const kept = (key: string, make: (i: Input) => Panel) => sampled(input) ? u().memo(input, key, () => make(input)) : make(input);
+  const panels = [funnel(input), ...outcome ? [kept('outcomes', outcomes), kept('conversion', conversion), ...byOutcome(input)] : []];
   if (t.journey) panels.push(feeling(input), channels(input));
   panels.push(tracked(input));
   return [{id: 'journey', title: 'Journey outcomes', panels}];

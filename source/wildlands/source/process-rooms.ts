@@ -1,11 +1,15 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-three.d.ts" />
+/// <reference path="./process-palette.ts" />
 /**
  * Presentation-only room themes and the room builder frame (LWProcessRooms): theme choice per step, the builder context, the
  * fixtures every room shares (wall lamp, idle standby sign, backlog board, mood face) and the working/idle switch. No simulation
  * state. The room models themselves are registered into `builders` by process-rooms-work.ts (task themes and flow-kind rooms),
  * process-rooms-automation.ts (machine and system) and process-rooms-touchpoint.ts with process-rooms-channels.ts (touchpoints),
  * which load after this module.
+ *  - A theme's floor, wall and accent colours are the palette's room theme of the same id (LWProcessPalette.ROOMS); the shared
+ *    fixtures draw with the palette roles the kit resolved for the scene (`Kit.colours`). Prop materials inside the room models
+ *    are authored with their geometry and are not palette roles.
  *  - A builder places furniture in `c.root` (always shown), `c.live` (shown while working) or `c.idle` (shown while idle).
  *  - `c.F` is a fixed piece (never moves, re-colours or toggles: merged into one draw with its neighbours, so it returns nothing);
  *    `c.L` is a fixed piece that glows while the room works; `c.P` is a moving or switching piece with its own mesh.
@@ -22,6 +26,8 @@ declare namespace LWProcessRooms {
  /** The 3D renderer's piece kit as room builders (and the asset renderer) see it; see process-3d-kit.ts. */
  interface Kit {
   T: LWThree.Module; mat(color: string, extra?: Options): LWThree.Material; group(parent: O3): LWThree.Group;
+  /** The palette roles resolved for this scene (LWProcessPalette.read). */
+  readonly colours: LWProcessPalette.Resolved;
   piece(parent: O3, kind: string, x: number, y: number, z: number, sx: number, sy: number, sz: number, color: string,
    rotation?: number, extra?: Options): LWThree.Mesh;
   /** A piece that never changes; merged with its container's other fixed pieces when the scene is sealed. */
@@ -65,28 +71,28 @@ declare namespace LWProcessRooms {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessRooms?: LWProcessRooms.Api};
- const T = (id: string, label: string, floor: string, wall: string, accent: string, task: string): LWProcessRooms.Theme =>
-  ({id, label, floor, wall, accent, task});
+ const root = inputRoot as {LWProcessRooms?: LWProcessRooms.Api; LWProcessPalette: LWProcessPalette.Api};
+ /** A theme by id with its palette colours. */
+ const T = (id: string, label: string, task: string): LWProcessRooms.Theme => ({id, label, ...root.LWProcessPalette.room(id), task});
  const TASK_THEMES = [
-  T('office', 'Office', '#314050', '#374756', '#86a6bb', 'Typing and reviewing'),
-  T('studio', 'Design studio', '#3b3a4c', '#4a4560', '#b79ad6', 'Drafting'),
-  T('lab', 'Test lab', '#2c4448', '#36585c', '#7fd0c4', 'Running experiments'),
-  T('workshop', 'Workshop', '#413a32', '#54483c', '#e0a35c', 'Building'),
-  T('review', 'Review desk', '#3a4636', '#4c5e46', '#a8cf86', 'Checking and stamping'),
-  T('archive', 'Records room', '#403747', '#54475c', '#d69aa8', 'Filing'),
+  T('office', 'Office', 'Typing and reviewing'),
+  T('studio', 'Design studio', 'Drafting'),
+  T('lab', 'Test lab', 'Running experiments'),
+  T('workshop', 'Workshop', 'Building'),
+  T('review', 'Review desk', 'Checking and stamping'),
+  T('archive', 'Records room', 'Filing'),
  ];
  const KIND_THEMES: Record<string, LWProcessRooms.Theme> = {
-  start: T('reception', 'Reception', '#2f4157', '#3b536c', '#91b9d5', 'Receiving requests'),
-  end: T('dispatch', 'Dispatch dock', '#38404a', '#4a5563', '#8fc9a2', 'Delivering results'),
-  decision: T('council', 'Decision room', '#3f3a33', '#574d41', '#e6c06e', 'Deliberating'),
-  fork: T('junction', 'Junction', '#2b3a46', '#35495a', '#c79871', 'Routing work'),
-  join: T('junction', 'Junction', '#2b3a46', '#35495a', '#c79871', 'Merging work'),
-  machine: T('machine', 'Automation cell', '#343a41', '#464e57', '#ff8f5a', 'Running automatically'),
-  system: T('system', 'Software system', '#232c45', '#2d3a5e', '#4fc3ff', 'Running automatically'),
-  timer: T('clock', 'Waiting room', '#33384a', '#434a62', '#d9c58a', 'Waiting for the due minute'),
+  start: T('reception', 'Reception', 'Receiving requests'),
+  end: T('dispatch', 'Dispatch dock', 'Delivering results'),
+  decision: T('council', 'Decision room', 'Deliberating'),
+  fork: T('junction', 'Junction', 'Routing work'),
+  join: T('junction', 'Junction', 'Merging work'),
+  machine: T('machine', 'Automation cell', 'Running automatically'),
+  system: T('system', 'Software system', 'Running automatically'),
+  timer: T('clock', 'Waiting room', 'Waiting for the due minute'),
  };
- const BACKLOG_THEME = T('backlog', 'Backlog room', '#33405a', '#46527a', '#9db4ff', 'Holding ready work');
+ const BACKLOG_THEME = T('backlog', 'Backlog room', 'Holding ready work');
  function theme(step: LWProcess.Step): LWProcessRooms.Theme {
   if (step.kind === 'touchpoint') return (step.channel && api.channels[step.channel]?.theme) || api.fallbackTheme;
   if (step.kind === 'join' && step.backlog) return BACKLOG_THEME;
@@ -99,17 +105,21 @@ declare namespace LWProcessRooms {
  /** Backlog board on the back wall: a framed grid of slots with one card per held item (scaled down when the capacity is larger). */
  function backlogBoard(kit: LWProcessRooms.Kit, c: Ctx, th: LWProcessRooms.Theme, capacity: number): (items: number) => void {
   const big = th.id === 'backlog', cols = big ? 6 : 4, rows = 3, w = big ? 6.4 : 2.6, h = big ? 2.6 : 1.7;
-  const x = big ? 0 : -3.3, z = big ? -3.6 : -3.7, cell = w / cols, cards: LWThree.Mesh[] = [];
-  c.F(c.root, 'box', x, h / 2 + .45, z, w + .3, h + .3, .12, '#242b38');
+  const x = big ? 0 : -3.3, z = big ? -3.6 : -3.7, cell = w / cols, cards: LWThree.Mesh[] = [], colours = kit.colours;
+  c.F(c.root, 'box', x, h / 2 + .45, z, w + .3, h + .3, .12, colours['board-frame']);
   c.F(c.root, 'box', x, h + .75, z + .02, w + .3, .22, .16, th.accent);
   for (let r = 0; r < rows; r++) for (let k = 0; k < cols; k++) {
    const cx = x - w / 2 + cell * (k + .5), cy = .45 + h * (1 - (r + .5) / rows) - .1;
-   c.F(c.root, 'box', cx, cy, z + .07, cell * .82, h / rows * .72, .03, '#394356');
-   const card = c.P(c.root, 'box', cx, cy, z + .1, cell * .7, h / rows * .6, .04, r === 0 && k === 0 ? '#ffd27a' : th.accent);
-   card.visible = false; cards.push(card);
+   c.F(c.root, 'box', cx, cy, z + .07, cell * .82, h / rows * .72, .03, colours['board-slot']);
+   const tint = r === 0 && k === 0 ? colours['board-first'] : th.accent;
+   const card = c.P(c.root, 'box', cx, cy, z + .1, cell * .7, h / rows * .6, .04, tint);
+   card.visible = false;
+   cards.push(card);
   }
   return items => {
-   const shown = items <= 0 ? 0 : capacity <= cards.length ? Math.min(items, cards.length) : Math.max(1, Math.round(items / capacity * cards.length));
+   const shown = items <= 0 ? 0
+    : capacity <= cards.length ? Math.min(items, cards.length)
+    : Math.max(1, Math.round(items / capacity * cards.length));
    cards.forEach((card, i) => {card.visible = i < shown;});
   };
  }
@@ -147,8 +157,10 @@ declare namespace LWProcessRooms {
   if (furnished) api.builders[th.id]?.(ctx);
   if (step.emotion !== undefined) kit.mood(parent, step.emotion);
   const setBacklog = step.backlog ? backlogBoard(kit, ctx, th, step.backlog.capacity) : () => undefined;
-  L(parent, 'box', 2.6, 2.4, -4.2, .5, .14, .2, '#4a4f55', '#fff1df', '#ffd9a0', 1.6);
-  F(idle, 'box', -3.3, .3, 1.8, .5, .6, .08, th.accent); F(idle, 'box', -3.3, .1, 1.8, .6, .2, .3, '#313c48');
+  const colours = kit.colours;
+  L(parent, 'box', 2.6, 2.4, -4.2, .5, .14, .2, colours['wall-lamp'], colours['light-key'], colours['wall-lamp-glow'], 1.6);
+  F(idle, 'box', -3.3, .3, 1.8, .5, .6, .08, th.accent);
+  F(idle, 'box', -3.3, .1, 1.8, .6, .2, .3, colours['standby-base']);
   // The standby light is shown only while idle, so it keeps its unlit accent colour.
   F(idle, 'ball', -3.3, .75, 1.8, .06, .06, .06, th.accent);
   return {
@@ -167,7 +179,7 @@ declare namespace LWProcessRooms {
    get moving() {return swings.length > 0;},
   };
  }
- const fallbackTheme = T('journey', 'Touchpoint', '#2f4a47', '#3b5f5a', '#7fd0c4', 'Serving customers');
+ const fallbackTheme = T('journey', 'Touchpoint', 'Serving customers');
  const api: LWProcessRooms.Api = {theme, build, builders: {}, channels: {}, moods: [], fallbackTheme};
  root.LWProcessRooms = api;
 })(globalThis);

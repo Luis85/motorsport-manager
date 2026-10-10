@@ -5,14 +5,16 @@
 /// <reference path="./process-terms.ts" />
 /// <reference path="./process-route.ts" />
 /// <reference path="./process-slides-contracts.d.ts" />
+/// <reference path="./process-dashboard-window.ts" />
+/// <reference path="./process-dashboard-tiles.ts" />
 /**
  * Pure view-model of the per-process Dashboard (LWProcessDashboardModel): it turns one detached `LWProcessApp.View`, plus the
  * optional read-model data of `LWProcessDashboardData`, into panels of plain numbers, percentile brackets, sentences, table rows and
  * empty-state reasons. No DOM, session, clock, randomness or storage; the same input gives the same model, and the input is never
  * changed. The panels of sections 2-8 are built by LWProcessDashboardFlow (flow over time), LWProcessDashboardTime (where time
  * goes), LWProcessDashboardPanels (lead time), LWProcessDashboardQuality (quality and cost), LWProcessDashboardJourney (journey
- * outcomes) and LWProcessDashboardFocus (step focus); this module owns the run identity and honesty
- * strip (R0), the KPI tiles (section 1), the shared helpers and the section order.
+ * outcomes) and LWProcessDashboardFocus (step focus), and the KPI tiles (section 1) by LWProcessDashboardTiles; this module owns
+ * the run identity and honesty strip (R0), the shared helpers and the section order.
  *
  * Honesty rules every panel follows: one seeded run is one sample, so the strip always carries the single-run notice (its seed
  * sentence is dropped when the definition has no random behaviour); a value that is undefined (mean lead time before the first
@@ -22,6 +24,11 @@
  *
  * Data that a later read model adds (the shapes of research section 4) is optional input: a panel that needs it shows its
  * `empty` reason ('Needs a sampled run history.') instead of failing.
+ *
+ * "Measure from minute W" (LWProcessDashboardWindow): `build` first replaces a window that is not a sample minute before the current
+ * one by 0, then hands the same input to every section, so all windowed figures use one window. Windowed tile lines carry the
+ * window's label; the tile values (counts so far, the whole-run lead-time bracket) stay whole-run, except the busiest pool, whose
+ * value becomes its utilisation over the window.
  */
 declare namespace LWProcessDashboardData {
  /** Token-minutes or case-minutes by work state (research 4.2, 4.3). */
@@ -29,6 +36,8 @@ declare namespace LWProcessDashboardData {
  /** Sampled time series on a fixed business-minute grid (research 4.7); every array has the length of `minutes`. */
  interface Series {
   base: number; every: number; level: number; minutes: number[];
+  /** The session's payload position (research 4.7): samples stored in total and the index of this payload's first sample. */
+  count?: number; offset?: number;
   run: {wip: number[]; wipPeak: number[]; arrived: number[]; completed: number[]; failed: number[]; dropped: number[]; goals: number[]; lost: number[];
    cycleSum: number[]; wipArea: number[]; cost: number[]};
   steps: Record<string, {waiting: number[]; working: number[]; blocked: number[]; timers: number[]; waitingPeak: number[]; starts: number[];
@@ -57,8 +66,10 @@ declare namespace LWProcessDashboardData {
   series?: Series | null; distributions?: Distributions | null; recent?: readonly FinishedCase[] | null;
   /** True while an unapplied draft differs from the running definition. */
   draft?: boolean;
-  /** "Measure from minute W": a sample minute of `series` (0 by default). */
+  /** "Measure from minute W": a sample minute of `series` (0 by default; another value reads as 0, see LWProcessDashboardWindow). */
   window?: number;
+  /** The lead-time target the viewer chose for the target share (a fine bin edge; not part of the process, never stored). */
+  target?: number | null;
  }
 }
 declare namespace LWProcessDashboardModel {
@@ -90,6 +101,8 @@ declare namespace LWProcessDashboardModel {
   empty: string | null;
   /** One-sentence summary, the figure caption. */
   caption: string; notes: string[]; chart: Chart | null; legend: Legend[]; table: Table | null;
+  /** A view control of the panel: the lead-time target select (its choices are fine bin edges; `value` null for no target). */
+  control?: {kind: 'target'; label: string; options: {value: number; label: string}[]; value: number | null};
  }
  /** A dashboard section; `tiles` (step focus) are drawn above its panels. */
  interface Section {id: string; title: string; panels: Panel[]; tiles?: Tile[]}
@@ -120,6 +133,12 @@ declare namespace LWProcessDashboardModel {
   bin(edges: readonly number[], i: number): string;
   /** Appends an incremental `series()` result to the cached one; a new level or base replaces it. */
   merge(cache: LWProcessDashboardData.Series | null, next: LWProcessDashboardData.Series): LWProcessDashboardData.Series;
+  /**
+   * The value `make` builds from the input's series (and the window, the selection and the definition's identity and names), kept
+   * while that series object lives: `merge` returns the same object until new samples arrive, so panels drawn only from the series
+   * are built once per sample instead of once per draw. `make` must read nothing else from the input (no snapshot values).
+   */
+  memo<T>(input: LWProcessDashboardData.Input, key: string, make: () => T): T;
   table(caption: string, head: string[], rows: (string | number)[][], numeric?: boolean[]): Table;
   panel(id: string, title: string, question: string, fields: Partial<Panel>): Panel;
   /** The work states in priority and stack order, with their label, colour role and glyph. */
@@ -142,6 +161,7 @@ declare namespace LWProcessDashboardSections {
  const root = inputRoot as {LWProcessTime: LWProcessTime.Api; LWProcessTerms: LWProcessTerms.Api; LWProcessRoute: LWProcessRoute.Api;
   LWProcessSlidesText: LWProcessSlidesText.Api; LWProcessDashboardFlow?: Builder; LWProcessDashboardTime?: Builder; LWProcessDashboardPanels?: Builder;
   LWProcessDashboardQuality?: Builder; LWProcessDashboardJourney?: Builder; LWProcessDashboardFocus?: Builder;
+  LWProcessDashboardWindow: LWProcessDashboardWindow.Api; LWProcessDashboardTiles: LWProcessDashboardTiles.Api;
   LWProcessDashboardModel?: LWProcessDashboardModel.Api};
  type Input = LWProcessDashboardData.Input;
  type Tile = LWProcessDashboardModel.Tile;
@@ -159,7 +179,21 @@ declare namespace LWProcessDashboardSections {
   return a >= 100 ? Math.round(n) : Math.round(n * 10) / 10;
  }
  /** Whole numbers (counts) stay exact; other values are rounded for reading. */
- const number = (n: number) => time().number(Number.isInteger(n) ? n : round(n));
+ /**
+  * Formatted numbers by value. Time-series tables format every sample's cumulative totals on each draw, and those values repeat from
+  * draw to draw, so a bounded memo (cleared at 20,000 entries) keeps a draw from formatting thousands of numbers again. It only
+  * caches a pure function, so the output never depends on it.
+  */
+ const formatted = new Map<number, string>();
+ function number(n: number): string {
+  let text = formatted.get(n);
+  if (text === undefined) {
+   if (formatted.size >= 20000) formatted.clear();
+   text = time().number(Number.isInteger(n) ? n : round(n));
+   formatted.set(n, text);
+  }
+  return text;
+ }
  const minutes = (n: number, d: LWProcess.Definition) => time().span(round(n), d.calendar ?? null);
  const percent = (part: number, whole: number) => whole > 0 ? `${Math.round(part * 1000 / whole) / 10}%` : '—';
  const plural = (n: number, one: string, many = one + 's') => `${time().number(n)} ${n === 1 ? one : many}`;
@@ -201,20 +235,21 @@ declare namespace LWProcessDashboardSections {
   return hi === undefined ? `≥ ${time().number(lo)} min` : `${time().number(lo)}–${time().number(hi)} min`;
  }
  type Columns = Record<string, unknown>;
- /** Appends every array of `b` to the same array of `a`, recursing into records (the columnar series). */
+ /** Every array of `b` appended to the same array of `a` as a new array, recursing into records (the columnar series); `a` is unchanged. */
  function append(a: Columns, b: Columns): Columns {
+  const out: Columns = {...a};
   for (const [k, v] of Object.entries(b)) {
    const old = a[k];
-   if (Array.isArray(v)) a[k] = Array.isArray(old) ? [...old, ...v] : v;
-   else if (v && typeof v === 'object') a[k] = append(old && typeof old === 'object' ? old as Columns : {}, v as Columns);
-   else a[k] = v;
+   if (Array.isArray(v)) out[k] = Array.isArray(old) ? old.concat(v) : v.slice();
+   else if (v && typeof v === 'object') out[k] = append(old && typeof old === 'object' ? old as Columns : {}, v as Columns);
+   else out[k] = v;
   }
-  return a;
+  return out;
  }
+ /** Cost per call: nothing without new samples (the cache itself is returned), else one copy of the columns; never a deep JSON copy. */
  function merge(cache: Series | null, next: Series): Series {
-  const copy = JSON.parse(JSON.stringify(next)) as Series;
-  if (!cache || cache.level !== next.level || cache.base !== next.base) return copy;
-  return append(JSON.parse(JSON.stringify(cache)) as Columns, copy as unknown as Columns) as unknown as Series;
+  if (!cache || cache.level !== next.level || cache.base !== next.base) return append({}, next as unknown as Columns) as unknown as Series;
+  return next.minutes.length ? append(cache as unknown as Columns, next as unknown as Columns) as unknown as Series : cache;
  }
  function table(caption: string, head: string[], rows: (string | number)[][], numeric = head.map((_, i) => i > 0)): LWProcessDashboardModel.Table {
   return {caption, head, rows: rows.map(r => r.map(c => typeof c === 'number' ? number(c) : c)), numeric};
@@ -222,12 +257,26 @@ declare namespace LWProcessDashboardSections {
  const panel = (id: string, title: string, question: string, f: Partial<Panel>): Panel =>
   ({id, title, question, empty: null, caption: '', notes: [], chart: null, legend: [], table: null, ...f});
  const count = (n: number) => time().number(n);
- const util: LWProcessDashboardModel.Util = {number, count, minutes, percent, round, plural, random, order, state, rank, bin, merge, table, panel, STATES};
- /** Whole-run cycle bins: the fine distribution when present, else the snapshot's 1-2-5 histogram. */
- function cycleBins(input: Input): {edges: number[]; counts: number[]} {
-  const fine = input.distributions;
-  return fine && fine.cycle.length ? {edges: fine.edges, counts: fine.cycle} : input.view.snapshot.metrics.cycleHistogram;
+ /** Built values per series object; a series is never changed after it is made, and a dropped one takes its values with it. */
+ const memos = new WeakMap<Series, Map<string, unknown>>();
+ function memo<T>(input: Input, key: string, make: () => T): T {
+  const s = input.series, d = input.view.definition;
+  if (!s) return make();
+  const names = [...d.steps, ...d.resources].map(x => x.id + ':' + x.name).join(',');
+  const full = [key, input.window ?? 0, input.view.selected, d.id, d.revision, d.name, d.genre, names].join('|');
+  let held = memos.get(s);
+  if (!held) {
+   held = new Map();
+   memos.set(s, held);
+  }
+  if (!held.has(full)) {
+   if (held.size >= 64) held.clear();
+   held.set(full, make());
+  }
+  return held.get(full) as T;
  }
+ const util: LWProcessDashboardModel.Util = {number, count, minutes, percent, round, plural, random, order, state, rank, bin, merge, memo, table, panel,
+  STATES};
  function notice(d: LWProcess.Definition, q: LWProcess.Snapshot): string {
   const at = time().number(q.minute);
   if (q.minute === 0) return 'Minute 0 — nothing has been simulated yet. Run or advance to collect results.';
@@ -260,89 +309,16 @@ declare namespace LWProcessDashboardSections {
    const text = 'Arrivals continue for the whole run; there is no natural end. Consider measuring from a later minute to leave out start-up.';
    notes.push({id: 'open', text});
   }
-  const s = input.series, windows = s && s.minutes.length > 1 ? s.minutes.filter(x => x < T) : [];
-  const window = windows.includes(input.window ?? 0) ? input.window ?? 0 : 0;
-  if (window > 0) notes.push({id: 'window', text: `Windowed values measure from minute ${time().number(window)}; distributions stay whole-run.`});
-  return {identity, notice: notice(d, q), notes, windows, window};
- }
- /** A monotone run rule over the last intervals: 'rising over the last 4 intervals', 'falling …' or 'steady …'. */
- function trend(values: number[]): string {
-  if (values.length < 3) return '';
-  const diffs = values.slice(1).map((v, i) => Math.sign(v - values[i]!)), last = diffs.at(-1)!;
-  let run = 0;
-  for (let i = diffs.length - 1; i >= 0 && diffs[i] === last; i--) run++;
-  return last === 0 || run < 2 ? 'steady over the last intervals' : `${last > 0 ? 'rising' : 'falling'} over the last ${run} intervals`;
- }
- const tile = (id: string, label: string, value: string, line: string, extra: Partial<Tile> = {}): Tile =>
-  ({id, label, value, line, problem: false, spark: null, trend: '', ...extra});
- /** The tiles' shared context: the view, its terms and the series when it has two samples. */
- interface Ctx {d: LWProcess.Definition; q: LWProcess.Snapshot; m: Metrics; terms: LWProcessTerms.Terms; s: Series | null; input: Input}
- function active({d, q, m, terms, s}: Ctx): Tile {
-  const wip = s ? s.run.wip.slice(-12) : null, overRun = m.wipArea !== undefined && q.minute > 0 ? ` · mean over the run ${number(m.wipArea / q.minute)}` : '';
-  const line = m.meanAgeMinutes === null ? `no open ${terms.many}` : `mean age ${minutes(m.meanAgeMinutes, d)}${overRun}`;
-  return tile('active', 'In progress', number(m.active), line, {spark: wip, trend: wip ? 'In progress is ' + trend(wip) : ''});
- }
- function finished({m, terms, s}: Ctx): Tile {
-  const done = s ? s.run.completed.slice(1).map((v, i) => v - s.run.completed[i]!).slice(-12) : null;
-  const rate = m.throughputPerHour === null ? '—' : number(m.throughputPerHour);
-  return tile('finished', terms.finished, number(m.completed), `${rate} per hour · ${number(m.arrived)} arrived`,
-   {spark: done, trend: done ? 'Finishes per interval are ' + trend(done) : ''});
- }
- function lead({d, m, terms, input}: Ctx): Tile {
-  const label = terms.journey ? 'Time to outcome' : 'Lead time', bins = cycleBins(input), median = rank(bins.counts, 50), p85 = rank(bins.counts, 85);
-  if (!m.completed) return tile('lead', label, '—', `No ${terms.one} has finished yet`);
-  const open = m.active ? ` · ${time().number(m.active)} open` : '';
-  if (m.completed < 10 || median === null || p85 === null) {
-   return tile('lead', label, minutes(m.meanCycleMinutes, d), `mean of ${plural(m.completed, terms.one, terms.many)}${open}`);
+  const Win = root.LWProcessDashboardWindow, windows = Win.choices(input.series, T), w = Win.of(input);
+  if (w) {
+   const text = `Windowed values measure ${Win.label(w)}, the last sample; distributions and ${terms.one}-level charts stay whole-run.`;
+   notes.push({id: 'window', text});
   }
-  return tile('lead', label, 'median ' + bin(bins.edges, median), `85th percentile ${bin(bins.edges, p85)} · mean ${minutes(m.meanCycleMinutes, d)}${open}`);
+  return {identity, notice: notice(d, q), notes, windows, window: w ? w.from : 0};
  }
- function oldest({d, q}: Ctx): Tile | null {
-  const open = q.cases.filter(c => c.status === 'active');
-  if (!open.length) return null;
-  const first = open.reduce((a, c) => c.entered < a.entered ? c : a), names = new Map(d.steps.map(st => [st.id, st.name]));
-  const at = [...new Set(q.tokens.filter(t => t.caseId === first.id && state(t)).map(t => names.get(t.stepId) ?? t.stepId))];
-  return tile('oldest', 'Oldest open', minutes(q.minute - first.entered, d), at.length ? 'at ' + at.join(', ') : 'between steps');
- }
- function pool({d, q}: Ctx): Tile | null {
-  const demanded = new Set(d.steps.flatMap(st => Object.keys(st.resources ?? {}))), pools = q.resources.filter(p => demanded.has(p.id));
-  if (!pools.length) return null;
-  const top = pools.reduce((a, p) => p.utilization > a.utilization ? p : a), name = d.resources.find(r => r.id === top.id)?.name ?? top.id;
-  const idle = q.minute === 0;
-  return tile('pool', 'Busiest pool', idle ? '—' : `${Math.round(top.utilization * 100)}%`,
-   `${name} · busy now ${top.busy} of ${top.capacity}${idle ? ' · no time simulated yet' : ''}`);
- }
- function cost({d, m, terms}: Ctx): Tile | null {
-  if (!d.resources.some(r => r.costPerMinute > 0) && !d.steps.some(st => (st.cost ?? 0) > 0)) return null;
-  const label = `Cost per ${terms.finished.toLowerCase()} ${terms.one}`;
-  if (!m.completed) return tile('cost', label, '—', `No ${terms.one} has finished yet`);
-  const capacity = number(m.capacityCost / m.completed);
-  if (m.costOf) return tile('cost', label, number(m.costOf.completed / m.completed), `work cost of finished ${terms.many} · capacity ÷ finished ${capacity}`);
-  return tile('cost', label, number(m.cost / m.completed), `work cost so far ÷ finished, open work included · capacity ÷ finished ${capacity}`);
- }
- function problems({q, m}: Ctx): Tile | null {
-  const held = q.steps.reduce((sum, st) => sum + st.held, 0), interrupted = q.steps.reduce((sum, st) => sum + (st.deadlines?.interrupted ?? 0), 0);
-  const list = ([[m.failed, 'failed'], [m.dropped, 'dropped'], [held, 'blocked now'], [interrupted, 'deadline interruptions']] as const).filter(([n]) => n > 0);
-  if (!list.length) return null;
-  const total = list.reduce((a, [n]) => a + n, 0);
-  return tile('problems', 'Problems', number(total), list.map(([n, w]) => `${number(n)} ${w}`).join(' · '), {problem: true});
- }
- function conversion({d, m}: Ctx): Tile | null {
-  if (!d.steps.some(st => st.kind === 'end' && st.outcome)) return null;
-  const n = m.goals + m.lost, value = m.conversion === null ? '—' : n < 10 ? `${number(m.goals)} of ${number(n)} decided` : `${m.conversion / 10}%`;
-  return tile('conversion', 'Conversion', value, n ? `goals ${number(m.goals)} · lost ${number(m.lost)}` : 'no outcome reached yet');
- }
- function tiles(input: Input): Tile[] {
-  const {definition: d, snapshot: q} = input.view, terms = root.LWProcessTerms.of(d), s = input.series && input.series.minutes.length > 1 ? input.series : null;
-  const ctx: Ctx = {d, q, m: q.metrics as Metrics, terms, s, input};
-  const build = {active, finished, lead, oldest, pool, cost, problems, conversion};
-  // Journeys lead with conversion and drop the capacity and cost tiles when nothing uses them (each builder returns null then).
-  const ids = terms.journey ? ['conversion', 'active', 'finished', 'lead', 'problems', 'oldest', 'pool', 'cost'] as const
-   : ['active', 'finished', 'lead', 'oldest', 'pool', 'cost', 'problems', 'conversion'] as const;
-  return ids.map(id => build[id](ctx)).filter((t): t is Tile => !!t);
- }
- function build(input: Input): LWProcessDashboardModel.Model {
-  const {definition: d, snapshot: q, selected} = input.view, journey = root.LWProcessTerms.of(d).journey;
+ function build(raw: Input): LWProcessDashboardModel.Model {
+  const {definition: d, snapshot: q, selected} = raw.view, journey = root.LWProcessTerms.of(d).journey;
+  const input: Input = {...raw, window: root.LWProcessDashboardWindow.pick(raw.series, q.minute, raw.window)};
   const builders = [root.LWProcessDashboardFlow, root.LWProcessDashboardTime, root.LWProcessDashboardPanels, root.LWProcessDashboardQuality,
    root.LWProcessDashboardJourney, root.LWProcessDashboardFocus];
   const byId = new Map(builders.flatMap(b => b?.sections(input) ?? []).map(s => [s.id, s]));
@@ -353,6 +329,8 @@ declare namespace LWProcessDashboardSections {
   const sections = ids.map(id => byId.get(id)).filter((s): s is LWProcessDashboardModel.Section => !!s);
   return {name: d.name, journey, minute: q.minute, focus: selected, strip: strip(input), tiles: tiles(input), sections};
  }
+ /** The KPI tiles (section 1) come from LWProcessDashboardTiles. */
+ const tiles = (input: Input): Tile[] => root.LWProcessDashboardTiles.tiles(input);
  root.LWProcessDashboardModel = {build, strip, tiles, util};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessDashboardModel;
 })(globalThis);

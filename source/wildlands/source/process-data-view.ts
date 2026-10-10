@@ -23,15 +23,44 @@ declare namespace LWProcessData {
  /** Task, machine and system steps run the same way: one visit, a receipt on completion. */
  const works = (step: LWProcess.Step | undefined): boolean => step?.kind === 'task' || step?.kind === 'machine' || step?.kind === 'system';
  const drawnFields = (step: LWProcess.Step | undefined): ReadonlySet<string> => new Set((step?.draws ?? []).map(d => d.field));
- /** Random timing and draws of a step as plain sentences; '' for deterministic steps. */
- function randomness(step: LWProcess.Step): Safe | '' {
-  const view = root.LWProcessRandomView, lines = [step.timing && view ? view.describeTiming(step) : '', view?.describeInstances(step) ?? '', view?.describeDeadline(step) ?? '', ...(view ? (step.draws ?? []).map(view.describeDraw) : [])].filter(Boolean);
+ /**
+  * Random timing and draws of a step as plain sentences; '' for deterministic steps. Durations use the definition's display
+  * calendar (LWProcessRandomView with `calendar`), as in the inspector.
+  */
+ function randomness(step: LWProcess.Step, calendar: LWProcess.Calendar | undefined): Safe | '' {
+  const view = root.LWProcessRandomView;
+  const lines = [
+   step.timing && view ? view.describeTiming(step, calendar) : '',
+   view?.describeInstances(step) ?? '',
+   view?.describeDeadline(step, calendar) ?? '',
+   ...(view ? (step.draws ?? []).map(view.describeDraw) : []),
+  ].filter(Boolean);
   return lines.length ? html`<ul class="process-adds" aria-label="Random behaviour">${lines.map(t => html`<li>${t}</li>`)}</ul>` : '';
  }
  /** 'Took 9 min (planned 12)' when the receipt recorded a realized duration, plus the instance count of a multiple-instance visit. */
- const took = (step: LWProcess.Step, r: LWProcess.Receipt | undefined) => (r?.duration === undefined ? '' : ` · Took ${r.duration} min${step.duration === undefined ? '' : ` (planned ${step.duration})`}`) + (r?.instances === undefined ? '' : ` · ${r.instances} instances`);
+ function took(step: LWProcess.Step, r: LWProcess.Receipt | undefined): string {
+  const planned = step.duration === undefined ? '' : ` (planned ${step.duration})`;
+  const duration = r?.duration === undefined ? '' : ` · Took ${r.duration} min${planned}`;
+  return duration + (r?.instances === undefined ? '' : ` · ${r.instances} instances`);
+ }
  /** Which item and deadline a running token is on; '' for ordinary work. */
- const running = (t: LWProcess.Token | undefined) => (t?.item === undefined ? '' : ` · item ${t.item} of ${t.items}`) + (t?.deadlineAt === undefined ? '' : ` · deadline at minute ${t.deadlineAt}`) + (t?.escalated ? ' · escalated work' : '');
+ function running(t: LWProcess.Token | undefined): string {
+  const item = t?.item === undefined ? '' : ` · item ${t.item} of ${t.items}`;
+  const deadline = t?.deadlineAt === undefined ? '' : ` · deadline at minute ${t.deadlineAt}`;
+  return item + deadline + (t?.escalated ? ' · escalated work' : '');
+ }
+ /** The state line of the selected visit: completed, waiting on a timer, working or running, waiting, or none retained. */
+ function visitState(view: LWProcessApp.View, step: LWProcess.Step, token: LWProcess.Token | undefined, receipt: LWProcess.Receipt | undefined,
+  one: string): string {
+  if (receipt) return `Completed · ${receipt.started}–${receipt.finished} min${took(step, receipt)}`;
+  if (token?.status === 'timer') return `Waiting on timer · due minute ${token.due} (${Math.max(0, token.due! - view.snapshot.minute)} min left)`;
+  if (token?.status === 'active') {
+   const work = view.playing ? (step.kind === 'task' ? 'Working' : 'Running') : 'Paused';
+   return `${work} · ${token.remaining} min remaining${running(token)}`;
+  }
+  if (token) return 'Waiting · inputs will be captured when work starts';
+  return `No retained visit for this ${one} at this step`;
+ }
  const declared = (step: LWProcess.Step) => step.outputs?.length
   ? html`<p class="process-declared">Declared outputs: ${step.outputs.map(o => o.label ? `${o.label} (${o.field})` : o.field).join(', ')}</p>` : '';
  const addText = (add: Record<string, number> | undefined) => Object.entries(add ?? {}).map(([k, n]) => `${n >= 0 ? '+' : '\u2212'}${Math.abs(n)} to ${k}`);
@@ -50,7 +79,8 @@ declare namespace LWProcessData {
    const focus = host.contains(document.activeElement) ? (document.activeElement as HTMLElement).id : '';
    const {definition: d, snapshot: q, selected} = view, step = d.steps.find(s => s.id === selected), t = root.LWProcessTerms.of(d);
    if (previousStep !== selected) {receiptId = ''; previousStep = selected;}
-   const relevant = q.tokens.find(t => !selected || t.stepId === selected)?.caseId ?? [...q.receipts].reverse().find(r => !selected || r.stepId === selected)?.caseId;
+   const relevant = q.tokens.find(t => !selected || t.stepId === selected)?.caseId
+    ?? [...q.receipts].reverse().find(r => !selected || r.stepId === selected)?.caseId;
    if (!q.cases.some(c => c.id === caseId)) caseId = relevant ?? q.cases[0]?.id ?? '';
    const c = q.cases.find(c => c.id === caseId);
    const receipts = q.receipts.filter(r => r.caseId === caseId && r.stepId === selected);
@@ -78,7 +108,7 @@ declare namespace LWProcessData {
     const data = html`<section><h3>${title}</h3><p>${state}</p>${fields(c.data, `No ${t.one} fields.`)}</section>`;
     content = html`<div class="process-io-columns">${inputs}${data}</div>`;
    } else {
-    const timing = token?.status === 'timer' && !receipt, state = receipt ? `Completed · ${receipt.started}–${receipt.finished} min${took(step, receipt)}` : timing ? `Waiting on timer · due minute ${token!.due} (${Math.max(0, token!.due! - q.minute)} min left)` : token?.status === 'active' ? `${view.playing ? (step.kind === 'task' ? 'Working' : 'Running') : 'Paused'} · ${token.remaining} min remaining${running(token)}` : token ? 'Waiting · inputs will be captured when work starts' : `No retained visit for this ${t.one} at this step`;
+    const state = visitState(view, step, token, receipt, t.one);
     const progress = token?.status === 'active' && !receipt && !step.timing
      ? html`<progress value="${num(step.duration! - token.remaining)}" max="${num(step.duration)}" aria-label="Step progress"></progress>` : '';
     const started = receipt || token?.input, moment = step.kind === 'timer' ? 'firing' : 'completion';
@@ -88,7 +118,7 @@ declare namespace LWProcessData {
     const none = receipt ? 'No output fields.'
      : Object.keys(step.add ?? {}).length ? 'No fields set; counters change as listed below.' : 'No fields changed; case data passes through.';
     const observed = fields(receipt?.output ?? step.set ?? {}, none, receipt ? drawnFields(step) : undefined);
-    const planned = receipt ? '' : html`${adds(step)}${randomness(step)}`;
+    const planned = receipt ? '' : html`${adds(step)}${randomness(step, d.calendar)}`;
     const about = receipt ? 'Observed case data at ' + moment : 'Authored effects · applied only on ' + moment;
     const after = html`${counters(step, receipt?.output ?? c.data)}${declared(step)}`;
     const outputs = html`<section><h3>${receipt ? 'Step outputs' : 'Expected changes'}</h3><p>${about}</p>${observed}${planned}${after}</section>`;

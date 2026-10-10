@@ -66,7 +66,7 @@ declare namespace LWProcess3DBake {
   const position = new Float32Array(vertices * 3), normal = new Float32Array(vertices * 3), color = new Float32Array(vertices * 3);
   const index = vertices > 65535 ? new Uint32Array(indices) : new Uint16Array(indices);
   const matrix = new T.Matrix4(), normals = new T.Matrix3(), euler = new T.Euler(), turn = new T.Quaternion();
-  const at = new T.Vector3(), size = new T.Vector3(), v = new T.Vector3(), tint = new T.Color('#ffffff');
+  const at = new T.Vector3(), size = new T.Vector3(), v = new T.Vector3(), tint = new T.Color();
   const ranges: [number, number][] = [];
   let vi = 0, ii = 0;
   for (const group of groups) {

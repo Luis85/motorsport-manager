@@ -11,6 +11,8 @@
  *    names it (`flow`, `deadline`, `conditional`, `color`). Deadline paths are red when the work is interrupted and amber when it
  *    escalates beside it; conditional paths are tan.
  *  - Front captions carry their text in `userData.caption` ("<state> | <extra> | <sub-label>").
+ *  - Lamps, bars and captions follow LWProcessWorkState (the studio's one work-state derivation, which also gives the bar's and
+ *    the room props' progress), and every colour is a palette role as the kit resolved it (`Kit.colours`).
  */
 declare namespace LWProcess3DStations {
  interface Stations {
@@ -34,9 +36,17 @@ declare namespace LWProcess3DStations {
  'use strict';
  const root = inputRoot as {LWProcessRooms: LWProcessRooms.Api; LWProcess3DCaptions: LWProcess3DCaptions.Api; LWProcess3DBake: LWProcess3DBake.Api;
   LWAssetRenderer: {createFromDefinition(kit: LWProcessRooms.Kit, parent: LWThree.Object3D, input: unknown, model?: string): unknown};
-  LWProcess3DStations?: LWProcess3DStations.Api};
+  LWProcessWorkState: LWProcessWorkState.Api; LWProcess3DStations?: LWProcess3DStations.Api};
  const AUTOMATED = new Set(['touchpoint', 'machine', 'system']);
- const TONE: Record<string, string> = {interrupt: '#e07a7a', escalate: '#e6b04a'}, CONDITIONAL = '#c79871', PLAIN = '#61738a';
+ /** Deadline path roles by deadline mode. */
+ const TONE: Record<string, LWProcessPalette.Role> = {interrupt: 'deadline-interrupt', escalate: 'deadline-escalate'};
+ /** The status lamp: the working colour, else the timer colour, else the waiting colour (waiting or blocked work), else idle. */
+ function lampOf(metric: LWProcess.StepMetric): LWProcessPalette.Role {
+  const n = root.LWProcessWorkState.step(metric);
+  if (n.working) return 'state-active';
+  if (n.timers) return 'state-timer';
+  return n.waiting || n.blocked ? 'state-queued' : 'lamp-idle';
+ }
  interface Station {step: LWProcess.Step; group: LWThree.Group; room: LWProcessRooms.Room; lamp: LWThree.Mesh; bar: LWThree.Mesh;
   front: LWProcess3DCaptions.Caption; sub: string; progress: number}
  /** Process Forge starter geometry (desk/monitor or podium/marker) yields to the themed room. */
@@ -47,7 +57,7 @@ declare namespace LWProcess3DStations {
  function build(T: LWThree.Module, scene: LWThree.Scene, kit: LWProcess3DKit.Kit, definition: LWProcess.Definition): LWProcess3DStations.Stations {
   const captions = root.LWProcess3DCaptions, stations = new Map<string, Station>(), hits: LWThree.Object3D[] = [];
   const names: {caption: LWProcess3DCaptions.Caption; text: string}[] = [], fronts: LWProcess3DCaptions.Caption[] = [];
-  const hitMaterial = kit.mat('#000000'), picking = kit.group(scene);
+  const colours = kit.colours, hitMaterial = kit.mat(colours.unlit), picking = kit.group(scene);
   picking.visible = false;
   for (const step of definition.steps) {
    const [px, pz] = step.scene.position, g = kit.station(step.id, px, pz), theme = root.LWProcessRooms.theme(step);
@@ -57,40 +67,42 @@ declare namespace LWProcess3DStations {
    hit.userData.stepId = step.id;
    picking.add(hit);
    hits.push(hit);
-   kit.fixed(g, 'box', 0, -.16, 0, 10, .3, 9, '#293544');
+   kit.fixed(g, 'box', 0, -.16, 0, 10, .3, 9, colours['room-floor']);
    kit.fixed(g, 'box', 0, .01, -4.35, 10, .1, .18, step.scene.color);
    // Low walls and inset floor panels tinted per room theme; the themed workstation and its idle variant come from LWProcessRooms.
    kit.fixed(g, 'box', 0, .7, -4.35, 10, 1.4, .14, theme.wall);
    kit.fixed(g, 'box', -4.9, .7, -2.8, .14, 1.4, 3.2, theme.wall);
    for (const x of [-3.75, -1.25, 1.25, 3.75]) for (const z of [-3, -.5, 2]) kit.fixed(g, 'box', x, .006, z, 2.46, .015, 2.46, theme.floor);
-   kit.fixed(g, 'cylinder', 4.05, .3, -3.2, .36, .6, .36, '#b99c7f');
-   for (const [x, y] of [[3.85, 1.05], [4.15, 1.35], [4.35, .95]] as const) kit.fixed(g, 'ball', x, y, -3.2, .28, .55, .28, '#6d9585');
+   kit.fixed(g, 'cylinder', 4.05, .3, -3.2, .36, .6, .36, colours.planter);
+   for (const [x, y] of [[3.85, 1.05], [4.15, 1.35], [4.35, .95]] as const) {
+    kit.fixed(g, 'ball', x, y, -3.2, .28, .55, .28, colours['planter-leaf']);
+   }
    // Custom attached geometry is drawn as authored.
    const custom = !!step.scene.asset && !isStarterAsset(step.scene.asset);
    if (custom) root.LWAssetRenderer.createFromDefinition(kit, g, step.scene.asset, 'world');
    const room = root.LWProcessRooms.build(kit, g, step, !custom);
    room.setActive(false);
-   const name = captions.caption(T, step.name, '#edf2f7');
+   const name = captions.caption(T, step.name, colours.text);
    name.sprite.center.set(.5, 0);
    name.sprite.position.set(0, 4.6, -2.2);
    g.add(name.sprite);
    names.push({caption: name, text: step.name});
    // The room kind sub-label shares the front caption pill with the count, so nothing floats over the props.
    const sub = captions.sub(step, theme);
-   const lamp = kit.piece(g, 'ball', 4.35, 1.65, -4.25, .12, .12, .12, '#91b9d5');
-   kit.fixed(g, 'box', 0, .12, 4.2, 8, .07, .12, '#15222e');
-   const bar = kit.piece(g, 'box', -4, .17, 4.2, .001, .07, .14, '#ffbb73');
+   const lamp = kit.piece(g, 'ball', 4.35, 1.65, -4.25, .12, .12, .12, colours['state-queued']);
+   kit.fixed(g, 'box', 0, .12, 4.2, 8, .07, .12, colours['progress-track']);
+   const bar = kit.piece(g, 'box', -4, .17, 4.2, .001, .07, .14, colours['state-active']);
    bar.visible = false;
    if (step.kind === 'fork' && step.mode === 'inclusive') {
     // A gateway diamond with a ring on a post by the back wall marks the inclusive fork; the diamond carries the marker for checks.
-    const diamond = kit.piece(g, 'box', -4.1, 2.25, -4.2, .85, .85, .14, '#c79871');
+    const diamond = kit.piece(g, 'box', -4.1, 2.25, -4.2, .85, .85, .14, colours.gateway);
     diamond.rotation.z = Math.PI / 4;
     diamond.userData.glyph = 'inclusive-fork';
-    kit.fixed(g, 'ring', -4.1, 2.25, -4.1, .3, .3, .3, '#13181f');
-    kit.fixed(g, 'cylinder', -4.1, 1.35, -4.2, .05, 1.2, .05, '#c79871');
+    kit.fixed(g, 'ring', -4.1, 2.25, -4.1, .3, .3, .3, colours.stage);
+    kit.fixed(g, 'cylinder', -4.1, 1.35, -4.2, .05, 1.2, .05, colours.gateway);
    }
    // The caption hangs below the room's front edge (its top on the floor edge), clear of the queue rail and bench.
-   const front = captions.caption(T, ['Ready', sub], '#e3eaf2', step.instances || step.deadline ? 25 : 30);
+   const front = captions.caption(T, ['Ready', sub], colours['caption-front'], step.instances || step.deadline ? 25 : 30);
    front.sprite.center.set(.5, 1);
    front.sprite.position.set(0, .05, 5.9);
    front.sprite.scale.multiplyScalar(.75);
@@ -102,7 +114,7 @@ declare namespace LWProcess3DStations {
   const focus = kit.group(scene);
   focus.visible = false;
   for (const [x, z, w, d] of [[0, -4.7, 10.4, .14], [0, 4.7, 10.4, .14], [-5.2, 0, .14, 9.4], [5.2, 0, .14, 9.4]] as const) {
-   kit.fixed(focus, 'box', x, .05, z, w, .08, d, '#ffbb73', {emissive: '#ff9a3c', emissiveIntensity: .6});
+   kit.fixed(focus, 'box', x, .05, z, w, .08, d, colours.accent, {emissive: colours['selection-glow'], emissiveIntensity: .6});
   }
   const links = flows(T, scene, kit, definition);
   kit.seal();
@@ -130,8 +142,7 @@ declare namespace LWProcess3DStations {
    for (const [id, s] of stations) {
     const metric = metrics.get(id), step = s.step, here = byStep.get(id) ?? [];
     if (!metric) continue;
-    const active = here.filter(t => t.status === 'active'), duration = step.duration ?? 1;
-    s.progress = active.length ? active.reduce((n, t) => n + (duration - t.remaining) / duration, 0) / active.length : 0;
+    s.progress = root.LWProcessWorkState.progress(step, here);
     const taskLike = step.kind === 'task' || AUTOMATED.has(step.kind);
     const stored = here.filter(t => t.status === 'backlog' || taskLike && t.status === 'queued').length;
     s.room.setActive(metric.active > 0 || metric.timers.waiting > 0 || step.kind === 'join' && stored > 0);
@@ -140,8 +151,7 @@ declare namespace LWProcess3DStations {
     s.bar.visible = s.progress > 0;
     s.bar.scale.x = Math.max(.001, s.progress * 8);
     s.bar.position.x = -4 + s.progress * 4;
-    const tone = metric.active ? '#ffbb73' : metric.timers.waiting ? '#d9c58a' : metric.queued ? '#91b9d5' : '#6d9585';
-    s.lamp.material = kit.mat(tone, {emissive: metric.active ? '#704c2d' : '#000000'});
+    s.lamp.material = kit.mat(colours[lampOf(metric)], {emissive: metric.active ? colours['lamp-glow'] : colours.unlit});
     const extra = captions.extra(step, metric, here), lines = [captions.status(step, metric, stored), ...extra ? [extra] : [], s.sub];
     const text = lines.join(' | ');
     if (s.front.sprite.userData.caption === text) continue;
@@ -165,8 +175,13 @@ declare namespace LWProcess3DStations {
  }
  /** Flow arrows from room to room as two merged meshes, plus one record object per flow for checks. */
  function flows(T: LWThree.Module, scene: LWThree.Scene, kit: LWProcess3DKit.Kit, definition: LWProcess.Definition): LWThree.Group {
-  const links = kit.group(scene), at = new Map(definition.steps.map(s => [s.id, s])), segments: number[] = [], colours: number[] = [];
+  const links = kit.group(scene), at = new Map(definition.steps.map(s => [s.id, s])), segments: number[] = [], rgb: number[] = [];
   const heads: LWProcess3DBake.Piece[] = [];
+  /** Deadline paths by mode, conditional paths and plain paths. */
+  const roleOf = (f: LWProcess.Flow): LWProcessPalette.Role => {
+   if (f.on === 'deadline') return TONE[at.get(f.from)?.deadline?.mode ?? 'interrupt']!;
+   return f.when ? 'path-conditional' : 'scene-path';
+  };
   for (const f of definition.flows) {
    const a = at.get(f.from)?.scene.position, b = at.get(f.to)?.scene.position;
    if (!a || !b) continue;
@@ -176,20 +191,22 @@ declare namespace LWProcess3DStations {
    // A deadline path runs level, a little above the others.
    dir.normalize();
    if (late) from.y += .12;
-   const color = late ? TONE[at.get(f.from)?.deadline?.mode ?? 'interrupt']! : f.when ? CONDITIONAL : PLAIN, tint = new T.Color(color);
+   const color = kit.colours[roleOf(f)], tint = new T.Color(color);
    // The arrow is as long as the gap between the rooms minus 3, with a head 0.8 long and 0.45 wide.
    const reach = Math.max(.1, length - 3), end = from.clone().addScaledVector(dir, Math.max(.0001, reach - .8));
-   segments.push(from.x, from.y, from.z, end.x, end.y, end.z); colours.push(tint.r, tint.g, tint.b, tint.r, tint.g, tint.b);
+   segments.push(from.x, from.y, from.z, end.x, end.y, end.z);
+   rgb.push(tint.r, tint.g, tint.b, tint.r, tint.g, tint.b);
    const head = from.clone().addScaledVector(dir, reach - .4);
    heads.push({kind: 'cone', x: head.x, y: head.y, z: head.z, sx: .225, sy: .8, sz: .225, color,
     turn: [0, Math.atan2(dir.z, -dir.x), Math.acos(Math.max(-1, Math.min(1, dir.y)))]});
    const record = new T.Object3D();
-   record.userData = {flow: f.id, deadline: late, conditional: !!f.when, color}; links.add(record);
+   record.userData = {flow: f.id, deadline: late, conditional: !!f.when, color};
+   links.add(record);
   }
   if (!segments.length) return links;
   const lines = new T.BufferGeometry();
   lines.setAttribute('position', new T.BufferAttribute(new Float32Array(segments), 3));
-  lines.setAttribute('color', new T.BufferAttribute(new Float32Array(colours), 3));
+  lines.setAttribute('color', new T.BufferAttribute(new Float32Array(rgb), 3));
   links.add(new T.LineSegments(lines, new T.LineBasicMaterial({vertexColors: true, toneMapped: false})));
   const baked = root.LWProcess3DBake.bake(T, kind => kit.shape(kind), [heads]).geometry;
   links.add(new T.Mesh(baked, new T.MeshBasicMaterial({vertexColors: true, toneMapped: false})));

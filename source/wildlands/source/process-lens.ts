@@ -7,7 +7,7 @@
 declare namespace LWProcessLens {
  interface Surface {
   draw(view: LWProcessApp.View): void;
-  /** Resets the lens' own scroll or fit state (the Frame view button). */
+  /** Resets the lens' own scroll or fit state (the Fit to view button). */
   frame(): void;
   /** Drops the current lens surface (a different process or a replaced definition); the next draw builds a fresh one. */
   reset(): void;
@@ -27,7 +27,11 @@ declare namespace LWProcessLens {
   function reset(): void {inner?.dispose(); inner = null; kind = null; host.replaceChildren();}
   return {
    draw(view) {
-    if (kind !== view.lens) {reset(); kind = view.lens; inner = view.lens === 'journey' ? root.LWProcessJourney.create(host, onSelect) : root.LWProcessSipoc.create(host, onSelect);}
+    if (kind !== view.lens) {
+     reset();
+     kind = view.lens;
+     inner = view.lens === 'journey' ? root.LWProcessJourney.create(host, onSelect) : root.LWProcessSipoc.create(host, onSelect);
+    }
     inner!.draw(view);
    },
    frame() {inner?.frame?.();},

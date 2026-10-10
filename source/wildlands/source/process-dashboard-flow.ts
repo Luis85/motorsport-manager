@@ -1,5 +1,6 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-dashboard-model.ts" />
+/// <reference path="./process-dashboard-window.ts" />
 /**
  * Dashboard section 2 (LWProcessDashboardFlow): "Flow over time": arrivals against finishes, work in progress over time, throughput
  * per interval and the Little's law identity. Pure view-models over the detached view and the optional sampled series (research
@@ -10,11 +11,13 @@
  * divided by the interval length. Little's law over [W, T] is exact (L = A / (T - W), λ = S / (T - W), W̄ = A / S, with A the
  * case-minute area in the window and S the cases in progress at W plus the arrivals after it); the "stable flow" conditions are
  * listed as observations, never scored. Without a series, W is 0 and the snapshot's `wipArea` gives the whole-run identity.
+ * With a window (LWProcessDashboardWindow) the time charts mark W ("measuring from here"), the arrivals and work-in-progress
+ * captions add the window's exact totals with its label, and Little's law covers [W, last sample].
  */
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessDashboardModel: LWProcessDashboardModel.Api; LWProcessTerms: LWProcessTerms.Api;
-  LWProcessDashboardFlow?: LWProcessDashboardSections.Builder};
+  LWProcessDashboardWindow: LWProcessDashboardWindow.Api; LWProcessDashboardFlow?: LWProcessDashboardSections.Builder};
  type Input = LWProcessDashboardData.Input;
  type Panel = LWProcessDashboardModel.Panel;
  type Series = LWProcessDashboardData.Series;
@@ -27,6 +30,7 @@
  const legendOf = (series: LWProcessChart.Series[]) => series.map(x => ({label: x.label, tone: x.tone}));
  /** A time-series table: a long one keeps its latest rows when shortened. */
  const timeTable = (caption: string, head: string[], rows: (string | number)[][]) => ({...u().table(caption, head, rows), tail: true});
+ const upper = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
  function arrivals(input: Input): Panel {
   const {definition: d, snapshot: q} = input.view, m = q.metrics, t = root.LWProcessTerms.of(d), U = u(), s = sampled(input, 1);
   const finished = m.completed + m.failed;
@@ -35,6 +39,14 @@
   const base = U.panel('arrivals', 'Arrivals and finishes', 'Is work arriving faster than it finishes? How much is open?', {caption: text});
   if (q.minute === 0) return {...base, empty: 'No simulated time yet.'};
   if (!s) return {...base, empty: NEEDS_SERIES, notes: [text]};
+  const w = root.LWProcessDashboardWindow.of(input), span = w ? upper(root.LWProcessDashboardWindow.label(w)) : '';
+  const windowed = w ? ` ${span}, ${U.number(w.arrived)} arrived and ${U.number(w.completed + w.failed)} finished.` : '';
+  const drawn = U.memo(input, 'arrivals', () => cumulative(input, s));
+  return {...base, caption: text + drawn.growth + windowed, legend: drawn.legend, chart: drawn.chart, table: drawn.table};
+ }
+ /** The series part of the arrivals panel (chart, legend, table and the growth sentence), built once per series. */
+ function cumulative(input: Input, s: Series): Pick<Panel, 'legend' | 'chart' | 'table'> & {growth: string} {
+  const d = input.view.definition, t = root.LWProcessTerms.of(d), U = u();
   const fin = s.minutes.map((_, i) => s.run.completed[i]! + s.run.failed[i]!), outcomes = t.journey && d.steps.some(x => x.outcome);
   const series: LWProcessChart.Series[] = [{label: 'Arrived', values: s.run.arrived, tone: 'wait'}];
   if (outcomes) series.push({label: 'Goals reached', values: s.run.goals, tone: 'goal'}, {label: 'Lost', values: s.run.lost, tone: 'blocked'});
@@ -45,8 +57,9 @@
   while (k > 0 && s.run.wip[k - 1]! < s.run.wip[k]!) k--;
   const growth = s.minutes.length - 1 - k >= 3 ? ` Open work has grown at every sample since minute ${U.number(s.minutes[k]!)}.` : '';
   const rows = s.minutes.map((x, i) => [x, s.run.arrived[i]!, fin[i]!, s.run.wip[i]!, s.run.dropped[i]!]);
-  const title = `Cumulative arrived and finished ${t.many} by business minute`;
-  return {...base, caption: text + growth, legend: legendOf(series), chart: {kind: 'lines', title, axis: t.many, xs: s.minutes, series, step: true, mark: null},
+  const title = `Cumulative arrived and finished ${t.many} by business minute`, W = input.window ?? 0;
+  const chart: LWProcessDashboardModel.Chart = {kind: 'lines', title, axis: t.many, xs: s.minutes, series, step: true, mark: W || null};
+  return {growth, legend: legendOf(series), chart,
    table: timeTable(`Cumulative ${t.many} at each sample minute`, ['Minute', 'Arrived', 'Finished', 'Open', 'Dropped'], rows)};
  }
  function work(input: Input): Panel {
@@ -56,8 +69,10 @@
   if (!s) return {...base, empty: NEEDS_TWO};
   const xs = s.minutes.slice(1), peak = s.run.wipPeak.slice(1), top = peak.indexOf(Math.max(...peak));
   const mean = diff(s.run.wipArea).map((a, i) => a / Math.max(1, s.minutes[i + 1]! - s.minutes[i]!));
+  const w = root.LWProcessDashboardWindow.of(input);
+  const windowed = w && w.minutes ? ` Mean ${U.number(w.wipArea / w.minutes)} ${root.LWProcessDashboardWindow.label(w)}.` : '';
   const caption = `Average open ${t.many} per interval went from ${U.number(mean[0]!)} to ${U.number(mean.at(-1)!)}; `
-   + `the peak was ${U.number(peak[top]!)} in the interval to minute ${U.number(xs[top]!)}.`;
+   + `the peak was ${U.number(peak[top]!)} in the interval to minute ${U.number(xs[top]!)}.${windowed}`;
   const series: LWProcessChart.Series[] = [{label: 'Mean in progress', values: mean, tone: 'work'},
    {label: 'Peak in the interval', values: peak, tone: 'idle'}];
   const title = `Open ${t.many} per interval of ${U.number(s.every)} min`;
@@ -84,12 +99,10 @@
  interface Window {A: number; S: number; span: number; came: number; left: number; finishedMean: number | null; start: number | null; end: number | null}
  /** Little's law quantities over [W, last sample] from the series, or over [0, T] from the snapshot; null without the area. */
  function window(input: Input): Window | null {
-  const q = input.view.snapshot, m = q.metrics as Metrics, s = input.series, W = input.window ?? 0;
-  if (W > 0 && s && s.minutes.includes(W)) {
-   const i = s.minutes.indexOf(W), e = s.minutes.length - 1, r = s.run, done = r.completed[e]! - r.completed[i]!;
-   return {A: r.wipArea[e]! - r.wipArea[i]!, S: r.wip[i]! + r.arrived[e]! - r.arrived[i]!, span: s.minutes[e]! - W, came: r.arrived[e]! - r.arrived[i]!,
-    left: r.completed[e]! + r.failed[e]! - r.completed[i]! - r.failed[i]!, finishedMean: done ? (r.cycleSum[e]! - r.cycleSum[i]!) / done : null,
-    start: r.wip[i]!, end: r.wip[e]!};
+  const q = input.view.snapshot, m = q.metrics as Metrics, s = input.series, w = root.LWProcessDashboardWindow.of(input);
+  if (w) {
+   return {A: w.wipArea, S: w.wipStart + w.arrived, span: w.minutes, came: w.arrived, left: w.completed + w.failed,
+    finishedMean: w.completed ? w.cycleSum / w.completed : null, start: w.wipStart, end: w.wipEnd};
   }
   if (m.wipArea === undefined) return null;
   const finishedMean = m.completed ? (m.cycleSum ?? m.meanCycleMinutes * m.completed) / m.completed : null;
@@ -124,8 +137,11 @@
   return {...base, caption: lines[0]!, chart: {kind: 'text', title: "Little's law over the window", lines},
    table: U.table("Little's law quantities", ['Quantity', 'Value'], rows)};
  }
- const sections = (input: Input): LWProcessDashboardModel.Section[] =>
-  [{id: 'flow', title: 'Flow over time', panels: [arrivals(input), work(input), throughput(input), little(input)]}];
+ function sections(input: Input): LWProcessDashboardModel.Section[] {
+  // Panels drawn only from a run history of two samples or more are built once per series (LWProcessDashboardModel.util.memo).
+  const kept = (key: string, make: (i: Input) => Panel) => sampled(input, 2) ? u().memo(input, key, () => make(input)) : make(input);
+  return [{id: 'flow', title: 'Flow over time', panels: [arrivals(input), kept('wip', work), kept('throughput', throughput), little(input)]}];
+ }
  root.LWProcessDashboardFlow = {sections};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessDashboardFlow;
 })(globalThis);

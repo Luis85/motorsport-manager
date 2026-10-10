@@ -1,4 +1,5 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-html.ts" />
 /// <reference path="./process-step-model.ts" />
 /// <reference path="./process-step-checks.ts" />
 /// <reference path="./process-step-history.ts" />
@@ -51,13 +52,14 @@ declare namespace LWProcessStepEditor {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessStepModel: LWProcessStepModel.Api; LWProcessStepChecks: LWProcessStepChecks.Api; LWProcessCatalog: LWProcess.Catalog;
+ const root = inputRoot as {LWProcessHtml: LWProcessHtml.Api;
+  LWProcessStepModel: LWProcessStepModel.Api; LWProcessStepChecks: LWProcessStepChecks.Api; LWProcessCatalog: LWProcess.Catalog;
   LWProcessDraft: LWProcessDraft.Api; LWProcessDialog: LWProcessDialog.Api; LWProcessStepSections: LWProcessStepSections.Api;
   LWProcessStepLogic: LWProcessStepLogic.Api; LWProcessStepFlows: LWProcessStepFlows.Api; LWProcessStepHistory: LWProcessStepHistory.Api;
   LWProcessStepStructure: LWProcessStepStructure.Api; LWProcessStepRows: LWProcessStepRows.Api; LWProcessStepProblems: LWProcessStepProblems.Api;
   LWProcessStepEditor?: LWProcessStepEditor.Api};
  type M = LWProcessStepModel.Model;
- const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
+ const {esc} = root.LWProcessHtml;
  const setPath = (target: unknown, path: string, value: unknown) => {
   const keys = path.split('.');
   let at = target as Record<string, unknown>;

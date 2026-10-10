@@ -52,7 +52,11 @@ declare namespace LWProcessDiff {
   for (const id of a.keys()) if (!b.has(id)) n++;
   return n;
  }
- const rest = (d: LWProcess.Definition) => { const {steps: _s, flows: _f, resources: _r, arrivals: _a, revision: _v, ...others} = d; return others as Record<string, unknown>; };
+ /** The process settings of a definition: every top-level field except the lists and the revision. */
+ function rest(d: LWProcess.Definition): Record<string, unknown> {
+  const {steps: _s, flows: _f, resources: _r, arrivals: _a, revision: _v, ...others} = d;
+  return others as Record<string, unknown>;
+ }
  function settings(active: LWProcess.Definition, draft: LWProcess.Definition): string[] {
   const left = rest(active), right = rest(draft);
   return [...new Set([...Object.keys(left), ...Object.keys(right)])].filter(k => !same(left[k], right[k])).sort();
@@ -118,7 +122,13 @@ declare namespace LWProcessDiff {
  }
  function describe(c: LWProcessDiff.Changes, prefix = 'Unapplied draft'): string {
   if (c.invalid) return `${prefix}: not valid process JSON yet`;
-  const parts = [c.steps && plural(c.steps, 'step'), c.flows && plural(c.flows, 'flow'), c.resources && plural(c.resources, 'resource'), c.arrivals && plural(c.arrivals, 'arrival rule'), c.meta && plural(c.meta, 'process setting')].filter(Boolean);
+  const parts = [
+   c.steps && plural(c.steps, 'step'),
+   c.flows && plural(c.flows, 'flow'),
+   c.resources && plural(c.resources, 'resource'),
+   c.arrivals && plural(c.arrivals, 'arrival rule'),
+   c.meta && plural(c.meta, 'process setting'),
+  ].filter(Boolean);
   return parts.length ? `${prefix}: ${parts.join(', ')} changed` : `${prefix}: formatting only`;
  }
  root.LWProcessDiff = {compare, settings, empty, detail, describe};

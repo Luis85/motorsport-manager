@@ -65,11 +65,16 @@ test('Tune values and the inspector carry no local escaper; the remaining escape
   const text = fs.readFileSync(path.join(dir, file), 'utf8');
   assert.doesNotMatch(text, local, file + ' has no local escaper'); assert.match(text, /LWProcessHtml/, file + ' uses LWProcessHtml');
  }
- // The modules a later wave still migrates; the list shrinks as they move, and a new local escaper fails here.
+ // The dashboard modules that build markup escape with LWProcessHtml directly, never through a chart's or a local copy of it.
+ for (const file of ['process-chart.ts', 'process-dashboard-html.ts', 'process-dashboard-whatif.ts']) {
+  const text = fs.readFileSync(path.join(dir, file), 'utf8');
+  assert.doesNotMatch(text, local, file + ' has no local escaper');
+  assert.doesNotMatch(text, /\bC(\(\))?\.esc\b/, file + ' does not escape through LWProcessChart');
+  assert.match(text, /root\.LWProcessHtml\.esc\b/, file + ' escapes with LWProcessHtml.esc');
+ }
+ // Every studio module now escapes through LWProcessHtml; a new local escaper fails here.
  const remaining = fs.readdirSync(dir).filter(f => /^process-.*\.ts$/.test(f) && f !== 'process-html.ts' && local.test(fs.readFileSync(path.join(dir, f), 'utf8'))).sort();
- assert.deepEqual(remaining, ['process-activity.ts', 'process-definition-editor.ts', 'process-definition-json.ts',
-  'process-dialog.ts', 'process-io.ts', 'process-present.ts', 'process-slots.ts', 'process-step-editor.ts', 'process-step-list.ts', 'process-step-problems.ts',
-  'process-step-sections.ts', 'process-step-structure.ts']);
+ assert.deepEqual(remaining, []);
 });
 
 /** A small pinned process: one task on a 2-unit pool with a fixed cost, a biased exponential timing and a display calendar. */

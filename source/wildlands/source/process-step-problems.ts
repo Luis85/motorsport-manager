@@ -1,4 +1,5 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-html.ts" />
 /// <reference path="./process-step-model.ts" />
 /// <reference path="./process-step-checks.ts" />
 /**
@@ -7,7 +8,7 @@
  * field into the field's error slot (`data-errs`) with `aria-invalid` on its control, opens the collapsed Journey notes when one of
  * their fields has a problem, and builds the status list ("2 problems in this step" as links that focus the field, then
  * "Elsewhere in the draft") and the refusal shown when Apply is refused. It reads the dialog body it is given; it never writes the
- * draft, ticks or touches storage. All markup it returns is escaped.
+ * draft, ticks or touches storage. All markup it returns is escaped with LWProcessHtml's `esc`.
  */
 declare namespace LWProcessStepProblems {
  interface Item extends LWProcessStepModel.Scoped {local: boolean}
@@ -32,10 +33,10 @@ declare namespace LWProcessStepProblems {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessCatalog: LWProcess.Catalog; LWProcessStepChecks: LWProcessStepChecks.Api;
+ const root = inputRoot as {LWProcessHtml: LWProcessHtml.Api; LWProcessCatalog: LWProcess.Catalog; LWProcessStepChecks: LWProcessStepChecks.Api;
   LWProcessStepProblems?: LWProcessStepProblems.Api};
  type Item = LWProcessStepProblems.Item;
- const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
+ const {esc} = root.LWProcessHtml;
  const LABELS: [RegExp, (n: number) => string][] = [[/^set\.(\d+)/, n => `Value ${n}`], [/^add\.(\d+)/, n => `Counter ${n}`],
   [/^outputs\.(\d+)/, n => `Output ${n}`], [/^needs\.(\d+)/, n => `Need ${n}`], [/^flows\.(\d+)/, n => `Path ${n}`],
   [/^draws\.(\d+)/, n => `Random field ${n}`], [/^pools\.(\d+)/, () => ''], [/^instances/, () => 'Multiple instances'], [/^deadline/, () => 'Deadline'],

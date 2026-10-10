@@ -28,8 +28,14 @@ declare namespace LWProcessTuningSipoc {
  const F = root.LWProcessTuningFields, {html} = root.LWProcessHtml, LIMIT = 8;
  type Key = 'suppliers' | 'customers';
  const KINDS: Record<Key, {noun: string; heading: string; detail: 'supplies' | 'receives'; detailLabel: string; help: string; empty: string}> = {
-  suppliers: {noun: 'Supplier', heading: 'Suppliers', detail: 'supplies', detailLabel: 'What they supply (optional, up to 160 characters)', help: 'Who or what provides the inputs, for example a payment provider.', empty: 'No suppliers are named.'},
-  customers: {noun: 'Customer', heading: 'Customers', detail: 'receives', detailLabel: 'What they receive (optional, up to 160 characters)', help: 'Who receives the outputs, for example the shopper or the business.', empty: 'No customers are named.'},
+  suppliers: {
+   noun: 'Supplier', heading: 'Suppliers', detail: 'supplies', detailLabel: 'What they supply (optional, up to 160 characters)',
+   help: 'Who or what provides the inputs, for example a payment provider.', empty: 'No suppliers are named.',
+  },
+  customers: {
+   noun: 'Customer', heading: 'Customers', detail: 'receives', detailLabel: 'What they receive (optional, up to 160 characters)',
+   help: 'Who receives the outputs, for example the shopper or the business.', empty: 'No customers are named.',
+  },
  };
  const KEYS: Key[] = ['suppliers', 'customers'];
  const HELP = 'Inputs, process stages and outputs are derived automatically from the process; only suppliers and customers need to be written. '
