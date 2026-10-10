@@ -11,7 +11,9 @@ model or Littlewild visual on its own, use [Model Forge](../reference/model-forg
 it imports one `definition.json` variant into one guarded model document and
 exports it back with `export --format littlewild` to a
 `<family>/<id>/definition.json` path, replacing only that variant of the
-`visual` facet through the same writer as Scene Forge.
+`visual` facet through the same writer as Scene Forge. Model Forge keeps the
+definition's own representation wherever a field is unchanged, so an unedited
+import exports byte-identically and an edit changes only the edited fields.
 
 ## Requirements
 

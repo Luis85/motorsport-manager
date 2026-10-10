@@ -25,6 +25,18 @@ export function kindForPath(file: string): DocumentKind | undefined {
   return undefined;
 }
 
+/** A warning when a document's file stem is not its model ID (`<id>.model.json`). */
+export function stemWarnings(file: string, id: string): string[] {
+  const name = file.split(/[\\/]/).pop() ?? file;
+  const kind = kindForPath(name);
+  const stem = kind ? name.slice(0, -documentSuffixes[kind].length) : name;
+  return kind && stem !== id
+    ? [
+        `The file name ${name} does not match model ID ${id}; ${id}${documentSuffixes[kind]} keeps paths and IDs aligned.`,
+      ]
+    : [];
+}
+
 /** A parameter definition exactly as the model schema stores it under `parameters`. */
 export const ParameterSpecSchema = ModelSchema.shape.parameters.unwrap().valueType;
 export type ParameterSpec = z.infer<typeof ParameterSpecSchema>;

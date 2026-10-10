@@ -10,7 +10,7 @@ import { auditDocument } from '../application/inspect.js';
 import { documentExportFormats, exportDocument } from '../infra/exporters.js';
 import { previewDocument, reviewDocument } from '../infra/preview.js';
 import { atomicWrite } from '../infra/files.js';
-import { historyDirectory } from '../infra/store.js';
+import { checkOutput } from '../infra/paths.js';
 import { parseJson, parseParameters } from './input.js';
 import { integer } from './options.js';
 import type { CommandContext } from './context.js';
@@ -108,9 +108,10 @@ export function registerOutputCommands(c: CommandContext) {
       if (opts.background && !/^#[0-9a-fA-F]{6}$/.test(opts.background))
         fail('INVALID_OPTION', '--background must be #rrggbb.');
       const loaded = await load();
-      const out = resolvePath(opts.out);
-      if (out === historyDirectory(loaded.path))
-        fail('INVALID_PATH', 'Review output cannot be the document history directory.');
+      const out = await checkOutput(resolvePath(opts.out), {
+        directory: true,
+        source: loaded.path,
+      });
       output(
         await reviewDocument(loaded, out, plan, {
           parameters: parseParameters(opts.parameters),
@@ -122,12 +123,14 @@ export function registerOutputCommands(c: CommandContext) {
   program
     .command('preview')
     .description('Write a self-contained, read-only orbit preview HTML file')
-    .requiredOption('-o, --out <file>', 'Output .html file')
+    .requiredOption('-o, --out <file>', 'New output .html file')
+    .option('--overwrite', 'Replace an existing output file deliberately')
     .option('--parameters <json>', 'Parameter overrides')
     .action(async (opts) => {
       const loaded = await load();
       const out = resolvePath(opts.out);
       if (!out.endsWith('.html')) fail('INVALID_OPTION', 'Preview output must end with .html.');
+      await checkOutput(out, { overwrite: opts.overwrite, source: loaded.path });
       const html = await previewDocument(loaded, parseParameters(opts.parameters));
       await atomicWrite(out, html);
       output({ path: out, bytes: Buffer.byteLength(html), offline: true, readOnly: true });
@@ -161,30 +164,46 @@ export function registerOutputCommands(c: CommandContext) {
     )
     .requiredOption(
       '-o, --out <path>',
-      'Output file; littlewild needs <family>/<id>/definition.json',
+      'New output file; littlewild needs <family>/<id>/definition.json and merges into it',
     )
+    .option('--overwrite', 'Replace an existing output file deliberately (not littlewild)')
     .option('--validate', 'Khronos glTF validation; rejects invalid output before writing')
     .option('--parameters <json>', 'Parameter overrides (rendered formats and littlewild)')
     .addOption(
-      new Option('--family <family>', 'Littlewild family').choices([
-        'items',
-        'buildings',
-        'creatures',
-        'pets',
-      ]),
+      new Option(
+        '--family <family>',
+        'Littlewild family; defaults to the <family> directory of the --out path, else items',
+      ).choices(['items', 'buildings', 'creatures', 'pets']),
     )
     .option('--variant <name>', 'Littlewild model variant (default world)')
-    .option('--name <name>', 'Littlewild display name; defaults to the model name')
+    .option(
+      '--name <name>',
+      'Littlewild display name; defaults to the existing definition name, else the model name',
+    )
     .option('--materials <json>', 'Littlewild inline material replacements by material ID')
     .option('--check', 'Littlewild: fail with LITTLEWILD_STALE when the definition differs')
     .option('--dry-run', 'Littlewild: compile and compare without writing')
     .action(async (opts) => {
       const littlewild = opts.format === 'littlewild';
-      const littlewildFlags = ['family', 'variant', 'name', 'materials', 'check', 'dryRun'];
-      if (!littlewild && littlewildFlags.some((flag) => opts[flag] !== undefined))
+      const littlewildFlags = {
+        family: '--family',
+        variant: '--variant',
+        name: '--name',
+        materials: '--materials',
+        check: '--check',
+        dryRun: '--dry-run',
+      };
+      const used = Object.entries(littlewildFlags).filter(([key]) => opts[key] !== undefined);
+      if (!littlewild && used.length)
         fail(
           'INVALID_OPTION',
-          `--${littlewildFlags.join(', --')} apply to --format littlewild only.`,
+          `${used.map(([, flag]) => flag).join(', ')} apply to --format littlewild only (${Object.values(littlewildFlags).join(', ')}).`,
+          { flags: used.map(([, flag]) => flag) },
+        );
+      if (littlewild && opts.overwrite)
+        fail(
+          'INVALID_OPTION',
+          '--overwrite does not apply to littlewild: the export merges into an existing definition.json (use --dry-run or --check first).',
         );
       const loaded = await load();
       output(
@@ -192,10 +211,11 @@ export function registerOutputCommands(c: CommandContext) {
           format: opts.format,
           out: resolvePath(opts.out),
           validate: opts.validate,
+          overwrite: opts.overwrite,
           parameters: parseParameters(opts.parameters),
           littlewild: littlewild
             ? {
-                family: opts.family ?? 'items',
+                family: opts.family,
                 variant: opts.variant ?? 'world',
                 name: opts.name,
                 materials: opts.materials ? parseJson(opts.materials) : undefined,

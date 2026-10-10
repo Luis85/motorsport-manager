@@ -33,7 +33,8 @@ bin/model-forge -d lamp.model.json export --format glb --validate --out lamp.glb
 - Writes accept `--dry-run`, `--expected-revision <n>` and `--expected-state <hash>` (or the
   same fields in a batch). A stale guard fails with `REVISION_CONFLICT` or `STATE_CONFLICT`;
   inspect again and rebase instead of dropping the guard.
-- Operation failures carry `details.operationIndex` (zero-based).
+- Operation failures carry `details.operationIndex` (zero-based). `error.hint` is the
+  remedy for that failure in its context.
 - `discover` (alias `catalog`), `describe [command...]` and `schema --kind <kind> [--raw]`
   are the machine-readable references; `doctor` checks Playwright and Chromium.
 
@@ -44,14 +45,25 @@ bin/model-forge -d lamp.model.json export --format glb --validate --out lamp.glb
 | `model`        | `<id>.model.json`        | the model                                  |
 | `model-bundle` | `<id>.model-bundle.json` | the `entry` model; other models are frozen |
 
-- `revision` is an optional integer in the editable model (absent means 0, so existing
-  recipes keep their bytes and hashes). A batch that changes nothing keeps the revision.
+- `revision` is an optional integer in the editable model. Revision 0 is written as no
+  field (`create` and `import` write none; an explicit `revision: 0` reads as absent), so
+  equal content has one `stateHash`. A batch that changes nothing keeps the revision.
 - `stateHash` is `sha256(canonical({model, dependencies}))`, the kernel's `modelStateHash`.
 - Each written edit holds `<document>.lock` from read through write, stores the replaced
   file byte-for-byte as `<document>.history/<revision>.json`, increments `revision` and
-  replaces the document atomically. Reads never lock. `history` lists revisions and
-  `restore <revision> --expected-revision <current>` writes a stored one as a new revision.
+  replaces the document atomically; a snapshot is never replaced (`HISTORY_CONFLICT`).
+  Reads never lock. `DOCUMENT_LOCKED` reports the holder `pid`, `createdAt` and whether it
+  is `stale` (its process is gone); locks are never removed automatically. `history`
+  lists revisions and `restore <revision> --expected-revision <current>` writes a stored
+  one as a new revision.
 - `create`, `import` and `example create` never overwrite a document.
+- Documents inside a Scene Forge project (an ancestor holds `forge.project.json`) are
+  read-only: writes, new documents and `model`/`model-bundle` exports there fail with
+  `PROJECT_MODEL_READONLY`. Import a copy with `import --project`, then hand it back with
+  `scene-forge model import --replace` and its guards.
+- Outputs never replace an existing file without `--overwrite` (`ALREADY_EXISTS`), and
+  never the source document, a `*.lock` file or a `*.history` entry (`INVALID_PATH`).
+  `export --format littlewild` merges into an existing definition instead.
 
 ## Commands
 
@@ -88,13 +100,19 @@ in `variantModels`. `--dry-run` plans and validates without writing.
 
 Portable `model` and `model-bundle` exports carry no editor revision, and a bundle export
 leaves out dependencies no node instantiates (`inspect` lists them as `unusedDependencies`).
-GLB, model-bundle and Littlewild exports are byte-identical to Scene Forge's
+GLB, model-bundle and new Littlewild definitions are byte-identical to Scene Forge's
 `export --model`, `model export` and `littlewild export` for the same model;
-`tests/agent.test.ts` checks this against `bin/scene-forge`.
+`tests/agent.test.ts` checks this against `bin/scene-forge`. Into an existing
+definition, Model Forge additionally keeps the source representation of everything
+unchanged (layout, key order, string material references, mesh names, engine-only
+fields such as `castShadow`), so an unedited Littlewild import re-exports
+byte-identically; `tests/littlewild-roundtrip.test.ts` checks every variant under
+`docs/concepts`.
 
 `review --out <new directory>` renders named views or a `--turntable` in one headless
 Chromium session and writes PNGs, `contact-sheet.png`, `review.json` (`review-result`,
-`provenance.tool: "model-forge"`) and a `replay-plan.json` with fixed cameras. `preview`
+`provenance.tool: "model-forge"`, top-level `scene`/`revision` naming the model and its
+document revision) and a `replay-plan.json` with fixed cameras. `preview`
 writes a self-contained, read-only orbit page.
 
 ## Development

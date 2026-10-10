@@ -217,7 +217,7 @@ test('dependencies are frozen: only explicit bundle operations change them', () 
   assert.deepEqual(replaced.result.changes.dependencies.updated, ['crate']);
   assert.throws(
     () => edit(bundle(), [{ op: 'removeDependency', id: 'crate' }]),
-    fails('REFERENCE_MISSING'),
+    fails('DEPENDENCY_IN_USE', 0),
   );
   const added = edit(bundle(), [
     { op: 'putDependency', model: boxModel('bin') },
@@ -251,4 +251,50 @@ test('nested instances accept rigs as patches on model-instance nodes', () => {
       ]),
     (error: unknown) => error instanceof ForgeError && error.code.startsWith('RIG'),
   );
+});
+
+test('removals and IDs fail on the operation that caused them, with contextual remedies', () => {
+  const withSecond = (op: unknown) =>
+    [{ op: 'putMaterial', id: 'extra', material: { color: '#ffffff' } }, op] as ModelOperation[];
+  assert.throws(
+    () => edit(document(), withSecond({ op: 'removeGeometry', id: 'missing' })),
+    fails('NOT_FOUND', 1),
+  );
+  assert.throws(
+    () => edit(document(), withSecond({ op: 'removeMaterial', id: 'missing' })),
+    fails('NOT_FOUND', 1),
+  );
+  const nested = bundle();
+  assert.throws(
+    () => edit(nested, withSecond({ op: 'removeGeometry', id: 'body' })),
+    (error: unknown) =>
+      fails('DEPENDENCY_READONLY', 1)(error) &&
+      (error as ForgeError).message.includes('frozen dependency crate'),
+  );
+  assert.throws(
+    () => edit(nested, withSecond({ op: 'removeMaterial', id: 'wood' })),
+    fails('DEPENDENCY_READONLY', 1),
+  );
+  assert.equal(nested.dependencies.crate.materials.wood.color, '#a0703c', 'input is unchanged');
+  assert.throws(
+    () => edit(document(), withSecond({ op: 'duplicateNode', id: 'body', newId: 'lid' })),
+    (error: unknown) =>
+      fails('DUPLICATE_ID', 1)(error) &&
+      /node list/.test(String(((error as ForgeError).details as { hint?: string }).hint)),
+  );
+  assert.throws(
+    () => edit(nested, withSecond({ op: 'removeDependency', id: 'crate' })),
+    (error: unknown) =>
+      fails('DEPENDENCY_IN_USE', 1)(error) &&
+      JSON.stringify((error as ForgeError).details).includes('"nodes":["item"]'),
+  );
+  for (const [spec, code] of [
+    [{ default: 5, min: 0, max: 1 }, 'PARAMETER_RANGE'],
+    [{ default: 0.5, integer: true }, 'PARAMETER_INTEGER'],
+    [{ default: 1, min: 2, max: 0 }, 'PARAMETER_RANGE'],
+  ] as const)
+    assert.throws(
+      () => edit(document(), withSecond({ op: 'putParameter', id: 'w', ...spec })),
+      fails(code, 1),
+    );
 });

@@ -9,7 +9,7 @@ const helpFooter = `
 Handbook: source/model-forge/README.md (repository root). One document = one model.
 Discover: model-forge discover | model-forge describe <command...> | model-forge schema --kind batch --raw
 Output: stdout {"ok":true,"data":...} with exit 0; stderr {"ok":false,"error":{code,message,...}} with exit 1.
-review and preview capture render through Playwright and Chromium (not bundled); run model-forge doctor.
+review renders through Playwright and Chromium (not bundled; run model-forge doctor). preview only writes HTML.
 `;
 
 // A closed downstream pipe (e.g. `model-forge --help | head`) ends output, not the process.

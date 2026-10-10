@@ -87,10 +87,14 @@ A `model` document is the existing Scene Forge model recipe (`schemaVersion: 1`,
 `kind: "model"`, `id`, `name`, optional `category` and `description`,
 `parameters`, `materials`, `geometries`, `nodes`). Model Forge adds one optional
 field to the **editable model** (the entry model of a bundle), `revision`: a
-nonnegative integer that is absent (meaning 0) in existing files, so their bytes
-and state hashes are unchanged. Scene Forge accepts the field everywhere it
-accepts a model. Portable `export --format model` and `model-bundle` outputs omit
-it.
+nonnegative integer. Revision 0 is written as **no field**: `create`, `import`
+and `example create` write none, the first committed edit writes `revision: 1`,
+and a hand-written `revision: 0` is read as absent. Equal content therefore has
+one `stateHash`, the same as Scene Forge computes for the plain model, whether or
+not a file spells out revision 0. Portable `export --format model` and
+`model-bundle` outputs omit the field, and `scene-forge model import` drops it
+from a raw document with a warning, so importing a document or its portable
+export gives the same project state.
 
 A model that nests other models (a node with `"type": "model"`) needs its
 dependencies to compile. Such a model is edited as a `model-bundle`
@@ -114,7 +118,22 @@ crate.model.json.history/    the replaced file, byte for byte, per committed rev
 
 Reads (`inspect`, `validate`, `node list`, `history`, `rig inspect`, `review`,
 `preview`, `audit`, `export`) never take the lock; writers replace the document
-atomically. `stateHash` is the SHA-256 of the canonical JSON of
+atomically. A writer records its `pid`, `hostname` and `createdAt` in the lock and
+removes the lock only while it is still its own. A second writer fails with
+`DOCUMENT_LOCKED` and these `details`, plus `stale: true` when the holder process
+no longer runs on this host (a crashed writer). Model Forge never removes a lock
+by itself: delete a stale lock only after verifying that no writer is running.
+A history snapshot is never replaced; if `<revision>.json` already exists for the
+current revision, the write fails with `HISTORY_CONFLICT` and changes nothing.
+
+**Scene Forge projects are read-only.** A document inside a Scene Forge project
+(any ancestor directory holding `forge.project.json`) can be read, validated,
+reviewed and exported elsewhere, but every write, every new document (`create`,
+`import --out`, `example create`) and every `model`/`model-bundle` export there
+fails with `PROJECT_MODEL_READONLY`. Its `hint` names the supported route: `import
+--project <dir> --id <id> --out <new document>`, edit the copy, `export --format
+model-bundle`, then `scene-forge model import --replace` with
+`--expected-revision` or `--expected-state`. `stateHash` is the SHA-256 of the canonical JSON of
 `{model, dependencies}`: the entry model and the frozen dependency library. Every
 read returns `revision` and `stateHash`; every write accepts them as guards.
 
@@ -163,8 +182,12 @@ formatting only. There are no prompts. Wherever JSON input is accepted, use
 6. Export for the consumer (see [Outputs and consumers](#outputs-and-consumers));
    use `--validate` for GLB/glTF and `--dry-run` or `--check` before rewriting a
    Littlewild definition.
-7. Never edit a model registered inside a Scene Forge project in place. Export a
+7. Never edit a model registered inside a Scene Forge project in place (Model
+   Forge refuses with `PROJECT_MODEL_READONLY`). Import a copy, export a
    `model-bundle` and import it with Scene Forge's guarded `model import`.
+8. Every error carries `hint`, the remedy for that failure in its context (for
+   example "choose another node ID" for a taken ID); `discover` lists the general
+   remedy of each code.
 
 A guarded edit of the quick-start crate (`add` produced revision 1):
 
@@ -217,12 +240,15 @@ choices of a command subtree as JSON for the installed build, and
 
 ### Lifecycle
 
-`create`, `import` and `example create` never overwrite an existing file
-(`DOCUMENT_EXISTS`).
+`create`, `import` and `example create` never overwrite an existing file or an
+orphaned `<document>.history` directory (`DOCUMENT_EXISTS`; `import --dry-run`
+checks the same), never write into a Scene Forge project
+(`PROJECT_MODEL_READONLY`), and add a `warnings` entry when the file name is not
+`<model id>.model.json` (or `.model-bundle.json`).
 
 | Command | Options and behavior |
 |---|---|
-| `create <path>` | `--id`, `--name` (both required), `--category`, `--description`, `--example <id>` (start from a bundled example under the new ID and metadata; its dependencies stay frozen). Writes a new document at revision 0; the path suffix selects `model` or `model-bundle` |
+| `create <path>` | `--id`, `--name` (both required), `--category`, `--description`, `--example <id>` (start from a bundled example under the new ID and metadata; its dependencies stay frozen). Writes a new document at revision 0 (no `revision` field); the path suffix selects `model` or `model-bundle` |
 | `import` | `--out <new document>` (required) and either `--from <file>` or `--project <dir> --id <model>` (a Scene Forge project and the model's nested closure, read-only; `PROJECT_LOCKED` while a Scene Forge command writes it). `--from` accepts a `model`, a `model-bundle` (`--entry <id>` selects a model other than its entry; only that model's dependency closure is kept), or a Littlewild `littlewild-definition`, `littlewild-creature-package` or `littlewild-3d-asset` (`--variant <name>`, default the first variant; `--prefix <id>` for the generated model IDs). `--dry-run` plans and validates without writing |
 
 A multi-variant Littlewild import writes **one** document for the selected
@@ -238,7 +264,7 @@ ID it would receive in `variantModels`, reports `sourceFormat` and
 | `inspect` | `--source`, `--parameters <json>`, `--node <id>`. Identity, revision, `stateHash`, parameters, dependencies, unused dependencies, counts and compiled statistics |
 | `validate` | Schema, references, dependencies, cycles, parameter ranges and compilation; returns `valid`, statistics and dependency lists |
 | `node list` | Filters intersect: `--ids <a,b>`, `--tag`, `--type group\|mesh\|model\|light`, `--model <dependency>`, `--parent <id>`, `--root`. `--details` adds source, world matrix, bounds and subtree statistics (`--parameters <json>` evaluates them at overrides). Paged with `--limit <1–1000>` (default 100) and `--offset` (default 0); the result has `total`, `offset` and `nextOffset` |
-| `history` | Stored revisions with their `stateHash` and snapshot path, plus the current revision |
+| `history` | Stored revisions with their `stateHash` and snapshot path, plus the current revision. An unreadable snapshot is listed with `error` (`code`, `message`) instead of a `stateHash`; the other revisions stay listed |
 | `rig inspect <node>` | Joints, clips and bindable mesh paths of a nested model-instance node |
 
 ### Write
@@ -253,7 +279,7 @@ document.
 |---|---|
 | `apply` | A batch `{expectedRevision?, expectedState?, operations}` from `--file`/`--data`; a command-line guard that disagrees with the batch's fails with `GUARD_MISMATCH` |
 | `put <kind> <id>` | `kind` is `node`, `geometry`, `material` or `parameter`; JSON from `--file`/`--data`. One `put*` operation |
-| `remove <id>` | Remove a node; `--cascade` also removes its descendants (otherwise a node with children fails with `HAS_CHILDREN`). Geometries and materials are removed through `apply` |
+| `remove <id>` | Remove a node; `--cascade` also removes its descendants (otherwise a node with children fails with `HAS_CHILDREN`). Geometries and materials are removed through `apply` (`removeGeometry`/`removeMaterial`; an ID the model does not define fails with `NOT_FOUND`, one only a frozen dependency defines with `DEPENDENCY_READONLY`) |
 | `add <primitive> <id>` | `box`, `sphere`, `cylinder`, `cone`, `torus`, `capsule` or `plane` with `--size`, `--radius`, `--height`, `--tube`, `--at`, `--rotate`, `--material` (default `clay`, created when absent) and `--parent`. Adds geometry `<id>_geo` and the mesh node; guards against the revision it read |
 | `node edit` | One patch (`--file`/`--data`, `schema --kind node-patch`) applied to every node matching the `node list` filters; an empty match fails with `EMPTY_SELECTION` |
 | `node transform <id>` | `--at`, `--rotate`, `--scale`: set only the given local components |
@@ -267,7 +293,7 @@ document.
 | `parameter remove <id>` | Remove a parameter no expression still uses |
 | `metadata set` | `--name`, `--category`, `--description`; `--clear-category` and `--clear-description` remove a field (a value and its clear flag together fail with `INVALID_OPTION`) |
 | `dependency put` | Bundle only: add a dependency model from `--file`/`--data`; `--replace` deliberately replaces a different one with the same ID |
-| `dependency remove <id>` | Bundle only: remove a dependency no node instantiates |
+| `dependency remove <id>` | Bundle only: remove a dependency no node instantiates; otherwise `DEPENDENCY_IN_USE` names the instancing nodes (`details.nodes`) and dependencies (`details.dependencies`) |
 | `rig bind <node>` | Replace the rig of a nested model-instance node with a rig document (`schema --kind rig`) |
 | `rig pose <node>` | `--joint <id> --rotation x,y,z`: absolute local joint rotation in degrees |
 | `rig remove <node>` | Remove the rig and return to the authored rest form |
@@ -292,9 +318,13 @@ lists the changed metadata fields (`name`, `category`, `description`). A dry run
 keeps the current `revision` and `stateHash` and reports the proposal. A
 `restore` result has `restoredFrom` and no `changes`. An operation that fails
 while it is applied reports its zero-based `details.operationIndex` and
-`details.operation`; failures found by the final validation of the whole result
-(for example, a removed geometry or dependency that is still referenced) carry no
-index.
+`details.operation` (the kernel's own details move to `details.cause`); this
+includes a taken node ID (`DUPLICATE_ID`), a missing geometry or material to
+remove, a dependency still in use and a `putParameter` default outside its range
+(`PARAMETER_RANGE`, `PARAMETER_INTEGER`). Failures found by the final validation
+of the whole result (for example, a removed geometry that is still referenced)
+carry no index. `--expected-state` must be the 64-digit hex `stateHash`;
+anything else fails with `INVALID_OPTION` before the document is read.
 
 A bundle around the crate: export it as a portable model, add it as a frozen
 dependency and instantiate it twice.
@@ -312,12 +342,20 @@ bin/model-forge -d "$OUT/stack.model-bundle.json" inspect
 
 ### Outputs
 
+Outputs never silently replace a file: `export` and `preview` fail with
+`ALREADY_EXISTS` when the output exists unless `--overwrite` is passed, and
+`review` does the same for a non-empty directory. No output may replace the
+source document, any `*.lock` file or anything inside a `*.history` directory,
+even with `--overwrite` (`INVALID_PATH`). `export --format littlewild` is the
+exception by contract: it merges into an existing `definition.json` (and refuses
+`--overwrite`).
+
 | Command | Options and behavior |
 |---|---|
-| `review --out <directory>` | Renders in one headless Chromium session: one PNG per view, `contact-sheet.png` (`--no-contact-sheet` skips it), `review.json` (`review-result` v1 with `provenance.tool: "model-forge"`, the document `revision`, `sourceStateHash`, camera settings and frame hashes) and `replay-plan.json` with fixed cameras. Views from `--views <names>` (default `iso,front,right,back,left,top`) or `--turntable <2–36>` with `--elevation`; `--width`/`--height` (64–2048, default 800×600), `--projection auto\|perspective\|orthographic`, `--padding`, `--grid`, `--wireframe`, `--parameters <json>`, `--background #rrggbb`. `--file <plan>` (`schema --kind review`, for example a `replay-plan.json`) replaces the view and frame flags. A non-empty directory fails with `ALREADY_EXISTS` unless `--overwrite` |
-| `preview --out <file.html>` | A self-contained, offline, read-only orbit page; `--parameters <json>`. No Playwright needed |
+| `review --out <directory>` | Renders in one headless Chromium session: one PNG per view, `contact-sheet.png` (`--no-contact-sheet` skips it), `review.json` (`review-result` v1 with `provenance.tool: "model-forge"`, top-level `scene` set to the model ID and `revision` to the document revision, `target` with the document path, model, revision and parameters, `sourceStateHash`, camera settings and frame hashes) and `replay-plan.json` with fixed cameras. Views from `--views <names>` (default `iso,front,right,back,left,top`) or `--turntable <2–36>` with `--elevation`; `--width`/`--height` (64–2048, default 800×600), `--projection auto\|perspective\|orthographic`, `--padding`, `--grid`, `--wireframe`, `--parameters <json>`, `--background #rrggbb`. `--file <plan>` (`schema --kind review`, for example a `replay-plan.json`) replaces the view and frame flags. A non-empty directory fails with `ALREADY_EXISTS` unless `--overwrite` |
+| `preview --out <file.html>` | A self-contained, offline, read-only orbit page; `--parameters <json>`, `--overwrite`. No Playwright needed |
 | `audit` | Policy from `--file`/`--data` (`schema --kind quality-policy`; defaults when absent), `--parameters <json>`, `--strict`. Geometry and material budgets of the visible deliverable; failures return `QUALITY_GATE_FAILED` |
-| `export --format <format> --out <file>` | `-f, --format` (default `glb`), `--validate` (Khronos validation; GLB/glTF only), `--parameters <json>` (rendered formats and Littlewild; `model` and `model-bundle` stay parametric and refuse it). The output may not be the document or its side files (`INVALID_PATH`). Littlewild only: `--family items\|buildings\|creatures\|pets` (default `items`), `--variant` (default `world`), `--name` (default the model name), `--materials <json>`, `--check` and `--dry-run`; these flags fail with `INVALID_OPTION` for other formats |
+| `export --format <format> --out <file>` | `-f, --format` (default `glb`), `--validate` (Khronos validation; GLB/glTF only), `--parameters <json>` (rendered formats and Littlewild; `model` and `model-bundle` stay parametric and refuse it), `--overwrite` (not Littlewild). `model` and `model-bundle` exports into a Scene Forge project fail with `PROJECT_MODEL_READONLY`. Littlewild only: `--family items\|buildings\|creatures\|pets` (default: the `<family>` directory of the `--out` path, else `items`), `--variant` (default `world`), `--name` (default: the existing definition's name, else the model name), `--materials <json>`, `--check` and `--dry-run`; these flags fail with `INVALID_OPTION` for other formats, naming each flag as typed |
 
 ```sh
 bin/model-forge doctor
@@ -334,7 +372,7 @@ bin/model-forge -d "$OUT/crate.model.json" export --format glb --validate --out 
 |---|---|---|
 | `model` | The entry model as a portable `model` document without `revision` | `scene-forge model import --file`; another Model Forge document via `import` or `dependency put` |
 | `model-bundle` | Entry model plus the dependency closure it instantiates, without `revision`; unused dependencies are left out | `scene-forge -p <project> model import --file <file>` (`--dry-run` first; `--replace` with `--expected-revision`/`--expected-state` to change an existing registered model); `model-forge import` |
-| `littlewild` | A Littlewild `definition.json` written through the same kernel writer as Scene Forge. The output must be `<target>/<family>/<id>/definition.json` (otherwise `LITTLEWILD_EXPORT`); the directory names give the definition ID. Only the `visual` facet's selected variant is replaced; other variants, rig metadata, gameplay and other facets are retained | Wildlands game folders (`docs/concepts/<id>/assets/<family>/<id>/definition.json`), `wildlands creature attach-visual`, `bin/wildlands validate-game` |
+| `littlewild` | A Littlewild `definition.json` written through the same kernel writer as Scene Forge. The output must be `<target>/<family>/<id>/definition.json` (otherwise `LITTLEWILD_EXPORT`); the directory names give the definition ID and, by default, the family. Only the `visual` facet's selected variant is replaced; other variants, rig metadata, gameplay and other facets are retained, and unchanged parts of the variant keep their source representation (see below) | Wildlands game folders (`docs/concepts/<id>/assets/<family>/<id>/definition.json`), `wildlands creature attach-visual`, `bin/wildlands validate-game` |
 | `glb`, `gltf` | glTF 2.0 with PBR materials, skins and rotation clips | Engines and DCC tools; `--validate` runs the Khronos validator |
 | `obj`, `stl`, `three` | Mesh interchange and Three.js JSON | DCC tools, 3D printing, three.js `ObjectLoader` |
 
@@ -355,17 +393,19 @@ bin/scene-forge -p "$OUT/garage" model import --file "$OUT/crate.model-bundle.js
 
 Refine a Littlewild visual and attach it to an engine project without losing
 gameplay. Work on a copy laid out as `<family>/<id>/definition.json`, so that
-export merges into the original complete definition:
+export merges into the original complete definition. The first `--check`, before
+any edit, passes: an unedited import re-exports byte-identically.
 
 ```sh
 mkdir -p "$OUT/assets/creatures/sproutling"
 cp docs/concepts/littlewild/assets/creatures/sproutling/definition.json "$OUT/assets/creatures/sproutling/definition.json"
 bin/model-forge import --from "$OUT/assets/creatures/sproutling/definition.json" --variant world --out "$OUT/sproutling-world.model.json"
+bin/model-forge -d "$OUT/sproutling-world.model.json" export --format littlewild --variant world --out "$OUT/assets/creatures/sproutling/definition.json" --check
 bin/model-forge -d "$OUT/sproutling-world.model.json" node edit --ids ear-left,ear-right --data '{"transform": {"scale": [1, 1.15, 1]}}' --expected-revision 0
 bin/model-forge -d "$OUT/sproutling-world.model.json" validate
-bin/model-forge -d "$OUT/sproutling-world.model.json" export --format littlewild --family creatures --variant world --name Sproutling --out "$OUT/assets/creatures/sproutling/definition.json" --dry-run
-bin/model-forge -d "$OUT/sproutling-world.model.json" export --format littlewild --family creatures --variant world --name Sproutling --out "$OUT/assets/creatures/sproutling/definition.json"
-bin/model-forge -d "$OUT/sproutling-world.model.json" export --format littlewild --family creatures --variant world --name Sproutling --out "$OUT/assets/creatures/sproutling/definition.json" --check
+bin/model-forge -d "$OUT/sproutling-world.model.json" export --format littlewild --family creatures --variant world --out "$OUT/assets/creatures/sproutling/definition.json" --dry-run
+bin/model-forge -d "$OUT/sproutling-world.model.json" export --format littlewild --family creatures --variant world --out "$OUT/assets/creatures/sproutling/definition.json"
+bin/model-forge -d "$OUT/sproutling-world.model.json" export --format littlewild --family creatures --variant world --out "$OUT/assets/creatures/sproutling/definition.json" --check
 bin/wildlands create --game docs/concepts/littlewild --output "$OUT/game.project.json"
 FINGERPRINT="$(bin/wildlands creature list --project "$OUT/game.project.json" | node -p 'JSON.parse(require("fs").readFileSync(0, "utf8")).fingerprint')"
 bin/wildlands creature attach-visual --project "$OUT/game.project.json" --archetype sproutling --file "$OUT/assets/creatures/sproutling/definition.json" --expected-fingerprint "$FINGERPRINT" --dry-run
@@ -375,11 +415,25 @@ bin/wildlands creature attach-visual --project "$OUT/game.project.json" --archet
 `--dry-run` compiles and compares without writing (`changed`, `written: false`
 and `warnings`, for example retained variants that now use re-exported
 materials); `--check` fails with `LITTLEWILD_STALE` when a write would change the
-file, so it passes only once the definition is current. Pass `--name` to keep the
-definition's display name; it defaults to the model name, which a Littlewild
-import sets to `<name> (<variant>)`. A Littlewild round trip normalizes the
-selected variant through the kernel writer, so even an unedited re-export can
-differ from a hand-written source: read the `--dry-run` result before writing.
+file, so it passes only once the definition is current. The display name stays
+the existing definition's unless `--name` replaces it (a new definition takes the
+model name, which a Littlewild import sets to `<name> (<variant>)`).
+
+Model Forge's Littlewild export is **lossless for unchanged content**. Where a
+re-exported node, material or mesh is semantically unchanged, the definition
+keeps its own representation: node key order, explicit zero transforms and empty
+`children`, shared string material references and per-node `materialProps`,
+mesh resource names, engine-only node fields the recipe cannot express (for
+example `castShadow: false` or `receiveShadow: false`), palette entries no
+variant references, and the file's layout (indented arrays, or plain or
+ASCII-escaped `JSON.stringify` output). Only edited fields take the exporter's
+normalized form: in the example above the definition gains exactly the two ear
+`scale` arrays. A changed material is written in full and shared by every
+variant that names it (the result's `warnings` lists retained variants that now
+use it). Every variant of every `definition.json` under `docs/concepts` round-trips
+unedited (`tests/littlewild-roundtrip.test.ts`). Scene Forge's `littlewild export`
+and `sync` keep their normalizing output; for a new definition both tools write
+identical bytes.
 
 Scene-wide Littlewild synchronization from a manifest (`littlewild sync`) and the
 Pocket Pet assets stay in Scene Forge; see
@@ -399,29 +453,32 @@ Read `error.code`, then `error.hint` (the remedy) and `error.details`.
 | | `SCHEMA_INVALID`, `UNKNOWN_SCHEMA` | The data violates the schema (repair the reported paths), or `schema --kind` names an unknown contract |
 | | `UNKNOWN_OPERATION` | Not a model operation; scene-only operations name their model equivalent in the message |
 | Document | `DOCUMENT_REQUIRED` | The command needs `-d, --document <path>` |
-| | `DOCUMENT_NOT_FOUND` | `-d` does not name an existing file; `create` or `import --out` one |
-| | `DOCUMENT_EXISTS` | `create`, `import` and `example create` never overwrite; choose a new path |
-| | `DOCUMENT_LOCKED` | Another writer holds `<document>.lock`; retry after it finishes, and remove a lock only after verifying no writer is running |
+| | `DOCUMENT_NOT_FOUND` | `-d` does not name an existing file (or names a directory); `create` or `import --out` one |
+| | `DOCUMENT_EXISTS` | `create`, `import` and `example create` never overwrite a document or an orphaned history directory; choose a new path |
+| | `DOCUMENT_LOCKED` | Another writer holds `<document>.lock`; `details` has the holder `pid`, `hostname`, `createdAt` and `stale`. Retry after it finishes; remove a stale lock only after verifying no writer is running |
+| | `PROJECT_MODEL_READONLY` | The document or new document is inside a Scene Forge project; import a copy with `import --project`, edit it, export a `model-bundle` and use `scene-forge model import --replace` with its guards |
 | | `DOCUMENT_KIND` | The path is not `<id>.model.json`/`<id>.model-bundle.json`, a nesting model needs a bundle, or a dependency operation needs a bundle |
 | | `DEPENDENCY_READONLY` | An edit would change a frozen bundle dependency; edit it in its own document and `putDependency` with `replace: true` |
+| | `DEPENDENCY_IN_USE` | `removeDependency` while nodes (`details.nodes`) or other dependencies (`details.dependencies`) still instantiate it; remove or retarget them first |
 | | `HISTORY_NOT_FOUND` | `restore` names a revision without a history snapshot; run `history` |
+| | `HISTORY_CONFLICT` | A snapshot for the current revision already exists in the history directory; nothing was written. Inspect both and move the conflicting snapshot aside deliberately |
 | Guards | `REVISION_CONFLICT`, `STATE_CONFLICT` | The document, model or dependencies changed since the read; inspect again and rebase the batch |
 | | `GUARD_REQUIRED` | `restore` needs `--expected-revision <current>` |
 | | `GUARD_MISMATCH` | The command-line guard and the batch guard disagree; use one, or the same value |
-| References and structure | `NOT_FOUND`, `REFERENCE_MISSING`, `DUPLICATE_ID`, `ID_MISMATCH` | A missing node, geometry, material, parameter or dependency; an ID already in use; a bundle model not keyed by its own ID |
+| References and structure | `NOT_FOUND`, `REFERENCE_MISSING`, `DUPLICATE_ID`, `ID_MISMATCH` | A missing node, geometry, material, parameter, dependency or command path (`describe`); an ID already in use (including a `duplicateNode` or `groupNodes` target); a bundle model not keyed by its own ID |
 | | `CYCLE`, `DEPTH_LIMIT`, `HAS_CHILDREN` | A circular parent or model reference; nesting too deep; removing a node with children without `--cascade` |
 | | `EMPTY_SELECTION`, `INVALID_NODE_TYPE` | A selector matched nothing; the command needs another node type (rigs bind to model-instance nodes) |
 | Parameters and patterns | `UNKNOWN_PARAMETER`, `PARAMETER_MISSING`, `PARAMETER_RANGE`, `PARAMETER_INTEGER` | Unknown override, undeclared `$param`, a value outside `min`/`max`, or a fraction for an integer parameter |
 | | `PATTERN_PATH`, `PATTERN_COUNT` | Degenerate path for yaw orientation; counts that are not positive integers or exceed 256 copies |
 | Rigs | `RIG_INVALID`, `RIG_BINDING`, `RIG_MISSING` | Invalid rig document; wrong mesh binding path (use `rig inspect`); posing without a bound rig |
-| Paths and projects | `INVALID_PATH` | An export or review output would replace the document, its lock or its history, or a project path escapes its project |
+| Paths and projects | `INVALID_PATH` | An output would replace the source document, a `*.lock` file or something inside a `*.history` directory (even with `--overwrite`), an output file path is a directory (or a `review` directory path is a file), or a project path escapes its project |
 | | `PROJECT_NOT_FOUND`, `PROJECT_LOCKED` | `import --project` names no Scene Forge project, or a Scene Forge command is writing it |
 | Littlewild | `LITTLEWILD_IMPORT` | The source is not a `littlewild-definition`, `littlewild-creature-package` or `littlewild-3d-asset` |
 | | `LITTLEWILD_EXPORT` | The output is not `<target>/<family>/<id>/definition.json` for the same family and ID |
 | | `LITTLEWILD_STALE` | `--check` found that the definition differs; export without `--check` |
 | Outputs | `EXPORT_INVALID` | Khronos validation failed; nothing was written |
 | | `QUALITY_GATE_FAILED` | `audit` findings; repair the listed geometry or budgets |
-| | `ALREADY_EXISTS` | A review directory is not empty; choose a new one or pass `--overwrite` deliberately |
+| | `ALREADY_EXISTS` | An `export` or `preview` output file exists, or a `review` directory is not empty; choose a new path or pass `--overwrite` deliberately |
 | | `INVALID_CAMERA` | Use a named view, an orbit or a fixed camera from a replay plan |
 | Runtime | `BROWSER_UNAVAILABLE`, `PLAYWRIGHT_UNAVAILABLE`, `RENDER_FAILED` | Review cannot launch Chromium, cannot resolve Playwright (`details.remedies`), or rendering failed; run `doctor` |
 | | `BUILD_REQUIRED` | A source run is missing built assets; run `npm run build` in `source/model-forge` or use `bin/model-forge` |

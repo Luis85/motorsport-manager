@@ -9,8 +9,9 @@ import {
 } from '../application/import.js';
 import { validateEditorDocument } from '../application/document.js';
 import { documentHeader } from '../application/inspect.js';
+import { stemWarnings } from '../domain/document.js';
 import { exists, inside, readJson } from './files.js';
-import { createDocument, documentKindForPath } from './store.js';
+import { checkNewDocument, createDocument, documentKindForPath } from './store.js';
 
 /** The read-only slice of a Scene Forge `forge.project.json` that names model files. */
 const SceneForgeManifest = z.looseObject({
@@ -73,10 +74,12 @@ export async function importDocument(request: ImportRequest) {
     if (request.id) fail('INVALID_OPTION', '--id applies to --project; use --entry for bundles.');
     plan = planImport(await readJson(request.from!), kind, request);
   }
-  const { document, ...report } = plan;
+  const { document, ...planned } = plan;
+  const warnings = [...(planned.warnings ?? []), ...stemWarnings(request.out, document.model.id)];
+  const report = { ...planned, ...(warnings.length ? { warnings } : {}) };
   if (request.dryRun) {
-    if (await exists(request.out))
-      fail('DOCUMENT_EXISTS', `${request.out} already exists. Choose a new document path.`);
+    // The same path checks as a real import: kind, project, history and existing files.
+    await checkNewDocument(request.out, kind);
     // The same shape a write returns: the new document's revision, stateHash and statistics.
     return {
       path: request.out,
@@ -88,7 +91,7 @@ export async function importDocument(request: ImportRequest) {
       ...report,
     };
   }
-  const created = await createDocument(request.out, document);
+  const { warnings: _created, ...created } = await createDocument(request.out, document);
   return {
     ...created,
     dryRun: false,

@@ -18,12 +18,18 @@ export const errorRemedies: Record<string, string> = {
   DOCUMENT_NOT_FOUND: 'Check the -d path, or create one with create <path> or import --out <path>.',
   DOCUMENT_EXISTS: 'Choose a new path; create, import and example create never overwrite.',
   DOCUMENT_LOCKED:
-    'Another writer holds <document>.lock. Retry after it finishes; remove the lock only after verifying no writer is running.',
+    'Another writer holds <document>.lock (details.pid, createdAt). Retry after it finishes; details.stale: true means that process no longer runs on this host, so remove the lock after verifying no writer is running.',
   DOCUMENT_KIND:
     'Use <id>.model.json for a self-contained model and <id>.model-bundle.json when it nests other models.',
   DEPENDENCY_READONLY:
     'Dependencies are frozen. Edit the dependency in its own document and putDependency with replace: true.',
   HISTORY_NOT_FOUND: 'Run history to list the revisions that can be restored.',
+  HISTORY_CONFLICT:
+    'A snapshot for the current revision already exists in <document>.history; nothing was written. Inspect the document and its history, and move the conflicting snapshot aside deliberately.',
+  DEPENDENCY_IN_USE:
+    'Remove or retarget the instancing nodes named in details.nodes (and dependencies in details.dependencies) in the same batch, before removeDependency.',
+  PROJECT_MODEL_READONLY:
+    'Model Forge does not write inside a Scene Forge project. import --project <dir> --id <id> --out <new document>, edit it, export --format model-bundle, then scene-forge model import --replace with --expected-revision or --expected-state.',
   REVISION_CONFLICT:
     'The document changed since you read it. Run inspect again and rebase the edit; do not drop the guard blindly.',
   STATE_CONFLICT:
@@ -50,7 +56,8 @@ export const errorRemedies: Record<string, string> = {
     'Run schema --kind rig --raw. Check the single root, joint references, cycles and increasing keyframe times.',
   RIG_BINDING: 'Run rig inspect <node> and use the exact relative mesh paths returned.',
   RIG_MISSING: 'Use rig bind <node> --file <rig.json> before posing a joint.',
-  INVALID_PATH: 'Use a path inside the named project, and never the document or its side files.',
+  INVALID_PATH:
+    'Choose another path: outputs never replace the source document, a *.lock file or anything in a *.history directory, and project paths stay inside the project.',
   PROJECT_NOT_FOUND: 'Pass --project <directory> containing forge.project.json.',
   PROJECT_LOCKED: 'A Scene Forge command is writing the project. Retry after it finishes.',
   LITTLEWILD_IMPORT:
@@ -60,7 +67,8 @@ export const errorRemedies: Record<string, string> = {
   EXPORT_INVALID: 'Read details for the Khronos issues; no output was written.',
   QUALITY_GATE_FAILED:
     'Read details.findings, repair the listed geometry or budgets, and run audit again.',
-  ALREADY_EXISTS: 'Choose a new output directory or pass --overwrite deliberately.',
+  ALREADY_EXISTS:
+    'The output file or review directory already exists. Choose a new path, or pass --overwrite deliberately.',
   INVALID_CAMERA: 'Use a named view, an orbit or a fixed camera from a replay plan.',
   BROWSER_UNAVAILABLE: 'Run doctor; install Chromium or set FORGE_CHROMIUM_PATH.',
   PLAYWRIGHT_UNAVAILABLE:

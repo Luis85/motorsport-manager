@@ -14,22 +14,26 @@ export const operationSemantics: Record<string, string> = {
   patchNode: 'Merge supplied node fields; transform components and named overrides merge.',
   patchNodes: 'Apply one patch to every node matching a selector; an empty match fails.',
   removeNode: 'Remove a node; cascade: true also removes its descendants.',
-  duplicateNode: 'Copy a node subtree under newId with an optional local offset.',
+  duplicateNode:
+    'Copy a node subtree under newId with an optional local offset; a taken ID fails with DUPLICATE_ID.',
   reparentNode: 'Change a parent; keepWorld (default true) preserves world placement.',
   groupNodes: 'Create group id around sibling nodes, preserving their world placement.',
   groundNode: 'Move a node vertically so its world bounds rest on y (default 0).',
   placeNode: 'Move a node beside a target node by world bounds (side, gap, center).',
   putGeometry: 'Insert or fully replace a geometry definition.',
-  removeGeometry: 'Remove a geometry; final validation rejects remaining references.',
+  removeGeometry:
+    'Remove a geometry of the editable model (NOT_FOUND when absent, DEPENDENCY_READONLY when only a dependency defines it); final validation rejects remaining references.',
   putMaterial: 'Insert or fully replace a material definition.',
-  removeMaterial: 'Remove a material; final validation rejects remaining references.',
+  removeMaterial:
+    'Remove a material of the editable model (NOT_FOUND when absent, DEPENDENCY_READONLY when only a dependency defines it); final validation rejects remaining references.',
   putParameter:
     'Insert or replace a model parameter {id, default, min?, max?, integer?, description?}.',
   removeParameter: 'Remove a parameter; remaining $param references fail validation.',
   setMetadata: 'Set name, category or description; null clears category or description.',
   putDependency:
     'Bundle documents only: add a frozen dependency model; replacing a different one needs replace: true.',
-  removeDependency: 'Bundle documents only: remove a frozen dependency no node still instantiates.',
+  removeDependency:
+    'Bundle documents only: remove a frozen dependency; DEPENDENCY_IN_USE names the nodes and dependencies still instantiating it.',
 };
 
 /** Ordered agent protocol. Every step is one stateless command against an explicit document. */
@@ -95,7 +99,7 @@ export const exportConsumers = [
   {
     format: 'littlewild',
     writes:
-      'Littlewild <family>/<id>/definition.json; only the visual facet changes, gameplay facets are preserved.',
+      'Littlewild <family>/<id>/definition.json; only the selected visual variant changes, gameplay facets are preserved, and unchanged source nodes, materials, meshes and layout keep their exact representation (an unedited import re-exports byte-identically).',
     consumers: [
       'wildlands creature attach-visual',
       'Wildlands/Littlewild games through docs/concepts/<game>/assets',
@@ -126,11 +130,16 @@ export function discoverCatalog(tool: string, version: string, commands: string[
         file: `<id>${suffix}`,
         editable: kind === 'model' ? 'the model' : 'the entry model; other models are frozen',
       })),
-      revision: 'Integer in the editable model; absent means 0. Changed writes add 1.',
-      stateHash: 'sha256 of canonical {model, dependencies}; a concurrency token.',
-      history: '<document>.history/<revision>.json holds each replaced version.',
-      lock: '<document>.lock is held from read through write; reads never lock.',
+      revision:
+        'Integer in the editable model. create and import write none (revision 0) and an explicit 0 reads as absent; each changed write adds 1.',
+      stateHash:
+        'sha256 of canonical {model, dependencies}; a concurrency token (64 lowercase hex digits).',
+      history:
+        '<document>.history/<revision>.json holds each replaced version; an existing snapshot is never replaced (HISTORY_CONFLICT).',
+      lock: '<document>.lock is held from read through write; reads never lock. DOCUMENT_LOCKED reports the holder pid, createdAt and stale; locks are never removed automatically.',
       selection: 'Always explicit: -d, --document <path>. No working-directory discovery.',
+      sceneForgeProjects:
+        'Documents inside a Scene Forge project (an ancestor directory with forge.project.json) are read-only: writes, new documents and model/model-bundle exports there fail with PROJECT_MODEL_READONLY. Use import --project and scene-forge model import --replace with guards.',
     },
     agentContract: {
       success: 'stdout: {"ok":true,"data":...}; exit 0',
@@ -141,6 +150,15 @@ export function discoverCatalog(tool: string, version: string, commands: string[
       idempotency: 'An operation batch that changes nothing keeps the revision',
       failures: 'Operation failures carry details.operationIndex (zero-based)',
       noHiddenState: 'No prompts, colors, sessions or implicit documents',
+      hints:
+        'error.hint is the remedy for that failure in its context; discover lists the general remedy per code',
+    },
+    outputs: {
+      existing:
+        'export, preview and review never replace an existing file or non-empty directory without --overwrite (ALREADY_EXISTS); export --format littlewild merges into an existing definition.json instead.',
+      forbidden:
+        'No output may replace the source document, a *.lock file or anything inside a *.history directory, even with --overwrite (INVALID_PATH).',
+      documents: 'create, import and example create never overwrite (DOCUMENT_EXISTS).',
     },
     operations: Object.entries(operationSemantics).map(([op, semantics]) => ({ op, semantics })),
     sceneOnlyOperations: sceneOnlyOperations,

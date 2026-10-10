@@ -66,6 +66,9 @@ test('review renders parameter variants with Model Forge provenance and replays 
       revision: 0,
       parameters: { mastHeight: 2 },
     });
+    // The top-level identity names the reviewed model and document revision, not the host scene.
+    assert.equal(manifest.scene, 'rover');
+    assert.equal(manifest.revision, inspected.revision);
     assert.ok(manifest.stats.triangles > 0);
     assert.equal(png(await fs.readFile(result.contactSheet)).signature, 'PNG');
 
@@ -108,6 +111,7 @@ test('nested bundles render as turntables and the read-only preview boots in Chr
   withTemp(async (cwd) => {
     await ok(['example', 'create', 'fieldStation', 'station.model-bundle.json'], { cwd });
     const doc = ['-d', 'station.model-bundle.json'];
+    await ok([...doc, 'add', 'box', 'beacon', '--at', '0,3,0'], { cwd });
     const result = await ok(
       [
         ...doc,
@@ -131,6 +135,10 @@ test('nested bundles render as turntables and the read-only preview boots in Chr
       ['orbit-00', 'orbit-01', 'orbit-02', 'orbit-03'],
     );
     assert.equal(result.contactSheet, undefined);
+    const manifest = JSON.parse(await fs.readFile(result.manifest, 'utf8'));
+    assert.equal(manifest.scene, 'fieldStation');
+    assert.equal(manifest.revision, 1);
+    assert.equal(manifest.target.revision, 1);
     const preview = await ok([...doc, 'preview', '--out', 'station.html'], { cwd });
     assert.equal(preview.readOnly, true);
     const html = await fs.readFile(path.join(cwd, 'station.html'), 'utf8');

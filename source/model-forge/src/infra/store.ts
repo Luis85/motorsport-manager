@@ -1,7 +1,13 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { randomUUID } from 'node:crypto';
 import { fail, errorCode, ForgeError } from '../kernel/index.js';
-import { kindForPath, documentSuffixes, type DocumentKind } from '../domain/document.js';
+import {
+  kindForPath,
+  documentSuffixes,
+  stemWarnings,
+  type DocumentKind,
+} from '../domain/document.js';
 import {
   type EditorDocument,
   contentKey,
@@ -14,7 +20,8 @@ import {
 import { checkGuards, prepareModelEdit, type EditOptions } from '../application/edit.js';
 import { documentHeader } from '../application/inspect.js';
 import type { ModelOperation } from '../domain/document.js';
-import { atomicWrite, exists, withFileLock, writeJson } from './files.js';
+import { exists, withFileLock, writeJson } from './files.js';
+import { refuseProjectDocument, sideFilePath } from './paths.js';
 
 /**
  * The document store: one JSON file per model, `<doc>.lock` held across read → prepare →
@@ -48,10 +55,16 @@ async function readBounded(file: string, missing: string, message: string) {
   let bytes: Buffer;
   try {
     const stat = await fs.stat(file);
+    if (stat.isDirectory())
+      fail(missing, `${file} is a directory, not a JSON file.`, {
+        path: file,
+        hint: 'Pass the document file itself: <directory>/<id>.model.json or <id>.model-bundle.json.',
+      });
     if (stat.size > maxBytes) fail('INPUT_TOO_LARGE', `Document exceeds 16 MiB: ${file}`);
     bytes = await fs.readFile(file);
   } catch (error) {
-    if (errorCode(error) === 'ENOENT') fail(missing, message, { path: file });
+    if (errorCode(error) === 'ENOENT' || errorCode(error) === 'ENOTDIR')
+      fail(missing, message, { path: file });
     throw error;
   }
   try {
@@ -92,27 +105,45 @@ export async function readDocument(file: string): Promise<LoadedDocument> {
   };
 }
 
+/**
+ * Checks for a new document path, without side effects: the kind its suffix declares, no
+ * Scene Forge project, no lock or history location, and neither the file nor an orphaned
+ * history directory may exist.
+ */
+export async function checkNewDocument(file: string, kind: DocumentKind) {
+  if (documentKindForPath(file) !== kind)
+    fail('DOCUMENT_KIND', `A ${kind} document must be named <id>${documentSuffixes[kind]}.`);
+  if (sideFilePath(file))
+    fail('INVALID_PATH', `${file} is inside a document history directory.`, { path: file });
+  await refuseProjectDocument(file, 'create');
+  for (const existing of [file, historyDirectory(file)])
+    if (await exists(existing))
+      fail('DOCUMENT_EXISTS', `${existing} already exists. Choose a new document path.`, {
+        path: existing,
+      });
+}
+
 /** Write a new document. Never overwrites a document or an orphaned history directory. */
 export async function createDocument(file: string, document: EditorDocument) {
-  if (documentKindForPath(file) !== document.kind)
-    fail(
-      'DOCUMENT_KIND',
-      `A ${document.kind} document must be named <id>${documentSuffixes[document.kind]}.`,
-    );
+  await checkNewDocument(file, document.kind);
+  await fs.mkdir(path.dirname(file), { recursive: true });
   return withFileLock(file, async () => {
-    for (const existing of [file, historyDirectory(file)])
-      if (await exists(existing))
-        fail('DOCUMENT_EXISTS', `${existing} already exists. Choose a new document path.`, {
-          path: existing,
-        });
+    await checkNewDocument(file, document.kind);
     const { stats } = validateEditorDocument(document);
     await writeJson(file, serializeDocument(document));
-    return { path: file, ...documentHeader(document), stats };
+    const warnings = stemWarnings(file, document.model.id);
+    return {
+      path: file,
+      ...documentHeader(document),
+      stats,
+      ...(warnings.length ? { warnings } : {}),
+    };
   });
 }
 
 /** Apply one guarded batch. Unchanged results write nothing and keep the revision. */
 export async function commitEdit(file: string, operations: ModelOperation[], options: EditOptions) {
+  await refuseProjectDocument(file, 'edit');
   return withFileLock(file, async () => {
     const current = await readDocument(file);
     const { next, result } = prepareModelEdit(current.document, operations, options);
@@ -122,8 +153,25 @@ export async function commitEdit(file: string, operations: ModelOperation[], opt
 }
 async function persist(file: string, current: LoadedDocument, next: EditorDocument) {
   await fs.mkdir(historyDirectory(file), { recursive: true });
-  // The replaced version is kept byte-for-byte, then the document is replaced atomically.
-  await atomicWrite(historyFile(file, current.revision), current.bytes);
+  // The replaced version is kept byte-for-byte (never replacing a stored snapshot), then the
+  // document is replaced atomically.
+  const snapshot = historyFile(file, current.revision);
+  const temporary = `${snapshot}.${randomUUID()}.tmp`;
+  try {
+    await fs.writeFile(temporary, current.bytes, { flag: 'wx' });
+    // link() publishes the complete snapshot atomically and fails when one exists.
+    await fs.link(temporary, snapshot);
+  } catch (error) {
+    if (errorCode(error) === 'EEXIST')
+      fail(
+        'HISTORY_CONFLICT',
+        `${snapshot} already stores revision ${current.revision}; the document was not changed.`,
+        { path: snapshot, revision: current.revision },
+      );
+    throw error;
+  } finally {
+    await fs.rm(temporary, { force: true });
+  }
   await writeJson(file, serializeDocument(next));
 }
 
@@ -140,12 +188,23 @@ export async function listHistory(file: string) {
     .sort((a, b) => a - b);
   const entries = [];
   for (const revision of revisions) {
-    const saved = await readBounded(historyFile(file, revision), 'HISTORY_NOT_FOUND', 'Missing.');
-    entries.push({
-      revision,
-      stateHash: documentStateHash(parseAt(historyFile(file, revision), saved.value)),
-      path: historyFile(file, revision),
-    });
+    const snapshot = historyFile(file, revision);
+    try {
+      const saved = await readBounded(snapshot, 'HISTORY_NOT_FOUND', `${snapshot} is missing.`);
+      entries.push({
+        revision,
+        stateHash: documentStateHash(parseAt(snapshot, saved.value)),
+        path: snapshot,
+      });
+    } catch (error) {
+      // One unreadable snapshot is reported in place; the others stay listed and restorable.
+      if (!(error instanceof ForgeError)) throw error;
+      entries.push({
+        revision,
+        path: snapshot,
+        error: { code: error.code, message: error.message },
+      });
+    }
   }
   return {
     ...documentHeader(current.document),
@@ -160,6 +219,7 @@ export async function listHistory(file: string) {
 
 /** Restore a stored revision as a new revision. Identical content is a no-op. */
 export async function restoreRevision(file: string, revision: number, options: EditOptions) {
+  await refuseProjectDocument(file, 'edit');
   return withFileLock(file, async () => {
     const current = await readDocument(file);
     checkGuards(current.document, options);

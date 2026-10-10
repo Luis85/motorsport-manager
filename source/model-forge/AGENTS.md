@@ -11,19 +11,24 @@ Model Forge edits exactly one model per document. Use the repository executable
    (plus `geometry`, `material`, `node`, `parameter` or `rig`) for exact JSON contracts.
 2. Start a document with `create <path> --id --name` or `import --from <file> --out <path>`.
    Use `<id>.model.json`, or `<id>.model-bundle.json` when the model nests other models.
-   Neither command overwrites; choose a new path on `DOCUMENT_EXISTS`.
+   Neither command overwrites; choose a new path on `DOCUMENT_EXISTS`. Revision 0 is
+   written as no field.
 3. Pass the document explicitly on every command: `-d <path>`. Read `inspect --source` and
    keep its `revision` and `stateHash`.
 4. Prefer one complete batch per intent. Run `apply --dry-run`, read `changes`,
    `proposedRevision` and `proposedStateHash`, then apply the same batch with
    `--expected-revision` and `--expected-state`.
 5. On `REVISION_CONFLICT` or `STATE_CONFLICT`, inspect again and rebase the batch. Never
-   drop the guards to force a write, and never remove another process's `<document>.lock`.
+   drop the guards to force a write, and never remove another process's `<document>.lock`;
+   only a lock that `DOCUMENT_LOCKED` reports as `stale: true` may be deleted, after
+   verifying that no writer runs. Read `error.hint`: it is the remedy for that failure.
 6. Use `node list --details` to check bounds, `validate`, then `audit --file <policy>`. Use
    `review --out <new directory>`; reuse its `replay-plan.json` to hold cameras fixed.
 7. Export for the consumer: `model-bundle` for Scene Forge, `littlewild` for Wildlands
-   games, `glb --validate` for engines. Export to a Scene Forge project only through
-   `scene-forge model import` (with its guards); never edit a project's model files in place.
+   games, `glb --validate` for engines. Outputs never replace an existing file unless you
+   pass `--overwrite` (Littlewild exports merge instead). Export to a Scene Forge project
+   only through `scene-forge model import` (with its guards); Model Forge refuses to write
+   inside a project (`PROJECT_MODEL_READONLY`).
 
 `put` operations replace whole definitions; `patchNode`/`patchNodes` merge. Dependencies in
 a bundle are frozen: change one in its own document and `putDependency` with
@@ -43,8 +48,10 @@ a bundle are frozen: change one in its own document and `putDependency` with
   with `npm run build:cli` when kernel bytes change.
 - Keep the agent contract: one JSON envelope per command, no prompts, no ANSI, no hidden
   state, no working-directory document discovery. New error codes need a remedy in
-  `src/domain/errors.ts`. New operations need schema, application support, catalog
-  semantics and tests.
+  `src/domain/errors.ts`; a throw site with a more specific remedy passes it as
+  `details.hint`, which the CLI prints as `error.hint`. New operations need schema,
+  application support, catalog semantics and tests. Every file an output command writes
+  goes through `src/infra/paths.ts` (`checkOutput`, `refuseProjectDocument`).
 - Budgets: at most 400 code lines per source file and 450 per test file. Extract cohesive
   responsibilities instead of compressing code.
 - Examples are data in `examples/` (`index.json` plus documents); they are embedded into the

@@ -34,10 +34,19 @@ export function withoutRevision(model: ModelDocument): ModelDocument {
   return copy;
 }
 
+/**
+ * An explicit `revision: 0` means the same as no field, so it is read as absent: equal
+ * content then has one stateHash whether or not a file spells out revision 0.
+ */
+function withoutZeroRevision(model: ModelDocument): ModelDocument {
+  return model.revision === 0 ? withoutRevision(model) : model;
+}
+
 /** Parse a document file's JSON. Other kinds are rejected with an import hint. */
 export function parseDocument(input: unknown): EditorDocument {
   const kind = plain(input) ? input.kind : undefined;
-  if (kind === 'model') return { kind, model: parse(ModelSchema, input), dependencies: {} };
+  if (kind === 'model')
+    return { kind, model: withoutZeroRevision(parse(ModelSchema, input)), dependencies: {} };
   if (kind !== 'model-bundle')
     fail(
       'DOCUMENT_KIND',
@@ -52,7 +61,11 @@ export function parseDocument(input: unknown): EditorDocument {
   const dependencies = Object.fromEntries(
     Object.entries(bundle.models).filter(([id]) => id !== bundle.entry),
   );
-  return { kind: 'model-bundle', model: bundle.models[bundle.entry], dependencies };
+  return {
+    kind: 'model-bundle',
+    model: withoutZeroRevision(bundle.models[bundle.entry]),
+    dependencies,
+  };
 }
 
 /** The exact JSON written for a document: the model, or a bundle with the entry first. */
@@ -160,17 +173,24 @@ export function validateEditorDocument(document: EditorDocument) {
   }
 }
 
-/** Re-throw a kernel failure for one batch entry with its zero-based operation index. */
+/**
+ * Re-throw a kernel failure for one batch entry with its zero-based operation index. A
+ * contextual `hint` stays at the top of the details, where the CLI reads it.
+ */
 export function atOperation(error: unknown, index: number, op: string): never {
   if (!(error instanceof ForgeError)) throw error;
-  const details = plain(error.details) && 'operationIndex' in error.details ? error.details : null;
+  const indexed = plain(error.details) && 'operationIndex' in error.details;
+  let cause = indexed ? (error.details as Record<string, unknown>).cause : error.details;
+  let hint = indexed ? (error.details as Record<string, unknown>).hint : undefined;
+  if (plain(cause) && typeof cause.hint === 'string') {
+    const { hint: specific, ...rest } = cause;
+    hint = specific;
+    cause = Object.keys(rest).length ? rest : undefined;
+  }
   throw new ForgeError(error.code, error.message, {
     operationIndex: index,
     operation: op,
-    ...(details
-      ? { cause: details.cause }
-      : error.details !== undefined
-        ? { cause: error.details }
-        : {}),
+    ...(cause !== undefined ? { cause } : {}),
+    ...(typeof hint === 'string' ? { hint } : {}),
   });
 }

@@ -4,6 +4,7 @@ import {
   ForgeError,
   applyOperations,
   canonical,
+  modelParameters,
   sceneChanges,
   type ModelDocument,
   type SceneDocument,
@@ -103,6 +104,30 @@ function addressedNodes(operation: ModelOperation): string[] {
       return [];
   }
 }
+/**
+ * Removing a geometry or material the model does not define is an error here (the kernel's
+ * scene semantics treat it as a no-op): NOT_FOUND, or DEPENDENCY_READONLY when only a frozen
+ * dependency defines that ID.
+ */
+function checkRemoval(draft: Draft, op: ModelOperation) {
+  if (op.op !== 'removeGeometry' && op.op !== 'removeMaterial') return;
+  const field = op.op === 'removeGeometry' ? 'geometries' : 'materials';
+  const noun = field === 'geometries' ? 'Geometry' : 'Material';
+  if (Object.hasOwn(draft.scene[field], op.id)) return;
+  const owner = Object.values(draft.dependencies).find((dependency) =>
+    Object.hasOwn(dependency[field], op.id),
+  );
+  if (owner)
+    fail(
+      'DEPENDENCY_READONLY',
+      `${noun} ${op.id} belongs to frozen dependency ${owner.id}. Edit that model in its own document.`,
+      { [field === 'geometries' ? 'geometry' : 'material']: op.id, dependency: owner.id },
+    );
+  fail('NOT_FOUND', `${noun} ${op.id} does not exist in model ${draft.model.id}.`, {
+    available: Object.keys(draft.scene[field]),
+    hint: `Run inspect --source to see the ${field} of the editable model.`,
+  });
+}
 function dependencyOwner(document: EditorDocument, scene: SceneDocument, op: ModelOperation) {
   for (const id of addressedNodes(op)) {
     if (scene.nodes.some((node) => node.id === id)) continue;
@@ -124,6 +149,8 @@ function applyModelOperation(draft: Draft, operation: ModelOnlyOperation) {
   switch (operation.op) {
     case 'putParameter': {
       const { op, id, ...spec } = operation;
+      // Check range and integer rules here so a failure names this operation's index.
+      modelParameters({ ...model, parameters: { [id]: spec } });
       model.parameters[id] = spec;
       draft.scene.parameters[id] = spec.default;
       return;
@@ -153,7 +180,26 @@ function applyModelOperation(draft: Draft, operation: ModelOnlyOperation) {
         );
       if (operation.op === 'removeDependency') {
         if (!Object.hasOwn(draft.dependencies, operation.id))
-          fail('NOT_FOUND', `Dependency ${operation.id} does not exist.`);
+          fail('NOT_FOUND', `Dependency ${operation.id} does not exist.`, {
+            available: Object.keys(draft.dependencies),
+          });
+        const nodes = draft.scene.nodes
+          .filter((node) => node.type === 'model' && node.model === operation.id)
+          .map((node) => node.id);
+        const models = Object.values(draft.dependencies)
+          .filter((other) =>
+            other.nodes.some((node) => node.type === 'model' && node.model === operation.id),
+          )
+          .map((other) => other.id);
+        if (nodes.length || models.length)
+          fail(
+            'DEPENDENCY_IN_USE',
+            `Dependency ${operation.id} is still instantiated by ${[
+              ...nodes.map((id) => `node ${id}`),
+              ...models.map((id) => `dependency ${id}`),
+            ].join(', ')}.`,
+            { dependency: operation.id, nodes, dependencies: models },
+          );
         delete draft.dependencies[operation.id];
         return;
       }
@@ -217,6 +263,7 @@ export function prepareModelEdit(
         applyModelOperation(draft, operation as ModelOnlyOperation);
       else {
         const owner = dependencyOwner(document, draft.scene, operation);
+        checkRemoval(draft, operation);
         try {
           draft.scene = applyOperations(draft.scene, [operation as never], draft.dependencies);
         } catch (error) {
@@ -226,6 +273,12 @@ export function prepareModelEdit(
               `Node ${owner.node} belongs to frozen dependency ${owner.dependency}. Edit that model in its own document.`,
               owner,
             );
+          // The kernel reports a taken node ID as ALREADY_EXISTS; here it is an ID choice.
+          if (error instanceof ForgeError && error.code === 'ALREADY_EXISTS')
+            fail('DUPLICATE_ID', error.message, {
+              ...(error.details && typeof error.details === 'object' ? error.details : {}),
+              hint: 'Choose another node ID; run node list to see the IDs already in use.',
+            });
           throw error;
         }
       }

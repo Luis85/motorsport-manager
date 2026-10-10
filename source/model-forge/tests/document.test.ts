@@ -122,7 +122,13 @@ test('a written edit snapshots the replaced bytes, increments revision and repla
       ['crate.model.json', 'crate.model.json.history'],
       'no lock or temporary files remain',
     );
-    const unchanged = await commitEdit(file, [{ op: 'removeGeometry', id: 'unused' }], {});
+    // Replacing a definition with identical content is a no-op edit.
+    const body = (await readDocument(file)).document.model.geometries.body;
+    const unchanged = await commitEdit(
+      file,
+      [{ op: 'putGeometry', id: 'body', geometry: body }],
+      {},
+    );
     assert.equal(unchanged.changed, false);
     assert.equal(unchanged.revision, 1, 'a no-op edit keeps the revision');
     assert.deepEqual(await fs.readdir(`${file}.history`), ['0.json']);

@@ -29,7 +29,9 @@ test('a model file imports as revision 0 and a nested source needs a bundle docu
     const result = await importDocument({ from, out });
     assert.equal(result.revision, 0);
     assert.equal(result.sourceFormat, 'model');
-    assert.equal((await readDocument(out)).document.model.revision, 0);
+    const imported = await readDocument(out);
+    assert.equal(imported.revision, 0);
+    assert.equal(imported.document.model.revision, undefined, 'revision 0 is written as no field');
     await assert.rejects(importDocument({ from, out }), code('DOCUMENT_EXISTS'));
     await assert.rejects(
       importDocument({ from, out: path.join(directory, 'other.model.json'), entry: 'crate' }),

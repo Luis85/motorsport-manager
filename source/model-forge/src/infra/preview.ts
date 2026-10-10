@@ -107,6 +107,7 @@ export function reviewDocument(
     {
       overwrite: options.overwrite,
       sourceStateHash: loaded.stateHash,
+      identity: { scene: document.model.id, revision: loaded.revision },
       target: {
         document: loaded.path,
         model: document.model.id,

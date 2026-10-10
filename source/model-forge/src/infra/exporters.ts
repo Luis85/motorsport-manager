@@ -5,6 +5,8 @@ import {
   exportScene,
   validateExport,
   writeLittlewildAsset,
+  readDefinition,
+  littlewildFamilies,
   modelDependencies,
   exportFormats,
   LittlewildAssetSchema,
@@ -17,7 +19,8 @@ import {
   withoutRevision,
 } from '../application/document.js';
 import { atomicWrite, writeJson } from './files.js';
-import { historyDirectory, type LoadedDocument } from './store.js';
+import { checkOutput, refuseProjectDocument } from './paths.js';
+import type { LoadedDocument } from './store.js';
 
 export const documentExportFormats = [
   ...exportFormats,
@@ -27,8 +30,10 @@ export const documentExportFormats = [
 ] as const;
 export type DocumentExportFormat = (typeof documentExportFormats)[number];
 
+type LittlewildFamily = keyof typeof littlewildFamilies;
 export interface LittlewildOptions {
-  family: 'items' | 'buildings' | 'creatures' | 'pets';
+  /** Defaults to the `<family>` directory of `<family>/<id>/definition.json`, else items. */
+  family?: LittlewildFamily;
   variant: string;
   name?: string;
   materials?: unknown;
@@ -40,6 +45,8 @@ export interface ExportRequest {
   out: string;
   validate?: boolean;
   parameters?: Record<string, number>;
+  /** Replace an existing output file (not used by Littlewild, which merges). */
+  overwrite?: boolean;
   littlewild?: LittlewildOptions;
 }
 
@@ -59,22 +66,19 @@ export function portableRecipe(document: EditorDocument, format: 'model' | 'mode
   };
 }
 
-function refuseSelfOverwrite(loaded: LoadedDocument, out: string) {
-  const history = historyDirectory(loaded.path);
-  if (
-    out === loaded.path ||
-    out === `${loaded.path}.lock` ||
-    out === history ||
-    out.startsWith(history + path.sep)
-  )
-    fail('INVALID_PATH', 'Export cannot replace the document or its lock and history files.');
-}
-
 /** Write one deliverable. Geometry formats compile the model exactly as Scene Forge does. */
 export async function exportDocument(loaded: LoadedDocument, request: ExportRequest) {
   const { document } = loaded;
   const out = path.resolve(request.out);
-  refuseSelfOverwrite(loaded, out);
+  // Littlewild exports merge into an existing definition by contract; other outputs replace
+  // an existing file only with --overwrite.
+  await checkOutput(out, {
+    overwrite: request.overwrite,
+    source: loaded.path,
+    merge: request.format === 'littlewild',
+  });
+  if (request.format === 'model' || request.format === 'model-bundle')
+    await refuseProjectDocument(out, 'export');
   if (request.validate && request.format !== 'glb' && request.format !== 'gltf')
     fail('INVALID_OPTION', '--validate applies to glb and gltf exports.');
   if (request.littlewild && request.format !== 'littlewild')
@@ -95,10 +99,24 @@ export async function exportDocument(loaded: LoadedDocument, request: ExportRequ
   }
   if (request.format === 'littlewild') {
     const options = request.littlewild!;
+    const directory = path.basename(path.dirname(path.dirname(out)));
+    const family =
+      options.family ??
+      (Object.hasOwn(littlewildFamilies, directory) ? (directory as LittlewildFamily) : 'items');
+    // An existing definition keeps its display name unless --name replaces it.
+    const existing = await readDefinition(out);
+    const previousName =
+      existing?.visual && typeof existing.visual === 'object' && 'name' in existing.visual
+        ? existing.visual.name
+        : undefined;
     const asset = parse(LittlewildAssetSchema, {
       id: path.basename(path.dirname(out)),
-      family: options.family,
-      name: options.name ?? document.model.name,
+      family,
+      name:
+        options.name ??
+        (typeof previousName === 'string' && existing?.family === family
+          ? previousName
+          : document.model.name),
       models: {
         [options.variant]: {
           model: document.model.id,
@@ -110,6 +128,7 @@ export async function exportDocument(loaded: LoadedDocument, request: ExportRequ
     const result = await writeLittlewildAsset(asset, libraryOf(document), out, {
       dryRun: options.dryRun,
       check: options.check,
+      preserve: true,
     });
     if (options.check && result.changed)
       fail('LITTLEWILD_STALE', `${out} differs from model ${document.model.id}.`, result);

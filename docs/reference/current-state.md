@@ -100,8 +100,10 @@ clone without `npm ci` or `node_modules`:
   recipe kernel that Scene Forge imports, applies revision-guarded edits with
   history, and exports model bundles for Scene Forge's `model import`,
   Littlewild definitions for `wildlands creature attach-visual` and game
-  folders, and GLB/glTF/OBJ/STL/Three.js JSON. Its `review` needs Playwright
-  and Chromium.
+  folders, and GLB/glTF/OBJ/STL/Three.js JSON. An unedited Littlewild import
+  re-exports byte-identically across the concept-game corpus. It never writes
+  inside a Scene Forge project and never replaces an existing output without
+  `--overwrite`. Its `review` needs Playwright and Chromium.
 - [`bin/character-studio`](character-studio-cli.md) edits Littlewild companions
   through a local browser editor, JSON CLI and HTTP API from
   `source/character-studio/`.

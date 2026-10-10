@@ -16,7 +16,7 @@ const plain = (value: unknown): value is Plain =>
   !!value && typeof value === 'object' && !Array.isArray(value);
 
 /**
- * A new document for `id` and exactly its dependency closure, starting at revision 0.
+ * A new document for `id` and exactly its dependency closure, at revision 0 (no field).
  * `kind` comes from the output path suffix; a nested model needs a bundle.
  */
 export function documentFor(library: ModelLibrary, id: string, kind: DocumentKind): EditorDocument {
@@ -37,11 +37,8 @@ export function documentFor(library: ModelLibrary, id: string, kind: DocumentKin
         suggestedPath: `${id}${documentSuffixes['model-bundle']}`,
       },
     );
-  const document: EditorDocument = {
-    kind,
-    model: { ...withoutRevision(library[id]), revision: 0 },
-    dependencies,
-  };
+  // A new document has no revision field (revision 0) until its first committed edit.
+  const document: EditorDocument = { kind, model: withoutRevision(library[id]), dependencies };
   validateEditorDocument(document);
   return document;
 }
@@ -163,7 +160,7 @@ export function planProjectImport(
   return { sourceFormat: 'scene-forge-project', document: documentFor(library, id, kind) };
 }
 
-/** A new, empty model document at revision 0. */
+/** A new, empty model document at revision 0 (no revision field). */
 export function emptyDocument(
   kind: DocumentKind,
   metadata: { id: string; name: string; category?: string; description?: string },
@@ -175,7 +172,6 @@ export function emptyDocument(
     name: metadata.name,
     ...(metadata.category !== undefined ? { category: metadata.category } : {}),
     ...(metadata.description !== undefined ? { description: metadata.description } : {}),
-    revision: 0,
   });
   return { kind, model, dependencies: {} };
 }

@@ -65,6 +65,7 @@ async function exists(file: string) {
 
 export function registerDiscoveryCommands(c: CommandContext) {
   const { program, output, writeOut } = c;
+  const compact = () => !!program.opts<{ compact?: boolean }>().compact;
   program
     .command('discover')
     .alias('catalog')
@@ -81,6 +82,7 @@ export function registerDiscoveryCommands(c: CommandContext) {
         if (!child)
           fail('NOT_FOUND', `Unknown command ${part}.`, {
             available: command.commands.map((c) => c.name()),
+            hint: 'Run discover for every command path, or describe with a path from details.available.',
           });
         prefix = [prefix, command.name()].filter(Boolean).join(' ');
         command = child;
@@ -94,12 +96,12 @@ export function registerDiscoveryCommands(c: CommandContext) {
     .option('--raw', 'Print the bare JSON Schema for validators')
     .action((opts: { kind: string; raw?: boolean }) => {
       const schema = jsonSchema(opts.kind);
-      if (opts.raw) writeOut(JSON.stringify(schema, null, 2) + '\n');
+      if (opts.raw) writeOut(JSON.stringify(schema, null, compact() ? undefined : 2) + '\n');
       else output(schema);
     });
   program
     .command('doctor')
-    .description('Check Node, Playwright and Chromium for review and preview capture')
+    .description('Check Node, Playwright and Chromium for review (preview needs neither)')
     .action(async () => {
       const playwright = await probePlaywright();
       const configured = process.env.FORGE_CHROMIUM_PATH;
@@ -144,7 +146,7 @@ export function registerDiscoveryCommands(c: CommandContext) {
     .option('--raw', 'Print bare document JSON for saving or piping')
     .action(async (id: string, opts: { raw?: boolean }) => {
       const document = serializeDocument(await exampleDocument(id));
-      if (opts.raw) writeOut(JSON.stringify(document, null, 2) + '\n');
+      if (opts.raw) writeOut(JSON.stringify(document, null, compact() ? undefined : 2) + '\n');
       else output(document);
     });
   example
