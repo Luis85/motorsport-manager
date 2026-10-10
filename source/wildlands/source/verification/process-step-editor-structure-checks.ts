@@ -291,21 +291,26 @@ export async function structureChecks(studio: Studio): Promise<void> {
     bottom: Math.max(...buttons.map(b => b.bottom)), overflow: document.documentElement.scrollWidth > innerWidth || d.scrollWidth > d.clientWidth, wide,
     small: buttons.filter(b => b.height < 43.5).length, subtitle: parseFloat(getComputedStyle(d.querySelector('.pd-subtitle')!).fontSize)};
   });
-  await open('discovery');
-  const step = await measure();
-  assert.ok(step.chrome <= step.vh * 0.3, JSON.stringify(step));
-  assert.deepEqual([step.overflow, step.wide, step.small, step.rows], [false, [], 0, 1], 'the three footer buttons share one row');
-  assert.ok(step.bottom <= step.vh && step.subtitle >= 12, JSON.stringify(step));
-  await page.keyboard.press('Escape');
-  await page.locator('#open-definition').click();
-  await page.locator('dialog.de-dialog[open]').waitFor();
-  const definition = await measure();
-  assert.ok(definition.chrome <= definition.vh * 0.3, JSON.stringify(definition));
-  assert.deepEqual([definition.overflow, definition.wide, definition.small, definition.rows], [false, [], 0, 2], 'secondary actions share one row');
-  assert.ok(definition.bottom <= definition.vh, JSON.stringify(definition));
-  // The primary action keeps its own full row at the bottom of the sticky footer.
-  const apply = (await page.locator('#de-apply').boundingBox())!;
-  assert.ok(apply.width >= 390 - 32 - 1 && Math.round(apply.y + apply.height) <= 844);
-  await page.keyboard.press('Escape');
+  // Hosted CI has no Inter and renders in the wider DejaVu Sans, so the same limits are checked in both fonts.
+  for (const fallback of [false, true]) {
+   if (fallback) await page.addStyleTag({content: '*{font-family:"DejaVu Sans" !important}'}).then(h => h.evaluate(n => {(n as HTMLElement).id = 'dejavu-probe';}));
+   await open('discovery');
+   const step = await measure();
+   assert.ok(step.chrome <= step.vh * 0.3, JSON.stringify(step));
+   assert.deepEqual([step.overflow, step.wide, step.small, step.rows], [false, [], 0, 1], 'the three footer buttons share one row');
+   assert.ok(step.bottom <= step.vh && step.subtitle >= 12, JSON.stringify(step));
+   await page.keyboard.press('Escape');
+   await page.locator('#open-definition').click();
+   await page.locator('dialog.de-dialog[open]').waitFor();
+   const definition = await measure();
+   assert.ok(definition.chrome <= definition.vh * 0.3, JSON.stringify(definition));
+   assert.deepEqual([definition.overflow, definition.wide, definition.small, definition.rows], [false, [], 0, 2], 'secondary actions share one row');
+   assert.ok(definition.bottom <= definition.vh, JSON.stringify(definition));
+   // The primary action keeps its own full row at the bottom of the sticky footer.
+   const apply = (await page.locator('#de-apply').boundingBox())!;
+   assert.ok(apply.width >= 390 - 32 - 1 && Math.round(apply.y + apply.height) <= 844);
+   await page.keyboard.press('Escape');
+  }
+  await page.evaluate(() => document.getElementById('dejavu-probe')?.remove());
  });
 }

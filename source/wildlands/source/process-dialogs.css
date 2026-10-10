@@ -115,7 +115,10 @@ html.pd-locked { overflow:hidden; }
  .pd-buttons { flex-wrap:wrap; gap:6px; }
  .pd-buttons button { flex:1 1 0; min-width:min(100%,8rem); }
  .pd-buttons button.primary { flex-basis:100%; order:-1; }
- .se-dialog .pd-buttons button { flex:1 1 auto; min-width:min(100%,5rem); }
+ /* The step editor's three actions always share one row: in a wider fallback font (DejaVu Sans on hosted CI) a long label wraps
+    inside its button instead of pushing the button to a second row. */
+ .se-dialog .pd-buttons { flex-wrap:nowrap; }
+ .se-dialog .pd-buttons button { flex:1 1 auto; min-width:0; padding-inline:var(--s2); white-space:normal; overflow-wrap:break-word; line-height:1.2; }
  .se-dialog .pd-buttons button.primary { flex-basis:auto; order:0; }
 }
 /* Definition editor (LWProcessDefinitionEditor, dialog id "de"): opener chip, two panes (tabs below 1000px), tuning form and raw JSON pane. */
@@ -195,9 +198,12 @@ html.pd-locked { overflow:hidden; }
  .pd-dialog .de-grid,.pd-dialog .de-pair { grid-template-columns:1fr; }
  .pd-dialog .de-row,.pd-dialog .de-values .de-row { grid-template-columns:1fr; }
  .pd-dialog .de-link { min-height:44px; }
- /* Four secondary actions share one compact row (the longest label wraps inside its button); the primary action keeps a full row. */
- .de-dialog .pd-buttons { display:grid; grid-template-columns:auto auto auto minmax(min-content,1fr); align-items:stretch; }
- .de-dialog .pd-buttons button { min-width:0; padding-inline:var(--s2); white-space:normal; }
+ /* Four secondary actions share one compact row; the primary action keeps a full row. The two short labels take their own width and
+    the two long ones share the rest 2:3, so each long label wraps to at most two lines inside its button, also in the wider DejaVu
+    Sans fallback font. */
+ .de-dialog .pd-buttons { display:grid; grid-template-columns:min-content min-content minmax(min-content,2fr) minmax(min-content,3fr);
+  align-items:stretch; }
+ .de-dialog .pd-buttons button { min-width:0; padding-inline:var(--s2); white-space:normal; line-height:1.2; }
  .de-dialog #de-apply { grid-column:1/-1; order:0; }
 }
 /* Activity modal (LWProcessActivity, dialog id "act"): filters, a sticky-header table that scrolls inside the sheet, and a pill when live updates are held back. */
