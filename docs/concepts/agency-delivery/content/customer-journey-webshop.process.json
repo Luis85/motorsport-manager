@@ -1,7 +1,7 @@
 {
   "format": "wildlands-process",
   "schemaVersion": 1,
-  "revision": 0,
+  "revision": 1,
   "id": "customer-journey-webshop",
   "name": "Customer journey · Online shop",
   "description": "Synthetic customer journey of an online shop, from the first ad to the review request. Shoppers arrive as a steady open stream with a random gap (exponential, mean 3 minutes, at most 12) for as long as the run lasts, so the example is meant to run unlimited. Each shopper draws an intent (60% browser, 40% buyer) and starts with sentiment 0; touchpoints add to sentiment to follow the emotions, and the tracked curve is the measured average. Browsers leave at Interested? with a 55% chance, 25% abandon the cart, 6% of payments fail and go to support chat, 12% of deliveries lead to a return call, and 30% of satisfied customers buy again. Phases, emotions, pains and opportunities are authored assumptions. Support agents, a payment gateway and warehouse robots serve the touchpoints backstage. Every random value derives from the definition seed 20261001 and the case and step, so the same seed always gives the same run and another seed (process run --seed N) gives another one. All numbers are synthetic illustrative assumptions, not research data, a measured shop or a forecast.",
@@ -92,7 +92,8 @@
       "channel": "social",
       "duration": 1,
       "pain": "Most shoppers scroll past the ad without noticing it.",
-      "opportunity": "Test shorter creative aimed at the buyer segment."
+      "opportunity": "Test shorter creative aimed at the buyer segment.",
+      "description": "A short social ad introduces the shop and one of its products. It takes about a minute of the shopper's attention and does not change sentiment yet."
     },
     {
       "id": "landing",
@@ -114,7 +115,8 @@
         "sentiment": 1
       },
       "pain": "The landing page repeats the ad claim only loosely.",
-      "opportunity": "Land the shopper on the advertised product."
+      "opportunity": "Land the shopper on the advertised product.",
+      "description": "The shopper searches for the product and lands on the shop's website. Finding the shop lifts sentiment by one point."
     },
     {
       "id": "browse",
@@ -140,7 +142,8 @@
       "add": {
         "sentiment": 1
       },
-      "opportunity": "Show best sellers and size guides first."
+      "opportunity": "Show best sellers and size guides first.",
+      "description": "The shopper looks through product pages and categories, which takes two to eight minutes. A good selection lifts sentiment by one point."
     },
     {
       "id": "reviews",
@@ -161,7 +164,8 @@
       "add": {
         "sentiment": 1
       },
-      "pain": "Reviews are long and hard to filter."
+      "pain": "Reviews are long and hard to filter.",
+      "description": "The shopper reads what other customers wrote before deciding. Reassuring reviews lift sentiment by one point."
     },
     {
       "id": "interested",
@@ -175,7 +179,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Consideration"
+      "phase": "Consideration",
+      "description": "Buyers always continue to the cart. Shoppers who are only browsing leave with a 55% chance; the rest put something in the cart as well."
     },
     {
       "id": "cart",
@@ -197,7 +202,8 @@
         "sentiment": -1
       },
       "pain": "Shipping cost only appears in the cart.",
-      "opportunity": "Show delivery cost on the product page."
+      "opportunity": "Show delivery cost on the product page.",
+      "description": "The shopper opens the cart and sees the shipping cost for the first time. The surprise lowers sentiment by one point."
     },
     {
       "id": "cart-abandoned",
@@ -211,7 +217,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Purchase"
+      "phase": "Purchase",
+      "description": "A quarter of shoppers (25%) abandon the cart here and leave without buying. Everyone else continues to the checkout form."
     },
     {
       "id": "checkout",
@@ -233,7 +240,8 @@
         "sentiment": -1
       },
       "pain": "Account creation is required.",
-      "opportunity": "Offer guest checkout."
+      "opportunity": "Offer guest checkout.",
+      "description": "The shopper enters address and account details in the checkout form. Having to create an account lowers sentiment by one point."
     },
     {
       "id": "payment",
@@ -259,7 +267,8 @@
       "resources": {
         "gateway": 1
       },
-      "opportunity": "Offer wallet payment to shorten the step."
+      "opportunity": "Offer wallet payment to shorten the step.",
+      "description": "The shopper pays online through the payment gateway, which takes one to three minutes and holds one gateway connection. A payment retried after a support chat comes back to this step."
     },
     {
       "id": "payment-failed",
@@ -273,7 +282,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Purchase"
+      "phase": "Purchase",
+      "description": "6% of payments fail and send the shopper to support chat. Successful payments continue to the order confirmation."
     },
     {
       "id": "support-chat",
@@ -304,7 +314,8 @@
         "sentiment": -1
       },
       "pain": "The customer waits in a chat queue while the cart is open.",
-      "opportunity": "Offer a one-click payment retry."
+      "opportunity": "Offer a one-click payment retry.",
+      "description": "The shopper waits in a chat queue for a support agent and works through the failed payment with them. The chat takes three to twelve minutes, holds one agent and lowers sentiment by one point."
     },
     {
       "id": "payment-resolved",
@@ -318,7 +329,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Purchase"
+      "phase": "Purchase",
+      "description": "After the chat, 40% of shoppers give up on paying. The others try the payment again."
     },
     {
       "id": "confirmation",
@@ -339,7 +351,8 @@
       "add": {
         "sentiment": 2
       },
-      "opportunity": "Add a tracking link to the email."
+      "opportunity": "Add a tracking link to the email.",
+      "description": "The shop emails the order confirmation right after the payment. Knowing the order went through lifts sentiment by two points."
     },
     {
       "id": "delivery",
@@ -370,7 +383,8 @@
         "sentiment": 1
       },
       "pain": "The delivery window is vague.",
-      "opportunity": "Offer a precise delivery slot."
+      "opportunity": "Offer a precise delivery slot.",
+      "description": "The warehouse robots pick, pack and ship the parcel while the shopper waits for it. This takes five to twenty simulated minutes, holds one robot and lifts sentiment by one point."
     },
     {
       "id": "unboxing",
@@ -391,7 +405,8 @@
       "add": {
         "sentiment": 2
       },
-      "opportunity": "Include a personal note and easy return instructions."
+      "opportunity": "Include a personal note and easy return instructions.",
+      "description": "The shopper opens the parcel and sees the product for the first time. A good unboxing lifts sentiment by two points."
     },
     {
       "id": "problem",
@@ -405,7 +420,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Delivery"
+      "phase": "Delivery",
+      "description": "12% of orders have a problem, and the shopper calls support to return or exchange the item. All other orders go straight to the review request."
     },
     {
       "id": "returns",
@@ -435,7 +451,8 @@
         "sentiment": -2
       },
       "pain": "Returns need a phone call.",
-      "opportunity": "Offer a self-service returns portal."
+      "opportunity": "Offer a self-service returns portal.",
+      "description": "The shopper phones a support agent to return or exchange the order. The call takes five to fourteen minutes, holds one agent and lowers sentiment by two points; the review request still follows."
     },
     {
       "id": "review-request",
@@ -456,7 +473,8 @@
       "add": {
         "sentiment": 1
       },
-      "opportunity": "Time the request after the product was used."
+      "opportunity": "Time the request after the product was used.",
+      "description": "The shop emails the customer a request to review the product. Being asked lifts sentiment by one point."
     },
     {
       "id": "repeat",
@@ -470,7 +488,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "After-sales and loyalty"
+      "phase": "After-sales and loyalty",
+      "description": "30% of customers come back and buy again, becoming loyal repeat buyers. Everyone else ends the journey as a happy customer."
     },
     {
       "id": "happy",
@@ -485,7 +504,8 @@
         "color": "#77b5a0"
       },
       "phase": "After-sales and loyalty",
-      "outcome": "goal"
+      "outcome": "goal",
+      "description": "The journey ends with a satisfied one-time customer. This is a goal outcome and counts towards conversion."
     },
     {
       "id": "loyal",
@@ -500,7 +520,8 @@
         "color": "#77b5a0"
       },
       "phase": "After-sales and loyalty",
-      "outcome": "goal"
+      "outcome": "goal",
+      "description": "The journey ends with a customer who buys again. This is a goal outcome and counts towards conversion."
     },
     {
       "id": "left",
@@ -515,7 +536,8 @@
         "color": "#d9777f"
       },
       "phase": "Consideration",
-      "outcome": "lost"
+      "outcome": "lost",
+      "description": "The shopper leaves without buying, either while browsing or after abandoning the cart. This is a lost outcome."
     },
     {
       "id": "payment-lost",
@@ -530,7 +552,8 @@
         "color": "#d9777f"
       },
       "phase": "Purchase",
-      "outcome": "lost"
+      "outcome": "lost",
+      "description": "The shopper gives up after the failed payment and the support chat. This is a lost outcome."
     }
   ],
   "flows": [
