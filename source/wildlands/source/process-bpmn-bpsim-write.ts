@@ -82,16 +82,29 @@ declare namespace LWProcessBpmnBpsimWrite {
   return out;
  }
  function write(d: LWProcess.Definition, ids: LWProcessBpmn.Ids, add: Add): void {
-  const first = d.arrivals[0], block = (ref: string, inner: (depth: number) => void) => { add(2, `<bpsim:ElementParameters elementRef="${ref}">`); inner(3); add(2, '</bpsim:ElementParameters>'); };
-  add(0, '<bpsim:BPSimData>'); add(1, `<bpsim:Scenario id="Scenario_${d.id}" name="Wildlands simulation">`);
-  // The scenario Duration is the simulated span from the scenario start (minute 0), so an `until` stream ends at that absolute minute; the importer reads it back as `until`.
+  const first = d.arrivals[0];
+  const block = (ref: string, inner: (depth: number) => void) => {
+   add(2, `<bpsim:ElementParameters elementRef="${ref}">`);
+   inner(3);
+   add(2, '</bpsim:ElementParameters>');
+  };
+  add(0, '<bpsim:BPSimData>');
+  add(1, `<bpsim:Scenario id="Scenario_${d.id}" name="Wildlands simulation">`);
+  // The scenario Duration is the simulated span from the scenario start (minute 0), so an `until` stream ends at that absolute
+  // minute; the importer reads it back as `until`.
   // The run seed travels as the BPSim scenario seed, so a tool without the extension still repeats the same run.
   const head = `<bpsim:ScenarioParameters baseTimeUnit="min"${d.seed === undefined ? '' : ` seed="${d.seed}"`}`;
   if (first?.until === undefined) add(2, head + '/>');
   else {
-   add(2, head + '>'); add(3, `<bpsim:Duration><bpsim:DurationParameter value="PT${first.until}M"/></bpsim:Duration>`); add(2, '</bpsim:ScenarioParameters>');
+   add(2, head + '>');
+   add(3, `<bpsim:Duration><bpsim:DurationParameter value="PT${first.until}M"/></bpsim:Duration>`);
+   add(2, '</bpsim:ScenarioParameters>');
   }
-  const wrap = (depth: number, group: string, name: string, inner: string) => { add(depth, `<bpsim:${group}>`); add(depth + 1, `<bpsim:${name}>${inner}</bpsim:${name}>`); add(depth, `</bpsim:${group}>`); };
+  const wrap = (depth: number, group: string, name: string, inner: string) => {
+   add(depth, `<bpsim:${group}>`);
+   add(depth + 1, `<bpsim:${name}>${inner}</bpsim:${name}>`);
+   add(depth, `</bpsim:${group}>`);
+  };
   const timed = !!first && (!!first.gap || first.interval > 0 || first.count !== undefined), props = first ? properties(first) : [];
   /** Arrival timing as control parameters and the case data as properties, in the order BPSim declares the groups. */
   const arrival = (a: LWProcess.Arrival, depth: number) => {
@@ -102,7 +115,11 @@ declare namespace LWProcessBpmnBpsimWrite {
     if (a.count !== undefined) add(depth + 1, `<bpsim:TriggerCount>${constant('NumericParameter', a.count)}</bpsim:TriggerCount>`);
     add(depth, '</bpsim:ControlParameters>');
    }
-   if (props.length) { add(depth, '<bpsim:PropertyParameters>'); for (const line of props) add(depth + 1, line); add(depth, '</bpsim:PropertyParameters>'); }
+   if (props.length) {
+    add(depth, '<bpsim:PropertyParameters>');
+    for (const line of props) add(depth + 1, line);
+    add(depth, '</bpsim:PropertyParameters>');
+   }
   };
   for (const s of d.steps) {
    const work = s.kind === 'task' || s.kind === 'touchpoint' || s.kind === 'machine' || s.kind === 'system', wait = s.kind === 'timer' && s.until === undefined;

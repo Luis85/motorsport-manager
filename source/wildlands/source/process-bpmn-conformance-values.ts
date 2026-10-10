@@ -21,7 +21,10 @@ declare namespace LWProcessBpmnValues {
  const root = inputRoot as {LWProcessBpmnValues?: LWProcessBpmnValues.Api};
  const collapse = (v: string) => v.replace(/[\t\n\r ]+/g, ' ').replace(/^ | $/g, '');
  // XML 1.0 (fifth edition) name characters without the colon.
- const START = 'A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD\\u{10000}-\\u{EFFFF}';
+ const START = [
+  'A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C\\u200D\\u2070-\\u218F',
+  '\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD\\u{10000}-\\u{EFFFF}',
+ ].join('');
  const NCNAME = `[${START}][${START}\\-.0-9\\u00B7\\u0300-\\u036F\\u203F\\u2040]*`;
  const NAME = new RegExp(`^${NCNAME}$`, 'u'), QNAME = new RegExp(`^(?:(${NCNAME}):)?(${NCNAME})$`, 'u');
  const NUMBER = /^(?:[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?|-?INF|NaN)$/;
@@ -32,7 +35,10 @@ declare namespace LWProcessBpmnValues {
  const SEGMENT = `${PCHAR}*`, NZ = `${PCHAR}+`, NZ_NC = `(?:[${UNRESERVED}${SUB}@]|${PCT})+`, TAIL = `(?:\\?(?:${PCHAR}|[/?])*)?(?:#(?:${PCHAR}|[/?])*)?`;
  const AUTHORITY = `(?:(?:[${UNRESERVED}${SUB}:]|${PCT})*@)?(?:\\[[^\\]/?#@]*\\]|(?:[${UNRESERVED}${SUB}]|${PCT})*)(?::\\d*)?`;
  const ABEMPTY = `(?:/${SEGMENT})*`, ABSOLUTE = `/(?:${NZ}(?:/${SEGMENT})*)?`;
- const URI = new RegExp(`^(?:[A-Za-z][A-Za-z0-9+\\-.]*:(?://${AUTHORITY}${ABEMPTY}|${ABSOLUTE}|${NZ}(?:/${SEGMENT})*|)|//${AUTHORITY}${ABEMPTY}|${ABSOLUTE}|${NZ_NC}(?:/${SEGMENT})*|)${TAIL}$`);
+ // An absolute URI (scheme, then hierarchical part) or a relative reference, each followed by the optional query and fragment.
+ const ABSOLUTE_URI = `[A-Za-z][A-Za-z0-9+\\-.]*:(?://${AUTHORITY}${ABEMPTY}|${ABSOLUTE}|${NZ}(?:/${SEGMENT})*|)`;
+ const RELATIVE_REF = `//${AUTHORITY}${ABEMPTY}|${ABSOLUTE}|${NZ_NC}(?:/${SEGMENT})*|`;
+ const URI = new RegExp(`^(?:${ABSOLUTE_URI}|${RELATIVE_REF})${TAIL}$`);
  const uri = (v: string) => URI.test(v.replace(/[\x00-\x20\x7F-￿<>"{}|\\^`]/g, '_'));
  const LIMITS: Record<string, [bigint, bigint]> = {int: [-(2n ** 31n), 2n ** 31n - 1n], long: [-(2n ** 63n), 2n ** 63n - 1n]};
  function dateTime(v: string): boolean {
@@ -49,7 +55,11 @@ declare namespace LWProcessBpmnValues {
   boolean: [true, v => /^(?:true|false|1|0)$/.test(v), 'true or false (or 1 or 0)'],
   integer: [true, v => /^[+-]?\d+$/.test(v), 'a whole number'],
   int: [true, v => /^[+-]?\d+$/.test(v) && BigInt(v) >= LIMITS.int![0] && BigInt(v) <= LIMITS.int![1], 'a whole number from -2147483648 to 2147483647'],
-  long: [true, v => /^[+-]?\d+$/.test(v) && BigInt(v) >= LIMITS.long![0] && BigInt(v) <= LIMITS.long![1], 'a whole number from -9223372036854775808 to 9223372036854775807'],
+  long: [
+   true,
+   v => /^[+-]?\d+$/.test(v) && BigInt(v) >= LIMITS.long![0] && BigInt(v) <= LIMITS.long![1],
+   'a whole number from -9223372036854775808 to 9223372036854775807',
+  ],
   double: [true, v => NUMBER.test(v), 'a number such as 12, 0.5 or 1.5E3 (or INF, -INF, NaN)'],
   float: [true, v => NUMBER.test(v), 'a number such as 12, 0.5 or 1.5E3 (or INF, -INF, NaN)'],
   id: [true, v => NAME.test(v), 'a name that starts with a letter or underscore and has no spaces or colons'],
