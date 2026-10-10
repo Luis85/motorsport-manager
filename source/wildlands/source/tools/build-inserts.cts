@@ -375,6 +375,7 @@ export const INSERTS: readonly Insert[] = [
   ["PROCESS_STEP_CHECKS", "process-step-checks.js", "script", "template-process"],
   ["PROCESS_STEP_HISTORY", "process-step-history.js", "script", "template-process"],
   ["PROCESS_STEP_PROBLEMS", "process-step-problems.js", "script", "template-process"],
+  ["PROCESS_STEP_KIT", "process-step-kit.js", "script", "template-process"],
   ["PROCESS_STEP_LOGIC_SECTIONS", "process-step-logic-sections.js", "script", "template-process"],
   ["PROCESS_STEP_FLOWS", "process-step-flows.js", "script", "template-process"],
   ["PROCESS_STEP_SECTIONS", "process-step-sections.js", "script", "template-process"],

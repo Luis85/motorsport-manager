@@ -458,6 +458,7 @@
     "source/process-step-checks.ts",
     "source/process-step-history.ts",
     "source/process-step-problems.ts",
+    "source/process-step-kit.ts",
     "source/process-step-logic-sections.ts",
     "source/process-step-flows.ts",
     "source/process-step-sections.ts",
