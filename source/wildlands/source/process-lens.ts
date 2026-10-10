@@ -27,7 +27,11 @@ declare namespace LWProcessLens {
   function reset(): void {inner?.dispose(); inner = null; kind = null; host.replaceChildren();}
   return {
    draw(view) {
-    if (kind !== view.lens) {reset(); kind = view.lens; inner = view.lens === 'journey' ? root.LWProcessJourney.create(host, onSelect) : root.LWProcessSipoc.create(host, onSelect);}
+    if (kind !== view.lens) {
+     reset();
+     kind = view.lens;
+     inner = view.lens === 'journey' ? root.LWProcessJourney.create(host, onSelect) : root.LWProcessSipoc.create(host, onSelect);
+    }
     inner!.draw(view);
    },
    frame() {inner?.frame?.();},

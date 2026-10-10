@@ -1,15 +1,18 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-palette.ts" />
+/// <reference path="./process-work-state.ts" />
 /**
  * Drawing vocabulary of the 2D process map (LWProcessMapMarks): the SVG element helper, room glyphs, pills, the work-state markers
  * and the label wrapping rule. Presentation only; nothing here reads or changes a session.
  *  - Colours are process.css tokens. State colours come from `data-status` rules shared by map markers, card borders and the
- *    legend samples (`legend()`), so the key and the picture cannot drift apart; other colours are `var(--token)` styles. Only the
- *    room theme accent (data of LWProcessRooms) is passed in as a value.
+ *    legend samples (`legend()`), so the key and the picture cannot drift apart; other colours are `var(--token)` styles of the
+ *    studio palette (LWProcessPalette.css). Only the room theme accent (LWProcessRooms) is passed in as a value.
+ *  - A work item's state is LWProcessWorkState.statusOf, the studio's one work-state derivation.
  *  - Each work state has its own marker shape as well as its colour: Working disc, Waiting ring, Timer hourglass, Backlog square,
  *    Blocked cross.
  */
 declare namespace LWProcessMapMarks {
- type Status = 'active' | 'queued' | 'timer' | 'backlog' | 'held';
+ type Status = LWProcessWorkState.Status;
  type Attrs = Record<string, string | number>;
  /** A pill above a card: its top-right corner at `right`,`top`, enlarged by `k`; `tone` is a CSS colour (a token or the room accent). */
  interface Pill {cls: string; right: number; top: number; k: number; text: string; tip: string; tone: string; full: boolean; clock: boolean}
@@ -21,7 +24,6 @@ declare namespace LWProcessMapMarks {
   pill(parent: SVGElement, p: Pill): void;
   /** A work-state marker centred at x,y and `size` world units wide. */
   mark(status: Status, x: number, y: number, size: number, attrs?: Attrs): SVGPathElement;
-  statusOf(token: LWProcess.Token): Status;
   /** Work states in legend order with their legend labels. */
   readonly STATES: readonly {status: Status; label: string}[];
   /** Legend entries (HTML): one marker sample per work state, then the conditional and deadline path samples. */
@@ -42,7 +44,7 @@ declare namespace LWProcessMapMarks {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessMapMarks?: LWProcessMapMarks.Api; LWProcessRooms: LWProcessRooms.Api};
+ const root = inputRoot as {LWProcessMapMarks?: LWProcessMapMarks.Api; LWProcessRooms: LWProcessRooms.Api; LWProcessPalette: LWProcessPalette.Api};
  const NS = 'http://www.w3.org/2000/svg';
  function el<K extends keyof SVGElementTagNameMap>(name: K, attrs: LWProcessMapMarks.Attrs = {}, text?: string): SVGElementTagNameMap[K] {
   const n = document.createElementNS(NS, name);
@@ -114,9 +116,6 @@ declare namespace LWProcessMapMarks {
   const cls = 'pm-mark' + (attrs.class ? ' ' + attrs.class : '');
   return el('path', {...attrs, class: cls, 'data-status': status, d: SHAPES[status], transform: `translate(${x} ${y}) scale(${size})`});
  }
- function statusOf(t: LWProcess.Token): LWProcessMapMarks.Status {
-  return t.status === 'active' || t.status === 'timer' || t.status === 'backlog' || t.status === 'held' ? t.status : 'queued';
- }
  function legend(): string {
   const sample = (inner: string, wide: boolean) => `<svg class="pm-key" width="${wide ? 24 : 12}" height="12" `
    + `viewBox="${wide ? '0 0 24 12' : '-.6 -.6 1.2 1.2'}" aria-hidden="true" focusable="false">${inner}</svg>`;
@@ -179,6 +178,7 @@ declare namespace LWProcessMapMarks {
  }
  const wrap = (text: string, per: number, lines: number) => laid(text, per, lines).lines;
  const cutOf = (text: string, per: number, lines: number) => laid(text, per, lines).cut;
- const TONE = {interrupt: 'var(--danger)', escalate: 'var(--deadline-escalate)'};
- root.LWProcessMapMarks = {el, small, glyph, pill, mark, statusOf, STATES, legend, wrap, fits, cutOf, trunc, TONE};
+ const palette = root.LWProcessPalette;
+ const TONE = {interrupt: palette.css('deadline-interrupt'), escalate: palette.css('deadline-escalate')};
+ root.LWProcessMapMarks = {el, small, glyph, pill, mark, STATES, legend, wrap, fits, cutOf, trunc, TONE};
 })(globalThis);
