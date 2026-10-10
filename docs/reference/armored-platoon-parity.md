@@ -3,7 +3,7 @@
 The full requested parity target remains **incomplete**. This is a provisional
 requirements and evidence inventory, not a claim that a reduced proving ground
 matches the complete reference. Initial baseline audit is against `749a9f6296f3beb665eedf1eda57ae8cbfd00b39`.
-The implementation update records source checkpoint `bc47aaeb65910ecae6f2c802800a288b81daea28`
+The implementation update records source checkpoint `b2b10fbeabfcfb8460fad014fb3a2350c24fcf4b`
 and scoped reports; integrated changes require source-bound evidence before rows can close. See [current status](current-state.md)
 and the [dated reference register, situations and budget proposals](../_archive/armored-platoon-2026-10-10-reference.md).
 
@@ -200,13 +200,19 @@ All complete-scope gates remain open until their own acceptance evidence exists.
 ## Verification checkpoint and mission progression defect
 
 As of this ledger update, the authoritative integration branch is
-`codex/armored-platoon`, source checkpoint `bc47aaeb65910ecae6f2c802800a288b81daea28`,
+`codex/armored-platoon`, source checkpoint `b2b10fbeabfcfb8460fad014fb3a2350c24fcf4b`,
 on base `749a9f6296f3beb665eedf1eda57ae8cbfd00b39`. Per-run source/content hashes
 and complete-gate results belong
 in the [integration record](../_archive/armored-platoon-2026-10-10-integration.md).
 Old logs with failed type checks or formatting are retained evidence of their
 own run; neither later source edits nor earlier green checks supersede them
-without a corresponding rerun.
+without a corresponding rerun. Draft [PR #49](https://github.com/Luis85/motorsport-manager/pull/49)
+is open on `claude/model-forge`, with published checkpoint HEAD
+`3679ff945d4e8975e56458c5bd6fcf8baeeefbf1`; it is not merged. The integration
+record maps earlier unpublished commit identities to public equivalents with
+identical source trees after GitHub private-email protection required metadata-only
+rebuilding. Native records under local `022da2a4` describe the same tree as public
+`3e2bca33faef0d74aa3e400321b7e610a8365c3b`; they remain valid for that exact tree.
 
 | Evidence | Observed result | What it establishes / does not establish |
 |---|---|---|
@@ -216,9 +222,9 @@ without a corresponding rerun.
 | Browser captures | Chase/gunner, 1024/1440 and phone observation from Chromium 151 software SwiftShader | Actual application visual evidence, not hardware performance, Safari coverage, approved regression baselines or reference fidelity. |
 | Real motion capture | 5.6066 m movement, 0.325 rad traverse, ammo 15 → 14, tick 0 → 127 across 15.196 seconds wall time / 21 captured frames | Actual application motion; sparse software capture is not a rendered-FPS benchmark or reference motion comparison. |
 | Model Forge complete gate | 176 unit + 4 end-to-end tests passed after formatting correction | Tool gate evidence; no production-art or other-project gate acceptance inferred. |
-| Scene Forge and CLI checks | Existing inline-HTML e2e mode passed 15/15 after file-URL policy blocked the initial run; both Forge check:cli checks passed; all four CLI bundles regenerated | `FORGE_TEST_INLINE_HTML=1` disclosed; Character initial handoff passed, final regeneration-bound handoff pending. |
-| Native baseline | VIEWS failed at untouched `749a9f6296f3beb665eedf1eda57ae8cbfd00b39` with Godot 4.6.3; the same targeted test passed on CI-SHA-verified Godot 4.7.2: 1 test, 73.962 seconds | Targeted environment mismatch resolved; full native 103-check run is underway at `022da2a41bf1be7dc09681b041c04e2229608b72` with pinned 4.7.2 and user Xvfb; no full pass claimed. |
-| Wildlands complete gate | Generation/check chain running before the complete gate; final results pending | Focused tests cannot substitute for the registered complete gate. |
+| Scene Forge and generated-output checks | Existing inline-HTML e2e mode passed 15/15 after file-URL policy blocked the initial run; all four current CLI and all seven demo checks pass, including both Forge check:cli | `FORGE_TEST_INLINE_HTML=1` disclosed; Character final handoff passed eight variants with all four CLI hashes unchanged. Complete Wildlands/native gate success is not inferred. |
+| Native baseline | VIEWS failed at untouched `749a9f6296f3beb665eedf1eda57ae8cbfd00b39` with Godot 4.6.3; the same targeted test passed on CI-SHA-verified Godot 4.7.2: 1 test, 73.962 seconds | Targeted environment mismatch resolved; full native 103-check run is underway at `3e2bca33faef0d74aa3e400321b7e610a8365c3b` with pinned 4.7.2 and user Xvfb; no full pass claimed. |
+| Wildlands complete gate | CLI/demo generation and current-output checks passed; final complete-gate result pending | Focused tests cannot substitute for the registered complete gate. |
 | Forge authoring | Two distinct original studies and guarded Model Forge → Scene Forge → runtime handoff are present | Scalar-PBR development geometry with semantic pivots/volumes; not production-textured M1 assets. Damage still uses its approximation rather than authored semantic-volume collision. |
 
 Portable captures, motion and the Pine browser route are indexed in the
@@ -319,10 +325,10 @@ executed/failed/skipped checks and report paths. The immediate executable work i
 2. Retain the intermediate 9/9 browser report and motion capture; revalidate
    changed shipping artifacts and remaining focus/mobile/persistence edges
    without weakening assertions or inventing performance from sparse frames.
-3. Finish the root-owned Wildlands generation/check chain and complete gate,
-   the running native 103-check suite and final Character handoff. Both Forge
-   CLI checks already passed; ensure every changed-engine demo is regenerated.
-   Record each source identity and separate unavailable hardware from failures.
+3. Finish the root-owned Wildlands complete gate and running native 103-check
+   suite. Retain all four CLI/all seven demo passes and final eight-variant
+   Character handoff evidence; repeat changed-source checks when warranted.
+   Record exact tree identity and separate unavailable hardware from failures.
 4. Obtain installed reference build/roster evidence and ordinary-gameplay motion
    for all twelve situations. Continue production texture/rig/physics work and
    measured baseline-hardware review toward M1; the current models do not pass it.

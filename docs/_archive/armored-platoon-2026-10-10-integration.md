@@ -19,11 +19,31 @@ PR metadata were inspected before editing. No unrelated checkout was changed.
 Its common ancestor with #47 is `01bc13385e550cd96f2b5827e0477fb3e92dc6e0`.
 It is not a compatible successor of Model Forge and was not imported.
 
+Draft [PR #49](https://github.com/Luis85/motorsport-manager/pull/49) is now open,
+stacked on `claude/model-forge` at the selected base
+`749a9f6296f3beb665eedf1eda57ae8cbfd00b39`. Published implementation/evidence HEAD
+at this record is `3679ff945d4e8975e56458c5bd6fcf8baeeefbf1`. The PR remains a
+draft; no merge or public deployment was performed.
+
+GitHub's private-email protection required rebuilding only commit metadata for
+three previously unpublished commits. Their trees are identical:
+
+| Earlier local identity | Public equivalent |
+|---|---|
+| `022da2a41bf1be7dc09681b041c04e2229608b72` | `3e2bca33faef0d74aa3e400321b7e610a8365c3b` |
+| `bc47aaeb65910ecae6f2c802800a288b81daea28` | `b2b10fbeabfcfb8460fad014fb3a2350c24fcf4b` |
+| `6ec9f184` | `3679ff945d4e8975e56458c5bd6fcf8baeeefbf1` |
+
+Native execution continues in its existing clean worktree under the earlier
+`022da2a4` identity. Its exact source tree is public `3e2bca33`; this metadata-only
+mapping preserves the run's validity without pretending it executed under a new
+commit identity. Earlier source-bound reports retain their original identities.
+
 ## Ownership and integration board
 
 | Owner | Files / responsibility | Dependency | Acceptance | State |
 |---|---|---|---|---|
-| Root | Admission, build registrations, catalogs, architecture maps, generated artifacts, verification queue | All contracts | Existing templates intact; armored folder builds via CLI | Checkpoint integrated; generation/check chain then complete gate pending |
+| Root | Admission, build registrations, catalogs, architecture maps, generated artifacts, verification queue | All contracts | Existing templates intact; armored folder builds via CLI | Checkpoint integrated; CLI/demo checks passed, complete gates pending |
 | Runtime | Armored contracts, session, application, physics, checkpoint | Existing ECS | Explicit fixed step; detached queries; validated restore | Checkpoint implemented/reviewed; full handling parity open |
 | Combat | Ballistics, AI, mission systems, combat tests | Runtime context | Authority resolves shots/orders/objectives once | Checkpoint implemented/reviewed; Pine/Crossroads runtime completion; Pine browser debrief passed |
 | Presentation | Armored world, renderer, controls, audio, UI, host, template | Snapshot and Forge asset map | Menu → deployment → running browser; stable scene and controls | Checkpoint implemented/reviewed; Pine browser route/debrief passed |
@@ -48,8 +68,8 @@ No proprietary reference assets are imported.
 
 ## Verification and continuation
 
-Implementation source checkpoint: `bc47aaeb65910ecae6f2c802800a288b81daea28`. Native full-run source
-identity is separately `022da2a41bf1be7dc09681b041c04e2229608b72`. Per-artifact manifests and report hashes,
+Implementation source checkpoint: `b2b10fbeabfcfb8460fad014fb3a2350c24fcf4b`. Native full-run source
+identity is separately `3e2bca33faef0d74aa3e400321b7e610a8365c3b`. Per-artifact manifests and report hashes,
 rather than the moving branch name, identify each run. Portable captures, motion
 and the browser mission result are indexed in the
 [evidence archive](armored-platoon-2026-10-10-evidence/README.md).
@@ -60,9 +80,11 @@ These are checkpoint results, not M1–M5 acceptance:
   establish production vehicle fidelity or the other projects' complete gates.
 - Scene Forge's unchanged end-to-end suite passed **15/15** with the existing
   `FORGE_TEST_INLINE_HTML=1` mode explicitly selected after file-URL policy blocked
-  the initial run. Both Forge `check:cli` checks passed; all four CLI bundles have
-  been regenerated. Character Studio's initial handoff check passed; final
-  regeneration-bound handoff confirmation remains pending.
+  the initial run. Current checks pass for **all four CLI bundles and all seven
+  generated demos**, including both Forge `check:cli` checks. Character Studio's
+  final handoff passed **eight variants**; all four CLI bundle hashes stayed
+  unchanged across that handoff. This confirms generated-output consistency,
+  not complete Wildlands/native gate acceptance.
 - The intermediate Armored browser artifact passed **9/9** focused checks in
   Chromium 151 with software SwiftShader, including offline execution. Artifact
   SHA-256: `dffbbdb19f615925a09631cd3e84621742b2fb243feae218e2d3452f5a339558`
@@ -101,10 +123,11 @@ These are checkpoint results, not M1–M5 acceptance:
   **4.7.2**. The CI-SHA-verified pinned binary passed that same targeted baseline
   test on the untouched commit: **1 test, 73.962 seconds**. This resolves the
   targeted environment mismatch; it does not establish a passing full native
-  gate. Full native **103-check execution is running** on `022da2a41bf1be7dc09681b041c04e2229608b72`
+  gate. Full native **103-check execution is running** on `3e2bca33faef0d74aa3e400321b7e610a8365c3b`
   with pinned Godot 4.7.2 and user-owned Xvfb. No complete native result is claimed.
-- Wildlands generation/check chain is running before its complete registered
-  gate; no final generation/check-chain or full-gate result is claimed here.
+- Wildlands CLI/demo generation and current-output checks passed as recorded
+  above. Its complete registered verification gate has no final result recorded
+  here; output checks do not establish full-gate success.
 
 The [parity ledger](../reference/armored-platoon-parity.md) records the failed
 360-second Crossroads route, its cumulative-damage/neutralization correction,
@@ -117,8 +140,8 @@ later changed artifact.
 
 Preserve branch `codex/armored-platoon`, actual HEAD, source/content hashes, the
 last runnable artifact, generated outputs, active owner changes and all
-failed/skipped reports. Finish Wildlands generation/checks and its complete gate,
-the running native suite, and final Character Studio handoff. Retain the passed
+failed/skipped reports. Finish Wildlands' complete gate and the running native
+suite; retain the passed CLI/demo and final Character handoff results. Retain the passed
 Pine browser route and verify Crossroads through browser play; assess both with
 ordinary human input and realtime clocks. Automated completion, including the
 Crossroads ammo-exhaustion tactic, does not establish the full single-player
@@ -137,7 +160,7 @@ slice or normal-play balance.
    campaign/Conquest/skirmish progression and genuine authoritative co-op/PvP.
 5. **M5:** close explained visual/behavior gaps, run real hardware/browser tiers,
    hosting/cache/device failure checks and the 30-minute soak, complete every
-   registered gate, and provide a reviewable draft PR without merging/publishing.
+   registered gate, and keep draft PR #49 reviewable without merging/publishing.
 
 The two generic tank studies and three original development missions remain an
 early milestone. They do not replace the requested full reference-game scope.
