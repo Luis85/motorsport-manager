@@ -155,13 +155,20 @@ and its browser checks in `process-dashboard-browser`.
   fields and adds the exact wording the merged data produces.
 - **Escaping across waves** (`1367623`): the Add step dialog, written in the same wave as
   `LWProcessHtml`, moved onto it so the escaper inventory stays empty.
-- **2D map framing under DejaVu Sans:** TODO(coordinator): state whether the fix for the check "2D
-  map refreshes in place …" (the viewBox drift seen in hosted CI on `5c98627`) was merged, with its
-  commit, or remove this line.
+- **2D map framing under DejaVu Sans** (`1379586`, `5b5ac00`, merged in `caec93d`; `22f6c33`,
+  `aa9163a`, merged in `546ac3a`): hosted CI failed "2D map refreshes in place … matches a fresh
+  draw" on `5c98627` and `923676f`. The map was drawn mid-command while the run bar's temporary
+  status sentence changed the stage height in DejaVu Sans, so the camera framed for a size that was
+  never painted and the ResizeObserver saw no net change. The camera now frames for the size the
+  ResizeObserver reports, and an untouched camera re-frames on every draw like a fresh one. A camera
+  the reader zoomed or panned keeps its scale and the centre of its clear area across a real resize
+  (for example the KPI strip wrapping to a second row when outcome tiles appear). A new check in
+  `process-renderers-browser` runs in DejaVu Sans, with ticks, Fit to view, numbered cards and a
+  window resize; it fails against the old camera and with the scale rule turned off.
 
 ## Deliberate expectation changes, suites and timeouts
 
-- **Checks:** `totalChecks` grew from 2,097 to 2,265 through 168 reviewed additions; one check was
+- **Checks:** `totalChecks` grew from 2,097 to 2,266 through 169 reviewed additions; one check was
   renamed with a `renames` entry (the process switch check now expects kept runs instead of a
   question); nothing was retired.
 - **New suites (9):** `business-process-analysis` (Node, fast, 120 s), `business-process-readmodel`
@@ -201,20 +208,42 @@ and its browser checks in `process-dashboard-browser`.
 
 ## Verification
 
-- **Source identity:** TODO(coordinator): the branch, the head SHA the complete gate ran on, and
-  whether the documentation commits and regenerated `bin/` and `demos/` came before or after it.
-- **Complete registered gate:** TODO(coordinator): `npm run verify -- --jobs 3 --browser-jobs 2`
-  result (checks passed of 2,265 or the final `totalChecks`, suites passed of 124, duration, machine
-  and Chromium version).
-- **Fast checks:** TODO(coordinator): `npm run typecheck`, `npm run architecture` (rules passed),
-  `npm test` (fast tier count).
-- **Generated artifacts:** TODO(coordinator): `npm run check:cli` and `npm run check:demos` results.
+- **Source identity:** branch `feature/process-studio-followups` (stacked on
+  `feature/process-present-mode`), head `b608752a106e7668b6a91e01ff0e5a52e4c5fb8f`. That head
+  already contains the documentation merge (`fa9724d`), both 2D framing merges and the regenerated
+  `bin/` and `demos/`. Only this Verification text was committed after it.
+- **Complete registered gate:** `npm run verify -- --jobs 3 --browser-jobs 2` on `b608752`:
+  passed 2,266/2,266 checks in 124/124 suites, 1,850 s (18:43 to 19:14 UTC on 2026-10-10), in the
+  Linux cloud container, Node v22.22.0, Playwright 1.63.0, Chromium 141.0.7390.37 (explicit
+  override), with nothing else running. The inventory matched `gate-expectations.json`.
+- **Fast checks:** on the merged head before the push, `tsc -p tsconfig.json --noEmit` and
+  `tsc -p tsconfig.strict.json --noEmit` were clean and the fast tier (`--tier fast`) passed
+  901/901 in 45 suites. The complete gate repeats the typecheck, architecture and fast-tier stages.
+  The renderer, readability, Present, draft, lenses and business-process browser suites passed
+  85/85, and `process-renderers-browser` passed 25/25 again with Inter blocked through fontconfig
+  to emulate hosted CI.
+- **Generated artifacts:** after `npm run build:cli` and `npm run build:demos`, `npm run check:cli`
+  reported `bin/wildlands` current (14,087,057 bytes) and `npm run check:demos` reported all six demos
+  current with engine `a6991fce…`.
 - **Repository checks:** `python3 scripts/check_docs.py` passed during the documentation pass (2,939
-  local links). TODO(coordinator): the final `check_docs.py`, `python3 scripts/check_architecture.py`
-  and `python3 -m unittest discover -s tests -p 'test_*.py'` results.
-- **Native visual evidence:** TODO(coordinator): `npm run process:shots` for processes 1 and 7 (the
-  minute, the number of captures, `overflowing` and `consoleErrors` from `shots.json`, and what the
-  captures showed). The Dashboard is not captured by `process:shots`; say whether it was reviewed by
-  hand.
-- **Not run:** the Godot `scripts/verify.py` gate, which this standalone project does not touch.
-  TODO(coordinator): add anything else that was skipped and why.
+  local links). After the complete gate, `check_docs.py` passed again (2,939 links),
+  `python3 scripts/check_architecture.py` passed, and `python3 -m unittest discover -s tests -p
+  'test_*.py'` ran 355 tests: OK, 19 skipped.
+- **Native visual evidence:** `npm run process:shots -- --game docs/concepts/agency-delivery
+  --minute 240` for process 1 (completed at minute 217) and process 7 (run limit at minute 240):
+  12 captures each, `overflowing` empty and `consoleErrors` empty in both `shots.json` files. The
+  captures showed the following:
+  - the 2D map of process 7 at 1440 px: 25 steps, shape-coded states, legend and Fit to view;
+  - the 3D scene of process 1, with captions clear of props;
+  - the process 7 phone studio, with numbered cards and the Dashboard and Present buttons hidden
+    as designed;
+  - a process 1 step slide in DejaVu Sans, framed with its direct neighbours.
+
+  `process:shots` does not capture the Dashboard, and it was not reviewed by hand in this final pass.
+  The Dashboard browser suite covers it. These are synthetic fixture states, not usability,
+  accessibility or balance validation.
+- **Not run:**
+  - the Godot `scripts/verify.py` gate, which this standalone project does not touch;
+  - `python3 scripts/quality.py`: advisory, and run by CI's "Code quality (warnings only)" job;
+  - the 1366 x 768 capture of process 7, which `process:shots` does not take. Its label rules are
+    covered by `process-readability-browser`.
