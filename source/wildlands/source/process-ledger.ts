@@ -1,5 +1,6 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-ledger-cases.ts" />
+/// <reference path="./process-ledger-exact.ts" />
 /**
  * Run ledger (LWProcessLedger), owned by the process-definition context: exact running aggregates that exist only for the read
  * model. They never feed the engine, a fingerprint, a random key or a routing decision, and they are kept outside the case store,
@@ -16,6 +17,8 @@
  *   (`FINE`, 54 edges, a superset of the coarse edges): cycle, by outcome (only when an end declares one), failed lifetimes, and
  *   per step wait, service and exit age. Fixed size: 54 × (3 × steps + 5) integers at most.
  * - Per case (LWProcessLedgerCases): dominant-state lead minutes, attributed cost, repeats and the recent ring.
+ * - Per completed case (LWProcessLedgerExact): its exact lead time while the run has completed at most 50,000 cases, for exact
+ *   percentiles in `distributions().percentiles` (brackets of the fine bins past that bound).
  *
  * Charging: `charge(minutes)` is called by the clock exactly where pools are charged, with the state at the end of the previous
  * minute (the pools' convention), so a case admitted at a and finished at f is charged exactly f − a minutes. The token profile
@@ -82,8 +85,9 @@ declare namespace LWProcessLedger {
 (function(inputRoot: unknown) {
  'use strict';
  type Ledger = LWProcess.Ledger;
- const root = inputRoot as {LWProcessLedgerCases: LWProcessLedgerCases.Api; LWProcessLedger?: LWProcessLedger.Api};
- const cases = root.LWProcessLedgerCases;
+ const root = inputRoot as {LWProcessLedgerCases: LWProcessLedgerCases.Api; LWProcessLedgerExact: LWProcessLedgerExact.Api;
+  LWProcessLedger?: LWProcessLedger.Api};
+ const cases = root.LWProcessLedgerCases, exact = root.LWProcessLedgerExact;
  const EDGES: readonly number[] = Object.freeze([0, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000]);
  const FINE: readonly number[] = Object.freeze([0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50, 60, 75, 90, 100, 120, 150, 180, 200, 240, 300,
   360, 480, 500, 600, 720, 960, 1000, 1200, 1440, 1920, 2000, 2400, 2880, 3600, 4320, 5000, 5760, 7200, 8640, 10000, 14400, 20000, 28800, 40320,
@@ -119,7 +123,8 @@ declare namespace LWProcessLedger {
   const count = definition.steps.length;
   return {unit, rate: new Map(), steps, cycles: EDGES.map(() => 0), index: new Map(definition.steps.map((s, i) => [s.id, i])), stepCosts,
    minutesBy: Array(count * BUCKETS.length).fill(0), failedAt: Array(count).fill(0), wipArea: 0, profile: null,
-   fine: {cycle: zeros(), failed: zeros(), outcomes, steps: definition.steps.map(() => [zeros(), zeros(), zeros()])}, cases: cases.create(retained)};
+   fine: {cycle: zeros(), failed: zeros(), outcomes, steps: definition.steps.map(() => [zeros(), zeros(), zeros()])}, cases: cases.create(retained),
+   exact: exact.create(outcomes !== null)};
  }
  const fine = (ledger: Ledger, stepId: string, kind: number, minutes: number) => {
   ledger.fine.steps[ledger.index.get(stepId)!]![kind]![fineBin(minutes)]!++;
@@ -175,6 +180,7 @@ declare namespace LWProcessLedger {
   ledger.cycles[bin(cycle)]!++;
   ledger.fine.cycle[fineBin(cycle)]!++;
   if (ledger.fine.outcomes) ledger.fine.outcomes[outcome ?? 'none'][fineBin(cycle)]!++;
+  exact.add(ledger.exact, cycle, outcome);
   cases.completed(ledger.cases, c, end, outcome);
  }
  function failed(ledger: Ledger, c: LWProcess.Case, stepId: string | null): void {
@@ -193,7 +199,7 @@ declare namespace LWProcessLedger {
    failed: [...f.failed], steps: Object.fromEntries(definition.steps.map((s, i) => {
     const [wait, service, exitAge] = f.steps[i]!;
     return [s.id, {wait: [...wait!], service: [...service!], exitAge: [...exitAge!]}];
-   }))};
+   })), percentiles: exact.read(ledger.exact, f, FINE)};
  }
  root.LWProcessLedger = {EDGES, FINE, BUCKETS, create, started, released, charge, settled, profile, concluded, finished, failed, bin, fineBin, step,
   distributions,

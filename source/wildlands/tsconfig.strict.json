@@ -407,6 +407,7 @@
     "source/process-bpmn-preview.ts",
     "source/process-bpmn-dialog.ts",
     "source/process-ledger-cases.ts",
+    "source/process-ledger-exact.ts",
     "source/process-ledger.ts",
     "source/process-kernel.ts",
     "source/process-routing.ts",

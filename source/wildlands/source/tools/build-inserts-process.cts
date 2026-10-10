@@ -36,6 +36,7 @@ export const PROCESS_INSERTS: readonly Insert[] = [
   ["PROCESS_BPMN_CONFORMANCE_SCHEMA", "process-bpmn-conformance-schema.js", "script", "template-process"],
   ["PROCESS_BPMN_CONFORMANCE", "process-bpmn-conformance.js", "script", "template-process"],
   ["PROCESS_LEDGER_CASES", "process-ledger-cases.js", "script", "template-process"],
+  ["PROCESS_LEDGER_EXACT", "process-ledger-exact.js", "script", "template-process"],
   ["PROCESS_LEDGER", "process-ledger.js", "script", "template-process"],
   ["PROCESS_KERNEL", "process-kernel.js", "script", "template-process"],
   ["PROCESS_ROUTING", "process-routing.js", "script", "template-process"],
