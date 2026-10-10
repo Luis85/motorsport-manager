@@ -43,6 +43,13 @@
   }
   return lead || first.split(/\s+/).slice(0, LEAD_WORDS).join(' ') + ' …';
  }
+ /** With a display calendar, how long times also read in business days and weeks; nothing without one. */
+ function calendarNote(d: LWProcess.Definition): string[] {
+  if (!d.calendar) return [];
+  const {minutesPerDay, daysPerWeek} = d.calendar, n = root.LWProcessSlidesText.number;
+  return [`This process counts ${n(minutesPerDay)} min as one business day and ${plural(daysPerWeek, 'business day')} as one business week, `
+   + 'so times of one business day or more also show business days or weeks.'];
+ }
  /** A section's lead counts the steps between the start and the end, as the SIPOC overview does, and names a start or end it holds. */
  function sectionLead(steps: Step[]): string {
   const work = steps.filter(s => s.kind !== 'start' && s.kind !== 'end'), start = steps.find(s => s.kind === 'start');
@@ -146,14 +153,15 @@
   const add = (section: Omit<Section, 'first' | 'count'>, list: Slide[]) => { sections.push({...section, first: slides.length, count: list.length}); slides.push(...list); };
   const stepSlide = (s: Step, section: string, subtitle: string): Slide => {
    const out = slide('step-' + s.id, 'step', section, s.name, subtitle, s.description ?? 'No description authored.', text.stepBlocks(s, context), s.id);
-   out.concepts = text.concepts(s, context); if (snapshot) out.live = text.stepLive(metrics.get(s.id), snapshot, terms); return out;
+   out.concepts = text.concepts(s, context); if (snapshot) out.live = text.stepLive(metrics.get(s.id), snapshot, context, s); return out;
   };
   const description = d.description?.trim() ?? '', lead = leadOf(description), unit = root.LWProcessTime.UNIT;
   const title = slide('title', 'title', 'intro', d.name, terms.label, lead || 'No description authored.', [
    ...d.description && SYNTHETIC.test(d.description) ? [{heading: 'About the values', items: ['The description says these values are synthetic or illustrative: they are scenario assumptions, not measurements.']}] : [],
    {heading: 'How to read this deck', items: [`The overview and resources come first, then the main route ${groups.length ? 'phase by phase' : 'step by step'}${variants.length ? ', then every step off the main route' : ''}, then a summary.`,
     `Each step slide says what happens, who or what does it, how long it takes, what it needs and delivers, and where the ${terms.one} goes next.`,
-    `Times are simulated ${unit} (min), the working time the model counts, not wall-clock time; long times also show hours (h).`]},
+    `Times are simulated ${unit} (min), the working time the model counts, not wall-clock time; long times also show hours (h).`,
+    ...calendarNote(d)]},
    // The lead is clamped to a slide-sized opening; the whole description follows for reference.
    ...lead !== description ? [{heading: 'Process description', items: description.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)}] : []]);
   if (snapshot) title.live = text.keyResults(snapshot, terms, d);

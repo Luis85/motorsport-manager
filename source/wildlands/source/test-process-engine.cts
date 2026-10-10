@@ -119,7 +119,9 @@ test('Task backlogs bound waiting work, hold upstream work and honour fifo, lifo
    const view = {definition: d, snapshot: q} as unknown as LWProcessApp.View, html = inspector.step(view, d.steps.find(x => x.id === 'intake')!);
    assert(html.includes(`<dt>Blocked after finishing</dt><dd>${intake.held} blocked · waiting for room in the next backlog</dd>`), html);
    const live = slides.build(d, q).slides.find(x => x.id === 'step-intake')!.live!.items;
-   const counts = `Now in progress: ${intake.active}; now waiting: ${intake.queued - intake.held}; blocked after finishing: ${intake.held}`;
+   // The step slide uses the studio's work-state words: waiting is queued minus held, and held work is blocked.
+   const counts = `Now: ${intake.active} working, ${intake.queued - intake.held} waiting, ${intake.held} blocked`
+    + ' (blocked: waiting for room in the next backlog)';
    assert(live.includes(counts), live.join('|'));
   }
   blocked ||= intake.held > 0;

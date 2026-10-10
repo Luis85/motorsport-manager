@@ -41,6 +41,7 @@ require('./process-replicate.js');
 require('./process-authoring.js');
 require('./process-diff.js');
 require('./process-route.js');
+require('./process-work-state.js');
 require('./process-sipoc-model.js');
 require('./process-time.js');
 require('./process-random-view.js');
