@@ -2,10 +2,11 @@
 /**
  * Menu button behaviour for Process Studio (the Export menu and the phone overflow menu share one popup).
  * Pure DOM wiring over markup the caller owns: trigger buttons (`aria-haspopup="menu"`, `aria-expanded`, `aria-controls`) and a
- * popup holding `[role="menuitem"]` buttons. Items that are not displayed (CSS) are skipped. Keys: Enter, Space and ArrowDown on a
- * trigger open the menu on the first item, ArrowUp on the last; inside the menu ArrowDown/ArrowUp wrap, Home/End jump, Escape closes
- * and returns focus to the trigger that opened it, Tab closes and lets focus move on from that trigger. Activating an item, pressing
- * a trigger again or a pointer press outside closes the menu. It never touches the simulation, the draft or storage.
+ * popup holding `[role="menuitem"]` buttons and `[role="menuitemcheckbox"]` toggles. Items that are not displayed (CSS) are skipped.
+ * Keys: Enter, Space and ArrowDown on a trigger open the menu on the first item, ArrowUp on the last; inside the menu ArrowDown/ArrowUp
+ * wrap, Home/End jump, Escape closes and returns focus to the trigger that opened it, Tab closes and lets focus move on from that
+ * trigger. Activating a menuitem, pressing a trigger again or a pointer press outside closes the menu; a toggle keeps the menu open
+ * and its focus, so its new state can be read. It never touches the simulation, the draft or storage.
  */
 declare namespace LWProcessMenu {
  interface Options {
@@ -29,7 +30,7 @@ declare namespace LWProcessMenu {
  function create(o: LWProcessMenu.Options): LWProcessMenu.Surface {
   const {popup, triggers} = o;
   let from: HTMLElement | null = null;
-  const items = () => [...popup.querySelectorAll<HTMLElement>('[role="menuitem"]')].filter(shown);
+  const items = () => [...popup.querySelectorAll<HTMLElement>('[role="menuitem"],[role="menuitemcheckbox"]')].filter(shown);
   const isOpen = () => !popup.hidden;
   function close(returnFocus = true): void {
    if (!isOpen()) return;

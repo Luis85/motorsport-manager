@@ -173,10 +173,11 @@ runSuite('process layout browser harness', 'process-layout-browser-results.json'
     'New process…', 'Import as a new process…']);
   const focusAfter = async (key: string) => { await page.keyboard.press(key); return activeId(); };
   const keyed = [await focusAfter('ArrowDown'), await focusAfter('End'), await focusAfter('ArrowDown'), await focusAfter('Home'), await focusAfter('ArrowUp')];
-  assert.deepEqual(keyed, ['bpmn', 'import-new', 'json', 'json', 'import-new']);
+  // The Light theme toggle (a menuitemcheckbox, LWProcessTheme) ends the menu, after Import as a new process….
+  assert.deepEqual(keyed, ['bpmn', 'theme-item', 'json', 'json', 'theme-item']);
   await page.keyboard.press('Escape'); assert.equal(await activeId(), 'export-menu'); assert.equal(await trigger.getAttribute('aria-expanded'), 'false'); assert.equal(await page.locator('#json').isHidden(), true);
   await page.keyboard.press('ArrowDown'); assert.equal(await activeId(), 'json'); await page.keyboard.press('Escape');
-  await page.keyboard.press('ArrowUp'); assert.equal(await activeId(), 'import-new'); await page.keyboard.press('Escape');
+  await page.keyboard.press('ArrowUp'); assert.equal(await activeId(), 'theme-item'); await page.keyboard.press('Escape');
   await trigger.click(); await page.locator('#scene-title').click(); assert.equal(await trigger.getAttribute('aria-expanded'), 'false', 'an outside click closes the menu');
   await trigger.focus(); await page.keyboard.press('Enter'); assert.equal(await activeId(), 'json'); let pending = page.waitForEvent('download'); await page.keyboard.press('ArrowDown'); await page.keyboard.press('Enter'); let saved = await pending;
   assert.match(saved.suggestedFilename(), /\.bpmn$/); assert.equal(await trigger.getAttribute('aria-expanded'), 'false', 'activating an item closes the menu'); assert.equal(await activeId(), 'export-menu');

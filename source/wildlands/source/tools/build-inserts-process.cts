@@ -113,6 +113,7 @@ export const PROCESS_INSERTS: readonly Insert[] = [
   ["PROCESS_DRAFT", "process-draft.js", "script", "template-process"],
   ["PROCESS_DIALOG", "process-dialog.js", "script", "template-process"],
   ["PROCESS_MENU", "process-menu.js", "script", "template-process"],
+  ["PROCESS_THEME", "process-theme.js", "script", "template-process"],
   ["PROCESS_INSPECTOR", "process-inspector.js", "script", "template-process"],
   ["PROCESS_ACTIVITY", "process-activity.js", "script", "template-process"],
   ["PROCESS_STEP_LOGIC", "process-step-logic.js", "script", "template-process"],

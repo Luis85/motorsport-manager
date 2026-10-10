@@ -469,6 +469,7 @@
         "process-draft.ts",
         "process-dialog.ts",
         "process-menu.ts",
+        "process-theme.ts",
         "process-inspector.ts",
         "process-activity.ts",
         "process-step-logic.ts",

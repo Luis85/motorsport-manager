@@ -21,7 +21,7 @@ const DRAWN = ['process-renderer-2d.ts', 'process-map-marks.ts', 'process-map-ca
  'process-map-camera.ts', 'process-map-focus.ts', 'process-map-drag.ts', 'process-map-legend.ts', 'process-renderer-3d.ts',
  'process-3d-kit.ts', 'process-3d-bake.ts', 'process-3d-captions.ts', 'process-3d-stations.ts', 'process-3d-camera.ts',
  'process-rooms.ts', 'process-rooms-channels.ts', 'process-renderer-journey.ts', 'process-journey-model.ts',
- 'process-renderer-sipoc.ts', 'process-sipoc-model.ts', 'process-step-list.ts', 'process-work-state.ts', 'process-lens.ts'];
+ 'process-renderer-sipoc.ts', 'process-sipoc-model.ts', 'process-step-list.ts', 'process-work-state.ts', 'process-lens.ts', 'process-theme.ts'];
 const COLOUR = /^(#[0-9a-f]{3}|#[0-9a-f]{6}|rgba\(\d+,\d+,\d+,\.\d+\))$/;
 type Role = LWProcessPalette.Role;
 

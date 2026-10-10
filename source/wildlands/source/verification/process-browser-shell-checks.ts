@@ -82,7 +82,9 @@ export async function shellChecks(studio: Studio): Promise<void> {
   }
   assert.match(await page.locator('#export-hint').innerText(), /A studio holds at most 8 processes\.$/);
   // aria-disabled keeps the item in the keyboard order, so its reason is reachable: End, ArrowUp and Enter choose New process….
-  await page.keyboard.press('End'); assert.equal(await activeId(), 'import-new'); await page.keyboard.press('ArrowUp');
+  // The menu ends with the Light theme toggle (LWProcessTheme), so New process… is two steps up from End.
+  await page.keyboard.press('End'); assert.equal(await activeId(), 'theme-item'); await page.keyboard.press('ArrowUp');
+  assert.equal(await activeId(), 'import-new'); await page.keyboard.press('ArrowUp');
   assert.equal(await activeId(), 'new-process'); await page.keyboard.press('Enter');
   assert.equal(await message(), 'A studio holds at most 8 processes.'); assert.equal(await newDialog.count(), 0);
   // Download HTML keeps the added process.

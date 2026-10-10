@@ -128,6 +128,7 @@
     {"name": "process-scale-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-scale-browser.js", "result": "verification/v15/process-scale-browser-results.json", "timeout": 300, "cost": 70},
     {"name": "process-present-screen-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-present-screen-browser.js", "result": "verification/v15/process-present-screen-browser-results.json", "timeout": 180, "cost": 50},
     {"name": "business-process-checkpoint", "kind": "node", "tier": "full", "entry": ".generated/test-process-checkpoint.cjs", "result": ".generated/process-checkpoint-results.json", "timeout": 180, "cost": 35},
-    {"name": "process-checkpoint-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-checkpoint-browser.js", "result": "verification/v15/process-checkpoint-browser-results.json", "timeout": 240, "cost": 40}
+    {"name": "process-checkpoint-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-checkpoint-browser.js", "result": "verification/v15/process-checkpoint-browser-results.json", "timeout": 240, "cost": 40},
+    {"name": "process-theme-browser", "kind": "browser", "tier": "full", "entry": ".generated/verification/process-theme-browser.js", "result": "verification/v15/process-theme-browser-results.json", "timeout": 300, "cost": 70}
   ]
 }
