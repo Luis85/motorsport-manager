@@ -95,8 +95,15 @@
   };
   const ordered = (a: LWProcess.Case, b: LWProcess.Case) => a.id.length - b.id.length || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
   function stepMetrics(tokens: LWProcess.Token[]): LWProcess.StepMetric[] {
-   const timers = (id: string): LWProcess.TimerMetric => {
-    const due = tokens.filter(t => t.stepId === id && t.status === 'timer').map(t => t.due!);
+   // Tokens grouped by step in one pass (token order kept), instead of filtering every token once per step and count.
+   const at = new Map<string, LWProcess.Token[]>();
+   for (const t of tokens) {
+    const list = at.get(t.stepId);
+    if (list) list.push(t);
+    else at.set(t.stepId, [t]);
+   }
+   const timers = (here: LWProcess.Token[]): LWProcess.TimerMetric => {
+    const due = here.filter(t => t.status === 'timer').map(t => t.due!);
     return {waiting: due.length, nextDue: due.length ? Math.min(...due) : null};
    };
    const tracked = (id: string) => Object.fromEntries((definition.track ?? []).map(t => {
@@ -104,9 +111,9 @@
     return [t.field, {n: a?.n ?? 0, mean: mean(a)}];
    }));
    return definition.steps.map(step => {
-    const here = tokens.filter(t => t.stepId === step.id), metric = station(step), costs = ledger.steps.get(step.id)!;
+    const here = at.get(step.id) ?? [], metric = station(step), costs = ledger.steps.get(step.id)!;
     return {...metric, queued: here.filter(t => t.status !== 'active' && t.status !== 'timer').length, active: here.filter(t => t.status === 'active').length,
-     held: here.filter(t => t.status === 'held').length, entered: metric.visits, timers: timers(step.id), tracked: tracked(step.id),
+     held: here.filter(t => t.status === 'held').length, entered: metric.visits, timers: timers(here), tracked: tracked(step.id),
      starts: costs.starts, meanWaitMinutes: costs.starts ? round3(metric.waitMinutes / costs.starts) : null,
      fixedCost: costs.fixedCost, workCost: costs.workCost, ...root.LWProcessLedger.step(ledger, step.id)};
    });
