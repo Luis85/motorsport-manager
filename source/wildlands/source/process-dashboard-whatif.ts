@@ -1,4 +1,5 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-html.ts" />
 /// <reference path="./process-replicate.ts" />
 /// <reference path="./process-chart.ts" />
 /// <reference path="./process-dashboard-model.ts" />
@@ -14,10 +15,18 @@
  * and conversion (permille in the report) as a percentage; the difference is applied minus draft, worded from the draft's side, and
  * "no clear difference" when its 95% interval contains 0. Results always carry the honesty text: spread under the authored
  * assumptions, from runs that start empty, never a forecast.
+ *
+ * Warm-up: `warmup` is the dashboard's "Measure from minute W" (0 or absent: none). It must be less than the minutes per run; the
+ * replications then report, besides the whole-run measures, the measures labelled "after minute W" (LWProcessReplicate `warmup`),
+ * and the plan line and the honesty text say which measures leave out start-up.
  */
 declare namespace LWProcessDashboardWhatIf {
  type Mode = 'spread' | 'compare';
- interface Inputs {mode: Mode; runs: number; minutes: number; seed: number}
+ interface Inputs {
+  mode: Mode; runs: number; minutes: number; seed: number;
+  /** The measuring start W used as each run's warm-up (0 or absent: none). */
+  warmup?: number;
+ }
  interface Draft {changed: boolean; valid: boolean}
  interface Check {ok: boolean; problems: string[]; plan: string; advice: string}
  interface Kpi {id: string; label: string; n: number; mean: string; ci: string; spread: string; sentence: string; interval: LWProcessChart.Interval | null}
@@ -44,7 +53,7 @@ declare namespace LWProcessDashboardWhatIf {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessDashboardModel: LWProcessDashboardModel.Api; LWProcessChart: LWProcessChart.Api;
+ const root = inputRoot as {LWProcessDashboardModel: LWProcessDashboardModel.Api; LWProcessChart: LWProcessChart.Api; LWProcessHtml: LWProcessHtml.Api;
   LWProcessDashboardHtml: LWProcessDashboardHtml.Api; LWProcessDashboardWhatIf?: LWProcessDashboardWhatIf.Api};
  type Inputs = LWProcessDashboardWhatIf.Inputs;
  type Result = LWProcessDashboardWhatIf.Result;
@@ -72,11 +81,16 @@ declare namespace LWProcessDashboardWhatIf {
   if (!problems.length && total > LIMITS.work) {
    problems.push(`This plan simulates ${U.count(total)} minutes; the limit is ${U.count(LIMITS.work)}. Lower the runs or the minutes.`);
   }
+  const warm = i.warmup ?? 0;
+  if (warm > 0 && whole(i.minutes, 1, max) && i.minutes <= warm) {
+   problems.push(`Minutes per run must be more than the measuring start, minute ${U.count(warm)}, which is each run's warm-up.`);
+  }
   const why = i.mode === 'compare' ? compareReason(draft) : null;
   if (why) problems.push(why);
   const designs = work === 2 ? ' × 2 designs' : '';
+  const warmup = warm > 0 ? ` Measures labelled "after minute ${U.count(warm)}" leave out each run's first ${U.count(warm)} minutes (warm-up).` : '';
   const plan = problems.length ? '' : `Seeds ${i.seed} to ${last} · ${i.runs} × ${U.count(i.minutes)} minutes${designs} = `
-   + `${U.count(total)} of at most ${U.count(LIMITS.work)} simulated minutes.`;
+   + `${U.count(total)} of at most ${U.count(LIMITS.work)} simulated minutes.${warmup}`;
   const advice = whole(i.runs, LIMITS.runsMin, 9) ? 'Intervals are wide with few runs.' : '';
   return {ok: !problems.length, problems, plan, advice};
  }
@@ -117,8 +131,10 @@ declare namespace LWProcessDashboardWhatIf {
   const kpis = compare ? pairs.map(k => kpi(k.id, k.label, k.difference, done, true)) : single.map(k => kpi(k.id, k.label, k, done, false));
   const stats = compare ? pairs.flatMap(k => [k.a, k.b]) : single;
   const flat = done > 1 && stats.every(s => s.sd === null || s.sd === 0), seeds = r.seeds.slice(0, Math.max(1, done));
+  const start = r.warmup ? `; measures labelled "after minute ${U.count(r.warmup)}" leave out the first ${U.count(r.warmup)} minutes `
+   + '(warm-up), the others include start-up' : ', so start-up is included';
   const honesty = `Spread under the authored assumptions across ${U.plural(done, 'seed')} (${seeds[0]} to ${seeds.at(-1)}), measured at minute `
-   + `${U.count(r.minutes)} of runs that start empty, so start-up is included. Intervals use Student t (normal 1.96 above 30 degrees of freedom, `
+   + `${U.count(r.minutes)} of runs that start empty${start}. Intervals use Student t (normal 1.96 above 30 degrees of freedom, `
    + 'slightly narrow between 31 and about 120). This is not a forecast.'
    + (compare ? ' Both designs run on the same seeds, so they share random numbers wherever they agree.' : '');
   const status = r.complete ? (compare ? 'Comparison complete.' : 'Replications complete.') : `Partial results (${done} of ${r.runs} runs).`;
@@ -132,7 +148,7 @@ declare namespace LWProcessDashboardWhatIf {
   return u().table(caption, head, r.kpis.map(k => [k.label, k.mean, k.ci, k.spread, String(k.n)]));
  }
  function markup(r: Result, width: number, rem: number): string {
-  const C = root.LWProcessChart, esc = C.esc, w = Math.max(160, Math.floor(width)), compare = r.kind === 'compare';
+  const C = root.LWProcessChart, esc = root.LWProcessHtml.esc, w = Math.max(160, Math.floor(width)), compare = r.kind === 'compare';
   const flat = r.flat ? '<p class="db-note">This process has no random behaviour; every seed gives the same result, so there is no spread to show.</p>' : '';
   const title = (k: LWProcessDashboardWhatIf.Kpi) => `${k.label}: dot is the mean, bold line the 95% interval, thin line the 10th to 90th percentile`;
   const item = (k: LWProcessDashboardWhatIf.Kpi, i: number) => '<li>'

@@ -493,6 +493,8 @@
     "source/process-slides.ts",
     "source/process-chart.ts",
     "source/process-dashboard-model.ts",
+    "source/process-dashboard-window.ts",
+    "source/process-dashboard-tiles.ts",
     "source/process-dashboard-flow.ts",
     "source/process-dashboard-time.ts",
     "source/process-dashboard-quality.ts",

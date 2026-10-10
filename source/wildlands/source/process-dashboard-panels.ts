@@ -10,6 +10,10 @@
  * lead time is arrival to finish of completed cases (the studio's "cycle"); the scatter draws the retained (or `recent()`) finished
  * cases only and says so, with whole-run percentile bands; aging dots use the case age (minute minus arrival) per open token, at
  * most 500, and pace per step needs 10 exits of the age-at-exit distribution. Jitter is a hash of the identity, never random.
+ *
+ * Target share (the whole-run panel, with the fine distribution only): the viewer may choose a target from the upper edges of the
+ * populated fine bins; the share of finished cases under it is exact (the sum of the bins below that edge ÷ finished cases), because
+ * the target is a bin edge. It is labelled as a target chosen for this view, not part of the process, and never stored.
  */
 declare namespace LWProcessDashboardPanels {
  interface Api extends LWProcessDashboardSections.Builder {
@@ -65,7 +69,23 @@ declare namespace LWProcessDashboardPanels {
   for (const r of ranks) rows.push([r.words, U.bin(edges, r.i), '']);
   const chart: LWProcessDashboardModel.Chart = {kind: 'histogram', title, axis: t.many, tone: 'join', bins: shown, brackets: [...brackets],
    ...max ? {max} : {}};
-  return {...base, caption, notes, chart, table: U.table(`${title}: ${t.many} per bin`, ['Lead time', t.Many, 'Cumulative share'], rows)};
+  const goal = id === 'lead' && input.distributions?.cycle.length ? target(input, counts, edges, first, last, n) : null;
+  if (goal?.note) notes.push(goal.note);
+  if (goal?.row) rows.push(goal.row);
+  return {...base, caption, notes, chart, table: U.table(`${title}: ${t.many} per bin`, ['Lead time', t.Many, 'Cumulative share'], rows),
+   ...goal ? {control: goal.control} : {}};
+ }
+ /** The target select over the upper edges of the populated bins, and for a chosen target its exact share (a note and a table row). */
+ function target(input: Input, counts: number[], edges: number[], first: number, last: number, n: number) {
+  const U = u(), t = root.LWProcessTerms.of(input.view.definition), options = edges.slice(first + 1, last + 2).filter(e => e > 0);
+  const value = options.includes(input.target ?? -1) ? input.target! : null;
+  const control = {kind: 'target' as const, label: t.journey ? 'Target time to outcome' : 'Target lead time', value,
+   options: options.map(e => ({value: e, label: `${U.count(e)} min`}))};
+  if (value === null) return {control, note: null, row: null};
+  const below = counts.slice(0, edges.indexOf(value)).reduce((a, b) => a + b, 0), share = U.percent(below, n);
+  const note = `Target ${U.count(value)} min, chosen for this view and not part of the process: ${share} of ${U.plural(n, `finished ${t.one}`,
+   `finished ${t.many}`)} took less than ${U.count(value)} min (exact: the target is a bin edge).`;
+  return {control, note, row: [`Less than the target of ${U.count(value)} min`, below, share] as (string | number)[]};
  }
  interface Finished {caseId: string; entered: number; finished: number; status: 'completed' | 'failed'; outcome: 'goal' | 'lost' | null}
  /** The finished cases to draw: `recent()` when offered, else the retained finished cases of the snapshot. */
@@ -108,10 +128,14 @@ declare namespace LWProcessDashboardPanels {
   if (!tokens.length) return {...base, empty: `No open ${t.many}.`};
   const order = U.order(d).filter(s => tokens.some(k => k.stepId === s.id)), col = new Map(order.map((s, i) => [s.id, i]));
   const look = (k: LWProcess.Token) => U.STATES.find(x => x.key === U.state(k))!, exits = input.distributions?.steps ?? {};
-  /** The upper edge of the 85th percentile age-at-exit bin of a step; null before 10 exits. */
+  /** The upper edge of the 85th percentile age-at-exit bin of a step; null before 10 exits. Computed once per step. */
+  const paces = new Map<string, number | null>();
   const pace = (id: string) => {
-   const e = exits[id]?.exitAge, i = e && e.reduce((a, b) => a + b, 0) >= 10 ? U.rank(e, 85) : null;
-   return i === null || !input.distributions ? null : input.distributions.edges[i + 1] ?? null;
+   if (!paces.has(id)) {
+    const e = exits[id]?.exitAge, i = e && e.reduce((a, b) => a + b, 0) >= 10 ? U.rank(e, 85) : null;
+    paces.set(id, i === null || !input.distributions ? null : input.distributions.edges[i + 1] ?? null);
+   }
+   return paces.get(id) ?? null;
   };
   const points = tokens.slice(0, 500).map(k => ({x: col.get(k.stepId)! + (hash(k.id) - .5) * .6, y: age(k), glyph: look(k).glyph, tone: look(k).tone}));
   const older = new Set(tokens.filter(k => { const p = pace(k.stepId); return p !== null && age(k) > p; }).map(k => k.caseId));

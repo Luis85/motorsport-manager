@@ -1,5 +1,6 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-dashboard-model.ts" />
+/// <reference path="./process-dashboard-window.ts" />
 /**
  * Dashboard section 3 (LWProcessDashboardTime): "Where time goes": the lead-time breakdown by work state with flow efficiency,
  * waiting by step (the bottleneck ranking, each row selecting its step), pool capacity as bullet graphs and queues over time. Pure
@@ -10,11 +11,13 @@
  * working over lead time, also without authored timer waiting. Waiting shares use the waiting token-minutes when the engine reports
  * them (`minutesBy.waiting`, exact, including work still waiting) and otherwise the waits of started work (`waitMinutes`), and say
  * which. Utilisation reads '—' at minute 0, never 0%; the 85-100% band is a reading aid for queueing near full use, not a target.
+ * With a window (LWProcessDashboardWindow) pool utilisation is the busy minutes over the window ÷ (window × capacity), labelled.
  */
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessDashboardModel: LWProcessDashboardModel.Api; LWProcessTerms: LWProcessTerms.Api;
-  LWProcessSlidesText: LWProcessSlidesText.Api; LWProcessDashboardTime?: LWProcessDashboardSections.Builder};
+  LWProcessSlidesText: LWProcessSlidesText.Api; LWProcessDashboardWindow: LWProcessDashboardWindow.Api;
+  LWProcessDashboardTime?: LWProcessDashboardSections.Builder};
  type Input = LWProcessDashboardData.Input;
  type Panel = LWProcessDashboardModel.Panel;
  type Metrics = LWProcess.Snapshot['metrics'] & LWProcessDashboardData.Metrics;
@@ -119,22 +122,26 @@
   const kind = (r: LWProcess.Resource) => root.LWProcessSlidesText.poolKind(r);
   type Pair = {p: LWProcess.PoolMetric; r: LWProcess.Resource};
   const pools = q.resources.map(p => ({p, r: d.resources.find(r => r.id === p.id)})).filter((x): x is Pair => !!x.r);
-  const share = (p: LWProcess.PoolMetric) => Math.round(p.utilization * 1000) / 10;
+  const Win = root.LWProcessDashboardWindow, w = Win.of(input), over = w ? Win.label(w) : 'since minute 0';
+  const use = (p: LWProcess.PoolMetric) => w ? Win.utilization(w, p.id, p.capacity) ?? 0 : p.utilization;
+  const share = (p: LWProcess.PoolMetric) => Math.round(use(p) * 1000) / 10;
   const spark = (p: LWProcess.PoolMetric) => {
    const c = s?.pools[p.id];
    return c && s ? diff(c.busyMinutes).map((b, i) => b / Math.max(1, (s.minutes[i + 1]! - s.minutes[i]!) * p.capacity) * 100) : null;
   };
   const rows = pools.map(({p, r}) => ({label: r.name, detail: `${kind(r)} · ${U.plural(p.capacity, 'unit')} · used by ${users(p.id)}`,
    value: T ? share(p) : null, compare: p.capacity ? Math.round(p.busy / p.capacity * 1000) / 10 : null, spark: spark(p),
-   tip: T ? `${r.name}: ${pct(p.utilization)} average utilisation, ${p.busy} of ${p.capacity} busy now`
+   tip: T ? `${r.name}: ${pct(use(p))} average utilisation ${over}, ${p.busy} of ${p.capacity} busy now`
     : `${r.name}: ${p.capacity} units, no time simulated yet`}));
-  const top = pools.reduce((a, b) => b.p.utilization > a.p.utilization ? b : a);
-  const caption = T ? `${top.r.name} is the busiest pool at ${pct(top.p.utilization)} average utilisation since minute 0.`
+  const top = pools.reduce((a, b) => use(b.p) > use(a.p) ? b : a);
+  const caption = T ? `${top.r.name} is the busiest pool at ${pct(use(top.p))} average utilisation ${over}.`
    : 'Capacities only: utilisation needs simulated time.';
-  const table = pools.map(({p, r}) => [r.name, kind(r), p.capacity, T ? `${share(p)}%` : '—', p.busy, p.busyMinutes, users(p.id)]);
+  const busy = (p: LWProcess.PoolMetric) => w ? w.busy[p.id] ?? 0 : p.busyMinutes;
+  const table = pools.map(({p, r}) => [r.name, kind(r), p.capacity, T ? `${share(p)}%` : '—', p.busy, busy(p), users(p.id)]);
   return {...base, caption, notes: ['The shaded band from 85% to 100% marks where queues grow quickly near full use; it is a reading aid, not a target.'],
    chart: {kind: 'bullets', title: 'Average utilisation per pool, with busy units now as a tick', rows},
-   table: U.table('Pool utilisation', ['Pool', 'Kind', 'Capacity', 'Average utilisation', 'Busy now', 'Busy minutes', 'Used by'], table)};
+   table: U.table('Pool utilisation', ['Pool', 'Kind', 'Capacity', w ? `Average utilisation ${over}` : 'Average utilisation', 'Busy now',
+    w ? `Busy minutes ${over}` : 'Busy minutes', 'Used by'], table)};
  }
  function queues(input: Input): Panel {
   const {definition: d} = input.view, U = u(), s = input.series && input.series.minutes.length > 1 ? input.series : null;
@@ -159,8 +166,11 @@
    table: U.table('Queues over time', ['Step', 'Mean waiting, first third', 'Mean waiting, last third', 'Peak waiting'],
     per.map(x => [name(x.id), U.round(third(x.mean, false)), U.round(third(x.mean, true)), Math.max(...x.c.waitingPeak)]))};
  }
- const sections = (input: Input): LWProcessDashboardModel.Section[] =>
-  [{id: 'time', title: 'Where time goes', panels: [breakdown(input), waiting(input), capacity(input), queues(input)]}];
+ function sections(input: Input): LWProcessDashboardModel.Section[] {
+  // Queues over time read only the run history, so with two samples or more they are built once per series.
+  const s = input.series, kept = s && s.minutes.length > 1 ? u().memo(input, 'queues', () => queues(input)) : queues(input);
+  return [{id: 'time', title: 'Where time goes', panels: [breakdown(input), waiting(input), capacity(input), kept]}];
+ }
  root.LWProcessDashboardTime = {sections};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessDashboardTime;
 })(globalThis);

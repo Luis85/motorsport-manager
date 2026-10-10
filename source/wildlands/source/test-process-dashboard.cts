@@ -11,8 +11,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {catalog} from './process-sdk.cjs';
 import {test, application, copy, stepOf, flowOf, build} from './test-process-helpers.cjs';
-for (const name of ['process-chart', 'process-dashboard-model', 'process-dashboard-flow', 'process-dashboard-time', 'process-dashboard-quality',
- 'process-dashboard-panels', 'process-dashboard-journey', 'process-dashboard-focus']) require(`./${name}.js`);
+for (const name of ['process-chart', 'process-dashboard-model', 'process-dashboard-window', 'process-dashboard-tiles', 'process-dashboard-flow',
+ 'process-dashboard-time', 'process-dashboard-quality', 'process-dashboard-panels', 'process-dashboard-journey', 'process-dashboard-focus']) {
+ require(`./${name}.js`);
+}
 const M = (globalThis as unknown as {LWProcessDashboardModel: LWProcessDashboardModel.Api}).LWProcessDashboardModel;
 type View = LWProcessApp.View;
 type Model = LWProcessDashboardModel.Model;
@@ -174,7 +176,7 @@ test('Dashboard model of a journey leads with outcomes, the funnel, feeling and 
  assert.equal(tile(m, 'conversion')!.value, `${q.metrics.conversion! / 10}%`);
  assert.equal(tile(m, 'conversion')!.line, `goals ${q.metrics.goals} · lost ${q.metrics.lost}`);
  const journey = m.sections[0]!.panels.map(p => p.id);
- assert.deepEqual(journey, ['funnel', 'outcomes', 'outcome-time', 'feeling', 'channels', 'tracked']);
+ assert.deepEqual(journey, ['funnel', 'outcomes', 'conversion', 'outcome-time', 'feeling', 'channels', 'tracked']);
  const funnel = panel(m, 'funnel').chart as Extract<LWProcessDashboardModel.Chart, {kind: 'rows'}>;
  const first = q.steps.find(s => s.id === view.definition.start)!.reached;
  assert.equal(funnel.rows[0]!.value, first);
@@ -288,7 +290,8 @@ test('Dashboard step focus replaces sections 3-6 with the step tiles, its distri
 
 test('Dashboard journey outcomes read outcome series and distributions on one shared scale', () => {
  const view = copy(viewAt(demo('customer-journey-webshop'), 300)), m = model(view, {series: SERIES, distributions: DISTRIBUTIONS});
- assert.deepEqual(m.sections[0]!.panels.map(p => p.id), ['funnel', 'outcomes', 'outcome-goal', 'outcome-lost', 'feeling', 'channels', 'tracked']);
+ assert.deepEqual(m.sections[0]!.panels.map(p => p.id), ['funnel', 'outcomes', 'conversion', 'outcome-goal', 'outcome-lost', 'feeling', 'channels',
+  'tracked']);
  const outcomes = panel(m, 'outcomes');
  assert.equal(outcomes.caption, 'By minute 180, 4 reached a goal and 2 were lost.');
  assert.deepEqual(outcomes.table!.rows.at(-1), ['180', '4', '2', '—']);

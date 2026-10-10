@@ -26,7 +26,8 @@
 .process-studio .db-identity { color:var(--text); font-weight:600; }
 .process-studio .db-notice { color:var(--text); }
 .db-notes { margin:0; padding-left:1.1rem; color:var(--muted); }
-.db-window { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); color:var(--muted); }
+.db-window,.db-target { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s2); color:var(--muted); }
+.db-target { margin-bottom:var(--s2); font-size:var(--t-xs); }
 .db-tiles { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,10rem),1fr)); gap:var(--s2); }
 .db-tile { display:flex; flex-direction:column; gap:2px; min-width:0; padding:var(--s2) var(--s3); border:1px solid var(--line); border-radius:var(--r-lg);
  background:var(--panel); overflow-wrap:anywhere; }
@@ -115,6 +116,14 @@ div.db-row { display:grid; gap:var(--s1); padding:var(--s1) var(--s2); }
 .db-tip { position:absolute; z-index:5; max-width:min(22rem,90%); padding:var(--s1) var(--s2); border:1px solid var(--control-border);
  border-radius:var(--r-sm); background:var(--surface-card); color:var(--text); font-size:var(--t-xs); pointer-events:none;
  box-shadow:0 6px 18px var(--shadow); }
+/* Phones: every section folds into a disclosure whose summary is the section heading, open until the reader closes it. */
+.db-fold > summary { display:flex; align-items:center; gap:var(--s2); min-height:44px; cursor:pointer; list-style:none; }
+.db-fold > summary::-webkit-details-marker { display:none; }
+.db-fold > summary::before { content:''; flex:none; border-block:.35em solid transparent; border-inline-start:.55em solid currentColor; }
+.db-fold[open] > summary::before { transform:rotate(90deg); }
+.db-fold > summary:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.process-studio .db-fold > summary h2 { margin:0; }
+.db-fold > * + * { margin-top:var(--s3); }
 /* Narrow windows and short desktops: the dashboard grows with the page instead of scrolling inside the stage. */
 @media(max-width:1099px),(max-height:599px) {
  #viewport:has(> #dashboard:not([hidden])) { height:auto; min-height:0; }
@@ -125,7 +134,7 @@ div.db-row { display:grid; gap:var(--s1); padding:var(--s1) var(--s2); }
  .process-dashboard { padding-inline:var(--s3); }
  .db-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); }
  .db-grid { grid-template-columns:minmax(0,1fr); }
- .process-studio button.db-row,.process-studio button.db-more,.process-studio .db-table summary { min-height:44px; }
+ .process-studio button.db-row,.process-studio button.db-more,.process-studio .db-table summary,.db-target select { min-height:44px; }
 }
 /* Forced colours drop the role colours: marks get system ink and a border, the outline glyphs stay, and the tooltip keeps a frame. */
 @media(forced-colors:active) {

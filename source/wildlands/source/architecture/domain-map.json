@@ -505,6 +505,8 @@
         "process-slides.ts",
         "process-chart.ts",
         "process-dashboard-model.ts",
+        "process-dashboard-window.ts",
+        "process-dashboard-tiles.ts",
         "process-dashboard-flow.ts",
         "process-dashboard-time.ts",
         "process-dashboard-quality.ts",
