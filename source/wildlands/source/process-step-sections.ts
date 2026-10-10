@@ -86,8 +86,12 @@ declare namespace LWProcessStepSections {
  function randomTiming(m: M): string {
   if (!root.LWProcessStepModel.timingAllowed(m)) return '';
   const t = m.timing;
+  // The whole-minute rounding note (LWProcessRandomView.roundingNote) of the distribution as it would be written, when it biases the mean.
+  const rounding = t.dist ? root.LWProcessRandomView.roundingNote(root.LWProcessStepLogic.writeTiming(t)) : null;
+  const note = rounding ? `<p class="se-help" id="se-timing-rounding">${esc(rounding)}</p>` : '';
+  const plan = t.dist ? `<p class="se-help" id="se-timing-note">${esc(root.LWProcessStepModel.timingNote(m))}</p>` : '';
   return section('random-timing', 'Random timing', 'Optional. Without it every visit takes exactly the planning duration. Times are whole minutes, repeatable for the same seed.',
-   `${root.LWProcessStepLogicSections.dist('timing', t, 'se-err-timing', 'None: always the planning duration')}${t.dist ? `<p class="se-help" id="se-timing-note">${esc(root.LWProcessStepModel.timingNote(m))}</p>` : ''}${err('timing')}`);
+   `${root.LWProcessStepLogicSections.dist('timing', t, 'se-err-timing', 'None: always the planning duration')}${plan}${note}${err('timing')}`);
  }
  function automation(m: M): string {
   if (m.kind !== 'machine' && m.kind !== 'system') return '';

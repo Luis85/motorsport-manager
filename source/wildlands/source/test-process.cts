@@ -3,6 +3,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {results} from './test-process-helpers.cjs';
+// The studio's escaping module, loaded before the checks that render inspector markup (as the studio page loads it first).
+import './process-html.js';
 import './test-process-engine.cjs';
 import './test-process-authoring.cjs';
 import './test-process-structure.cjs';
@@ -17,6 +19,7 @@ import './test-process-analytics-cli.cjs';
 import './test-process-calendar.cjs';
 import './test-process-advice.cjs';
 import './test-process-application.cjs';
+import './test-process-html.cjs';
 const report = {suite: 'business-process', passed: results.filter(r => r.passed).length, total: results.length, results};
 fs.writeFileSync(path.join(__dirname, 'process-results.json'), JSON.stringify(report, null, 2) + '\n');
 console.log(`${report.passed}/${report.total} process checks passed`); for (const r of results) if (!r.passed) console.error(r.name, r.error);

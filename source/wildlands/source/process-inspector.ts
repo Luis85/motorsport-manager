@@ -1,33 +1,62 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-html.ts" />
+/// <reference path="./process-time.ts" />
+/// <reference path="./process-advice.ts" />
 /**
  * Inspector markup for Process Studio: the overview of the whole process, the details of one selected step and the shared
- * resource bars. Pure functions from a detached view (`LWProcessApp.View`) to escaped HTML strings; no DOM access, no session,
- * clock or storage. Random behaviour is worded by LWProcessRandomView so the inspector, the editors and the activity list agree.
+ * resource bars. Pure functions from a detached view (`LWProcessApp.View`) to HTML strings built with LWProcessHtml's `html`
+ * template (every value from the definition or the run is escaped); no DOM access, no session, clock or storage. Random
+ * behaviour is worded by LWProcessRandomView so the inspector, the editors and the activity list agree.
+ *
+ * Durations (step durations, waits, mean cycle and mean age) are worded by `LWProcessTime.span` with the definition's display
+ * calendar, so they read '240 min (≈ 4 h)' or, with a calendar, '2,400 min (5 business days)'; clock points ('Until minute
+ * 200', 'next due minute 45') stay minutes. The read model's analytics are shown where they answer a question, kept short
+ * (the Dashboard view holds the full analytics): per work step the mean wait per start ('—' before the first start) and the
+ * work cost split into fixed cost and pool-minute cost; per pool the work cost against the capacity cost and the idle cost
+ * (capacity cost − work cost); in the overview the throughput per business hour ('—' at minute 0) and, when
+ * `LWProcessAdvice.advise` reports any, a short Notes list. A step with random timing adds its whole-minute rounding note
+ * (`LWProcessRandomView.roundingNote`) beside Random timing.
  */
 declare namespace LWProcessInspector {
  interface Api {
-  /** Whole-process facts: description (clamped to three lines until `moreOpen`), counts, revision, seed, multiple-instance, deadline and inclusive-fork totals (only when present) and the arrival streams. */
+  /**
+   * Whole-process facts: description (clamped to three lines until `moreOpen`), counts, revision, seed, throughput per business
+   * hour, tracked measures, multiple-instance, deadline and inclusive-fork totals (only when present), modelling notes (only
+   * when there are any) and the arrival streams.
+   */
   overview(view: LWProcessApp.View, moreOpen: boolean): string;
-  /** One step: description, timing, branching, multiple instances and deadline (with their live counters), random timing and outcomes, needs, outputs, backlog and the steps that can follow. */
+  /**
+   * One step: description, timing, work counts, queue time, mean wait per start and work cost (work steps), branching, multiple
+   * instances and deadline (with their live counters), random timing with its rounding note and outcomes, needs, outputs,
+   * backlog and the steps that can follow.
+   */
   step(view: LWProcessApp.View, step: LWProcess.Step): string;
   /**
    * The KPI strip cells under the stage: counts, mean cycle ('—' until a case finishes), mean age in progress, work cost and capacity cost,
-   * plus goals, lost, conversion and up to two tracked measures for journeys. HTML without the seed note.
+   * plus goals, lost, conversion and up to two tracked measures for journeys. HTML without the seed note. Times use the display calendar.
    */
   kpis(view: LWProcessApp.View): string;
   /**
-   * Shared resources as utilisation meters, then one sentence on work and capacity cost. The percentage is the average utilisation
-   * since minute 0 and the busy count is right now; both are text, so colour is never the only signal.
+   * Shared resources as utilisation meters, each with its work cost against its capacity cost and the idle cost, then one sentence
+   * on work and capacity cost. The percentage is the average utilisation since minute 0 and the busy count is right now; both are
+   * text, so colour is never the only signal.
    */
   pools(view: LWProcessApp.View): string;
  }
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessNeeds: LWProcessNeeds.Api; LWProcessRandomView: LWProcessRandomView.Api; LWProcessTerms: LWProcessTerms.Api; LWProcessInspector?: LWProcessInspector.Api};
- const esc = (v: unknown) => String(v).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]!));
+ const root = inputRoot as {LWProcessNeeds: LWProcessNeeds.Api; LWProcessRandomView: LWProcessRandomView.Api; LWProcessTerms: LWProcessTerms.Api;
+  LWProcessHtml: LWProcessHtml.Api; LWProcessTime: LWProcessTime.Api; LWProcessAdvice: LWProcessAdvice.Api; LWProcessInspector?: LWProcessInspector.Api};
+ type Safe = LWProcessHtml.Safe;
+ // Resolved per call, so the module can be loaded before LWProcessHtml in Node checks.
+ const html = (strings: TemplateStringsArray, ...values: unknown[]): Safe => root.LWProcessHtml.html(strings, ...values);
  const num = (n: number) => Number(n.toFixed(1)).toLocaleString();
+ /** A duration in the definition's words (LWProcessTime.span with its display calendar). */
+ const span = (d: LWProcess.Definition, n: number) => root.LWProcessTime.span(n, d.calendar);
  const works = (s: LWProcess.Step) => s.kind === 'task' || s.kind === 'machine' || s.kind === 'system', automated = (s: LWProcess.Step) => s.kind === 'machine' || s.kind === 'system';
+ /** Steps whose work starts are counted by the ledger: they have a mean wait per start and a work cost. */
+ const working = (s: LWProcess.Step) => works(s) || s.kind === 'touchpoint';
  /** Up to `limit` tracked finish averages with data, in the definition's declared order. */
  function trackedFinish(view: LWProcessApp.View) {
   const finish = view.snapshot.metrics.tracked;
@@ -35,44 +64,63 @@ declare namespace LWProcessInspector {
  }
  const dec = (n: number) => Number(n.toFixed(2)).toLocaleString();
  function kpis(view: LWProcessApp.View): string {
-  const m = view.snapshot.metrics, t = root.LWProcessTerms.of(view.definition), cells: string[][] = [[t.finished, num(m.completed)]];
-  const outcomes = m.goals + m.lost > 0 ? [['Goals', num(m.goals)], ['Lost', num(m.lost)], ['Conversion', (m.conversion! / 10).toFixed(1) + '%']] : [];
+  const m = view.snapshot.metrics, d = view.definition, t = root.LWProcessTerms.of(d), cells: [string, string][] = [[t.finished, num(m.completed)]];
+  const conversion = (m.conversion! / 10).toFixed(1) + '%';
+  const outcomes: [string, string][] = m.goals + m.lost > 0 ? [['Goals', num(m.goals)], ['Lost', num(m.lost)], ['Conversion', conversion]] : [];
   // Mean cycle covers finished cases only: '—' until one finishes, with the mean age of the cases still in progress beside it.
-  const age = m.meanAgeMinutes === null ? '—' : num(m.meanAgeMinutes) + ' min';
-  const cycle = m.completed ? num(m.meanCycleMinutes) + ' min' : '—';
+  const age = m.meanAgeMinutes === null ? '—' : span(d, m.meanAgeMinutes);
+  const cycle = m.completed ? span(d, m.meanCycleMinutes) : '—';
   cells.push(...outcomes, ['In progress', num(m.active)], ['Mean cycle', cycle], ['Mean age in progress', age]);
   cells.push(['Work cost', num(m.cost)], ['Capacity cost', num(m.capacityCost)], ['Failed', num(m.failed)]);
   if (m.dropped > 0) cells.push(['Dropped', num(m.dropped)]);
-  cells.push(...trackedFinish(view).slice(0, 2).map(x => [esc(x.label) + ' (avg)', dec(x.mean)]));
-  return cells.map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`).join('');
+  cells.push(...trackedFinish(view).slice(0, 2).map((x): [string, string] => [x.label + ' (avg)', dec(x.mean)]));
+  return String(html`${cells.map(([label, value]) => html`<div><span>${label}</span><strong>${value}</strong></div>`)}`);
  }
- function needsHtml(view: LWProcessApp.View, step: LWProcess.Step): string {
-  const delivered = [...Object.entries(step.set ?? {}).map(([k, v]) => `<li>${esc(k)} = ${esc(JSON.stringify(v))}</li>`), ...Object.entries(step.add ?? {}).map(([k, n]) => `<li>${n >= 0 ? '+' : '−'}${Math.abs(n)} to ${esc(k)} (counter)</li>`)].join('');
+ function needsHtml(view: LWProcessApp.View, step: LWProcess.Step): Safe {
+  const delivered = [...Object.entries(step.set ?? {}).map(([k, v]) => html`<li>${k} = ${JSON.stringify(v)}</li>`),
+   ...Object.entries(step.add ?? {}).map(([k, n]) => html`<li>${n >= 0 ? '+' : '−'}${Math.abs(n)} to ${k} (counter)</li>`)];
   const deliveries = root.LWProcessNeeds.deliveries(view.definition, step.id), names = new Map(view.definition.steps.map(s => [s.id, s.name]));
-  const needs = (step.needs ?? []).map((n, i) => { const from = deliveries[i]!, who = [...from.steps.map(id => names.get(id)!), ...from.arrivals ? [root.LWProcessTerms.of(view.definition).one + ' arrival'] : []];
-   return `<li><strong>${esc(root.LWProcessNeeds.describe(n))}</strong>${n.label ? ' · ' + esc(n.label) : ''}<small>${who.length ? 'Delivered by ' + esc(who.join(', ')) : 'No earlier delivery'}</small></li>`; }).join('');
-  return (needs ? `<h3>Needs from earlier steps</h3><ul class="process-needs">${needs}</ul>` : '') + (delivered ? `<h3>Delivers</h3><ul class="process-needs">${delivered}</ul>` : '');
+  const needs = (step.needs ?? []).map((n, i) => {
+   const from = deliveries[i]!, arrival = from.arrivals ? [root.LWProcessTerms.of(view.definition).one + ' arrival'] : [];
+   const who = [...from.steps.map(id => names.get(id)!), ...arrival], source = who.length ? 'Delivered by ' + who.join(', ') : 'No earlier delivery';
+   return html`<li><strong>${root.LWProcessNeeds.describe(n)}</strong>${n.label ? ' · ' + n.label : ''}<small>${source}</small></li>`;
+  });
+  const wanted = needs.length ? html`<h3>Needs from earlier steps</h3><ul class="process-needs">${needs}</ul>` : '';
+  return html`${wanted}${delivered.length ? html`<h3>Delivers</h3><ul class="process-needs">${delivered}</ul>` : ''}`;
  }
- function timingHtml(step: LWProcess.Step, m: LWProcess.StepMetric): string {
-  if (step.kind !== 'timer') return `<dt>${step.kind === 'machine' ? 'Cycle time' : step.kind === 'system' ? 'Run time' : 'Duration'}</dt><dd>${num(step.duration ?? 0)} min</dd>${step.technology ? `<dt>Technology</dt><dd>${esc(step.technology)}</dd>` : ''}`;
-  const rule = step.until !== undefined ? `Until minute ${num(step.until)}` : `Wait ${num(step.duration ?? 0)} min`;
-  return `<dt>Timer</dt><dd>${rule}</dd><dt>Status</dt><dd>${m.timers.waiting ? `Waiting on timer · ${m.timers.waiting} waiting, next due minute ${num(m.timers.nextDue!)}` : 'No timers waiting'}</dd>`;
+ function timingHtml(d: LWProcess.Definition, step: LWProcess.Step, m: LWProcess.StepMetric): Safe {
+  if (step.kind !== 'timer') {
+   const label = step.kind === 'machine' ? 'Cycle time' : step.kind === 'system' ? 'Run time' : 'Duration';
+   return html`${row(label, span(d, step.duration ?? 0))}${step.technology ? row('Technology', step.technology) : ''}`;
+  }
+  const rule = step.until !== undefined ? `Until minute ${num(step.until)}` : `Wait ${span(d, step.duration ?? 0)}`;
+  const status = m.timers.waiting ? `Waiting on timer · ${m.timers.waiting} waiting, next due minute ${num(m.timers.nextDue!)}` : 'No timers waiting';
+  return html`${row('Timer', rule)}${row('Status', status)}`;
  }
- function outputsHtml(step: LWProcess.Step, q: LWProcess.Snapshot): string {
+ function outputsHtml(step: LWProcess.Step, q: LWProcess.Snapshot): Safe | '' {
   if (!step.outputs?.length) return '';
   const seen = [...q.receipts].reverse().find(r => r.stepId === step.id);
-  return `<h3>Declared outputs</h3><ul class="process-needs">${step.outputs.map(o => `<li><strong>${esc(o.label ?? o.field)}</strong>${o.label ? ` · <code>${esc(o.field)}</code>` : ''}<small>${seen && Object.hasOwn(seen.output, o.field) ? 'Last observed: ' + esc(JSON.stringify(seen.output[o.field])) : 'Not observed yet'}</small></li>`).join('')}</ul>`;
+  const items = step.outputs.map(o => {
+   const observed = seen && Object.hasOwn(seen.output, o.field) ? 'Last observed: ' + JSON.stringify(seen.output[o.field]) : 'Not observed yet';
+   return html`<li><strong>${o.label ?? o.field}</strong>${o.label ? html` · <code>${o.field}</code>` : ''}<small>${observed}</small></li>`;
+  });
+  return html`<h3>Declared outputs</h3><ul class="process-needs">${items}</ul>`;
  }
- function backlogHtml(step: LWProcess.Step, q: LWProcess.Snapshot): string {
+ function backlogHtml(step: LWProcess.Step, q: LWProcess.Snapshot): Safe | '' {
   const b = step.backlog; if (!b) return '';
   const items = q.tokens.filter(t => t.stepId === step.id && (t.status === 'backlog' || works(step) && t.status === 'queued')).length, blocked = q.tokens.filter(t => t.status === 'held' && t.target === step.id).length;
-  return `<h3>Backlog</h3><dl><dt>Items / capacity</dt><dd>${items} / ${b.capacity}</dd><dt>Order</dt><dd>${esc(b.order === 'priority' ? 'Highest ' + b.priority + ' first' : b.order === 'lifo' ? 'Newest first' : 'Oldest first')}</dd>${b.pull !== undefined ? `<dt>Pull limit</dt><dd>${b.pull} in next step</dd>` : ''}<dt>Blocked upstream</dt><dd>${blocked}</dd></dl>`;
+  const order = b.order === 'priority' ? 'Highest ' + b.priority + ' first' : b.order === 'lifo' ? 'Newest first' : 'Oldest first';
+  const pull = b.pull !== undefined ? row('Pull limit', `${b.pull} in next step`) : '';
+  return html`<h3>Backlog</h3><dl>${row('Items / capacity', `${items} / ${b.capacity}`)}${row('Order', order)}${pull}${row('Blocked upstream', blocked)}</dl>`;
  }
- /** 'Random timing' and 'Random outcomes' in the same sentences the editors use; '' for a deterministic step. */
- function randomHtml(step: LWProcess.Step): string {
-  const v = root.LWProcessRandomView;
-  return (step.timing ? `<h3>Random timing</h3><p class="process-random">${esc(v.describeTiming(step))}</p>` : '') +
-   (step.draws?.length ? `<h3>Random outcomes</h3><ul class="process-adds">${step.draws.map(d => `<li>${esc(v.describeDraw(d))}</li>`).join('')}</ul>` : '');
+ /** 'Random timing' (with its whole-minute rounding note) and 'Random outcomes' in the same sentences the editors use; '' for a deterministic step. */
+ function randomHtml(step: LWProcess.Step): Safe {
+  const v = root.LWProcessRandomView, rounding = step.timing ? v.roundingNote(step.timing) : null;
+  const note = rounding ? html`<p class="process-rounding">${rounding}</p>` : '';
+  const timing = step.timing ? html`<h3>Random timing</h3><p class="process-random">${v.describeTiming(step)}</p>${note}` : '';
+  const outcomes = (step.draws ?? []).map(d => html`<li>${v.describeDraw(d)}</li>`);
+  const draws = outcomes.length ? html`<h3>Random outcomes</h3><ul class="process-adds">${outcomes}</ul>` : '';
+  return html`${timing}${draws}`;
  }
  /** The deadline flow in the 2D map's own words: 'Deadline path (escalates: the work keeps going)'. */
  const deadlinePath = (mode: LWProcess.Deadline['mode']) => `Deadline path (${mode === 'escalate' ? 'escalates: the work keeps going' : 'interrupts: the work is cancelled'})`;
@@ -80,86 +128,151 @@ declare namespace LWProcessInspector {
   * The next steps. A decision's routes also say how they are chosen; chance routes show their share and the fallback shows what is left.
   * An inclusive fork's branches show their condition (each is tested on its own, so no shares are summed) and a deadline flow says it is the deadline path.
   */
- function nextHtml(view: LWProcessApp.View, step: LWProcess.Step): string {
+ function nextHtml(view: LWProcessApp.View, step: LWProcess.Step): Safe {
   const d = view.definition, out = d.flows.filter(f => f.from === step.id), v = root.LWProcessRandomView, many = root.LWProcessTerms.of(d).many;
   const chances = out.filter(f => typeof f.when?.chance === 'number'), conditions = out.filter(f => f.when && typeof f.when.chance !== 'number');
   const left = chances.length && !conditions.length ? 100 - chances.reduce((sum, f) => sum + (f.when!.chance as number), 0) : undefined;
   const branch = (f: LWProcess.Flow) => f.when ? v.describeWhen(f.when, many) : 'Default branch: taken only when no condition is true';
   const how = (f: LWProcess.Flow) => f.on === 'deadline' && step.deadline ? deadlinePath(step.deadline.mode) : step.kind === 'fork' && step.mode === 'inclusive' ? branch(f) : step.kind !== 'decision' ? '' : f.when ? v.describeWhen(f.when, many) : left !== undefined ? `Otherwise, ${Math.round(left * 10) / 10}% of ${many}` : 'Otherwise';
-  return out.map(f => { const reason = how(f);
-   return `<button class="next-step" data-next="${esc(f.to)}">${esc(d.steps.find(s => s.id === f.to)!.name)}${f.label ? ' · ' + esc(f.label) : ''}${reason ? `<small>${esc(reason)}</small>` : ''}</button>`; }).join('') || '<p>Process ends here.</p>';
+  const buttons = out.map(f => {
+   const reason = how(f), target = d.steps.find(s => s.id === f.to)!.name;
+   const why = reason ? html`<small>${reason}</small>` : '';
+   return html`<button class="next-step" data-next="${f.to}">${target}${f.label ? ' · ' + f.label : ''}${why}</button>`;
+  });
+  return buttons.length ? html`${buttons}` : html`<p>Process ends here.</p>`;
  }
  /** Journey annotations of a step (phase, channel, feeling, pain, opportunity, end outcome) and its funnel and tracked averages. '' when there is nothing to say. */
- function journeyHtml(view: LWProcessApp.View, s: LWProcess.Step, m: LWProcess.StepMetric): string {
-  const v = root.LWProcessRandomView, t = root.LWProcessTerms.of(view.definition), rows: string[] = [], add = (k: string, value: string) => rows.push(`<dt>${k}</dt><dd>${value}</dd>`);
-  if (s.phase) add('Phase', esc(s.phase));
-  if (v.describeChannel(s.channel)) add('Channel', esc(v.describeChannel(s.channel)));
-  if (v.describeEmotion(s.emotion)) add('Feeling', esc(v.describeEmotion(s.emotion)) + ' (' + (s.emotion! > 0 ? '+' : '') + s.emotion + ')');
-  if (v.describeOutcome(s.outcome)) add('Ends as', `<span class="process-outcome ${esc(s.outcome)}">${esc(v.describeOutcome(s.outcome))}</span>`);
+ function journeyHtml(view: LWProcessApp.View, s: LWProcess.Step, m: LWProcess.StepMetric): Safe {
+  const v = root.LWProcessRandomView, t = root.LWProcessTerms.of(view.definition), rows: Safe[] = [];
+  const add = (k: string, value: unknown) => rows.push(row(k, value));
+  if (s.phase) add('Phase', s.phase);
+  if (v.describeChannel(s.channel)) add('Channel', v.describeChannel(s.channel));
+  if (v.describeEmotion(s.emotion)) add('Feeling', v.describeEmotion(s.emotion) + ' (' + (s.emotion! > 0 ? '+' : '') + s.emotion + ')');
+  if (v.describeOutcome(s.outcome)) add('Ends as', html`<span class="process-outcome ${s.outcome}">${v.describeOutcome(s.outcome)}</span>`);
   if (t.journey) {add('Reached', `${num(m.reached)} ${m.reached === 1 ? t.one : t.many}`); add('Entered', `${num(m.entered)} ${m.entered === 1 ? 'time' : 'times'}`);}
-  for (const x of view.definition.track ?? []) {const e = m.tracked[x.field]; if (e && e.n > 0 && e.mean !== null) add(`Average ${esc(x.label ?? x.field)} on entry`, dec(e.mean));}
-  const notes = (s.pain ? `<h3>Pain point</h3><p>${esc(s.pain)}</p>` : '') + (s.opportunity ? `<h3>Opportunity</h3><p>${esc(s.opportunity)}</p>` : '');
-  return (rows.length ? `<h3>${t.journey ? 'Journey' : 'Annotations'}</h3><dl class="process-journey">${rows.join('')}</dl>` : '') + notes;
+  for (const x of view.definition.track ?? []) {
+   const e = m.tracked[x.field];
+   if (e && e.n > 0 && e.mean !== null) add(`Average ${x.label ?? x.field} on entry`, dec(e.mean));
+  }
+  const pain = s.pain ? html`<h3>Pain point</h3><p>${s.pain}</p>` : '', chance = s.opportunity ? html`<h3>Opportunity</h3><p>${s.opportunity}</p>` : '';
+  return html`${rows.length ? html`<h3>${t.journey ? 'Journey' : 'Annotations'}</h3><dl class="process-journey">${rows}</dl>` : ''}${pain}${chance}`;
  }
- const row = (label: string, value: string) => `<dt>${label}</dt><dd>${value}</dd>`;
+ /** One label and value of a description list; the value is escaped unless it is already markup. */
+ const row = (label: string, value: unknown) => html`<dt>${label}</dt><dd>${value}</dd>`;
  /**
   * BPMN-class behaviour of one step in the editors' sentences: fork branching and its join, multiple instances with the cumulative
   * item counters, the visits running now and the item count of the latest completed visit, and the boundary deadline with its
   * path, firing counters and the next pending deadline minute. '' for a step with none of them.
   */
- function logicHtml(view: LWProcessApp.View, s: LWProcess.Step, m: LWProcess.StepMetric): string {
+ function logicHtml(view: LWProcessApp.View, s: LWProcess.Step, m: LWProcess.StepMetric): Safe {
   const v = root.LWProcessRandomView, d = view.definition, q = view.snapshot, name = (id: string | undefined) => d.steps.find(x => x.id === id)?.name;
-  let html = '';
-  if (s.kind === 'fork') html += `<h3>Branching</h3><p class="process-random">${esc(v.describeFork(s))}</p>${name(s.join) ? `<dl>${row('Joins at', esc(name(s.join)))}</dl>` : ''}`;
+  const parts: Safe[] = [];
+  if (s.kind === 'fork') {
+   const join = name(s.join) ? html`<dl>${row('Joins at', name(s.join))}</dl>` : '';
+   parts.push(html`<h3>Branching</h3><p class="process-random">${v.describeFork(s)}</p>${join}`);
+  }
   if (s.instances) {
    const items = m.items ?? {started: 0, finished: 0}, last = [...q.receipts].reverse().find(r => r.stepId === s.id && r.instances !== undefined);
    const visits = new Set(q.tokens.filter(t => t.stepId === s.id && t.group !== undefined).map(t => t.group)).size;
-   html += `<h3>Multiple instances</h3><p class="process-random">${esc(v.describeInstances(s))}</p><dl>${row('Items started', num(items.started))}${row('Items finished', num(items.finished))}${row('Visits in progress', num(visits))}${last ? row('Latest completed visit', `${num(last.instances!)} ${last.instances === 1 ? 'item' : 'items'}`) : ''}</dl>`;
+   const latest = last ? row('Latest completed visit', `${num(last.instances!)} ${last.instances === 1 ? 'item' : 'items'}`) : '';
+   const done = html`${row('Items started', num(items.started))}${row('Items finished', num(items.finished))}`;
+   const counts = html`${done}${row('Visits in progress', num(visits))}${latest}`;
+   parts.push(html`<h3>Multiple instances</h3><p class="process-random">${v.describeInstances(s)}</p><dl>${counts}</dl>`);
   }
   if (s.deadline) {
    const fired = m.deadlines ?? {interrupted: 0, escalated: 0}, target = name(d.flows.find(f => f.id === s.deadline!.flow)?.to);
    const pending = q.tokens.filter(t => t.stepId === s.id && t.deadlineAt !== undefined).map(t => t.deadlineAt!);
    const next = pending.length ? row('Next deadline', `Minute ${num(Math.min(...pending))}${pending.length > 1 ? ` · ${pending.length} pending` : ''}`) : '';
-   html += `<h3>Deadline</h3><p class="process-random">${esc(v.describeDeadline(s))}</p><dl>${target ? row('Deadline path to', esc(target)) : ''}${row('Escalated', num(fired.escalated))}${row('Interrupted', num(fired.interrupted))}${next}</dl>`;
+   const path = target ? row('Deadline path to', target) : '';
+   const counts = html`${path}${row('Escalated', num(fired.escalated))}${row('Interrupted', num(fired.interrupted))}${next}`;
+   parts.push(html`<h3>Deadline</h3><p class="process-random">${v.describeDeadline(s)}</p><dl>${counts}</dl>`);
   }
-  return html;
+  return html`${parts}`;
  }
  /** 'Blocked after finishing': work done here that waits for room in the next step's backlog; shown when a next step has a backlog or work is blocked. */
- function blockedHtml(view: LWProcessApp.View, s: LWProcess.Step, m: LWProcess.StepMetric): string {
+ function blockedHtml(view: LWProcessApp.View, s: LWProcess.Step, m: LWProcess.StepMetric): Safe | '' {
   const d = view.definition, next = d.flows.filter(f => f.from === s.id).map(f => d.steps.find(x => x.id === f.to));
   return next.some(x => x?.backlog) || m.held > 0 ? row('Blocked after finishing', `${num(m.held)} blocked · waiting for room in the next backlog`) : '';
  }
+ /**
+  * Mean wait per start ('—' before the first start) and the work cost so far, split into the fixed cost charged at each start and
+  * the cost of the pool minutes worked here (the read model's `meanWaitMinutes`, `fixedCost` and `workCost`); '' for other steps.
+  */
+ function analyticsHtml(d: LWProcess.Definition, s: LWProcess.Step, m: LWProcess.StepMetric): Safe | '' {
+  if (!working(s)) return '';
+  const wait = m.meanWaitMinutes === null ? '—' : span(d, m.meanWaitMinutes);
+  const cost = `${num(m.workCost)} = ${num(m.fixedCost)} fixed + ${num(m.workCost - m.fixedCost)} for pool minutes`;
+  return html`${row('Mean wait per start', wait)}${row('Work cost', cost)}`;
+ }
  function step(view: LWProcessApp.View, s: LWProcess.Step): string {
-  const q = view.snapshot, m = q.steps.find(m => m.id === s.id)!, busy = (s.instances ? 'Items ' : '') + (automated(s) ? 'running / waiting' : 'working / waiting');
-  return `<p>${esc(s.description ?? s.name)}</p>${automated(s) ? `<p class="process-auto">Runs automatically${s.technology ? ' on ' + esc(s.technology) : ''}. No people are needed.</p>` : ''}<dl>${timingHtml(s, m)}<dt>${busy[0]!.toUpperCase() + busy.slice(1)}</dt><dd>${m.active} / ${m.queued - m.held}</dd>${blockedHtml(view, s, m)}<dt>Completed visits</dt><dd>${num(m.completed)}</dd><dt>Total queue time</dt><dd>${num(m.waitMinutes)} min</dd><dt>Fixed cost per visit</dt><dd>${num(s.cost ?? 0)}</dd></dl>${journeyHtml(view, s, m)}${logicHtml(view, s, m)}${randomHtml(s)}${needsHtml(view, s)}${outputsHtml(s, q)}${backlogHtml(s, q)}<h3>Next steps</h3>${nextHtml(view, s)}`;
+  const d = view.definition, q = view.snapshot, m = q.steps.find(m => m.id === s.id)!;
+  const busy = (s.instances ? 'Items ' : '') + (automated(s) ? 'running / waiting' : 'working / waiting');
+  const auto = automated(s) ? html`<p class="process-auto">Runs automatically${s.technology ? ' on ' + s.technology : ''}. No people are needed.</p>` : '';
+  const counts = row(busy[0]!.toUpperCase() + busy.slice(1), `${m.active} / ${m.queued - m.held}`);
+  const facts = html`${timingHtml(d, s, m)}${counts}${blockedHtml(view, s, m)}${row('Completed visits', num(m.completed))}`;
+  const costs = html`${row('Total queue time', span(d, m.waitMinutes))}${analyticsHtml(d, s, m)}${row('Fixed cost per visit', num(s.cost ?? 0))}`;
+  const sections = html`${journeyHtml(view, s, m)}${logicHtml(view, s, m)}${randomHtml(s)}${needsHtml(view, s)}${outputsHtml(s, q)}${backlogHtml(s, q)}`;
+  return String(html`<p>${s.description ?? s.name}</p>${auto}<dl>${facts}${costs}</dl>${sections}<h3>Next steps</h3>${nextHtml(view, s)}`);
  }
  /** Counts of the BPMN-class steps with their cumulative item and deadline counters; '' when the process has none. */
- function logicSummary(view: LWProcessApp.View): string {
+ function logicSummary(view: LWProcessApp.View): Safe | '' {
   const d = view.definition, metrics = new Map(view.snapshot.steps.map(m => [m.id, m])), many = (n: number, one: string) => `${num(n)} ${n === 1 ? one : one + 's'}`;
   const multi = d.steps.filter(s => s.instances), late = d.steps.filter(s => s.deadline), inclusive = d.steps.filter(s => s.kind === 'fork' && s.mode === 'inclusive');
   const total = (list: LWProcess.Step[], pick: (m: LWProcess.StepMetric) => number) => list.reduce((n, s) => n + pick(metrics.get(s.id)!), 0);
   const rows = [multi.length ? row('Multiple instances', `${many(multi.length, 'step')} · ${num(total(multi, m => m.items?.started ?? 0))} items started · ${num(total(multi, m => m.items?.finished ?? 0))} finished`) : '',
    late.length ? row('Deadlines', `${many(late.length, 'step')} · ${num(total(late, m => m.deadlines?.escalated ?? 0))} escalated · ${num(total(late, m => m.deadlines?.interrupted ?? 0))} interrupted`) : '',
-   inclusive.length ? row('Inclusive forks', many(inclusive.length, 'fork')) : ''].join('');
-  return rows ? `<h3>Instances, deadlines and forks</h3><dl class="process-tracked">${rows}</dl>` : '';
+   inclusive.length ? row('Inclusive forks', many(inclusive.length, 'fork')) : ''].filter(Boolean);
+  return rows.length ? html`<h3>Instances, deadlines and forks</h3><dl class="process-tracked">${rows}</dl>` : '';
+ }
+ /** Where an advisory points, in the definition's words: 'Review, random timing', 'Arrival 1, random gap'. */
+ function adviceAt(d: LWProcess.Definition, path: string): string {
+  const step = /^\/steps\/(\d+)\/(deadline\/)?timing$/.exec(path), arrival = /^\/arrivals\/(\d+)\/gap$/.exec(path);
+  if (step) return `${d.steps[Number(step[1])]?.name ?? 'A step'}, ${step[2] ? 'deadline time' : 'random timing'}`;
+  return arrival ? `Arrival ${Number(arrival[1]) + 1}, random gap` : 'The process';
+ }
+ /** The non-blocking modelling notes of LWProcessAdvice as a short list; '' when there are none. */
+ function notesHtml(d: LWProcess.Definition): Safe | '' {
+  const notes = root.LWProcessAdvice.advise(d);
+  if (!notes.length) return '';
+  const items = notes.map(n => html`<li>${adviceAt(d, n.path)}: ${n.message}</li>`);
+  return html`<h3>Notes</h3><ul class="process-adds process-notes" aria-label="Modelling notes">${items}</ul>`;
  }
  function overview(view: LWProcessApp.View, moreOpen: boolean): string {
   const d = view.definition, seed = view.snapshot.seed, v = root.LWProcessRandomView, t = root.LWProcessTerms.of(d), tracked = trackedFinish(view);
   const text = d.description ?? `${t.Many} move through the process. Run the simulation to see work, queues and resource contention.`;
-  return `<p id="process-desc" class="process-desc${moreOpen ? ' open' : ''}">${esc(text)}</p><button type="button" id="desc-more" class="process-more" aria-controls="process-desc" aria-expanded="${moreOpen}" hidden>${moreOpen ? 'Less' : 'More'}</button>
-   <dl><dt>Steps</dt><dd>${d.steps.length}</dd><dt>Connections</dt><dd>${d.flows.length}</dd><dt>Revision</dt><dd>${d.revision}</dd><dt>Seed</dt><dd>${seed}${seed !== (d.seed ?? 1) ? ' · set for this run' : ''}</dd>${t.journey ? `<dt>Process type</dt><dd>${t.label}</dd>` : ''}</dl>${tracked.length ? `<h3>Tracked measures</h3><dl class="process-tracked">${tracked.map(x => `<dt>${esc(x.label)}</dt><dd>${dec(x.mean)} average · ${dec(x.min!)} to ${dec(x.max!)} · ${num(x.n)} ${x.n === 1 ? t.one : t.many}</dd>`).join('')}</dl>` : ''}${logicSummary(view)}
-   <h3>Arrivals</h3>${d.arrivals.length ? `<ul class="process-adds" aria-label="Arrival streams">${d.arrivals.map(a => `<li>${esc(v.describeArrival(a, t))}</li>`).join('')}</ul>` : '<p>No arrivals defined.</p>'}`;
+  // Completed cases per 60 business minutes since minute 0: '1 case finished per business hour', '0.5 cases …', '—' at minute 0.
+  const perHour = view.snapshot.metrics.throughputPerHour, rate = perHour === null ? '' : dec(perHour);
+  const throughput = perHour === null ? '—' : `${rate} ${rate === '1' ? t.one : t.many} finished per business hour`;
+  const seedText = `${seed}${seed !== (d.seed ?? 1) ? ' · set for this run' : ''}`;
+  const facts = html`${row('Steps', d.steps.length)}${row('Connections', d.flows.length)}${row('Revision', d.revision)}${row('Seed', seedText)}`;
+  const kind = t.journey ? row('Process type', t.label) : '';
+  const measures = tracked.map(x => row(x.label, `${dec(x.mean)} average · ${dec(x.min!)} to ${dec(x.max!)} · ${num(x.n)} ${x.n === 1 ? t.one : t.many}`));
+  const streams = d.arrivals.map(a => html`<li>${v.describeArrival(a, t)}</li>`);
+  const arrivals = streams.length ? html`<ul class="process-adds" aria-label="Arrival streams">${streams}</ul>` : html`<p>No arrivals defined.</p>`;
+  const toggle = html`type="button" id="desc-more" class="process-more" aria-controls="process-desc" aria-expanded="${moreOpen}" hidden`;
+  const more = html`<button ${toggle}>${moreOpen ? 'Less' : 'More'}</button>`;
+  const measured = tracked.length ? html`<h3>Tracked measures</h3><dl class="process-tracked">${measures}</dl>` : '';
+  return String(html`<p id="process-desc" class="process-desc${moreOpen ? ' open' : ''}">${text}</p>${more}
+   <dl>${facts}${row('Throughput', throughput)}${kind}</dl>${measured}${logicSummary(view)}${notesHtml(d)}
+   <h3>Arrivals</h3>${arrivals}`);
  }
  /** One plain sentence under the meters that tells the two KPI costs apart. */
  const COST_NOTE = '<p class="process-cost-note">Work cost charges pools only for the minutes they work, plus fixed step costs. '
-  + 'Capacity cost charges every pool unit for every minute, busy or idle. Both are simulated units, not money.</p>';
+  + 'Capacity cost charges every pool unit for every minute, busy or idle. Both are simulated units, not money. '
+  + 'Idle cost is capacity cost minus work cost.</p>';
  function pools(view: LWProcessApp.View): string {
   const d = view.definition;
   const meters = view.snapshot.resources.map(p => {
    const name = d.resources.find(r => r.id === p.id)!.name, pct = Math.round(p.utilization * 100), level = pct >= 85 ? 'hot' : pct >= 70 ? 'warm' : 'ok';
-   return `<div class="process-pool"><div class="pool-head"><strong>${esc(name)}</strong><span class="pool-pct">${pct}%</span></div><div class="pool-bar" data-level="${level}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-valuetext="${pct}% average utilisation since minute 0${level === 'hot' ? ', nearly full' : ''}; ${p.busy} of ${p.capacity} busy now" aria-label="${esc(name)} utilisation"><i style="width:${Math.min(100, pct)}%"></i></div><small>Average since minute 0 · ${p.busy}/${p.capacity} busy now</small></div>`;
-  }).join('');
-  return meters ? meters + COST_NOTE : '<p>No shared resources defined.</p>';
+   const text = `${pct}% average utilisation since minute 0${level === 'hot' ? ', nearly full' : ''}; ${p.busy} of ${p.capacity} busy now`;
+   const meter = html`role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-valuetext="${text}" aria-label="${name} utilisation"`;
+   const bar = html`<div class="pool-bar" data-level="${level}" ${meter}><i style="width:${Math.min(100, pct)}%"></i></div>`;
+   const cost = `Work cost ${num(p.workCost)} of ${num(p.capacityCost)} capacity cost · idle cost ${num(p.capacityCost - p.workCost)}`;
+   const head = html`<div class="pool-head"><strong>${name}</strong><span class="pool-pct">${pct}%</span></div>`;
+   const now = html`<small>Average since minute 0 · ${p.busy}/${p.capacity} busy now</small>`;
+   return html`<div class="process-pool">${head}${bar}${now}<div class="pool-cost"><small>${cost}</small></div></div>`;
+  });
+  return meters.length ? String(html`${meters}`) + COST_NOTE : '<p>No shared resources defined.</p>';
  }
  root.LWProcessInspector = {overview, step, kpis, pools};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessInspector;
