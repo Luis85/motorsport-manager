@@ -403,6 +403,7 @@
     "source/process-routing.ts",
     "source/process-systems.ts",
     "source/process-session.ts",
+    "source/process-replicate.ts",
     "source/process-authoring.ts",
     "source/process-application.ts",
     "source/process-sdk.cts",

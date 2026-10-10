@@ -410,6 +410,7 @@
       "layer": "application",
       "files": [
         "process-session.ts",
+        "process-replicate.ts",
         "process-authoring.ts",
         "process-application.ts"
       ]
