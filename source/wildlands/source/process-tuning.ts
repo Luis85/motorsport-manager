@@ -162,14 +162,18 @@ declare namespace LWProcessTuning {
    const pool = def.resources[at]; if (!pool) return;
    const by = users(def, pool.id);
    if (by.length && confirm) {
-    const one = by.length === 1, question = `${list(by)} still ${one ? 'uses' : 'use'} ${pool.name}. Removing the pool also clears ${one ? 'that demand' : 'those demands'}.`;
+    const one = by.length === 1;
+    const question = `${list(by)} still ${one ? 'uses' : 'use'} ${pool.name}. Removing the pool also clears ${one ? 'that demand' : 'those demands'}.`;
     const choice = await confirm(question, [{id: 'keep-pool', label: 'Cancel', default: true}, {id: 'remove-pool', label: 'Remove and clear demands'}]);
     if (choice !== 'remove-pool') return;
     // The draft may have changed while the question was open: act on the current text.
     def = parse() ?? def; at = def.resources.findIndex(r => r.id === pool.id); if (at < 0) return;
    }
    def.resources.splice(at, 1);
-   for (const s of def.steps) if (s.resources && Object.hasOwn(s.resources, pool.id)) { delete s.resources[pool.id]; if (!Object.keys(s.resources).length) delete s.resources; }
+   for (const s of def.steps) {
+    if (!s.resources || !Object.hasOwn(s.resources, pool.id)) continue;
+    delete s.resources[pool.id]; if (!Object.keys(s.resources).length) delete s.resources;
+   }
    commit(def, '#tune-res-add', true, `Removed ${pool.name}`);
   }
   host.addEventListener('input', edit); host.addEventListener('change', edit); host.addEventListener('click', click);

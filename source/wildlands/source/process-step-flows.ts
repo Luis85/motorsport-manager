@@ -69,18 +69,22 @@ declare namespace LWProcessStepFlows {
   return `${A_KIND[m.kind] ?? 'This step'} needs ${need === 1 ? 'exactly one outgoing path' : 'at least two outgoing paths'}.`;
  }
  function card(m: M, k: number, choices: [string, string][]): string {
-  const f = m.flows[k]!, s = kit(), logic = root.LWProcessStepLogicSections, decision = m.kind === 'decision', conditional = decision || m.branching === 'inclusive';
+  const f = m.flows[k]!, s = kit(), logic = root.LWProcessStepLogicSections;
+  const decision = m.kind === 'decision', conditional = decision || m.branching === 'inclusive';
   const late = L().isDeadlineFlow(m, f.id), last = m.flows.length - 1;
   const where = k === 0 ? 'Checked first. Cannot move up.' : k === last ? 'Checked last. Cannot move down.' : `Position ${k + 1} of ${m.flows.length}.`;
-  const moves = decision && m.flows.length > 1 ? `<div class="se-actions">${s.button('up', 'Move up', k, k === 0 ? ' disabled aria-describedby="se-first"' : '')}`
+  const moves = decision && m.flows.length > 1
+   ? `<div class="se-actions">${s.button('up', 'Move up', k, k === 0 ? ' disabled aria-describedby="se-first"' : '')}`
    + `${s.button('down', 'Move down', k, k === last ? ' disabled aria-describedby="se-last"' : '')}<span class="se-help">${where}</span></div>` : '';
-  const rule = late ? '<p class="se-help">This is the deadline path: it is taken when the deadline fires and takes no condition.</p>' : conditional || f.cond.on ? logic.condition(m, f, k) : '';
+  const rule = late ? '<p class="se-help">This is the deadline path: it is taken when the deadline fires and takes no condition.</p>'
+   : conditional || f.cond.on ? logic.condition(m, f, k) : '';
   // A path that points somewhere no path may lead (a missing step or the start) keeps its value visible so the select never lies.
   const options = choices.some(([id]) => id === f.to) ? choices : [[f.to, f.toName] as [string, string], ...choices];
   const blocked = removeBlocked(m, k), keep = `se-flows-${k}-keep`;
   const removeButton = s.button('remove-path', 'Remove path', k, blocked ? ` disabled aria-describedby="${keep}"` : '', `Remove path ${k + 1} to ${f.toName}`)
    + (blocked ? `<span class="se-help" id="${keep}">${s.esc(blocked)}</span>` : '');
-  return `<fieldset class="se-card${late ? ' se-deadline-path' : ''}"><legend>Path ${k + 1} of ${m.flows.length} · to ${s.esc(f.toName)}${late ? ' · deadline path' : ''}</legend>`
+  const legend = `Path ${k + 1} of ${m.flows.length} · to ${s.esc(f.toName)}${late ? ' · deadline path' : ''}`;
+  return `<fieldset class="se-card${late ? ' se-deadline-path' : ''}"><legend>${legend}</legend>`
    + `<div class="se-grid">${s.select(`flows.${k}.to`, 'Go to', options, f.to, true)}${s.field(`flows.${k}.label`, 'Label shown on this path', f.label)}</div>`
    + `${rule}${s.err(`flows.${k}`)}${moves}<div class="se-actions">${removeButton}</div></fieldset>`;
  }
@@ -102,11 +106,13 @@ declare namespace LWProcessStepFlows {
   const label = decision ? 'Order in which the paths are checked' : 'Branches and the conditions that start them';
   const summary = conditional ? `<ol class="se-paths" id="se-path-summary" aria-label="${label}">${root.LWProcessStepLogicSections.pathSummary(m)}</ol>` : '';
   const intro = (decision ? 'The first path whose condition matches wins, so order matters; the path without a condition is the fallback. '
-   : inclusive ? 'Every branch whose condition is true starts. The branch without a condition is the default: it starts only when no other branch matches. ' : '')
+   : inclusive ? 'Every branch whose condition is true starts. The branch without a condition is the default: '
+    + 'it starts only when no other branch matches. ' : '')
    + (deadline ? 'The deadline path is taken when the deadline fires. ' : '')
    + 'Choose where each path goes with Go to, add a path with Add path to… or remove one. The draft is checked as you edit.';
   const rows = m.flows.map((_, k) => card(m, k, choices)).join('');
-  return s.section('flows', 'Where work goes next', intro, summary + (rows || '<p class="se-help">This step has no outgoing path yet.</p>') + s.err('flows') + adder(m, choices, ui));
+  const body = summary + (rows || '<p class="se-help">This step has no outgoing path yet.</p>') + s.err('flows') + adder(m, choices, ui);
+  return s.section('flows', 'Where work goes next', intro, body);
  }
  root.LWProcessStepFlows = {targets, newId, add, remove, retarget, removeBlocked, render};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessStepFlows;

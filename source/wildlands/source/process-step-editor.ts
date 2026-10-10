@@ -143,23 +143,30 @@ declare namespace LWProcessStepEditor {
   }
   /** Previous step and Next step in draft order; at either end the button is disabled and says why. */
   function navigation(): void {
-   const at = model.others.findIndex(o => o.id === stepId), button = (act: 'step-prev' | 'step-next', word: string, to: {name: string} | undefined, why: string) => to
+   const at = model.others.findIndex(o => o.id === stepId);
+   const button = (act: 'step-prev' | 'step-next', word: string, to: {name: string} | undefined, why: string) => to
     ? `<button type="button" id="se-${act}" data-act="${act}">${word} step: ${esc(to.name)}</button>`
-    : `<button type="button" id="se-${act}" data-act="${act}" disabled aria-describedby="se-${act}-why">${word} step</button><span class="se-help" id="se-${act}-why">${why}</span>`;
-   q('se-stepnav').innerHTML = button('step-prev', 'Previous', model.others[at - 1], 'This is the first step.') + button('step-next', 'Next', model.others[at + 1], 'This is the last step.');
+    : `<button type="button" id="se-${act}" data-act="${act}" disabled aria-describedby="se-${act}-why">${word} step</button>`
+     + `<span class="se-help" id="se-${act}-why">${why}</span>`;
+   q('se-stepnav').innerHTML = button('step-prev', 'Previous', model.others[at - 1], 'This is the first step.')
+    + button('step-next', 'Next', model.others[at + 1], 'This is the last step.');
   }
   /** Moves to the step before or after this one, asking first when this step has edits that are not in the draft. */
   async function go(by: -1 | 1): Promise<void> {
    const at = model.others.findIndex(o => o.id === stepId), to = model.others[at + by]; if (!to) return;
    if (JSON.stringify(model) !== initial) {
-    const choices = [{id: 'keep', label: 'Keep editing', default: true}, ...api.problems(model).length ? [] : [{id: 'save-go', label: 'Save to draft and go'}], {id: 'discard', label: 'Discard changes'}];
+    const save = api.problems(model).length ? [] : [{id: 'save-go', label: 'Save to draft and go'}];
+    const choices = [{id: 'keep', label: 'Keep editing', default: true}, ...save, {id: 'discard', label: 'Discard changes'}];
     const choice = await dialog.confirm(`Go to ${to.name}? Your changes to ${model.name || stepId} are not in the draft yet.`, choices);
     if (!dialog.isOpen() || choice === 'keep') return;
-    if (choice === 'save-go') { draft.write(JSON.stringify(candidate(), null, 2), 'step-editor'); env.notify('Saved to the draft. Apply the draft to start a fresh run.'); }
+    if (choice === 'save-go') {
+     draft.write(JSON.stringify(candidate(), null, 2), 'step-editor'); env.notify('Saved to the draft. Apply the draft to start a fresh run.');
+    }
    }
    if (!load(to.id)) return;
    dialog.setTitle(model.name, SUBTITLE, model.kind, model.id);
-   const same = q<HTMLButtonElement>(by < 0 ? 'se-step-prev' : 'se-step-next'); (same.disabled ? q(by < 0 ? 'se-step-next' : 'se-step-prev') : same).focus();
+   const same = q<HTMLButtonElement>(by < 0 ? 'se-step-prev' : 'se-step-next');
+   (same.disabled ? q(by < 0 ? 'se-step-next' : 'se-step-prev') : same).focus();
   }
   async function apply(): Promise<void> {
    let result = root.LWProcessCatalog.validate(candidate()); if (!result.ok) { refuse(result); return; }
@@ -224,7 +231,8 @@ declare namespace LWProcessStepEditor {
   return {
    open(id, invoker) {
     if (dialog.isOpen() || !load(id)) return false;
-    return dialog.open({title: model.name, subtitle: SUBTITLE, chip: model.kind, meta: model.id, invoker: invoker ?? null, focusFallback: () => env.focusFor(stepId)});
+    const focusFallback = () => env.focusFor(stepId);
+    return dialog.open({title: model.name, subtitle: SUBTITLE, chip: model.kind, meta: model.id, invoker: invoker ?? null, focusFallback});
    },
    isOpen: () => dialog.isOpen(),
    dispose() { dialog.dispose(); },
