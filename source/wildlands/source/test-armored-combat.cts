@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 for(const name of ['ecs','armored-catalog','armored-physics','armored-combat','armored-ai','armored-missions','armored-checkpoint','armored-session'])require('./'+name+'.js');
 const root=globalThis as any;
 const results:{name:string;passed:boolean;error?:string}[]=[];
@@ -149,5 +150,7 @@ test('Armored cumulative turret damage neutralizes combat capability while immob
  const stationary=mobile.world.get('red','armored-damage');stationary.components.leftTrack=0;root.LWArmoredCombat.refresh(stationary);mobile.step();
  assert.equal(stationary.status,'immobilized');assert.equal(mobile.state.status,'running');assert.equal(mobile.state.objectives.neutralize,0);
 });
-console.log(JSON.stringify({suite:'armored-combat',passed:results.filter(r=>r.passed).length,failed:results.filter(r=>!r.passed).length,results},null,2));
+const report={suite:'armored-combat',passed:results.filter(r=>r.passed).length,total:results.length,failed:results.filter(r=>!r.passed).length,results};
+fs.writeFileSync(__dirname+'/armored-combat-results.json',JSON.stringify(report,null,2)+'\n');
+console.log(JSON.stringify(report,null,2));
 if(results.some(result=>!result.passed))process.exitCode=1;
