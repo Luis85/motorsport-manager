@@ -13,7 +13,8 @@ const commands: Record<string, readonly string[]> = {
  'import-bpmn': ['--input', '--output', '--draft', '--default-duration', '--process', '--lanes', '--default-capacity', '--no-auto-system-pool', '--system-capacity', '--minutes-per-day', '--minutes-per-hour', '--unsupported', '--no-bpsim', '--scenario', '--report'],
  attach: ['--input', '--asset', '--step', '--expected-revision', '--expected-fingerprint', '--output', '--dry-run'],
  slides: ['--input', '--format', '--minutes', '--seed', '--output'], diff: ['--input', '--against'],
- replicate: ['--input', '--minutes', '--runs', '--seed', '--output'], compare: ['--input', '--against', '--minutes', '--runs', '--seed', '--output']
+ replicate: ['--input', '--minutes', '--runs', '--seed', '--output', '--warmup'],
+ compare: ['--input', '--against', '--minutes', '--runs', '--seed', '--output', '--warmup']
 };
 const flags = new Set(['--draft', '--dry-run', '--bpsim', '--no-auto-system-pool', '--no-bpsim']);
 /** Options every invocation of a command must carry; checked before any file is read or work is done. */
@@ -32,9 +33,11 @@ const descriptions: Record<string, string> = {discover: 'Discover commands, limi
  'import-bpmn': 'Import a BPMN 2.0 XML file into a simulatable definition (lanes, sub-processes, call activities, gateways, loops, boundary timers, expressions and BPSim parameters are mapped); prints the structured report (warnings, mapping counts, rejections); unsupported elements are rejected (exit 2) or, with --unsupported drop, dropped with warnings.', forge: 'Create an editable Scene Forge project with one scene per step.', attach: 'Attach a Scene Forge Wildlands asset to a step using edit guards.',
  slides: 'Explain the process as a slide deck (title, overview, resources, main route by phase, variants, summary); --format json (default) or md (Markdown printed as plain text without --output); --minutes N [--seed S] adds read-only facts from one fresh bounded run.',
  replicate: 'Run the definition for --minutes over --runs consecutive seeds (from --seed, else the definition seed, else 1); '
-  + 'report n, mean, sample sd, t-based 95% interval and p10/p50/p90 per KPI with per-seed rows; --output writes the report file.',
+  + 'report n, mean, sample sd, t-based 95% interval and p10/p50/p90 per KPI with per-seed rows; --output writes the report file; '
+  + '--warmup W adds windowed KPIs after minute W.',
  compare: 'Run --input (A) and --against (B) over the same --runs seeds for --minutes; report per KPI the statistics of A and B and '
-  + 'the paired difference A - B with its sd and t-based 95% interval, per-seed rows and the process diff of the two files.',
+  + 'the paired difference A - B with its sd and t-based 95% interval, per-seed rows and the process diff of the two files; '
+  + '--warmup W adds windowed KPIs after minute W.',
  diff: 'Report what changed from --against (the reference) to --input: counts of changed steps, flows, resources, arrival rules and process settings; the changed steps, resources, flows, arrival rules and settings; every changed value with its path, before and after; and both revisions and fingerprints.'};
 function recipeSchema(): Record<string, unknown> {
  const properties = catalog.schema.properties as Record<string, Record<string, unknown>>;

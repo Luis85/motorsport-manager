@@ -4,7 +4,8 @@
  * Run and analysis commands of the process CLI (Node only; owned by the process CLI): `run` with its optional streamed event log,
  * `replicate`, `compare` and the definition comparison shared by `diff` and `compare`. Option names, required options and flag
  * syntax are checked by the dispatcher (process-cli.cts); the numeric bounds here are checked before any file is read or any run
- * starts, so a bad `--minutes`, `--runs` or replication plan exits 2 with a message that names the flag.
+ * starts, so a bad `--minutes`, `--runs`, `--warmup` or replication plan exits 2 with a message that names the flag.
+ * `--warmup W` (replicate and compare) adds the windowed KPIs "after minute W" (LWProcessReplicate); without it reports are unchanged.
  */
 import path from 'node:path';
 import {catalog, runtime, replicate, diff} from '../process-sdk.cjs';
@@ -19,10 +20,14 @@ export function checkBounds(command: string, values: Values): void {
  const minutes = values.get('--minutes'), runs = values.get('--runs');
  if (minutes !== undefined && (!/^\d+$/.test(minutes) || Number(minutes) < 1 || Number(minutes) > runtime.limits.minutes)) throw Error(MINUTES);
  if (runs !== undefined && (!/^\d+$/.test(runs) || Number(runs) < 1 || Number(runs) > replicate.LIMITS.runs)) throw Error(RUNS);
+ const warmup = values.get('--warmup');
+ if (warmup !== undefined && (!/^\d+$/.test(warmup) || Number(warmup) >= Number(minutes))) {
+  throw Error('--warmup must be a whole number of minutes from 0 to ' + (Number(minutes) - 1) + ' (below --minutes).');
+ }
  if (command === 'replicate' || command === 'compare') {
   // The definition seed is not known yet; a given --seed is checked in full, otherwise seed 0 checks only the work bound.
   const seed = values.has('--seed') ? Number(values.get('--seed')) : 0;
-  replicate.plan({minutes: Number(minutes), runs: Number(runs), seed}, undefined, command === 'compare' ? 2 : 1);
+  replicate.plan({minutes: Number(minutes), runs: Number(runs), seed, ...warmupOption(values)}, undefined, command === 'compare' ? 2 : 1);
  }
  if (command === 'run') {
   const log = values.get('--event-log');
@@ -34,6 +39,7 @@ export function checkBounds(command: string, values: Values): void {
  }
 }
 const seedOption = (values: Values) => values.has('--seed') ? {seed: Number(values.get('--seed'))} : {};
+const warmupOption = (values: Values) => values.has('--warmup') ? {warmup: Number(values.get('--warmup'))} : {};
 /** `process run`: one fresh bounded run, its report, and with `--event-log` every engine event streamed to a CSV or XES file. */
 export function runCommand(definition: LWProcess.Definition, file: string, values: Values, success: Success): void {
  const report = values.get('--output')!, logFile = values.get('--event-log'), format = (values.get('--format') ?? 'csv') as LogFormat;
@@ -57,7 +63,7 @@ export function runCommand(definition: LWProcess.Definition, file: string, value
  }
 }
 const options = (values: Values): LWProcessReplicate.Options =>
- ({minutes: Number(values.get('--minutes')), runs: Number(values.get('--runs')), ...seedOption(values)});
+ ({minutes: Number(values.get('--minutes')), runs: Number(values.get('--runs')), ...seedOption(values), ...warmupOption(values)});
 /** Prints the whole report, or writes it with `--output` and prints the file with the per-KPI statistics (no per-seed rows). */
 function publish(report: {kpis: unknown[]; runs: number; seeds: number[]; format: string}, values: Values, inputs: string[], success: Success): void {
  if (!values.has('--output')) {

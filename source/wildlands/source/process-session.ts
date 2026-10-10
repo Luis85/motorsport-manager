@@ -5,6 +5,11 @@
  * Read-model values (capacity cost, mean age, mean wait per visit, throughput, per-pool and per-step cost, the cycle histogram) are
  * computed from exact running aggregates when a snapshot is built; they never feed the engine, a fingerprint or a decision.
  *
+ * Additional read-model values (LWProcessLedger): per step `minutesBy` and `failed`; run `wipArea`, `cycleSum`, `leadTime`,
+ * `flowEfficiency`, `costOf`, `failedMinutes`, `firstPass` and `repeats`. The larger structures stay out of `query()`, which views
+ * call on every pulse: `series(after?)` (LWProcessSeries; option `series`, `false` turns it off), `distributions()` and `recent()`
+ * are separate detached reads. Like `query()` they never tick and are refused while a clock command runs.
+ *
  * Event sink: `create(definition, {onEvent})` streams every engine event in order as a detached plain value, starting with the
  * events of minute 0 that `create` itself settles. The sink runs inside a clock command, so it may not call the session (query,
  * advance, setHorizon or dispose throw while a command runs). A sink that throws aborts the command and stops the session:
@@ -13,7 +18,7 @@
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWECS: LWProcess.Ecs; LWProcessCatalog: LWProcess.Catalog; LWProcessSystems: LWProcess.Systems; LWProcessLimits: LWProcess.Limits;
-  LWProcessLedger: LWProcessLedger.Api; LWProcessRuntime?: LWProcess.Runtime};
+  LWProcessLedger: LWProcessLedger.Api; LWProcessSeries: LWProcessSeries.Api; LWProcessRuntime?: LWProcess.Runtime};
  const limits = root.LWProcessLimits;
  const copy = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
  // Largest seed (a positive 31-bit integer) and the most finished cases a caller may ask a session to keep in detail.
@@ -38,11 +43,12 @@
    throw Error('Retained finished cases must be a whole number from 1 to ' + MAX_RETAINED + '.');
   }
   if (options.onEvent !== undefined && typeof options.onEvent !== 'function') throw Error('The event sink must be a function.');
+  const series = options.series === false ? null : root.LWProcessSeries.create(definition, options.series);
   let sinkFailed = false;
   const onEvent = options.onEvent, sink = onEvent ? (event: LWProcess.Event) => {
    try { onEvent(event); } catch (error) { sinkFailed = true; throw error; }
   } : null;
-  const world = new root.LWECS.World(), scheduler = new root.LWECS.Scheduler(), ledger = root.LWProcessLedger.create(definition);
+  const world = new root.LWECS.World(), scheduler = new root.LWECS.Scheduler(), ledger = root.LWProcessLedger.create(definition, retained);
   const clock: LWProcess.Clock = {minute: 0, serial: 0, forkSerial: 0, arrival: 0, cost: 0, arrived: 0, completed: 0, failed: 0, dropped: 0, cycle: 0,
    pruned: 0, goals: 0, lost: 0};
   world.create('process-clock');
@@ -68,6 +74,7 @@
   scheduler.register({id: 'process-work', phase: 'simulate', order: 1, query: ['process-clock'], update: () => root.LWProcessSystems.work(state)});
   root.LWProcessSystems.admit(state);
   root.LWProcessSystems.settle(state);
+  if (series) root.LWProcessSeries.observe(series, state);
   let disposed = false, running = false;
   const alive = () => {
    if (disposed) throw Error('Process session is disposed.');
@@ -99,9 +106,14 @@
     return {...metric, queued: here.filter(t => t.status !== 'active' && t.status !== 'timer').length, active: here.filter(t => t.status === 'active').length,
      held: here.filter(t => t.status === 'held').length, entered: metric.visits, timers: timers(step.id), tracked: tracked(step.id),
      starts: costs.starts, meanWaitMinutes: costs.starts ? round3(metric.waitMinutes / costs.starts) : null,
-     fixedCost: costs.fixedCost, workCost: costs.workCost};
+     fixedCost: costs.fixedCost, workCost: costs.workCost, ...root.LWProcessLedger.step(ledger, step.id)};
    });
   }
+  /** Run-level read-model totals, in contract order after the existing metrics. */
+  const readModel = () => {
+   const {wipArea, ...books} = root.LWProcessLedger.totals(ledger);
+   return {wipArea, cycleSum: clock.cycle, ...books};
+  };
   function query(): LWProcess.Snapshot {
    alive();
    const cases = world.query(['process-case']).map(id => world.get<LWProcess.Case>(id, 'process-case')!).sort(ordered);
@@ -127,7 +139,7 @@
      throughputPerHour: clock.minute ? clock.completed * 60 / clock.minute : null,
      cycleHistogram: {edges: [...root.LWProcessLedger.EDGES], counts: ledger.cycles},
      goals: clock.goals, lost: clock.lost, conversion: decided ? Math.floor((2000 * clock.goals + decided) / (2 * decided)) : null,
-     tracked: finishTracked},
+     tracked: finishTracked, ...readModel()},
     seed, retention: {finishedDropped: clock.pruned}});
   }
   function advance(minutes: number): LWProcess.Snapshot {
@@ -146,11 +158,24 @@
      scheduler.step(world, .1);
      systems.admit(state);
      systems.settle(state);
+     if (series) root.LWProcessSeries.observe(series, state);
     }
    } finally { running = false; }
    return query();
   }
   return {query, advance, horizon: () => horizon,
+   series(after) {
+    alive();
+    return series ? root.LWProcessSeries.read(series, after) : null;
+   },
+   distributions() {
+    alive();
+    return root.LWProcessLedger.distributions(ledger, definition);
+   },
+   recent() {
+    alive();
+    return root.LWProcessLedger.recent(ledger);
+   },
    setHorizon(value) {
     alive();
     horizon = checkHorizon(value);

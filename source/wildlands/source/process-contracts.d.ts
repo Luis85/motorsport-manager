@@ -134,7 +134,17 @@ declare namespace LWProcess {
    * work at this step. The steps' `workCost` sums to `metrics.cost`.
    */
   starts: number; meanWaitMinutes: number | null; fixedCost: number; workCost: number;
+  /**
+   * Read model (LWProcessLedger; exact, chunk-invariant): token-minutes spent at this step by end-of-minute status (`queued` is
+   * waiting, `active` working, `held` blocked, then backlog, timer and joining). Always present on session snapshots; optional so
+   * hand-built snapshots stay valid.
+   */
+  minutesBy?: MinutesBy;
+  /** Read model: case failures attributed to this step (unmet need, unsafe `add`, outstanding work at an end, item count, ...). */
+  failed?: number;
  }
+ /** Minutes by state; in `StepMetric.minutesBy` token-minutes, in `metrics.leadTime` case-minutes by the case's dominant state. */
+ interface MinutesBy { waiting: number; working: number; blocked: number; backlog: number; timer: number; joining: number; }
  /**
   * `workCost` (read model) is `busyMinutes × costPerMinute`, the pool's share of `metrics.cost` (the pools' `workCost` plus the steps'
   * `fixedCost` sum to `metrics.cost`); `capacityCost` is `capacity × costPerMinute × minute`, the pool's share of `metrics.capacityCost`.
@@ -170,21 +180,94 @@ declare namespace LWProcess {
     */
    meanAgeMinutes: number | null;
    /** Completed cases that ended at a `goal` / `lost` end step; `conversion` is goals*1000/(goals+lost) rounded half up (permille), `null` when neither happened. */
-   goals: number; lost: number; conversion: number | null; tracked: Record<string, TrackedFinish>; };
+   goals: number; lost: number; conversion: number | null; tracked: Record<string, TrackedFinish>;
+   /** Read model (LWProcessLedger): Σ over minutes of cases in progress (case-minutes), Little's A over [0, minute]. */
+   wipArea?: number;
+   /** Read model: Σ (finished − entered) over completed cases; `meanCycleMinutes × completed` without rounding. */
+   cycleSum?: number;
+   /**
+    * Read model: completed cases' minutes by the case's dominant state at each minute (working > waiting > blocked > backlog >
+    * timer > joining over its tokens); the six sum to `cycleSum` exactly.
+    */
+   leadTime?: MinutesBy;
+   /** Read model: completed cases by working share of their lead time; `counts[i]` covers [10i, 10i + 10) %, the last bin [90, 100]. */
+   flowEfficiency?: {counts: number[]};
+   /** Read model: work cost attributed to finished cases (fixed cost at each start plus their running pool cost); open = cost − both. */
+   costOf?: {completed: number; failed: number};
+   /** Read model: Σ (finished − entered) over failed cases. */
+   failedMinutes?: number;
+   /** Read model: completed cases that never entered a non-join step twice; `repeats.counts` bins repeat entries 0, 1, 2, 3, 4, 5+. */
+   firstPass?: number; repeats?: {counts: number[]}; };
   /** Seed in use; every random draw is a pure function of it and a stable identity. */
   seed: number;
   /** Finished cases pruned from `cases` (oldest first) once more than `limits.retained` are kept; metrics stay exact. */
   retention: { finishedDropped: number };
  }
  /** `horizon` is the total run length in minutes; `null` means no clock limit (the run still ends when no work remains or can advance). */
- interface Session { query(): Snapshot; advance(minutes: number): Snapshot; horizon(): number | null; setHorizon(value: number | null): void; dispose(): void; }
+ interface Session {
+  query(): Snapshot; advance(minutes: number): Snapshot; horizon(): number | null; setHorizon(value: number | null): void; dispose(): void;
+  /** Detached sampled time series (LWProcessSeries); `null` when the session was created with `series: false`. Never ticks. */
+  series(after?: SeriesCursor): Series | null;
+  /** Detached fine distributions (LWProcessLedger). Never ticks. */
+  distributions(): Distributions;
+  /** Detached latest finished or failed cases, oldest first (at most `retained`). Never ticks. */
+  recent(): FinishedCase[];
+ }
+ /** Incremental series read: the `level` and sample `count` the caller already holds. */
+ interface SeriesCursor { level: number; count: number; }
+ /**
+  * Sampled time series, columnar: every array has `count - offset` entries, the samples `offset..count-1` (all of them unless the
+  * cursor's level is still current). A sample at grid minute g holds the end-of-minute state of g; gauges are values at g,
+  * peaks the largest end-of-minute value in (g − every, g], all other columns cumulative totals since minute 0.
+  */
+ interface Series {
+  /** Configured base spacing; `every = base × 2^level`; a new `level` means the caller must drop what it holds and refetch. */
+  base: number; every: number; level: number;
+  /** Effective sample cap K = min(requested points, floor(400,000 / perSample)); `perSample` = 12 + 11 × steps + 2 × pools. */
+  points: number; perSample: number;
+  /** Samples stored in total and the index of the first sample in this payload. */
+  count: number; offset: number;
+  minutes: number[];
+  run: {wip: number[]; wipPeak: number[]; arrived: number[]; completed: number[]; failed: number[]; dropped: number[]; goals: number[];
+   lost: number[]; cycleSum: number[]; wipArea: number[]; cost: number[]};
+  steps: Record<string, {waiting: number[]; working: number[]; blocked: number[]; timers: number[]; waitingPeak: number[]; starts: number[];
+   completed: number[]; entered: number[]; waitMinutes: number[]; waitingArea: number[]; blockedArea: number[]}>;
+  pools: Record<string, {busy: number[]; busyMinutes: number[]}>;
+ }
+ /**
+  * Fine distributions over fixed lower bin `edges` (business minutes): bin i counts x with edges[i] <= x < edges[i + 1]; the last
+  * bin is open. The edges include every `cycleHistogram` edge, so each coarse bin is the sum of its fine bins.
+  */
+ interface Distributions {
+  edges: number[];
+  /** Completed cases by lead time; `byOutcome` only when an end step declares an outcome (`none`: ends without one). */
+  cycle: number[]; byOutcome?: {goal: number[]; lost: number[]; none: number[]};
+  /** Failed cases by lifetime (failure minute − arrival). */
+  failed: number[];
+  /**
+   * Per step: `wait` per work start (start − entry, every multi-instance item); `service` per completed work visit (finish − start,
+   * a multi-instance visit from its first start; interrupted visits excluded); `exitAge` per completed visit or fired timer
+   * (minute − case arrival).
+   */
+  steps: Record<string, {wait: number[]; service: number[]; exitAge: number[]}>;
+ }
+ /** One finished or failed case: `end` is the end step (null when failed); `working` is null for a failed case. */
+ interface FinishedCase {
+  caseId: string; entered: number; finished: number; status: 'completed' | 'failed'; end: string | null; outcome: 'goal' | 'lost' | null;
+  repeats: number; working: number | null;
+ }
  interface Limits { readonly cases: number; readonly minutes: number; readonly transitions: number; readonly events: number; readonly receipts: number; readonly active: number; readonly retained: number; }
  /**
   * `seed` overrides the definition's seed; `active` (1..limits.active) and `retained` (1..10,000) override the case caps.
   * `onEvent` receives every engine event in order (also those before the first advance and beyond the retained history) as a
   * detached copy; it must not call the session, and a sink that throws stops the session (later calls throw).
+  * `series` configures the sampled time series (base spacing `every` 1..10,000 minutes, default 60; `points` 64..960, default
+  * 480), or `false` turns it off; it is session configuration only, never part of the definition or its fingerprint.
   */
- interface RunOptions { horizon?: number | null; seed?: number; active?: number; retained?: number; onEvent?: (event: Event) => void; }
+ interface RunOptions {
+  horizon?: number | null; seed?: number; active?: number; retained?: number; onEvent?: (event: Event) => void;
+  series?: {every?: number; points?: number} | false;
+ }
  interface Runtime { create(input: unknown, options?: RunOptions): Session; limits: Limits; }
  interface Recipe {
   expectedRevision: number; expectedFingerprint: string;
@@ -239,7 +322,7 @@ declare namespace LWProcess {
   /** Finished case ids, oldest first, awaiting pruning; per-case visit counters for keyed draws; cached ordered token list. */
   finished: string[]; visits: Map<string, Map<string, number>>; tokenList: Token[] | null; poolList: Pool[] | null;
   /** Clock-step failures recorded while the scheduler is locked; the next settle applies them. */
-  failures: {caseId: string; message: string}[];
+  failures: {caseId: string; message: string; stepId?: string}[];
   /** Multi-instance visits in progress, escalations detected by the clock awaiting their token, and pending outcomes of cases that still wait for escalated tokens. */
   deadlines: Map<string, Flow>; groups: Map<string, Group>; spawns: {caseId: string; flow: string}[]; outcomes: Map<string, 'goal' | 'lost'>;
   /** Journey bookkeeping: steps each active case has entered (dropped when it finishes), finish aggregates by field, entry aggregates by `stepId|field`. */
