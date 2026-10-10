@@ -97,15 +97,22 @@ clone without `npm ci` or `node_modules`:
   save/load.
 - [`bin/scene-forge`](scene-forge-cli.md) authors, validates and exports
   declarative 3D projects, model registries and composed scenes from
-  `source/scene-forge/`. Its `screenshot` and `review` capture commands
-  additionally need Playwright and Chromium; `doctor` reports their availability.
+  `source/scene-forge/`. Seeded `terrain add` (heightfield presets), `scatter`
+  and `layout` place registered models deterministically as guarded scene
+  edits that echo a replayable recipe and its `recipeHash`. Its `screenshot`
+  and `review` capture commands additionally need Playwright and Chromium;
+  `doctor` reports their availability.
 - [`bin/model-forge`](model-forge-cli.md) is the agent-first, standalone editor
   for exactly one model document (`model` or `model-bundle`) from
   `source/model-forge/`. It owns the model asset contract and the shared model
   recipe kernel that Scene Forge imports, applies revision-guarded edits with
   history, and exports model bundles for Scene Forge's `model import`,
   Littlewild definitions for `wildlands creature attach-visual` and game
-  folders, and GLB/glTF/OBJ/STL/Three.js JSON. Littlewild export follows one
+  folders, and GLB/glTF/OBJ/STL/Three.js JSON. Its `generate` command builds
+  editable, parametric models from eight seeded generators (rock, tree, bush,
+  crate, barrel, fence, building, terrain) with presets and a replayable
+  sidecar recipe; `variants` and document `scatter` derive bounded families and
+  placements. Littlewild export follows one
   lossless contract shared with Scene Forge's `littlewild export` and `sync`: an
   unedited import re-exports byte-identically through either tool across the
   concept-game corpus, an edit changes only the edited fields, and both tools
@@ -117,7 +124,12 @@ clone without `npm ci` or `node_modules`:
   `source/character-studio/`.
 
 The bundles are generated from their source projects and checked by each
-project's `npm run check:cli`.
+project's `npm run check:cli`. The three procedural generators (Model Forge
+`generate`, Scene Forge `terrain`/`scatter`/`layout` and Wildlands `generate`)
+share one keyed random algorithm, so the same seed and recipe reproduce the
+same bytes; see [Generate content procedurally](../how-to/procedural-generation.md).
+Generated content is validated structurally; it is not human-reviewed,
+playtested or balance-validated.
 
 Wildlands verification has a fast tier (`npm test`: typecheck, build and the
 quick Node suites, partial evidence) and the complete registered gate

@@ -10,6 +10,7 @@ the procedure to the relevant [contracts](../reference/README.md).
 - [Author a Wildlands RTS mission](rts-mission-editor.md)
 - [Author Littlewild assets in Scene Forge](scene-forge-littlewild-assets.md)
 - [Maintain useful documentation](maintaining-documentation.md)
+- [Generate models, scenes and game content procedurally](procedural-generation.md)
 - [Runtime confidence and change safety](runtime-confidence.md)
 - [Shipping runtime measurements](runtime-performance.md)
 - [Standalone build and recovery validation](standalone-validation.md)

@@ -1121,6 +1121,9 @@ and notice texts of every bundled package. For development without rebuilding,
 
 ## Further reading
 
+- [Generate models, scenes and game content procedurally](../how-to/procedural-generation.md):
+  Model Forge generators, terrain, scatter and layout, and Wildlands content in
+  one workflow, with the shared determinism contract.
 - [Model Forge CLI](model-forge-cli.md): the one-model editor, the model asset
   contract and the shared kernel.
 - [Scene Forge README](../../source/scene-forge/README.md): capabilities, export

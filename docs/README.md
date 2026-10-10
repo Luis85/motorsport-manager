@@ -27,6 +27,10 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
 - **Virtual-pet and 3D asset author:** [Raise a Pocket Pet](tutorials/pocket-pet-demo.md) →
   [Author Littlewild assets in Scene Forge](how-to/scene-forge-littlewild-assets.md) →
   [Pocket Pet contract](reference/pet-engine.md).
+- **Procedural content author:** [Generate models, scenes and game content](how-to/procedural-generation.md) →
+  [Model Forge](reference/model-forge-cli.md#procedural-generation),
+  [Scene Forge](reference/scene-forge-cli.md#procedural-generation) and
+  [Wildlands `generate`](reference/wildlands-cli.md#generate).
 - **Developer:** [Architecture](explanation/architecture.md) →
   [Mechanics recipes](how-to/developing-mechanics.md) or
   [Toolbox experiments](how-to/toolbox-recipes.md) → [Verification](how-to/verification.md).

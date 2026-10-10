@@ -955,6 +955,7 @@ payloads.
 
 ## Related documentation
 
+- [Generate models, scenes and game content procedurally](../how-to/procedural-generation.md): `generate` with the forge tools' generators, the shared determinism contract and asset hand-off.
 - [Game folders](../concepts/README.md): the games this CLI builds, one folder each.
 - [Playable demos](../../demos/README.md): the checked-in builds of every game folder.
 - [Wildlands project and Godot target](../../source/wildlands/WILDLANDS.md): project format, browser workspace, persistent JSON-lines runtime and native coverage.

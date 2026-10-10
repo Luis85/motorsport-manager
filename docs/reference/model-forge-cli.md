@@ -662,6 +662,9 @@ changes.
 
 ## Further reading
 
+- [Generate models, scenes and game content procedurally](../how-to/procedural-generation.md):
+  generators, Scene Forge terrain and scatter, and Wildlands content in one
+  workflow, with the shared determinism contract.
 - [Model Forge README](../../source/model-forge/README.md) and
   [AGENTS.md](../../source/model-forge/AGENTS.md): the source project, its
   layering and code-change rules.
