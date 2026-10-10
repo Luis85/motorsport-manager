@@ -18,15 +18,24 @@ import {test, application} from './test-process-helpers.cjs';
 import {reads, chunking} from './test-process-readmodel-helpers.cjs';
 import {scaleProcess} from './verification/process-scale-models';
 const root = globalThis as unknown as {LWECS: LWProcess.Ecs; LWProcessKernel: LWProcessKernel.Api};
-/** Minutes run, and the SHA-256 of `{q, series, distributions, recent}` recorded with the reference engine (minute 9,054, completed). */
+/**
+ * Minutes run, and the SHA-256 of `{q, series, distributions, recent}` recorded with the reference engine (minute 9,054, completed).
+ * The reference read model had no `distributions.percentiles` (LWProcessLedgerExact came later), so the digest covers every other
+ * field and the exact percentiles are checked on their own below.
+ */
 const MINUTES = 10000, REFERENCE = '2ee24238ce53f0fb0584ac6125269e346b6257eb3a6f152acaf41aef09fafde3';
-const digest = (value: unknown) => crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+type Reads = ReturnType<typeof reads>;
+const digest = ({q, series, distributions: {percentiles: _exact, ...distributions}, recent}: Reads) =>
+ crypto.createHash('sha256').update(JSON.stringify({q, series, distributions, recent})).digest('hex');
 
 export function scaleChecks(): void {
  test('The generated 128-step process reproduces its reference run in one advance, in random chunks and through Run to end', () => {
   const d = scaleProcess(), whole = reads(d, [MINUTES]);
   assert.deepEqual([whole.q.minute, whole.q.status, whole.q.metrics.completed], [9054, 'completed', 300]);
   assert.equal(digest(whole), REFERENCE, 'the reference engine result');
+  const exact = whole.distributions.percentiles!;
+  assert.deepEqual([exact.cycle.n, exact.cycle.exact], [300, true], 'the 300 completed cases are within the exact bound');
+  assert(exact.cycle.points.length > 0 && exact.cycle.points.every(point => point.exact), 'every lead-time percentile is exact');
   for (const seed of [1, 2]) assert.deepEqual(reads(d, chunking(MINUTES, seed * 104729, 1440)), whole, 'chunking ' + seed);
   const app = application.create(d);
   try {
