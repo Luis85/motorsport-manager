@@ -139,7 +139,10 @@ export function registerGenerateCommands(c: CommandContext) {
     )
     .option('--materials <material=#a,#b>', 'Pick a color per variant; repeatable', collect)
     .requiredOption('-o, --out <directory>', 'New directory for the variants and variants.json')
-    .option('--review', 'Render one frame per variant into <out>/review (at most 36)')
+    .option(
+      '--review <directory>',
+      'New directory (not --out): one review frame per variant, contact sheet (at most 36)',
+    )
     .option('--dry-run', 'Plan and validate without writing')
     .action(async (opts) => {
       const loaded = await c.load();
@@ -150,7 +153,7 @@ export function registerGenerateCommands(c: CommandContext) {
           vary: Object.fromEntries((opts.vary ?? []).map(parseVary)),
           materials: Object.fromEntries((opts.materials ?? []).map(parseMaterialChoices)),
           out: resolvePath(opts.out),
-          review: opts.review,
+          review: opts.review ? resolvePath(opts.review) : undefined,
           dryRun: opts.dryRun,
           tool: program.name(),
         }),

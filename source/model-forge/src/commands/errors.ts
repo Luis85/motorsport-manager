@@ -11,10 +11,12 @@ export function formatCliError(error: unknown, compact = false): string {
           error instanceof CommanderError ? 'CLI_USAGE' : 'INTERNAL_ERROR',
           errorMessage(error),
         );
-  // A throw site may name a remedy for its exact context as details.hint; it replaces the
-  // code's general remedy, and the remaining details are reported unchanged.
+  // A throw site may name a remedy for its exact context as details.hint (or as the error's
+  // own hint); it replaces the code's general remedy, and other details are unchanged.
   let details = forge.details;
   let hint = errorRemedies[forge.code];
+  // An own hint serves errors whose details are not an object (a SCHEMA_INVALID issue array).
+  if ('hint' in forge && typeof forge.hint === 'string') hint = forge.hint;
   if (details && typeof details === 'object' && !Array.isArray(details) && 'hint' in details) {
     const { hint: specific, ...rest } = details as Record<string, unknown>;
     if (typeof specific === 'string') {

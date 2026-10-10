@@ -134,6 +134,7 @@ test('variant ranges must narrow the declared range; integers stay whole', () =>
             '--out',
             'v',
             '--review',
+            'v-review',
           ],
           { cwd },
         )

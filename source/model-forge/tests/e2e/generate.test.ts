@@ -59,6 +59,7 @@ test('variants --review renders the variants at one common scale', () =>
         '--out',
         'firs',
         '--review',
+        'firs-review',
       ],
       { cwd },
     );

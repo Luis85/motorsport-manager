@@ -1,6 +1,6 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
-import { fail, errorCode } from '../kernel/index.js';
+import { fail, errorCode, errorMessage, ForgeError } from '../kernel/index.js';
 import type { EditorDocument } from '../application/document.js';
 import { checkNewDocument, createDocument } from './store.js';
 import { checkOutput } from './paths.js';
@@ -52,17 +52,47 @@ export async function checkPlanned(planned: PlannedDocument[], extraFiles: strin
   }
 }
 
-/** Write planned documents (never replacing one) and their side files, in order. */
-export async function writePlanned(planned: PlannedDocument[]) {
-  const written = [];
-  for (const entry of planned) {
-    await fs.mkdir(path.dirname(entry.path), { recursive: true });
-    const created = await createDocument(entry.path, entry.document);
-    if (entry.sidecar) {
-      await checkOutput(entry.sidecar.path);
-      await writeJson(entry.sidecar.path, entry.sidecar.data);
+/**
+ * Write planned documents (never replacing one), their side files and any extra JSON
+ * files, in order. Nothing is rolled back: a failure part way rethrows with every path
+ * already written (including `options.written`, such as a rendered review) in
+ * `details.written`, so the caller can see exactly what exists before retrying.
+ */
+export async function writePlanned(
+  planned: PlannedDocument[],
+  options: { files?: { path: string; data: unknown }[]; written?: string[] } = {},
+) {
+  const written = [...(options.written ?? [])];
+  try {
+    for (const entry of planned) {
+      await fs.mkdir(path.dirname(entry.path), { recursive: true });
+      await createDocument(entry.path, entry.document);
+      written.push(entry.path);
+      if (entry.sidecar) {
+        await checkOutput(entry.sidecar.path);
+        await writeJson(entry.sidecar.path, entry.sidecar.data);
+        written.push(entry.sidecar.path);
+      }
     }
-    written.push(created);
+    for (const file of options.files ?? []) {
+      await checkOutput(file.path);
+      await writeJson(file.path, file.data);
+      written.push(file.path);
+    }
+  } catch (error) {
+    if (!written.length) throw error;
+    const forge =
+      error instanceof ForgeError ? error : new ForgeError('INTERNAL_ERROR', errorMessage(error));
+    const details = forge.details;
+    fail(forge.code, `${forge.message} Already written: ${written.length} path(s).`, {
+      ...(details && typeof details === 'object' && !Array.isArray(details)
+        ? details
+        : details === undefined
+          ? {}
+          : { cause: details }),
+      written,
+      hint: 'Nothing was rolled back. Inspect or delete the paths in details.written, then rerun with new output paths.',
+    });
   }
   return written;
 }

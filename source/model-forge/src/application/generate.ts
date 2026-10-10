@@ -20,6 +20,8 @@ import { type EditorDocument, validateEditorDocument } from './document.js';
 import { generators } from './generators/index.js';
 import type { Generator } from './generators/types.js';
 
+type Issue = { path: string; message: string };
+
 /** The generator with this ID, or GENERATOR_NOT_FOUND naming the catalog. */
 export function findGenerator(id: string): Generator {
   const generator = generators.find((entry) => entry.id === id);
@@ -153,10 +155,18 @@ export function resolveRecipe(generator: Generator, request: GenerateRequest) {
     }) as Record<string, unknown>;
   } catch (error) {
     if (!(error instanceof ForgeError)) throw error;
-    fail(error.code, `Generator ${generator.id}: ${error.message}`, {
-      ...(error.details && typeof error.details === 'object' ? error.details : {}),
-      hint: `Run generate show ${generator.id} for parameter ranges and choices.`,
-    });
+    // Keep the schema issues as the array every SCHEMA_INVALID reports; the remedy names
+    // the generator's own parameter description rather than the generic schema command.
+    const issues = Array.isArray(error.details) ? (error.details as Issue[]) : [];
+    const listed = issues.map((issue) => `${issue.path || '(parameters)'}: ${issue.message}`);
+    throw Object.assign(
+      new ForgeError(
+        error.code,
+        `Generator ${generator.id} parameters are invalid${listed.length ? ` (${listed.join('; ')})` : ''}.`,
+        error.details,
+      ),
+      { hint: `Run generate show ${generator.id} for parameter ranges and choices.` },
+    );
   }
   const seed = checkSeed(request.seed ?? recipe?.seed ?? DEFAULT_SEED);
   const resolved: GeneratorRecipe = {
@@ -221,9 +231,9 @@ export function proceduralCatalog() {
       generate:
         'generate <generator> --out <new.model.json> [--preset <name>] [--seed <n>] [--set <name=value>]... [--file|--data <generator recipe>] [--count <n> (--out is then a new directory)] [--review <new directory>] [--dry-run]',
       variants:
-        '-d <doc> variants --count <n> [--seed <n>] --vary <parameter=min..max>... [--materials <material=#a,#b>]... --out <new directory> [--review] [--dry-run]',
+        '-d <doc> variants --count <n> [--seed <n>] --vary <parameter=min..max>... [--materials <material=#a,#b>]... --out <new directory> [--review <new directory>] [--dry-run]',
       scatter:
-        '-d <doc> scatter (--file|--data <scatter recipe> | --node|--model <ids> --spacing|--grid|--count ... [--area] [--on <terrain node>]) [--dependency <file>]... [--replace] --dry-run | --expected-revision <n> --expected-state <hash>',
+        '-d <doc> scatter (--file|--data <scatter recipe> | --node|--model <ids> --spacing <m>|--grid <CxR> --step <m>|--count <n> ... [--area] [--on <terrain node>]) [--dependency <file>]... [--replace] --dry-run | --expected-revision <n> --expected-state <hash>',
     },
     outputs: {
       document:
@@ -242,7 +252,7 @@ export function proceduralCatalog() {
       'generate show tree',
       'generate tree --preset palm --seed 3 --out palm.model.json --review palm-review',
       'generate rock --preset boulder --count 6 --out boulders --review boulders-review',
-      '-d palm.model.json variants --count 6 --vary height=5..9 --materials leaf=#5f9a3c,#4f8a3a --out palms --review',
+      '-d palm.model.json variants --count 6 --vary height=5..9 --materials leaf=#5f9a3c,#4f8a3a --out palms --review palms-review',
       '-d field.model-bundle.json scatter --model rock --dependency rock.model.json --spacing 3 --on terrain --dry-run',
     ],
     limits: {

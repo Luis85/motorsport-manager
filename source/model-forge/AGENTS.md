@@ -29,7 +29,7 @@ Model Forge edits exactly one model per document. Use the repository executable
    `review --out <new directory>`; reuse its `replay-plan.json` to hold cameras fixed.
 7. For many similar assets use `generate --count <n> --out <new directory>` (consecutive
    seeds) or `-d <doc> variants --count <n> --vary name=min..max --out <new directory>`
-   (ranges must narrow the declared min..max), and judge them with `--review`. Place
+   (ranges must narrow the declared min..max), and judge them with `--review <new directory>`. Place
    copies with `-d <doc> scatter` (a recipe or flags; `--dry-run`, then the guards);
    instancing models needs a model-bundle (`import --from <doc> --out <id>.model-bundle.json`
    and `--dependency <model file>`).

@@ -50,12 +50,14 @@ test('scatter plans with the kernel and commits like apply: dry run, guards, his
     assert.ok(
       (await fs.readFile(path.join(cwd, 'garden.model.json.history/1.json'))).equals(before),
     );
-    const listed = await ok([...doc, 'node', 'list', '--parent', 'scatter', '--limit', '1000'], {
-      cwd,
-    });
+    // The default group follows Scene Forge: the first item's ID, then -scatter.
+    const listed = await ok(
+      [...doc, 'node', 'list', '--parent', 'tuft-scatter', '--limit', '1000'],
+      { cwd },
+    );
     assert.equal(listed.total, written.placement.placed);
     assert.ok(listed.nodes.every((n: { visible: boolean }) => n.visible));
-    const group = (await ok([...doc, 'node', 'list', '--ids', 'scatter'], { cwd })).nodes[0];
+    const group = (await ok([...doc, 'node', 'list', '--ids', 'tuft-scatter'], { cwd })).nodes[0];
     assert.deepEqual(group.tags, ['scatter', `scatter:${written.recipeHash.slice(0, 8)}`]);
 
     const stale = await failure([...doc, 'scatter', ...flags, '--expected-revision', '1'], { cwd });
@@ -68,7 +70,7 @@ test('scatter plans with the kernel and commits like apply: dry run, guards, his
       { cwd },
     );
     assert.equal(replaced.revision, 3);
-    assert.ok(replaced.changes.nodes.updated.includes('scatter'), 'the group is replaced');
+    assert.ok(replaced.changes.nodes.updated.includes('tuft-scatter'), 'the group is replaced');
     await ok([...doc, 'validate'], { cwd });
 
     // The same recipe as a file, and on a copy, gives the same plan.

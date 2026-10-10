@@ -102,7 +102,7 @@ rounded to 1e-4), bounded by triangle budgets (`PROCEDURAL_BUDGET`) and never ov
 ```sh
 bin/model-forge generate tree --preset palm --seed 3 --out palm.model.json --review palm-review
 bin/model-forge generate rock --preset boulder --count 6 --out boulders --review boulders-review
-bin/model-forge -d palm.model.json variants --count 6 --vary height=5..9 --out palms --review
+bin/model-forge -d palm.model.json variants --count 6 --vary height=5..9 --out palms --review palms-review
 bin/model-forge generate tree --file source/model-forge/examples/recipes/palm.generate.json --out beach-palm.model.json
 bin/model-forge -d glade.model-bundle.json scatter --file source/model-forge/examples/recipes/stones.scatter.json --dependency stone.model.json --dry-run
 ```

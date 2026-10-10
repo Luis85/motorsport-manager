@@ -1,4 +1,11 @@
-import { fail, ForgeError, planScatter, compileScene, type ModelLibrary } from '../kernel/index.js';
+import {
+  fail,
+  ForgeError,
+  planScatter,
+  compileScene,
+  gridArea,
+  type ModelLibrary,
+} from '../kernel/index.js';
 import type { ModelOperation } from '../domain/document.js';
 import {
   type EditorDocument,
@@ -16,8 +23,11 @@ export interface ScatterFlags {
   area?: string;
   exclude?: string[];
   spacing?: number;
-  grid?: number;
+  /** `CxR` grid counts, with `step` (and optional `jitter`, `center`). */
+  grid?: string;
+  step?: number;
   jitter?: number;
+  center?: string;
   count?: number;
   on?: string;
   sink?: number;
@@ -70,19 +80,26 @@ export function parseArea(text: string, flag = '--area') {
     },
   );
 }
-/** `a..b` (negative numbers allowed) as [a, b]. */
+/** `a..b` (negative numbers allowed) as [a, b], or one value `a` as [a, a], like Scene Forge. */
 export function parseRange(text: string, flag: string): [number, number] {
   const match = /^(.+)\.\.(.+)$/.exec(text);
-  const range = match ? [Number(match[1]), Number(match[2])] : [];
-  if (!match || !range.every(Number.isFinite))
-    fail('INVALID_OPTION', `${flag} expects <min>..<max>, got ${text}.`);
+  const range = match
+    ? [Number(match[1]), Number(match[2])]
+    : text.trim()
+      ? [Number(text), Number(text)]
+      : [];
+  if (range.length !== 2 || !range.every(Number.isFinite) || range[0] > range[1])
+    fail('INVALID_OPTION', `${flag} expects <min>..<max> (or one value), got ${text}.`);
   return range as [number, number];
 }
 /** `a,b:3` as weighted items of one kind. */
 const items = (text: string, kind: 'model' | 'node') =>
   text.split(',').map((entry) => {
     const [id, weight] = entry.split(':');
-    return { [kind]: id, ...(weight !== undefined ? { weight: Number(weight) } : {}) };
+    return {
+      [kind]: id,
+      ...(weight !== undefined ? { weight: Number(weight) } : {}),
+    } as { model?: string; node?: string; weight?: number };
   });
 
 /** XZ footprint of the model's compiled content: the default scatter area. */
@@ -100,49 +117,89 @@ function footprint(document: EditorDocument) {
   }
 }
 
+/** `CxR` grid counts, as Scene Forge's `layout --grid`. */
+function gridCounts(text: string): [number, number] {
+  const match = /^(\d+)x(\d+)$/i.exec(text.trim());
+  const counts = match ? [Number(match[1]), Number(match[2])] : [];
+  if (!match || counts.some((n) => n < 1))
+    fail('INVALID_OPTION', `--grid expects COLUMNSxROWS such as 4x3, got ${text}.`, {
+      hint: 'Pass --grid 4x3 --step 1.5 [--center x,z] [--jitter 0..1].',
+    });
+  return counts as [number, number];
+}
+
+/** The area and distribution of `--grid CxR --step s [--center x,z] [--jitter j]`. */
+function gridPlacement(flags: ScatterFlags) {
+  if (flags.step === undefined)
+    fail('INVALID_OPTION', '--grid needs --step <m>.', {
+      hint: 'Pass --grid 4x3 --step 1.5: COLUMNSxROWS placements spaced step apart.',
+    });
+  if (flags.area !== undefined)
+    fail('INVALID_OPTION', '--grid places exactly COLUMNSxROWS around --center; drop --area.', {
+      hint: 'Move the grid with --center x,z, or use --spacing or --count inside an --area.',
+    });
+  const [columns, rows] = gridCounts(flags.grid!);
+  const center = flags.center ? numbers(flags.center, '--center', 2) : [0, 0];
+  return {
+    area: gridArea(columns, rows, flags.step, [center[0], center[1]]),
+    distribution: { type: 'grid', step: flags.step, jitter: flags.jitter ?? 0 },
+  };
+}
+
 /**
- * A scatter recipe (`schema --kind scatter`) from command-line flags. Without --area the
- * model's current XZ footprint is the area (for example the terrain it scatters onto).
+ * A scatter recipe (`schema --kind scatter`) from command-line flags, with Scene Forge's
+ * flag meanings. Without --area the model's current XZ footprint is the area (for example
+ * the terrain it scatters onto); --grid CxR --step s places exactly CxR around --center.
  */
 export function recipeFromFlags(document: EditorDocument, flags: ScatterFlags) {
   const distributions = [flags.spacing, flags.grid, flags.count].filter((v) => v !== undefined);
   if (distributions.length !== 1)
     fail(
       'INVALID_OPTION',
-      'Choose exactly one distribution: --spacing <m> (Poisson), --grid <step> or --count <n> (random).',
+      'Choose exactly one distribution: --spacing <m> (Poisson), --grid <CxR> --step <m> or --count <n> (random).',
       {
         hint: 'For an even natural spread use --spacing; pass a recipe with --file for paths.',
       },
     );
+  if (flags.grid === undefined)
+    for (const [flag, value] of [
+      ['--step', flags.step],
+      ['--jitter', flags.jitter],
+      ['--center', flags.center],
+    ] as const)
+      if (value !== undefined) fail('INVALID_OPTION', `${flag} applies only with --grid <CxR>.`);
   if (!flags.model && !flags.node)
     fail(
       'INVALID_OPTION',
       'Name what to place: --model <dependency ids> or --node <template node ids>.',
     );
-  if (flags.area === undefined && flags.parent !== undefined)
+  if (flags.area === undefined && flags.parent !== undefined && flags.grid === undefined)
     fail('INVALID_OPTION', '--parent needs an explicit --area in the parent frame.');
+  const placed = [
+    ...(flags.model ? items(flags.model, 'model') : []),
+    ...(flags.node ? items(flags.node, 'node') : []),
+  ];
+  const first = String(placed[0].model ?? placed[0].node);
+  const grid = flags.grid !== undefined ? gridPlacement(flags) : undefined;
   return {
     schemaVersion: 1,
     kind: 'scatter',
     seed: flags.seed ?? 1,
-    group: flags.group ?? 'scatter',
+    // Scene Forge's rule: the first item's ID, then -scatter.
+    group: flags.group ?? `${first.slice(0, 48)}-scatter`,
     ...(flags.parent ? { parent: flags.parent } : {}),
-    area: flags.area ? parseArea(flags.area) : footprint(document),
+    area: grid ? grid.area : flags.area ? parseArea(flags.area) : footprint(document),
     exclude: (flags.exclude ?? []).map((area) => parseArea(area, '--exclude')),
     ...(flags.avoid
       ? { avoidNodes: { ids: flags.avoid.split(','), margin: flags.margin ?? 0 } }
       : {}),
-    distribution:
-      flags.spacing !== undefined
+    distribution: grid
+      ? grid.distribution
+      : flags.spacing !== undefined
         ? { type: 'poisson', minDistance: flags.spacing }
-        : flags.grid !== undefined
-          ? { type: 'grid', step: flags.grid, jitter: flags.jitter ?? 0 }
-          : { type: 'random', count: flags.count },
+        : { type: 'random', count: flags.count },
     ...(flags.max !== undefined ? { maxCount: flags.max } : {}),
-    items: [
-      ...(flags.model ? items(flags.model, 'model') : []),
-      ...(flags.node ? items(flags.node, 'node') : []),
-    ],
+    items: placed,
     ...(flags.scale ? { scale: parseRange(flags.scale, '--scale') } : {}),
     rotation: {
       ...(flags.yaw ? { yaw: parseRange(flags.yaw, '--yaw') } : {}),

@@ -14,7 +14,9 @@ const flagNames = [
   'exclude',
   'spacing',
   'grid',
+  'step',
   'jitter',
+  'center',
   'count',
   'on',
   'sink',
@@ -40,7 +42,10 @@ export function registerScatterCommands(c: CommandContext) {
       )
       .option('--file <path>', 'Scatter recipe JSON; - for stdin. Replaces the flags below')
       .option('--data <json>', 'Inline scatter recipe JSON')
-      .option('--group <id>', 'Group node that owns the placements (<group>-<n>)', 'scatter')
+      .option(
+        '--group <id>',
+        'Group node that owns the placements <group>-<n> (default <first item>-scatter)',
+      )
       .option('--node <ids>', 'Template mesh/model nodes to copy: a,b or a:3,b:1 (weights)')
       .option('--model <ids>', 'Dependency models to instance (bundles): a,b or a:3,b:1')
       .option(
@@ -49,8 +54,10 @@ export function registerScatterCommands(c: CommandContext) {
       )
       .option('--exclude <spec>', 'Area to keep clear, same forms as --area; repeatable', collect)
       .option('--spacing <m>', 'Poisson spacing: no two placements closer than this', finite)
-      .option('--grid <m>', 'Grid step', finite)
-      .option('--jitter <0..1>', 'Grid jitter as a fraction of half the step', finite)
+      .option('--grid <CxR>', 'Grid of COLUMNSxROWS placements, e.g. 4x3 (with --step)')
+      .option('--step <m>', 'With --grid: spacing on both axes', finite)
+      .option('--jitter <0..1>', 'With --grid: random offset up to jitter * step / 2', finite)
+      .option('--center <x,z>', 'With --grid: grid center (default 0,0)')
       .option('--count <n>', 'Uniformly random placements', integer)
       .option('--on <node>', 'Ground every placement on this heightfield mesh node')
       .option('--sink <m>', 'Sink below the terrain surface', finite)

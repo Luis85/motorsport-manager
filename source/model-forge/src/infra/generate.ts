@@ -70,6 +70,7 @@ export function documentNextCommands(tool: string, file: string, model: ModelDoc
             '--out',
             '<new directory>',
             '--review',
+            '<new review directory>',
           ],
         ]
       : []),
@@ -140,7 +141,9 @@ export async function runGenerate(run: GenerateRun) {
   if (multiple) await checkNewDirectory(run.out, '--out');
   if (run.review) await checkNewDirectory(run.review, '--review');
   await checkPlanned(planned);
-  if (!run.dryRun) await writePlanned(planned);
+  // The review renders the in-memory documents before anything is written, so a missing
+  // browser (BROWSER_UNAVAILABLE) or a failed render leaves no files and the same command
+  // can simply be retried.
   const review =
     run.review && !run.dryRun
       ? await reviewLineup(
@@ -149,6 +152,7 @@ export async function runGenerate(run: GenerateRun) {
           { target: { generator: generator.id, documents: planned.map((entry) => entry.path) } },
         )
       : undefined;
+  if (!run.dryRun) await writePlanned(planned, { written: review ? [review.directory] : [] });
   const first = planned[0];
   return {
     generator: generator.id,
@@ -184,7 +188,22 @@ export async function runGenerate(run: GenerateRun) {
         : {}),
     ...(warnings.length ? { warnings } : {}),
     ...(run.dryRun
-      ? {}
+      ? {
+          // The exact write: the resolved recipe replays these documents byte for byte.
+          nextCommands: [
+            [
+              run.tool,
+              'generate',
+              generator.id,
+              '--data',
+              JSON.stringify(base),
+              '--out',
+              run.out,
+              ...(multiple ? ['--count', String(count)] : []),
+              ...(run.review ? ['--review', run.review] : []),
+            ],
+          ],
+        }
       : {
           nextCommands: [
             ...documentNextCommands(run.tool, first.path, first.document.model),

@@ -267,7 +267,20 @@ test('--count writes numbered documents with consecutive seeds; dry runs write n
     );
     assert.equal(planned.dryRun, true);
     assert.equal(await exists(path.join(cwd, 'crates')), false);
-    assert.equal(planned.nextCommands, undefined);
+    // The dry run's next command is the exact write: the resolved recipe and the same outputs.
+    assert.deepEqual(planned.nextCommands[0].slice(0, 4), [
+      'model-forge',
+      'generate',
+      'crate',
+      '--data',
+    ]);
+    assert.deepEqual(planned.nextCommands[0].slice(-4), [
+      '--out',
+      path.join(cwd, 'crates'),
+      '--count',
+      '3',
+    ]);
+    assert.equal(planned.nextCommands.length, 1);
     const single = await ok(
       ['generate', 'rock', '--out', 'rock.model.json', '--dry-run', '--review', 'r'],
       { cwd },

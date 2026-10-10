@@ -7,12 +7,12 @@ import { numberedId, planVariants, type VariantRequest } from '../application/va
 import { checkNewDirectory, checkPlanned, writePlanned } from './generated.js';
 import { reviewLineup } from './lineup.js';
 import { documentNextCommands } from './generate.js';
-import { writeJson } from './files.js';
 import type { LoadedDocument } from './store.js';
 
 export interface VariantsRun extends VariantRequest {
   out: string;
-  review?: boolean;
+  /** A new directory for the lineup review. */
+  review?: string;
   dryRun?: boolean;
   tool: string;
 }
@@ -20,7 +20,7 @@ export interface VariantsRun extends VariantRequest {
 /**
  * Write `count` variants of a document into a new directory: `<id>-<nn>` documents of the
  * same kind (bundles keep their frozen dependencies), `variants.json` (kind
- * `model-variants`) and, with `review`, a lineup review in `<out>/review`.
+ * `model-variants`) and, with `review`, a lineup review in that new directory.
  */
 export async function runVariants(loaded: LoadedDocument, run: VariantsRun) {
   const source = loaded.document;
@@ -42,8 +42,12 @@ export async function runVariants(loaded: LoadedDocument, run: VariantsRun) {
     document: variant.document,
   }));
   const manifestPath = path.join(run.out, 'variants.json');
-  const reviewDirectory = path.join(run.out, 'review');
+  if (run.review && path.resolve(run.review) === path.resolve(run.out))
+    fail('INVALID_OPTION', '--review needs a directory other than --out.', {
+      hint: `Pass --review ${run.out}-review (any new or empty directory).`,
+    });
   await checkNewDirectory(run.out, '--out');
+  if (run.review) await checkNewDirectory(run.review, '--review');
   await checkPlanned(planned, [manifestPath]);
   const manifest = parse(ModelVariantsSchema, {
     schemaVersion: 1,
@@ -62,10 +66,7 @@ export async function runVariants(loaded: LoadedDocument, run: VariantsRun) {
       stateHash: documentStateHash(variant.document),
     })),
   });
-  if (!run.dryRun) {
-    await writePlanned(planned);
-    await writeJson(manifestPath, manifest);
-  }
+  // Render the in-memory variants first: a missing browser or a failed render writes nothing.
   const review =
     run.review && !run.dryRun
       ? await reviewLineup(
@@ -73,10 +74,15 @@ export async function runVariants(loaded: LoadedDocument, run: VariantsRun) {
             id: variant.document.model.id,
             document: variant.document,
           })),
-          reviewDirectory,
+          run.review,
           { target: { variantsOf: loaded.path, documents: planned.map((entry) => entry.path) } },
         )
       : undefined;
+  if (!run.dryRun)
+    await writePlanned(planned, {
+      files: [{ path: manifestPath, data: manifest }],
+      written: review ? [review.directory] : [],
+    });
   return {
     source: { path: loaded.path, ...manifest.source },
     seed: run.seed,
@@ -107,10 +113,30 @@ export async function runVariants(loaded: LoadedDocument, run: VariantsRun) {
       : run.review
         ? { review: { skipped: 'dry run: nothing was rendered' } }
         : {}),
-    ...(run.dryRun
-      ? {}
-      : {
-          nextCommands: documentNextCommands(run.tool, planned[0].path, planned[0].document.model),
-        }),
+    nextCommands: run.dryRun
+      ? [
+          [
+            run.tool,
+            '-d',
+            loaded.path,
+            'variants',
+            '--count',
+            String(run.count),
+            '--seed',
+            String(run.seed),
+            ...Object.entries(run.vary).flatMap(([name, [low, high]]) => [
+              '--vary',
+              `${name}=${low}..${high}`,
+            ]),
+            ...Object.entries(run.materials).flatMap(([name, colors]) => [
+              '--materials',
+              `${name}=${colors.join(',')}`,
+            ]),
+            '--out',
+            run.out,
+            ...(run.review ? ['--review', run.review] : []),
+          ],
+        ]
+      : documentNextCommands(run.tool, planned[0].path, planned[0].document.model),
   };
 }
