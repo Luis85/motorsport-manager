@@ -401,6 +401,7 @@
     "source/process-bpmn-conformance-values.ts",
     "source/process-bpmn-conformance-model.ts",
     "source/process-bpmn-conformance-bpsim.ts",
+    "source/process-bpmn-conformance-schema.ts",
     "source/process-bpmn-conformance.ts",
     "source/process-bpmn-preview.ts",
     "source/process-bpmn-dialog.ts",
