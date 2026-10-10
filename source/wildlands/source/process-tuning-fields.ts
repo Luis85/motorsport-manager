@@ -64,7 +64,12 @@ declare namespace LWProcessTuningFields {
   const items = options.map(([v, name]) => html`<option value="${v}"${v === value ? html` selected` : ''}>${name}</option>`);
   return field(id, label, html`<select id="${id}" data-path="${path}" data-kind="choice" ${describe(id, help)}>${items}</select>`, path, help);
  }
- const typeOf = (v: LWProcess.Scalar | undefined) => v === undefined ? 'unset' : v === null ? 'null' : typeof v === 'boolean' ? 'boolean' : typeof v === 'number' ? 'number' : 'string';
+ function typeOf(v: LWProcess.Scalar | undefined): string {
+  if (v === undefined) return 'unset';
+  if (v === null) return 'null';
+  if (typeof v === 'boolean') return 'boolean';
+  return typeof v === 'number' ? 'number' : 'string';
+ }
  /** The value control of a scalar editor for its current type; a value that is not set or empty has only a note. */
  function scalarControl(id: string, label: string, path: string, value: LWProcess.Scalar | undefined, type: string): Safe {
   if (type === 'boolean') {
@@ -104,9 +109,14 @@ declare namespace LWProcessTuningFields {
  }
  function plain(message: string, control: Element | null): string {
   const el = control as HTMLInputElement | null;
-  if (message === 'Number is out of range.') return el?.min ? `Enter a whole number from ${Number(el.min).toLocaleString('en-US')} to ${Number(el.max).toLocaleString('en-US')}.` : message;
+  if (message === 'Number is out of range.') {
+   if (!el?.min) return message;
+   return `Enter a whole number from ${Number(el.min).toLocaleString('en-US')} to ${Number(el.max).toLocaleString('en-US')}.`;
+  }
   if (message === 'Expected integer.' || message === 'Expected number.') return 'Enter a whole number.';
-  if (message === 'String has invalid length or format.') return el?.dataset.hint ?? (el?.maxLength && el.maxLength > 0 ? `Use 1 to ${el.maxLength} characters.` : message);
+  if (message === 'String has invalid length or format.') {
+   return el?.dataset.hint ?? (el?.maxLength && el.maxLength > 0 ? `Use 1 to ${el.maxLength} characters.` : message);
+  }
   return message;
  }
  root.LWProcessTuningFields = {slug, field, int, text, choice, scalar, coerce, keyOf, plain};

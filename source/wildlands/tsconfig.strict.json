@@ -538,6 +538,7 @@
     "source/test-process-dashboard-render.cts",
     "source/test-process-application.cts",
     "source/test-process-html.cts",
+    "source/test-process-random-calendar.cts",
     "source/test-process-readmodel-helpers.cts",
     "source/test-process-readmodel.cts",
     "source/test-process-series.cts",

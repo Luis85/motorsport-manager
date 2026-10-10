@@ -16,6 +16,7 @@ import './test-process-advice.cjs';
 import './test-process-application.cjs';
 import './test-process-structure.cjs';
 import './test-process-html.cjs';
+import './test-process-random-calendar.cjs';
 import './test-process-readmodel.cjs';
 import './test-process-series.cjs';
 import './test-process-slices.cjs';

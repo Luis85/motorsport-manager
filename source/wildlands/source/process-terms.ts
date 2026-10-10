@@ -40,8 +40,14 @@ declare namespace LWProcessTerms {
  const JOURNEY = {lens: 'journey', lensLabel: 'Journey map', lensTitle: 'Journey map: stages, touchpoints, feeling, funnel'} as const;
  const TERMS: Record<LWProcess.Genre, Base> = {
   process: {genre: 'process', one: 'case', many: 'cases', label: 'Business process', stepsHeading: 'Steps', finished: 'Completed', ...SIPOC},
-  'customer-journey': {genre: 'customer-journey', one: 'customer', many: 'customers', label: 'Customer journey', stepsHeading: 'Touchpoints and steps', finished: 'Finished', ...JOURNEY},
-  'user-journey': {genre: 'user-journey', one: 'user', many: 'users', label: 'User journey', stepsHeading: 'Touchpoints and steps', finished: 'Finished', ...JOURNEY},
+  'customer-journey': {
+   genre: 'customer-journey', one: 'customer', many: 'customers', label: 'Customer journey', stepsHeading: 'Touchpoints and steps',
+   finished: 'Finished', ...JOURNEY,
+  },
+  'user-journey': {
+   genre: 'user-journey', one: 'user', many: 'users', label: 'User journey', stepsHeading: 'Touchpoints and steps', finished: 'Finished',
+   ...JOURNEY,
+  },
  };
  const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
  function of(source: string | {genre?: string} | undefined): LWProcessTerms.Terms {

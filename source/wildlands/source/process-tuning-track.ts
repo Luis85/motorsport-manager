@@ -33,13 +33,15 @@ declare namespace LWProcessTuningTrack {
  const HINT = 'Start with a lowercase letter, then letters, digits or underscores (up to 64).';
  const GENRES: [string, string, string][] = [
   ['process', 'Business process', 'Cases are work items such as orders or tickets, and steps are work that people, machines or systems do.'],
-  ['customer-journey', 'Customer journey', 'Cases are customers and steps are the touchpoints where they meet your business, from first contact to their goal.'],
+  ['customer-journey', 'Customer journey',
+   'Cases are customers and steps are the touchpoints where they meet your business, from first contact to their goal.'],
   ['user-journey', 'User journey', 'Cases are users of a product or service and steps are the interactions they take to get what they came for.'],
  ];
  const genreOf = (def: LWProcess.Definition) => GENRES.find(g => g[0] === def.genre) ?? GENRES[0]!;
  function genreMarkup(def: LWProcess.Definition): LWProcessHtml.Safe {
   const [value, , help] = genreOf(def);
-  return F.choice('tune-genre', 'Process type', 'genre', value, GENRES.map(([v, name]): [string, string] => [v, name]), help + ' It changes labels and the default view only; the simulation runs the same.');
+  const options = GENRES.map(([v, name]): [string, string] => [v, name]);
+  return F.choice('tune-genre', 'Process type', 'genre', value, options, help + ' It changes labels and the default view only; the simulation runs the same.');
  }
  function suggestions(def: LWProcess.Definition): string[] {
   const names = new Set<string>(), add = (key: string) => { if (NAME.test(key)) names.add(key); };
@@ -60,6 +62,8 @@ declare namespace LWProcessTuningTrack {
    ${shown}</div>
    <button type="button" class="de-mini de-remove" data-act="track-remove" data-i="${i}" aria-label="${label}">Remove</button></fieldset>`;
  }
+ const TRACK_HELP = 'The simulation averages these values when cases finish and at every step, to draw the measured curve. '
+  + `Choose up to ${LIMIT} number fields, for example a mood score or a satisfaction rating.`;
  function trackMarkup(def: LWProcess.Definition): LWProcessHtml.Safe {
   const list = def.track ?? [], full = list.length >= LIMIT, names = suggestions(def);
   const rows = list.length ? list.map(row) : html`<p class="de-help">No measures are tracked.</p>`;
@@ -67,7 +71,7 @@ declare namespace LWProcessTuningTrack {
   const add = html`<button type="button" class="de-add" id="tune-track-add" data-act="track-add"${disabled}>Add measure</button>`;
   const heading = html`<h4 id="tune-h-track" tabindex="-1">Tracked measures</h4><div class="de-errs" id="tune-track-err" data-errs="track"></div>`;
   return html`<section class="de-sec" aria-labelledby="tune-h-track">${heading}
-   <p class="de-help" id="tune-track-help">The simulation averages these values when cases finish and at every step, to draw the measured curve. Choose up to ${LIMIT} number fields, for example a mood score or a satisfaction rating.</p>
+   <p class="de-help" id="tune-track-help">${TRACK_HELP}</p>
    <datalist id="tune-track-fields">${names.map(n => html`<option value="${n}"></option>`)}</datalist>
    ${rows}
    ${add}${full ? html`<span class="de-help" id="tune-track-full">At most ${LIMIT} measures are tracked.</span>` : ''}</section>`;
