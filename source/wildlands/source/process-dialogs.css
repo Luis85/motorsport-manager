@@ -103,8 +103,9 @@ html.pd-locked { overflow:hidden; }
  .pd-confirm .pd-actions { flex-direction:column-reverse; align-items:stretch; }
  .pd-confirm .pd-actions button { width:100%; }
  /* Compact sheet chrome (about 30% of a phone screen at most): tighter header and footer padding, the title, kind chip and id on one
-    line where they fit, the subtitle clamped to one line (its full text stays the dialog's accessible description), and the footer
-    buttons in one row where they fit, in reading order, wrapping onto a second row only when they do not. Text keeps its rem sizes. */
+    line where they fit, and the subtitle clamped to one line (its full text stays the dialog's accessible description). By default
+    the primary action takes the first full row and secondary actions share the next; the step editor keeps its three buttons in one
+    row where they fit, in reading order. Text keeps its rem sizes. */
  .pd-head { padding-block:var(--s2); gap:var(--s2); }
  .pd-heading { display:flex; flex-wrap:wrap; align-items:center; column-gap:var(--s2); }
  .pd-heading h2 { flex:0 1 auto; min-width:0; }
@@ -112,7 +113,10 @@ html.pd-locked { overflow:hidden; }
  .pd-subtitle { order:2; flex-basis:100%; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:1; overflow:hidden; }
  .pd-foot { gap:6px; padding-block:var(--s2) max(var(--s2),env(safe-area-inset-bottom)); }
  .pd-buttons { flex-wrap:wrap; gap:6px; }
- .pd-buttons button { flex:1 1 auto; min-width:min(100%,5rem); }
+ .pd-buttons button { flex:1 1 0; min-width:min(100%,8rem); }
+ .pd-buttons button.primary { flex-basis:100%; order:-1; }
+ .se-dialog .pd-buttons button { flex:1 1 auto; min-width:min(100%,5rem); }
+ .se-dialog .pd-buttons button.primary { flex-basis:auto; order:0; }
 }
 /* Definition editor (LWProcessDefinitionEditor, dialog id "de"): opener chip, two panes (tabs below 1000px), tuning form and raw JSON pane. */
 .de-dialog .de-message { margin:0 0 12px; color:var(--accent); overflow-wrap:anywhere; }
@@ -194,7 +198,7 @@ html.pd-locked { overflow:hidden; }
  /* Four secondary actions share one compact row (the longest label wraps inside its button); the primary action keeps a full row. */
  .de-dialog .pd-buttons { display:grid; grid-template-columns:auto auto auto minmax(min-content,1fr); align-items:stretch; }
  .de-dialog .pd-buttons button { min-width:0; padding-inline:var(--s2); white-space:normal; }
- .de-dialog #de-apply { grid-column:1/-1; }
+ .de-dialog #de-apply { grid-column:1/-1; order:0; }
 }
 /* Activity modal (LWProcessActivity, dialog id "act"): filters, a sticky-header table that scrolls inside the sheet, and a pill when live updates are held back. */
 .pd-dialog.act-dialog { height:min(80vh,720px); }

@@ -83,6 +83,7 @@ declare namespace LWProcessStepEditor {
    },
    onClose: () => history.reset(),
   });
+  dialog.el.classList.add('se-dialog');
   dialog.body.insertAdjacentHTML('beforeend', '<nav class="se-stepnav" id="se-stepnav" aria-label="Other steps"></nav>'
    + '<div id="se-apply-errors" class="se-apply-errors" tabindex="-1" role="alert" hidden></div><div id="se-sections"></div><div id="se-structure"></div>');
   const q = <T extends HTMLElement = HTMLElement>(id: string) => dialog.el.querySelector<T>('#' + id)!;

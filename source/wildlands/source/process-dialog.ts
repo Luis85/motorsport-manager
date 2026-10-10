@@ -20,7 +20,7 @@
  * body (scrolls; its FIRST child is the reserved status region, so append content AFTER it) / footer (note, reason, confirm,
  * actions). The footer note is a polite live region for short results with an optional action ("Removed need 2. Undo").
  * Element ids derive from the dialog id: `${id}-title`, `-subtitle`, `-chip`, `-meta`, `-close`, `-banner`, `-body`,
- * `-status`, `-note`, `-reason`, `-confirm`, `-confirm-title`, `-confirm-check` (the optional confirm checkbox), `-buttons`,
+ * `-status`, `-footnote`, `-reason`, `-confirm`, `-confirm-title`, `-confirm-check` (the optional confirm checkbox), `-buttons`,
  * one `-${actionId}` per footer action and one `-${choiceId}` per confirm choice. All HTML strings passed to
  * setBanner/setStatus/setNote must already be escaped (`escape`).
  * The dialog never touches simulation, draft or storage; it only reports intent through callbacks.
@@ -129,7 +129,7 @@ declare namespace LWProcessDialog {
    <button type="button" class="pd-close" id="${id}-close"><span aria-hidden="true">×</span> ${esc(closeLabel)}</button></div>
    <div class="pd-banner" id="${id}-banner" hidden></div>
    <div class="pd-body" id="${id}-body"><div class="pd-status" id="${id}-status" role="status"></div></div>
-   <div class="pd-foot"><p class="pd-note" id="${id}-note" role="status" hidden></p><p class="pd-reason" id="${id}-reason"></p>
+   <div class="pd-foot"><p class="pd-note" id="${id}-footnote" role="status" hidden></p><p class="pd-reason" id="${id}-reason"></p>
     <div class="pd-confirm" id="${id}-confirm" role="alertdialog" aria-labelledby="${id}-confirm-title" hidden><p id="${id}-confirm-title"></p>
      <div id="${id}-confirm-extra"></div><div class="pd-actions" id="${id}-choices"></div></div>
     <div class="pd-actions pd-buttons" id="${id}-buttons"></div></div>`;
@@ -342,7 +342,7 @@ declare namespace LWProcessDialog {
    confirm,
    ask: (message, choices, options) => confirm(message, choices, options).then(choice => ({choice, checked})),
    setNote(html) {
-    const n = q('note');
+    const n = q('footnote');
     n.hidden = !html;
     if (n.dataset.html !== html) {
      n.dataset.html = html;

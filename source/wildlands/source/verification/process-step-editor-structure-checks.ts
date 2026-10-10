@@ -39,7 +39,7 @@ export async function structureChecks(studio: Studio): Promise<void> {
   assert.equal(await page.locator('#se-chip').innerText(), 'timer');
   assert.equal(await page.locator('#se-meta').innerText(), 'cool-down');
   assert.equal(await activeId(), 'se-name', 'the new step opens with focus on its name');
-  assert.equal(await page.locator('#se-note').innerText(),
+  assert.equal(await page.locator('#se-footnote').innerText(),
    'Added step Cool down. Inserted Cool down between Discovery and Plan together. Undo it in the Definition editor.');
   const added = await defOf();
   assert.deepEqual(added.steps.slice(1, 4).map(s => s.id), ['discovery', 'cool-down', 'design-split'], 'placed after Discovery in draft order');
@@ -49,7 +49,7 @@ export async function structureChecks(studio: Studio): Promise<void> {
   await page.locator('#se-structure-duplicate').click();
   assert.equal(await title(), 'Cool down (copy)');
   assert.equal(await page.locator('#se-meta').innerText(), 'cool-down-copy');
-  assert.match(await page.locator('#se-note').innerText(), /^Duplicated Cool down\. The copy has no paths yet/);
+  assert.match(await page.locator('#se-footnote').innerText(), /^Duplicated Cool down\. The copy has no paths yet/);
   assert.equal((await stepOf('cool-down-copy'))!.duration, 60);
   // Nothing was applied: the run keeps its definition and its minute.
   const after = await query(page);
@@ -88,7 +88,7 @@ export async function structureChecks(studio: Studio): Promise<void> {
   assert.equal(await activeId(), 'se-structure-kind-open');
   const timer = (await stepOf('qa'))!;
   assert.deepEqual([timer.kind, timer.resources, timer.duration], ['timer', undefined, 10]);
-  assert.match(await page.locator('#se-note').innerText(), /^Changed Quality review to a timer\. Dropped resource demands\./);
+  assert.match(await page.locator('#se-footnote').innerText(), /^Changed Quality review to a timer\. Dropped resource demands\./);
   // Delete names the paths and offers to reconnect the predecessors to the single target, checked.
   await page.locator('#se-structure-delete').click();
   assert.equal(await page.locator('#se-confirm-title').innerText(),
@@ -154,21 +154,21 @@ export async function structureChecks(studio: Studio): Promise<void> {
   await page.locator('#se-add-need').focus();
   await page.keyboard.press('ControlOrMeta+z');
   assert.equal(await page.locator('[data-bind="needs.0.field"]').inputValue(), '', 'typing in one field is one step');
-  assert.equal(await page.locator('#se-note').innerText(), 'Undone. Ctrl+Shift+Z (Cmd+Shift+Z on a Mac) redoes it.');
+  assert.equal(await page.locator('#se-footnote').innerText(), 'Undone. Ctrl+Shift+Z (Cmd+Shift+Z on a Mac) redoes it.');
   await page.keyboard.press('ControlOrMeta+z');
   assert.equal(await page.locator('[data-bind="needs.0.field"]').count(), 0, 'then the added row goes');
   await page.keyboard.press('ControlOrMeta+Shift+z');
   await page.keyboard.press('Control+y');
   assert.equal(await page.locator('[data-bind="needs.0.field"]').inputValue(), 'scope');
   await page.keyboard.press('Control+y');
-  assert.equal(await page.locator('#se-note').innerText(), 'Nothing to redo.');
+  assert.equal(await page.locator('#se-footnote').innerText(), 'Nothing to redo.');
   // A removed row offers Undo, which restores it and moves focus to it.
   await page.locator('[data-act="remove-need"][data-i="0"]').click();
-  assert.equal(await page.locator('#se-note').innerText(), 'Removed need 1 scope. Undo');
+  assert.equal(await page.locator('#se-footnote').innerText(), 'Removed need 1 scope. Undo');
   await page.locator('#se-undo').click();
   assert.equal(await page.locator('[data-bind="needs.0.field"]').inputValue(), 'scope');
   assert.equal(await activeId(), 'se-needs-0-field');
-  assert.equal(await page.locator('#se-note').innerText(), 'Undone. Removed need 1 scope. Ctrl+Shift+Z (Cmd+Shift+Z on a Mac) redoes it.');
+  assert.equal(await page.locator('#se-footnote').innerText(), 'Undone. Removed need 1 scope. Ctrl+Shift+Z (Cmd+Shift+Z on a Mac) redoes it.');
   // A checkbox change is one step; text fields keep the browser's own undo, so the form history is not touched there.
   await page.locator('#se-backlog-on').check();
   await page.keyboard.press('ControlOrMeta+z');
@@ -182,7 +182,7 @@ export async function structureChecks(studio: Studio): Promise<void> {
   await open('discovery');
   await page.locator('#se-add-need').focus();
   await page.keyboard.press('ControlOrMeta+z');
-  assert.equal(await page.locator('#se-note').innerText(), 'Nothing to undo.');
+  assert.equal(await page.locator('#se-footnote').innerText(), 'Nothing to undo.');
   await page.keyboard.press('Escape');
  });
 
