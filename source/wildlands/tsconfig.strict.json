@@ -527,6 +527,7 @@
     "source/test-process-bpmn-helpers.cts",
     "source/test-process-bpmn-extensions.cts",
     "source/test-process-bpmn-conformance.cts",
+    "source/test-process-bpmn-schema.cts",
     "source/verification/process-browser.ts",
     "source/verification/process-bpmn-import-browser.ts",
     "source/verification/process-browser-fixture.ts",
