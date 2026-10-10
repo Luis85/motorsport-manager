@@ -17,6 +17,8 @@
  *    painted. The live size is used until the first report, while the svg is hidden (0 x 0) and after the host moved to another
  *    parent (Present), whose new size the next report confirms. The dock is measured live: it is anchored to the map's bottom-right
  *    corner, so its offsets from that corner do not depend on the passing size.
+ *  - A camera the reader moved keeps its centre and its scale (`keepScale()`) when the svg really changes size or the fitted bounds
+ *    change (zoom is relative to the fit, so it is adjusted): only the edges of the view follow the svg.
  */
 declare namespace LWProcessMapCamera {
  /** The svg size (`W`,`H`) and the part the fitted map may use (`w`,`h`, from the top-left corner). */
@@ -31,6 +33,11 @@ declare namespace LWProcessMapCamera {
   fit: LWProcessMapFit.Box; zoom: number; cx: number; cy: number;
   /** Records the svg size and host parent at a ResizeObserver report; `area()` frames for that size while it applies. */
   settled(): void;
+  /**
+   * Keeps the scale of the last viewBox (screen pixels per world unit) for a camera the reader moved, by adjusting the fit-relative
+   * zoom after the fitted bounds or the svg size changed (within the 0.5 to 8 zoom range).
+   */
+  keepScale(): void;
   /** Whether the camera still shows the framing the map chose (no pan or zoom since), so a resize frames again. */
   atFit: boolean;
   /** The card-number key in the dock. */
@@ -67,7 +74,7 @@ declare namespace LWProcessMapCamera {
   let dragStart: {x: number; y: number} | null = null, panning = false, last = {x: 0, y: 0};
   let reported: {width: number; height: number; parent: Node | null} | null = null;
   const cam: LWProcessMapCamera.Camera = {
-   fit: {x: 0, y: 0, w: 1, h: 1}, zoom: 1, cx: 0, cy: 0, atFit: false, key, settled,
+   fit: {x: 0, y: 0, w: 1, h: 1}, zoom: 1, cx: 0, cy: 0, atFit: false, key, settled, keepScale,
    area, scale, clamp, setViewBox, zoomAt, panBy, reveal, down, move, up, keydown, dispose,
   };
   function settled(): void {
@@ -100,9 +107,17 @@ declare namespace LWProcessMapCamera {
    cam.cy = Math.max(fit.y, Math.min(fit.y + fit.h, cam.cy));
   }
   /** The camera centre sits at the middle of the usable area, so the dock corner stays clear at fit. */
+  /** The scale the last viewBox was written for; 0 before the first. */
+  let shown = 0;
+  function keepScale(): void {
+   if (!shown) return;
+   cam.zoom *= shown / scale(); clamp();
+  }
   function setViewBox(): void {
    clamp();
-   const a = area(), k = scale(), box = `${cam.cx - a.w / 2 / k} ${cam.cy - a.h / 2 / k} ${a.W / k} ${a.H / k}`;
+   const a = area(), k = scale();
+   shown = k;
+   const box = `${cam.cx - a.w / 2 / k} ${cam.cy - a.h / 2 / k} ${a.W / k} ${a.H / k}`;
    if (svg.getAttribute('viewBox') !== box) svg.setAttribute('viewBox', box);
   }
   function zoomAt(factor: number, clientX?: number, clientY?: number): void {

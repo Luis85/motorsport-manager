@@ -203,13 +203,14 @@ declare namespace LWProcess2D {
    * Measures the fitted bounds and frames the camera (when `placing`) for the number key's state, then shows or hides the key for the
    * layout found. The key sits in the dock, so toggling it changes the usable area, which changes the bounds (cards keep a screen
    * size) and the layout: the bounds are measured again in up to two more passes. A framing starts where a fresh map starts, with the
-   * key hidden, so the result never depends on the map's earlier states; a kept camera starts from the key it shows.
+   * key hidden, so the result never depends on the map's earlier states; a kept camera starts from the key it shows and keeps its
+   * centre and scale.
    */
   function settle(view: LWProcessApp.View, steps: LWProcess.Step[], single: boolean, placing: boolean): LWProcessMapCard.Layout {
    if (placing) camera.key.hidden = true;
    for (let pass = 0; ; pass++) {
     camera.fit = Fit.bounds(steps, drawnAt, single, box => atFit(view, box));
-    if (placing) place();
+    if (placing) place(); else camera.keepScale();
     camera.setViewBox();
     const L = layout(view), hide = L.mode !== 'numbers';
     if (camera.key.hidden === hide || pass === 2) return L;
