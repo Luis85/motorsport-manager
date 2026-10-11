@@ -362,16 +362,34 @@ measures); and section spacing.
 
 ### Close-out verification
 
-- **Source identity:** TODO(coordinator): branch, final head SHA and the merges it contains
-  (documentation, reflow, regenerated `bin/` and `demos/` after LT).
-- **Complete registered gate:** TODO(coordinator): the `npm run verify` command, checks passed of
-  `totalChecks`, suites, duration, environment (Node, Playwright, Chromium) and load.
-- **Check counts:** TODO(coordinator): fast tier, typecheck, architecture, `gate-integrity`, Python
-  unittest and `check_docs.py` results on the final head.
-- **Generated artifacts:** TODO(coordinator): `npm run check:cli` and `npm run check:demos` on the
-  final head (`bin/` and `demos/` were last rebuilt in `783850f`, before LT merged).
-- **Screenshots:** TODO(coordinator): the `process:shots` captures reviewed (and any manual captures
-  of Present full screen, Wide text, the light theme and the Dashboard), with `overflowing` and
-  `consoleErrors`. Screenshots of synthetic fixture states are review material, not usability,
-  accessibility or balance validation.
+- **Source identity:** branch `feature/process-studio-followups` (stacked on
+  `feature/process-present-mode`), head `b0b12596084e1543bce4d98992cefd6081bf5fb7`. It contains every
+  close-out merge (SF, S, T, P, V, CK, RC, LT, the documentation pass and the five reflows), the
+  re-enabled arrival-cap assertions, the last four wrapped source lines and `bin/` and `demos/`
+  regenerated after all of them. Only this record's text was committed after it.
+- **Complete registered gate:** `npm run verify -- --jobs 3 --browser-jobs 2` on `b0b1259`: passed
+  2,330/2,330 checks in 129/129 suites, 1,822 s (00:44 to 01:14 UTC on 2026-10-11), in the Linux
+  cloud container, Node v22.22.0, Playwright 1.63.0, Chromium 141.0.7390.37 (explicit override), with
+  nothing else running (load average 1.2 at the start). The inventory matched `gate-expectations.json`.
+  Earlier in the pass the same gate passed 2,302/2,302 on `5843c5f` (before RC and LT). Hosted CI
+  passed on every pushed head it finished on (`965a37d`, `289acc6`, `783850f`, `fa0f45f`, `3cdac35`).
+- **Check counts:** on the final head, `check_docs.py` passed (2,959 local links),
+  `python3 scripts/check_architecture.py` passed, and `python3 -m unittest discover -s tests -p
+  'test_*.py'` ran 355 tests, OK with 19 skipped. The gate's own stages ran both typechecks, the
+  architecture rules, the fast tier and `gate-integrity`. `python3 scripts/quality.py --loc-only`
+  reports no process file over its budget and no process line over 160 characters.
+- **Generated artifacts:** `npm run check:cli` reported `bin/wildlands` current (14,280,249 bytes) and
+  `npm run check:demos` all six demos current on the final head; `bin/scene-forge` was rebuilt after
+  the Scene Forge split and `check:cli` in `source/scene-forge` reported it current.
+- **Screenshots:** `npm run process:shots -- --game docs/concepts/agency-delivery --minute 240` for
+  process 1 (completed at minute 217) and process 7 (run limit at 240): 12 captures each, `overflowing`
+  and `consoleErrors` empty. Reviewed: the process 7 2D map at 1440 px, the process 7 phone studio and
+  a process 1 step slide in DejaVu Sans with the new Wide text and Full screen buttons and the key
+  hint. The packages' own capture sets were also reviewed: the Dashboard before and after its visual
+  fixes (162 final PNGs, an automated collision and clipping pass over 14 configurations) and the light
+  theme in 2D, 3D, Dashboard, Present, editors, lenses, phone and DejaVu Sans. Screenshots of synthetic
+  fixture states are review material, not usability, accessibility or balance validation.
+- **Not run:** the Godot `scripts/verify.py` gate (this standalone project does not touch it), the full
+  `quality.py` run beyond `--loc-only` (CI's advisory job runs it), and a real browser's full-screen
+  Escape (headless Chromium only).
 - **Documentation pass:** `python3 scripts/check_docs.py` passed after the documentation commits.
