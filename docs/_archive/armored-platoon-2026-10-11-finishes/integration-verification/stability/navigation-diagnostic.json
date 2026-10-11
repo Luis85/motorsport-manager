@@ -1,0 +1,65 @@
+{
+  "scope": "Offline diagnostic of copies of actual untouched checkpoints. Counterfactual removes other allied hulls from a separate world solely to isolate route blocking; no observed checkpoint or gameplay command is changed. This is not additional observed gameplay or a pass criterion.",
+  "results": [
+    {
+      "checkpoint": "checkpoint-11.json",
+      "actor": "able-2",
+      "mission": "iron-counterattack",
+      "observedOrderReason": "No safe route",
+      "currentSavedContextRoutePoints": 0,
+      "counterfactualWithoutOtherAlliedHullsRoutePoints": 1,
+      "counterfactualRemovedIds": [
+        "able-1",
+        "able-3"
+      ]
+    },
+    {
+      "checkpoint": "checkpoint-3.json",
+      "actor": "able-2",
+      "mission": "pine-ridge",
+      "observedOrderReason": "No safe route",
+      "currentSavedContextRoutePoints": 0,
+      "counterfactualWithoutOtherAlliedHullsRoutePoints": 1,
+      "counterfactualRemovedIds": [
+        "able-1",
+        "able-3"
+      ]
+    },
+    {
+      "checkpoint": "checkpoint-5.json",
+      "actor": "able-2",
+      "mission": "iron-counterattack",
+      "observedOrderReason": "No safe route",
+      "currentSavedContextRoutePoints": 0,
+      "counterfactualWithoutOtherAlliedHullsRoutePoints": 1,
+      "counterfactualRemovedIds": [
+        "able-1",
+        "able-3"
+      ]
+    },
+    {
+      "checkpoint": "checkpoint-9.json",
+      "actor": "able-2",
+      "mission": "pine-ridge",
+      "observedOrderReason": "No safe route",
+      "currentSavedContextRoutePoints": 0,
+      "counterfactualWithoutOtherAlliedHullsRoutePoints": 1,
+      "counterfactualRemovedIds": [
+        "able-1",
+        "able-3"
+      ]
+    },
+    {
+      "checkpoint": "checkpoint-9.json",
+      "actor": "able-3",
+      "mission": "pine-ridge",
+      "observedOrderReason": "No safe route",
+      "currentSavedContextRoutePoints": 0,
+      "counterfactualWithoutOtherAlliedHullsRoutePoints": 1,
+      "counterfactualRemovedIds": [
+        "able-1",
+        "able-2"
+      ]
+    }
+  ]
+}

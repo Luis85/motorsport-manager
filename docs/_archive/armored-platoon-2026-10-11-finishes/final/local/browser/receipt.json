@@ -1,0 +1,42 @@
+{
+  "recordedAtUTC": "2026-10-11T16:22:41.248189+00:00",
+  "implementation": "e9c5571cd116723e285dad5af1bb9adbb8badd3d",
+  "tree": "61796691e66afcc440731dab2305ad72579e8b77",
+  "status": "passed",
+  "passed": 17,
+  "total": 17,
+  "artifact": {
+    "path": ".generated/artifacts/armored-play.html",
+    "bytes": 4438829,
+    "sha256": "0890b4b9b8e8be967e7032062e1bbd7e24362140e452f49a43b32dcf6def7fda"
+  },
+  "provenance": {
+    "kind": "littlewild-browser-provenance",
+    "node": "v24.19.0",
+    "playwright": "1.63.0",
+    "playwrightCore": "1.63.0",
+    "browser": "151.0.7922.173",
+    "selection": "explicit-override",
+    "args": [
+      "--no-sandbox",
+      "--enable-unsafe-swiftshader",
+      "--use-angle=swiftshader"
+    ]
+  },
+  "testAndSourceIdentity": "isolated-inputs.json",
+  "result": "runtime/verification/v15/armored-browser-results.json",
+  "resultSha256": "231ef65b890361902f2b6ac846cde28783d534ebb45ac3229dd4033e9c57e2d5",
+  "log": {
+    "file": "browser.log",
+    "bytes": 3063,
+    "sha256": "58b328b707c41ab2502c72579bfe81170d1587e425eeb050596ab167af0809fe"
+  },
+  "unchangedAssertions": true,
+  "cleanup": "context and browser closed; process exited0",
+  "limitations": [
+    "SwiftShader observation is not hardware performance or reference-fidelity acceptance.",
+    "Bounded checkpoint fixtures are explicitly staged; results are not mission-completion evidence.",
+    "Offline assertion covers script errors and unexpected requests; console warning absence is not asserted by this suite."
+  ],
+  "handoff": "Gameplay observer notified of exclusive browser availability for the fresh30-minute run."
+}

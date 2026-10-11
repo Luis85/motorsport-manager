@@ -1,0 +1,55 @@
+# Thirty-minute software-browser stability observation
+
+Precommit freeze/launch checkout HEAD: 3ce1c8dfde1e479b9927e4447bcbb6e28e898ba9. This is retained provenance, not a relabeled implementation commit.
+Separately proven implementation: 09ed672642aedee855d2d45f0e8c4a611127ca7b, tree 7eb1dc63ee7709b75c0a835dcb14cbb3d509cf99; frozen/working/committed artifact bytes and all tracked source inventory entries match (committed-association-final.json).
+Frozen artifact: 4438590 bytes, SHA-256 a15cb9df9468a2dbd5373f4ea4f345f8bf1ec83d80a0c598b63b59a626f7fdb6.
+Browser: Chromium 151.0.7922.173; Playwright 1.63.0; SwiftShader; 960×600.
+Native wall-time observation: 1800.000 seconds, 2026-10-11T15:25:52.609Z to 2026-10-11T15:55:52.609Z; planned duration completed: true.
+
+Page errors: 0. Console errors: 0. Console warnings: 0. Observation failures: 0.
+Accepted public commands: 375/375. Recorded transitions: 14. Frozen artifact bytes unchanged: true.
+
+## Mission intervals
+
+| Mission | Sampled wall interval (s) | First → last tick | First → last simulation seconds | Samples |
+|---|---:|---:|---:|---:|
+| crossroads | 1.57–228.24 | 18 → 4492 | 0.300 → 74.867 | 16 |
+| pine-ridge | 243.64–468.93 | 19 → 5755 | 0.317 → 95.917 | 16 |
+| iron-counterattack | 483.94–709.22 | 31 → 6346 | 0.517 → 105.767 | 16 |
+| crossroads | 724.25–950.20 | 32 → 5576 | 0.533 → 92.933 | 16 |
+| pine-ridge | 965.22–1190.65 | 79 → 5772 | 1.317 → 96.200 | 16 |
+| iron-counterattack | 1205.66–1430.95 | 90 → 6095 | 1.500 → 101.583 | 16 |
+| crossroads | 1445.96–1672.15 | 74 → 5446 | 1.233 → 90.767 | 16 |
+| pine-ridge | 1687.16–1800.01 | 144 → 3026 | 2.400 → 50.433 | 9 |
+
+These are separate sampled intervals. Tick counts are not added across resets. The observations do not measure FPS.
+
+## Resource observations
+
+CDP JavaScript heap used: first 19045856, final 42276568, sampled minimum 16039492, maximum 51227496 bytes. No garbage collection was forced; these values do not establish leak freedom.
+DOM nodes: {"first":505,"last":507,"minimum":501,"maximum":878}. Documents: {"first":1,"last":1,"minimum":1,"maximum":1}. JavaScript event listeners: {"first":48,"last":48,"minimum":48,"maximum":59}.
+GPU memory, resource residency and renderer geometry/texture counters were unavailable. Snapshot entity counts represent visible detached projections, not total ECS allocations.
+
+## Warnings and errors
+
+
+Controlled vehicles were operational in80samples and impaired in41; drive/aim were available in all121samples. Fire was unavailable in31samples due to reload. No scripted control handovers were needed. Automatic shell command responses are outside the scripted command acceptance count; raw observations are unchanged.
+
+## Observed navigation limits
+
+The121samples contain363friendly-vehicle projections:16reported No safe route and one reported Reverse escape. All seven saved checkpoints retain hull-route-v1. Five saved blocked-actor contexts were examined offline: all retained an empty route, while separate counterfactual copies omitting other allied hulls admitted a direct route. This isolates conservative allied-hull obstruction in those saved cases; it does not establish general traffic resolution. The actual workload, checkpoints and acceptance results were not changed. See navigation-observations.json and navigation-diagnostic.json.
+
+## Scope and retention
+
+- Software SwiftShader at 960x600; no hardware performance conclusion.
+- Entity counts are detached visible projection counts, not total live ECS or GPU allocations.
+- JS heap is CDP heap usage without forced garbage collection; fluctuations do not establish leak freedom.
+- GPU memory, resource residency, renderer geometry/texture counters, hardware VRAM and thermal/power data are unavailable.
+- Native RAF elapsed times are retained; no private ticks, RAF replacement, altered content, or fabricated checkpoint state.
+- This bounded observation is not full Q03 acceptance or reference-fidelity evidence.
+- Scripted workload calls only. Automatic shell control/aim command responses were not instrumented or included in these totals.
+- Repair and resupply actions were not part of this thirty-minute workload; their separate integrated browser checks are distinct evidence.
+- Workload: scripted driving near deployment, aiming/main-gun fire, platoon follow/hold orders, unmodified checkpoint restores and mission switches. No multiplayer, device loss, full campaign completion or worst-case crowded-scene coverage.
+- All local raw records, unmodified checkpoints, served demo bytes, exact scripts and PNG captures are retained under work/armored-v3-final-stability. Root may archive a selected subset with explicit scope.
+
+Cleanup: [{"name":"cdp","closed":true,"at":"2026-10-11T15:55:53.835Z"},{"name":"context","closed":true,"at":"2026-10-11T15:55:53.856Z"},{"name":"browser","closed":true,"at":"2026-10-11T15:55:54.159Z"}]

@@ -1,0 +1,11 @@
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),cp=require('node:child_process'),crypto=require('node:crypto'),{performance}=require('node:perf_hooks');
+const root=process.cwd(),out=path.join(root,'work/finish-harness-profile');
+const ts=require(path.join(root,'source/wildlands/node_modules/typescript'));
+const sha='09ed672642aedee855d2d45f0e8c4a611127ca7b';
+const file='source/model-forge/src/kernel/application/finish-pattern.ts';
+const input=cp.execFileSync('git',['show',sha+':'+file],{encoding:'utf8'});
+const code=ts.transpileModule(input,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
+const recipes=[]; for(const kind of ['painted-metal','bare-metal','rubber'])for(const seed of [0,7,65535])recipes.push({version:1,kind,seed,scale:seed===7?16:1,wear:.35,palette:['#000000','#ffffff','#485239','#AbCdEf']});
+const cases=[['CommonJS-equivalent',()=>{const exports={};vm.runInThisContext('(function(exports){'+code+'\n})')(exports);return exports.generateFinish;}],['Default VM',()=>{const ctx={exports:{}};vm.runInNewContext(code,ctx);return ctx.exports.generateFinish;}],['VM explicit Math',()=>{const ctx={exports:{},Math};vm.runInNewContext(code,ctx);return ctx.exports.generateFinish;}],['VM local Math binding',()=>{const ctx={exports:{}};vm.runInNewContext('const Math=globalThis.Math;\n'+code,ctx);return ctx.exports.generateFinish;}]];
+const report={commit:sha,file,sourceSha256:crypto.createHash('sha256').update(input).digest('hex'),node:process.version,recipes,cases:[],scope:'Same original source, pixels and 9 representative recipes. Diagnostic realm/binding changes only, not production or registered suite edits. Measurements may overlap other agents CPU work.'};
+for(const [name,load]of cases){const fn=load(),start=performance.now(),cpu=process.cpuUsage(),hash=crypto.createHash('sha256');for(const recipe of recipes){const p=fn(recipe);for(const ch of ['color','normal','orm'])hash.update(p[ch]);}const used=process.cpuUsage(cpu);report.cases.push({name,wallMs:performance.now()-start,cpuMs:(used.user+used.system)/1000,pixelSha256:hash.digest('hex')});fs.writeFileSync(path.join(out,'realm-profile.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report.cases.at(-1)));}

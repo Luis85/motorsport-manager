@@ -1,0 +1,69 @@
+{
+  "passed": 13,
+  "total": 14,
+  "results": [
+    {
+      "name": "Default adapter retains the shipped graphics renderer",
+      "passed": true
+    },
+    {
+      "name": "Real custom map installs without mutating simulation or save state",
+      "passed": true
+    },
+    {
+      "name": "Custom map hit-testing opens the existing creature UI and camera controls",
+      "passed": true
+    },
+    {
+      "name": "Lifecycle failures roll back and dispose all candidate resources",
+      "passed": true
+    },
+    {
+      "name": "Custom frames expose detached geometry and reject draw-time command mutation",
+      "passed": true
+    },
+    {
+      "name": "User intents share command validation and disposed renderer callbacks lose authority",
+      "passed": true
+    },
+    {
+      "name": "Active draw failures restore basic while preserving state",
+      "passed": true
+    },
+    {
+      "name": "Custom renderer follows replacement engines without retaining old geometry",
+      "passed": true
+    },
+    {
+      "name": "Custom renderer draws the visited upper floor and real worker progress without changing active work or save",
+      "passed": true
+    },
+    {
+      "name": "Custom renderer resizes with the browser at 1440px",
+      "passed": true
+    },
+    {
+      "name": "Custom renderer resizes with the browser at 390px",
+      "passed": true
+    },
+    {
+      "name": "Repeated switches leave one input owner and no duplicate canvases",
+      "passed": true
+    },
+    {
+      "name": "Custom Office frames keep a real onsite customer-call quest actor visible and selectable",
+      "passed": false,
+      "error": "TimeoutError: locator.click: Timeout 5000ms exceeded.\nCall log:\n  - waiting for locator('[data-scenario=select]').filter({ hasText: 'Office' })\n    - locator resolved to <button data-id=\"2\" aria-pressed=\"false\" data-scenario=\"select\">…</button>\n  - attempting click action\n    - waiting for element to be visible, enabled and stable\n"
+    },
+    {
+      "name": "Renderer extension flows remain offline and produce no browser errors",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "consoleProblems": [],
+  "requests": [],
+  "fixtureRequests": [
+    "https://localhost/wildlands-artifact.html"
+  ]
+}

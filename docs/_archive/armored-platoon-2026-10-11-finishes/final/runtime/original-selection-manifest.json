@@ -1,0 +1,96 @@
+{
+  "source_commit": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+  "scope": "Selected portable receipt, complete findings, exact lossless job logs and terminal metadata; excludes caches and executable work scripts.",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 2409,
+      "sha256": "0d42cf967b9f4246789e99333aa91109248d5d8fa44cc3a392365aabca7e3c1d"
+    },
+    {
+      "path": "receipt.json",
+      "bytes": 9795,
+      "sha256": "92fd5dd8407a5a8bcd47b8e133c28e123a86a03d00c59ad4332d02385b353ef0"
+    },
+    {
+      "path": "checkout-identity.json",
+      "bytes": 554,
+      "sha256": "cdf45cc01074eae5892b9c43d6ede6beba963d9f61a7b75a79353092e384f8fc"
+    },
+    {
+      "path": "runtime-terminal-run.json",
+      "bytes": 361,
+      "sha256": "c1fec038d5383ee7237f90c3b06cd64f13740cd0027adff5722296e64b748260"
+    },
+    {
+      "path": "runtime-terminal-jobs.json",
+      "bytes": 4026,
+      "sha256": "6d15c6bf26cd4a03582d023a6905d096a5b231d9f0326639acd4f3ec01655752"
+    },
+    {
+      "path": "runtime-terminal-artifacts.json",
+      "bytes": 2528,
+      "sha256": "bce3f69d2e4d3ed1799e5740758c80b87c37b00dbef16b27b8f653628d5bb422"
+    },
+    {
+      "path": "runtime-linux-job.log.gz",
+      "bytes": 38486,
+      "sha256": "0780e9ccab2c74d8a9adcead3798377f882abb6b50c0bdb61349a34116df777a"
+    },
+    {
+      "path": "runtime-windows-job.log.gz",
+      "bytes": 5169,
+      "sha256": "247f5f463136012c87ab1e25fb44d09f48432da556b93439da7b67ee92e4f47a"
+    },
+    {
+      "path": "quality/receipt.json",
+      "bytes": 629,
+      "sha256": "293ab0822c0336f9493bb9b6597577a7c9474721bb4388fa7af35765d985b8f8"
+    },
+    {
+      "path": "quality/compact-summary.json",
+      "bytes": 538,
+      "sha256": "2fbba7c351d07455db01a5492b04d00f43c48617ab0c073365c24ee263ae7030"
+    },
+    {
+      "path": "quality/summary.md",
+      "bytes": 2233,
+      "sha256": "c9cda31ae9ea2eaf2b0ec3a2fd47e11e24d9c938597f694ad6522ac9167d15e9"
+    },
+    {
+      "path": "quality/quality.json.gz",
+      "bytes": 112468,
+      "sha256": "b9e21cba89091c4d3102de45002717fd6a93dc1f946912429eb1d502fe6da940"
+    },
+    {
+      "path": "quality/invocation.log",
+      "bytes": 159,
+      "sha256": "516f4de50ac7adf70e001a305254d51e4d693b4f6147d7c7e38cac70871fc67f"
+    },
+    {
+      "path": "quality/ruff.log",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "path": "quality/ruff-format.log",
+      "bytes": 27,
+      "sha256": "b75cbfdc648a3350a77e0c7831035d830c486ab9918dbdf3f315551293017f8e"
+    },
+    {
+      "path": "quality/gdlint.log",
+      "bytes": 27,
+      "sha256": "d2f45ecead8ebe024d64d724cef92d4c7b89f8d0150b30b296320bddb760e4be"
+    },
+    {
+      "path": "quality/gdformat.log",
+      "bytes": 34,
+      "sha256": "ae47611dc50469dc4f82167e160e8c2921880f781d58b8c268f538b3f7b2e1c4"
+    },
+    {
+      "path": "quality/gdradon.log.gz",
+      "bytes": 33014,
+      "sha256": "1fa40af2dd3376d24d451cd5b8b0dbf9c22bcf7a6aff01ad13df86db372974dc"
+    }
+  ]
+}

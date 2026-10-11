@@ -1,0 +1,59 @@
+{
+  "baselineCommit": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "optimizedState": "Uncommitted production changes in the two generators plus Model Forge golden-test extension; no source commit identity claimed. Shared root may separately rebuild generated artifacts.",
+  "sources": [
+    {
+      "path": "source/model-forge/src/kernel/application/finish-pattern.ts",
+      "baseline": {
+        "bytes": 4617,
+        "sha256": "fd88b0ec05939bb439b6f3b7d1b76c2464c4c837027b59966bbd2cbe4d3a13fe",
+        "snapshot": "source-snapshots/baseline-finish-pattern.ts.txt.gz"
+      },
+      "optimized": {
+        "bytes": 5618,
+        "sha256": "53fd6b90a5763aa5784d4795179e7571a70151aacd6a81cbc38c923688f71aeb",
+        "snapshot": "source-snapshots/optimized-finish-pattern.ts.txt.gz"
+      }
+    },
+    {
+      "path": "source/wildlands/source/asset-finish.ts",
+      "baseline": {
+        "bytes": 7031,
+        "sha256": "5f24b7f7528f31098e1789fb7777904b4fce50acb8d7dde00afb64bef84b113a",
+        "snapshot": "source-snapshots/baseline-asset-finish.ts.txt.gz"
+      },
+      "optimized": {
+        "bytes": 8052,
+        "sha256": "4aca0280594a3df3108fc30efa690536340466b66c8dc2bae43fd8dd5d3ecf4b",
+        "snapshot": "source-snapshots/optimized-asset-finish.ts.txt.gz"
+      }
+    },
+    {
+      "path": "source/model-forge/tests/kernel-finish.test.ts",
+      "baseline": {
+        "bytes": 9255,
+        "sha256": "ec967b6c0867ae0bd82717b1b5f208e24a91cc67b5b5ca085b524d169902c497",
+        "snapshot": "source-snapshots/baseline-kernel-finish.test.ts.txt.gz"
+      },
+      "optimized": {
+        "bytes": 10179,
+        "sha256": "ecb6608fe09ec44660f1563cb8d195930ea7d8c834ecd2fbda64ffd6ba525b27",
+        "snapshot": "source-snapshots/optimized-kernel-finish.test.ts.txt.gz"
+      }
+    },
+    {
+      "path": "source/wildlands/source/test-asset-finish.cts",
+      "baseline": {
+        "bytes": 22154,
+        "sha256": "c3a427c8ac63a3a56d0943593a72bccd16684d60abf3d6682ee06e7193776bae",
+        "snapshot": "source-snapshots/baseline-test-asset-finish.cts.txt.gz"
+      },
+      "optimized": {
+        "bytes": 22154,
+        "sha256": "c3a427c8ac63a3a56d0943593a72bccd16684d60abf3d6682ee06e7193776bae",
+        "snapshot": "source-snapshots/optimized-test-asset-finish.cts.txt.gz"
+      }
+    }
+  ],
+  "wildlandsNineCheckSuiteUnchanged": true
+}

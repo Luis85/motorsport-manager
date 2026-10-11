@@ -1,0 +1,12 @@
+[
+  {
+    "archive": "integration-verification",
+    "committedFilesChecked": 110,
+    "errors": []
+  },
+  {
+    "archive": "performance-correction",
+    "committedFilesChecked": 35,
+    "errors": []
+  }
+]

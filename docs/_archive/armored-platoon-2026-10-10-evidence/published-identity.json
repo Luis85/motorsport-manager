@@ -1,0 +1,16 @@
+{
+  "published": {
+    "path": "demos/armored-platoon.html",
+    "bytes": 1803890,
+    "sha256": "4708ad9b3cd9343ee69b1de248eaeef344b767d83e39bf2ad250271b6737c22d",
+    "gzipBytes": 332430
+  },
+  "pineArtifactSha256": "9b561acf571dcce27c76ba68bcdc85e0ef02b8215cefe1d471401b32a60f686e",
+  "inlineScriptCount": 22,
+  "unchangedRuntimeScriptCount": 21,
+  "allRuntimeScriptsByteEqual": true,
+  "catalogAndVisualDataByteEqualAfterExactStoragePrefix": true,
+  "publishedStoragePrefix": "window.LWGameProfile = {\"storage\":{\"namespace\":\"wildlands.armored-platoon\"}};",
+  "stylesByteEqual": true,
+  "limitation": "This comparison establishes script/data continuity; published-demo lifecycle is checked separately in the complete gate."
+}

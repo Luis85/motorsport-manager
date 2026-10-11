@@ -1,0 +1,40 @@
+{
+  "kind": "intermediate-armored-browser-evidence",
+  "date": "2026-10-10",
+  "baseHead": "749a9f6296f3beb665eedf1eda57ae8cbfd00b39",
+  "artifact": {
+    "sha256": "dffbbdb19f615925a09631cd3e84621742b2fb243feae218e2d3452f5a339558",
+    "bytes": 1802555,
+    "pathAtCapture": "source/wildlands/.generated/artifacts/armored-play.html",
+    "bundled": false
+  },
+  "browser": "Chromium151.0.7922.173",
+  "playwright": "1.63.0",
+  "renderer": "ANGLE SwiftShader software Vulkan",
+  "passed": 9,
+  "total": 9,
+  "files": {
+    "armored-browser-results.json": {
+      "sha256": "3941cfebe99a9a17e75c8a83448decb035403e797161f6d585db213e87360ef3",
+      "bytes": 1193
+    },
+    "armored-chase.png": {
+      "sha256": "a2a8bc54dd876cb1dfafbc1a4a53f7df298438d2805ec8f620be0109182ec0f2",
+      "bytes": 473917
+    },
+    "armored-gunner.png": {
+      "sha256": "acaea34cfa71d1a1ab84fe1a16e5ba038741bd66f2ce74083314bfa0e92c2e9b",
+      "bytes": 273520
+    },
+    "armored-phone-observation.png": {
+      "sha256": "529c908c06cfca57e730fc4701db931976a65585654f47a71f803dafd3da87e7",
+      "bytes": 150306
+    }
+  },
+  "limits": [
+    "Artifact-bound intermediate pass; later source edits require new final-source gate.",
+    "Phone screenshot is observational; no touch driving support claim.",
+    "No terminal mission outcome, reference fidelity or hardware performance acceptance in these nine scenarios."
+  ],
+  "archiveNote": "Retained result and three selected captures. Additional desktop layout captures omitted; hashes here cover retained files only. Artifact pathAtCapture is provenance, not a bundled file."
+}

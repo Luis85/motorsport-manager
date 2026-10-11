@@ -6,6 +6,7 @@ var meshes: Dictionary = {}
 var materials: Dictionary = {}
 var surface_textures: Dictionary = {}
 var surface_entries: Variant = null
+var finish_entries: Variant = null
 
 
 func install(records: Array) -> void:
@@ -122,6 +123,8 @@ func material(
 		result.emission_energy_multiplier = float(properties.get("emissiveIntensity", 1))
 	if properties.has("surface"):
 		_surface(result, properties.surface)
+	if properties.has("finish"):
+		_finish(result, properties.finish)
 	materials[key] = result
 	return result
 
@@ -162,6 +165,57 @@ func _surface(result: StandardMaterial3D, descriptor: Dictionary) -> void:
 		result.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 		return
 	push_error("Portable surface was not baked into this Godot project")
+
+
+## Finish pixels are baked by the same versioned engine generator as browser maps.
+func _finish(result: StandardMaterial3D, descriptor: Dictionary) -> void:
+	if finish_entries == null:
+		finish_entries = JSON.parse_string(
+			FileAccess.get_file_as_string("res://finishes/index.json")
+		)
+	if not finish_entries is Array:
+		push_error("Missing portable finish texture index")
+		return
+	for entry in finish_entries:
+		# JSON numbers arrive as floats; compare their values without approximate matching.
+		if (
+			entry.get("algorithm") != "forge-finish-v1"
+			or not _same_finish(entry.get("finish", {}), descriptor)
+		):
+			continue
+		for role in ["color", "normal", "orm"]:
+			var path := "res://" + str(entry[role])
+			if not surface_textures.has(path):
+				var image := Image.load_from_file(path)
+				if image == null:
+					push_error("Missing portable finish texture " + path)
+					return
+				image.generate_mipmaps()
+				surface_textures[path] = ImageTexture.create_from_image(image)
+		result.set_meta("finish_algorithm", entry.algorithm)
+		result.albedo_texture = surface_textures["res://" + str(entry.color)]
+		result.normal_enabled = true
+		result.normal_texture = surface_textures["res://" + str(entry.normal)]
+		result.roughness_texture = surface_textures["res://" + str(entry.orm)]
+		result.metallic_texture = result.roughness_texture
+		result.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_GREEN
+		result.metallic_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_BLUE
+		var repeat := float(descriptor.scale)
+		result.uv1_scale = Vector3(repeat, repeat, 1)
+		result.texture_repeat = true
+		result.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		return
+	push_error("Portable finish was not baked into this Godot project")
+
+
+func _same_finish(left: Dictionary, right: Dictionary) -> bool:
+	if left.get("kind") != right.get("kind"):
+		return false
+	for key in ["version", "seed", "scale", "wear"]:
+		if not left.has(key) or not right.has(key) or float(left[key]) != float(right[key]):
+			return false
+	# Match LWAssetFinish.key: an omitted palette is the explicit single white swatch.
+	return left.get("palette", ["#ffffff"]) == right.get("palette", ["#ffffff"])
 
 
 func colored(color: String) -> StandardMaterial3D:

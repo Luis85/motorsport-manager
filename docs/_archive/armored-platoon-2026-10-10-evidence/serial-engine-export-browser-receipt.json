@@ -1,0 +1,33 @@
+{
+  "suite": "engine-export-browser",
+  "sourceSha256": "6f000038fcbdf3b3702cdb15af81c117c479492c25089dc049964e66ad10b541",
+  "gitHead": "187dd821316cb334f13947780bb5e135878bda2c",
+  "command": [
+    "timeout",
+    "--kill-after=10s",
+    "300s",
+    "node",
+    "/workspace/work/armored-platoon/source/wildlands/.generated/verification/engine-export-browser.js"
+  ],
+  "timeoutSeconds": 300,
+  "browserExecutable": "/usr/bin/chromium",
+  "browserVersion": "Chromium 151.0.7922.173 built on Debian GNU/Linux 13 (trixie)",
+  "entrySha256": "c2eafd34a74a8e2facea4e9a1748beda6c09d477a0bee4445bdabc49c119a1a9",
+  "fullGateSha256Before": "0b3eeb02d6edd5aea90e4f65a82e298535eece57f378c81f2f3fdd0636fa29e5",
+  "environment": {
+    "PLAYWRIGHT_NODEJS_PATH": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+    "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH": "/usr/bin/chromium",
+    "LITTLEWILD_ENGINE_EXPORT_OUT": "/workspace/work/armored-platoon/work/isolated-browser-diagnostics/engine-export-browser"
+  },
+  "startedAt": "2026-10-10T22:09:14Z",
+  "studioArtifactSha256": "c08e2d76c1bcdb03a8f7f6d06e9be9dbf6fc292107603f371ef980b2f5881f21",
+  "showcaseArtifactSha256": "eb36a53bcbedcc37e30a5eaf71f75502a0a3b944a927bdf53b166b36b86b00f3",
+  "exitCode": 0,
+  "passed": 12,
+  "total": 12,
+  "reportSha256": "f3db3449d7c427aff2fbdf45f384dbd501c5e45e5902e3b07d0548b225cecde4",
+  "seconds": 91.094,
+  "finishedAt": "2026-10-10T22:10:45Z",
+  "fullGateSha256After": "0b3eeb02d6edd5aea90e4f65a82e298535eece57f378c81f2f3fdd0636fa29e5",
+  "fullGateUnchanged": true
+}

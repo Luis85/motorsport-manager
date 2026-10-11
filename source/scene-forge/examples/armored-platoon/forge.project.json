@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "name": "Armored Platoon original vehicle library",
+  "activeScene": "main",
+  "scenes": {
+    "main": "scenes/main.scene.json",
+    "pine-ridge": "scenes/pine-ridge.scene.json",
+    "iron-counterattack": "scenes/iron-counterattack.scene.json"
+  },
+  "models": {
+    "m4-sherman": "models/m4-sherman.model.json",
+    "panzer-iv": "models/panzer-iv.model.json"
+  }
+}

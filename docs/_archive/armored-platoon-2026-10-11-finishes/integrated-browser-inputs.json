@@ -1,0 +1,17 @@
+[
+  {
+    "path": ".generated/test-armored-browser.cjs",
+    "bytes": 35218,
+    "sha256": "c9035c79cae6dadd8d4ad525a8b98264b21e517a6673e768b5af2cb3bcb57dde"
+  },
+  {
+    "path": ".generated/verification/browser-harness.js",
+    "bytes": 10022,
+    "sha256": "a464f9b13b46be5a626c628a805960170bbfca74c65fee26d2ea7a4926843bad"
+  },
+  {
+    "path": ".generated/artifacts/armored-play.html",
+    "bytes": 4438163,
+    "sha256": "a82ba1f73d4d62118d093b784840306d475c2497aba35691f675efa074f54032"
+  }
+]

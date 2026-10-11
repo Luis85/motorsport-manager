@@ -1,0 +1,9 @@
+{
+  "artifact_id": 11706772640,
+  "artifact_name": "runtime-confidence-evidence",
+  "status": "workspace_download_blocked",
+  "error": "URLError: Tunnel connection failed: 403 Forbidden",
+  "attempts": 1,
+  "count_limitation": "Full Python output was redirected to tooling-contracts.log inside the retained CI artifact. The job step succeeded; final CI Python counts were not observed.",
+  "no_further_attempts": true
+}

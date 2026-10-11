@@ -30,3 +30,6 @@ under `source/`; they are outside the native game's capability inventory.
 - [Process Studio CLI (`bin/process-studio`)](process-studio-cli.md)
 
 - [Business process engine](business-process-engine.md) — definition, ECS scheduling, step scenes and supported semantics.
+
+- [Armored Platoon contracts and development checkpoint](armored-platoon.md)
+- [Armored Platoon parity ledger](armored-platoon-parity.md)

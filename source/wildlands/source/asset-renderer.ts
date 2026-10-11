@@ -2,16 +2,22 @@
 (function(root){'use strict';
  const A=root.LWAssets;
  const surfaceCache=new WeakMap();
- function surfaceMaps(T,surface){
-  const S=root.LWAssetSurface;if(!S)throw Error('Portable surface generator is unavailable');
+ function disposeMaps(textures){
+  const failures=[];for(const texture of textures)try{texture.dispose();}catch(error){failures.push(error);}
+  if(failures.length)throw new AggregateError(failures,'Portable material texture disposal failed');
+ }
+ function surfaceMaps(T,surface,finish=false){
+  const S=finish?root.LWAssetFinish:root.LWAssetSurface;if(!S)throw Error('Portable material generator is unavailable');
   let cache=surfaceCache.get(T);if(!cache){cache=new Map();surfaceCache.set(T,cache);}
-  const key=S.key(surface);let entry=cache.get(key);
+  const key=(finish?'finish/':'')+S.key(surface);let entry=cache.get(key);
   if(!entry){
    if(cache.size>=256)throw Error('Renderer exceeds 256 active portable surfaces');
-   const pixels=S.generate(surface),make=(data,color)=>{const t=new T.DataTexture(data,pixels.width,pixels.height,T.RGBAFormat);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(surface.scale,surface.scale);t.magFilter=T.LinearFilter;t.minFilter=T.LinearMipmapLinearFilter;t.generateMipmaps=true;if(color)t.colorSpace=T.SRGBColorSpace;t.needsUpdate=true;return t;};
-   entry={map:make(pixels.color,true),normalMap:make(pixels.normal,false),users:0};cache.set(key,entry);
+   const pixels=S.generate(surface),allocated=[],make=(data,color)=>{const t=new T.DataTexture(data,pixels.width,pixels.height,T.RGBAFormat);allocated.push(t);t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(surface.scale,surface.scale);t.magFilter=T.LinearFilter;t.minFilter=T.LinearMipmapLinearFilter;t.generateMipmaps=true;if(color)t.colorSpace=T.SRGBColorSpace;t.needsUpdate=true;return t;};
+   try{entry={map:make(pixels.color,true),normalMap:make(pixels.normal,false),orm:finish?make(pixels.orm,false):null,users:0};}
+   catch(error){try{disposeMaps(allocated);}catch(cleanup){throw new AggregateError([error,cleanup],'Portable material construction failed');}throw error;}
+   cache.set(key,entry);
   }
-  entry.users++;return{map:entry.map,normalMap:entry.normalMap,release(){if(--entry.users===0){cache.delete(key);entry.map.dispose();entry.normalMap.dispose();}}};
+  entry.users++;return{map:entry.map,normalMap:entry.normalMap,...(entry.orm?{roughnessMap:entry.orm,metalnessMap:entry.orm}:{}),release(){if(--entry.users===0){cache.delete(key);disposeMaps([entry.map,entry.normalMap,...(entry.orm?[entry.orm]:[])]);}}};
  }
  function material(asset,key,overrides){
   const base=asset.materials[key]??key,override=overrides?.[key];
@@ -25,9 +31,13 @@
   const options={color,...defaults,...extra},physical=physicalKeys.some(key=>options[key]!==undefined);
   const Material=physical?T.MeshPhysicalMaterial:T.MeshStandardMaterial;
   if(!Material)throw Error('This Three renderer does not support authored physical materials');
-  const surface=options.surface;delete options.surface;const maps=surface?surfaceMaps(T,surface):null;
-  let material;try{material=new Material({...options,...(maps?{map:maps.map,normalMap:maps.normalMap}: {})});}catch(error){maps?.release();throw error;}
-  if(maps){let released=false;material.addEventListener('dispose',()=>{if(!released){released=true;maps.release();}});material.userData.surface={...surface};material.userData.surfaceAlgorithm=root.LWAssetSurface.algorithm(surface);}
+  const surface=options.surface,finish=options.finish===undefined?undefined:root.LWAssetFinish.validate(options.finish);delete options.surface;delete options.finish;
+  if(surface&&finish)throw Error('A material cannot combine surface and finish');
+  const maps=finish?surfaceMaps(T,finish,true):surface?surfaceMaps(T,surface):null;
+  let material;try{material=new Material({...options,...(maps?{map:maps.map,normalMap:maps.normalMap,...(finish?{roughnessMap:maps.roughnessMap,metalnessMap:maps.metalnessMap}:{})}: {})});}catch(error){maps?.release();throw error;}
+  if(maps){let released=false;material.addEventListener('dispose',()=>{if(!released){released=true;maps.release();}});
+   if(finish){material.userData.finish=JSON.parse(JSON.stringify(finish));material.userData.finishAlgorithm=root.LWAssetFinish.algorithmVersion;}
+   else{material.userData.surface={...surface};material.userData.surfaceAlgorithm=root.LWAssetSurface.algorithm(surface);}}
   return material;
  }
  /* Data names a portable doubleSided flag; Three expects its side constant. */
@@ -96,7 +106,9 @@
   const recipes=new Set(surfaceCache.get(kit.T)?.keys()||[]);
   function visit(nodes){for(const node of nodes){
    if(node.primitive!=='group'){
-    const chosen=material(asset,node.material,options.materials),surface=node.materialProps?.surface??chosen.extra.surface;
+    const chosen=material(asset,node.material,options.materials),surface=node.materialProps?.surface??chosen.extra.surface,finish=node.materialProps?.finish??chosen.extra.finish;
+    if(surface&&finish)throw Error('A material cannot combine surface and finish');
+    if(finish!==undefined){const F=root.LWAssetFinish;if(!F)throw Error('Portable finish generator is unavailable');F.validate(finish);recipes.add('finish/'+F.key(finish));if(recipes.size>256)throw Error('Renderer exceeds 256 active portable surfaces');}
     if(surface){
      const S=root.LWAssetSurface;if(!S)throw Error('Portable surface generator is unavailable');
      recipes.add(S.key(surface));if(recipes.size>256)throw Error('Renderer exceeds 256 active portable surfaces');

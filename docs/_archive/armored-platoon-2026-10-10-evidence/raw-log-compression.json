@@ -1,0 +1,30 @@
+{
+  "reason": "These raw terminal logs contain final blank lines rejected by staged diff whitespace validation. Lossless gzip preserves their exact bytes without relaxing authored-text checks.",
+  "encoding": "gzip, mtime=0",
+  "files": [
+    {
+      "originalName": "css-isolation-full-armored-browser.log",
+      "originalBytes": 1851,
+      "originalSha256": "47805b4fe9bd53313f87dbe3c0551eafd9ffce0668067a68797712a7733839bd",
+      "retainedName": "css-isolation-full-armored-browser.log.gz",
+      "retainedBytes": 655,
+      "retainedSha256": "9712106bfda240d104a702a001695be7b56b39fe8b314bb81602421099dd69b6"
+    },
+    {
+      "originalName": "css-isolation-full-process-present-browser.log",
+      "originalBytes": 252,
+      "originalSha256": "ac4157e9a1009b0aa93e32157cc8d3f268b9d9dc2928285eb58ce1cb752461d8",
+      "retainedName": "css-isolation-full-process-present-browser.log.gz",
+      "retainedBytes": 192,
+      "retainedSha256": "fe4bbfe739a93d2c69d8b750d3e8913308154426a900e52872427a844d547ec1"
+    },
+    {
+      "originalName": "full-gate-storytelling-browser.log",
+      "originalBytes": 2529,
+      "originalSha256": "fb6f2c9f740c0e50ca69124b7c8a7f7ffdbed00d8c7b2e90f318d88781280281",
+      "retainedName": "full-gate-storytelling-browser.log.gz",
+      "retainedBytes": 894,
+      "retainedSha256": "805e48ba61b73f197cd5cca05d67d125260b138fe7aa49461c6d5e08e125c7a5"
+    }
+  ]
+}

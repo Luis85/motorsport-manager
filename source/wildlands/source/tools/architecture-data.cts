@@ -1,5 +1,6 @@
 /** Compiled validator capabilities and plain-data ownership checks, shared by policy/tests. */
 export const validatorRoles=Object.freeze({
+ armored:'armored-catalog.ts:validate',armoredVisuals:'armored-visuals.ts:validate',
  process:'process-catalog.ts:validate',
  gameFolder:'tools/game-folder.cts:loadGame',definitionSource:'tools/definition-source.cts:definitions',balancingSource:'tools/bundled-content.cts:balancingDocument',defaultScenarioSource:'tools/bundled-content.cts:defaultScenario',
  skillTrees:'skill-trees.ts:validate',rts:'rts-catalog.ts:validate',pet:'pet-catalog.ts:validate',balancing:'balancing-tools.ts:validate',balancingInventory:'balancing-inventory.ts:validate',

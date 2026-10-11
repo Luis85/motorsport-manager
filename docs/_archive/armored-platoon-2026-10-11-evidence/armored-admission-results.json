@@ -1,0 +1,26 @@
+{
+  "passed": 5,
+  "total": 5,
+  "results": [
+    {
+      "name": "Armored content admits detached original policy and Forge semantic assets",
+      "passed": true
+    },
+    {
+      "name": "Armored catalog rejects executable descriptors sparse arrays and unknown fields",
+      "passed": true
+    },
+    {
+      "name": "Armored catalog rejects reserved identities impossible goals and off-map deployment",
+      "passed": true
+    },
+    {
+      "name": "Armored visuals reject external resources corrupt geometry and missing required pivots",
+      "passed": true
+    },
+    {
+      "name": "Canonical Armored obstacle bases match terrain and Scene Forge box centers preserve that ground contact",
+      "passed": true
+    }
+  ]
+}

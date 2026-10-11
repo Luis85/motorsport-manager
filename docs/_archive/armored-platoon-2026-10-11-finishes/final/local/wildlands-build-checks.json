@@ -1,0 +1,37 @@
+[
+  {
+    "step": "typecheck",
+    "exitCode": 0,
+    "seconds": 13.394
+  },
+  {
+    "step": "architecture",
+    "exitCode": 0,
+    "seconds": 9.922
+  },
+  {
+    "step": "build:cli",
+    "exitCode": 0,
+    "seconds": 44.08
+  },
+  {
+    "step": "build:demos",
+    "exitCode": 0,
+    "seconds": 45.684
+  },
+  {
+    "step": "check:cli",
+    "exitCode": 0,
+    "seconds": 44.972
+  },
+  {
+    "step": "check:demos",
+    "exitCode": 0,
+    "seconds": 47.256
+  },
+  {
+    "step": "test",
+    "exitCode": 0,
+    "seconds": 88.701
+  }
+]

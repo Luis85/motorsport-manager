@@ -1,0 +1,5726 @@
+{
+  "schema_version": 1,
+  "mode": "advisory",
+  "analysis_complete": false,
+  "policy": {
+    "limits": {
+      "source": 400,
+      "tests": 450
+    },
+    "extensions": [
+      ".gd",
+      ".py"
+    ],
+    "test_roots": [
+      "tests"
+    ],
+    "excluded_directories": [
+      ".git",
+      ".godot",
+      ".venv",
+      "venv",
+      "__pycache__",
+      "reports",
+      "vendor",
+      "third_party"
+    ],
+    "complexity_limit": 15,
+    "tool_timeout_seconds": 180
+  },
+  "files": [
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-artboard-godot-capture.gd",
+      "category": "source",
+      "code_lines": 52,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/pip-trail-godot-capture.gd",
+      "category": "source",
+      "code_lines": 52,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/checkpoint.gd",
+      "category": "source",
+      "code_lines": 346,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/checkpoint_management_validation.gd",
+      "category": "source",
+      "code_lines": 68,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/checkpoint_migration.gd",
+      "category": "source",
+      "code_lines": 133,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/commands.gd",
+      "category": "source",
+      "code_lines": 14,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/commercial_query.gd",
+      "category": "source",
+      "code_lines": 26,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/commercial_transaction.gd",
+      "category": "source",
+      "code_lines": 115,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/competition_transaction.gd",
+      "category": "source",
+      "code_lines": 104,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/correction_query.gd",
+      "category": "source",
+      "code_lines": 81,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/delegated_executor.gd",
+      "category": "source",
+      "code_lines": 88,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/delegation_query.gd",
+      "category": "source",
+      "code_lines": 29,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/delegation_transaction.gd",
+      "category": "source",
+      "code_lines": 68,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/departure_transaction.gd",
+      "category": "source",
+      "code_lines": 123,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/director_query.gd",
+      "category": "source",
+      "code_lines": 306,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/director_transaction.gd",
+      "category": "source",
+      "code_lines": 136,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/distress_transaction.gd",
+      "category": "source",
+      "code_lines": 117,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/engineering_query.gd",
+      "category": "source",
+      "code_lines": 57,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/engineering_transaction.gd",
+      "category": "source",
+      "code_lines": 87,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/finance_query.gd",
+      "category": "source",
+      "code_lines": 43,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/finance_transaction.gd",
+      "category": "source",
+      "code_lines": 74,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/financial_position_query.gd",
+      "category": "source",
+      "code_lines": 40,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/group_transaction.gd",
+      "category": "source",
+      "code_lines": 219,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/operations_query.gd",
+      "category": "source",
+      "code_lines": 47,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/operations_transaction.gd",
+      "category": "source",
+      "code_lines": 198,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/people_transaction.gd",
+      "category": "source",
+      "code_lines": 242,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/personnel_query.gd",
+      "category": "source",
+      "code_lines": 106,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/personnel_transaction.gd",
+      "category": "source",
+      "code_lines": 198,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/readiness_query.gd",
+      "category": "source",
+      "code_lines": 203,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/rival_query.gd",
+      "category": "source",
+      "code_lines": 28,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/rival_transaction.gd",
+      "category": "source",
+      "code_lines": 86,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/season_progression_transaction.gd",
+      "category": "source",
+      "code_lines": 227,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/starter.gd",
+      "category": "source",
+      "code_lines": 359,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/starter_legacy.gd",
+      "category": "source",
+      "code_lines": 32,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/starter_resources.gd",
+      "category": "source",
+      "code_lines": 115,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/supply_transaction.gd",
+      "category": "source",
+      "code_lines": 169,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/weekend_manifest.gd",
+      "category": "source",
+      "code_lines": 117,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/weekend_settlement.gd",
+      "category": "source",
+      "code_lines": 290,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/weekend_transaction.gd",
+      "category": "source",
+      "code_lines": 324,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/campaign/weekend_workflow.gd",
+      "category": "source",
+      "code_lines": 135,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/content/catalog.gd",
+      "category": "source",
+      "code_lines": 152,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/content/catalog_validation.gd",
+      "category": "source",
+      "code_lines": 386,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/editor/track_editor_content.gd",
+      "category": "source",
+      "code_lines": 102,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/editor/track_editor_port.gd",
+      "category": "source",
+      "code_lines": 12,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/editor/track_editor_session.gd",
+      "category": "source",
+      "code_lines": 203,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/editor/track_preview_handle.gd",
+      "category": "source",
+      "code_lines": 20,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/editor/track_reference_preview.gd",
+      "category": "source",
+      "code_lines": 32,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/minimal/context.gd",
+      "category": "source",
+      "code_lines": 201,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/minimal/controls.gd",
+      "category": "source",
+      "code_lines": 180,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/minimal/lifecycle.gd",
+      "category": "source",
+      "code_lines": 163,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/minimal/readout.gd",
+      "category": "source",
+      "code_lines": 113,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/minimal/session.gd",
+      "category": "source",
+      "code_lines": 7,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/minimal/timing.gd",
+      "category": "source",
+      "code_lines": 128,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/minimal/view_handle.gd",
+      "category": "source",
+      "code_lines": 14,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/minimal/weekend_query.gd",
+      "category": "source",
+      "code_lines": 66,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/moment_director.gd",
+      "category": "source",
+      "code_lines": 328,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/ports/notebook_port.gd",
+      "category": "source",
+      "code_lines": 14,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/ports/race_presentation_services.gd",
+      "category": "source",
+      "code_lines": 28,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/ports/race_visual_port.gd",
+      "category": "source",
+      "code_lines": 12,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/contest_read_model.gd",
+      "category": "source",
+      "code_lines": 24,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/decision_view_model.gd",
+      "category": "source",
+      "code_lines": 281,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/director_read_model.gd",
+      "category": "source",
+      "code_lines": 154,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/entrant_read_model.gd",
+      "category": "source",
+      "code_lines": 29,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/race_chart_query.gd",
+      "category": "source",
+      "code_lines": 148,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/race_read_model.gd",
+      "category": "source",
+      "code_lines": 361,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/race_session_status.gd",
+      "category": "source",
+      "code_lines": 11,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/race_view_analysis_query.gd",
+      "category": "source",
+      "code_lines": 108,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/race_view_query.gd",
+      "category": "source",
+      "code_lines": 88,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/race_view_state_query.gd",
+      "category": "source",
+      "code_lines": 248,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/race_view_tools_query.gd",
+      "category": "source",
+      "code_lines": 91,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/race_visual_source.gd",
+      "category": "source",
+      "code_lines": 106,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/queries/weekend_summary.gd",
+      "category": "source",
+      "code_lines": 31,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/race_commands.gd",
+      "category": "source",
+      "code_lines": 20,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/race_moment_control.gd",
+      "category": "source",
+      "code_lines": 35,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/race_session_runner.gd",
+      "category": "source",
+      "code_lines": 18,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/race_view_handle.gd",
+      "category": "source",
+      "code_lines": 14,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/race_view_session.gd",
+      "category": "source",
+      "code_lines": 7,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/replay/notebook_entry.gd",
+      "category": "source",
+      "code_lines": 348,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/replay/race_record.gd",
+      "category": "source",
+      "code_lines": 286,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/replay/race_record_format.gd",
+      "category": "source",
+      "code_lines": 177,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/replay/race_replay.gd",
+      "category": "source",
+      "code_lines": 113,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/replay/race_reproduction.gd",
+      "category": "source",
+      "code_lines": 226,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/replay/recorded_weekend_continuation.gd",
+      "category": "source",
+      "code_lines": 39,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/replay/replay_scenario.gd",
+      "category": "source",
+      "code_lines": 51,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/replay/state_divergence.gd",
+      "category": "source",
+      "code_lines": 44,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/replay/weekend_result.gd",
+      "category": "source",
+      "code_lines": 267,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/replay_playback.gd",
+      "category": "source",
+      "code_lines": 11,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/replay_session_binding.gd",
+      "category": "source",
+      "code_lines": 20,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/replay_view_session.gd",
+      "category": "source",
+      "code_lines": 61,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/scenario_draft.gd",
+      "category": "source",
+      "code_lines": 12,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/catalog_queries.gd",
+      "category": "source",
+      "code_lines": 52,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_campaign_descriptions.gd",
+      "category": "source",
+      "code_lines": 99,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_campaign_management_actions.gd",
+      "category": "source",
+      "code_lines": 125,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_campaign_organization_actions.gd",
+      "category": "source",
+      "code_lines": 112,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_campaign_planning.gd",
+      "category": "source",
+      "code_lines": 36,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_campaign_queries.gd",
+      "category": "source",
+      "code_lines": 90,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_campaign_season_actions.gd",
+      "category": "source",
+      "code_lines": 207,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_campaign_snapshots.gd",
+      "category": "source",
+      "code_lines": 84,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_campaigns.gd",
+      "category": "source",
+      "code_lines": 203,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_facet_values.gd",
+      "category": "source",
+      "code_lines": 39,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_track_descriptions.gd",
+      "category": "source",
+      "code_lines": 86,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_track_edits.gd",
+      "category": "source",
+      "code_lines": 116,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_tracks.gd",
+      "category": "source",
+      "code_lines": 232,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_weekend_descriptors.gd",
+      "category": "source",
+      "code_lines": 140,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_weekend_dispatch.gd",
+      "category": "source",
+      "code_lines": 58,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_weekend_planning_queries.gd",
+      "category": "source",
+      "code_lines": 140,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_weekend_queries.gd",
+      "category": "source",
+      "code_lines": 82,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_weekend_session.gd",
+      "category": "source",
+      "code_lines": 139,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/developer_weekends.gd",
+      "category": "source",
+      "code_lines": 233,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/game_toolbox.gd",
+      "category": "source",
+      "code_lines": 285,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/response_budget.gd",
+      "category": "source",
+      "code_lines": 22,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/toolbox/tool_result.gd",
+      "category": "source",
+      "code_lines": 40,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/weekend_entry_store.gd",
+      "category": "source",
+      "code_lines": 4,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/weekend_launch.gd",
+      "category": "source",
+      "code_lines": 153,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/application/weekend_launch_preparation.gd",
+      "category": "source",
+      "code_lines": 171,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/balance.py",
+      "category": "source",
+      "code_lines": 146,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/balance_authoring.py",
+      "category": "source",
+      "code_lines": 312,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/balance_native.py",
+      "category": "source",
+      "code_lines": 203,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/balance_windows.py",
+      "category": "source",
+      "code_lines": 43,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/build_standalone.py",
+      "category": "source",
+      "code_lines": 152,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/check_architecture.py",
+      "category": "source",
+      "code_lines": 243,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/check_docs.py",
+      "category": "source",
+      "code_lines": 121,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/composition/campaign_screens.gd",
+      "category": "source",
+      "code_lines": 212,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/composition/content_scenario_controls.gd",
+      "category": "source",
+      "code_lines": 49,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/composition/main.gd",
+      "category": "source",
+      "code_lines": 379,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/composition/main_menu_screen.gd",
+      "category": "source",
+      "code_lines": 95,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/composition/replay_controller.gd",
+      "category": "source",
+      "code_lines": 119,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/composition/scenario_screens.gd",
+      "category": "source",
+      "code_lines": 316,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/composition/standalone_smoke.gd",
+      "category": "source",
+      "code_lines": 385,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/composition/standalone_smoke_files.gd",
+      "category": "source",
+      "code_lines": 20,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/composition/weekend_library_screen.gd",
+      "category": "source",
+      "code_lines": 312,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/content.py",
+      "category": "source",
+      "code_lines": 347,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/content_export_scenarios.py",
+      "category": "source",
+      "code_lines": 79,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/content_operations.py",
+      "category": "source",
+      "code_lines": 145,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/availability_reservation.gd",
+      "category": "source",
+      "code_lines": 89,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/capacity_reservation.gd",
+      "category": "source",
+      "code_lines": 81,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/capacity_resource.gd",
+      "category": "source",
+      "code_lines": 97,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/cash_commitment.gd",
+      "category": "source",
+      "code_lines": 97,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/cash_forecast.gd",
+      "category": "source",
+      "code_lines": 182,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/clock.gd",
+      "category": "source",
+      "code_lines": 123,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/commercial.gd",
+      "category": "source",
+      "code_lines": 268,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/commercial_authority.gd",
+      "category": "source",
+      "code_lines": 51,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/competition.gd",
+      "category": "source",
+      "code_lines": 394,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/competition_validation.gd",
+      "category": "source",
+      "code_lines": 202,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/content_snapshot.gd",
+      "category": "source",
+      "code_lines": 150,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/delegation.gd",
+      "category": "source",
+      "code_lines": 230,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/delegation_authority.gd",
+      "category": "source",
+      "code_lines": 24,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/delegation_guard.gd",
+      "category": "source",
+      "code_lines": 88,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/distress.gd",
+      "category": "source",
+      "code_lines": 100,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/economy.gd",
+      "category": "source",
+      "code_lines": 290,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/economy_legacy.gd",
+      "category": "source",
+      "code_lines": 155,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/economy_timeline.gd",
+      "category": "source",
+      "code_lines": 26,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/economy_validation.gd",
+      "category": "source",
+      "code_lines": 188,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/employment_contract.gd",
+      "category": "source",
+      "code_lines": 238,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/engineering.gd",
+      "category": "source",
+      "code_lines": 349,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/engineering_design.gd",
+      "category": "source",
+      "code_lines": 38,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/engineering_economy.gd",
+      "category": "source",
+      "code_lines": 55,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/engineering_operations.gd",
+      "category": "source",
+      "code_lines": 59,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/engineering_project.gd",
+      "category": "source",
+      "code_lines": 120,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/engineering_timeline.gd",
+      "category": "source",
+      "code_lines": 21,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/group.gd",
+      "category": "source",
+      "code_lines": 283,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/group_authority.gd",
+      "category": "source",
+      "code_lines": 99,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/group_validation.gd",
+      "category": "source",
+      "code_lines": 198,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/identity.gd",
+      "category": "source",
+      "code_lines": 12,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/inventory.gd",
+      "category": "source",
+      "code_lines": 223,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/management.gd",
+      "category": "source",
+      "code_lines": 197,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/operations.gd",
+      "category": "source",
+      "code_lines": 299,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/operations_economy.gd",
+      "category": "source",
+      "code_lines": 74,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/operations_personnel.gd",
+      "category": "source",
+      "code_lines": 64,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/operations_timeline.gd",
+      "category": "source",
+      "code_lines": 23,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/part_instance.gd",
+      "category": "source",
+      "code_lines": 82,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/people_development.gd",
+      "category": "source",
+      "code_lines": 338,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/people_development_authority.gd",
+      "category": "source",
+      "code_lines": 40,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/people_development_validation.gd",
+      "category": "source",
+      "code_lines": 203,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/people_policy.gd",
+      "category": "source",
+      "code_lines": 35,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/person.gd",
+      "category": "source",
+      "code_lines": 49,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/personnel.gd",
+      "category": "source",
+      "code_lines": 398,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/personnel_economy.gd",
+      "category": "source",
+      "code_lines": 103,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/personnel_rules.gd",
+      "category": "source",
+      "code_lines": 195,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/personnel_timeline.gd",
+      "category": "source",
+      "code_lines": 27,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/reserve_policy.gd",
+      "category": "source",
+      "code_lines": 44,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/rival_policy.gd",
+      "category": "source",
+      "code_lines": 36,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/rivals.gd",
+      "category": "source",
+      "code_lines": 251,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/rivals_authority.gd",
+      "category": "source",
+      "code_lines": 34,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/role_assignment.gd",
+      "category": "source",
+      "code_lines": 62,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/season.gd",
+      "category": "source",
+      "code_lines": 51,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/season_calendar.gd",
+      "category": "source",
+      "code_lines": 188,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/season_entries.gd",
+      "category": "source",
+      "code_lines": 176,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/season_planning.gd",
+      "category": "source",
+      "code_lines": 222,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/season_planning_authority.gd",
+      "category": "source",
+      "code_lines": 37,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/season_record.gd",
+      "category": "source",
+      "code_lines": 290,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/series_rules.gd",
+      "category": "source",
+      "code_lines": 88,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/standings.gd",
+      "category": "source",
+      "code_lines": 104,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/state.gd",
+      "category": "source",
+      "code_lines": 256,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/supply_authority.gd",
+      "category": "source",
+      "code_lines": 44,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/supply_network.gd",
+      "category": "source",
+      "code_lines": 290,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/supply_policy.gd",
+      "category": "source",
+      "code_lines": 25,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/supply_validation.gd",
+      "category": "source",
+      "code_lines": 195,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/weekend_policy.gd",
+      "category": "source",
+      "code_lines": 114,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/weekend_receipt.gd",
+      "category": "source",
+      "code_lines": 118,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/campaign/work_order.gd",
+      "category": "source",
+      "code_lines": 152,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/car_setup.gd",
+      "category": "source",
+      "code_lines": 114,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/commands/race_driver_orders.gd",
+      "category": "source",
+      "code_lines": 111,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/commands/race_pit_orders.gd",
+      "category": "source",
+      "code_lines": 91,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/commands/race_session_orders.gd",
+      "category": "source",
+      "code_lines": 97,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/campaign_definition.gd",
+      "category": "source",
+      "code_lines": 239,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/campaign_finance_balance.gd",
+      "category": "source",
+      "code_lines": 28,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/circuit_definition.gd",
+      "category": "source",
+      "code_lines": 56,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/competition_tuning_schema.gd",
+      "category": "source",
+      "code_lines": 229,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/content_versions.gd",
+      "category": "source",
+      "code_lines": 44,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/editor_profile_definition.gd",
+      "category": "source",
+      "code_lines": 82,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/entrant_definition.gd",
+      "category": "source",
+      "code_lines": 55,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/entrant_identity.gd",
+      "category": "source",
+      "code_lines": 12,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/environment_tuning_schema.gd",
+      "category": "source",
+      "code_lines": 307,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/environment_tuning_validation.gd",
+      "category": "source",
+      "code_lines": 122,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/game_balance_schema.gd",
+      "category": "source",
+      "code_lines": 23,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/legacy_competition.gd",
+      "category": "source",
+      "code_lines": 141,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/legacy_environment.gd",
+      "category": "source",
+      "code_lines": 165,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/legacy_operations.gd",
+      "category": "source",
+      "code_lines": 74,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/legacy_race_tuning.gd",
+      "category": "source",
+      "code_lines": 70,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/legacy_roster.gd",
+      "category": "source",
+      "code_lines": 19,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/legacy_setup_content.gd",
+      "category": "source",
+      "code_lines": 44,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/legacy_tyre_content.gd",
+      "category": "source",
+      "code_lines": 147,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/mechanic_profile_definition.gd",
+      "category": "source",
+      "code_lines": 63,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/operations_tuning_schema.gd",
+      "category": "source",
+      "code_lines": 247,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/race_content_snapshot.gd",
+      "category": "source",
+      "code_lines": 36,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/race_physics_balance.gd",
+      "category": "source",
+      "code_lines": 201,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/race_planning_balance.gd",
+      "category": "source",
+      "code_lines": 168,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/race_presentation_balance.gd",
+      "category": "source",
+      "code_lines": 116,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/race_tuning_definition.gd",
+      "category": "source",
+      "code_lines": 161,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/race_tuning_schema.gd",
+      "category": "source",
+      "code_lines": 82,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/roster_definition.gd",
+      "category": "source",
+      "code_lines": 192,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/scenario_definition.gd",
+      "category": "source",
+      "code_lines": 84,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/schema.gd",
+      "category": "source",
+      "code_lines": 168,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/setup_definition.gd",
+      "category": "source",
+      "code_lines": 108,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/tyre_definition.gd",
+      "category": "source",
+      "code_lines": 49,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/tyre_operating_schema.gd",
+      "category": "source",
+      "code_lines": 37,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/tyre_rules.gd",
+      "category": "source",
+      "code_lines": 157,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/tyre_schema.gd",
+      "category": "source",
+      "code_lines": 83,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/tyre_surface_response.gd",
+      "category": "source",
+      "code_lines": 9,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/tyre_thermal_defaults.gd",
+      "category": "source",
+      "code_lines": 118,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/validation.gd",
+      "category": "source",
+      "code_lines": 134,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/vehicle_definition.gd",
+      "category": "source",
+      "code_lines": 62,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/content/weekend_definition.gd",
+      "category": "source",
+      "code_lines": 115,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/practice_commands.gd",
+      "category": "source",
+      "code_lines": 154,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/practice_mechanic.gd",
+      "category": "source",
+      "code_lines": 240,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/practice_runs.gd",
+      "category": "source",
+      "code_lines": 327,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/race_hook_contract.gd",
+      "category": "source",
+      "code_lines": 120,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/race_mechanic.gd",
+      "category": "source",
+      "code_lines": 8,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/race_mechanic_profiles.gd",
+      "category": "source",
+      "code_lines": 26,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/race_mechanics.gd",
+      "category": "source",
+      "code_lines": 155,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/recovery_commands.gd",
+      "category": "source",
+      "code_lines": 143,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/recovery_incidents.gd",
+      "category": "source",
+      "code_lines": 223,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/recovery_mechanic.gd",
+      "category": "source",
+      "code_lines": 268,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/recovery_operations.gd",
+      "category": "source",
+      "code_lines": 165,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/strategy_commands.gd",
+      "category": "source",
+      "code_lines": 183,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/strategy_execution.gd",
+      "category": "source",
+      "code_lines": 338,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/strategy_mechanic.gd",
+      "category": "source",
+      "code_lines": 180,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/strategy_policy_commands.gd",
+      "category": "source",
+      "code_lines": 153,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/weather_mechanic.gd",
+      "category": "source",
+      "code_lines": 251,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/mechanics/weather_observations.gd",
+      "category": "source",
+      "code_lines": 162,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race/car.gd",
+      "category": "source",
+      "code_lines": 316,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race/entrant_factory.gd",
+      "category": "source",
+      "code_lines": 158,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race/performance_profile.gd",
+      "category": "source",
+      "code_lines": 103,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race/pit_service.gd",
+      "category": "source",
+      "code_lines": 193,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race/state_value.gd",
+      "category": "source",
+      "code_lines": 67,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race/step_clock.gd",
+      "category": "source",
+      "code_lines": 22,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race/timing.gd",
+      "category": "source",
+      "code_lines": 160,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race/vehicle_condition.gd",
+      "category": "source",
+      "code_lines": 102,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_checkpoint.gd",
+      "category": "source",
+      "code_lines": 214,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_checkpoint_validation.gd",
+      "category": "source",
+      "code_lines": 147,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_sim.gd",
+      "category": "source",
+      "code_lines": 306,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_sim_core.gd",
+      "category": "source",
+      "code_lines": 239,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_sim_foundation.gd",
+      "category": "source",
+      "code_lines": 223,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_sim_motion.gd",
+      "category": "source",
+      "code_lines": 237,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_sim_movement_intent.gd",
+      "category": "source",
+      "code_lines": 184,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_sim_operations.gd",
+      "category": "source",
+      "code_lines": 222,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_sim_port.gd",
+      "category": "source",
+      "code_lines": 45,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_sim_practice_dispatch.gd",
+      "category": "source",
+      "code_lines": 31,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_sim_recovery_dispatch.gd",
+      "category": "source",
+      "code_lines": 43,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_sim_service_port.gd",
+      "category": "source",
+      "code_lines": 17,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_sim_state_port.gd",
+      "category": "source",
+      "code_lines": 50,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_sim_strategy_dispatch.gd",
+      "category": "source",
+      "code_lines": 51,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/race_surface.gd",
+      "category": "source",
+      "code_lines": 327,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/racing_line.gd",
+      "category": "source",
+      "code_lines": 87,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/track_diagnostics.gd",
+      "category": "source",
+      "code_lines": 129,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/track_document.gd",
+      "category": "source",
+      "code_lines": 297,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/track_document_validation.gd",
+      "category": "source",
+      "code_lines": 139,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/track_edit.gd",
+      "category": "source",
+      "code_lines": 164,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/track_geometry.gd",
+      "category": "source",
+      "code_lines": 320,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/track_sketch.gd",
+      "category": "source",
+      "code_lines": 126,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/tyre_inventory.gd",
+      "category": "source",
+      "code_lines": 207,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/decision_feed.gd",
+      "category": "source",
+      "code_lines": 184,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/duel_rival_policy.gd",
+      "category": "source",
+      "code_lines": 61,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/duel_scenarios.gd",
+      "category": "source",
+      "code_lines": 68,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/practice_evidence.gd",
+      "category": "source",
+      "code_lines": 265,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/practice_evidence_validation.gd",
+      "category": "source",
+      "code_lines": 95,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/practice_race_sim.gd",
+      "category": "source",
+      "code_lines": 108,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/practice_run_validation.gd",
+      "category": "source",
+      "code_lines": 183,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/race_forecast_evaluation.gd",
+      "category": "source",
+      "code_lines": 208,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/race_forecast_physics.gd",
+      "category": "source",
+      "code_lines": 208,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/race_forecaster.gd",
+      "category": "source",
+      "code_lines": 283,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/race_journal.gd",
+      "category": "source",
+      "code_lines": 268,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/race_reliability.gd",
+      "category": "source",
+      "code_lines": 254,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/racecraft_controller.gd",
+      "category": "source",
+      "code_lines": 289,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/recovery_forecast.gd",
+      "category": "source",
+      "code_lines": 87,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/recovery_race_sim.gd",
+      "category": "source",
+      "code_lines": 202,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/recovery_scenarios.gd",
+      "category": "source",
+      "code_lines": 65,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/rival_strategy.gd",
+      "category": "source",
+      "code_lines": 218,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/rival_style_history.gd",
+      "category": "source",
+      "code_lines": 98,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/rival_style_validation.gd",
+      "category": "source",
+      "code_lines": 107,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/rival_styles.gd",
+      "category": "source",
+      "code_lines": 248,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/scenario_brief.gd",
+      "category": "source",
+      "code_lines": 80,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/strategy_plan.gd",
+      "category": "source",
+      "code_lines": 141,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/strategy_race_sim.gd",
+      "category": "source",
+      "code_lines": 93,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/tactical_duel_execution.gd",
+      "category": "source",
+      "code_lines": 339,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/tactical_duel_validation.gd",
+      "category": "source",
+      "code_lines": 239,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/tactical_duels.gd",
+      "category": "source",
+      "code_lines": 247,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/tactical_forecast.gd",
+      "category": "source",
+      "code_lines": 367,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/team_order_planning.gd",
+      "category": "source",
+      "code_lines": 178,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/team_orders.gd",
+      "category": "source",
+      "code_lines": 304,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/weather_outlook.gd",
+      "category": "source",
+      "code_lines": 135,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/weather_race_sim.gd",
+      "category": "source",
+      "code_lines": 187,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/weather_scenarios.gd",
+      "category": "source",
+      "code_lines": 64,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/weather_strategy.gd",
+      "category": "source",
+      "code_lines": 239,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/weekend_race_control.gd",
+      "category": "source",
+      "code_lines": 223,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/weekend_scenarios.gd",
+      "category": "source",
+      "code_lines": 166,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/weekend/weekend_weather.gd",
+      "category": "source",
+      "code_lines": 152,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/domain/wheel_tyres.gd",
+      "category": "source",
+      "code_lines": 295,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/download_artifacts.py",
+      "category": "source",
+      "code_lines": 198,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/gdscript_contracts.py",
+      "category": "source",
+      "code_lines": 99,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/mechanics.py",
+      "category": "source",
+      "code_lines": 379,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/paired_runtime.py",
+      "category": "source",
+      "code_lines": 266,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/quality.py",
+      "category": "source",
+      "code_lines": 221,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/quality_delta.py",
+      "category": "source",
+      "code_lines": 134,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/quality_loc.py",
+      "category": "source",
+      "code_lines": 77,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/quality_report.py",
+      "category": "source",
+      "code_lines": 83,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/reproduce.py",
+      "category": "source",
+      "code_lines": 123,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/app.gd",
+      "category": "source",
+      "code_lines": 297,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/campaign_storage.gd",
+      "category": "source",
+      "code_lines": 49,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/circuit_notebook.gd",
+      "category": "source",
+      "code_lines": 113,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/content/balance_validation.gd",
+      "category": "source",
+      "code_lines": 155,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/content/bundled_documents.gd",
+      "category": "source",
+      "code_lines": 51,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/content/cli.gd",
+      "category": "source",
+      "code_lines": 88,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/content/json_number.gd",
+      "category": "source",
+      "code_lines": 144,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/content/pack_loader.gd",
+      "category": "source",
+      "code_lines": 214,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/content/runtime_probe.gd",
+      "category": "source",
+      "code_lines": 134,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/content/scenario_test.gd",
+      "category": "source",
+      "code_lines": 58,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/content/strict_json.gd",
+      "category": "source",
+      "code_lines": 248,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/local_notebook_port.gd",
+      "category": "source",
+      "code_lines": 13,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/local_race_presentation_services.gd",
+      "category": "source",
+      "code_lines": 53,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/local_track_editor_port.gd",
+      "category": "source",
+      "code_lines": 38,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/local_weekend_entry_store.gd",
+      "category": "source",
+      "code_lines": 7,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/practice_scenarios.gd",
+      "category": "source",
+      "code_lines": 53,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/replay_storage.gd",
+      "category": "source",
+      "code_lines": 10,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/result_receipts.gd",
+      "category": "source",
+      "code_lines": 79,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/rival_scenarios.gd",
+      "category": "source",
+      "code_lines": 87,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/scenario_catalog.gd",
+      "category": "source",
+      "code_lines": 122,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/session_lifecycle.gd",
+      "category": "source",
+      "code_lines": 39,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/storage.gd",
+      "category": "source",
+      "code_lines": 155,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/toolbox/cli.gd",
+      "category": "source",
+      "code_lines": 202,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/services/toolbox/factory.gd",
+      "category": "source",
+      "code_lines": 13,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/smoke_standalone.py",
+      "category": "source",
+      "code_lines": 278,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/toolbox.py",
+      "category": "source",
+      "code_lines": 186,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/toolbox_bootstrap.py",
+      "category": "source",
+      "code_lines": 12,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/toolbox_facets.py",
+      "category": "source",
+      "code_lines": 77,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/toolbox_process.py",
+      "category": "source",
+      "code_lines": 185,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/toolbox_project.py",
+      "category": "source",
+      "code_lines": 173,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/toolbox_protocol.py",
+      "category": "source",
+      "code_lines": 134,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/toolbox_windows.py",
+      "category": "source",
+      "code_lines": 70,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/battle_overlay.gd",
+      "category": "source",
+      "code_lines": 51,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/campaign/director_desk.gd",
+      "category": "source",
+      "code_lines": 254,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/circuit_palette.gd",
+      "category": "source",
+      "code_lines": 15,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/circuit_world.gd",
+      "category": "source",
+      "code_lines": 400,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/context_guide.gd",
+      "category": "source",
+      "code_lines": 125,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/duel_workspace.gd",
+      "category": "source",
+      "code_lines": 107,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/editor.gd",
+      "category": "source",
+      "code_lines": 248,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/editor_authoring.gd",
+      "category": "source",
+      "code_lines": 251,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/editor_inspector.gd",
+      "category": "source",
+      "code_lines": 37,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/editor_inspector_circuit.gd",
+      "category": "source",
+      "code_lines": 328,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/editor_inspector_selection.gd",
+      "category": "source",
+      "code_lines": 254,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/editor_inspector_workspace.gd",
+      "category": "source",
+      "code_lines": 271,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/editor_state.gd",
+      "category": "source",
+      "code_lines": 186,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/editor_storage.gd",
+      "category": "source",
+      "code_lines": 198,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/editor_toolbar.gd",
+      "category": "source",
+      "code_lines": 102,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/game_theme.gd",
+      "category": "source",
+      "code_lines": 169,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/main_menu.gd",
+      "category": "source",
+      "code_lines": 119,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/minimal_race_driver_presenter.gd",
+      "category": "source",
+      "code_lines": 129,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/minimal_race_workspace_builder.gd",
+      "category": "source",
+      "code_lines": 285,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/notebook_window.gd",
+      "category": "source",
+      "code_lines": 345,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/pitwall_car_card.gd",
+      "category": "source",
+      "code_lines": 216,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/pitwall_comparison.gd",
+      "category": "source",
+      "code_lines": 82,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/pitwall_design.gd",
+      "category": "source",
+      "code_lines": 162,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/pitwall_finishing_guide.gd",
+      "category": "source",
+      "code_lines": 146,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/pitwall_navigator.gd",
+      "category": "source",
+      "code_lines": 233,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/pitwall_workspace.gd",
+      "category": "source",
+      "code_lines": 256,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/pitwall_workspace_builder.gd",
+      "category": "source",
+      "code_lines": 241,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/pitwall_workspace_layout.gd",
+      "category": "source",
+      "code_lines": 175,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/pitwall_workspace_state.gd",
+      "category": "source",
+      "code_lines": 75,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/practice_panel.gd",
+      "category": "source",
+      "code_lines": 358,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/practice_weekend.gd",
+      "category": "source",
+      "code_lines": 306,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/practice_weekend_review.gd",
+      "category": "source",
+      "code_lines": 116,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/public_rival_inspector.gd",
+      "category": "source",
+      "code_lines": 74,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_director_presentation.gd",
+      "category": "source",
+      "code_lines": 157,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_director_workspace.gd",
+      "category": "source",
+      "code_lines": 334,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/accessibility.gd",
+      "category": "source",
+      "code_lines": 23,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/analysis_workspace.gd",
+      "category": "source",
+      "code_lines": 53,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/call_room.gd",
+      "category": "source",
+      "code_lines": 287,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/call_room_intent.gd",
+      "category": "source",
+      "code_lines": 135,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/chart_navigation.gd",
+      "category": "source",
+      "code_lines": 16,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/decision_drawer.gd",
+      "category": "source",
+      "code_lines": 353,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/decision_queue.gd",
+      "category": "source",
+      "code_lines": 104,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/director_car_card.gd",
+      "category": "source",
+      "code_lines": 90,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/director_style.gd",
+      "category": "source",
+      "code_lines": 59,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/driver_emblem.gd",
+      "category": "source",
+      "code_lines": 22,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/gamepad_navigation.gd",
+      "category": "source",
+      "code_lines": 58,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/inspector_page.gd",
+      "category": "source",
+      "code_lines": 13,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/journal_view.gd",
+      "category": "source",
+      "code_lines": 97,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/metric_chart.gd",
+      "category": "source",
+      "code_lines": 287,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/metric_chart_data.gd",
+      "category": "source",
+      "code_lines": 187,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/minimal/driver_card.gd",
+      "category": "source",
+      "code_lines": 245,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/minimal/gauge.gd",
+      "category": "source",
+      "code_lines": 61,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/minimal/strategy_comparison.gd",
+      "category": "source",
+      "code_lines": 146,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/minimal/style.gd",
+      "category": "source",
+      "code_lines": 32,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/minimal/timing_presenter.gd",
+      "category": "source",
+      "code_lines": 67,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/minimal/workspace.gd",
+      "category": "source",
+      "code_lines": 343,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/pit_service_panel.gd",
+      "category": "source",
+      "code_lines": 283,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/practice_programme_card.gd",
+      "category": "source",
+      "code_lines": 200,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/practice_workspace.gd",
+      "category": "source",
+      "code_lines": 111,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/qualifying_workspace.gd",
+      "category": "source",
+      "code_lines": 59,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/race_read_panel.gd",
+      "category": "source",
+      "code_lines": 42,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/race_workspace.gd",
+      "category": "source",
+      "code_lines": 6,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/radio_inspector.gd",
+      "category": "source",
+      "code_lines": 130,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/results_workspace.gd",
+      "category": "source",
+      "code_lines": 354,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/sector_table.gd",
+      "category": "source",
+      "code_lines": 61,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/session_header.gd",
+      "category": "source",
+      "code_lines": 90,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/session_results_panel.gd",
+      "category": "source",
+      "code_lines": 196,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/status_badge.gd",
+      "category": "source",
+      "code_lines": 34,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/stint_history.gd",
+      "category": "source",
+      "code_lines": 197,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/strategy_chart.gd",
+      "category": "source",
+      "code_lines": 228,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/team_intent_timeline.gd",
+      "category": "source",
+      "code_lines": 180,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/telemetry_inspector.gd",
+      "category": "source",
+      "code_lines": 123,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/timing_tower.gd",
+      "category": "source",
+      "code_lines": 164,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/race_weekend/tyre_readout.gd",
+      "category": "source",
+      "code_lines": 81,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/racecraft_panel.gd",
+      "category": "source",
+      "code_lines": 283,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/recovery_panel.gd",
+      "category": "source",
+      "code_lines": 326,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/recovery_weekend.gd",
+      "category": "source",
+      "code_lines": 115,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/rejoin_overlay.gd",
+      "category": "source",
+      "code_lines": 55,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/replay_workspace.gd",
+      "category": "source",
+      "code_lines": 343,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/scenario_author.gd",
+      "category": "source",
+      "code_lines": 92,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/settings_view.gd",
+      "category": "source",
+      "code_lines": 277,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/strategy_desk.gd",
+      "category": "source",
+      "code_lines": 213,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/strategy_desk_draft.gd",
+      "category": "source",
+      "code_lines": 198,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/strategy_desk_presentation.gd",
+      "category": "source",
+      "code_lines": 248,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/strategy_weekend.gd",
+      "category": "source",
+      "code_lines": 172,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/strategy_weekend_controls.gd",
+      "category": "source",
+      "code_lines": 196,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/strategy_weekend_presentation.gd",
+      "category": "source",
+      "code_lines": 242,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/surface_lab.gd",
+      "category": "source",
+      "code_lines": 204,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/tactical_plan_draft.gd",
+      "category": "source",
+      "code_lines": 176,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/tactical_plan_panel.gd",
+      "category": "source",
+      "code_lines": 371,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/tactical_plan_review.gd",
+      "category": "source",
+      "code_lines": 219,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/team_orders_panel.gd",
+      "category": "source",
+      "code_lines": 356,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/track_canvas.gd",
+      "category": "source",
+      "code_lines": 242,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/track_canvas_authoring.gd",
+      "category": "source",
+      "code_lines": 138,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/track_canvas_gesture.gd",
+      "category": "source",
+      "code_lines": 117,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/track_canvas_input.gd",
+      "category": "source",
+      "code_lines": 264,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/track_canvas_overlay_renderer.gd",
+      "category": "source",
+      "code_lines": 43,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/track_canvas_overlays.gd",
+      "category": "source",
+      "code_lines": 237,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/track_canvas_state.gd",
+      "category": "source",
+      "code_lines": 243,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/ui.gd",
+      "category": "source",
+      "code_lines": 219,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/weather_panel.gd",
+      "category": "source",
+      "code_lines": 272,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/weather_weekend.gd",
+      "category": "source",
+      "code_lines": 137,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/weekend.gd",
+      "category": "source",
+      "code_lines": 267,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/weekend_driver_presenter.gd",
+      "category": "source",
+      "code_lines": 150,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/weekend_driver_support.gd",
+      "category": "source",
+      "code_lines": 103,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/weekend_end.gd",
+      "category": "source",
+      "code_lines": 109,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/weekend_entry.gd",
+      "category": "source",
+      "code_lines": 115,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/weekend_inspector_builder.gd",
+      "category": "source",
+      "code_lines": 194,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/weekend_navigation.gd",
+      "category": "source",
+      "code_lines": 180,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/weekend_support.gd",
+      "category": "source",
+      "code_lines": 179,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/weekend_view_state.gd",
+      "category": "source",
+      "code_lines": 211,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/ui/weekend_workspace_builder.gd",
+      "category": "source",
+      "code_lines": 245,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/verification_process.py",
+      "category": "source",
+      "code_lines": 41,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/verification_run.py",
+      "category": "source",
+      "code_lines": 357,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/verify.py",
+      "category": "source",
+      "code_lines": 69,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "scripts/verify_content_export.py",
+      "category": "source",
+      "code_lines": 337,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "source/wildlands/source/wildlands-godot/assets.gd",
+      "category": "source",
+      "code_lines": 253,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "source/wildlands/source/wildlands-godot/bridge.gd",
+      "category": "source",
+      "code_lines": 127,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "source/wildlands/source/wildlands-godot/creatures.gd",
+      "category": "source",
+      "code_lines": 278,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "source/wildlands/source/wildlands-godot/floors.gd",
+      "category": "source",
+      "code_lines": 240,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "source/wildlands/source/wildlands-godot/guide.gd",
+      "category": "source",
+      "code_lines": 45,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "source/wildlands/source/wildlands-godot/main.gd",
+      "category": "source",
+      "code_lines": 400,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "source/wildlands/source/wildlands-godot/test-native-appearance.gd",
+      "category": "source",
+      "code_lines": 132,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "source/wildlands/source/wildlands-godot/test-native.gd",
+      "category": "source",
+      "code_lines": 398,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "source/wildlands/source/wildlands-godot/world.gd",
+      "category": "source",
+      "code_lines": 399,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/architecture_characterization.gd",
+      "category": "tests",
+      "code_lines": 115,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/architecture_tests.gd",
+      "category": "tests",
+      "code_lines": 254,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/architecture_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 352,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/balance_campaign_presentation_tests.gd",
+      "category": "tests",
+      "code_lines": 17,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/balance_config_validation_tests.gd",
+      "category": "tests",
+      "code_lines": 95,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/car_entity_tests.gd",
+      "category": "tests",
+      "code_lines": 217,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/car_record_tests.gd",
+      "category": "tests",
+      "code_lines": 289,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/command_contract_tests.gd",
+      "category": "tests",
+      "code_lines": 212,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/command_responsibility_tests.gd",
+      "category": "tests",
+      "code_lines": 128,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/compact_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 442,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_catalog_tests.gd",
+      "category": "tests",
+      "code_lines": 365,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_competition_tests.gd",
+      "category": "tests",
+      "code_lines": 277,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_editor_interaction_tests.gd",
+      "category": "tests",
+      "code_lines": 234,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_editor_profile_tests.gd",
+      "category": "tests",
+      "code_lines": 160,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_environment_tests.gd",
+      "category": "tests",
+      "code_lines": 440,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_mechanic_profile_tests.gd",
+      "category": "tests",
+      "code_lines": 269,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_operations_tests.gd",
+      "category": "tests",
+      "code_lines": 395,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_pack_tests.gd",
+      "category": "tests",
+      "code_lines": 164,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_persistence_tests.gd",
+      "category": "tests",
+      "code_lines": 129,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_planning_balance_tests.gd",
+      "category": "tests",
+      "code_lines": 362,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_roster_tests.gd",
+      "category": "tests",
+      "code_lines": 323,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_roster_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 171,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_scenario_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 144,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_tests.gd",
+      "category": "tests",
+      "code_lines": 159,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_tuning_tests.gd",
+      "category": "tests",
+      "code_lines": 395,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_tyre_tests.gd",
+      "category": "tests",
+      "code_lines": 341,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_tyre_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 258,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_weekend_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 168,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/content_wheel_operating_tests.gd",
+      "category": "tests",
+      "code_lines": 172,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/director_tests.gd",
+      "category": "tests",
+      "code_lines": 349,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/director_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 386,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/director_weekend_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 291,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/duel_contract_tests.gd",
+      "category": "tests",
+      "code_lines": 183,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/duel_scenario_runs.gd",
+      "category": "tests",
+      "code_lines": 191,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/editor_gesture_tests.gd",
+      "category": "tests",
+      "code_lines": 285,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/editor_session_tests.gd",
+      "category": "tests",
+      "code_lines": 442,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/foundation_tests.gd",
+      "category": "tests",
+      "code_lines": 417,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/game_flow_coherence_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 371,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/iteration3_tests.gd",
+      "category": "tests",
+      "code_lines": 234,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/iteration4_tests.gd",
+      "category": "tests",
+      "code_lines": 346,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/iteration4_ui.gd",
+      "category": "tests",
+      "code_lines": 424,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/living_racecraft_tests.gd",
+      "category": "tests",
+      "code_lines": 405,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/living_racecraft_ui.gd",
+      "category": "tests",
+      "code_lines": 284,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/mechanics_tests.gd",
+      "category": "tests",
+      "code_lines": 331,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/minimal_tests.gd",
+      "category": "tests",
+      "code_lines": 401,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/minimal_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 413,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/minimal_weekend_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 258,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/notebook_tests.gd",
+      "category": "tests",
+      "code_lines": 354,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/notebook_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 379,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/operation_sequence_tests.gd",
+      "category": "tests",
+      "code_lines": 213,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/pitwall_ux_tests.gd",
+      "category": "tests",
+      "code_lines": 393,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/practice_scenario_runs.gd",
+      "category": "tests",
+      "code_lines": 148,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/practice_tests.gd",
+      "category": "tests",
+      "code_lines": 309,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/practice_ui_smoke.gd",
+      "category": "tests",
+      "code_lines": 274,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/presentation_boundary_tests.gd",
+      "category": "tests",
+      "code_lines": 162,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/race_physics_balance_tests.gd",
+      "category": "tests",
+      "code_lines": 241,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/record_traversal_tests.gd",
+      "category": "tests",
+      "code_lines": 100,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/recovery_scenario_runs.gd",
+      "category": "tests",
+      "code_lines": 176,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/recovery_tests.gd",
+      "category": "tests",
+      "code_lines": 210,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/recovery_ui_smoke.gd",
+      "category": "tests",
+      "code_lines": 383,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/replay_performance.gd",
+      "category": "tests",
+      "code_lines": 96,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/replay_scenario_runs.gd",
+      "category": "tests",
+      "code_lines": 278,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/replay_tests.gd",
+      "category": "tests",
+      "code_lines": 304,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/replay_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 305,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/reproduce_cli.gd",
+      "category": "tests",
+      "code_lines": 22,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/reproduction_tests.gd",
+      "category": "tests",
+      "code_lines": 141,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/rival_scenario_runs.gd",
+      "category": "tests",
+      "code_lines": 123,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/rival_styles_tests.gd",
+      "category": "tests",
+      "code_lines": 298,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/rivals_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 285,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/roster_content_tests.gd",
+      "category": "tests",
+      "code_lines": 202,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/roster_content_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 101,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/run_tests.gd",
+      "category": "tests",
+      "code_lines": 349,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/scenario_authoring_runs.gd",
+      "category": "tests",
+      "code_lines": 282,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/scenario_authoring_ui.gd",
+      "category": "tests",
+      "code_lines": 327,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/scenario_catalog_tests.gd",
+      "category": "tests",
+      "code_lines": 176,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/script_load_tests.gd",
+      "category": "tests",
+      "code_lines": 41,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/shipping_runtime_tests.gd",
+      "category": "tests",
+      "code_lines": 365,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/storage_contract_tests.gd",
+      "category": "tests",
+      "code_lines": 397,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/strategy_scenario_runs.gd",
+      "category": "tests",
+      "code_lines": 119,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/strategy_ui_smoke.gd",
+      "category": "tests",
+      "code_lines": 280,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_command_contracts.gd",
+      "category": "tests",
+      "code_lines": 149,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_commercial_contracts.gd",
+      "category": "tests",
+      "code_lines": 197,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_competition_identity_contracts.gd",
+      "category": "tests",
+      "code_lines": 70,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_competition_transaction_contracts.gd",
+      "category": "tests",
+      "code_lines": 189,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_correction_contracts.gd",
+      "category": "tests",
+      "code_lines": 166,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_delegation_contracts.gd",
+      "category": "tests",
+      "code_lines": 231,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_director_contracts.gd",
+      "category": "tests",
+      "code_lines": 196,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_engineering_contracts.gd",
+      "category": "tests",
+      "code_lines": 371,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_finance_balance_contracts.gd",
+      "category": "tests",
+      "code_lines": 182,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_finance_contracts.gd",
+      "category": "tests",
+      "code_lines": 293,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_finance_timeline_contracts.gd",
+      "category": "tests",
+      "code_lines": 76,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_frozen_content_contracts.gd",
+      "category": "tests",
+      "code_lines": 84,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_group_contracts.gd",
+      "category": "tests",
+      "code_lines": 264,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_identity_clock_contracts.gd",
+      "category": "tests",
+      "code_lines": 50,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_migration_contracts.gd",
+      "category": "tests",
+      "code_lines": 137,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_operational_depth_contracts.gd",
+      "category": "tests",
+      "code_lines": 347,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_operations_contracts.gd",
+      "category": "tests",
+      "code_lines": 345,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_people_depth_contracts.gd",
+      "category": "tests",
+      "code_lines": 244,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_personnel_contracts.gd",
+      "category": "tests",
+      "code_lines": 309,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_personnel_lifecycle_contracts.gd",
+      "category": "tests",
+      "code_lines": 310,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_projection_validation_contracts.gd",
+      "category": "tests",
+      "code_lines": 92,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_readiness_contracts.gd",
+      "category": "tests",
+      "code_lines": 298,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_rival_contracts.gd",
+      "category": "tests",
+      "code_lines": 203,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_season_contracts.gd",
+      "category": "tests",
+      "code_lines": 437,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_season_progression_contracts.gd",
+      "category": "tests",
+      "code_lines": 364,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_state_contracts.gd",
+      "category": "tests",
+      "code_lines": 29,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_storage_contracts.gd",
+      "category": "tests",
+      "code_lines": 108,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_weekend_finance_contracts.gd",
+      "category": "tests",
+      "code_lines": 91,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_weekend_transaction_contracts.gd",
+      "category": "tests",
+      "code_lines": 272,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/campaign_weekend_transaction_fixture.gd",
+      "category": "tests",
+      "code_lines": 184,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/checkpoint_value_contracts.gd",
+      "category": "tests",
+      "code_lines": 51,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/compact_ui_fixture.gd",
+      "category": "tests",
+      "code_lines": 91,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/content_duration_contracts.gd",
+      "category": "tests",
+      "code_lines": 64,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/content_operations_contracts.gd",
+      "category": "tests",
+      "code_lines": 201,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/content_schema_contracts.gd",
+      "category": "tests",
+      "code_lines": 80,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/domain_authoring_contracts.gd",
+      "category": "tests",
+      "code_lines": 168,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/editor_sequence_case.gd",
+      "category": "tests",
+      "code_lines": 219,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/iteration4_physics_contracts.gd",
+      "category": "tests",
+      "code_lines": 291,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/living_racecraft_track_contracts.gd",
+      "category": "tests",
+      "code_lines": 268,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/minimal_control_contracts.gd",
+      "category": "tests",
+      "code_lines": 291,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/minimal_ui_layout_contracts.gd",
+      "category": "tests",
+      "code_lines": 244,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/operation_recipe.gd",
+      "category": "tests",
+      "code_lines": 184,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/practice_run_contracts.gd",
+      "category": "tests",
+      "code_lines": 193,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/race_presentation_balance_contracts.gd",
+      "category": "tests",
+      "code_lines": 191,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/race_restore_validation_contracts.gd",
+      "category": "tests",
+      "code_lines": 113,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/race_sequence_case.gd",
+      "category": "tests",
+      "code_lines": 220,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/recovery_authority_contracts.gd",
+      "category": "tests",
+      "code_lines": 297,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/recovery_service_contracts.gd",
+      "category": "tests",
+      "code_lines": 313,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/runtime_probe.gd",
+      "category": "tests",
+      "code_lines": 61,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/state_comparison.gd",
+      "category": "tests",
+      "code_lines": 38,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/tactical_duel_fixture.gd",
+      "category": "tests",
+      "code_lines": 39,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/toolbox_campaign_nested.gd",
+      "category": "tests",
+      "code_lines": 115,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/toolbox_cli_fixture.py",
+      "category": "tests",
+      "code_lines": 11,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/toolbox_engine_fixture.py",
+      "category": "tests",
+      "code_lines": 97,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/toolbox_response_budget.gd",
+      "category": "tests",
+      "code_lines": 122,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/toolbox_test_fixture.gd",
+      "category": "tests",
+      "code_lines": 108,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/toolbox_weekend_journey.gd",
+      "category": "tests",
+      "code_lines": 83,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/ui_completion_fixture.gd",
+      "category": "tests",
+      "code_lines": 74,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/ui_editor_smoke_contracts.gd",
+      "category": "tests",
+      "code_lines": 207,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/ui_finish_lineage_fixture.gd",
+      "category": "tests",
+      "code_lines": 304,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/ui_polish_reading_contracts.gd",
+      "category": "tests",
+      "code_lines": 141,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/weather_information_contracts.gd",
+      "category": "tests",
+      "code_lines": 211,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/support/weekend_strategy_forecast_contracts.gd",
+      "category": "tests",
+      "code_lines": 224,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/tactical_duel_tests.gd",
+      "category": "tests",
+      "code_lines": 425,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/tactical_duel_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 335,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_architecture_guard.py",
+      "category": "tests",
+      "code_lines": 355,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_balance_authoring.py",
+      "category": "tests",
+      "code_lines": 351,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_balance_integration.py",
+      "category": "tests",
+      "code_lines": 98,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_balance_native.py",
+      "category": "tests",
+      "code_lines": 285,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_balance_portable.py",
+      "category": "tests",
+      "code_lines": 108,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_campaign_data_contract.py",
+      "category": "tests",
+      "code_lines": 102,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_check_docs.py",
+      "category": "tests",
+      "code_lines": 102,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_content_authoring.py",
+      "category": "tests",
+      "code_lines": 131,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_content_consumer_inventory.py",
+      "category": "tests",
+      "code_lines": 110,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_content_hardening.py",
+      "category": "tests",
+      "code_lines": 213,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_content_multipack.py",
+      "category": "tests",
+      "code_lines": 263,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_content_multipack_smoke.py",
+      "category": "tests",
+      "code_lines": 124,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_content_operations.py",
+      "category": "tests",
+      "code_lines": 80,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_download_artifacts.py",
+      "category": "tests",
+      "code_lines": 255,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_gdscript_contracts.py",
+      "category": "tests",
+      "code_lines": 193,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_json_number_fixtures.py",
+      "category": "tests",
+      "code_lines": 47,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_mechanics_tool.py",
+      "category": "tests",
+      "code_lines": 381,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_quality.py",
+      "category": "tests",
+      "code_lines": 134,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_quality_delta.py",
+      "category": "tests",
+      "code_lines": 100,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_race_refactor_contract.py",
+      "category": "tests",
+      "code_lines": 34,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_reproduction_tool.py",
+      "category": "tests",
+      "code_lines": 76,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_runtime_comparison.py",
+      "category": "tests",
+      "code_lines": 184,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_standalone.py",
+      "category": "tests",
+      "code_lines": 334,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_standalone_archive.py",
+      "category": "tests",
+      "code_lines": 65,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_toolbox_client.py",
+      "category": "tests",
+      "code_lines": 250,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_toolbox_native.py",
+      "category": "tests",
+      "code_lines": 227,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_toolbox_native_boundaries.py",
+      "category": "tests",
+      "code_lines": 112,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_toolbox_native_transport.py",
+      "category": "tests",
+      "code_lines": 275,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_toolbox_protocol.py",
+      "category": "tests",
+      "code_lines": 128,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_toolbox_response_limits.py",
+      "category": "tests",
+      "code_lines": 36,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_verification_evidence.py",
+      "category": "tests",
+      "code_lines": 94,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_verification_plan.py",
+      "category": "tests",
+      "code_lines": 271,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/test_verify_runner.py",
+      "category": "tests",
+      "code_lines": 177,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/toolbox_campaign_tests.gd",
+      "category": "tests",
+      "code_lines": 336,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/toolbox_protocol_tests.gd",
+      "category": "tests",
+      "code_lines": 411,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/toolbox_track_tests.gd",
+      "category": "tests",
+      "code_lines": 246,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/toolbox_weekend_tests.gd",
+      "category": "tests",
+      "code_lines": 340,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_clarity_tests.gd",
+      "category": "tests",
+      "code_lines": 439,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_completion_tests.gd",
+      "category": "tests",
+      "code_lines": 435,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_finish_analysis_tests.gd",
+      "category": "tests",
+      "code_lines": 195,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_finish_details_tests.gd",
+      "category": "tests",
+      "code_lines": 138,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_finish_execution_tests.gd",
+      "category": "tests",
+      "code_lines": 320,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_finish_guide_tests.gd",
+      "category": "tests",
+      "code_lines": 207,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_finish_observation_tests.gd",
+      "category": "tests",
+      "code_lines": 193,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_finish_populated_tests.gd",
+      "category": "tests",
+      "code_lines": 390,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_finish_soak_tests.gd",
+      "category": "tests",
+      "code_lines": 221,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_finish_states_tests.gd",
+      "category": "tests",
+      "code_lines": 336,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_finish_tests.gd",
+      "category": "tests",
+      "code_lines": 427,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_polish_tests.gd",
+      "category": "tests",
+      "code_lines": 311,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_repair_tests.gd",
+      "category": "tests",
+      "code_lines": 353,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ui_smoke.gd",
+      "category": "tests",
+      "code_lines": 241,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/ux_performance.gd",
+      "category": "tests",
+      "code_lines": 167,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/weather_scenario_runs.gd",
+      "category": "tests",
+      "code_lines": 110,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/weather_tests.gd",
+      "category": "tests",
+      "code_lines": 369,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/weather_ui_smoke.gd",
+      "category": "tests",
+      "code_lines": 245,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/weekend_flow_ui_tests.gd",
+      "category": "tests",
+      "code_lines": 201,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/weekend_launch_tests.gd",
+      "category": "tests",
+      "code_lines": 259,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/weekend_lifecycle_tests.gd",
+      "category": "tests",
+      "code_lines": 245,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/weekend_strategy_tests.gd",
+      "category": "tests",
+      "code_lines": 441,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "tests/workspace_performance.gd",
+      "category": "tests",
+      "code_lines": 203,
+      "limit": 450,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "work/armored-assets/add-depots.py",
+      "category": "source",
+      "code_lines": 26,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "work/armored-assets/content.py",
+      "category": "source",
+      "code_lines": 56,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "work/armored-assets/ground-obstacles.py",
+      "category": "source",
+      "code_lines": 25,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "work/armored-assets/validate-depot-placements.py",
+      "category": "source",
+      "code_lines": 28,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "work/integrate-armored.py",
+      "category": "source",
+      "code_lines": 40,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "work/isolated-browser-diagnostics/base-control.py",
+      "category": "source",
+      "code_lines": 24,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "work/isolated-browser-diagnostics/run.py",
+      "category": "source",
+      "code_lines": 27,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    },
+    {
+      "path": "work/register-armored.py",
+      "category": "source",
+      "code_lines": 19,
+      "limit": 400,
+      "over_limit": false,
+      "line": 1
+    }
+  ],
+  "findings": [],
+  "tools": [
+    {
+      "name": "ruff",
+      "status": "not-requested"
+    },
+    {
+      "name": "ruff-format",
+      "status": "not-requested"
+    },
+    {
+      "name": "gdlint",
+      "status": "not-requested"
+    },
+    {
+      "name": "gdformat",
+      "status": "not-requested"
+    },
+    {
+      "name": "gdradon",
+      "status": "not-requested"
+    }
+  ],
+  "analyzer_sha256": "63234888464b7d93148b38c7c3c53d2dabcbd22ef67f8ccd057cee285a327883",
+  "tool_versions": {
+    "ruff": "0.16.2",
+    "gdtoolkit": "4.5.0"
+  },
+  "source_sha256": "f8e03bb88147d3b839a2336f17119755b234fc16e6af122b6121330b569b2608",
+  "commit": "0e7fede91f7de162accab4eeb36467a83a671f26"
+}

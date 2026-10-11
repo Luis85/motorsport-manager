@@ -16,6 +16,7 @@ const fields = new Set([
   'emissive',
   'emissiveIntensity',
   'surface',
+  'finish',
   'sheen',
   'sheenColor',
   'sheenRoughness',

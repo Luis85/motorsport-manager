@@ -40,6 +40,11 @@ edits and deterministic compilation. Infrastructure owns files, guarded disk
 history and the loopback server. Browser UI emits operations and renders detached
 values. Build embeds UI, Three.js, content and existing engine validators. Generated
 `bin/character-studio` must be rebuilt, never hand-edited.
+The executable directly embeds Wildlands asset/creature validators and the shared
+asset renderer, including its surface and finish generators. Changes to those
+files in `source/wildlands/source/` require rebuilding and checking Character
+Studio too, even when no file under Character Studio changed. Run its unit,
+handoff, engine integration and browser checks for the affected boundary.
 
 The app does not tick the engine, rewrite player saves, grant live progression or
 publish a companion into a world. Portable exports are explicit integration

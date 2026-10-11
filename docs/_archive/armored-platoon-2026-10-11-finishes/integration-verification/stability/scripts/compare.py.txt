@@ -1,0 +1,21 @@
+from pathlib import Path
+from html.parser import HTMLParser
+import json,hashlib
+class P(HTMLParser):
+ def __init__(self):super().__init__(convert_charrefs=False);self.blocks=[];self.current=None;self.meta=[]
+ def handle_starttag(self,t,a):
+  if t in ('script','style'):self.current={'tag':t,'attrs':a,'content':''}
+  if t=='meta':self.meta.append(dict(a))
+ def handle_data(self,s):
+  if self.current is not None:self.current['content']+=s
+ def handle_endtag(self,t):
+  if self.current is not None and t==self.current['tag']:self.blocks.append(self.current);self.current=None
+files=['demos/armored-platoon.html','source/wildlands/.generated/artifacts/armored-play.html'];ps=[]
+for f in files:
+ p=P();p.feed(Path(f).read_text());ps.append(p)
+print('BLOCKS',len(ps[0].blocks),len(ps[1].blocks));rows=[]
+for i,(a,b) in enumerate(zip(ps[0].blocks,ps[1].blocks)):
+ same=a==b;rows.append({'index':i,'tag':a['tag'],'attributes':a['attrs'],'same':same,'demoBytes':len(a['content'].encode()),'testBytes':len(b['content'].encode()),'demoSha256':hashlib.sha256(a['content'].encode()).hexdigest(),'testSha256':hashlib.sha256(b['content'].encode()).hexdigest()})
+ if not same:print('DIFF',i,a['tag'],a['attrs'],a['content'][:350],b['content'][:350])
+print('META',ps[0].meta,ps[1].meta)
+Path('work/armored-v3-final-stability/artifact-comparison.json').write_text(json.dumps({'demo':files[0],'browserTestArtifact':files[1],'blocks':rows,'demoMeta':ps[0].meta,'testMeta':ps[1].meta},indent=2)+'\n')

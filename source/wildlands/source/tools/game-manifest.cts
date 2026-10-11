@@ -5,7 +5,7 @@
  * closed and every string, array and number is bounded. Semantic rules that need no other file
  * (id/namespace/output agreement, per-template features) are checked here as well.
  */
-export type Template = 'colony' | 'rts' | 'pet' | 'process';
+export type Template = 'colony' | 'rts' | 'pet' | 'process' | 'armored';
 export interface ColonyContent {
  /** Authored balancing document (catalog selectors expand over `assets`). */
  readonly balancing: string;
@@ -28,6 +28,7 @@ export type ProcessContent = {readonly definition: string; readonly definitions?
 export const MAX_PROCESS_DEFINITIONS = 8;
 /** Every process definition file of process content in switch order. */
 export const processDefinitionFiles = (content: ProcessContent): readonly string[] => content.definitions ?? [content.definition];
+export interface ArmoredContent {readonly catalog: string; readonly visuals: string;}
 export interface RtsContent {readonly catalog: string;}
 export interface PetContent {readonly catalog: string; readonly assets?: string;}
 export interface GameManifest {
@@ -41,7 +42,7 @@ export interface GameManifest {
  readonly engine: {readonly api: 1};
  /** Optional engine feature bundles beyond the template's required set. */
  readonly features?: readonly string[];
- readonly content: ColonyContent | RtsContent | PetContent | ProcessContent;
+ readonly content: ColonyContent | RtsContent | PetContent | ProcessContent | ArmoredContent;
  readonly presentation: {readonly title: string; readonly description?: string; readonly accent?: string};
  /** `wildlands.<id>`; only the `littlewild` game keeps the legacy `littlewild` namespace (legacy save keys). */
  readonly storage: {readonly namespace: string};
@@ -51,7 +52,7 @@ export interface GameManifest {
 export const MANIFEST_FORMAT = 'wildlands-game';
 export const ENGINE_API = 1;
 /** Optional engine bundles a template may declare (build-inserts.cts bundle tags). */
-export const TEMPLATE_FEATURES: Readonly<Record<Template, readonly string[]>> = Object.freeze({colony: ['storytelling-player', 'renderers-2d'], rts: [], pet: [], process: []});
+export const TEMPLATE_FEATURES: Readonly<Record<Template, readonly string[]>> = Object.freeze({colony: ['storytelling-player', 'renderers-2d'], rts: [], pet: [], process: [], armored: []});
 export const MAX_BUDGET_BYTES = 64 * 1024 * 1024;
 const ID = /^[a-z][a-z0-9-]{0,63}$/;
 const PACK_ID = /^[a-z0-9][a-z0-9-]{0,63}$/;
@@ -92,8 +93,8 @@ export function manifestErrors(value: unknown): string[] {
  const id = text(top.id, '/id', 64, ID) ? top.id as string : null;
  text(top.name, '/name', 80);
  text(top.version, '/version', 64, VERSION);
- const template = (['colony', 'rts', 'pet', 'process'] as const).find(entry => entry === top.template) ?? null;
- if (!template) fail('/template', 'must be colony, rts, pet or process');
+ const template = (['colony', 'rts', 'pet', 'process', 'armored'] as const).find(entry => entry === top.template) ?? null;
+ if (!template) fail('/template', 'must be colony, rts, pet, process or armored');
  const engine = object(top.engine, '/engine', ['api']);
  if (engine && engine.api !== ENGINE_API) fail('/engine/api', 'must be ' + ENGINE_API + ' (this engine)');
  if (Object.hasOwn(top, 'features')) list(top.features, '/features', 0, 2, (entry, at) => {
@@ -122,8 +123,8 @@ export function manifestErrors(value: unknown): string[] {
    if (many) list(content.definitions, '/content/definitions', 1, MAX_PROCESS_DEFINITIONS, (entry, at) => { text(entry, at, 255, JSON_PATH); });
   }
  } else if (template) {
-  const content = object(top.content, '/content', ['catalog'], template === 'pet' ? ['assets'] : []);
-  if (content) { text(content.catalog, '/content/catalog', 255, JSON_PATH); if (Object.hasOwn(content, 'assets')) text(content.assets, '/content/assets', 255, DIRECTORY); }
+  const content = object(top.content, '/content', template === 'armored' ? ['catalog', 'visuals'] : ['catalog'], template === 'pet' ? ['assets'] : []);
+  if (content) { text(content.catalog, '/content/catalog', 255, JSON_PATH); if (Object.hasOwn(content, 'visuals')) text(content.visuals, '/content/visuals', 255, JSON_PATH); if (Object.hasOwn(content, 'assets')) text(content.assets, '/content/assets', 255, DIRECTORY); }
  }
  const presentation = object(top.presentation, '/presentation', ['title'], ['description', 'accent']);
  if (presentation) {

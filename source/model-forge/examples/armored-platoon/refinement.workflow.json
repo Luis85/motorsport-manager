@@ -1,0 +1,642 @@
+[
+  {
+    "tool": "model-forge",
+    "args": [
+      "-d",
+      "source/model-forge/examples/armored-platoon/m4-sherman.model.json",
+      "inspect",
+      "--source"
+    ],
+    "result": {
+      "revision": 2,
+      "stateHash": "ffab6d4e585371d773c687ff414c12a21bb248eec1cdaa85565952b873166062",
+      "stats": {
+        "nodes": 238,
+        "meshes": 215,
+        "triangles": 7532,
+        "materials": 8,
+        "geometries": 42,
+        "bounds": {
+          "min": [-1.7049999964237212, 0.04000000134110451, -2.8599999986588953],
+          "max": [1.7049999964237212, 3.870000011920929, 3.937499999832362],
+          "size": [3.4099999928474425, 3.830000010579824, 6.797499998491258]
+        },
+        "warnings": []
+      },
+      "path": "/workspace/work/armored-platoon/source/model-forge/examples/armored-platoon/m4-sherman.model.json"
+    }
+  },
+  {
+    "tool": "model-forge",
+    "args": [
+      "-d",
+      "source/model-forge/examples/armored-platoon/m4-sherman.model.json",
+      "apply",
+      "--file",
+      "source/model-forge/examples/armored-platoon/m4-sherman.refine.batch.json",
+      "--expected-revision",
+      "2",
+      "--expected-state",
+      "ffab6d4e585371d773c687ff414c12a21bb248eec1cdaa85565952b873166062",
+      "--dry-run"
+    ],
+    "result": {
+      "revision": 2,
+      "stateHash": "ffab6d4e585371d773c687ff414c12a21bb248eec1cdaa85565952b873166062",
+      "proposedRevision": 3,
+      "proposedStateHash": "fafeaa907c1fc02865cdd9cfb1685df75021ebac2e7e22ae4b8eafe8c501bf2d",
+      "stats": {
+        "nodes": 238,
+        "meshes": 215,
+        "triangles": 7532,
+        "materials": 8,
+        "geometries": 42,
+        "bounds": {
+          "min": [-1.7049999964237212, 0.04000000134110451, -2.8599999986588953],
+          "max": [1.7049999964237212, 3.870000011920929, 3.937499999832362],
+          "size": [3.4099999928474425, 3.830000010579824, 6.797499998491258]
+        },
+        "warnings": []
+      },
+      "changes": {
+        "nodes": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "geometries": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "materials": {
+          "added": [],
+          "updated": ["armor", "raised"],
+          "removed": []
+        },
+        "parameters": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "dependencies": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "metadata": []
+      },
+      "dryRun": true,
+      "path": "/workspace/work/armored-platoon/source/model-forge/examples/armored-platoon/m4-sherman.model.json"
+    }
+  },
+  {
+    "tool": "model-forge",
+    "args": [
+      "-d",
+      "source/model-forge/examples/armored-platoon/m4-sherman.model.json",
+      "apply",
+      "--file",
+      "source/model-forge/examples/armored-platoon/m4-sherman.refine.batch.json",
+      "--expected-revision",
+      "2",
+      "--expected-state",
+      "ffab6d4e585371d773c687ff414c12a21bb248eec1cdaa85565952b873166062"
+    ],
+    "result": {
+      "revision": 3,
+      "stateHash": "fafeaa907c1fc02865cdd9cfb1685df75021ebac2e7e22ae4b8eafe8c501bf2d",
+      "proposedRevision": 3,
+      "proposedStateHash": "fafeaa907c1fc02865cdd9cfb1685df75021ebac2e7e22ae4b8eafe8c501bf2d",
+      "stats": {
+        "nodes": 238,
+        "meshes": 215,
+        "triangles": 7532,
+        "materials": 8,
+        "geometries": 42,
+        "bounds": {
+          "min": [-1.7049999964237212, 0.04000000134110451, -2.8599999986588953],
+          "max": [1.7049999964237212, 3.870000011920929, 3.937499999832362],
+          "size": [3.4099999928474425, 3.830000010579824, 6.797499998491258]
+        },
+        "warnings": []
+      },
+      "changes": {
+        "nodes": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "geometries": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "materials": {
+          "added": [],
+          "updated": ["armor", "raised"],
+          "removed": []
+        },
+        "parameters": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "dependencies": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "metadata": []
+      },
+      "dryRun": false,
+      "path": "/workspace/work/armored-platoon/source/model-forge/examples/armored-platoon/m4-sherman.model.json"
+    }
+  },
+  {
+    "tool": "model-forge",
+    "args": ["-d", "source/model-forge/examples/armored-platoon/m4-sherman.model.json", "validate"],
+    "result": {
+      "revision": 3,
+      "stateHash": "fafeaa907c1fc02865cdd9cfb1685df75021ebac2e7e22ae4b8eafe8c501bf2d",
+      "valid": true,
+      "stats": {
+        "nodes": 238,
+        "meshes": 215,
+        "triangles": 7532,
+        "materials": 8,
+        "geometries": 42,
+        "bounds": {
+          "min": [-1.7049999964237212, 0.04000000134110451, -2.8599999986588953],
+          "max": [1.7049999964237212, 3.870000011920929, 3.937499999832362],
+          "size": [3.4099999928474425, 3.830000010579824, 6.797499998491258]
+        },
+        "warnings": []
+      },
+      "path": "/workspace/work/armored-platoon/source/model-forge/examples/armored-platoon/m4-sherman.model.json"
+    }
+  },
+  {
+    "tool": "model-forge",
+    "args": [
+      "-d",
+      "source/model-forge/examples/armored-platoon/m4-sherman.model.json",
+      "audit",
+      "--file",
+      "source/model-forge/examples/armored-platoon/quality-policy.json",
+      "--strict"
+    ],
+    "result": {
+      "revision": 3,
+      "passed": true,
+      "metrics": {
+        "nodes": 236,
+        "meshes": 213,
+        "triangles": 7508,
+        "geometries": 40,
+        "materials": 8,
+        "geometryBytes": 141460,
+        "maxExtent": 6.797499998491258,
+        "bounds": {
+          "min": [-1.7049999964237212, 0.04000000134110451, -2.8599999986588953],
+          "max": [1.7049999964237212, 3.870000011920929, 3.937499999832362],
+          "size": [3.4099999928474425, 3.830000010579824, 6.797499998491258]
+        }
+      },
+      "summary": {
+        "errors": 0,
+        "warnings": 0
+      }
+    }
+  },
+  {
+    "tool": "model-forge",
+    "args": [
+      "-d",
+      "source/model-forge/examples/armored-platoon/m4-sherman.model.json",
+      "export",
+      "--format",
+      "model-bundle",
+      "--out",
+      "source/model-forge/examples/armored-platoon/m4-sherman.model-bundle.json",
+      "--overwrite"
+    ],
+    "result": {
+      "revision": 3,
+      "path": "/workspace/work/armored-platoon/source/model-forge/examples/armored-platoon/m4-sherman.model-bundle.json"
+    }
+  },
+  {
+    "tool": "scene-forge",
+    "args": ["-p", "source/scene-forge/examples/armored-platoon", "inspect", "--source"],
+    "result": {
+      "revision": 4,
+      "stateHash": "f57f0854b2f97d9da84c9a9ff9cb500925207f075e4353f8702868d971f220d5",
+      "stats": {
+        "nodes": 1516,
+        "meshes": 1366,
+        "triangles": 47496,
+        "materials": 17,
+        "geometries": 62,
+        "bounds": {
+          "min": [0, -1.5992000102996826, 0],
+          "max": [576, 9.586870833333332, 576],
+          "size": [576, 11.186070843633015, 576]
+        },
+        "warnings": [
+          "Custom mesh uses local spherical UV fallback; author seam-aware uvs for precise surface placement."
+        ]
+      }
+    }
+  },
+  {
+    "tool": "scene-forge",
+    "args": [
+      "-p",
+      "source/scene-forge/examples/armored-platoon",
+      "model",
+      "import",
+      "--file",
+      "source/model-forge/examples/armored-platoon/m4-sherman.model-bundle.json",
+      "--replace",
+      "--expected-revision",
+      "4",
+      "--expected-state",
+      "f57f0854b2f97d9da84c9a9ff9cb500925207f075e4353f8702868d971f220d5",
+      "--dry-run"
+    ],
+    "result": {
+      "dryRun": true
+    }
+  },
+  {
+    "tool": "scene-forge",
+    "args": [
+      "-p",
+      "source/scene-forge/examples/armored-platoon",
+      "model",
+      "import",
+      "--file",
+      "source/model-forge/examples/armored-platoon/m4-sherman.model-bundle.json",
+      "--replace",
+      "--expected-revision",
+      "4",
+      "--expected-state",
+      "f57f0854b2f97d9da84c9a9ff9cb500925207f075e4353f8702868d971f220d5"
+    ],
+    "result": {
+      "stateHash": "8090f4468e693c46b4ef1dbd8cd5b73ba1c38bd381c84e2ea8248c60adad6825",
+      "path": "models/m4-sherman.model.json"
+    }
+  },
+  {
+    "tool": "scene-forge",
+    "args": [
+      "-p",
+      "source/scene-forge/examples/armored-platoon",
+      "export",
+      "--format",
+      "three",
+      "--model",
+      "m4-sherman",
+      "--out",
+      "source/scene-forge/examples/armored-platoon/exports/m4-sherman.three.json"
+    ],
+    "result": {
+      "stats": {
+        "nodes": 236,
+        "meshes": 213,
+        "triangles": 7508,
+        "materials": 8,
+        "geometries": 40,
+        "bounds": {
+          "min": [-1.7049999964237212, 0.04000000134110451, -2.8599999986588953],
+          "max": [1.7049999964237212, 3.870000011920929, 3.937499999832362],
+          "size": [3.4099999928474425, 3.830000010579824, 6.797499998491258]
+        },
+        "warnings": []
+      },
+      "path": "/workspace/work/armored-platoon/source/scene-forge/examples/armored-platoon/exports/m4-sherman.three.json"
+    }
+  },
+  {
+    "tool": "model-forge",
+    "args": [
+      "-d",
+      "source/model-forge/examples/armored-platoon/panzer-iv.model.json",
+      "inspect",
+      "--source"
+    ],
+    "result": {
+      "revision": 2,
+      "stateHash": "ab7da8bb7c69844c18bf953e95fc80819d1c84732d749943b1c36119d19bd8ba",
+      "stats": {
+        "nodes": 253,
+        "meshes": 226,
+        "triangles": 6596,
+        "materials": 8,
+        "geometries": 41,
+        "bounds": {
+          "min": [-1.777500001490116, 0.04000000134110451, -2.8599999986588953],
+          "max": [1.777500001490116, 3.870000011920929, 4.837499999832362],
+          "size": [3.555000002980232, 3.830000010579824, 7.697499998491257]
+        },
+        "warnings": []
+      },
+      "path": "/workspace/work/armored-platoon/source/model-forge/examples/armored-platoon/panzer-iv.model.json"
+    }
+  },
+  {
+    "tool": "model-forge",
+    "args": [
+      "-d",
+      "source/model-forge/examples/armored-platoon/panzer-iv.model.json",
+      "apply",
+      "--file",
+      "source/model-forge/examples/armored-platoon/panzer-iv.refine.batch.json",
+      "--expected-revision",
+      "2",
+      "--expected-state",
+      "ab7da8bb7c69844c18bf953e95fc80819d1c84732d749943b1c36119d19bd8ba",
+      "--dry-run"
+    ],
+    "result": {
+      "revision": 2,
+      "stateHash": "ab7da8bb7c69844c18bf953e95fc80819d1c84732d749943b1c36119d19bd8ba",
+      "proposedRevision": 3,
+      "proposedStateHash": "ce1ca3de6d7957ec7c5caeeafa05f815480279e3ccae7d754f3d1a0d8ca8baab",
+      "stats": {
+        "nodes": 253,
+        "meshes": 226,
+        "triangles": 6596,
+        "materials": 8,
+        "geometries": 41,
+        "bounds": {
+          "min": [-1.777500001490116, 0.04000000134110451, -2.8599999986588953],
+          "max": [1.777500001490116, 3.870000011920929, 4.837499999832362],
+          "size": [3.555000002980232, 3.830000010579824, 7.697499998491257]
+        },
+        "warnings": []
+      },
+      "changes": {
+        "nodes": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "geometries": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "materials": {
+          "added": [],
+          "updated": ["armor", "raised"],
+          "removed": []
+        },
+        "parameters": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "dependencies": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "metadata": []
+      },
+      "dryRun": true,
+      "path": "/workspace/work/armored-platoon/source/model-forge/examples/armored-platoon/panzer-iv.model.json"
+    }
+  },
+  {
+    "tool": "model-forge",
+    "args": [
+      "-d",
+      "source/model-forge/examples/armored-platoon/panzer-iv.model.json",
+      "apply",
+      "--file",
+      "source/model-forge/examples/armored-platoon/panzer-iv.refine.batch.json",
+      "--expected-revision",
+      "2",
+      "--expected-state",
+      "ab7da8bb7c69844c18bf953e95fc80819d1c84732d749943b1c36119d19bd8ba"
+    ],
+    "result": {
+      "revision": 3,
+      "stateHash": "ce1ca3de6d7957ec7c5caeeafa05f815480279e3ccae7d754f3d1a0d8ca8baab",
+      "proposedRevision": 3,
+      "proposedStateHash": "ce1ca3de6d7957ec7c5caeeafa05f815480279e3ccae7d754f3d1a0d8ca8baab",
+      "stats": {
+        "nodes": 253,
+        "meshes": 226,
+        "triangles": 6596,
+        "materials": 8,
+        "geometries": 41,
+        "bounds": {
+          "min": [-1.777500001490116, 0.04000000134110451, -2.8599999986588953],
+          "max": [1.777500001490116, 3.870000011920929, 4.837499999832362],
+          "size": [3.555000002980232, 3.830000010579824, 7.697499998491257]
+        },
+        "warnings": []
+      },
+      "changes": {
+        "nodes": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "geometries": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "materials": {
+          "added": [],
+          "updated": ["armor", "raised"],
+          "removed": []
+        },
+        "parameters": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "dependencies": {
+          "added": [],
+          "updated": [],
+          "removed": []
+        },
+        "metadata": []
+      },
+      "dryRun": false,
+      "path": "/workspace/work/armored-platoon/source/model-forge/examples/armored-platoon/panzer-iv.model.json"
+    }
+  },
+  {
+    "tool": "model-forge",
+    "args": ["-d", "source/model-forge/examples/armored-platoon/panzer-iv.model.json", "validate"],
+    "result": {
+      "revision": 3,
+      "stateHash": "ce1ca3de6d7957ec7c5caeeafa05f815480279e3ccae7d754f3d1a0d8ca8baab",
+      "valid": true,
+      "stats": {
+        "nodes": 253,
+        "meshes": 226,
+        "triangles": 6596,
+        "materials": 8,
+        "geometries": 41,
+        "bounds": {
+          "min": [-1.777500001490116, 0.04000000134110451, -2.8599999986588953],
+          "max": [1.777500001490116, 3.870000011920929, 4.837499999832362],
+          "size": [3.555000002980232, 3.830000010579824, 7.697499998491257]
+        },
+        "warnings": []
+      },
+      "path": "/workspace/work/armored-platoon/source/model-forge/examples/armored-platoon/panzer-iv.model.json"
+    }
+  },
+  {
+    "tool": "model-forge",
+    "args": [
+      "-d",
+      "source/model-forge/examples/armored-platoon/panzer-iv.model.json",
+      "audit",
+      "--file",
+      "source/model-forge/examples/armored-platoon/quality-policy.json",
+      "--strict"
+    ],
+    "result": {
+      "revision": 3,
+      "passed": true,
+      "metrics": {
+        "nodes": 251,
+        "meshes": 224,
+        "triangles": 6572,
+        "geometries": 39,
+        "materials": 8,
+        "geometryBytes": 101924,
+        "maxExtent": 7.697499998491257,
+        "bounds": {
+          "min": [-1.777500001490116, 0.04000000134110451, -2.8599999986588953],
+          "max": [1.777500001490116, 3.870000011920929, 4.837499999832362],
+          "size": [3.555000002980232, 3.830000010579824, 7.697499998491257]
+        }
+      },
+      "summary": {
+        "errors": 0,
+        "warnings": 0
+      }
+    }
+  },
+  {
+    "tool": "model-forge",
+    "args": [
+      "-d",
+      "source/model-forge/examples/armored-platoon/panzer-iv.model.json",
+      "export",
+      "--format",
+      "model-bundle",
+      "--out",
+      "source/model-forge/examples/armored-platoon/panzer-iv.model-bundle.json",
+      "--overwrite"
+    ],
+    "result": {
+      "revision": 3,
+      "path": "/workspace/work/armored-platoon/source/model-forge/examples/armored-platoon/panzer-iv.model-bundle.json"
+    }
+  },
+  {
+    "tool": "scene-forge",
+    "args": ["-p", "source/scene-forge/examples/armored-platoon", "inspect", "--source"],
+    "result": {
+      "revision": 4,
+      "stateHash": "8090f4468e693c46b4ef1dbd8cd5b73ba1c38bd381c84e2ea8248c60adad6825",
+      "stats": {
+        "nodes": 1516,
+        "meshes": 1366,
+        "triangles": 47496,
+        "materials": 17,
+        "geometries": 62,
+        "bounds": {
+          "min": [0, -1.5992000102996826, 0],
+          "max": [576, 9.586870833333332, 576],
+          "size": [576, 11.186070843633015, 576]
+        },
+        "warnings": [
+          "Custom mesh uses local spherical UV fallback; author seam-aware uvs for precise surface placement."
+        ]
+      }
+    }
+  },
+  {
+    "tool": "scene-forge",
+    "args": [
+      "-p",
+      "source/scene-forge/examples/armored-platoon",
+      "model",
+      "import",
+      "--file",
+      "source/model-forge/examples/armored-platoon/panzer-iv.model-bundle.json",
+      "--replace",
+      "--expected-revision",
+      "4",
+      "--expected-state",
+      "8090f4468e693c46b4ef1dbd8cd5b73ba1c38bd381c84e2ea8248c60adad6825",
+      "--dry-run"
+    ],
+    "result": {
+      "dryRun": true
+    }
+  },
+  {
+    "tool": "scene-forge",
+    "args": [
+      "-p",
+      "source/scene-forge/examples/armored-platoon",
+      "model",
+      "import",
+      "--file",
+      "source/model-forge/examples/armored-platoon/panzer-iv.model-bundle.json",
+      "--replace",
+      "--expected-revision",
+      "4",
+      "--expected-state",
+      "8090f4468e693c46b4ef1dbd8cd5b73ba1c38bd381c84e2ea8248c60adad6825"
+    ],
+    "result": {
+      "stateHash": "f2bf2e9728954317a7a601f6838922c910f214b4109296f7180fc6f1069992c5",
+      "path": "models/panzer-iv.model.json"
+    }
+  },
+  {
+    "tool": "scene-forge",
+    "args": [
+      "-p",
+      "source/scene-forge/examples/armored-platoon",
+      "export",
+      "--format",
+      "three",
+      "--model",
+      "panzer-iv",
+      "--out",
+      "source/scene-forge/examples/armored-platoon/exports/panzer-iv.three.json"
+    ],
+    "result": {
+      "stats": {
+        "nodes": 251,
+        "meshes": 224,
+        "triangles": 6572,
+        "materials": 8,
+        "geometries": 39,
+        "bounds": {
+          "min": [-1.777500001490116, 0.04000000134110451, -2.8599999986588953],
+          "max": [1.777500001490116, 3.870000011920929, 4.837499999832362],
+          "size": [3.555000002980232, 3.830000010579824, 7.697499998491257]
+        },
+        "warnings": []
+      },
+      "path": "/workspace/work/armored-platoon/source/scene-forge/examples/armored-platoon/exports/panzer-iv.three.json"
+    }
+  }
+]

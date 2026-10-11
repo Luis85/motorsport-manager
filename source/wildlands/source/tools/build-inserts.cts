@@ -5,7 +5,7 @@
  * order (source/index.html), so every artifact profile that filters it keeps the same
  * relative order. Each insert names exactly one bundle; profiles select bundles, never
  * individual files. tools/artifact-profiles.cts owns the profiles and their order checks.
- * The Process Studio's `template-process` inserts live in build-inserts-process.cts and close the list.
+ * The Process Studio's `template-process` inserts live in build-inserts-process.cts, followed by the Armored template.
  * A module is tagged with the lowest bundle that needs it: the defensive developer JSON/command
  * boundary (DEVELOPER_DATA, DEVELOPER_COMMANDS) is required by the renderer host's plugin
  * contexts, and the storytelling preview renderer is used only by the storytelling editor.
@@ -33,7 +33,8 @@ export const BUNDLES = [
   "rts-editor",
   "template-pet",
   "play-boot",
-  "template-process"
+  "template-process",
+  "template-armored"
 ] as const;
 export type BundleTag = typeof BUNDLES[number];
 export type Insert = readonly [marker:string,file:string,kind:InsertKind,bundle:BundleTag];
@@ -177,6 +178,8 @@ export const INSERTS: readonly Insert[] = [
   ["WORLD", "world.js", "script", "colony-shell"],
   ["THREE", "../vendor/three.js", "script", "renderer-3d"],
   ["DEVELOPER_TOOLBOX", "developer-toolbox.js", "script", "developer"],
+  ["IMAGE_DATA", "image-data.js", "script", "engine-kernel"],
+  ["ASSET_FINISH", "asset-finish.js", "script", "engine-kernel"],
   ["ASSET_SURFACE", "asset-surface.js", "script", "engine-kernel"],
   ["ASSET_RENDERER", "asset-renderer.js", "script", "renderer-3d"],
   ["SOFTWARE_3D", "software-3d.js", "script", "colony-shell"],
@@ -288,5 +291,27 @@ export const INSERTS: readonly Insert[] = [
   ["UI", "ui.js", "script", "colony-shell"],
   ["PLAY_CSS", "play.css", "style", "play-boot"],
   ["PLAY_BOOT", "play-boot.js", "script", "play-boot"],
-  ...PROCESS_INSERTS
+  ...PROCESS_INSERTS,
+  ["ARMORED_CATALOG", "armored-catalog.js", "script", "template-armored"],
+  ["ARMORED_VISUALS", "armored-visuals.js", "script", "template-armored"],
+  ["ARMORED_PHYSICS_LEGACY", "armored-physics-legacy.js", "script", "template-armored"],
+  ["ARMORED_COLLISION", "armored-collision.js", "script", "template-armored"],
+  ["ARMORED_PHYSICS", "armored-physics.js", "script", "template-armored"],
+  ["ARMORED_COMBAT", "armored-combat.js", "script", "template-armored"],
+  ["ARMORED_LOGISTICS", "armored-logistics.js", "script", "template-armored"],
+  ["ARMORED_NAVIGATION", "armored-navigation.js", "script", "template-armored"],
+  ["ARMORED_AI", "armored-ai.js", "script", "template-armored"],
+  ["ARMORED_MISSIONS", "armored-missions.js", "script", "template-armored"],
+  ["ARMORED_CHECKPOINT", "armored-checkpoint.js", "script", "template-armored"],
+  ["ARMORED_SESSION", "armored-session.js", "script", "template-armored"],
+  ["ARMORED_APPLICATION", "armored-application.js", "script", "template-armored"],
+  ["VISUAL_RESOURCES", "visual-resources.js", "script", "template-armored"],
+  ["ARMORED_WORLD", "armored-world.js", "script", "template-armored"],
+  ["ARMORED_RENDERER", "armored-renderer.js", "script", "template-armored"],
+  ["ARMORED_CONTROLS", "armored-controls.js", "script", "template-armored"],
+  ["ARMORED_AUDIO", "armored-audio.js", "script", "template-armored"],
+  ["ARMORED_UI", "armored-ui.js", "script", "template-armored"],
+  ["ARMORED_HOST", "armored-host.js", "script", "template-armored"],
+  ["ARMORED_CSS", "armored.css", "style", "template-armored"]
+
 ];

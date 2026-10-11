@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python3",
+    "scripts/quality.py",
+    "--output",
+    "/workspace/work/armored-platoon/work/armored-v3-python/quality"
+  ],
+  "source_commit": "3ce1c8dfde1e479b9927e4447bcbb6e28e898ba9",
+  "exit_code": 0,
+  "seconds": 86.415,
+  "log_sha256": "c8b0c546ecb3532c056916ce3a64a3c36ec92a3f24c91946068ae3cd51f6aff7"
+}

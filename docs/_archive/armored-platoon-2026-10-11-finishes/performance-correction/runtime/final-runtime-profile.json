@@ -1,0 +1,16 @@
+{
+  "sourceSha256": "4aca0280594a3df3108fc30efa690536340466b66c8dc2bae43fd8dd5d3ecf4b",
+  "baseline": "frozen09edruntimebaseline81.json",
+  "commonjs": {
+    "recipes": 81,
+    "channelHashesChecked": 243,
+    "milliseconds": 243.112246,
+    "aggregateSha256": "0e645858b3f3af227e367a64dee336d84cb41b47915edc35ae8ce6e41961d8c2"
+  },
+  "vm": {
+    "recipes": 81,
+    "channelHashesChecked": 243,
+    "milliseconds": 264.250495,
+    "aggregateSha256": "0e645858b3f3af227e367a64dee336d84cb41b47915edc35ae8ce6e41961d8c2"
+  }
+}

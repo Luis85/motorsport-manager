@@ -180,7 +180,7 @@ function smoke(built: BundleResult): void {
       throw Error('Bundled CLI create without --game lacks its diagnostic.');
     // Games are data the smoke copies next to the CLI; the candidate reads nothing else.
     const games = path.join(directory, 'games'), folders = gameFolders(), copies = new Map<string, string>();
-    for (const id of ['littlewild', 'rts-frontier', 'pocket-pet', 'agency-delivery']) {
+    for (const id of ['littlewild', 'rts-frontier', 'pocket-pet', 'agency-delivery', 'armored-platoon']) {
      const source = folders.get(id);
      if (!source) throw Error(`The ${id} game folder is required for the CLI smoke.`);
      copies.set(id, path.join(games, id)); fs.cpSync(source, copies.get(id)!, {recursive: true});

@@ -1,0 +1,1061 @@
+{
+  "source": "source/model-forge/src/kernel/application/finish-pattern.ts",
+  "elapsedMs": 437.864687,
+  "count": 81,
+  "sha256": "0e645858b3f3af227e367a64dee336d84cb41b47915edc35ae8ce6e41961d8c2",
+  "rows": [
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0
+      },
+      "sha256": "28104a846c1cf9e534076ff384d712ded73cd808e18352f2dfea414977a730da"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "28104a846c1cf9e534076ff384d712ded73cd808e18352f2dfea414977a730da"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "f86e26f2894f34a48202407cb5d66b141f1d67fa93cc4ac67029eba3048467d0"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35
+      },
+      "sha256": "42d1eb4fb6665b9ea10bcc84a5bfdfdea1ce25addcdb84a017555525d8d78c99"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "42d1eb4fb6665b9ea10bcc84a5bfdfdea1ce25addcdb84a017555525d8d78c99"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "9812bb77ab9e9f856978663250ed1835405d839612965050baa36210c714580d"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1
+      },
+      "sha256": "43e27d5047e70bc65f423c944e702a6c9791153d868a188ab20fe0ddf40d3b12"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "43e27d5047e70bc65f423c944e702a6c9791153d868a188ab20fe0ddf40d3b12"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "fc9b8ac6fede319d70e98bf7d778b5a3301baf0b21cdd87b318aa666330e9441"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0
+      },
+      "sha256": "49533c87e722e62bee1dceba18ef3dfc0b1c4382eb22fd44690ce57804fbf7d1"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "49533c87e722e62bee1dceba18ef3dfc0b1c4382eb22fd44690ce57804fbf7d1"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "f406ddf74ed041a78f437e5217d0559bfc76d714aadfb9e3b0fb25163b65e3c2"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35
+      },
+      "sha256": "b91e819e74fa1c33daa8597862d1e44d93cc95cfe4373b7ecc12dfeccb682520"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "b91e819e74fa1c33daa8597862d1e44d93cc95cfe4373b7ecc12dfeccb682520"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "e793501d0c0e08a9e43f36e3ad92b019686c80ba0fd20fc7e6c6e70ed6b52c65"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1
+      },
+      "sha256": "702db5766a3d23dce9447a9c985f01ee411fa443e2072b793488f23f54389f14"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "702db5766a3d23dce9447a9c985f01ee411fa443e2072b793488f23f54389f14"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "5d7de7c7b139d8cf2a27102a90c91c394804453c6af1c7900c4872e348866e1e"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0
+      },
+      "sha256": "666dd9b739a16faf95159520f083899d497b0b0549d4ea0112bdd83f1a97aee6"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "666dd9b739a16faf95159520f083899d497b0b0549d4ea0112bdd83f1a97aee6"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "b705c67ac98fdc3af6b5a3e44fa52e09c5f262b703703906b72dc802a891f336"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35
+      },
+      "sha256": "31c6362e49e0ede2bd26d0daab997d264f728e0aa96d5298c840a38e9a9c759b"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "31c6362e49e0ede2bd26d0daab997d264f728e0aa96d5298c840a38e9a9c759b"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "5b0cf1ee787bf38221b4643dc6d77c81efe9058e238d189bab313c5ffa1fbaf8"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1
+      },
+      "sha256": "5144549f26afc95a63501d604b60b0a3cba270983f3537d49dd2f847da7844d0"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "5144549f26afc95a63501d604b60b0a3cba270983f3537d49dd2f847da7844d0"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "a06a336b1dfe4d100d46f08e5725fdbc558460f7bc515e5896e89c8f98da61e9"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0
+      },
+      "sha256": "4df959df00dfc62d95e17687c49f6bc30f871fbd6ae01bb6b798559773732e6b"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "4df959df00dfc62d95e17687c49f6bc30f871fbd6ae01bb6b798559773732e6b"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "9ef7c2611476b291ff99fa293b9fb6b56a92b26ca84b226e48a95db50fc64a18"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35
+      },
+      "sha256": "5636a51239843e99e1d9fd489d855156d02d969b2dfb2bf5e40087f62ddd0ed5"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "5636a51239843e99e1d9fd489d855156d02d969b2dfb2bf5e40087f62ddd0ed5"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "ea1628498f77785e7c009fb99d39bb15674dd412b00dbaf4037fdfefa9c249da"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1
+      },
+      "sha256": "b250f9da1fbb4e6444c2dce2a9e76e8df38ac142279d905d44fda221b128836a"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "b250f9da1fbb4e6444c2dce2a9e76e8df38ac142279d905d44fda221b128836a"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "16f89187dbb3384e3315be8cd73478af3f064c976e0a8353aee373d4fd68d228"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0
+      },
+      "sha256": "32eba2b6b1e934031653967e86d00cb95f31bf5538a94e58cf4b314a76aa8e23"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "32eba2b6b1e934031653967e86d00cb95f31bf5538a94e58cf4b314a76aa8e23"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "69153e0d758de2ae0e9da638d5439ea086347aaa286b1473451537d9c6bc1f7e"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35
+      },
+      "sha256": "41032645b50a996aabd580ec9d26440311798989a42f08265621a8eebe587629"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "41032645b50a996aabd580ec9d26440311798989a42f08265621a8eebe587629"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "a073391ad974d576322efa9fcf698e3b2f0d30e2814a04a4eb32e3cf18d069ab"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1
+      },
+      "sha256": "67ec296ce85ecc7150ee53b970484ab880b8afea199df13a4dcd1a47baa069e6"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "67ec296ce85ecc7150ee53b970484ab880b8afea199df13a4dcd1a47baa069e6"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "edf2e23af24b1d7a048dc04305c30be19f8858c7cbec36f2ae390c9902411627"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0
+      },
+      "sha256": "5d573ea03d8fbce0e75c52ba25cf0b1c7b70001e4d392fb451d38bb8b924fee8"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "5d573ea03d8fbce0e75c52ba25cf0b1c7b70001e4d392fb451d38bb8b924fee8"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "ac795dc3a017614ffcee52c34d15f9642c365a93323e5cfd37daa0967c1d8e77"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35
+      },
+      "sha256": "698be14da2305b3287a83da100d70daf41dd06822db0878d38c0ccd1c6310932"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "698be14da2305b3287a83da100d70daf41dd06822db0878d38c0ccd1c6310932"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "dde9c49ffe5fb06938b8a63f11a95fc9b6f3d30b7624d159fca6dd016b72f890"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1
+      },
+      "sha256": "9e98d9cedab026735e7af8e3f584b84acc4b48a0c43d18e505b47d2dcb416124"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "9e98d9cedab026735e7af8e3f584b84acc4b48a0c43d18e505b47d2dcb416124"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "78d6afc141142dea42ca9e3014f97e366af8001b7154127702635a1c1bb215ca"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0
+      },
+      "sha256": "295fdf8025c20f14636e0de055f1490ceb80ca993cdf1a082a4aa99c6f4ca16d"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "295fdf8025c20f14636e0de055f1490ceb80ca993cdf1a082a4aa99c6f4ca16d"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "ad5c1311f54da412be60d06ffc43937eddea7795327440352ffdb4c6a42faa4d"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35
+      },
+      "sha256": "fe2a79ef83afb2d9a86b14f3240f3036f6bf13de447c96e88acbfe8bf0bcd8fd"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "fe2a79ef83afb2d9a86b14f3240f3036f6bf13de447c96e88acbfe8bf0bcd8fd"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "92a13858d252888957bd7f0c33ac0de770a2a6a3684422bd97c007d41f1ba51a"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1
+      },
+      "sha256": "a915950fcc65d8c53638a1220a88eb35e4a3286ab263d290466ae2b64137ef09"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "a915950fcc65d8c53638a1220a88eb35e4a3286ab263d290466ae2b64137ef09"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "4d6cb311f1e2b45c128e5bc0c24450dabca633f6391faa0cb81e8f9eb8af81ac"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0
+      },
+      "sha256": "baf312bd96881cf3365a77168a02243154ec0202d7888ab1f638b42d365d83b4"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "baf312bd96881cf3365a77168a02243154ec0202d7888ab1f638b42d365d83b4"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "451ea36beb39d2e55389490d080d373fbd84660bf357bd5606f61f110b62c655"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35
+      },
+      "sha256": "87e5b1193f28a27f99d2fae3d076c0fce955716bd1c9ca6f65a7fbb57f667ac9"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "87e5b1193f28a27f99d2fae3d076c0fce955716bd1c9ca6f65a7fbb57f667ac9"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "911a1bcb7e4b975fc8780bd3cbbc3c93a30cacd1be157e48088237ce90ed6a59"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1
+      },
+      "sha256": "e4da95b4f94b15e694905ecb109da5c2f51391a5c458d34712188ec79a1d4a27"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "e4da95b4f94b15e694905ecb109da5c2f51391a5c458d34712188ec79a1d4a27"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "f5e22ad177839f5e36044df3d1efac77a44c5ef392498d2cef63c9e261775e30"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0
+      },
+      "sha256": "feb90ab240f31c7b9622ee00061e6bbbbc3fb7f8ab8a35b9b39deaf4e3cdf1db"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "feb90ab240f31c7b9622ee00061e6bbbbc3fb7f8ab8a35b9b39deaf4e3cdf1db"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "3c1e88f61ff5afe2bf137bcb33a45d6bfd76295c6c01161f76eb7f1fe500412c"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35
+      },
+      "sha256": "d8349882661e8b385706c7d930cba3418441c659380f90a58aee363db15023ff"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "d8349882661e8b385706c7d930cba3418441c659380f90a58aee363db15023ff"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "f75b60e758207e5c49005d0b7e19724841408ab3f0c006240a89b19f17c925dd"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1
+      },
+      "sha256": "88768f2664707e259dc9f6dd5bd114561c6f128e697af70b61d57e54eae94130"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": "88768f2664707e259dc9f6dd5bd114561c6f128e697af70b61d57e54eae94130"
+    },
+    {
+      "finish": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": "cf56f96480bba78b71b0d444ed90eab0813e07a3450c3a3ccf2da827be4d4241"
+    }
+  ]
+}

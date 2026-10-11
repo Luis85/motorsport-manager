@@ -262,6 +262,22 @@
       "kind": "scenario",
       "validatorRole": "process",
       "embeddedGlobal": "LWProcessDefinition"
+    },
+    {
+      "id": "armored-catalog",
+      "pattern": "games/armored-platoon/content/catalog.json",
+      "owner": "armored",
+      "kind": "definitions",
+      "validatorRole": "armored",
+      "embeddedGlobal": "LWArmoredDefinitions"
+    },
+    {
+      "id": "armored-visuals",
+      "pattern": "games/armored-platoon/content/visuals.json",
+      "owner": "armored",
+      "kind": "definitions",
+      "validatorRole": "armoredVisuals",
+      "embeddedGlobal": "LWArmoredVisuals"
     }
   ],
   "historicalFixtures": [

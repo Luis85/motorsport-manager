@@ -1,0 +1,184 @@
+{
+  "files": [
+    {
+      "source": "work/character-navigation-diagnosis/unchanged-journey.log",
+      "path": "unchanged-journey.log.gz",
+      "sourceBytes": 2133,
+      "sourceSha256": "1baea0a16bee4af7ab22e16d8ac09a766efca0f3f669d7d7dc4d10ee70c3c2e6",
+      "bytes": 538,
+      "sha256": "4490be88b5b990b857087abe4147f767fe7a4332948a0e20b462f929af9306f9",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/unchanged-trace.json",
+      "path": "unchanged-trace.json.gz",
+      "sourceBytes": 2544,
+      "sourceSha256": "66278f9eb8d3215e359114d808d12d2e067b3682a732047489fd8acfc4098361",
+      "bytes": 392,
+      "sha256": "3bdedabd3ab148e8b0597073b4dcc1338b58fc2e2965910ffbcb5d08a30e4c89",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/modal-loop.log",
+      "path": "modal-loop.log.gz",
+      "sourceBytes": 45500,
+      "sourceSha256": "2fd2b2c1cefeca75db17bed1d64ac2c187977100a536a3b915bed905f08713d4",
+      "bytes": 2957,
+      "sha256": "f25aa6f6ba139a73b50fa93d0cd1501f7fe8c1f0244cf0b54929daad80264b9e",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/modal-loop-outcomes.json",
+      "path": "modal-loop-outcomes.json.gz",
+      "sourceBytes": 1900,
+      "sourceSha256": "e8b9b1502120f6af1a6d5688f18af4cab3ef293e3cc7b19e0e7a5d318ded7e1a",
+      "bytes": 162,
+      "sha256": "558d11f8bd4ef9f3ce148a5e4e8e9146175fb5858a0d18e7e2303607adae4fa3",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/modal-loop-trace.json",
+      "path": "modal-loop-trace.json.gz",
+      "sourceBytes": 57820,
+      "sourceSha256": "8d29fc47b7ed892527dd2f8f0d55a76f6f581c8bbb3b03bd2de3bc5480938be6",
+      "bytes": 2414,
+      "sha256": "8455f206dbd2e50d05c02d81113d1c873ee50fc7d5e602a1e90452620d3b0e27",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/modal-loop-fixed.log",
+      "path": "modal-loop-fixed.log.gz",
+      "sourceBytes": 43070,
+      "sourceSha256": "0ea1d28713b0d1e5b186e7c6166fdfa1c8e8a5c3b7aa67fd8f4a7143aae61029",
+      "bytes": 2481,
+      "sha256": "1ea10d5dbaa29b71e61b570e48a4fbec1db9e8a77838bf4f3c4e5df62a24026e",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/modal-loop-fixed-outcomes.json",
+      "path": "modal-loop-fixed-outcomes.json.gz",
+      "sourceBytes": 1923,
+      "sourceSha256": "63bc8e26f5dd4174bd1707dffe933dddd3f267516b6c898cfa824d69f5e9121c",
+      "bytes": 123,
+      "sha256": "7849b3e09791c67f9fd79832c90b6c9617fa4b5c7096fab2e2e7af69acfa1d8f",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/modal-loop-fixed-trace.json",
+      "path": "modal-loop-fixed-trace.json.gz",
+      "sourceBytes": 55402,
+      "sourceSha256": "2ad0b184b887532f169927c03fa66f1a4c0b50a60b4ad4d3adbf0133a56ecb76",
+      "bytes": 2321,
+      "sha256": "77d589f77fdb86a81438eae8c2a16b1c23c10a58f3dcccdbdbb23bfbaa23863f",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/modal-loop-prelaunch-parse-error.log",
+      "path": "modal-loop-prelaunch-parse-error.log.gz",
+      "sourceBytes": 1570,
+      "sourceSha256": "b0c2f32ab0bf2f3f5af45b428335c448469de47568d880dcd528d308be3add80",
+      "bytes": 613,
+      "sha256": "ff4c2ef70b27dd02b6db31082803c84a5f7b2ca847ea4c1c8c32547226b28a9e",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/journey-instrumented.test.ts",
+      "path": "journey-instrumented.test.ts.txt.gz",
+      "sourceBytes": 13534,
+      "sourceSha256": "6112506ef9476e8b7ac4a6ba93a401963086b098e798f2b33488932a379afa2a",
+      "bytes": 3882,
+      "sha256": "74372b028dce42917524c8232be32922114a29e63facb5f7b95736baad9b23c4",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/modal-loop.test.ts",
+      "path": "modal-loop.test.ts.txt.gz",
+      "sourceBytes": 4476,
+      "sourceSha256": "9db52237541034e5c49d4751ce4953ec82093492e8be3d91046b75e979c9c509",
+      "bytes": 1790,
+      "sha256": "bf69b3d5343177a41e461717fb80c0ea216c207c0f24d8717f6493e99642b32f",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/final-e2e.log",
+      "path": "final-e2e.log.gz",
+      "sourceBytes": 559,
+      "sourceSha256": "029ea147348e96f8dd9359c31e466b7ba5b0347cf843dca056ee31cfc1b5c7d1",
+      "bytes": 387,
+      "sha256": "b3972c66e5588f28e1350f3e15c213cf359631ea51554b04781184fde847ea3c",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci/character-job-114516090614.log",
+      "path": "ci-character-job-114516090614.log.gz",
+      "sourceBytes": 76640,
+      "sourceSha256": "2b0a0ce231ddd421fbc966de5a8ce25646ed4b1ea5c2ffd8e9248e06e058b2bc",
+      "bytes": 16433,
+      "sha256": "9dd0b40ab976437137c29bc595d8a9543ef8081e311e8f91bcb3e2b614cabaaf",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci/terminal-jobs-38154995981.json",
+      "path": "ci-terminal-jobs-38154995981.json.gz",
+      "sourceBytes": 3307,
+      "sourceSha256": "86334afdc60b8de922d937ef8e8308e06e5f9f354f9f40578269dca17cf5ed01",
+      "bytes": 618,
+      "sha256": "c8b39d313e67c19b3771e25815d39ac9b569d24a1d1a76b8c4c785f0574f6132",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci/checkout-identity.json",
+      "path": "ci-checkout-identity.json.gz",
+      "sourceBytes": 381,
+      "sourceSha256": "34af8b57157c7bf1e43a348dfd453ca0d28206afe3569e4b3f7140c689778deb",
+      "bytes": 279,
+      "sha256": "e532a55bc0a4a61873036bbdf4a8f6684672fe3b457d24ce096bf9038b9c2329",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/final-freshness.log",
+      "path": "final-freshness.log.gz",
+      "sourceBytes": 121,
+      "sourceSha256": "a30214e7113e649a4dae6f1971c5a870694f46ac1abbda6e23d80875b7b1a0cb",
+      "bytes": 112,
+      "sha256": "6dec6b64e7d337c04a768ebfca018b47d9c6a4290ead71c5fc2bbc63ada312d5",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/final-types.log",
+      "path": "final-types.log.gz",
+      "sourceBytes": 71,
+      "sourceSha256": "2eba6fcb94fd65cac7e0ee364f65a4e46d28d3afd92aeb99c8490a422173b328",
+      "bytes": 88,
+      "sha256": "4ccd887117a99abe8c0ffca9d937bf925c986f95a92e26b6b9b9e91216dd5b9f",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/final-units.log",
+      "path": "final-units.log.gz",
+      "sourceBytes": 5368,
+      "sourceSha256": "770331abe95c5221e12d972bd677f63e7b479e207853625f1cea72f8eb5ab7ce",
+      "bytes": 2436,
+      "sha256": "b96fe5c77b69008a4f9613afcf80e2470311fe3d048c47cedd57959819645d4e",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/final-handoff.log",
+      "path": "final-handoff.log.gz",
+      "sourceBytes": 3394,
+      "sourceSha256": "887970e0b1a6f7b4425c463e2823a1196daab74fa1a7d777f4c08618108b4a3b",
+      "bytes": 1085,
+      "sha256": "7a0146660001d17bc009403d0fbf707b093720c1b9dd4c1515e5159127cf30ba",
+      "gzip": true
+    },
+    {
+      "source": "work/character-navigation-diagnosis/final-integration.log",
+      "path": "final-integration.log.gz",
+      "sourceBytes": 453,
+      "sourceSha256": "a1fb07bf432539e98adacc9252ff96f1f9d68cbe9bf25fae664410238f56bb3b",
+      "bytes": 312,
+      "sha256": "da09528b012cef3a62470810030f75589dadd1dee8d9867323ae6294c0edec81",
+      "gzip": true
+    }
+  ]
+}

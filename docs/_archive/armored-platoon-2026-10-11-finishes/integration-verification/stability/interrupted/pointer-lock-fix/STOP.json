@@ -1,0 +1,7 @@
+{
+  "at": "2026-10-11T15:13:27.467701+00:00",
+  "classification": "interrupted-for-pointer-lock-input-fix",
+  "requestedBy": "root",
+  "reason": "Interface review identified a concrete pointer-lock focus/held-drive bug requiring source change and exclusive browser reproduction. Root requested stopping the superseded observation.",
+  "acceptance": "Partial observation only, not a thirty-minute pass."
+}

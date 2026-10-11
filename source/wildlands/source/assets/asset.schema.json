@@ -332,7 +332,16 @@
         },
         "surface": {
           "$ref": "#/$defs/surface"
+        },
+        "finish": {
+          "$ref": "#/$defs/finish"
         }
+      },
+      "not": {
+        "required": [
+          "surface",
+          "finish"
+        ]
       }
     },
     "material": {
@@ -404,6 +413,54 @@
           "description": "Replay algorithm version. Omitted or 1 retains the original grain; 2 uses fine tapered fur fibres, interlaced cloth and soft leather grain."
         }
       }
+    },
+    "finish": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "kind",
+        "seed",
+        "scale",
+        "wear"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "kind": {
+          "enum": [
+            "painted-metal",
+            "bare-metal",
+            "rubber"
+          ]
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 16
+        },
+        "wear": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "palette": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "items": {
+            "type": "string",
+            "pattern": "^#[0-9a-fA-F]{6}$"
+          }
+        }
+      },
+      "description": "Versioned offline 128 x 128 color, normal and packed roughness/metalness maps; scalar material values multiply the maps."
     }
   }
 }

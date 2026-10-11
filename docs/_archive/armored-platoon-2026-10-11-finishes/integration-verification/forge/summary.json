@@ -1,0 +1,46 @@
+{
+  "requestedHead": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "actualCheckout": "ec88210c205a674cdb77f85cc2cc59d9feb3874c",
+  "base": "3f56925b3532f015d9a29f19a998a05286b76f13",
+  "checkoutKind": "Synthetic PR merge",
+  "workflows": [
+    {
+      "name": "Model Forge",
+      "run": 38151353075,
+      "job": 114505302575,
+      "conclusion": "success",
+      "units": 182,
+      "binFreshness": "passed"
+    },
+    {
+      "name": "Scene Forge",
+      "run": 38151353022,
+      "job": 114505302194,
+      "conclusion": "success",
+      "units": 57,
+      "binFreshness": "passed"
+    },
+    {
+      "name": "Process Studio",
+      "run": 38151353182,
+      "job": 114505303013,
+      "conclusion": "success",
+      "units": 22,
+      "binFreshness": "passed"
+    },
+    {
+      "name": "Character Studio",
+      "run": 38151353058,
+      "job": 114505302269,
+      "conclusion": "success",
+      "units": 52,
+      "integration": 2,
+      "browserE2E": 3,
+      "standaloneHandoff": "passed",
+      "binFreshness": "passed",
+      "installedBrowser": "Chrome for Testing153.0.8010.12 (Playwright chromium v1243)",
+      "browserEvidenceLimit": "Log records downloaded browser version and passing browser checks, but does not print the selected executable/browser.version result."
+    }
+  ],
+  "limits": "No local workloads or source edits during CI monitoring. Model/Scene workflows do not run their browser tiers. Earlier3ce1c8df receipts remain separate."
+}

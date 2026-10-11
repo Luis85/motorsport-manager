@@ -1,0 +1,1707 @@
+{
+  "status": "failed",
+  "passed": 2084,
+  "total": 2084,
+  "suites": [
+    {
+      "name": "skill-trees",
+      "command": [
+        "node",
+        ".generated/test-skill-trees.cjs"
+      ],
+      "result": ".generated/skill-tree-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 9.39,
+      "passed": 15,
+      "total": 15
+    },
+    {
+      "name": "rts-mission-editor",
+      "command": [
+        "node",
+        ".generated/test-rts-mission-editor.cjs"
+      ],
+      "result": ".generated/rts-mission-editor-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 1.16,
+      "passed": 19,
+      "total": 19
+    },
+    {
+      "name": "rts-catalog",
+      "command": [
+        "node",
+        ".generated/test-rts-catalog.cjs"
+      ],
+      "result": ".generated/rts-catalog-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.91,
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "rts-economy",
+      "command": [
+        "node",
+        ".generated/test-rts-economy.cjs"
+      ],
+      "result": ".generated/rts-economy-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.51,
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "name": "rts-production",
+      "command": [
+        "node",
+        ".generated/test-rts-production.cjs"
+      ],
+      "result": ".generated/rts-production-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.23,
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "name": "rts-runtime",
+      "command": [
+        "node",
+        ".generated/test-rts-runtime.cjs"
+      ],
+      "result": ".generated/rts-runtime-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 11.04,
+      "passed": 16,
+      "total": 16
+    },
+    {
+      "name": "rts-tools",
+      "command": [
+        "node",
+        ".generated/test-rts-tools.cjs"
+      ],
+      "result": ".generated/rts-tools-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 2.01,
+      "passed": 10,
+      "total": 10
+    },
+    {
+      "name": "rts-application",
+      "command": [
+        "node",
+        ".generated/test-rts-application.cjs"
+      ],
+      "result": ".generated/rts-application-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.81,
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "name": "pet-catalog",
+      "command": [
+        "node",
+        ".generated/test-pet-catalog.cjs"
+      ],
+      "result": ".generated/pet-catalog-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.2,
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "name": "pet-runtime",
+      "command": [
+        "node",
+        ".generated/test-pet-runtime.cjs"
+      ],
+      "result": ".generated/pet-runtime-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 3.71,
+      "passed": 11,
+      "total": 11
+    },
+    {
+      "name": "pet-application",
+      "command": [
+        "node",
+        ".generated/test-pet-application.cjs"
+      ],
+      "result": ".generated/pet-application-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.41,
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "name": "pet-wardrobe",
+      "command": [
+        "node",
+        ".generated/test-pet-wardrobe.cjs"
+      ],
+      "result": ".generated/pet-wardrobe-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.48,
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "wildlands-runtime",
+      "command": [
+        "node",
+        ".generated/test-wildlands-runtime.cjs"
+      ],
+      "result": ".generated/wildlands-runtime-results.json",
+      "timeout": 300,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 56.67,
+      "passed": 20,
+      "total": 20
+    },
+    {
+      "name": "wildlands-project",
+      "command": [
+        "node",
+        ".generated/test-wildlands-project.cjs"
+      ],
+      "result": ".generated/wildlands-project-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 37.7,
+      "passed": 17,
+      "total": 17
+    },
+    {
+      "name": "wildlands-cli",
+      "command": [
+        "node",
+        ".generated/test-wildlands-cli.cjs"
+      ],
+      "result": ".generated/wildlands-cli-results.json",
+      "timeout": 420,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 264.06,
+      "passed": 26,
+      "total": 26
+    },
+    {
+      "name": "wildlands-acceptance",
+      "command": [
+        "node",
+        ".generated/test-wildlands-acceptance.cjs"
+      ],
+      "result": ".generated/wildlands-acceptance-results.json",
+      "timeout": 300,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 35.01,
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "engine-export-cli",
+      "command": [
+        "node",
+        ".generated/test-engine-export-cli.cjs"
+      ],
+      "result": ".generated/engine-export-cli-results.json",
+      "timeout": 240,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 51.17,
+      "passed": 5,
+      "total": 5
+    },
+    {
+      "name": "engine-export",
+      "command": [
+        "node",
+        ".generated/test-engine-export.cjs"
+      ],
+      "result": ".generated/engine-export-results.json",
+      "timeout": 240,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 117.31,
+      "passed": 17,
+      "total": 17
+    },
+    {
+      "name": "animations",
+      "command": [
+        "node",
+        ".generated/test-animations.cjs"
+      ],
+      "result": "verification/v15/animations-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.58,
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "name": "balancing-cli",
+      "command": [
+        "node",
+        ".generated/test-balancing-cli.cjs"
+      ],
+      "result": ".generated/balancing-cli-results.json",
+      "timeout": 240,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 42.36,
+      "passed": 5,
+      "total": 5
+    },
+    {
+      "name": "cold-balancing",
+      "command": [
+        "node",
+        ".generated/test-cold-balancing.cjs"
+      ],
+      "result": ".generated/cold-balancing-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 11.42,
+      "passed": 23,
+      "total": 23
+    },
+    {
+      "name": "balancing",
+      "command": [
+        "node",
+        ".generated/test-balancing.cjs"
+      ],
+      "result": ".generated/balancing-results.json",
+      "timeout": 240,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 25.49,
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "name": "storytelling",
+      "command": [
+        "node",
+        ".generated/test-storytelling.cjs"
+      ],
+      "result": ".generated/storytelling-results.json",
+      "timeout": 210,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 49.05,
+      "passed": 24,
+      "total": 24
+    },
+    {
+      "name": "external-editor-cli",
+      "command": [
+        "node",
+        ".generated/test-external-editor-cli.cjs"
+      ],
+      "result": ".generated/external-editor-cli-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 39.59,
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "name": "external-canvas",
+      "command": [
+        "node",
+        ".generated/test-external-canvas.cjs"
+      ],
+      "result": ".generated/external-canvas-results.json",
+      "timeout": 240,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 52.3,
+      "passed": 21,
+      "total": 21
+    },
+    {
+      "name": "creature-editor",
+      "command": [
+        "node",
+        ".generated/test-creature-editor.cjs"
+      ],
+      "result": ".generated/creature-editor-results.json",
+      "timeout": 240,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 45.87,
+      "passed": 18,
+      "total": 18
+    },
+    {
+      "name": "external-editors",
+      "command": [
+        "node",
+        ".generated/test-external-editors.cjs"
+      ],
+      "result": ".generated/external-editors-results.json",
+      "timeout": 300,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 37.03,
+      "passed": 24,
+      "total": 24
+    },
+    {
+      "name": "renderer-scene-2d",
+      "command": [
+        "node",
+        ".generated/test-renderer-scene-2d.cjs"
+      ],
+      "result": ".generated/renderer-scene-2d-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.51,
+      "passed": 10,
+      "total": 10
+    },
+    {
+      "name": "scene-editor",
+      "command": [
+        "node",
+        ".generated/test-scene-editor.cjs"
+      ],
+      "result": ".generated/scene-editor-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 17.62,
+      "passed": 15,
+      "total": 15
+    },
+    {
+      "name": "scene-navigation",
+      "command": [
+        "node",
+        ".generated/test-scene-navigation.cjs"
+      ],
+      "result": ".generated/scene-navigation-results.json",
+      "timeout": 660,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 111.41,
+      "passed": 12,
+      "total": 12
+    },
+    {
+      "name": "scene-journeys",
+      "command": [
+        "node",
+        ".generated/test-scene-journeys.cjs"
+      ],
+      "result": ".generated/scene-journeys-results.json",
+      "timeout": 420,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 67.03,
+      "passed": 5,
+      "total": 5
+    },
+    {
+      "name": "architecture-extensions",
+      "command": [
+        "node",
+        ".generated/test-architecture-extensions.cjs"
+      ],
+      "result": ".generated/architecture-extensions-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 13.62,
+      "passed": 10,
+      "total": 10
+    },
+    {
+      "name": "building-interiors",
+      "command": [
+        "node",
+        ".generated/test-building-interiors.cjs"
+      ],
+      "result": ".generated/building-interiors-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 18.36,
+      "passed": 15,
+      "total": 15
+    },
+    {
+      "name": "construction",
+      "command": [
+        "node",
+        ".generated/test-construction.cjs"
+      ],
+      "result": ".generated/construction-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 5.59,
+      "passed": 12,
+      "total": 12
+    },
+    {
+      "name": "terraform",
+      "command": [
+        "node",
+        ".generated/test-terraform.cjs"
+      ],
+      "result": ".generated/terraform-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 9.15,
+      "passed": 13,
+      "total": 13
+    },
+    {
+      "name": "renderers",
+      "command": [
+        "node",
+        ".generated/test-renderers.cjs"
+      ],
+      "result": ".generated/renderer-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.5,
+      "passed": 16,
+      "total": 16
+    },
+    {
+      "name": "canvas-renderer",
+      "command": [
+        "node",
+        ".generated/test-canvas-renderer.cjs"
+      ],
+      "result": ".generated/canvas-renderer-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 1.22,
+      "passed": 29,
+      "total": 29
+    },
+    {
+      "name": "architecture-policy",
+      "command": [
+        "node",
+        ".generated/test-architecture-policy.cjs"
+      ],
+      "result": ".generated/architecture-policy-results.json",
+      "timeout": 300,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 109.63,
+      "passed": 53,
+      "total": 53
+    },
+    {
+      "name": "storage-clock",
+      "command": [
+        "node",
+        ".generated/test-storage-clock.cjs"
+      ],
+      "result": ".generated/storage-clock-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.24,
+      "passed": 15,
+      "total": 15
+    },
+    {
+      "name": "gate-integrity",
+      "command": [
+        "node",
+        ".generated/test-gate-integrity.cjs"
+      ],
+      "result": ".generated/gate-integrity-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 3.3,
+      "passed": 31,
+      "total": 31
+    },
+    {
+      "name": "cli-contracts",
+      "command": [
+        "node",
+        ".generated/test-cli-contracts.cjs"
+      ],
+      "result": ".generated/cli-contract-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 68.27,
+      "passed": 26,
+      "total": 26
+    },
+    {
+      "name": "typescript-architecture",
+      "command": [
+        "node",
+        ".generated/tools/architecture-check.cjs"
+      ],
+      "result": ".generated/typescript-architecture-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 32.47,
+      "passed": 21,
+      "total": 21
+    },
+    {
+      "name": "behavior-tree",
+      "command": [
+        "node",
+        ".generated/test-behavior-tree.cjs"
+      ],
+      "result": ".generated/behavior-tree-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.23,
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "content-boundary",
+      "command": [
+        "node",
+        ".generated/test-content-boundary.cjs"
+      ],
+      "result": ".generated/content-boundary-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 4.76,
+      "passed": 23,
+      "total": 23
+    },
+    {
+      "name": "definition-source",
+      "command": [
+        "node",
+        ".generated/test-definition-source.cjs"
+      ],
+      "result": ".generated/definition-source-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 1.26,
+      "passed": 12,
+      "total": 12
+    },
+    {
+      "name": "assets",
+      "command": [
+        "node",
+        ".generated/test-assets.cjs"
+      ],
+      "result": ".generated/asset-catalog-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 22.42,
+      "passed": 25,
+      "total": 25
+    },
+    {
+      "name": "creatures",
+      "command": [
+        "node",
+        ".generated/test-creatures.cjs"
+      ],
+      "result": ".generated/creature-catalog-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 6.42,
+      "passed": 24,
+      "total": 24
+    },
+    {
+      "name": "ecs-core",
+      "command": [
+        "node",
+        ".generated/test-ecs.cjs"
+      ],
+      "result": ".generated/ecs-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.2,
+      "passed": 19,
+      "total": 19
+    },
+    {
+      "name": "simulation-profile",
+      "command": [
+        "node",
+        ".generated/test-simulation-profile.cjs"
+      ],
+      "result": ".generated/simulation-profile-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.7,
+      "passed": 19,
+      "total": 19
+    },
+    {
+      "name": "simulation-profile-integration",
+      "command": [
+        "node",
+        ".generated/test-simulation-profile-integration.cjs"
+      ],
+      "result": ".generated/simulation-profile-integration-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 15.3,
+      "passed": 17,
+      "total": 17
+    },
+    {
+      "name": "scene-environment",
+      "command": [
+        "node",
+        ".generated/test-scene-environment.cjs"
+      ],
+      "result": ".generated/scene-environment-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.32,
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "name": "office-scenario",
+      "command": [
+        "node",
+        ".generated/test-office-scenario.cjs"
+      ],
+      "result": ".generated/office-scenario-results.json",
+      "timeout": 240,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 83.46,
+      "passed": 11,
+      "total": 11
+    },
+    {
+      "name": "game-settings",
+      "command": [
+        "node",
+        ".generated/test-game-settings.cjs"
+      ],
+      "result": ".generated/game-settings-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 4.93,
+      "passed": 13,
+      "total": 13
+    },
+    {
+      "name": "game-settings-ui",
+      "command": [
+        "node",
+        ".generated/test-game-settings-ui.cjs"
+      ],
+      "result": ".generated/game-settings-ui-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.5,
+      "passed": 12,
+      "total": 12
+    },
+    {
+      "name": "creature-interactions",
+      "command": [
+        "node",
+        ".generated/test-interactions.cjs"
+      ],
+      "result": ".generated/interaction-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 35.13,
+      "passed": 27,
+      "total": 27
+    },
+    {
+      "name": "interaction-ui",
+      "command": [
+        "node",
+        ".generated/test-interaction-ui.cjs"
+      ],
+      "result": ".generated/interaction-ui-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.23,
+      "passed": 12,
+      "total": 12
+    },
+    {
+      "name": "developer-toolbox",
+      "command": [
+        "node",
+        ".generated/test-developer-toolbox.cjs"
+      ],
+      "result": ".generated/developer-toolbox-results.json",
+      "timeout": 420,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 112.79,
+      "passed": 32,
+      "total": 32
+    },
+    {
+      "name": "engine-composition",
+      "command": [
+        "node",
+        ".generated/test-engine-composition.cjs"
+      ],
+      "result": ".generated/engine-composition-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 4.28,
+      "passed": 30,
+      "total": 30
+    },
+    {
+      "name": "ecs-activity",
+      "command": [
+        "node",
+        ".generated/test-ecs-activity.cjs"
+      ],
+      "result": ".generated/ecs-activity-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.37,
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "name": "ecs-world",
+      "command": [
+        "node",
+        ".generated/test-ecs-world.cjs"
+      ],
+      "result": ".generated/ecs-world-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.23,
+      "passed": 24,
+      "total": 24
+    },
+    {
+      "name": "ecs-economy",
+      "command": [
+        "node",
+        ".generated/test-economy-ecs.cjs"
+      ],
+      "result": ".generated/economy-ecs-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.16,
+      "passed": 15,
+      "total": 15
+    },
+    {
+      "name": "ecs-integration",
+      "command": [
+        "node",
+        ".generated/test-ecs-integration.cjs"
+      ],
+      "result": ".generated/ecs-integration-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 2.5,
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "ecs-world-integration",
+      "command": [
+        "node",
+        ".generated/test-ecs-world-integration.cjs"
+      ],
+      "result": ".generated/ecs-world-integration-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 1.28,
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "name": "ecs-economy-integration",
+      "command": [
+        "node",
+        ".generated/test-economy-integration.cjs"
+      ],
+      "result": ".generated/economy-integration-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 2.91,
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "name": "scenario-domain",
+      "command": [
+        "node",
+        ".generated/test-scenario-domain.cjs"
+      ],
+      "result": ".generated/scenario-domain-results.json",
+      "timeout": 150,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 43,
+      "passed": 83,
+      "total": 83
+    },
+    {
+      "name": "presentation",
+      "command": [
+        "node",
+        ".generated/test-presentation.cjs"
+      ],
+      "result": ".generated/presentation-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.77,
+      "passed": 49,
+      "total": 49
+    },
+    {
+      "name": "pause-policy",
+      "command": [
+        "node",
+        ".generated/test-pause-policy.cjs"
+      ],
+      "result": ".generated/pause-policy-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.98,
+      "passed": 53,
+      "total": 53
+    },
+    {
+      "name": "cartography",
+      "command": [
+        "node",
+        ".generated/test-cartography.cjs"
+      ],
+      "result": ".generated/cartography-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 13.14,
+      "passed": 71,
+      "total": 71
+    },
+    {
+      "name": "domain",
+      "command": [
+        "node",
+        ".generated/test-domain.cjs"
+      ],
+      "result": ".generated/domain-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 8.17,
+      "passed": 86,
+      "total": 86
+    },
+    {
+      "name": "growth-stress",
+      "command": [
+        "node",
+        ".generated/test-growth-stress.cjs"
+      ],
+      "result": ".generated/growth-stress-results.json",
+      "timeout": 300,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 56.9,
+      "passed": 3,
+      "total": 3
+    },
+    {
+      "name": "earned-progression",
+      "command": [
+        "node",
+        ".generated/test-earned-progression.cjs"
+      ],
+      "result": ".generated/earned-progression-results.json",
+      "timeout": 300,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 24.34,
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "name": "scenario-schema-cli",
+      "command": [
+        "node",
+        ".generated/verification/schema-checks.js"
+      ],
+      "result": ".generated/scenario-schema-results.json",
+      "timeout": 90,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 17.23,
+      "passed": 61,
+      "total": 61
+    },
+    {
+      "name": "release",
+      "command": [
+        "node",
+        ".generated/test-release.cjs"
+      ],
+      "result": ".generated/release-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 82.89,
+      "passed": 28,
+      "total": 28
+    },
+    {
+      "name": "skill-tree-browser",
+      "command": [
+        "node",
+        ".generated/verification/skill-tree-browser.js"
+      ],
+      "result": "verification/v15/skill-tree-browser-results.json",
+      "timeout": 180,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 54.04,
+      "passed": 13,
+      "total": 13
+    },
+    {
+      "name": "rts-mission-editor-browser",
+      "command": [
+        "node",
+        ".generated/verification/rts-mission-editor-browser.js"
+      ],
+      "result": "verification/v15/rts-mission-editor-browser-results.json",
+      "timeout": 180,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 66,
+      "passed": 11,
+      "total": 11
+    },
+    {
+      "name": "rts-browser",
+      "command": [
+        "node",
+        ".generated/verification/rts-browser.js"
+      ],
+      "result": "verification/v15/rts-browser-results.json",
+      "timeout": 180,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 66.57,
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "name": "pet-browser",
+      "command": [
+        "node",
+        ".generated/verification/pet-browser.js"
+      ],
+      "result": "verification/v15/pet-browser-results.json",
+      "timeout": 240,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 99.97,
+      "passed": 10,
+      "total": 10
+    },
+    {
+      "name": "wildlands-browser",
+      "command": [
+        "node",
+        ".generated/verification/wildlands-browser.js"
+      ],
+      "result": "verification/v15/wildlands-browser-results.json",
+      "timeout": 690,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 301.99,
+      "passed": 17,
+      "total": 17
+    },
+    {
+      "name": "external-editors-browser",
+      "command": [
+        "node",
+        ".generated/verification/external-editors-browser.js"
+      ],
+      "result": "verification/v15/external-editors-browser-results.json",
+      "timeout": 360,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 134.09,
+      "passed": 11,
+      "total": 11
+    },
+    {
+      "name": "external-canvas-browser",
+      "command": [
+        "node",
+        ".generated/verification/external-canvas-browser.js"
+      ],
+      "result": "verification/v15/external-canvas-browser-results.json",
+      "timeout": 270,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 135.67,
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "creature-editor-browser",
+      "command": [
+        "node",
+        ".generated/verification/creature-editor-browser.js"
+      ],
+      "result": "verification/v15/creature-editor-browser-results.json",
+      "timeout": 300,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 291.33,
+      "passed": 20,
+      "total": 20
+    },
+    {
+      "name": "balancing-defaults-browser",
+      "command": [
+        "node",
+        ".generated/verification/balancing-defaults-browser.js"
+      ],
+      "result": "verification/v15/balancing-defaults-browser-results.json",
+      "timeout": 300,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 124.45,
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "name": "balancing-browser",
+      "command": [
+        "node",
+        ".generated/verification/balancing-browser.js"
+      ],
+      "result": "verification/v15/balancing-browser-results.json",
+      "timeout": 300,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 90.39,
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "name": "storytelling-browser",
+      "command": [
+        "node",
+        ".generated/verification/storytelling-browser.js"
+      ],
+      "result": "verification/v15/storytelling-browser-results.json",
+      "timeout": 720,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 503.52,
+      "passed": 24,
+      "total": 24
+    },
+    {
+      "name": "engine-export-browser",
+      "command": [
+        "node",
+        ".generated/verification/engine-export-browser.js"
+      ],
+      "result": "verification/v15/engine-export-browser-results.json",
+      "timeout": 300,
+      "kind": "browser",
+      "exitCode": 1,
+      "seconds": 147.22
+    },
+    {
+      "name": "renderer-storytelling",
+      "command": [
+        "node",
+        ".generated/verification/renderers-storytelling-browser.js"
+      ],
+      "result": "verification/v15/renderers-storytelling-browser-results.json",
+      "timeout": 360,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 212.55,
+      "passed": 17,
+      "total": 17
+    },
+    {
+      "name": "storytelling-player-browser",
+      "command": [
+        "node",
+        ".generated/verification/storytelling-player-browser.js"
+      ],
+      "result": "verification/v15/storytelling-player-browser-results.json",
+      "timeout": 420,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 290.83,
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "name": "renderer-libraries",
+      "command": [
+        "node",
+        ".generated/verification/renderers-libraries-browser.js"
+      ],
+      "result": "verification/v15/renderers-libraries-browser-results.json",
+      "timeout": 240,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 132.24,
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "name": "scene-editor-browser",
+      "command": [
+        "node",
+        ".generated/verification/scene-editor-browser.js"
+      ],
+      "result": "verification/v15/scene-editor-browser-results.json",
+      "timeout": 510,
+      "kind": "browser",
+      "exitCode": 1,
+      "seconds": 45.12
+    },
+    {
+      "name": "building-interiors-browser",
+      "command": [
+        "node",
+        ".generated/verification/building-interiors-browser.js"
+      ],
+      "result": "verification/v15/building-interiors-browser.json",
+      "timeout": 210,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 95.91,
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "name": "construction-editor-browser",
+      "command": [
+        "node",
+        ".generated/verification/construction-editor-browser.js"
+      ],
+      "result": "verification/v15/construction-editor-browser-results.json",
+      "timeout": 180,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 51.85,
+      "passed": 13,
+      "total": 13
+    },
+    {
+      "name": "terraform-browser",
+      "command": [
+        "node",
+        ".generated/verification/terraform-browser.js"
+      ],
+      "result": "verification/v15/terraform-browser-results.json",
+      "timeout": 180,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 66.85,
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "name": "renderers-browser",
+      "command": [
+        "node",
+        ".generated/verification/renderers-browser.js"
+      ],
+      "result": "verification/v15/renderers-browser-results.json",
+      "timeout": 180,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 89.6,
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "name": "office-browser",
+      "command": [
+        "node",
+        ".generated/verification/office-browser.js"
+      ],
+      "result": "verification/v15/office-browser-results.json",
+      "timeout": 180,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 64.98,
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "name": "game-settings-browser",
+      "command": [
+        "node",
+        ".generated/verification/game-settings-browser.js"
+      ],
+      "result": "verification/v15/game-settings-browser-results.json",
+      "timeout": 180,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 28.85,
+      "passed": 11,
+      "total": 11
+    },
+    {
+      "name": "browser",
+      "command": [
+        "node",
+        ".generated/verification/browser.js"
+      ],
+      "result": "verification/v15/browser-results.json",
+      "timeout": 300,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 133.05,
+      "passed": 90,
+      "total": 90
+    },
+    {
+      "name": "interactions-browser",
+      "command": [
+        "node",
+        ".generated/verification/interactions-browser.js"
+      ],
+      "result": "verification/v15/interactions-browser-results.json",
+      "timeout": 180,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 68.48,
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "name": "browser-contracts",
+      "command": [
+        "node",
+        ".generated/verification/browser-contracts.js"
+      ],
+      "result": "verification/v15/browser-contract-results.json",
+      "timeout": 240,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 87.69,
+      "passed": 24,
+      "total": 24
+    },
+    {
+      "name": "runtime-optionality",
+      "command": [
+        "node",
+        ".generated/test-runtime-optionality.cjs"
+      ],
+      "result": ".generated/runtime-optionality-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 2.11,
+      "passed": 13,
+      "total": 13
+    },
+    {
+      "name": "content-provider",
+      "command": [
+        "node",
+        ".generated/test-content-provider.cjs"
+      ],
+      "result": ".generated/content-provider-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 2.48,
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "game-folders",
+      "command": [
+        "node",
+        ".generated/test-game-folders.cjs"
+      ],
+      "result": ".generated/game-folders-results.json",
+      "timeout": 240,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 13.47,
+      "passed": 16,
+      "total": 16
+    },
+    {
+      "name": "runtime-optionality-browser",
+      "command": [
+        "node",
+        ".generated/verification/runtime-optionality-browser.js"
+      ],
+      "result": "verification/v15/runtime-optionality-browser-results.json",
+      "timeout": 450,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 242.69,
+      "passed": 10,
+      "total": 10
+    },
+    {
+      "name": "artifact-play-browser",
+      "command": [
+        "node",
+        ".generated/verification/artifact-play-browser.js"
+      ],
+      "result": "verification/v15/artifact-play-browser-results.json",
+      "timeout": 180,
+      "kind": "browser",
+      "exitCode": 1,
+      "seconds": 3.57
+    },
+    {
+      "name": "game-demos-browser",
+      "command": [
+        "node",
+        ".generated/verification/game-demos-browser.js"
+      ],
+      "result": "verification/v15/game-demos-browser-results.json",
+      "timeout": 330,
+      "kind": "browser",
+      "exitCode": 1,
+      "seconds": 24.36
+    },
+    {
+      "name": "business-process",
+      "command": [
+        "node",
+        ".generated/test-process.cjs"
+      ],
+      "result": ".generated/process-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 82.96,
+      "passed": 79,
+      "total": 79
+    },
+    {
+      "name": "business-process-bpmn",
+      "command": [
+        "node",
+        ".generated/test-process-bpmn.cjs"
+      ],
+      "result": ".generated/process-bpmn-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 7.2,
+      "passed": 28,
+      "total": 28
+    },
+    {
+      "name": "business-process-browser",
+      "command": [
+        "node",
+        ".generated/verification/process-browser.js"
+      ],
+      "result": "verification/v15/process-browser-results.json",
+      "timeout": 360,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 187.08,
+      "passed": 19,
+      "total": 19
+    },
+    {
+      "name": "process-layout-browser",
+      "command": [
+        "node",
+        ".generated/verification/process-layout-browser.js"
+      ],
+      "result": "verification/v15/process-layout-browser-results.json",
+      "timeout": 330,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 154.12,
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "name": "process-step-editor-browser",
+      "command": [
+        "node",
+        ".generated/verification/process-step-editor-browser.js"
+      ],
+      "result": "verification/v15/process-step-editor-browser-results.json",
+      "timeout": 420,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 140.94,
+      "passed": 12,
+      "total": 12
+    },
+    {
+      "name": "process-definition-browser",
+      "command": [
+        "node",
+        ".generated/verification/process-definition-browser.js"
+      ],
+      "result": "verification/v15/process-definition-browser-results.json",
+      "timeout": 450,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 176.33,
+      "passed": 11,
+      "total": 11
+    },
+    {
+      "name": "process-renderers-browser",
+      "command": [
+        "node",
+        ".generated/verification/process-renderers-browser.js"
+      ],
+      "result": "verification/v15/process-renderers-browser-results.json",
+      "timeout": 300,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 146.79,
+      "passed": 13,
+      "total": 13
+    },
+    {
+      "name": "process-lenses-browser",
+      "command": [
+        "node",
+        ".generated/verification/process-lenses-browser.js"
+      ],
+      "result": "verification/v15/process-lenses-browser-results.json",
+      "timeout": 240,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 91.1,
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "name": "process-bpmn-import-browser",
+      "command": [
+        "node",
+        ".generated/verification/process-bpmn-import-browser.js"
+      ],
+      "result": "verification/v15/process-bpmn-import-browser-results.json",
+      "timeout": 300,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 72.34,
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "name": "process-readability-browser",
+      "command": [
+        "node",
+        ".generated/verification/process-readability-browser.js"
+      ],
+      "result": "verification/v15/process-readability-browser-results.json",
+      "timeout": 300,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 118.77,
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "name": "process-present-browser",
+      "command": [
+        "node",
+        ".generated/verification/process-present-browser.js"
+      ],
+      "result": "verification/v15/process-present-browser-results.json",
+      "timeout": 240,
+      "kind": "browser",
+      "exitCode": 1,
+      "seconds": 189.05
+    },
+    {
+      "name": "generate",
+      "command": [
+        "node",
+        ".generated/test-generate.cjs"
+      ],
+      "result": ".generated/generate-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 56.14,
+      "passed": 13,
+      "total": 13
+    },
+    {
+      "name": "armored-admission",
+      "command": [
+        "node",
+        ".generated/test-armored-admission.cjs"
+      ],
+      "result": ".generated/armored-admission-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.44,
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "name": "armored-runtime",
+      "command": [
+        "node",
+        ".generated/test-armored-runtime.cjs"
+      ],
+      "result": ".generated/armored-runtime-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.35,
+      "passed": 11,
+      "total": 11
+    },
+    {
+      "name": "armored-combat",
+      "command": [
+        "node",
+        ".generated/test-armored-combat.cjs"
+      ],
+      "result": ".generated/armored-combat-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.3,
+      "passed": 17,
+      "total": 17
+    },
+    {
+      "name": "armored-browser",
+      "command": [
+        "node",
+        ".generated/test-armored-browser.cjs"
+      ],
+      "result": "verification/v15/armored-browser-results.json",
+      "timeout": 300,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 76.1,
+      "passed": 10,
+      "total": 10
+    }
+  ],
+  "browserIncluded": true,
+  "complete": true,
+  "selection": {
+    "tier": "full",
+    "noBrowser": false,
+    "only": null,
+    "shard": null,
+    "suites": 120
+  },
+  "execution": {
+    "jobs": 3,
+    "browserJobs": 2,
+    "keepGoing": true,
+    "wallSeconds": 2545.07
+  },
+  "registrySha256": "761ef7b4cc4bfb341f5d7d6a49346fcdb4e5c2c7e7314a031e19a67318a46ff6",
+  "expectationsSha256": "bc2fa518d878a397dea88aa62c47c7ca5b16c50a3b53d0153ad65700b898b4bd",
+  "sourceSha256": "6f000038fcbdf3b3702cdb15af81c117c479492c25089dc049964e66ad10b541",
+  "startedAt": "2026-10-10T21:22:12.509Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "architecture": "x64",
+    "chromium": "/usr/bin/chromium",
+    "cores": 4
+  },
+  "htmlSha256": "eb36a53bcbedcc37e30a5eaf71f75502a0a3b944a927bdf53b166b36b86b00f3",
+  "htmlBytes": 20199948,
+  "error": "scene-editor-browser failed; see scene-editor-browser.log\nprocess-present-browser failed; see process-present-browser.log\nengine-export-browser failed; see engine-export-browser.log\ngame-demos-browser failed; see game-demos-browser.log\nartifact-play-browser failed; see artifact-play-browser.log",
+  "finishedAt": "2026-10-10T22:04:37.575Z"
+}

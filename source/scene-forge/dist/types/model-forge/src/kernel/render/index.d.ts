@@ -16,3 +16,4 @@ export { createMaterial } from '../application/materials.js';
 export * from '../application/surfaces.js';
 export * from './realization.js';
 export * from './viewport.js';
+export * from '../application/finish-pattern.js';

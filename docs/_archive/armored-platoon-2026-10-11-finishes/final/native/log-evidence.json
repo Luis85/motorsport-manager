@@ -1,0 +1,818 @@
+[
+  {
+    "log": "suites-0.log",
+    "bytes": 318108,
+    "sha256": "0b629a21a430ffafa84fc36ffdb55a8ba16628f0d85687c36a10c6752d8d6b26",
+    "ciSourceRevisions": [
+      "319eb893c6d10b3f5eaa387cbb1bdf2300465a75"
+    ],
+    "godotPinnedSHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+    "cancellationObserved": false,
+    "artifacts": [
+      {
+        "name": "verification-shard-0",
+        "bytes": 18514670,
+        "id": 11708309578,
+        "sha256": "9ce456f2187aaadc615301939c02430083c0b1ae04499de72dd81a21e64be744"
+      }
+    ],
+    "verification": {
+      "source": "2c1b0164566553e7e83e4177b535f977095e2355a3986dcc41527c9ca067b823",
+      "index": 0,
+      "count": 6,
+      "mode": "full",
+      "passed": true,
+      "suites": [
+        {
+          "id": "architecture_characterization",
+          "passed": true,
+          "checks": 36,
+          "seconds": 103.959
+        },
+        {
+          "id": "architecture_ui_tests",
+          "passed": true,
+          "checks": 45,
+          "seconds": 22.162
+        },
+        {
+          "id": "living_racecraft_ui",
+          "passed": true,
+          "checks": 33,
+          "seconds": 17.7
+        },
+        {
+          "id": "practice_scenario_runs",
+          "passed": true,
+          "checks": 17,
+          "seconds": 91.939
+        },
+        {
+          "id": "replay_performance",
+          "passed": true,
+          "checks": 15,
+          "seconds": 43.963
+        },
+        {
+          "id": "rivals_ui_tests",
+          "passed": true,
+          "checks": 60,
+          "seconds": 27.821
+        },
+        {
+          "id": "tactical_duel_ui_tests",
+          "passed": true,
+          "checks": 88,
+          "seconds": 63.099
+        },
+        {
+          "id": "ui_finish_guide_tests",
+          "passed": true,
+          "checks": 303,
+          "seconds": 64.45
+        },
+        {
+          "id": "ui_polish_tests",
+          "passed": true,
+          "checks": 208,
+          "seconds": 54.232
+        },
+        {
+          "id": "weather_ui_smoke",
+          "passed": true,
+          "checks": 33,
+          "seconds": 14.295
+        },
+        {
+          "id": "weekend_flow_ui_tests",
+          "passed": true,
+          "checks": 43,
+          "seconds": 18.503
+        },
+        {
+          "id": "storage_contract_tests",
+          "passed": true,
+          "checks": 89,
+          "seconds": 2.02
+        },
+        {
+          "id": "roster_content_ui_tests",
+          "passed": true,
+          "checks": 17,
+          "seconds": 16.4
+        },
+        {
+          "id": "editor_gesture_tests",
+          "passed": true,
+          "checks": 147,
+          "seconds": 13.942
+        },
+        {
+          "id": "content_environment_tests",
+          "passed": true,
+          "checks": 483,
+          "seconds": 9.286
+        },
+        {
+          "id": "content_mechanic_profile_tests",
+          "passed": true,
+          "checks": 106,
+          "seconds": 10.69
+        },
+        {
+          "id": "toolbox_protocol_tests",
+          "passed": true,
+          "checks": 1416,
+          "seconds": 31.586
+        },
+        {
+          "id": "balance_config_validation_tests",
+          "passed": true,
+          "checks": 48,
+          "seconds": 8.734
+        }
+      ],
+      "script_loads": 453
+    },
+    "suiteCount": 18,
+    "checkCount": 3187
+  },
+  {
+    "log": "suites-1.log",
+    "bytes": 311982,
+    "sha256": "3642a1130e72a5bf7619f2d778e21a7c1181589b1bc460ad819969f19c573a17",
+    "ciSourceRevisions": [
+      "319eb893c6d10b3f5eaa387cbb1bdf2300465a75"
+    ],
+    "godotPinnedSHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+    "cancellationObserved": false,
+    "artifacts": [
+      {
+        "name": "verification-shard-1",
+        "bytes": 12427608,
+        "id": 11709285870,
+        "sha256": "8ff43867c2a48609dc8ff0ba7e547d32080ec495913bdc0daf0ac8a597269820"
+      }
+    ],
+    "verification": {
+      "source": "2c1b0164566553e7e83e4177b535f977095e2355a3986dcc41527c9ca067b823",
+      "index": 1,
+      "count": 6,
+      "mode": "full",
+      "passed": true,
+      "suites": [
+        {
+          "id": "director_weekend_ui_tests",
+          "passed": true,
+          "checks": 49,
+          "seconds": 127.85
+        },
+        {
+          "id": "compact_ui_tests",
+          "passed": true,
+          "checks": 125,
+          "seconds": 50.485
+        },
+        {
+          "id": "minimal_tests",
+          "passed": true,
+          "checks": 113,
+          "seconds": 59.531
+        },
+        {
+          "id": "practice_tests",
+          "passed": true,
+          "checks": 78,
+          "seconds": 63.598
+        },
+        {
+          "id": "replay_scenario_runs",
+          "passed": true,
+          "checks": 39,
+          "seconds": 115.496
+        },
+        {
+          "id": "run_tests",
+          "passed": true,
+          "checks": 752,
+          "seconds": 198.059
+        },
+        {
+          "id": "ui_clarity_tests",
+          "passed": true,
+          "checks": 181,
+          "seconds": 93.88
+        },
+        {
+          "id": "ui_finish_observation_tests",
+          "passed": true,
+          "checks": 19,
+          "seconds": 20.311
+        },
+        {
+          "id": "ui_repair_tests",
+          "passed": true,
+          "checks": 89,
+          "seconds": 25.122
+        },
+        {
+          "id": "weekend_strategy_tests",
+          "passed": true,
+          "checks": 109,
+          "seconds": 40.925
+        },
+        {
+          "id": "presentation_boundary_tests",
+          "passed": true,
+          "checks": 28,
+          "seconds": 4.076
+        },
+        {
+          "id": "content_tests",
+          "passed": true,
+          "checks": 61,
+          "seconds": 7.335
+        },
+        {
+          "id": "content_tyre_tests",
+          "passed": true,
+          "checks": 57,
+          "seconds": 72.716
+        },
+        {
+          "id": "weekend_lifecycle_tests",
+          "passed": true,
+          "checks": 109,
+          "seconds": 200.852
+        },
+        {
+          "id": "content_operations_tests",
+          "passed": true,
+          "checks": 273,
+          "seconds": 11.895
+        },
+        {
+          "id": "content_wheel_operating_tests",
+          "passed": true,
+          "checks": 49,
+          "seconds": 4.126
+        },
+        {
+          "id": "toolbox_track_tests",
+          "passed": true,
+          "checks": 190,
+          "seconds": 4.176
+        }
+      ],
+      "script_loads": 453
+    },
+    "suiteCount": 17,
+    "checkCount": 2321
+  },
+  {
+    "log": "suites-2.log",
+    "bytes": 386568,
+    "sha256": "d51e8d3d57faa8f858362db55cb3c4e00d345c756f639eaf94e7b0c4e6992c15",
+    "ciSourceRevisions": [
+      "319eb893c6d10b3f5eaa387cbb1bdf2300465a75"
+    ],
+    "godotPinnedSHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+    "cancellationObserved": false,
+    "artifacts": [
+      {
+        "name": "verification-shard-2",
+        "bytes": 47808019,
+        "id": 11709687347,
+        "sha256": "d3413e309b6c7ec42ac43d823c34fbb33ab0ee4ca69a3691ff3e8b657164b65e"
+      }
+    ],
+    "verification": {
+      "source": "2c1b0164566553e7e83e4177b535f977095e2355a3986dcc41527c9ca067b823",
+      "index": 2,
+      "count": 6,
+      "mode": "full",
+      "passed": true,
+      "suites": [
+        {
+          "id": "duel_scenario_runs",
+          "passed": true,
+          "checks": 149,
+          "seconds": 1060.052
+        },
+        {
+          "id": "director_tests",
+          "passed": true,
+          "checks": 76,
+          "seconds": 121.423
+        },
+        {
+          "id": "minimal_ui_tests",
+          "passed": true,
+          "checks": 295,
+          "seconds": 43.905
+        },
+        {
+          "id": "practice_ui_smoke",
+          "passed": true,
+          "checks": 67,
+          "seconds": 31.126
+        },
+        {
+          "id": "replay_tests",
+          "passed": true,
+          "checks": 59,
+          "seconds": 22.117
+        },
+        {
+          "id": "scenario_authoring_ui",
+          "passed": true,
+          "checks": 109,
+          "seconds": 58.438
+        },
+        {
+          "id": "ui_completion_tests",
+          "passed": true,
+          "checks": 68,
+          "seconds": 32.329
+        },
+        {
+          "id": "ui_finish_populated_tests",
+          "passed": true,
+          "checks": 655,
+          "seconds": 354.825
+        },
+        {
+          "id": "ui_smoke",
+          "passed": true,
+          "checks": 116,
+          "seconds": 74.261
+        },
+        {
+          "id": "workspace_performance",
+          "passed": true,
+          "checks": 14,
+          "seconds": 82.282
+        },
+        {
+          "id": "car_entity_tests",
+          "passed": true,
+          "checks": 51,
+          "seconds": 2.621
+        },
+        {
+          "id": "content_pack_tests",
+          "passed": true,
+          "checks": 41,
+          "seconds": 8.285
+        },
+        {
+          "id": "content_tyre_ui_tests",
+          "passed": true,
+          "checks": 51,
+          "seconds": 13.844
+        },
+        {
+          "id": "shipping_runtime_tests",
+          "passed": true,
+          "checks": 88,
+          "seconds": 140.61
+        },
+        {
+          "id": "content_competition_tests",
+          "passed": true,
+          "checks": 295,
+          "seconds": 36.455
+        },
+        {
+          "id": "scenario_catalog_tests",
+          "passed": true,
+          "checks": 117,
+          "seconds": 2.12
+        },
+        {
+          "id": "toolbox_campaign_tests",
+          "passed": true,
+          "checks": 605,
+          "seconds": 163.834
+        }
+      ],
+      "script_loads": 453
+    },
+    "suiteCount": 17,
+    "checkCount": 2856
+  },
+  {
+    "log": "suites-3.log",
+    "bytes": 316198,
+    "sha256": "e543e917bfa998366ec7bc901c1346bc241f3bdc6b75acd0d838e092459452b7",
+    "ciSourceRevisions": [
+      "319eb893c6d10b3f5eaa387cbb1bdf2300465a75"
+    ],
+    "godotPinnedSHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+    "cancellationObserved": false,
+    "artifacts": [
+      {
+        "name": "verification-shard-3",
+        "bytes": 9514020,
+        "id": 11708721587,
+        "sha256": "236da08441f1ae029949e0f6b29529459ee632bd313afca59005056794e45745"
+      }
+    ],
+    "verification": {
+      "source": "2c1b0164566553e7e83e4177b535f977095e2355a3986dcc41527c9ca067b823",
+      "index": 3,
+      "count": 6,
+      "mode": "full",
+      "passed": true,
+      "suites": [
+        {
+          "id": "minimal_weekend_ui_tests",
+          "passed": true,
+          "checks": 122,
+          "seconds": 126.29
+        },
+        {
+          "id": "director_ui_tests",
+          "passed": true,
+          "checks": 248,
+          "seconds": 70.277
+        },
+        {
+          "id": "notebook_tests",
+          "passed": true,
+          "checks": 100,
+          "seconds": 12.949
+        },
+        {
+          "id": "recovery_scenario_runs",
+          "passed": true,
+          "checks": 24,
+          "seconds": 196.47
+        },
+        {
+          "id": "replay_ui_tests",
+          "passed": true,
+          "checks": 111,
+          "seconds": 86.109
+        },
+        {
+          "id": "strategy_scenario_runs",
+          "passed": true,
+          "checks": 19,
+          "seconds": 195.557
+        },
+        {
+          "id": "ui_finish_analysis_tests",
+          "passed": true,
+          "checks": 18,
+          "seconds": 15.3
+        },
+        {
+          "id": "ui_finish_soak_tests",
+          "passed": true,
+          "checks": 15,
+          "seconds": 50.927
+        },
+        {
+          "id": "ux_performance",
+          "passed": true,
+          "checks": 8,
+          "seconds": 51.777
+        },
+        {
+          "id": "mechanics_tests",
+          "passed": true,
+          "checks": 117,
+          "seconds": 3.474
+        },
+        {
+          "id": "car_record_tests",
+          "passed": true,
+          "checks": 297,
+          "seconds": 9.29
+        },
+        {
+          "id": "content_roster_tests",
+          "passed": true,
+          "checks": 58,
+          "seconds": 184.946
+        },
+        {
+          "id": "reproduction_tests",
+          "passed": true,
+          "checks": 19,
+          "seconds": 19.365
+        },
+        {
+          "id": "record_traversal_tests",
+          "passed": true,
+          "checks": 436,
+          "seconds": 4.577
+        },
+        {
+          "id": "content_persistence_tests",
+          "passed": true,
+          "checks": 614,
+          "seconds": 12.45
+        },
+        {
+          "id": "content_editor_profile_tests",
+          "passed": true,
+          "checks": 19,
+          "seconds": 3.073
+        },
+        {
+          "id": "race_physics_balance_tests",
+          "passed": true,
+          "checks": 44,
+          "seconds": 5.579
+        }
+      ],
+      "script_loads": 453
+    },
+    "suiteCount": 17,
+    "checkCount": 2269
+  },
+  {
+    "log": "suites-4.log",
+    "bytes": 337503,
+    "sha256": "0d4e2507edf49ad8310bbf440072606a358b5a00a60f3fa1b34368152ad60d30",
+    "ciSourceRevisions": [
+      "319eb893c6d10b3f5eaa387cbb1bdf2300465a75"
+    ],
+    "godotPinnedSHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+    "cancellationObserved": false,
+    "artifacts": [
+      {
+        "name": "verification-shard-4",
+        "bytes": 18908326,
+        "id": 11709076267,
+        "sha256": "907004461fdd83a1eebb4c89b0bbb9377b0fc97a3173ce6136870da2b9ca9322"
+      }
+    ],
+    "verification": {
+      "source": "2c1b0164566553e7e83e4177b535f977095e2355a3986dcc41527c9ca067b823",
+      "index": 4,
+      "count": 6,
+      "mode": "full",
+      "passed": true,
+      "suites": [
+        {
+          "id": "scenario_authoring_runs",
+          "passed": true,
+          "checks": 42,
+          "seconds": 220.082
+        },
+        {
+          "id": "duel_contract_tests",
+          "passed": true,
+          "checks": 31,
+          "seconds": 4.024
+        },
+        {
+          "id": "notebook_ui_tests",
+          "passed": true,
+          "checks": 117,
+          "seconds": 88.36
+        },
+        {
+          "id": "recovery_tests",
+          "passed": true,
+          "checks": 128,
+          "seconds": 37.948
+        },
+        {
+          "id": "rival_scenario_runs",
+          "passed": true,
+          "checks": 34,
+          "seconds": 297.253
+        },
+        {
+          "id": "strategy_ui_smoke",
+          "passed": true,
+          "checks": 34,
+          "seconds": 21.261
+        },
+        {
+          "id": "ui_finish_details_tests",
+          "passed": true,
+          "checks": 111,
+          "seconds": 191.639
+        },
+        {
+          "id": "ui_finish_states_tests",
+          "passed": true,
+          "checks": 40,
+          "seconds": 23.917
+        },
+        {
+          "id": "weather_scenario_runs",
+          "passed": true,
+          "checks": 10,
+          "seconds": 151.185
+        },
+        {
+          "id": "editor_session_tests",
+          "passed": true,
+          "checks": 146,
+          "seconds": 3.073
+        },
+        {
+          "id": "game_flow_coherence_ui_tests",
+          "passed": true,
+          "checks": 382,
+          "seconds": 67.963
+        },
+        {
+          "id": "content_roster_ui_tests",
+          "passed": true,
+          "checks": 37,
+          "seconds": 19.957
+        },
+        {
+          "id": "operation_sequence_tests",
+          "passed": true,
+          "checks": 2959,
+          "seconds": 175.023
+        },
+        {
+          "id": "content_tuning_tests",
+          "passed": true,
+          "checks": 124,
+          "seconds": 15.899
+        },
+        {
+          "id": "content_catalog_tests",
+          "passed": true,
+          "checks": 87,
+          "seconds": 17.504
+        },
+        {
+          "id": "content_editor_interaction_tests",
+          "passed": true,
+          "checks": 77,
+          "seconds": 18.003
+        },
+        {
+          "id": "content_planning_balance_tests",
+          "passed": true,
+          "checks": 106,
+          "seconds": 6.98
+        }
+      ],
+      "script_loads": 453
+    },
+    "suiteCount": 17,
+    "checkCount": 4465
+  },
+  {
+    "log": "suites-5.log",
+    "bytes": 300807,
+    "sha256": "ab3ddf07e490b0aeee45338d04da4cebfab441453235d264a641cf3c1b8d0ab4",
+    "ciSourceRevisions": [
+      "319eb893c6d10b3f5eaa387cbb1bdf2300465a75"
+    ],
+    "godotPinnedSHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+    "cancellationObserved": false,
+    "artifacts": [
+      {
+        "name": "verification-shard-5",
+        "bytes": 9535937,
+        "id": 11708559195,
+        "sha256": "bef188b57ef50fc70efc0b2e845f1bb199d4bf87d623dc950f12615583ae9874"
+      }
+    ],
+    "verification": {
+      "source": "2c1b0164566553e7e83e4177b535f977095e2355a3986dcc41527c9ca067b823",
+      "index": 5,
+      "count": 6,
+      "mode": "full",
+      "passed": true,
+      "suites": [
+        {
+          "id": "architecture_tests",
+          "passed": true,
+          "checks": 40,
+          "seconds": 7.836
+        },
+        {
+          "id": "living_racecraft_tests",
+          "passed": true,
+          "checks": 113,
+          "seconds": 16.768
+        },
+        {
+          "id": "pitwall_ux_tests",
+          "passed": true,
+          "checks": 149,
+          "seconds": 44.527
+        },
+        {
+          "id": "recovery_ui_smoke",
+          "passed": true,
+          "checks": 41,
+          "seconds": 27.879
+        },
+        {
+          "id": "rival_styles_tests",
+          "passed": true,
+          "checks": 50,
+          "seconds": 17.868
+        },
+        {
+          "id": "tactical_duel_tests",
+          "passed": true,
+          "checks": 98,
+          "seconds": 101.335
+        },
+        {
+          "id": "ui_finish_execution_tests",
+          "passed": true,
+          "checks": 57,
+          "seconds": 62.457
+        },
+        {
+          "id": "ui_finish_tests",
+          "passed": true,
+          "checks": 47,
+          "seconds": 88.612
+        },
+        {
+          "id": "weather_tests",
+          "passed": true,
+          "checks": 97,
+          "seconds": 28.536
+        },
+        {
+          "id": "weekend_launch_tests",
+          "passed": true,
+          "checks": 962,
+          "seconds": 75.709
+        },
+        {
+          "id": "command_contract_tests",
+          "passed": true,
+          "checks": 1821,
+          "seconds": 23.32
+        },
+        {
+          "id": "roster_content_tests",
+          "passed": true,
+          "checks": 37,
+          "seconds": 207.54
+        },
+        {
+          "id": "command_responsibility_tests",
+          "passed": true,
+          "checks": 65,
+          "seconds": 2.772
+        },
+        {
+          "id": "content_weekend_ui_tests",
+          "passed": true,
+          "checks": 22,
+          "seconds": 16.102
+        },
+        {
+          "id": "content_scenario_ui_tests",
+          "passed": true,
+          "checks": 37,
+          "seconds": 15.35
+        },
+        {
+          "id": "toolbox_weekend_tests",
+          "passed": true,
+          "checks": 2545,
+          "seconds": 63.145
+        },
+        {
+          "id": "balance_campaign_presentation_tests",
+          "passed": true,
+          "checks": 67,
+          "seconds": 40.823
+        }
+      ],
+      "script_loads": 453
+    },
+    "suiteCount": 17,
+    "checkCount": 6248
+  },
+  {
+    "log": "verify.log",
+    "bytes": 18552,
+    "sha256": "7b5af660570bb9126f7979de38c293cba56172b6d4f86da04f8f2524d258f850",
+    "ciSourceRevisions": [],
+    "godotPinnedSHA256": null,
+    "cancellationObserved": false,
+    "artifacts": [],
+    "verification": {
+      "passed": true,
+      "source": "2c1b0164566553e7e83e4177b535f977095e2355a3986dcc41527c9ca067b823",
+      "suites": 103,
+      "checks": 21346,
+      "shards": 6
+    },
+    "suiteCount": 103,
+    "checkCount": 21346
+  }
+]

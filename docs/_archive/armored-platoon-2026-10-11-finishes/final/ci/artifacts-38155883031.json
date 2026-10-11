@@ -1,0 +1,175 @@
+{
+  "artifacts": [
+    {
+      "id": 11708617326,
+      "name": "standalone-windows-debug",
+      "size_in_bytes": 36455611,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708617326",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708617326/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:33:34Z",
+      "expires_at": "2026-10-25T16:33:33Z",
+      "updated_at": "2026-10-11T16:33:34Z",
+      "digest": "sha256:f4b19b1803e14f399917352c6d46f86c842e4a6ecf072ea1b6f882c04478a63c",
+      "workflow_run": {
+        "id": 38155883031,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    },
+    {
+      "id": 11708522925,
+      "name": "standalone-evidence-linux-debug",
+      "size_in_bytes": 1742939,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708522925",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708522925/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:34:46Z",
+      "expires_at": "2026-10-25T16:34:45Z",
+      "updated_at": "2026-10-11T16:34:46Z",
+      "digest": "sha256:98a152d2dfd86cdff737c93d90a2507ffa505d4d14a1b8d85059d7f2fc10609f",
+      "workflow_run": {
+        "id": 38155883031,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    },
+    {
+      "id": 11708497840,
+      "name": "standalone-windows-release",
+      "size_in_bytes": 40125606,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708497840",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708497840/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:33:34Z",
+      "expires_at": "2026-10-25T16:33:31Z",
+      "updated_at": "2026-10-11T16:33:34Z",
+      "digest": "sha256:ebda271ea445aa29c5a9e8ae035d197f4501455ecac5ecdc18d2ff71f6915f71",
+      "workflow_run": {
+        "id": 38155883031,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    },
+    {
+      "id": 11708363334,
+      "name": "standalone-evidence-windows-debug",
+      "size_in_bytes": 1336749,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708363334",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708363334/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:34:54Z",
+      "expires_at": "2026-10-25T16:34:53Z",
+      "updated_at": "2026-10-11T16:34:54Z",
+      "digest": "sha256:d0ffea23940e448ff0b361e31352980f8e6d18a5401d9f469b1d7708d778e8b5",
+      "workflow_run": {
+        "id": 38155883031,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    },
+    {
+      "id": 11708233561,
+      "name": "standalone-evidence-linux-release",
+      "size_in_bytes": 1743296,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708233561",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708233561/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:34:42Z",
+      "expires_at": "2026-10-25T16:34:41Z",
+      "updated_at": "2026-10-11T16:34:42Z",
+      "digest": "sha256:a17643fdc8358428b9d654631deb861a226c426eb3d1ca80feecfedb40ee867f",
+      "workflow_run": {
+        "id": 38155883031,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    },
+    {
+      "id": 11708183557,
+      "name": "standalone-linux-release",
+      "size_in_bytes": 30557690,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708183557",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708183557/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:33:30Z",
+      "expires_at": "2026-10-25T16:33:28Z",
+      "updated_at": "2026-10-11T16:33:30Z",
+      "digest": "sha256:7c0e4695a4ddb425bb40e790ba78a0d12f3944ee9e2fbdd07ed0b94b888a6078",
+      "workflow_run": {
+        "id": 38155883031,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    },
+    {
+      "id": 11707809355,
+      "name": "standalone-linux-debug",
+      "size_in_bytes": 29657965,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707809355",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707809355/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:33:33Z",
+      "expires_at": "2026-10-25T16:33:32Z",
+      "updated_at": "2026-10-11T16:33:33Z",
+      "digest": "sha256:302db6ace0d368a864d8340d50206a5cb1ae4ea011443761f53361e8f435efca",
+      "workflow_run": {
+        "id": 38155883031,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    },
+    {
+      "id": 11707769491,
+      "name": "pinned-desktop-export-templates",
+      "size_in_bytes": 131460497,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707769491",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707769491/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:32:56Z",
+      "expires_at": "2026-10-18T16:32:44Z",
+      "updated_at": "2026-10-11T16:32:56Z",
+      "digest": "sha256:35a150184fa557abe915d59a071837b07f0856cb4c14e385b2f718ed5a00dc88",
+      "workflow_run": {
+        "id": 38155883031,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    },
+    {
+      "id": 11707589840,
+      "name": "standalone-evidence-windows-release",
+      "size_in_bytes": 1335783,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707589840",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707589840/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:34:35Z",
+      "expires_at": "2026-10-25T16:34:34Z",
+      "updated_at": "2026-10-11T16:34:35Z",
+      "digest": "sha256:b80a860f17c120afff7d1ef695b9de7ed2425f279af3d49b637ed6507c7b3d2d",
+      "workflow_run": {
+        "id": 38155883031,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    }
+  ]
+}

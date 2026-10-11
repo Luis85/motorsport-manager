@@ -1,0 +1,16 @@
+{
+  "reviewedAt": "2026-10-11T16:58:30.537465+00:00",
+  "image": "work/armored-v3-final-stability-de06/start.png",
+  "bytes": 287708,
+  "sha256": "2612f0ec801cc73f6313deb3cd9bb3e8cf3fbfa2341a5ac9c8caf2837c88ec08",
+  "viewport": {
+    "width": 960,
+    "height": 600
+  },
+  "observations": [
+    "Objectives, status, ammo, platoon controls and service actions are readable in this start capture; major HUD panels do not overlap.",
+    "Original tank fittings and surface detail are visible.",
+    "Broad terrain texture, sparse uniform vegetation and simple distant buildings remain development-level visuals."
+  ],
+  "scope": "One still capture from the frozen final-build observation; not motion/reference fidelity, accessibility audit, target-hardware performance or AAA acceptance."
+}

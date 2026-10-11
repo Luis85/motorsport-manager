@@ -1,0 +1,26 @@
+{"kind":"littlewild-browser-provenance","node":"v24.19.0","playwright":"1.63.0","playwrightCore":"1.63.0","browser":"151.0.7922.173","selection":"explicit-override","args":["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"]}
+RUN Armored compiled styles leave other templates unchanged
+PASS Armored compiled styles leave other templates unchanged
+RUN Armored compiled artifact enters a mission through briefing and renders WebGL
+PASS Armored compiled artifact enters a mission through briefing and renders WebGL
+RUN Armored keyboard driving applies motor intent and moves the physical chassis
+PASS Armored keyboard driving applies motor intent and moves the physical chassis
+RUN Armored pause and detached inspection preserve the authoritative checkpoint
+PASS Armored pause and detached inspection preserve the authoritative checkpoint
+RUN Armored gunner and binocular camera switches retain one live canvas
+PASS Armored gunner and binocular camera switches retain one live canvas
+RUN Armored keyboard fire consumes ammunition once and enters reload
+PASS Armored keyboard fire consumes ammunition once and enters reload
+RUN Armored platoon handover and two-stage hold order reach the same authority
+PASS Armored platoon handover and two-stage hold order reach the same authority
+RUN Armored checkpoint replacement rejects corruption and restores complete paused state
+PASS Armored checkpoint replacement rejects corruption and restores complete paused state
+RUN Armored desktop and compact HUD retain accessible canvas without horizontal overflow
+PASS Armored desktop and compact HUD retain accessible canvas without horizontal overflow
+RUN Armored bounded depot fixture shows stock and progress and U cancels without transferring supplies
+PASS Armored bounded depot fixture shows stock and progress and U cancels without transferring supplies
+RUN Armored bounded depot fixture completes on the application clock and conserves displayed ammunition
+PASS Armored bounded depot fixture completes on the application clock and conserves displayed ammunition
+RUN Armored offline play completes without script errors or external requests
+PASS Armored offline play completes without script errors or external requests
+12/12 Armored browser checks passed

@@ -28,3 +28,5 @@ editor presets and authored weekends.
 - [Present a process to stakeholders](present-a-process.md) — Present mode in the studio (full screen, wide text, the brief deck) and the `process slides` Markdown deck.
 - [Read a process dashboard](read-a-process-dashboard.md) — the studio's Dashboard: flow, the bottleneck, predictability, and What-if replications and comparisons across seeds.
 - [Save and resume a process run](save-and-resume-a-process-run.md) — run checkpoints in the studio and with `process run --checkpoint`, and what they cannot do.
+
+- [Author Armored Platoon vehicles and scenes](armored-platoon-authoring.md).

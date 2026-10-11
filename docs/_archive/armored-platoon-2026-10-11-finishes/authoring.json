@@ -1,0 +1,24 @@
+[
+  {
+    "id": "m4-sherman",
+    "revision": 3,
+    "semanticNodesUnchanged": 24,
+    "importAndBundleExact": true,
+    "textures": 12,
+    "images": 12,
+    "imageBytes": 786432,
+    "geometries": 40,
+    "compactBytes": 3659025
+  },
+  {
+    "id": "panzer-iv",
+    "revision": 3,
+    "semanticNodesUnchanged": 28,
+    "importAndBundleExact": true,
+    "textures": 12,
+    "images": 12,
+    "imageBytes": 786432,
+    "geometries": 39,
+    "compactBytes": 3505133
+  }
+]

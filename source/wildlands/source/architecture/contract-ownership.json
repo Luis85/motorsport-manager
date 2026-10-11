@@ -237,6 +237,14 @@
     {
       "path": "process-three.d.ts",
       "owner": "process-presentation"
+    },
+    {
+      "path": "armored-contracts.d.ts",
+      "owner": "armored"
+    },
+    {
+      "path": "armored-presentation-contracts.d.ts",
+      "owner": "armored-presentation"
     }
   ]
 }

@@ -13,7 +13,7 @@ import path from 'node:path';
 import {BUNDLES, INSERTS, type BundleTag} from './build-inserts.cjs';
 import {TEMPLATE_FEATURES, type Template} from './game-manifest.cjs';
 
-export type DataGroup = 'game-profile' | 'export-payloads' | 'colony-content' | 'asset-catalog' | 'rts-content' | 'pet-content' | 'process-content' | 'process-list';
+export type DataGroup = 'game-profile' | 'export-payloads' | 'colony-content' | 'asset-catalog' | 'rts-content' | 'pet-content' | 'process-content' | 'process-list' | 'armored-content';
 export type ProfileKind = 'fixture' | 'studio' | 'play';
 
 /** Canonical declaration order of every injectable data global (the showcase order). */
@@ -27,6 +27,8 @@ export const DATA_GLOBALS: readonly (readonly [name: string, group: DataGroup])[
   ['LWDefaultBalancing', 'colony-content'],
   ['LWDefaultLibrary', 'colony-content'],
   ['LWRTSDefinitions', 'rts-content'],
+  ['LWArmoredDefinitions', 'armored-content'],
+  ['LWArmoredVisuals', 'armored-content'],
   ['LWPetDefinitions', 'pet-content'],
   ['LWPetAssetDefinitions', 'pet-content'],
   ['LWContentSchema', 'colony-content'],
@@ -91,6 +93,9 @@ export const PROFILES: readonly ArtifactProfile[] = [
   {id: 'colony-play', kind: 'play', template: 'templates/colony.html', minify: true, variables: SHOWCASE_TEXT,
     bundles: ['engine-kernel', 'asset-catalog', 'colony-styles', 'core-sim', 'colony-shell', 'renderer-3d', 'renderer-host', 'storytelling-player'],
     game: {storage: {namespace: 'littlewild'}}, data: groups('game-profile', 'colony-content', 'asset-catalog')},
+  {id: 'armored-play', kind: 'play', template: 'templates/armored.html', minify: true,
+    variables: {TITLE: 'Armored Platoon', DESCRIPTION: 'A Wildlands armored combat development checkpoint.'},
+    bundles: ['engine-kernel', 'renderer-3d', 'template-armored'], data: groups('armored-content')},
   {id: 'rts-play', kind: 'play', template: 'templates/standalone.html', minify: true,
     variables: {APP: 'rts', TITLE: 'Wildlands RTS', DESCRIPTION: 'An offline isometric real-time strategy match built with Wildlands.'},
     bundles: ['engine-kernel', 'template-rts', 'play-boot'], data: groups('rts-content')},
@@ -201,7 +206,7 @@ export type GameBuildKind = 'play' | 'studio';
 /** Optional data globals a game may omit (a pet game without presentation assets). */
 const OPTIONAL_GAME_DATA = new Set(['LWPetAssetDefinitions']);
 /** Build kinds each template offers; Pocket Pet has no editor bundle, so it has no studio. */
-export const GAME_BUILD_KINDS: Readonly<Record<Template, readonly GameBuildKind[]>> = Object.freeze({colony: ['play', 'studio'], rts: ['play', 'studio'], pet: ['play'], process: ['play', 'studio']});
+export const GAME_BUILD_KINDS: Readonly<Record<Template, readonly GameBuildKind[]>> = Object.freeze({colony: ['play', 'studio'], rts: ['play', 'studio'], pet: ['play'], process: ['play', 'studio'], armored: ['play']});
 
 /**
  * The artifact profile of one game build (`wildlands build-game`). It derives from the engine's
@@ -242,7 +247,7 @@ export function featureSets(template: Template): string[][] {
  */
 export function gameProfileErrors(source: string): string[] {
   const errors: string[] = [], dataNames = DATA_GLOBALS.map(([name]) => name);
-  for (const template of ['colony', 'rts', 'pet', 'process'] as const) for (const kind of GAME_BUILD_KINDS[template]) for (const features of featureSets(template)) {
+  for (const template of ['colony', 'rts', 'pet', 'process', 'armored'] as const) for (const kind of GAME_BUILD_KINDS[template]) for (const features of featureSets(template)) {
     const candidate = gameProfile({id: 'probe', template, features, presentation: {title: 'Probe'}, storage: {namespace: 'wildlands.probe'}}, kind);
     const where = `Game profile ${candidate.id} [${features.join(', ') || 'no features'}]`;
     if (!subsequence(candidate.data, dataNames)) errors.push(`${where} data globals are unknown or not in canonical order.`);

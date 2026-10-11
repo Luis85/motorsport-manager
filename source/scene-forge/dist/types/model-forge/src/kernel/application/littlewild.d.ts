@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { SurfaceSpec } from '../domain/schema.js';
+import type { SurfaceSpec, FinishSpec } from '../domain/schema.js';
 /**
  * Converts one compiled Scene Forge model into the declarative Littlewild primitive grammar.
  * Boxes stay native primitives; every other mesh is baked into bounded indexed triangles.
@@ -11,6 +11,7 @@ export interface LittlewildMaterial {
     metalness: number;
     flatShading: boolean;
     surface?: SurfaceSpec;
+    finish?: FinishSpec;
     sheen?: number;
     sheenColor?: string;
     sheenRoughness?: number;

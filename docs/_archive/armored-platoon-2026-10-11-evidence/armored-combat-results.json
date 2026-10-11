@@ -1,0 +1,76 @@
+{
+  "suite": "armored-combat",
+  "passed": 17,
+  "total": 17,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Armored main gun consumes one round and one reload for each authoritative shot",
+      "passed": true
+    },
+    {
+      "name": "Armored shells retain fixed initial velocity while a moving target escapes",
+      "passed": true
+    },
+    {
+      "name": "Armored swept collision catches a thin obstacle at high projectile speed",
+      "passed": true
+    },
+    {
+      "name": "Armored muzzle obstruction resolves before a shell can skip the wall",
+      "passed": true
+    },
+    {
+      "name": "Armored side penetration and frontal mantlet hit cause different component outcomes",
+      "passed": true
+    },
+    {
+      "name": "Armored low penetration bounces and oblique incidence can ricochet once",
+      "passed": true
+    },
+    {
+      "name": "Armored smoke is finite ECS state and blocks acquisition",
+      "passed": true
+    },
+    {
+      "name": "Armored buildings and terrain occlude perception without changing graphics",
+      "passed": true
+    },
+    {
+      "name": "Armored AI waits for acquisition and discards hidden target firing",
+      "passed": true
+    },
+    {
+      "name": "Armored Hold, Charge, Secure and Follow feed distinct shared motor intentions",
+      "passed": true
+    },
+    {
+      "name": "Armored navigation routes around cover and invalidates after destruction",
+      "passed": true
+    },
+    {
+      "name": "Armored repair commits a kit only on completion and motion cancels without payment",
+      "passed": true
+    },
+    {
+      "name": "Armored repair is interrupted by component damage and never duplicates its completion",
+      "passed": true
+    },
+    {
+      "name": "Armored mission goals latch in alternate order and terminal events are idempotent",
+      "passed": true
+    },
+    {
+      "name": "Armored loss of the whole platoon and time expiry independently fail a mission",
+      "passed": true
+    },
+    {
+      "name": "Armored destruction restores collision topology and deterministic continuation together",
+      "passed": true
+    },
+    {
+      "name": "Armored cumulative turret damage neutralizes combat capability while immobilization does not",
+      "passed": true
+    }
+  ]
+}

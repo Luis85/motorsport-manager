@@ -1,0 +1,4 @@
+{
+  "requestedAt": "2026-10-11T16:26:17.842097+00:00",
+  "reason": "Root requested exclusive browser release to reproduce the concrete Character Studio full-CI failure: native modal-close/focus restoration may race the existing keyboard journey. This run is interrupted, not a thirty-minute pass; Armored product bytes remain unchanged."
+}

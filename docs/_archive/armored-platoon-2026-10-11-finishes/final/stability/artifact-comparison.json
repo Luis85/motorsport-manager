@@ -1,0 +1,14 @@
+{
+  "frozenArtifact": {
+    "path": "work/armored-v3-final-stability-de06/served-demo.html",
+    "origin": "demos/armored-platoon.html",
+    "bytes": 4439139,
+    "sha256": "783d8dc2fba68251420b2ee61b477677994b8839be62f0660f03f0c49ceda883",
+    "matchesFrozenIdentity": true
+  },
+  "finalArtifactSha256": "783d8dc2fba68251420b2ee61b477677994b8839be62f0660f03f0c49ceda883",
+  "unchanged": true,
+  "association": "committed-association-final.json",
+  "sourceInventoryCount": 31,
+  "scope": "Exact bytes served during this observation and all31 tracked freeze inputs match committed de06 and final working copies. Prior interrupted and09ed observations remain separate."
+}

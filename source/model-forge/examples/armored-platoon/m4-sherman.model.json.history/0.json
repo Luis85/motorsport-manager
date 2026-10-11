@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "m4-sherman",
+  "category": "vehicles",
+  "name": "M4 Sherman study",
+  "parameters": {},
+  "geometries": {},
+  "materials": {},
+  "nodes": []
+}

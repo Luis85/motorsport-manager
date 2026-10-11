@@ -1,0 +1,35 @@
+{"kind":"littlewild-browser-provenance","node":"v24.19.0","playwright":"1.63.0","playwrightCore":"1.63.0","browser":"151.0.7922.173","selection":"explicit-override","args":["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"]}
+PASS Editor opens the separate pack draft with navigable worlds and scenes at 1440px
+PASS Delayed real pack import preserves a newer scene draft and history at 1440px
+PASS World terrain and resource generation have visual controls at 1440px
+PASS Direct grid placement and keyboard tile focus mutate only the draft at 1440px
+PASS Canonical inventory inspector retains supported items and history at 1440px
+PASS Visual connection, entry requirement and event rows author typed metadata at 1440px
+PASS Decorative props use canonical asset/model choices and direct placement at 1440px
+PASS Bound child scene creation uses source authority and stable floor IDs at 1440px
+PASS Canonical rectangular floors and explicitly authored holes project correct placement cells at 1440px
+PASS Invalid import is atomic and presents recovery guidance at 1440px
+PASS Full pack export includes the bound child and canonical item edit at 1440px
+PASS Review cancellation preserves draft revision and active story at 1440px
+PASS Closing and reopening retains the draft; another pack requires explicit replacement at 1440px
+PASS Deletion confirmation initially focuses Cancel at 1440px
+PASS Authored pack launches only after review and instantiates its actual 3D prop asset
+PASS Cross-world connection review cancellation preserves native state and camera
+PASS Cross-world committed travel and return restore the native checkpoint and camera
+PASS Bound interior travel and portable restore open the canonical floor and preserve source state
+PASS Editor opens the separate pack draft with navigable worlds and scenes at 390px
+PASS Delayed real pack import preserves a newer scene draft and history at 390px
+PASS World terrain and resource generation have visual controls at 390px
+PASS Direct grid placement and keyboard tile focus mutate only the draft at 390px
+PASS Canonical inventory inspector retains supported items and history at 390px
+PASS Visual connection, entry requirement and event rows author typed metadata at 390px
+PASS Decorative props use canonical asset/model choices and direct placement at 390px
+PASS Bound child scene creation uses source authority and stable floor IDs at 390px
+PASS Canonical rectangular floors and explicitly authored holes project correct placement cells at 390px
+PASS Invalid import is atomic and presents recovery guidance at 390px
+PASS Full pack export includes the bound child and canonical item edit at 390px
+PASS Review cancellation preserves draft revision and active story at 390px
+PASS Closing and reopening retains the draft; another pack requires explicit replacement at 390px
+PASS Deletion confirmation initially focuses Cancel at 390px
+PASS Editor browser execution has no page errors, console warnings or external requests
+Scene editor browser: 33/33 passed.

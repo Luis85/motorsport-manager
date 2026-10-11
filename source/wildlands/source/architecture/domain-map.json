@@ -62,6 +62,8 @@
         "world-profile.ts",
         "scenario-shape.ts",
         "asset-catalog.ts",
+        "image-data.ts",
+        "asset-finish.ts",
         "asset-surface.ts",
         "workflow-venues.ts",
         "scene-graph.ts",
@@ -533,6 +535,44 @@
         "process-data-view.ts",
         "process-sdk.cts"
       ]
+    },
+    {
+      "id": "armored",
+      "layer": "domain",
+      "files": [
+        "armored-catalog.ts",
+        "armored-visuals.ts",
+        "armored-physics-legacy.ts",
+        "armored-collision.ts",
+        "armored-physics.ts",
+        "armored-combat.ts",
+        "armored-logistics.ts",
+        "armored-navigation.ts",
+        "armored-ai.ts",
+        "armored-missions.ts",
+        "armored-checkpoint.ts"
+      ]
+    },
+    {
+      "id": "armored-application",
+      "layer": "application",
+      "files": [
+        "armored-session.ts",
+        "armored-application.ts"
+      ]
+    },
+    {
+      "id": "armored-presentation",
+      "layer": "presentation",
+      "files": [
+        "visual-resources.ts",
+        "armored-world.ts",
+        "armored-renderer.ts",
+        "armored-controls.ts",
+        "armored-audio.ts",
+        "armored-ui.ts",
+        "armored-host.ts"
+      ]
     }
   ],
   "moduleBudgetBytes": 40000,
@@ -566,6 +606,8 @@
     "LWInteractionLibrary",
     "LWInteractionDuelRules",
     "LWAssets",
+    "LWImageData",
+    "LWAssetFinish",
     "LWAssetSurface",
     "LWAssetDefinitions",
     "LWRuntimeResults",
@@ -646,7 +688,20 @@
     "LWProcessKernel",
     "LWProcessRouting",
     "LWProcessDefinition",
-    "LWProcessDefinitions"
+    "LWProcessDefinitions",
+    "LWArmoredCatalog",
+    "LWArmoredVisualsAdmission",
+    "LWArmoredPhysicsLegacy",
+    "LWArmoredCollision",
+    "LWArmoredPhysics",
+    "LWArmoredCombat",
+    "LWArmoredLogistics",
+    "LWArmoredNavigation",
+    "LWArmoredAI",
+    "LWArmoredMission",
+    "LWArmoredCheckpoint",
+    "LWArmoredDefinitions",
+    "LWArmoredVisuals"
   ],
   "injectedDataGlobals": [
     "LWDefaultLibrary",
@@ -680,7 +735,9 @@
     "LWPetAssetDefinitions",
     "LWGameProfile",
     "LWProcessDefinition",
-    "LWProcessDefinitions"
+    "LWProcessDefinitions",
+    "LWArmoredDefinitions",
+    "LWArmoredVisuals"
   ],
   "strictTypingDebt": {},
   "strictTypingDebtBudget": 0,

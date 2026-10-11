@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "scripts_scanned": 453,
+  "violations": [],
+  "scope": "Static architectural fitness rules; not a GDScript typechecker or proof against arbitrary reflection"
+}

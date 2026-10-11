@@ -1,0 +1,33 @@
+{
+  "status": "interrupted_not_pass",
+  "exit_code": 130,
+  "interrupted_at": "2026-10-10T21:08:10.668356+00:00",
+  "reason": "Parent requested graceful interruption of redundant local gate to free the shared 4-CPU host for full browser verification; full six-shard native CI on identical native source continues independently. Registered limits were unchanged.",
+  "source_commit": "022da2a41bf1be7dc09681b041c04e2229608b72",
+  "source_tree": "2ad9dcc2037704238c30ab32835a231de43c9f10",
+  "verification_source_digest": "35279b7f569699c458b931d356812c801d9e7dbd5099baebc037b316debb3edd",
+  "engine_version": "4.7.2.stable.official.ed1daf0bf",
+  "engine_sha256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+  "completed_suites": [
+    {
+      "id": "architecture_characterization",
+      "passed": true,
+      "checks": 36,
+      "seconds": 328.181
+    },
+    {
+      "id": "director_weekend_ui_tests",
+      "passed": true,
+      "checks": 49,
+      "seconds": 379.73
+    }
+  ],
+  "script_loads": 453,
+  "interrupted_suite": "duel_scenario_runs",
+  "interruption_signal": "SIGINT",
+  "report": "/workspace/work/armored-platoon/work/native-pinned/verification.json",
+  "log": "/workspace/work/armored-platoon/work/native-pinned-run.log",
+  "remote_native_run": 38085245903,
+  "remote_commit": "f6d7c48d03f5bf85da5af63ee008933f45b831e6",
+  "no_native_path_changes_to_remote": true
+}

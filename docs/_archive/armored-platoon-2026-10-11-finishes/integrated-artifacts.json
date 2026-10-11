@@ -1,0 +1,34 @@
+{
+  "artifacts": [
+    {
+      "path": "bin/model-forge",
+      "bytes": 2367451,
+      "sha256": "0d661dd28891130d3f9331f8252d1db419138d9b200c2480462c0741e70cd412"
+    },
+    {
+      "path": "bin/scene-forge",
+      "bytes": 2518238,
+      "sha256": "e373b65162978ed79800371489fd62ec2c98a5bb58fcddc63a5664a888a918f0"
+    },
+    {
+      "path": "bin/wildlands",
+      "bytes": 14730073,
+      "sha256": "5ab1d6b2022d380fe156f29765dd1fb7cc1f4aed7f7f71b7d8c8013b39f7cdf8"
+    },
+    {
+      "path": "bin/process-studio",
+      "bytes": 1370736,
+      "sha256": "93950992bd58ca55ee70334e902d6cab4af503ffa41c4b51d6fc496451c0df7e"
+    },
+    {
+      "path": "demos/armored-platoon.html",
+      "bytes": 4438473,
+      "sha256": "a1fa1e295bd41fd5030142c4b0e0b6a10a01a98215b6826fda377b78e2e10f4e"
+    },
+    {
+      "path": "demos/manifest.json",
+      "bytes": 4856,
+      "sha256": "b23af6a62711a6f0ec0a44cc4cf12122219327bc1e5626bf5edbb18e7cd7f230"
+    }
+  ]
+}

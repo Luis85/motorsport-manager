@@ -1,0 +1,61 @@
+{
+  "artifacts": [
+    {
+      "id": 11708503892,
+      "name": "toolbox-windows-evidence",
+      "size_in_bytes": 5886,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708503892",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708503892/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:41:35Z",
+      "expires_at": "2026-10-25T16:41:35Z",
+      "updated_at": "2026-10-11T16:41:35Z",
+      "digest": "sha256:10470e6271a49ae1421e87fbda6f0ef0d8c9484be6e308e285d73fa7a050d75d",
+      "workflow_run": {
+        "id": 38155883106,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    },
+    {
+      "id": 11708244586,
+      "name": "runtime-confidence-evidence",
+      "size_in_bytes": 266963,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708244586",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708244586/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:44:22Z",
+      "expires_at": "2026-10-25T16:44:21Z",
+      "updated_at": "2026-10-11T16:44:22Z",
+      "digest": "sha256:c576c8dc55e62218705c50e9980dab77596f6240dccad6de0f04f7212859eabf",
+      "workflow_run": {
+        "id": 38155883106,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    },
+    {
+      "id": 11708129911,
+      "name": "pinned-linux-reproduction-toolchain",
+      "size_in_bytes": 77832311,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708129911",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708129911/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:44:26Z",
+      "expires_at": "2026-10-18T16:44:23Z",
+      "updated_at": "2026-10-11T16:44:26Z",
+      "digest": "sha256:649210941f8af3d8954b76f8a97b6be522ca00d39cb63ba890b1e8b275884da9",
+      "workflow_run": {
+        "id": 38155883106,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    }
+  ]
+}

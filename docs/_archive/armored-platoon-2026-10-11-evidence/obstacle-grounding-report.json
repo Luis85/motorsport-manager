@@ -1,0 +1,1222 @@
+{
+  "basis": "Runtime obstacle.position.y is its base; shared physics bilinear terrain sampling. Forge boxes are centered.",
+  "changed": 133,
+  "preserved": [
+    "all x/z coordinates",
+    "all obstacle sizes/materials/destructibility/health",
+    "terrain samples",
+    "spawns",
+    "vehicle and ammunition policy",
+    "supply depots",
+    "objectives and descriptions"
+  ],
+  "deliberatelyRaisedObstacles": [],
+  "changes": [
+    {
+      "mission": "crossroads",
+      "obstacle": "farmhouse-0",
+      "material": "masonry",
+      "oldY": 4.2079,
+      "newY": 0.7079,
+      "delta": -3.5000000000000004,
+      "forgeCenterY": 4.2079
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "farmhouse-1",
+      "material": "masonry",
+      "oldY": 5.0637,
+      "newY": 1.5607166666666668,
+      "delta": -3.502983333333333,
+      "forgeCenterY": 5.060716666666667
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "farmhouse-2",
+      "material": "masonry",
+      "oldY": 3.6467,
+      "newY": 0.23224444444444414,
+      "delta": -3.414455555555556,
+      "forgeCenterY": 3.732244444444444
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "farmhouse-3",
+      "material": "masonry",
+      "oldY": 4.9046,
+      "newY": 1.4165555555555558,
+      "delta": -3.4880444444444443,
+      "forgeCenterY": 4.916555555555556
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "farmhouse-4",
+      "material": "masonry",
+      "oldY": 3.651,
+      "newY": 0.012950000000000003,
+      "delta": -3.63805,
+      "forgeCenterY": 3.51295
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "farmhouse-5",
+      "material": "masonry",
+      "oldY": 5.006,
+      "newY": 1.4782999999999997,
+      "delta": -3.5277000000000003,
+      "forgeCenterY": 4.9783
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "farmhouse-6",
+      "material": "masonry",
+      "oldY": 4.2757,
+      "newY": 0.8490819444444447,
+      "delta": -3.4266180555555548,
+      "forgeCenterY": 4.349081944444444
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "farmhouse-7",
+      "material": "masonry",
+      "oldY": 3.9465,
+      "newY": 0.43784722222222233,
+      "delta": -3.5086527777777774,
+      "forgeCenterY": 3.9378472222222225
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "orchard-wall-0",
+      "material": "stone",
+      "oldY": 0.3647,
+      "newY": -0.5437333333333334,
+      "delta": -0.9084333333333334,
+      "forgeCenterY": 0.3562666666666666
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "orchard-wall-1",
+      "material": "stone",
+      "oldY": 0.3647,
+      "newY": -0.481107638888889,
+      "delta": -0.8458076388888891,
+      "forgeCenterY": 0.418892361111111
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "orchard-wall-2",
+      "material": "stone",
+      "oldY": 0.5761000000000001,
+      "newY": -0.4184819444444444,
+      "delta": -0.9945819444444445,
+      "forgeCenterY": 0.4815180555555556
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "orchard-wall-3",
+      "material": "stone",
+      "oldY": 0.5761000000000001,
+      "newY": -0.35585625000000004,
+      "delta": -0.93195625,
+      "forgeCenterY": 0.5441437499999999
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "orchard-wall-4",
+      "material": "stone",
+      "oldY": 0.5761000000000001,
+      "newY": -0.2914638888888887,
+      "delta": -0.8675638888888888,
+      "forgeCenterY": 0.6085361111111114
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "orchard-wall-5",
+      "material": "stone",
+      "oldY": 0.5761000000000001,
+      "newY": -0.22574652777777807,
+      "delta": -0.8018465277777781,
+      "forgeCenterY": 0.674253472222222
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "orchard-wall-6",
+      "material": "stone",
+      "oldY": 0.7979,
+      "newY": -0.1600291666666667,
+      "delta": -0.9579291666666667,
+      "forgeCenterY": 0.7399708333333334
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "orchard-wall-7",
+      "material": "stone",
+      "oldY": 0.7979,
+      "newY": -0.0941694444444442,
+      "delta": -0.8920694444444442,
+      "forgeCenterY": 0.8058305555555558
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "orchard-wall-8",
+      "material": "stone",
+      "oldY": 0.7979,
+      "newY": -0.02745555555555583,
+      "delta": -0.8253555555555558,
+      "forgeCenterY": 0.8725444444444442
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "orchard-wall-9",
+      "material": "stone",
+      "oldY": 1.0231000000000001,
+      "newY": 0.03925833333333334,
+      "delta": -0.9838416666666667,
+      "forgeCenterY": 0.9392583333333333
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "orchard-wall-10",
+      "material": "stone",
+      "oldY": 1.0231000000000001,
+      "newY": 0.10597222222222251,
+      "delta": -0.9171277777777777,
+      "forgeCenterY": 1.0059722222222225
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "orchard-wall-11",
+      "material": "stone",
+      "oldY": 1.0231000000000001,
+      "newY": 0.17182499999999976,
+      "delta": -0.8512750000000003,
+      "forgeCenterY": 1.0718249999999998
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-0",
+      "material": "wood",
+      "oldY": 3.4318999999999997,
+      "newY": -1.568861111111111,
+      "delta": -5.00076111111111,
+      "forgeCenterY": 3.431138888888889
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-1",
+      "material": "wood",
+      "oldY": 3.4596999999999998,
+      "newY": -1.556025,
+      "delta": -5.015725,
+      "forgeCenterY": 3.443975
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-2",
+      "material": "wood",
+      "oldY": 3.685,
+      "newY": -1.3768972222222222,
+      "delta": -5.061897222222222,
+      "forgeCenterY": 3.6231027777777776
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-3",
+      "material": "wood",
+      "oldY": 3.8636,
+      "newY": -1.0506166666666668,
+      "delta": -4.9142166666666665,
+      "forgeCenterY": 3.9493833333333335
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-4",
+      "material": "wood",
+      "oldY": 4.324,
+      "newY": -0.6115416666666667,
+      "delta": -4.9355416666666665,
+      "forgeCenterY": 4.388458333333333
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-5",
+      "material": "wood",
+      "oldY": 3.4585,
+      "newY": -1.5452458333333332,
+      "delta": -5.003745833333333,
+      "forgeCenterY": 3.4547541666666666
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-6",
+      "material": "wood",
+      "oldY": 3.4859,
+      "newY": -1.5325812500000002,
+      "delta": -5.018481250000001,
+      "forgeCenterY": 3.4674187499999998
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-7",
+      "material": "wood",
+      "oldY": 3.7074,
+      "newY": -1.3561229166666666,
+      "delta": -5.063522916666667,
+      "forgeCenterY": 3.6438770833333334
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-8",
+      "material": "wood",
+      "oldY": 3.883,
+      "newY": -1.0347729166666668,
+      "delta": -4.917772916666667,
+      "forgeCenterY": 3.965227083333333
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-9",
+      "material": "wood",
+      "oldY": 4.3355,
+      "newY": -0.6023499999999999,
+      "delta": -4.937849999999999,
+      "forgeCenterY": 4.3976500000000005
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-10",
+      "material": "wood",
+      "oldY": 3.6067,
+      "newY": -1.3704180555555556,
+      "delta": -4.977118055555556,
+      "forgeCenterY": 3.6295819444444444
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-11",
+      "material": "wood",
+      "oldY": 3.6314,
+      "newY": -1.3592416666666665,
+      "delta": -4.990641666666667,
+      "forgeCenterY": 3.6407583333333333
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-12",
+      "material": "wood",
+      "oldY": 3.8316,
+      "newY": -1.2027319444444442,
+      "delta": -5.034331944444444,
+      "forgeCenterY": 3.7972680555555556
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-13",
+      "material": "wood",
+      "oldY": 3.9903,
+      "newY": -0.9177402777777778,
+      "delta": -4.908040277777777,
+      "forgeCenterY": 4.082259722222222
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-14",
+      "material": "wood",
+      "oldY": 4.3994,
+      "newY": -0.5342,
+      "delta": -4.9336,
+      "forgeCenterY": 4.4658
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-15",
+      "material": "wood",
+      "oldY": 3.9996,
+      "newY": -1.0598798611111113,
+      "delta": -5.059479861111111,
+      "forgeCenterY": 3.9401201388888887
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-16",
+      "material": "wood",
+      "oldY": 4.0174,
+      "newY": -1.0511708333333334,
+      "delta": -5.068570833333334,
+      "forgeCenterY": 3.9488291666666666
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-17",
+      "material": "wood",
+      "oldY": 4.1611,
+      "newY": -0.9301500000000003,
+      "delta": -5.0912500000000005,
+      "forgeCenterY": 4.06985
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-18",
+      "material": "wood",
+      "oldY": 4.275,
+      "newY": -0.7097812500000003,
+      "delta": -4.984781250000001,
+      "forgeCenterY": 4.290218749999999
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-19",
+      "material": "wood",
+      "oldY": 4.5687999999999995,
+      "newY": -0.41312916666666677,
+      "delta": -4.981929166666666,
+      "forgeCenterY": 4.586870833333333
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-20",
+      "material": "wood",
+      "oldY": 4.3497,
+      "newY": -0.64815,
+      "delta": -4.997850000000001,
+      "forgeCenterY": 4.35185
+    },
+    {
+      "mission": "crossroads",
+      "obstacle": "pine-21",
+      "material": "wood",
+      "oldY": 4.3612,
+      "newY": -0.6428750000000001,
+      "delta": -5.004075,
+      "forgeCenterY": 4.357125
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "orchard-wall-0",
+      "material": "stone",
+      "oldY": 3.8579,
+      "newY": 2.9409,
+      "delta": -0.9169999999999998,
+      "forgeCenterY": 3.8409
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "orchard-wall-1",
+      "material": "stone",
+      "oldY": 3.8579,
+      "newY": 3.00350625,
+      "delta": -0.8543937499999998,
+      "forgeCenterY": 3.90350625
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "orchard-wall-2",
+      "material": "stone",
+      "oldY": 4.0692,
+      "newY": 3.0661125,
+      "delta": -1.0030875000000004,
+      "forgeCenterY": 3.9661125
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "orchard-wall-3",
+      "material": "stone",
+      "oldY": 4.0692,
+      "newY": 3.12871875,
+      "delta": -0.9404812500000004,
+      "forgeCenterY": 4.02871875
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "orchard-wall-4",
+      "material": "stone",
+      "oldY": 4.0692,
+      "newY": 3.193116666666667,
+      "delta": -0.8760833333333333,
+      "forgeCenterY": 4.093116666666667
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "orchard-wall-5",
+      "material": "stone",
+      "oldY": 4.0692,
+      "newY": 3.2588583333333325,
+      "delta": -0.8103416666666678,
+      "forgeCenterY": 4.158858333333333
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "orchard-wall-6",
+      "material": "stone",
+      "oldY": 4.2911,
+      "newY": 3.3246,
+      "delta": -0.9664999999999999,
+      "forgeCenterY": 4.224600000000001
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "orchard-wall-7",
+      "material": "stone",
+      "oldY": 4.2911,
+      "newY": 3.3904770833333333,
+      "delta": -0.9006229166666668,
+      "forgeCenterY": 4.290477083333333
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "orchard-wall-8",
+      "material": "stone",
+      "oldY": 4.2911,
+      "newY": 3.457166666666666,
+      "delta": -0.8339333333333343,
+      "forgeCenterY": 4.357166666666666
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "orchard-wall-9",
+      "material": "stone",
+      "oldY": 4.5162,
+      "newY": 3.52385625,
+      "delta": -0.9923437500000003,
+      "forgeCenterY": 4.42385625
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "orchard-wall-10",
+      "material": "stone",
+      "oldY": 4.5162,
+      "newY": 3.5905458333333335,
+      "delta": -0.9256541666666669,
+      "forgeCenterY": 4.490545833333334
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "orchard-wall-11",
+      "material": "stone",
+      "oldY": 4.5162,
+      "newY": 3.6564090277777774,
+      "delta": -0.859790972222223,
+      "forgeCenterY": 4.556409027777778
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-0",
+      "material": "wood",
+      "oldY": 6.4401,
+      "newY": 1.3647444444444448,
+      "delta": -5.075355555555555,
+      "forgeCenterY": 6.364744444444445
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-1",
+      "material": "wood",
+      "oldY": 6.468,
+      "newY": 1.377625,
+      "delta": -5.090375,
+      "forgeCenterY": 6.377625
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-2",
+      "material": "wood",
+      "oldY": 6.6933,
+      "newY": 1.5567694444444449,
+      "delta": -5.136530555555555,
+      "forgeCenterY": 6.556769444444445
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-3",
+      "material": "wood",
+      "oldY": 6.8719,
+      "newY": 1.8830222222222224,
+      "delta": -4.988877777777778,
+      "forgeCenterY": 6.883022222222222
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-4",
+      "material": "wood",
+      "oldY": 7.3323,
+      "newY": 2.3220833333333335,
+      "delta": -5.0102166666666665,
+      "forgeCenterY": 7.3220833333333335
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-5",
+      "material": "wood",
+      "oldY": 5.713,
+      "newY": 0.77828125,
+      "delta": -4.93471875,
+      "forgeCenterY": 5.77828125
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-6",
+      "material": "wood",
+      "oldY": 5.7402999999999995,
+      "newY": 0.79089375,
+      "delta": -4.949406249999999,
+      "forgeCenterY": 5.79089375
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-7",
+      "material": "wood",
+      "oldY": 5.9618,
+      "newY": 0.9673375,
+      "delta": -4.9944625,
+      "forgeCenterY": 5.9673375
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-8",
+      "material": "wood",
+      "oldY": 6.1373999999999995,
+      "newY": 1.2887020833333331,
+      "delta": -4.848697916666667,
+      "forgeCenterY": 6.288702083333333
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-9",
+      "material": "wood",
+      "oldY": 6.59,
+      "newY": 1.72118125,
+      "delta": -4.86881875,
+      "forgeCenterY": 6.72118125
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-10",
+      "material": "wood",
+      "oldY": 5.2734,
+      "newY": 0.24719722222222199,
+      "delta": -5.026202777777778,
+      "forgeCenterY": 5.247197222222222
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-11",
+      "material": "wood",
+      "oldY": 5.2981,
+      "newY": 0.2583958333333331,
+      "delta": -5.039704166666667,
+      "forgeCenterY": 5.258395833333333
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-12",
+      "material": "wood",
+      "oldY": 5.4983,
+      "newY": 0.41488472222222206,
+      "delta": -5.083415277777778,
+      "forgeCenterY": 5.414884722222222
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-13",
+      "material": "wood",
+      "oldY": 5.657,
+      "newY": 0.6998597222222218,
+      "delta": -4.957140277777778,
+      "forgeCenterY": 5.699859722222222
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-14",
+      "material": "wood",
+      "oldY": 6.0661000000000005,
+      "newY": 1.083433333333333,
+      "delta": -4.982666666666668,
+      "forgeCenterY": 6.083433333333333
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-15",
+      "material": "wood",
+      "oldY": 4.8235,
+      "newY": -0.12568680555555545,
+      "delta": -4.949186805555556,
+      "forgeCenterY": 4.874313194444444
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-16",
+      "material": "wood",
+      "oldY": 4.8413,
+      "newY": -0.1169958333333332,
+      "delta": -4.958295833333334,
+      "forgeCenterY": 4.883004166666667
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-17",
+      "material": "wood",
+      "oldY": 4.9851,
+      "newY": 0.004034027777777987,
+      "delta": -4.981065972222222,
+      "forgeCenterY": 5.004034027777778
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-18",
+      "material": "wood",
+      "oldY": 5.099,
+      "newY": 0.22444444444444456,
+      "delta": -4.874555555555555,
+      "forgeCenterY": 5.224444444444445
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-19",
+      "material": "wood",
+      "oldY": 5.3927,
+      "newY": 0.5210458333333335,
+      "delta": -4.871654166666666,
+      "forgeCenterY": 5.521045833333334
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-20",
+      "material": "wood",
+      "oldY": 4.7315,
+      "newY": -0.26635000000000003,
+      "delta": -4.99785,
+      "forgeCenterY": 4.73365
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "pine-21",
+      "material": "wood",
+      "oldY": 4.743,
+      "newY": -0.261075,
+      "delta": -5.004075,
+      "forgeCenterY": 4.738925
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-0",
+      "material": "wood",
+      "oldY": 8.7742,
+      "newY": 3.840381944444445,
+      "delta": -4.933818055555555,
+      "forgeCenterY": 8.840381944444445
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-1",
+      "material": "wood",
+      "oldY": 8.792300000000001,
+      "newY": 3.8167291666666667,
+      "delta": -4.975570833333334,
+      "forgeCenterY": 8.816729166666667
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-2",
+      "material": "wood",
+      "oldY": 8.6131,
+      "newY": 3.5986097222222226,
+      "delta": -5.014490277777776,
+      "forgeCenterY": 8.598609722222223
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-3",
+      "material": "wood",
+      "oldY": 8.2598,
+      "newY": 3.214088888888889,
+      "delta": -5.045711111111111,
+      "forgeCenterY": 8.214088888888888
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-4",
+      "material": "wood",
+      "oldY": 7.7776,
+      "newY": 2.7124694444444453,
+      "delta": -5.065130555555554,
+      "forgeCenterY": 7.712469444444445
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-5",
+      "material": "wood",
+      "oldY": 7.6373999999999995,
+      "newY": 2.8176083333333337,
+      "delta": -4.819791666666665,
+      "forgeCenterY": 7.817608333333334
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-6",
+      "material": "wood",
+      "oldY": 7.6524,
+      "newY": 2.797275000000001,
+      "delta": -4.855124999999999,
+      "forgeCenterY": 7.797275000000001
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-7",
+      "material": "wood",
+      "oldY": 7.503299999999999,
+      "newY": 2.609963194444445,
+      "delta": -4.893336805555554,
+      "forgeCenterY": 7.609963194444445
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-8",
+      "material": "wood",
+      "oldY": 7.2092,
+      "newY": 2.2797034722222227,
+      "delta": -4.929496527777777,
+      "forgeCenterY": 7.279703472222223
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-9",
+      "material": "wood",
+      "oldY": 6.8077000000000005,
+      "newY": 1.8487902777777787,
+      "delta": -4.958909722222222,
+      "forgeCenterY": 6.848790277777779
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-10",
+      "material": "wood",
+      "oldY": 6.8103,
+      "newY": 1.6845222222222227,
+      "delta": -5.1257777777777775,
+      "forgeCenterY": 6.684522222222222
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-11",
+      "material": "wood",
+      "oldY": 6.822,
+      "newY": 1.670041666666667,
+      "delta": -5.151958333333333,
+      "forgeCenterY": 6.670041666666667
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-12",
+      "material": "wood",
+      "oldY": 6.7058,
+      "newY": 1.536980555555556,
+      "delta": -5.168819444444444,
+      "forgeCenterY": 6.536980555555556
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-13",
+      "material": "wood",
+      "oldY": 6.4765,
+      "newY": 1.3023055555555558,
+      "delta": -5.174194444444444,
+      "forgeCenterY": 6.302305555555556
+    },
+    {
+      "mission": "pine-ridge",
+      "obstacle": "ridge-tree-14",
+      "material": "wood",
+      "oldY": 6.1635,
+      "newY": 0.9961305555555562,
+      "delta": -5.167369444444444,
+      "forgeCenterY": 5.996130555555556
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "farmhouse-0",
+      "material": "masonry",
+      "oldY": 9.7766,
+      "newY": 6.2766,
+      "delta": -3.5,
+      "forgeCenterY": 9.7766
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "farmhouse-1",
+      "material": "masonry",
+      "oldY": 10.6324,
+      "newY": 7.353366666666666,
+      "delta": -3.2790333333333344,
+      "forgeCenterY": 10.853366666666666
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "farmhouse-2",
+      "material": "masonry",
+      "oldY": 7.5739,
+      "newY": 4.0605055555555545,
+      "delta": -3.5133944444444456,
+      "forgeCenterY": 7.5605055555555545
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "farmhouse-3",
+      "material": "masonry",
+      "oldY": 8.238,
+      "newY": 4.84893888888889,
+      "delta": -3.3890611111111095,
+      "forgeCenterY": 8.34893888888889
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "farmhouse-4",
+      "material": "masonry",
+      "oldY": 10.0428,
+      "newY": 6.3109875,
+      "delta": -3.7318124999999993,
+      "forgeCenterY": 9.8109875
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "farmhouse-5",
+      "material": "masonry",
+      "oldY": 10.0673,
+      "newY": 6.401487499999999,
+      "delta": -3.6658125000000004,
+      "forgeCenterY": 9.901487499999998
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "farmhouse-6",
+      "material": "masonry",
+      "oldY": 5.4479,
+      "newY": 2.219525000000001,
+      "delta": -3.228374999999999,
+      "forgeCenterY": 5.719525000000001
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "farmhouse-7",
+      "material": "masonry",
+      "oldY": 5.5945,
+      "newY": 2.1299312499999994,
+      "delta": -3.4645687500000006,
+      "forgeCenterY": 5.629931249999999
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "orchard-wall-0",
+      "material": "stone",
+      "oldY": 7.351,
+      "newY": 6.425466666666666,
+      "delta": -0.925533333333334,
+      "forgeCenterY": 7.325466666666666
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "orchard-wall-1",
+      "material": "stone",
+      "oldY": 7.351,
+      "newY": 6.488097222222221,
+      "delta": -0.8629027777777791,
+      "forgeCenterY": 7.388097222222221
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "orchard-wall-2",
+      "material": "stone",
+      "oldY": 7.5624,
+      "newY": 6.5507277777777775,
+      "delta": -1.0116722222222228,
+      "forgeCenterY": 7.450727777777778
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "orchard-wall-3",
+      "material": "stone",
+      "oldY": 7.5624,
+      "newY": 6.613358333333333,
+      "delta": -0.949041666666667,
+      "forgeCenterY": 7.513358333333334
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "orchard-wall-4",
+      "material": "stone",
+      "oldY": 7.5624,
+      "newY": 6.677752777777777,
+      "delta": -0.884647222222223,
+      "forgeCenterY": 7.577752777777778
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "orchard-wall-5",
+      "material": "stone",
+      "oldY": 7.5624,
+      "newY": 6.743470138888888,
+      "delta": -0.818929861111112,
+      "forgeCenterY": 7.643470138888889
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "orchard-wall-6",
+      "material": "stone",
+      "oldY": 7.7842,
+      "newY": 6.8091875,
+      "delta": -0.9750125000000001,
+      "forgeCenterY": 7.7091875000000005
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "orchard-wall-7",
+      "material": "stone",
+      "oldY": 7.7842,
+      "newY": 6.875047222222222,
+      "delta": -0.9091527777777779,
+      "forgeCenterY": 7.775047222222223
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "orchard-wall-8",
+      "material": "stone",
+      "oldY": 7.7842,
+      "newY": 6.941761111111111,
+      "delta": -0.8424388888888892,
+      "forgeCenterY": 7.841761111111111
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "orchard-wall-9",
+      "material": "stone",
+      "oldY": 8.0094,
+      "newY": 7.008474999999999,
+      "delta": -1.0009250000000005,
+      "forgeCenterY": 7.908474999999999
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "orchard-wall-10",
+      "material": "stone",
+      "oldY": 8.0094,
+      "newY": 7.075188888888889,
+      "delta": -0.93421111111111,
+      "forgeCenterY": 7.97518888888889
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "orchard-wall-11",
+      "material": "stone",
+      "oldY": 8.0094,
+      "newY": 7.141059027777778,
+      "delta": -0.8683409722222217,
+      "forgeCenterY": 8.041059027777777
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-0",
+      "material": "wood",
+      "oldY": 9.4484,
+      "newY": 4.298411111111112,
+      "delta": -5.149988888888887,
+      "forgeCenterY": 9.298411111111111
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-1",
+      "material": "wood",
+      "oldY": 9.4763,
+      "newY": 4.311291666666667,
+      "delta": -5.165008333333333,
+      "forgeCenterY": 9.311291666666667
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-2",
+      "material": "wood",
+      "oldY": 9.7016,
+      "newY": 4.490436111111112,
+      "delta": -5.211163888888887,
+      "forgeCenterY": 9.490436111111112
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-3",
+      "material": "wood",
+      "oldY": 9.8802,
+      "newY": 4.816675,
+      "delta": -5.063525,
+      "forgeCenterY": 9.816675
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-4",
+      "material": "wood",
+      "oldY": 10.3406,
+      "newY": 5.255750000000001,
+      "delta": -5.084849999999999,
+      "forgeCenterY": 10.25575
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-5",
+      "material": "wood",
+      "oldY": 7.9674,
+      "newY": 3.101754166666667,
+      "delta": -4.865645833333333,
+      "forgeCenterY": 8.101754166666666
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-6",
+      "material": "wood",
+      "oldY": 7.9948,
+      "newY": 3.1144187500000005,
+      "delta": -4.880381249999999,
+      "forgeCenterY": 8.11441875
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-7",
+      "material": "wood",
+      "oldY": 8.2163,
+      "newY": 3.290877083333333,
+      "delta": -4.925422916666667,
+      "forgeCenterY": 8.290877083333333
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-8",
+      "material": "wood",
+      "oldY": 8.3918,
+      "newY": 3.612183333333333,
+      "delta": -4.7796166666666675,
+      "forgeCenterY": 8.612183333333332
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-9",
+      "material": "wood",
+      "oldY": 8.8444,
+      "newY": 4.04465,
+      "delta": -4.79975,
+      "forgeCenterY": 9.04465
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-10",
+      "material": "wood",
+      "oldY": 6.9401,
+      "newY": 1.8648138888888883,
+      "delta": -5.075286111111112,
+      "forgeCenterY": 6.8648138888888885
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-11",
+      "material": "wood",
+      "oldY": 6.9648,
+      "newY": 1.8760124999999994,
+      "delta": -5.0887875000000005,
+      "forgeCenterY": 6.8760125
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-12",
+      "material": "wood",
+      "oldY": 7.165,
+      "newY": 2.0325013888888885,
+      "delta": -5.132498611111112,
+      "forgeCenterY": 7.032501388888889
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-13",
+      "material": "wood",
+      "oldY": 7.3237000000000005,
+      "newY": 2.3174763888888883,
+      "delta": -5.006223611111112,
+      "forgeCenterY": 7.317476388888888
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-14",
+      "material": "wood",
+      "oldY": 7.7328,
+      "newY": 2.701049999999999,
+      "delta": -5.031750000000001,
+      "forgeCenterY": 7.701049999999999
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-15",
+      "material": "wood",
+      "oldY": 5.6475,
+      "newY": 0.8085166666666671,
+      "delta": -4.838983333333333,
+      "forgeCenterY": 5.808516666666667
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-16",
+      "material": "wood",
+      "oldY": 5.6653,
+      "newY": 0.8172291666666671,
+      "delta": -4.848070833333333,
+      "forgeCenterY": 5.817229166666667
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-17",
+      "material": "wood",
+      "oldY": 5.809,
+      "newY": 0.9382256944444449,
+      "delta": -4.870774305555555,
+      "forgeCenterY": 5.938225694444445
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-18",
+      "material": "wood",
+      "oldY": 5.923,
+      "newY": 1.1586527777777782,
+      "delta": -4.764347222222222,
+      "forgeCenterY": 6.158652777777778
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-19",
+      "material": "wood",
+      "oldY": 6.2166999999999994,
+      "newY": 1.4552854166666673,
+      "delta": -4.761414583333332,
+      "forgeCenterY": 6.455285416666667
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-20",
+      "material": "wood",
+      "oldY": 5.1133,
+      "newY": 0.11545,
+      "delta": -4.99785,
+      "forgeCenterY": 5.11545
+    },
+    {
+      "mission": "iron-counterattack",
+      "obstacle": "pine-21",
+      "material": "wood",
+      "oldY": 5.1248,
+      "newY": 0.12069999999999999,
+      "delta": -5.004099999999999,
+      "forgeCenterY": 5.1207
+    }
+  ],
+  "validation": {
+    "runtimeSampler": "actual LWArmoredPhysics.height",
+    "obstaclesChecked": 133,
+    "maxRuntimeDelta": 0,
+    "maxForgeDelta": 8.881784197001252e-16,
+    "sourceScenes": "all3 guarded applied",
+    "batchToScenePositions": "all133 exact",
+    "spawnAndServiceValidation": "all18 spawn hulls, all9 friendly approaches clear"
+  }
+}

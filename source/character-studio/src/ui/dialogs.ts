@@ -13,6 +13,11 @@ export class Dialogs {
     this.element.id = 'studio-dialog';
     document.body.append(this.element);
     this.element.addEventListener('close', () => {
+      // Native close events are queued: respect a reopened modal or newer focus.
+      if (this.element.open) return;
+      const active = document.activeElement;
+      if (active?.isConnected && active !== document.body && active !== document.documentElement &&
+          !this.element.contains(active) && active !== this.returnFocus) return;
       if (this.returnFocus?.isConnected) this.returnFocus.focus();
       else [...document.querySelectorAll<HTMLElement>('[data-action]')].find(el => el.dataset.action === this.returnAction)?.focus();
     });

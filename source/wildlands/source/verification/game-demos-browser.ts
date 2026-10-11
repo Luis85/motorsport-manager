@@ -30,6 +30,7 @@ const OUT = process.env.WILDLANDS_GAME_DEMOS_OUT ?? path.join(ROOT, 'verificatio
 const results: {name: string; passed: boolean; error?: string}[] = [];
 /** The artifacts' CSP forbids string predicates, so waits pass functions reading this page global. */
 type PlayGlobal = {WildlandsPlay: {game: {query(): {tick: number}; renderer(): {frames?: number} | null}}};
+type ArmoredGlobal = {WildlandsArmored: Pick<LWArmoredRuntime.ApplicationView, 'query' | 'status'>};
 interface PublishedDemo {id: string; template: string; output: string; bytes: number; sha256: string; budgetBytes: number; gameDigest: string; engine: string;}
 interface GameJson {id: string; template: string; presentation: {title: string}; storage: {namespace: string}; targets: {html: {output: string; budgetBytes: number}}; content: {packs?: string[]}}
 async function check(name: string, work: () => Promise<void>): Promise<void> {
@@ -103,6 +104,26 @@ async function colonyDemo(page: Page, game: GameJson, folder: string): Promise<v
 
 /** A published RTS or Pocket Pet demo: only its own host runs, under its own namespace. */
 async function templateDemo(page: Page, game: GameJson): Promise<void> {
+  if (game.template === 'armored') {
+    await waitForReady(page, {host: 'armored', timeout: READY_TIMEOUT_MS});
+    assert.equal(await page.evaluate('LWContentProvider.get().id+"/"+LWGameProfile.storage.namespace'), game.id + '/' + game.storage.namespace);
+    assert.equal(await page.evaluate('[typeof Littlewild,typeof LWRTSHost,typeof LWPetHost,typeof LWScenarios].join()'), 'undefined,undefined,undefined,undefined');
+    assert(await page.locator('[data-ap-screen=menu]').isVisible());
+    assert.equal(await page.evaluate(() => (globalThis as unknown as ArmoredGlobal).WildlandsArmored.status().paused), true);
+    await page.locator('[data-ap-screen=menu] [data-ap-action=briefing]').click();
+    await page.locator('[data-ap-action=deploy]').click();
+    await page.waitForFunction(() => (globalThis as unknown as ArmoredGlobal).WildlandsArmored.query().tick > 0);
+    assert(await page.locator('#armored-canvas').evaluate(canvas => !!(canvas as HTMLCanvasElement).getContext('webgl2')));
+    await page.locator('[data-ap-action=pause]').click();
+    assert.equal(await page.evaluate(() => (globalThis as unknown as ArmoredGlobal).WildlandsArmored.status().paused), true);
+    await page.locator('[data-ap-action=save]').click();
+    const saved = await page.evaluate(key => JSON.parse(localStorage.getItem(key) ?? 'null') as LWArmoredRuntime.Checkpoint | null, game.storage.namespace + '.checkpoint.v1');
+    assert(saved, 'The published armored demo writes its admitted checkpoint');
+    assert.equal(saved.format, 'wildlands-armored-checkpoint');
+    assert.equal(saved.missionId, await page.evaluate(() => (globalThis as unknown as ArmoredGlobal).WildlandsArmored.query().missionId));
+    namespaced(await storageKeys(page), game.storage.namespace);
+    return;
+  }
   if (game.template === 'process') {
     await waitForReady(page, {host: 'process', timeout: READY_TIMEOUT_MS});
     assert.equal(await page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {query(): {snapshot: {minute: number}}}}).LWProcessStudio.query().snapshot.minute), 0);
@@ -143,6 +164,7 @@ async function publishedChecks(browser: Browser): Promise<void> {
   });
   const names: Record<string, string> = {
    'agency-delivery': 'Published agency process demo boots offline with all step scenes and explicit clock control',
+   'armored-platoon': 'Published Armored Platoon demo boots offline and saves its paused match under the wildlands.armored-platoon storage namespace',
    'littlewild': 'Published Littlewild demo boots only Littlewild from file:// and keeps the legacy littlewild save keys',
    'emberworks': 'Published Emberworks demo boots only Emberworks from file:// under the wildlands.emberworks storage namespace',
    'office': 'Published Office demo boots only Office from file:// under the wildlands.office storage namespace',

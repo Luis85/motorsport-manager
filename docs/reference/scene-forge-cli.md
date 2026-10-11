@@ -396,9 +396,22 @@ batch with revision/state guards, inspect the dry run, apply the same batch, and
 compare `review --file previous/replay-plan.json` captures. The material inspector
 edits the same fields and downloads guarded recipe changes.
 
-Surface maps are shared across colors with the same version/kind/seed/scale/strength. A
-scene allows at most 256 distinct surface recipes; exceeding it fails with
-`SCENE_BUDGET` before publication. Reuse seeds and scales when changing only color.
+Standard PBR materials also accept the shared kernel's native `finish` version 1
+recipes: `painted-metal`, `bare-metal` and `rubber`, with optional camouflage
+palettes and seeded wear. These produce 128×128 sRGB color, linear tangent-normal
+and packed roughness/metalness maps. Author them through guarded `putMaterial`
+batches or import a Model Forge model bundle. See the canonical
+[native PBR finish contract](model-forge-cli.md#native-pbr-finish-recipes) for
+field bounds, scalar multipliers, UV placement and export behavior. A material
+chooses either `surface` or `finish`; both require standard PBR shading.
+Wear is a surface pattern, not geometry-aware edge wear or simulated damage.
+External image texture import and automatic UV unwrapping remain unsupported.
+
+Surface and finish maps are shared across colors with identical recipes. A scene
+allows at most 256 distinct recipes across both kinds; exceeding this combined
+budget fails with `SCENE_BUDGET` before publication. Reuse recipe fields when
+changing only material color. The compiler or viewer owns the shared maps and
+releases them when its resources are disposed.
 
 ### Projects and scenes
 

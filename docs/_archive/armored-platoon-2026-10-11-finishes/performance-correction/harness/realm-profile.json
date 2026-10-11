@@ -1,0 +1,152 @@
+{
+  "commit": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "file": "source/model-forge/src/kernel/application/finish-pattern.ts",
+  "sourceSha256": "fd88b0ec05939bb439b6f3b7d1b76c2464c4c837027b59966bbd2cbe4d3a13fe",
+  "node": "v24.19.0",
+  "recipes": [
+    {
+      "version": 1,
+      "kind": "painted-metal",
+      "seed": 0,
+      "scale": 1,
+      "wear": 0.35,
+      "palette": [
+        "#000000",
+        "#ffffff",
+        "#485239",
+        "#AbCdEf"
+      ]
+    },
+    {
+      "version": 1,
+      "kind": "painted-metal",
+      "seed": 7,
+      "scale": 16,
+      "wear": 0.35,
+      "palette": [
+        "#000000",
+        "#ffffff",
+        "#485239",
+        "#AbCdEf"
+      ]
+    },
+    {
+      "version": 1,
+      "kind": "painted-metal",
+      "seed": 65535,
+      "scale": 1,
+      "wear": 0.35,
+      "palette": [
+        "#000000",
+        "#ffffff",
+        "#485239",
+        "#AbCdEf"
+      ]
+    },
+    {
+      "version": 1,
+      "kind": "bare-metal",
+      "seed": 0,
+      "scale": 1,
+      "wear": 0.35,
+      "palette": [
+        "#000000",
+        "#ffffff",
+        "#485239",
+        "#AbCdEf"
+      ]
+    },
+    {
+      "version": 1,
+      "kind": "bare-metal",
+      "seed": 7,
+      "scale": 16,
+      "wear": 0.35,
+      "palette": [
+        "#000000",
+        "#ffffff",
+        "#485239",
+        "#AbCdEf"
+      ]
+    },
+    {
+      "version": 1,
+      "kind": "bare-metal",
+      "seed": 65535,
+      "scale": 1,
+      "wear": 0.35,
+      "palette": [
+        "#000000",
+        "#ffffff",
+        "#485239",
+        "#AbCdEf"
+      ]
+    },
+    {
+      "version": 1,
+      "kind": "rubber",
+      "seed": 0,
+      "scale": 1,
+      "wear": 0.35,
+      "palette": [
+        "#000000",
+        "#ffffff",
+        "#485239",
+        "#AbCdEf"
+      ]
+    },
+    {
+      "version": 1,
+      "kind": "rubber",
+      "seed": 7,
+      "scale": 16,
+      "wear": 0.35,
+      "palette": [
+        "#000000",
+        "#ffffff",
+        "#485239",
+        "#AbCdEf"
+      ]
+    },
+    {
+      "version": 1,
+      "kind": "rubber",
+      "seed": 65535,
+      "scale": 1,
+      "wear": 0.35,
+      "palette": [
+        "#000000",
+        "#ffffff",
+        "#485239",
+        "#AbCdEf"
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "name": "CommonJS-equivalent",
+      "wallMs": 58.015491999999995,
+      "cpuMs": 114.947,
+      "pixelSha256": "fbf68a874165ae8dfa1a41ca0dc01566fae8a02d121016273f6da7118501d029"
+    },
+    {
+      "name": "Default VM",
+      "wallMs": 1651.0181949999999,
+      "cpuMs": 1701.855,
+      "pixelSha256": "fbf68a874165ae8dfa1a41ca0dc01566fae8a02d121016273f6da7118501d029"
+    },
+    {
+      "name": "VM explicit Math",
+      "wallMs": 1071.969074,
+      "cpuMs": 1127.139,
+      "pixelSha256": "fbf68a874165ae8dfa1a41ca0dc01566fae8a02d121016273f6da7118501d029"
+    },
+    {
+      "name": "VM local Math binding",
+      "wallMs": 283.72225100000014,
+      "cpuMs": 347.624,
+      "pixelSha256": "fbf68a874165ae8dfa1a41ca0dc01566fae8a02d121016273f6da7118501d029"
+    }
+  ],
+  "scope": "Same original source, pixels and 9 representative recipes. Diagnostic realm/binding changes only, not production or registered suite edits. Measurements may overlap other agents CPU work."
+}

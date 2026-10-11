@@ -1,0 +1,58 @@
+{
+  "passed": 13,
+  "total": 13,
+  "results": [
+    {
+      "name": "Supply catalog rejects unknown ammunition, fractional stock and reserved depot spawn identities",
+      "passed": true
+    },
+    {
+      "name": "Depot projections are detached and reveal stocks only to their faction",
+      "passed": true
+    },
+    {
+      "name": "Out-of-range, foreign, moving and full resupply requests reject without mutation",
+      "passed": true
+    },
+    {
+      "name": "Transfer waits for its duration and conserves finite ammunition and repair kits",
+      "passed": true
+    },
+    {
+      "name": "Explicit cancellation is accepted once and transfers no partial supplies",
+      "passed": true
+    },
+    {
+      "name": "Movement and fire interrupt service without consuming depot stocks",
+      "passed": true
+    },
+    {
+      "name": "Damage interrupts an active persisted service and repair cannot overlap it",
+      "passed": true
+    },
+    {
+      "name": "Simultaneous depot service cannot duplicate stock across friendly vehicles",
+      "passed": true
+    },
+    {
+      "name": "Active transfer checkpoint continuation is byte-identical and saves retain solver identity",
+      "passed": true
+    },
+    {
+      "name": "Checkpoint admission rejects missing, excess and corrupted depot stocks atomically",
+      "passed": true
+    },
+    {
+      "name": "Checkpoint admission rejects orphaned and malformed in-progress service state",
+      "passed": true
+    },
+    {
+      "name": "V2 checkpoint rejects unfunded repair commitments and overlapping depot service",
+      "passed": true
+    },
+    {
+      "name": "Legacy checkpoints remain on their original solver without logistics topology migration",
+      "passed": true
+    }
+  ]
+}

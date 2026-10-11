@@ -1,0 +1,12 @@
+{
+  "implementationCommit": "bbf8475e80d59754bef4df4448492979f492624c",
+  "implementationTree": "d8993c022778faa911647e77bbc4a26cf8f16a40",
+  "ciMergeCommit": "9357f10ee7c4fb0b1b1b11735c715149ac9e2d1a",
+  "ciMergeTree": "d8993c022778faa911647e77bbc4a26cf8f16a40",
+  "ciMergeParents": [
+    "749a9f6296f3beb665eedf1eda57ae8cbfd00b39",
+    "bbf8475e80d59754bef4df4448492979f492624c"
+  ],
+  "treeDiffEmpty": true,
+  "meaning": "GitHub PR merge checkout has exactly the implementation tree. Commit identities remain distinct."
+}

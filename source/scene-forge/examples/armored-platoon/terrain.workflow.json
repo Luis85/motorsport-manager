@@ -1,0 +1,102 @@
+{
+  "before": {
+    "revision": 1,
+    "stateHash": "8408a8bdb3dc2f59526d713d39d05105570077201d630bc02593551e0ffb9328"
+  },
+  "dryRun": {
+    "scene": "main",
+    "revision": 1,
+    "stateHash": "8408a8bdb3dc2f59526d713d39d05105570077201d630bc02593551e0ffb9328",
+    "proposedStateHash": "d2d37e7a30ef4ea5b4b1bc3c153d6c1e88971f22e63c695dd93c97687fdbb9ba",
+    "proposedRevision": 2,
+    "changes": {
+      "nodes": {
+        "added": [],
+        "updated": ["ground"],
+        "removed": []
+      },
+      "geometries": {
+        "added": [],
+        "updated": ["ground"],
+        "removed": []
+      },
+      "materials": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "parameters": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "settings": []
+    },
+    "changed": true,
+    "dryRun": true,
+    "operations": 2,
+    "stats": {
+      "nodes": 1261,
+      "meshes": 1111,
+      "triangles": 29712,
+      "materials": 14,
+      "geometries": 47,
+      "bounds": {
+        "min": [0, -1.5992000102996826, 0],
+        "max": [576, 9.5688, 576],
+        "size": [576, 11.168000010299682, 576]
+      },
+      "warnings": [
+        "Custom mesh uses local spherical UV fallback; author seam-aware uvs for precise surface placement."
+      ]
+    }
+  },
+  "applied": {
+    "scene": "main",
+    "revision": 2,
+    "stateHash": "d2d37e7a30ef4ea5b4b1bc3c153d6c1e88971f22e63c695dd93c97687fdbb9ba",
+    "proposedStateHash": "d2d37e7a30ef4ea5b4b1bc3c153d6c1e88971f22e63c695dd93c97687fdbb9ba",
+    "proposedRevision": 2,
+    "changes": {
+      "nodes": {
+        "added": [],
+        "updated": ["ground"],
+        "removed": []
+      },
+      "geometries": {
+        "added": [],
+        "updated": ["ground"],
+        "removed": []
+      },
+      "materials": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "parameters": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "settings": []
+    },
+    "changed": true,
+    "dryRun": false,
+    "operations": 2,
+    "stats": {
+      "nodes": 1261,
+      "meshes": 1111,
+      "triangles": 29712,
+      "materials": 14,
+      "geometries": 47,
+      "bounds": {
+        "min": [0, -1.5992000102996826, 0],
+        "max": [576, 9.5688, 576],
+        "size": [576, 11.168000010299682, 576]
+      },
+      "warnings": [
+        "Custom mesh uses local spherical UV fallback; author seam-aware uvs for precise surface placement."
+      ]
+    }
+  }
+}

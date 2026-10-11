@@ -1,0 +1,14 @@
+✔ finish contract rejects unsupported versions, unbounded recipes and incompatible shading (5.766571ms)
+✔ finish v1 pixels have fixed identity, distinct recipes and bounded physically meaningful channels (63.065185ms)
+✔ finish maps pool independently of tint, retain scalar multipliers, and dispose exactly once (21.018904ms)
+✔ finish and legacy surfaces share one bounded pool and a rejected compilation releases every texture (666.874992ms)
+✔ Littlewild roundtrip retains editable finish recipes and Three JSON embeds closed typed images (49.467699ms)
+✔ headless GLB and glTF embed finish PNGs with portable UV transforms and valid PBR channels (192.609419ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1447.057997

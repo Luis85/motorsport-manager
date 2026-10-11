@@ -1,0 +1,50 @@
+{
+  "passed": 11,
+  "total": 11,
+  "results": [
+    {
+      "name": "Armored queries and detached edits do not tick or mutate authority",
+      "passed": true
+    },
+    {
+      "name": "Fresh LOS hides stale contact transforms and enemy entity events without ticking",
+      "passed": true
+    },
+    {
+      "name": "Differential tracks produce force and yaw while equal forces translate forward",
+      "passed": true
+    },
+    {
+      "name": "Braking, reverse and obstacle collision obey the physical transform owner",
+      "passed": true
+    },
+    {
+      "name": "Malformed, stale and foreign commands leave checkpoints byte-identical",
+      "passed": true
+    },
+    {
+      "name": "Restore retains RNG, sequence, motor velocity and in-flight shell reconstruction",
+      "passed": true
+    },
+    {
+      "name": "Checkpoint rejects corrupt velocities, missing components and excess ammunition",
+      "passed": true
+    },
+    {
+      "name": "Checkpoint rejects incomplete combat records, mixed components and invalid AI working state",
+      "passed": true
+    },
+    {
+      "name": "Application clock alone advances fixed ticks and replacement failure is atomic",
+      "passed": true
+    },
+    {
+      "name": "Excessive slopes block uphill drive in both forward and reverse directions",
+      "passed": true
+    },
+    {
+      "name": "Traction caps forces without spurious reverse thrust at the speed limit",
+      "passed": true
+    }
+  ]
+}

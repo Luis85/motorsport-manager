@@ -138,6 +138,14 @@ export declare const newScene: (id: string, name?: string) => {
             strength: number;
             version?: 1 | 2 | undefined;
         } | undefined;
+        finish?: {
+            version: 1;
+            kind: "painted-metal" | "bare-metal" | "rubber";
+            seed: number;
+            scale: number;
+            wear: number;
+            palette?: string[] | undefined;
+        } | undefined;
         sheen?: number | undefined;
         sheenColor?: string | undefined;
         sheenRoughness?: number | undefined;
@@ -469,6 +477,14 @@ export declare function loadProjectScenes(start: string): Promise<{
                 scale: number;
                 strength: number;
                 version?: 1 | 2 | undefined;
+            } | undefined;
+            finish?: {
+                version: 1;
+                kind: "painted-metal" | "bare-metal" | "rubber";
+                seed: number;
+                scale: number;
+                wear: number;
+                palette?: string[] | undefined;
             } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;
@@ -878,6 +894,14 @@ export declare function importModel(start: string, input: unknown, replace?: boo
                 strength: number;
                 version?: 1 | 2 | undefined;
             } | undefined;
+            finish?: {
+                version: 1;
+                kind: "painted-metal" | "bare-metal" | "rubber";
+                seed: number;
+                scale: number;
+                wear: number;
+                palette?: string[] | undefined;
+            } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;
             sheenRoughness?: number | undefined;
@@ -1212,6 +1236,14 @@ export declare function importModel(start: string, input: unknown, replace?: boo
                 scale: number;
                 strength: number;
                 version?: 1 | 2 | undefined;
+            } | undefined;
+            finish?: {
+                version: 1;
+                kind: "painted-metal" | "bare-metal" | "rubber";
+                seed: number;
+                scale: number;
+                wear: number;
+                palette?: string[] | undefined;
             } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;
@@ -1548,6 +1580,14 @@ export declare function captureProjectModel(start: string, sceneId: string | und
                 scale: number;
                 strength: number;
                 version?: 1 | 2 | undefined;
+            } | undefined;
+            finish?: {
+                version: 1;
+                kind: "painted-metal" | "bare-metal" | "rubber";
+                seed: number;
+                scale: number;
+                wear: number;
+                palette?: string[] | undefined;
             } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;

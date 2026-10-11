@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-11T16:12:26.813298+00:00",
+  "repository": "Luis85/motorsport-manager",
+  "runId": 38151353064,
+  "jobId": 114505403449,
+  "url": "https://github.com/Luis85/motorsport-manager/actions/runs/38151353064",
+  "implementationCommit": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "ciCheckoutCommit": "ec88210c205a674cdb77f85cc2cc59d9feb3874c",
+  "equalGitTree": "7eb1dc63ee7709b75c0a835dcb14cbb3d509cf99",
+  "status": "completed",
+  "conclusion": "failure",
+  "acceptance": false,
+  "fastTier": {
+    "status": "partial-passed",
+    "passed": 1058,
+    "total": 1058,
+    "suites": 56,
+    "seconds": 171.79,
+    "assetFinishPassed": 9,
+    "assetFinishTotal": 9
+  },
+  "fullGate": {
+    "status": "failed",
+    "passedObservedChecks": 2055,
+    "totalObservedChecks": 2055,
+    "attemptedSuites": 106,
+    "selectedSuites": 141,
+    "completedGate": false,
+    "execution": {
+      "jobs": 3,
+      "browserJobs": 2,
+      "keepGoing": false,
+      "wallSeconds": 2099.49
+    },
+    "startedAt": "2026-10-11T15:34:06.756Z",
+    "finishedAt": "2026-10-11T16:09:06.241Z",
+    "failure": "asset-finish failed; see asset-finish.log: spawn node ETIMEDOUT after 120s (SIGKILL)",
+    "failedSuites": [
+      {
+        "name": "asset-finish",
+        "command": [
+          "node",
+          ".generated/test-asset-finish.cjs"
+        ],
+        "result": ".generated/asset-finish-results.json",
+        "timeout": 120,
+        "kind": "node",
+        "exitCode": 1,
+        "seconds": 120.04,
+        "signal": "SIGKILL",
+        "error": "spawn node ETIMEDOUT after 120s"
+      }
+    ]
+  },
+  "source": {
+    "sourceSha256": "b301b88fc67eb8af568a40b6f8ff871f62e0db09ec3985a0cd5e89b2f745d984",
+    "registrySha256": "ca65f3da7e0ab0e0abe4fe1e5cf5f3be0c8e87a20d6475cf7cd18427b9975977",
+    "expectationsSha256": "67a3eab1f774a97f07e918bc94c71ad695d407566006a96b6140d4336a00e9c9",
+    "htmlSha256": "28fe758833158cd33b3d868127323f746b03d417b15834fb3bff43dee1ecbf97",
+    "htmlBytes": 24810488
+  },
+  "environment": {
+    "node": "v22.23.3",
+    "platform": "linux",
+    "architecture": "x64",
+    "chromium": "playwright-bundled",
+    "cores": 4
+  },
+  "installedChromium": "153.0.8010.12",
+  "installedChromiumRevision": "1243",
+  "browserVersionLimit": "The job log records installation of this bundled Chromium; per-suite browser provenance is inside retained artifacts and was not downloaded. No execution version is inferred beyond the printed gate selection.",
+  "additionalStorytelling": {
+    "status": "skipped",
+    "executedChecks": 0,
+    "configuredChecks": 24
+  },
+  "godotExport": {
+    "jobId": 114505403326,
+    "status": "completed",
+    "conclusion": "success",
+    "checks": "23 recorded separately in ci export evidence"
+  },
+  "preflightStepsPassed": [
+    "strict TypeScript",
+    "architecture boundaries",
+    "fast tier",
+    "checked-in CLI source freshness",
+    "all checked-in demos freshness"
+  ],
+  "limits": [
+    "106 suites were attempted from 141 selected; 2055/2055 observed checks is not full-gate acceptance.",
+    "Full gate failed after asset-finish exceeded 120 seconds and received SIGKILL.",
+    "asset-finish result JSON unavailable; reporter printed no diagnostic content from its suite log.",
+    "Additional Storytelling 24 did not execute.",
+    "Compact artifact download into workspace was blocked by configured proxy 403; no bypass attempted."
+  ],
+  "log": {
+    "file": "verify-job-114505403449.log",
+    "bytes": 164987,
+    "sha256": "9cbdd97fc9387c1ca40a317b41c5a1fd3a7e3fd39d9b959cf87da4ff55d23fa2"
+  },
+  "evidence": [
+    "terminal-jobs.json",
+    "terminal-workflow.json",
+    "artifacts.json",
+    "gate-extracted-from-job-log.json",
+    "asset-finish-log-observation.json",
+    "artifact-access.json",
+    "artifact-download.headers",
+    "checkout-identity.json"
+  ]
+}

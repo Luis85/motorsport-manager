@@ -1,0 +1,28 @@
+{"kind":"littlewild-browser-provenance","node":"v24.19.0","playwright":"1.63.0","playwrightCore":"1.63.0","browser":"151.0.7922.173","selection":"explicit-override","args":["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"]}
+Scene editor browser: 0/1 passed.
+
+locator.click: Timeout 7000ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-act="begin"]')[22m
+[2m    - locator resolved to <button data-act="begin" class="btn primary">…</button>[22m
+[2m  - attempting click action (trial run)[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+[2m    - element is visible, enabled and stable[22m
+[2m    - scrolling into view if needed[22m
+[2m    - done scrolling[22m
+[2m    - performing click action[22m
+
+    at admit (/workspace/work/armored-platoon/source/wildlands/.generated/verification/browser-pages.js:60:19)
+    at main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/scene-editor-browser.js:47:45) {
+  log: [
+    `  - waiting for locator('[data-act="begin"]')`,
+    '    - locator resolved to <button data-act="begin" class="btn primary">…</button>',
+    '  - attempting click action (trial run)',
+    '    - waiting for element to be visible, enabled and stable',
+    '    - element is visible, enabled and stable',
+    '    - scrolling into view if needed',
+    '    - done scrolling',
+    '    - performing click action'
+  ],
+  name: 'TimeoutError'
+}

@@ -1,0 +1,247 @@
+{
+  "format": "armored-stability-archive-selection",
+  "version": 1,
+  "stagedAt": "2026-10-11T16:03:48.790012+00:00",
+  "implementation": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "tree": "7eb1dc63ee7709b75c0a835dcb14cbb3d509cf99",
+  "originalFreezeHead": "3ce1c8dfde1e479b9927e4447bcbb6e28e898ba9",
+  "identityPolicy": "The original precommit freeze and browser launch identity are retained verbatim. Separate start/final associations prove equality with committed implementation 09ed6726; raw identities are not relabeled.",
+  "method": "30 wall minutes; frozen generated HTML bytes; native requestAnimationFrame; Playwright UI actions and public command/query/checkpoint/restore ports; no injected gameplay state or private ticks",
+  "wall": {
+    "startedAt": "2026-10-11T15:25:52.609Z",
+    "endedAt": "2026-10-11T15:55:52.609Z",
+    "observedSeconds": 1800,
+    "plannedSeconds": 1800,
+    "completed": true
+  },
+  "counts": {
+    "samples": 121,
+    "checkpointRoundtrips": 7,
+    "exactCheckpointRoundtrips": 7,
+    "missionSwitches": 7,
+    "commands": 375,
+    "commandRejections": 0,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "consoleWarnings": 0,
+    "observationFailures": 0
+  },
+  "cleanup": [
+    {
+      "name": "cdp",
+      "closed": true,
+      "at": "2026-10-11T15:55:53.835Z"
+    },
+    {
+      "name": "context",
+      "closed": true,
+      "at": "2026-10-11T15:55:53.856Z"
+    },
+    {
+      "name": "browser",
+      "closed": true,
+      "at": "2026-10-11T15:55:54.159Z"
+    }
+  ],
+  "requests": [
+    {
+      "at": "2026-10-11T15:25:47.799Z",
+      "url": "https://armored-stability.localhost/frozen-demo.html",
+      "resourceType": "document",
+      "fixture": true
+    }
+  ],
+  "artifact": {
+    "committedBytes": 4438590,
+    "committedSha256": "a15cb9df9468a2dbd5373f4ea4f345f8bf1ec83d80a0c598b63b59a626f7fdb6",
+    "matchesFrozenDemo": true,
+    "workingDemoMatchesCommit": true
+  },
+  "resources": {
+    "jsHeapUsedBytes": {
+      "first": 19045856,
+      "last": 42276568,
+      "minimum": 16039492,
+      "maximum": 51227496
+    },
+    "jsHeapTotalBytes": {
+      "first": 32890880,
+      "last": 87846912,
+      "minimum": 32890880,
+      "maximum": 92811264
+    },
+    "domNodes": {
+      "first": 505,
+      "last": 507,
+      "minimum": 501,
+      "maximum": 878
+    },
+    "documents": {
+      "first": 1,
+      "last": 1,
+      "minimum": 1,
+      "maximum": 1
+    },
+    "jsEventListeners": {
+      "first": 48,
+      "last": 48,
+      "minimum": 48,
+      "maximum": 59
+    },
+    "forcedGarbageCollection": false,
+    "gpuMemory": "unavailable",
+    "gpuResourceResidency": "unavailable",
+    "rendererGeometryAndTextureCounts": "unavailable"
+  },
+  "domCanvasBounds": {
+    "canvasCount": {
+      "minimum": 1,
+      "maximum": 1
+    },
+    "domElementCount": {
+      "minimum": 235,
+      "maximum": 235
+    },
+    "cdpDomNodes": {
+      "first": 505,
+      "last": 507,
+      "minimum": 501,
+      "maximum": 878
+    }
+  },
+  "navigationLimit": "16 of 363 sampled friendly projections report No safe route and one Reverse escape. Five saved blocked contexts admit a direct route only in separate diagnostic copies omitting allied hulls; traffic resolution remains incomplete. Observed workload and checkpoints are unchanged.",
+  "selection": {
+    "rawObservations": "observations.json.gz retains the complete recorded result including raw identity, samples, transitions, commands, errors, requests and cleanup. Individual raw JSONL streams and seven exact checkpoints are also retained losslessly.",
+    "captures": [
+      "start.png",
+      "final.png"
+    ],
+    "scripts": "Verbatim harness/diagnostic scripts use .txt suffixes to remain evidence rather than executable source in the documentation archive.",
+    "derived": "summary.json, compact-report.md.txt and visual-review.md.txt are derived explanatory reports.",
+    "sourceAssociation": "Source inventory, explicit committed associations and full artifact comparison receipts are retained; untracked result JSONs accidentally caught by the broad original inventory are explicitly excluded from tracked-source association.",
+    "gzipPolicy": "gzip true in staging-manifest means lossless gzip storage with deterministic mtime 0; source and stored byte counts/hashes are both retained.",
+    "manifestScope": "files.sha256.json is the original full local retention inventory, not a claim that every listed file is staged. staging-manifest.json indexes the actual selected copies."
+  },
+  "excluded": [
+    {
+      "file": "served-demo.html",
+      "bytes": 4438590,
+      "sha256": "a15cb9df9468a2dbd5373f4ea4f345f8bf1ec83d80a0c598b63b59a626f7fdb6",
+      "reason": "Avoid duplicating the 4.4 MB generated deliverable. Exact bytes already exist as demos/armored-platoon.html at the recorded implementation commit; restore through git show and verify this hash."
+    },
+    {
+      "files": "transition-*.png",
+      "reason": "Intermediate screenshots remain in full local retention; archive includes start/final captures plus all screenshot hashes, complete raw transition observations and exact checkpoint bytes."
+    },
+    {
+      "files": "compact-report.json,report.md,progress.json",
+      "reason": "Duplicate or transient derived data; summary.json/compact-report.md.txt and complete raw observations retain their substantive evidence."
+    }
+  ],
+  "reproduction": {
+    "artifactCommand": "git show 09ed672642aedee855d2d45f0e8c4a611127ca7b:demos/armored-platoon.html > work/<fresh-observation-directory>/served-demo.html",
+    "preparation": "Use a fresh directory directly under repository work/. Restore observe.cjs and browser-harness-used.js from their .txt copies, copy freeze.json unchanged, and install the repository Wildlands Playwright dependency. Keep the archived originals intact. The observer validates the frozen artifact SHA/size before launch. The historical metadata and source paths retained inside freeze.json are provenance, not instructions to overwrite files.",
+    "command": "node work/<fresh-observation-directory>/observe.cjs",
+    "duration": "Native RAF and real 1,800 wall seconds; no private stepping or forced GC. Requires exclusive local browser slot and /usr/bin/chromium or PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH.",
+    "stop": "Write a reason as STOP.json in the fresh observation directory for a graceful partial run. An interrupted run is not a 30-minute pass.",
+    "historicalDiagnosticScripts": "The comparison/association/diagnostic scripts retain their original repository-relative work paths. Adapt paths in a separate reproduction copy; do not edit archived scripts or raw checkpoint evidence."
+  },
+  "priorInterruptedRuns": [
+    {
+      "directory": "interrupted/upstream-integration",
+      "localSourceDirectory": "work/armored-v3-stability",
+      "classification": "Superseded when upstream merge changed ECS bytes.",
+      "seconds": 156.226,
+      "completedThirtyMinutes": false,
+      "scriptedCommands": 35,
+      "scriptedCommandRejections": 0,
+      "pageErrors": 0,
+      "consoleProblems": 0,
+      "failures": [
+        {
+          "time": "2026-10-11T14:57:08.232Z",
+          "message": "SIGTERM interrupted the bounded observation"
+        },
+        {
+          "time": "2026-10-11T14:57:08.647Z",
+          "message": "Error: page.evaluate: Target page, context or browser has been closed"
+        }
+      ],
+      "cleanup": [
+        {
+          "name": "cdp",
+          "closed": false,
+          "error": "Error: cdpSession.detach: Target page, context or browser has been closed"
+        },
+        {
+          "name": "context",
+          "closed": true,
+          "at": "2026-10-11T14:57:08.647Z"
+        },
+        {
+          "name": "browser",
+          "closed": true,
+          "at": "2026-10-11T14:57:08.647Z"
+        }
+      ],
+      "artifact": {
+        "path": "work/armored-v3-stability/served-demo.html",
+        "origin": "source/wildlands/.generated/artifacts/armored-play.html",
+        "bytes": 4438131,
+        "sha256": "9c89da5d6bbdd7992d5d29bd540623dd1ca9e06b0caa43c6162015b0a2bb7170",
+        "matchesFrozenIdentity": true
+      }
+    },
+    {
+      "directory": "interrupted/pointer-lock-fix",
+      "localSourceDirectory": "work/armored-v3-integrated-stability",
+      "classification": "Superseded for the concrete pointer-lock/held-drive input fix.",
+      "seconds": 281.74,
+      "completedThirtyMinutes": false,
+      "scriptedCommands": 60,
+      "scriptedCommandRejections": 0,
+      "pageErrors": 0,
+      "consoleProblems": 0,
+      "failures": [
+        {
+          "time": "2026-10-11T15:13:28.205Z",
+          "message": "Intentional requested stop: {\n  \"at\": \"2026-10-11T15:13:27.467701+00:00\",\n  \"classification\": \"interrupted-for-pointer-lock-input-fix\",\n  \"requestedBy\": \"root\",\n  \"reason\": \"Interface review identified a concrete pointer-lock focus/held-drive bug requiring source change and exclusive browser reproduction. Root requested stopping the superseded observation.\",\n  \"acceptance\": \"Partial observation only, not a thirty-minute pass.\"\n}\n"
+        }
+      ],
+      "cleanup": [
+        {
+          "name": "cdp",
+          "closed": true,
+          "at": "2026-10-11T15:13:29.860Z"
+        },
+        {
+          "name": "context",
+          "closed": true,
+          "at": "2026-10-11T15:13:29.917Z"
+        },
+        {
+          "name": "browser",
+          "closed": true,
+          "at": "2026-10-11T15:13:30.534Z"
+        }
+      ],
+      "artifact": {
+        "path": "work/armored-v3-integrated-stability/served-demo.html",
+        "origin": "demos/armored-platoon.html",
+        "bytes": 4438473,
+        "sha256": "a1fa1e295bd41fd5030142c4b0e0b6a10a01a98215b6826fda377b78e2e10f4e",
+        "matchesFrozenIdentity": true
+      }
+    }
+  ],
+  "limitations": [
+    "Software SwiftShader at 960x600; no hardware performance conclusion.",
+    "Entity counts are detached visible projection counts, not total live ECS or GPU allocations.",
+    "JS heap is CDP heap usage without forced garbage collection; fluctuations do not establish leak freedom.",
+    "GPU memory, resource residency, renderer geometry/texture counters, hardware VRAM and thermal/power data are unavailable.",
+    "Native RAF elapsed times are retained; no private ticks, RAF replacement, altered content, or fabricated checkpoint state.",
+    "This bounded observation is not full Q03 acceptance or reference-fidelity evidence.",
+    "Scripted workload calls only. Automatic shell control/aim command responses were not instrumented or included in these totals.",
+    "Repair and resupply actions were not part of this thirty-minute workload; their separate integrated browser checks are distinct evidence."
+  ]
+}

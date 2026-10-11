@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
+import {validateAsset} from '../src/domain/engine-validation.ts';
 import {createRenderKit, createStage} from '../src/ui/viewport-kit.ts';
 
 test('preview renders the engine primitive dimensions and preserves material options', () => {
@@ -109,4 +110,38 @@ test('portable surfaces reach preview materials and release shared maps only aft
   second.dispose(new THREE.Group());
   assert.equal(mapDisposals, 1);
   assert.equal(normalDisposals, 1);
+});
+
+test('native finish admission reaches preview PBR maps and preserves shared texture ownership', () => {
+  const finish = {version:1,kind:'painted-metal',seed:7,scale:2,wear:.35,palette:['#485239','#736746']};
+  const asset = {format:'littlewild-3d-asset',schemaVersion:1,category:'item',id:'paint-fixture',name:'Paint fixture',
+    materials:{paint:{color:'#ffffff',roughness:.9,metalness:.85,finish}},
+    models:{world:{nodes:[{primitive:'box',material:'paint'}]}},metadata:{}};
+  assert.deepEqual(validateAsset(asset), asset);
+  const invalid = structuredClone(asset); invalid.materials.paint.finish.version = 2;
+  assert.throws(() => validateAsset(invalid), /finish/);
+  const first = createRenderKit(), second = createRenderKit();
+  try {
+    const paint = first.kit.mat('#ffffff', {finish,roughness:.9,metalness:.85});
+    const tint = second.kit.mat('#667755', {finish,roughness:.7,metalness:.6});
+    assert.ok(paint.map instanceof THREE.DataTexture);
+    assert.ok(paint.normalMap instanceof THREE.DataTexture);
+    assert.ok(paint.roughnessMap instanceof THREE.DataTexture);
+    assert.equal(paint.metalnessMap, paint.roughnessMap);
+    assert.equal(paint.map, tint.map);
+    assert.equal(paint.normalMap, tint.normalMap);
+    assert.equal(paint.roughnessMap, tint.roughnessMap);
+    assert.equal(paint.map.colorSpace, THREE.SRGBColorSpace);
+    assert.equal(paint.normalMap.colorSpace, THREE.NoColorSpace);
+    assert.equal(paint.roughnessMap.colorSpace, THREE.NoColorSpace);
+    assert.equal(paint.roughness, .9); assert.equal(paint.metalness, .85);
+    assert.deepEqual(paint.map.repeat.toArray(), [2,2]);
+    assert.equal(paint.userData.finishAlgorithm, 'forge-finish-v1');
+    assert.deepEqual(paint.userData.finish, finish);
+    assert.ok(new Set(paint.roughnessMap.image.data).size > 2);
+    let disposed = 0;
+    for (const map of [paint.map,paint.normalMap,paint.roughnessMap]) map.addEventListener('dispose', () => disposed++);
+    first.dispose(new THREE.Group()); assert.equal(disposed, 0);
+    second.dispose(new THREE.Group()); second.dispose(new THREE.Group()); assert.equal(disposed, 3);
+  } finally { first.dispose(new THREE.Group()); second.dispose(new THREE.Group()); }
 });

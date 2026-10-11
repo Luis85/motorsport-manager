@@ -1,0 +1,16 @@
+{
+  "command": [
+    "python3",
+    "scripts/quality.py",
+    "--output",
+    "/workspace/work/armored-platoon/work/armored-v3-final-verification/quality"
+  ],
+  "source_commit": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "source_tree": "7eb1dc63ee7709b75c0a835dcb14cbb3d509cf99",
+  "source_digest_before": "63527e9bac2f56c0e8ab60c99a729e8c52732f3015f49e9f27ce21eb346381b7",
+  "source_digest_after": "63527e9bac2f56c0e8ab60c99a729e8c52732f3015f49e9f27ce21eb346381b7",
+  "working_tree_status": "",
+  "exit_code": 0,
+  "seconds": 86.567,
+  "log_sha256": "26f1de5ca09d801f4a5719a32a5e56499fcbfce31d0ab7868fdd8d82607dff36"
+}

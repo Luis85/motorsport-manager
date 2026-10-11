@@ -34,7 +34,7 @@ export const ENGINE_SOURCE = path.join(PROJECT, 'source');
  * Games the engine build composes into its fixtures (the composite showcase, the transitional
  * installers) and engine-source payload, in showcase order: colony packs appear in this order.
  */
-export const BUNDLED_GAMES = ['littlewild', 'emberworks', 'office', 'rts-frontier', 'pocket-pet', 'agency-delivery'] as const;
+export const BUNDLED_GAMES = ['littlewild', 'emberworks', 'office', 'rts-frontier', 'pocket-pet', 'agency-delivery', 'armored-platoon'] as const;
 /** Inventory bounds: folders are reviewable data, not archives. */
 export const LIMITS = Object.freeze({files: 2048, fileBytes: 8 * 1024 * 1024, totalBytes: 32 * 1024 * 1024, depth: 8});
 const DOCUMENT = /^(?:README\.md|PROVENANCE\.md|LICENSE(?:[.-][A-Za-z0-9.-]{1,32})?)$/;
@@ -132,6 +132,7 @@ function referenced(manifest: GameManifest): {files: string[]; assets: string | 
   return {assets: colony.assets, files: ['game.json', colony.balancing, colony.creatures.catalog, colony.creatures.editorFields,
    colony.interactions, ...colony.packs, ...colony.skillTree ? [colony.skillTree] : [], ...colony.adventureExamples ?? []]};
  }
+ if (manifest.template === 'armored') { const armored = content as import('./game-manifest.cjs').ArmoredContent; return {assets: null, files: ['game.json', armored.catalog, ...armored.visuals ? [armored.visuals] : []]}; }
  if (manifest.template === 'process') return {assets: null, files: ['game.json', ...processDefinitionFiles(content as ProcessContent)]};
  if (manifest.template === 'pet') { const pet = content as PetContent; return {assets: pet.assets ?? null, files: ['game.json', pet.catalog]}; }
  return {assets: null, files: ['game.json', (content as RtsContent).catalog]};
@@ -230,6 +231,12 @@ export function compileGame(input: string | LoadedGame): CompiledGame {
   // A multi-process game's first entry is the single-definition projection; the full ordered list is its own global.
   return {...game, packages: [], profile: {...base, process: definition, ...content.definitions ? {processes: all} : {}},
    data: new Map<string, unknown>([['LWGameProfile', {storage: base.storage}], ['LWProcessDefinition', definition], ...content.definitions ? [['LWProcessDefinitions', all] as [string, unknown]] : []])};
+ }
+ if (manifest.template === 'armored') {
+  const content = manifest.content as import('./game-manifest.cjs').ArmoredContent;
+  const catalog = json(game.root, content.catalog), visuals = content.visuals ? json(game.root, content.visuals) : {};
+  return {...game, packages: [], profile: {...base, armored: catalog, armoredVisuals: visuals},
+   data: new Map<string, unknown>([['LWGameProfile', {storage: base.storage}], ['LWArmoredDefinitions', catalog], ['LWArmoredVisuals', visuals]])};
  }
  if (manifest.template === 'rts') {
   const catalog = json(game.root, (manifest.content as RtsContent).catalog);

@@ -1,0 +1,112 @@
+{
+  "baselineCommit": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "baselineSourceMatchesGit": true,
+  "method": "Transpile native generator to ES2022 CommonJS, load unchanged source into default vm.runInNewContext, generate complete81 recipe matrix and hash every color/normal/orm byte in deterministic order. Same harness before/after; no test timeout, assertions, registration or VM intrinsic injection changes.",
+  "recipeCount": 81,
+  "recipeMatrix": {
+    "kinds": [
+      "painted-metal",
+      "bare-metal",
+      "rubber"
+    ],
+    "seeds": [
+      0,
+      7,
+      65535
+    ],
+    "wear": [
+      0,
+      0.35,
+      1
+    ],
+    "palettes": [
+      null,
+      [
+        "#ffffff"
+      ],
+      [
+        "#000000",
+        "#ffffff",
+        "#485239",
+        "#AbCdEf"
+      ]
+    ],
+    "scale": "16 for seed7, otherwise1"
+  },
+  "aggregateSha256": "0e645858b3f3af227e367a64dee336d84cb41b47915edc35ae8ce6e41961d8c2",
+  "allIndividualRecipeHashesEqual": true,
+  "profiles": [
+    {
+      "stage": "before",
+      "elapsedMs": 14665.451876,
+      "evidence": "before.json"
+    },
+    {
+      "stage": "after",
+      "elapsedMs": 4277.5145680000005,
+      "evidence": "after.json"
+    },
+    {
+      "stage": "after-intrinsics",
+      "elapsedMs": 437.864687,
+      "evidence": "after-intrinsics.json"
+    }
+  ],
+  "changes": [
+    "Per-recipe Float64 lattice precomputation retains interpolation operation order.",
+    "Same-realm Math intrinsic capture avoids repeated contextified global lookup.",
+    "Direct typed-array channel writes avoid per-pixel temporary arrays."
+  ],
+  "checks": {
+    "modelTypes": "pass",
+    "modelArchitecture": "pass",
+    "modelUnits": {
+      "passed": 182,
+      "total": 182,
+      "durationMs": 25244.759313,
+      "log": "model-final-units.log"
+    },
+    "modelCliFreshness": "pass",
+    "sceneTypes": "pass",
+    "sceneArchitecture": "pass",
+    "sceneUnits": {
+      "passed": 57,
+      "total": 57,
+      "durationMs": 14649.504821,
+      "log": "scene-final-units.log"
+    },
+    "sceneBuild": "pass",
+    "sceneCliFreshness": "pass",
+    "changedFilesFormatting": "pass",
+    "whitespace": "pass"
+  },
+  "retainedIntermediate": {
+    "log": "model-units.log",
+    "passed": 181,
+    "total": 182,
+    "failure": "Expected stale standalone bundle before authorized rebuild; superseded by182/182 final run."
+  },
+  "files": [
+    {
+      "path": "source/model-forge/src/kernel/application/finish-pattern.ts",
+      "bytes": 5618,
+      "sha256": "53fd6b90a5763aa5784d4795179e7571a70151aacd6a81cbc38c923688f71aeb"
+    },
+    {
+      "path": "source/model-forge/tests/kernel-finish.test.ts",
+      "bytes": 10179,
+      "sha256": "ecb6608fe09ec44660f1563cb8d195930ea7d8c834ecd2fbda64ffd6ba525b27"
+    },
+    {
+      "path": "bin/model-forge",
+      "bytes": 2367903,
+      "sha256": "165c5239ce7052bc4dec096d745dab5616d50d247585b54547999db1980d693b"
+    },
+    {
+      "path": "bin/scene-forge",
+      "bytes": 2518690,
+      "sha256": "a15f7aba1290d62410fba4c71831c17b6be48ec930a850ce9a71a8e9a8a16388"
+    }
+  ],
+  "limits": "Bounded isolated CPU measurement on shared worker, not statistically controlled hardware benchmark. Generated pixels and export contract unchanged. Three128x128 Float64 field tables add384KiB bounded temporary storage per active generator call, with no retained cache."
+}

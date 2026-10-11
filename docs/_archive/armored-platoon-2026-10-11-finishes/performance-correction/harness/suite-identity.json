@@ -1,0 +1,5 @@
+{
+  "commit": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "scope": "All original nine named checks/all81parity recipes/all255real finish pool allocations. Added per-check timing only; immutablegitshow inputs. Isolated generated outputs; shared generated tree untouched.",
+  "base": "/workspace/work/armored-platoon/work/finish-harness-profile/isolated"
+}

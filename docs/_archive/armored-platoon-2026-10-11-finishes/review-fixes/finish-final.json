@@ -1,0 +1,42 @@
+{
+  "passed": 9,
+  "total": 9,
+  "results": [
+    {
+      "name": "Finish v1 pixels stay byte-identical to native Model Forge across kinds seeds wear and palettes",
+      "passed": true
+    },
+    {
+      "name": "Finish schema and runtime catalog reject malformed recipes and mutually exclusive detail",
+      "passed": true
+    },
+    {
+      "name": "Finish admission returns detached frozen data and rejects accessors without executing them",
+      "passed": true
+    },
+    {
+      "name": "Three finish maps share live owners preserve PBR multipliers and dispose only after the last owner",
+      "passed": true
+    },
+    {
+      "name": "A failed material constructor releases its newly acquired finish maps exactly once",
+      "passed": true
+    },
+    {
+      "name": "Combined finish and surface budgets reject a whole model before root or GPU allocation",
+      "passed": true
+    },
+    {
+      "name": "Littlewild finish recipes instantiate through the generic renderer with authored UVs and appearance colors",
+      "passed": true
+    },
+    {
+      "name": "Catalog admission rejects merged material conflicts and preserves valid node and actor palettes",
+      "passed": true
+    },
+    {
+      "name": "Material and per-node surface-finish conflicts fail before resource allocation",
+      "passed": true
+    }
+  ]
+}

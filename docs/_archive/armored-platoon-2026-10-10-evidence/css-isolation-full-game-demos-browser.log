@@ -1,0 +1,131 @@
+{"kind":"littlewild-browser-provenance","node":"v24.19.0","playwright":"1.63.0","playwrightCore":"1.63.0","browser":"151.0.7922.173","selection":"explicit-override","args":["--no-sandbox","--enable-unsafe-swiftshader","--use-angle=swiftshader"]}
+1/11
+
+CLI-built Littlewild demo boots from file:// with its own game profile and no requests page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/littlewild.html
+Call log:
+[2m  - navigating to "file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/littlewild.html", waiting until "load"[22m
+
+    at withDemo (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:62:20)
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:36:9)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:196:9) {
+  log: [
+    '  - navigating to "file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/littlewild.html", waiting until "load"'
+  ],
+  name: 'Error'
+}
+CLI-built RTS and Pocket Pet demos boot standalone under their own storage namespaces page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/rts-frontier.html
+Call log:
+[2m  - navigating to "file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/rts-frontier.html", waiting until "load"[22m
+
+    at withDemo (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:62:20)
+    at async /workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:211:13
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:36:9)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:210:9) {
+  log: [
+    '  - navigating to "file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/rts-frontier.html", waiting until "load"'
+  ],
+  name: 'Error'
+}
+CLI-built studio boots the colony with editors and export tools on demand page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/studio.html
+Call log:
+[2m  - navigating to "file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/studio.html", waiting until "load"[22m
+
+    at withDemo (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:62:20)
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:36:9)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:227:9) {
+  log: [
+    '  - navigating to "file:///tmp/wildlands-gate-GLGwRP/game-demos-browser/wildlands-game-demos-rAafzP/studio.html", waiting until "load"'
+  ],
+  name: 'Error'
+}
+Published agency process demo boots offline with all step scenes and explicit clock control page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/agency-delivery.html
+Call log:
+[2m  - navigating to "file:///workspace/work/armored-platoon/demos/agency-delivery.html", waiting until "load"[22m
+
+    at withDemo (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:62:20)
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:36:9)
+    at async publishedChecks (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:187:9)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:234:9) {
+  log: [
+    '  - navigating to "file:///workspace/work/armored-platoon/demos/agency-delivery.html", waiting until "load"'
+  ],
+  name: 'Error'
+}
+Published Armored Platoon demo boots offline and saves its paused match under the wildlands.armored-platoon storage namespace page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/armored-platoon.html
+Call log:
+[2m  - navigating to "file:///workspace/work/armored-platoon/demos/armored-platoon.html", waiting until "load"[22m
+
+    at withDemo (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:62:20)
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:36:9)
+    at async publishedChecks (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:187:9)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:234:9) {
+  log: [
+    '  - navigating to "file:///workspace/work/armored-platoon/demos/armored-platoon.html", waiting until "load"'
+  ],
+  name: 'Error'
+}
+Published Littlewild demo boots only Littlewild from file:// and keeps the legacy littlewild save keys page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/littlewild.html
+Call log:
+[2m  - navigating to "file:///workspace/work/armored-platoon/demos/littlewild.html", waiting until "load"[22m
+
+    at withDemo (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:62:20)
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:36:9)
+    at async publishedChecks (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:187:9)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:234:9) {
+  log: [
+    '  - navigating to "file:///workspace/work/armored-platoon/demos/littlewild.html", waiting until "load"'
+  ],
+  name: 'Error'
+}
+Published Emberworks demo boots only Emberworks from file:// under the wildlands.emberworks storage namespace page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/emberworks.html
+Call log:
+[2m  - navigating to "file:///workspace/work/armored-platoon/demos/emberworks.html", waiting until "load"[22m
+
+    at withDemo (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:62:20)
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:36:9)
+    at async publishedChecks (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:187:9)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:234:9) {
+  log: [
+    '  - navigating to "file:///workspace/work/armored-platoon/demos/emberworks.html", waiting until "load"'
+  ],
+  name: 'Error'
+}
+Published Office demo boots only Office from file:// under the wildlands.office storage namespace page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/office.html
+Call log:
+[2m  - navigating to "file:///workspace/work/armored-platoon/demos/office.html", waiting until "load"[22m
+
+    at withDemo (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:62:20)
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:36:9)
+    at async publishedChecks (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:187:9)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:234:9) {
+  log: [
+    '  - navigating to "file:///workspace/work/armored-platoon/demos/office.html", waiting until "load"'
+  ],
+  name: 'Error'
+}
+Published RTS Frontier demo boots only its RTS match from file:// under the wildlands.rts-frontier storage namespace page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/rts-frontier.html
+Call log:
+[2m  - navigating to "file:///workspace/work/armored-platoon/demos/rts-frontier.html", waiting until "load"[22m
+
+    at withDemo (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:62:20)
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:36:9)
+    at async publishedChecks (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:187:9)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:234:9) {
+  log: [
+    '  - navigating to "file:///workspace/work/armored-platoon/demos/rts-frontier.html", waiting until "load"'
+  ],
+  name: 'Error'
+}
+Published Pocket Pet demo boots only its pet room from file:// under the wildlands.pocket-pet storage namespace page.goto: net::ERR_BLOCKED_BY_ADMINISTRATOR at file:///workspace/work/armored-platoon/demos/pocket-pet.html
+Call log:
+[2m  - navigating to "file:///workspace/work/armored-platoon/demos/pocket-pet.html", waiting until "load"[22m
+
+    at withDemo (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:62:20)
+    at async check (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:36:9)
+    at async publishedChecks (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:187:9)
+    at async main (/workspace/work/armored-platoon/source/wildlands/.generated/verification/game-demos-browser.js:234:9) {
+  log: [
+    '  - navigating to "file:///workspace/work/armored-platoon/demos/pocket-pet.html", waiting until "load"'
+  ],
+  name: 'Error'
+}

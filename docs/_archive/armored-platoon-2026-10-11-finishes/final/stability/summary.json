@@ -1,0 +1,1315 @@
+{
+  "format": "armored-software-stability-observation",
+  "version": 1,
+  "source": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+  "identity": {
+    "gitHead": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+    "freeze": {
+      "frozenAt": "2026-10-11T16:32:56.255541+00:00",
+      "gitHead": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+      "tree": "b63851baa951f93b87859c222d706e00cf6bf0f6",
+      "captureCheckoutHead": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+      "identityPolicy": "Artifact and31 tracked source inventory entries read directly from committed de06 implementation and verified against working copies. Prior09ed full and e9c interrupted observations remain separate.",
+      "artifact": {
+        "origin": "demos/armored-platoon.html",
+        "bytes": 4439139,
+        "sha256": "783d8dc2fba68251420b2ee61b477677994b8839be62f0660f03f0c49ceda883"
+      },
+      "sourceFiles": [
+        {
+          "file": "docs/concepts/armored-platoon/content/catalog.json",
+          "bytes": 190203,
+          "sha256": "0bc1e6626c153fcacbfc424534fad02cf9f38128952862715532d9cd6b249afc"
+        },
+        {
+          "file": "docs/concepts/armored-platoon/content/visuals.json",
+          "bytes": 3133629,
+          "sha256": "8e406de65dd806954ce24a691da434fdfbdeac93e0f4901cb800445348be19c5"
+        },
+        {
+          "file": "source/model-forge/src/kernel/application/finish-pattern.ts",
+          "bytes": 5618,
+          "sha256": "53fd6b90a5763aa5784d4795179e7571a70151aacd6a81cbc38c923688f71aeb"
+        },
+        {
+          "file": "source/model-forge/src/kernel/application/littlewild-materials.ts",
+          "bytes": 3339,
+          "sha256": "a438966594a58ecbd019b8fb15371db6ea410d51895703883cacaff55486cbc4"
+        },
+        {
+          "file": "source/model-forge/src/kernel/application/materials.ts",
+          "bytes": 2238,
+          "sha256": "3eed945f8bf7b1c60dd5f933703e175c1ef3921ffeb5bdcaacbc13089976719f"
+        },
+        {
+          "file": "source/model-forge/src/kernel/application/surface-pattern.ts",
+          "bytes": 6046,
+          "sha256": "39cbc5738453580ac03e7ad1672a3ac3cdcb76d249616cca10a6892581a385af"
+        },
+        {
+          "file": "source/model-forge/src/kernel/application/surfaces.ts",
+          "bytes": 5355,
+          "sha256": "63fa7f0475e821b4d3acb860e6dc8cd0a4a3f759d414480bfe0742f1733db189"
+        },
+        {
+          "file": "source/model-forge/src/kernel/domain/schema-material.ts",
+          "bytes": 2037,
+          "sha256": "581524c8c1f43a3dd1229a2bfced9b61b24fd7b91641993e755b2d01e52f2ebb"
+        },
+        {
+          "file": "source/wildlands/source/armored-ai.ts",
+          "bytes": 16742,
+          "sha256": "d4ba98def0dc7356dac2dd2346defec3d5eec11bf05d9da95746afb4e4d294d2"
+        },
+        {
+          "file": "source/wildlands/source/armored-application.ts",
+          "bytes": 1752,
+          "sha256": "59a86e8a3b9869e2bb4caf6c6b3b18ba134307c319ede7eab34e32bee58aaea1"
+        },
+        {
+          "file": "source/wildlands/source/armored-audio.ts",
+          "bytes": 2665,
+          "sha256": "57003d950cac26588a5bd8a0a29d01b8a4b7b28fee45012519337a63583db43d"
+        },
+        {
+          "file": "source/wildlands/source/armored-catalog.ts",
+          "bytes": 14021,
+          "sha256": "fed7ae6f658d901d46649c1b0660fa595b0ad5466cba580c8cbb715920a35276"
+        },
+        {
+          "file": "source/wildlands/source/armored-checkpoint.ts",
+          "bytes": 12181,
+          "sha256": "c619232b2919e9b7498e87575631eca7eec3e95d0ef9fd2f3555817b16e509e7"
+        },
+        {
+          "file": "source/wildlands/source/armored-collision.ts",
+          "bytes": 7698,
+          "sha256": "0ad4094f050a1981eedbe088e274ec1339b032b0a0385a820110e265256c3062"
+        },
+        {
+          "file": "source/wildlands/source/armored-combat.ts",
+          "bytes": 20943,
+          "sha256": "6dd641590635f0f1b0d57da3473ec22009b0d784d2a7e6ab52b6a165a4f3ff77"
+        },
+        {
+          "file": "source/wildlands/source/armored-contracts.d.ts",
+          "bytes": 7568,
+          "sha256": "6a8fbc30c9dec66a49dfa583e194bb36d71ea5e3888ddd653b05aa9e32d31a33"
+        },
+        {
+          "file": "source/wildlands/source/armored-controls.ts",
+          "bytes": 7138,
+          "sha256": "db33b18e023b51e2193b1db7a79e8ac7f5cd8889613b8a150c6b899dc305c213"
+        },
+        {
+          "file": "source/wildlands/source/armored-host.ts",
+          "bytes": 6844,
+          "sha256": "0de48213d490210237bdba398e39aed5db8c34557ac9226cb34e735d6a57d82c"
+        },
+        {
+          "file": "source/wildlands/source/armored-logistics.ts",
+          "bytes": 6129,
+          "sha256": "8a43246128e7b75db88ddf74e5b1d2a21f5a93ac87a0749398565f89952b6242"
+        },
+        {
+          "file": "source/wildlands/source/armored-missions.ts",
+          "bytes": 2528,
+          "sha256": "a47d9274f6da21cdcff9c38e1dcbcc13d8e416196bf30a3dbb7a4525c318221a"
+        },
+        {
+          "file": "source/wildlands/source/armored-navigation.ts",
+          "bytes": 10305,
+          "sha256": "2777b80adbacd4d3b3325b54847b5282cd9cd9a85028adfe883d6f2911265fb4"
+        },
+        {
+          "file": "source/wildlands/source/armored-physics-legacy.ts",
+          "bytes": 6967,
+          "sha256": "3b4613a78af3b35d2f422507d8efc7a1539af52042c782680f24f8d4ce97bfc7"
+        },
+        {
+          "file": "source/wildlands/source/armored-physics.ts",
+          "bytes": 5363,
+          "sha256": "420771ad3bf6429fb02bcfafa36fc28ba9b885323c60d984e7093a979faebe0e"
+        },
+        {
+          "file": "source/wildlands/source/armored-presentation-contracts.d.ts",
+          "bytes": 1262,
+          "sha256": "dc824cc7e299108bede7ade1a0c93449b2b72e22d8cee498855c3664c35eee1d"
+        },
+        {
+          "file": "source/wildlands/source/armored-renderer.ts",
+          "bytes": 5857,
+          "sha256": "1c6807f1ab0aa1090b254ccd771daad2fe8e8919d14b42e9fc43698bebaeb1e8"
+        },
+        {
+          "file": "source/wildlands/source/armored-session.ts",
+          "bytes": 13381,
+          "sha256": "2c892e39bb413243ec2622e0fcd9dd33c09f36b802a9dca5566094b63ac2dafe"
+        },
+        {
+          "file": "source/wildlands/source/armored-ui.ts",
+          "bytes": 27109,
+          "sha256": "886932790d9cacdf0e242c24322d744263b08edcc11e66d9603d3df96139ad58"
+        },
+        {
+          "file": "source/wildlands/source/armored-visuals.ts",
+          "bytes": 16447,
+          "sha256": "9a461d92f737211fadf11ee0fb385dc81739e56f8a3bb9848efbddcc597f4fe5"
+        },
+        {
+          "file": "source/wildlands/source/armored-world.ts",
+          "bytes": 15157,
+          "sha256": "66ba229992531d10277b3db12062857abcb915e6b63c1b785e6f0940376a8a7c"
+        },
+        {
+          "file": "source/wildlands/source/ecs.ts",
+          "bytes": 13667,
+          "sha256": "0736c1aab5b235d608d5c1e3e3a414343596b5dcb3e43068ab3ce3cdf4b34bb3"
+        },
+        {
+          "file": "source/wildlands/source/visual-resources.ts",
+          "bytes": 3446,
+          "sha256": "4b8741e3a59b34e49657773e7bde9e3a2fa9e395e262c1c2821d1e918eda3f8c"
+        }
+      ]
+    },
+    "harnessAdaptations": [
+      "Frozen generated artifact and browser harness copied before observation; exact bytes and SHA checked at launch and completion.",
+      "Root may commit/build in parallel; source checkout HEAD is recorded but does not replace the frozen artifact identity.",
+      "Prior thirty-minute workload retained, including legitimate command-rejection reporting; no altered game data, private ticks, accelerated RAF or forced GC.",
+      "Read-only action readiness and issued platoon-order reasons added to sampled projections; no command behavior changed.",
+      "Requested interruption uses STOP.json polling so normal final capture and CDP/context/browser cleanup remain available.",
+      "Raw retention: work/armored-v3-final-stability-de06."
+    ],
+    "artifact": {
+      "path": "work/armored-v3-final-stability-de06/served-demo.html",
+      "origin": "demos/armored-platoon.html",
+      "bytes": 4439139,
+      "sha256": "783d8dc2fba68251420b2ee61b477677994b8839be62f0660f03f0c49ceda883",
+      "matchesFrozenIdentity": true
+    },
+    "scriptSha256": "afcc42e914a2ec3df5390db29c26c28be322978375de9e0a938bace2468e2c4b",
+    "harnessSha256": "a464f9b13b46be5a626c628a805960170bbfca74c65fee26d2ea7a4926843bad",
+    "node": "v24.19.0",
+    "playwright": "1.63.0",
+    "os": {
+      "platform": "linux",
+      "release": "6.18.44",
+      "architecture": "x64",
+      "logicalCpus": 5,
+      "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+      "totalMemoryBytes": 18882699264
+    },
+    "viewport": {
+      "width": 960,
+      "height": 600
+    },
+    "deviceScaleFactor": 1,
+    "executablePath": "/usr/bin/chromium",
+    "args": [
+      "--no-sandbox",
+      "--enable-unsafe-swiftshader",
+      "--use-angle=swiftshader"
+    ],
+    "browser": "151.0.7922.173",
+    "webgl": {
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "drawingBuffer": {
+        "width": 960,
+        "height": 600
+      }
+    }
+  },
+  "wall": {
+    "startedAt": "2026-10-11T16:33:00.839Z",
+    "endedAt": "2026-10-11T17:03:00.839Z",
+    "observedSeconds": 1800,
+    "plannedSeconds": 1800,
+    "completed": true
+  },
+  "method": "30 wall minutes; frozen generated HTML bytes; native requestAnimationFrame; Playwright UI actions and public command/query/checkpoint/restore ports; no injected gameplay state or private ticks",
+  "workload": {
+    "route": "Scripted bounded driving near deployment",
+    "actions": [
+      "drive",
+      "aim",
+      "main-gun fire",
+      "platoon follow/hold",
+      "untouched checkpoint roundtrip",
+      "menu/briefing/mission selection/deployment"
+    ],
+    "notCovered": [
+      "multiplayer",
+      "hardware GPU performance",
+      "GPU memory/resource residency",
+      "device/context loss",
+      "full campaign completion",
+      "worst-case crowded scenes"
+    ]
+  },
+  "missionIntervals": [
+    {
+      "missionId": "crossroads",
+      "firstAt": "2026-10-11T16:33:02.307Z",
+      "lastAt": "2026-10-11T16:36:48.051Z",
+      "firstWallSecond": 1.468,
+      "lastWallSecond": 227.212,
+      "firstTick": 18,
+      "lastTick": 4962,
+      "firstSimulationSecond": 0.3,
+      "lastSimulationSecond": 82.7,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 4,
+          "maximum": 5
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 42,
+          "maximum": 42
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 51
+        }
+      }
+    },
+    {
+      "missionId": "pine-ridge",
+      "firstAt": "2026-10-11T16:37:04.447Z",
+      "lastAt": "2026-10-11T16:40:49.977Z",
+      "firstWallSecond": 243.608,
+      "lastWallSecond": 469.138,
+      "firstTick": 18,
+      "lastTick": 5820,
+      "firstSimulationSecond": 0.3,
+      "lastSimulationSecond": 97,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 3,
+          "maximum": 5
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 2
+        },
+        "obstacles": {
+          "minimum": 49,
+          "maximum": 49
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 44
+        }
+      }
+    },
+    {
+      "missionId": "iron-counterattack",
+      "firstAt": "2026-10-11T16:41:05.014Z",
+      "lastAt": "2026-10-11T16:44:50.382Z",
+      "firstWallSecond": 484.175,
+      "lastWallSecond": 709.543,
+      "firstTick": 42,
+      "lastTick": 6134,
+      "firstSimulationSecond": 0.7,
+      "lastSimulationSecond": 102.23333333333333,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 3,
+          "maximum": 3
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 42,
+          "maximum": 42
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 19
+        }
+      }
+    },
+    {
+      "missionId": "crossroads",
+      "firstAt": "2026-10-11T16:45:05.413Z",
+      "lastAt": "2026-10-11T16:48:50.780Z",
+      "firstWallSecond": 724.574,
+      "lastWallSecond": 949.941,
+      "firstTick": 60,
+      "lastTick": 5568,
+      "firstSimulationSecond": 1,
+      "lastSimulationSecond": 92.8,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 4,
+          "maximum": 5
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 42,
+          "maximum": 42
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 65
+        }
+      }
+    },
+    {
+      "missionId": "pine-ridge",
+      "firstAt": "2026-10-11T16:49:05.818Z",
+      "lastAt": "2026-10-11T16:52:51.990Z",
+      "firstWallSecond": 964.979,
+      "lastWallSecond": 1191.151,
+      "firstTick": 55,
+      "lastTick": 5844,
+      "firstSimulationSecond": 0.9166666666666666,
+      "lastSimulationSecond": 97.4,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 3,
+          "maximum": 5
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 2
+        },
+        "obstacles": {
+          "minimum": 49,
+          "maximum": 49
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 37
+        }
+      }
+    },
+    {
+      "missionId": "iron-counterattack",
+      "firstAt": "2026-10-11T16:53:07.024Z",
+      "lastAt": "2026-10-11T16:56:52.258Z",
+      "firstWallSecond": 1206.185,
+      "lastWallSecond": 1431.419,
+      "firstTick": 96,
+      "lastTick": 6148,
+      "firstSimulationSecond": 1.6,
+      "lastSimulationSecond": 102.46666666666667,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 3,
+          "maximum": 3
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 42,
+          "maximum": 42
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 20
+        }
+      }
+    },
+    {
+      "missionId": "crossroads",
+      "firstAt": "2026-10-11T16:57:07.279Z",
+      "lastAt": "2026-10-11T17:00:53.636Z",
+      "firstWallSecond": 1446.44,
+      "lastWallSecond": 1672.797,
+      "firstTick": 108,
+      "lastTick": 5590,
+      "firstSimulationSecond": 1.8,
+      "lastSimulationSecond": 93.16666666666667,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 4,
+          "maximum": 5
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 3
+        },
+        "obstacles": {
+          "minimum": 42,
+          "maximum": 42
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 103
+        }
+      }
+    },
+    {
+      "missionId": "pine-ridge",
+      "firstAt": "2026-10-11T17:01:08.645Z",
+      "lastAt": "2026-10-11T17:03:00.846Z",
+      "firstWallSecond": 1687.806,
+      "lastWallSecond": 1800.007,
+      "firstTick": 139,
+      "lastTick": 3040,
+      "firstSimulationSecond": 2.316666666666667,
+      "lastSimulationSecond": 50.666666666666664,
+      "samples": 9,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 3,
+          "maximum": 5
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 49,
+          "maximum": 49
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 23
+        }
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 1,
+      "began": "2026-10-11T16:35:00.841Z",
+      "finishedAt": "2026-10-11T16:35:01.181Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 108021,
+      "checkpointSha256": "94620bd426ef92453a0a87f76747130ecc48ee513ed40fade6ddf016de0312fe",
+      "restoredSha256": "94620bd426ef92453a0a87f76747130ecc48ee513ed40fade6ddf016de0312fe"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 2,
+      "began": "2026-10-11T16:37:00.840Z",
+      "finishedAt": "2026-10-11T16:37:03.540Z",
+      "from": "crossroads",
+      "to": "pine-ridge",
+      "observed": "pine-ridge"
+    },
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 3,
+      "began": "2026-10-11T16:39:00.841Z",
+      "finishedAt": "2026-10-11T16:39:01.272Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 104080,
+      "checkpointSha256": "bade73958796ace670621cf6620a7fc7540d5703502148ac7ef22149d339a214",
+      "restoredSha256": "bade73958796ace670621cf6620a7fc7540d5703502148ac7ef22149d339a214"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 4,
+      "began": "2026-10-11T16:41:00.840Z",
+      "finishedAt": "2026-10-11T16:41:03.445Z",
+      "from": "pine-ridge",
+      "to": "iron-counterattack",
+      "observed": "iron-counterattack"
+    },
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 5,
+      "began": "2026-10-11T16:43:00.840Z",
+      "finishedAt": "2026-10-11T16:43:01.214Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 95827,
+      "checkpointSha256": "f8745c54f97c379971c18f7a54beeafee267a2ece05e08227f43b1ef8f3738d3",
+      "restoredSha256": "f8745c54f97c379971c18f7a54beeafee267a2ece05e08227f43b1ef8f3738d3"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 6,
+      "began": "2026-10-11T16:45:00.840Z",
+      "finishedAt": "2026-10-11T16:45:03.033Z",
+      "from": "iron-counterattack",
+      "to": "crossroads",
+      "observed": "crossroads"
+    },
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 7,
+      "began": "2026-10-11T16:47:00.840Z",
+      "finishedAt": "2026-10-11T16:47:01.107Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 110930,
+      "checkpointSha256": "f5a61b3ebbd137af098acd0f0db050f829bd86c4574089313b88591e3616a429",
+      "restoredSha256": "f5a61b3ebbd137af098acd0f0db050f829bd86c4574089313b88591e3616a429"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 8,
+      "began": "2026-10-11T16:49:00.842Z",
+      "finishedAt": "2026-10-11T16:49:03.479Z",
+      "from": "crossroads",
+      "to": "pine-ridge",
+      "observed": "pine-ridge"
+    },
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 9,
+      "began": "2026-10-11T16:51:00.840Z",
+      "finishedAt": "2026-10-11T16:51:01.167Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 103660,
+      "checkpointSha256": "44c7bc8a2611674ff775b478d0c5a23db46890bc22bf6526fd1f929f8c3c64bc",
+      "restoredSha256": "44c7bc8a2611674ff775b478d0c5a23db46890bc22bf6526fd1f929f8c3c64bc"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 10,
+      "began": "2026-10-11T16:53:00.840Z",
+      "finishedAt": "2026-10-11T16:53:03.459Z",
+      "from": "pine-ridge",
+      "to": "iron-counterattack",
+      "observed": "iron-counterattack"
+    },
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 11,
+      "began": "2026-10-11T16:55:00.839Z",
+      "finishedAt": "2026-10-11T16:55:01.156Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 95952,
+      "checkpointSha256": "4c3560dfd30b87216eb184fb5d27ed0ecf35445ab63370c234b3f6eb94b2a6ab",
+      "restoredSha256": "4c3560dfd30b87216eb184fb5d27ed0ecf35445ab63370c234b3f6eb94b2a6ab"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 12,
+      "began": "2026-10-11T16:57:00.840Z",
+      "finishedAt": "2026-10-11T16:57:03.312Z",
+      "from": "iron-counterattack",
+      "to": "crossroads",
+      "observed": "crossroads"
+    },
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 13,
+      "began": "2026-10-11T16:59:00.840Z",
+      "finishedAt": "2026-10-11T16:59:01.272Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 110613,
+      "checkpointSha256": "023bc183131e1a747863590b6eb8abb41fd7bad69a4aeed21a86ffd1d18ea030",
+      "restoredSha256": "023bc183131e1a747863590b6eb8abb41fd7bad69a4aeed21a86ffd1d18ea030"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 14,
+      "began": "2026-10-11T17:01:00.846Z",
+      "finishedAt": "2026-10-11T17:01:03.605Z",
+      "from": "crossroads",
+      "to": "pine-ridge",
+      "observed": "pine-ridge"
+    }
+  ],
+  "commands": {
+    "count": 375,
+    "rejected": [],
+    "scope": "Scripted workload calls only. Automatic shell control/aim command responses were not instrumented or included in these totals."
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "failures": [],
+  "resources": {
+    "jsHeapUsedBytes": {
+      "first": 20374208,
+      "last": 31212664,
+      "minimum": 16340864,
+      "maximum": 48024628
+    },
+    "jsHeapTotalBytes": {
+      "first": 32628736,
+      "last": 91512832,
+      "minimum": 32628736,
+      "maximum": 93323264
+    },
+    "domNodes": {
+      "first": 505,
+      "last": 507,
+      "minimum": 501,
+      "maximum": 934
+    },
+    "documents": {
+      "first": 1,
+      "last": 1,
+      "minimum": 1,
+      "maximum": 1
+    },
+    "jsEventListeners": {
+      "first": 48,
+      "last": 48,
+      "minimum": 48,
+      "maximum": 61
+    },
+    "forcedGarbageCollection": false,
+    "gpuMemory": "unavailable",
+    "gpuResourceResidency": "unavailable",
+    "rendererGeometryAndTextureCounts": "unavailable"
+  },
+  "requests": [
+    {
+      "at": "2026-10-11T16:32:57.025Z",
+      "url": "https://armored-stability.localhost/frozen-demo.html",
+      "resourceType": "document",
+      "fixture": true
+    }
+  ],
+  "artifactBytesUnchanged": true,
+  "cleanup": [
+    {
+      "name": "cdp",
+      "closed": true,
+      "at": "2026-10-11T17:03:02.142Z"
+    },
+    {
+      "name": "context",
+      "closed": true,
+      "at": "2026-10-11T17:03:02.165Z"
+    },
+    {
+      "name": "browser",
+      "closed": true,
+      "at": "2026-10-11T17:03:02.460Z"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "start.png",
+      "bytes": 287708,
+      "sha256": "2612f0ec801cc73f6313deb3cd9bb3e8cf3fbfa2341a5ac9c8caf2837c88ec08",
+      "at": "2026-10-11T16:33:02.278Z"
+    },
+    {
+      "file": "transition-01-checkpoint.png",
+      "bytes": 393290,
+      "sha256": "7d1b924af73fe2d3950fa644c9f7cdced4f8afbd27bea4e83ac84cee59748f09",
+      "at": "2026-10-11T16:35:02.431Z"
+    },
+    {
+      "file": "transition-02-mission.png",
+      "bytes": 283836,
+      "sha256": "dbfdabdeaf0213920907ea4fc7ba7ad4498b37ca61554965e9a66c197e97a83c",
+      "at": "2026-10-11T16:37:04.443Z"
+    },
+    {
+      "file": "transition-03-checkpoint.png",
+      "bytes": 390637,
+      "sha256": "a3a9eac118b0c4cb68a49b0e243600465a06a2262ceea5bb23340a8483255027",
+      "at": "2026-10-11T16:39:02.205Z"
+    },
+    {
+      "file": "transition-04-mission.png",
+      "bytes": 287376,
+      "sha256": "261af1c87f8a2eaaa4c0d98a384dc59c5c3016fecaf448490aa8eda7cd1e3d2e",
+      "at": "2026-10-11T16:41:04.405Z"
+    },
+    {
+      "file": "transition-05-checkpoint.png",
+      "bytes": 412052,
+      "sha256": "63d85e2a5c82c014ba7055a24712ec4333df8a40fb50853a55a1bce725a69002",
+      "at": "2026-10-11T16:43:02.680Z"
+    },
+    {
+      "file": "transition-06-mission.png",
+      "bytes": 287708,
+      "sha256": "2612f0ec801cc73f6313deb3cd9bb3e8cf3fbfa2341a5ac9c8caf2837c88ec08",
+      "at": "2026-10-11T16:45:04.075Z"
+    },
+    {
+      "file": "transition-07-checkpoint.png",
+      "bytes": 386817,
+      "sha256": "bfebb1e5bd4530a61cfbc83b98c1b4108ef7589026cbf1195ade8424d051f085",
+      "at": "2026-10-11T16:47:02.246Z"
+    },
+    {
+      "file": "transition-08-mission.png",
+      "bytes": 283836,
+      "sha256": "dbfdabdeaf0213920907ea4fc7ba7ad4498b37ca61554965e9a66c197e97a83c",
+      "at": "2026-10-11T16:49:04.449Z"
+    },
+    {
+      "file": "transition-09-checkpoint.png",
+      "bytes": 391038,
+      "sha256": "86426de83b022c082a151524fb75e5b6f6a0171c4bf01bd55f6b32798d290318",
+      "at": "2026-10-11T16:51:02.223Z"
+    },
+    {
+      "file": "transition-10-mission.png",
+      "bytes": 287376,
+      "sha256": "261af1c87f8a2eaaa4c0d98a384dc59c5c3016fecaf448490aa8eda7cd1e3d2e",
+      "at": "2026-10-11T16:53:04.519Z"
+    },
+    {
+      "file": "transition-11-checkpoint.png",
+      "bytes": 385790,
+      "sha256": "d18902ec78871b1be09561a1efeb939f53a971d596667cd0d3eba4ac30578c0f",
+      "at": "2026-10-11T16:55:02.206Z"
+    },
+    {
+      "file": "transition-12-mission.png",
+      "bytes": 287708,
+      "sha256": "2612f0ec801cc73f6313deb3cd9bb3e8cf3fbfa2341a5ac9c8caf2837c88ec08",
+      "at": "2026-10-11T16:57:04.248Z"
+    },
+    {
+      "file": "transition-13-checkpoint.png",
+      "bytes": 374820,
+      "sha256": "50d2ab850742bc0cb580dc2f40cea6f787f4943d156bad097d0378f9596a9a96",
+      "at": "2026-10-11T16:59:02.310Z"
+    },
+    {
+      "file": "transition-14-mission.png",
+      "bytes": 285171,
+      "sha256": "b4a302bbfb95319c458392bc14d7490ab9321039f6c93ebd3d237373a0baa654",
+      "at": "2026-10-11T17:01:04.676Z"
+    },
+    {
+      "file": "final.png",
+      "bytes": 385613,
+      "sha256": "b43a1999ee69f91195075f7e506dbed9d1695b0e2d8a6dc127489b0cb7276f70",
+      "at": "2026-10-11T17:03:02.136Z"
+    }
+  ],
+  "limitations": [
+    "Software SwiftShader at 960x600; no hardware performance conclusion.",
+    "Entity counts are detached visible projection counts, not total live ECS or GPU allocations.",
+    "JS heap is CDP heap usage without forced garbage collection; fluctuations do not establish leak freedom.",
+    "GPU memory, resource residency, renderer geometry/texture counters, hardware VRAM and thermal/power data are unavailable.",
+    "Native RAF elapsed times are retained; no private ticks, RAF replacement, altered content, or fabricated checkpoint state.",
+    "This bounded observation is not full Q03 acceptance or reference-fidelity evidence.",
+    "Scripted workload calls only. Automatic shell control/aim command responses were not instrumented or included in these totals.",
+    "Repair and resupply actions were not part of this thirty-minute workload; their separate integrated browser checks are distinct evidence."
+  ],
+  "retention": {
+    "fullLocalRaw": "All raw observations, JSONL logs, untouched checkpoints, the exact served demo, exact harnesses, run log and PNG captures remain in work/armored-v3-final-stability-de06.",
+    "archiveSelection": "Root chooses compact evidence and selected captures; that archive is not a copy of every local artifact."
+  },
+  "finalCheckoutHead": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+  "implementationAssociation": {
+    "implementationCommit": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+    "tree": "b63851baa951f93b87859c222d706e00cf6bf0f6",
+    "artifact": {
+      "committedBytes": 4439139,
+      "committedSha256": "783d8dc2fba68251420b2ee61b477677994b8839be62f0660f03f0c49ceda883",
+      "matchesFrozenDemo": true,
+      "workingDemoMatchesCommit": true
+    },
+    "frozenTrackedSourceFilesMatch": true,
+    "receipt": "committed-association-final.json"
+  },
+  "observedNavigation": {
+    "sampledOrderReasons": {
+      "No order reason": 121,
+      "Holding": 114,
+      "Advancing": 58,
+      "Aligning hull": 59,
+      "No safe route": 8,
+      "On station": 2,
+      "Route obstructed": 1
+    },
+    "sampledOrderKinds": {
+      "hold": 235,
+      "follow": 128
+    },
+    "checkpointPolicies": [
+      {
+        "index": 1,
+        "navigation": "hull-route-v1"
+      },
+      {
+        "index": 3,
+        "navigation": "hull-route-v1"
+      },
+      {
+        "index": 5,
+        "navigation": "hull-route-v1"
+      },
+      {
+        "index": 7,
+        "navigation": "hull-route-v1"
+      },
+      {
+        "index": 9,
+        "navigation": "hull-route-v1"
+      },
+      {
+        "index": 11,
+        "navigation": "hull-route-v1"
+      },
+      {
+        "index": 13,
+        "navigation": "hull-route-v1"
+      }
+    ],
+    "scope": "Detached public projection samples and unchanged checkpoint envelopes only; not exhaustive pathfinding coverage or a tactical acceptance test.",
+    "blockedOrRecoverySamples": [
+      {
+        "at": "2026-10-11T16:38:49.843Z",
+        "elapsedWallSeconds": 349.004,
+        "missionId": "pine-ridge",
+        "tick": 2788,
+        "actor": "able-2",
+        "damageStatus": "impaired",
+        "position": {
+          "x": 271.4210612358882,
+          "y": 3.821291513816513,
+          "z": 170.4340990964843
+        },
+        "order": {
+          "kind": "follow",
+          "targetId": "able-1",
+          "position": {
+            "x": 264,
+            "y": 1.0770211611208644,
+            "z": 145
+          },
+          "reason": "No safe route",
+          "path": [],
+          "pathRevision": 0,
+          "cursor": 0,
+          "stuck": 0,
+          "pathGoal": {
+            "x": 294.48982963348845,
+            "y": 3.478120830453621,
+            "z": 154.51921209937697
+          }
+        }
+      },
+      {
+        "at": "2026-10-11T16:38:49.843Z",
+        "elapsedWallSeconds": 349.004,
+        "missionId": "pine-ridge",
+        "tick": 2788,
+        "actor": "able-3",
+        "damageStatus": "operational",
+        "position": {
+          "x": 276.2514707072332,
+          "y": 3.7540061486471985,
+          "z": 167.61129130915896
+        },
+        "order": {
+          "kind": "follow",
+          "targetId": "able-1",
+          "position": {
+            "x": 264,
+            "y": 1.0770211611208644,
+            "z": 145
+          },
+          "reason": "No safe route",
+          "path": [],
+          "pathRevision": 0,
+          "cursor": 0,
+          "stuck": 0,
+          "pathGoal": {
+            "x": 291.6092752917028,
+            "y": 3.478120830453621,
+            "z": 168.21966489058136
+          }
+        }
+      },
+      {
+        "at": "2026-10-11T16:39:04.852Z",
+        "elapsedWallSeconds": 364.013,
+        "missionId": "pine-ridge",
+        "tick": 3124,
+        "actor": "able-3",
+        "damageStatus": "operational",
+        "position": {
+          "x": 276.2485629534032,
+          "y": 3.7531728430534153,
+          "z": 167.58250025028696
+        },
+        "order": {
+          "kind": "follow",
+          "targetId": "able-1",
+          "position": {
+            "x": 264,
+            "y": 1.0770211611208644,
+            "z": 145
+          },
+          "reason": "Route obstructed",
+          "path": [
+            {
+              "x": 267.50111429641373,
+              "y": 2.9799616672828604,
+              "z": 157.29840555161056
+            }
+          ],
+          "pathRevision": 0,
+          "cursor": 0,
+          "stuck": 0.13333333333333333,
+          "pathGoal": {
+            "x": 267.50111429641373,
+            "y": 3.4768944501958994,
+            "z": 157.29840555161056
+          }
+        }
+      },
+      {
+        "at": "2026-10-11T16:46:35.612Z",
+        "elapsedWallSeconds": 814.773,
+        "missionId": "crossroads",
+        "tick": 2218,
+        "actor": "able-2",
+        "damageStatus": "impaired",
+        "position": {
+          "x": 281.73616732343385,
+          "y": 0.6478138273440879,
+          "z": 160.0246260712824
+        },
+        "order": {
+          "kind": "follow",
+          "targetId": "able-1",
+          "position": {
+            "x": 264,
+            "y": -0.21202570298313533,
+            "z": 145
+          },
+          "reason": "No safe route",
+          "path": [],
+          "pathRevision": 0,
+          "cursor": 0,
+          "stuck": 0,
+          "pathGoal": {
+            "x": 277.86924982883363,
+            "y": 0.4669384430849373,
+            "z": 149.67645871664246
+          }
+        }
+      },
+      {
+        "at": "2026-10-11T16:46:50.621Z",
+        "elapsedWallSeconds": 829.782,
+        "missionId": "crossroads",
+        "tick": 2604,
+        "actor": "able-2",
+        "damageStatus": "impaired",
+        "position": {
+          "x": 283.68751205428936,
+          "y": 0.6525038017173193,
+          "z": 160.09935409166894
+        },
+        "order": {
+          "kind": "follow",
+          "targetId": "able-1",
+          "position": {
+            "x": 264,
+            "y": -0.21202570298313533,
+            "z": 145
+          },
+          "reason": "No safe route",
+          "path": [],
+          "pathRevision": 0,
+          "cursor": 0,
+          "stuck": 0,
+          "pathGoal": {
+            "x": 303.73005238988276,
+            "y": 0.46661426361380015,
+            "z": 141.01373822742332
+          }
+        }
+      },
+      {
+        "at": "2026-10-11T16:50:51.866Z",
+        "elapsedWallSeconds": 1071.027,
+        "missionId": "pine-ridge",
+        "tick": 2835,
+        "actor": "able-2",
+        "damageStatus": "impaired",
+        "position": {
+          "x": 285.9867644807894,
+          "y": 3.748794411213336,
+          "z": 166.6509682346366
+        },
+        "order": {
+          "kind": "follow",
+          "targetId": "able-1",
+          "position": {
+            "x": 264,
+            "y": 1.0768958196691114,
+            "z": 145
+          },
+          "reason": "No safe route",
+          "path": [],
+          "pathRevision": 0,
+          "cursor": 0,
+          "stuck": 0,
+          "pathGoal": {
+            "x": 280.30079347657596,
+            "y": 3.476741774741264,
+            "z": 170.79261782417132
+          }
+        }
+      },
+      {
+        "at": "2026-10-11T16:54:52.143Z",
+        "elapsedWallSeconds": 1311.304,
+        "missionId": "iron-counterattack",
+        "tick": 3010,
+        "actor": "able-2",
+        "damageStatus": "operational",
+        "position": {
+          "x": 266.1158175932725,
+          "y": 6.017885767255055,
+          "z": 153.5899698694527
+        },
+        "order": {
+          "kind": "follow",
+          "targetId": "able-1",
+          "position": {
+            "x": 264,
+            "y": 2.3653186452909214,
+            "z": 145
+          },
+          "reason": "No safe route",
+          "path": [],
+          "pathRevision": 0,
+          "cursor": 0,
+          "stuck": 0,
+          "pathGoal": {
+            "x": 285.24683175702063,
+            "y": 5.605876223492214,
+            "z": 141.77007613627686
+          }
+        }
+      },
+      {
+        "at": "2026-10-11T16:55:07.157Z",
+        "elapsedWallSeconds": 1326.318,
+        "missionId": "iron-counterattack",
+        "tick": 3352,
+        "actor": "able-2",
+        "damageStatus": "operational",
+        "position": {
+          "x": 267.71411819965664,
+          "y": 6.0232661579538505,
+          "z": 153.64782154301398
+        },
+        "order": {
+          "kind": "follow",
+          "targetId": "able-1",
+          "position": {
+            "x": 264,
+            "y": 2.3653186452909214,
+            "z": 145
+          },
+          "reason": "No safe route",
+          "path": [],
+          "pathRevision": 0,
+          "cursor": 0,
+          "stuck": 0,
+          "pathGoal": {
+            "x": 274.37890512791427,
+            "y": 5.603261395147762,
+            "z": 159.7478272786797
+          }
+        }
+      },
+      {
+        "at": "2026-10-11T17:03:00.846Z",
+        "elapsedWallSeconds": 1800.007,
+        "missionId": "pine-ridge",
+        "tick": 3040,
+        "actor": "able-2",
+        "damageStatus": "impaired",
+        "position": {
+          "x": 284.5431949020739,
+          "y": 3.1709309409002646,
+          "z": 150.06837374796655
+        },
+        "order": {
+          "kind": "follow",
+          "targetId": "able-1",
+          "position": {
+            "x": 264,
+            "y": 1.076611255864528,
+            "z": 145
+          },
+          "reason": "No safe route",
+          "path": [],
+          "pathRevision": 0,
+          "cursor": 0,
+          "stuck": 0,
+          "pathGoal": {
+            "x": 292.00617865042045,
+            "y": 3.066035540723777,
+            "z": 150.98269699228496
+          }
+        }
+      }
+    ],
+    "counting": "Order-reason counts are actor snapshots across periodic public projections, not distinct incidents or elapsed durations. Context rows preserve actual sampled actor/mission/tick/position/order; no offline counterfactual is included."
+  },
+  "observedActionReadiness": {
+    "drive": {
+      "availableSamples": 121,
+      "unavailableSamples": 0,
+      "reasons": {}
+    },
+    "aim": {
+      "availableSamples": 121,
+      "unavailableSamples": 0,
+      "reasons": {}
+    },
+    "fire": {
+      "availableSamples": 91,
+      "unavailableSamples": 30,
+      "reasons": {
+        "Reloading.": 30
+      }
+    },
+    "repair": {
+      "availableSamples": 2,
+      "unavailableSamples": 119,
+      "reasons": {
+        "No repairable damage.": 11,
+        "Repair needs a living crew, neutral drive controls and no hull motion.": 108
+      }
+    },
+    "resupply": {
+      "availableSamples": 0,
+      "unavailableSamples": 121,
+      "reasons": {
+        "No friendly depot in range.": 120,
+        "Stop the vehicle to receive supplies.": 1
+      }
+    }
+  },
+  "observedGameplay": {
+    "commandKinds": {
+      "drive": 120,
+      "aim": 120,
+      "fire": 120,
+      "order": 15
+    },
+    "controlledDamageStatusSamples": {
+      "operational": 80,
+      "impaired": 41
+    },
+    "sampledMissionStatuses": [
+      "running"
+    ],
+    "finalSampleFeedback": {
+      "feedback": "",
+      "pauseFeedback": ""
+    },
+    "note": "Actual sampled damage states, readiness counts and reasons are retained in observedGameplay and observedActionReadiness. Scripted command totals do not measure automatic shell command responses; raw observations are unchanged."
+  },
+  "counts": {
+    "samples": 121,
+    "checkpointRoundtrips": 7,
+    "exactCheckpointRoundtrips": 7,
+    "missionSwitches": 7,
+    "commands": 375,
+    "commandRejections": 0,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "consoleWarnings": 0,
+    "observationFailures": 0
+  },
+  "warningTypes": [],
+  "domCanvasBounds": {
+    "canvasCount": {
+      "minimum": 1,
+      "maximum": 1
+    },
+    "domElementCount": {
+      "minimum": 235,
+      "maximum": 235
+    },
+    "cdpDomNodes": {
+      "first": 505,
+      "last": 507,
+      "minimum": 501,
+      "maximum": 934
+    }
+  }
+}

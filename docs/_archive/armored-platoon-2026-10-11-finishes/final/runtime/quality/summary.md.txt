@@ -1,0 +1,62 @@
+# Advisory code quality
+
+**Warning-only. The existing Godot regression gate is unchanged.**
+
+Analysis complete: **True**. Measured files: **1812**. Findings: **6927**.
+
+Source budget: **400** code lines; tests: **450**. Blank/comment lines and Python docstrings excluded.
+TypeScript lines over the advisory width are reported as `long-line` warnings.
+
+| Check | Findings |
+|---|---:|
+| long-line | 6927 |
+
+## Languages
+
+| Language | Category | Files | Over budget | Long lines |
+|---|---|---:|---:|---:|
+| gdscript | source | 464 | 0 | 0 |
+| gdscript | tests | 170 | 0 | 0 |
+| python | source | 31 | 0 | 0 |
+| python | tests | 36 | 0 | 0 |
+| typescript | source | 792 | 0 | 4362 |
+| typescript | tests | 319 | 0 | 2565 |
+
+## Tools
+
+| Tool | Outcome |
+|---|---|
+| ruff | clean |
+| ruff-format | clean |
+| gdlint | clean |
+| gdformat | clean |
+| gdradon | clean |
+
+## Largest files
+
+| File | Code lines | Budget |
+|---|---:|---:|
+| `source/model-forge/tests/kernel-procedural-scatter.test.ts` | 449 | 450 |
+| `tests/compact_ui_tests.gd` | 442 | 450 |
+| `tests/editor_session_tests.gd` | 442 | 450 |
+| `tests/weekend_strategy_tests.gd` | 441 | 450 |
+| `tests/content_environment_tests.gd` | 440 | 450 |
+| `tests/ui_clarity_tests.gd` | 439 | 450 |
+| `tests/support/campaign_season_contracts.gd` | 437 | 450 |
+| `tests/ui_completion_tests.gd` | 435 | 450 |
+| `source/wildlands/source/verification/process-browser.ts` | 428 | 450 |
+| `tests/ui_finish_tests.gd` | 427 | 450 |
+| `tests/tactical_duel_tests.gd` | 425 | 450 |
+| `tests/iteration4_ui.gd` | 424 | 450 |
+| `tests/foundation_tests.gd` | 417 | 450 |
+| `tests/minimal_ui_tests.gd` | 413 | 450 |
+| `tests/toolbox_protocol_tests.gd` | 411 | 450 |
+| `tests/living_racecraft_tests.gd` | 405 | 450 |
+| `source/wildlands/source/test-process-semantics.cts` | 404 | 450 |
+| `tests/minimal_tests.gd` | 401 | 450 |
+| `scripts/ui/circuit_world.gd` | 400 | 400 |
+| `source/wildlands/source/wildlands-godot/main.gd` | 400 | 400 |
+
+Full findings, file inventory, source identity and tool logs are in the quality-report artifact.
+An unavailable/crashed tool is incomplete analysis, not a clean result.
+LOC and complexity identify review candidates; they do not prove correctness or design quality.

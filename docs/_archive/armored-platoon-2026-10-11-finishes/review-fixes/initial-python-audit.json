@@ -1,0 +1,588 @@
+{
+  "source_commit": "3ce1c8dfde1e479b9927e4447bcbb6e28e898ba9",
+  "source_tree": "b6d065dcd1948f30cc30cd9976822774eca4f5b2",
+  "unittest": {
+    "status": "passed_with_platform_skip",
+    "exit_code": 0,
+    "discovered": 361,
+    "executed_passed": 360,
+    "skipped": 1,
+    "skip_lines": [
+      "test_windows_engine_cannot_spawn_descendants_before_job_assignment (test_toolbox_client.ToolboxClientTests.test_windows_engine_cannot_spawn_descendants_before_job_assignment) ... skipped 'Windows Job Object gate regression'"
+    ],
+    "seconds": 687.904
+  },
+  "tracked_source_unchanged": true,
+  "source_digest_before": "4c68eae203c498acd3acee4348f3784626da1062c5d9a990547378fc8cf1b1a8",
+  "source_digest_after_including_native_generated_files": "bd4ad888beb792283a5a911ef06189cd7029d0ca11e66a2667ab7a247641e9f0",
+  "source_digest_after_excluding_exact_generated_inventory": "4c68eae203c498acd3acee4348f3784626da1062c5d9a990547378fc8cf1b1a8",
+  "exact_generated_inventory_restores_original_digest": true,
+  "directory_guard": {
+    "status": "failed_preserved",
+    "reason": "Unchanged scripts/content.py imports the root with the pinned Godot editor, generating untracked import sidecars and extracted textures. The original whole-directory guard failure is retained in the raw runner receipt; no tracked source changed."
+  },
+  "generated_count": 110,
+  "generated_bytes": 179940,
+  "generated_suffixes": {
+    ".import": 102,
+    ".uid": 2,
+    ".png": 6
+  },
+  "generated_archive": "native-generated-imports.tar.gz",
+  "generated_archive_sha256": "550b8d8e067d952edb83445144323020a142165418b695dadfd288b8a5b297ab",
+  "generated_files": [
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-10-evidence/armored-chase.png.import",
+      "bytes": 993,
+      "sha256": "3612d5592bf5490cceb00b148ebbf4d92689112738629ea2c6ebc2ec3ff13d7e"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-10-evidence/armored-gunner.png.import",
+      "bytes": 996,
+      "sha256": "053cc7e82e683633879dac12e13c6dfe7cb3f14cd7cc72c0646ca0322e705174"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-10-evidence/armored-phone-observation.png.import",
+      "bytes": 1029,
+      "sha256": "b2198903fdcd529dc540ce9016ea2f3dd82fdef1a59fbf9dd955d6780c6672b0"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-10-evidence/css-isolation-armored-chase.png.import",
+      "bytes": 1035,
+      "sha256": "68ebd52aa7c2ac43ae4c9f424be2e6662778ad75b89e85a7ac8a1c59b68cc543"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-10-evidence/pine-victory-debrief.png.import",
+      "bytes": 1014,
+      "sha256": "6f72df472f221a382ed915ed3f81b11d9da378acf6d7f8a2512b7ada0a03e2d2"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-10-evidence/stability-final.png.import",
+      "bytes": 998,
+      "sha256": "59eb274645f36e969d4973129e3dbccacf0aa7df12b4538cfe2ec42b6aa542f3"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-10-evidence/stability-start.png.import",
+      "bytes": 999,
+      "sha256": "4ed673931a9671d8dda8e7f0ee8ce98a768ec8a1a027eabc6e55d380a689eb70"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-10-evidence/stability-transition-04-mission.png.import",
+      "bytes": 1047,
+      "sha256": "c4bac1841ee8d7f59e346af5e70fc14c85191315620b57227f86f5e6566e731b"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-10-evidence/stability-transition-14-mission.png.import",
+      "bytes": 1046,
+      "sha256": "1397ed804ddccf93d62c8e6875bc680ba62421590b86759e31f10fee47857070"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/armored-1024.png.import",
+      "bytes": 990,
+      "sha256": "f214913b594a4d5066c682e63d0e409fd4194db447f54dadde8e0b5a3d2b737b"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/armored-1440.png.import",
+      "bytes": 990,
+      "sha256": "3cbae3015d43981507361dcebaef2a5ba897b0accb5274b73ce157070d5a35a8"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/armored-phone-observation.png.import",
+      "bytes": 1028,
+      "sha256": "0bee00c38ac3f8352877a72d78d9fe1dcea5fee670a45f22e72e6a08ed02af45"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/intermediate/armored-1024.png.import",
+      "bytes": 1003,
+      "sha256": "4f330d32c15bacf1102ec9cddccdace7ddf668bed9b065ce9413e16ac397385d"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/intermediate/armored-1440.png.import",
+      "bytes": 1002,
+      "sha256": "dcb55278e7127b85a1dd6cf83fe66e0f683656b6d6069e2299553288cca9a5c9"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/intermediate/armored-phone-observation.png.import",
+      "bytes": 1041,
+      "sha256": "7f12750f17c84600b0e162fe4494a9a130e6b71d372b0780126db94cfd9cc87d"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/presentation/initial/narrow-fixture.png.import",
+      "bytes": 1016,
+      "sha256": "ebc432a0019bb1e5eda5857dcf801baf3e858c66f80791eacc916b491415a4d2"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/presentation/initial/pine-fixture.png.import",
+      "bytes": 1011,
+      "sha256": "3e5a6ac21c6b90771a265a466658c90bd1988eeb33924bd4fab507c81eb6483c"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/presentation/initial/service-active-fixture.png.import",
+      "bytes": 1041,
+      "sha256": "02de963e22ace36d4ac3acb6c4e4e20998d07e04a15f1d04c418178819f1ea5a"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/presentation/initial/service-complete-fixture.png.import",
+      "bytes": 1047,
+      "sha256": "39e0e4f218824c089062faf5b7f68745a31296339103114e75997921bc32e4ae"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/presentation/initial/staging-live.png.import",
+      "bytes": 1011,
+      "sha256": "02eeaa75435360a1237292fe572c9beb73bd97e25e62e7029decbec6e872576d"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/presentation/initial/village-fixture.png.import",
+      "bytes": 1020,
+      "sha256": "1f707fd299feaae8145f322096155cc538f2181b777bdba100c6ad7920a66c90"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/presentation/narrow-fixture.png.import",
+      "bytes": 1009,
+      "sha256": "3dfdaf65f978e3e9122eed394f79d101d6e8aa3b3d3e77245ff5e53853458caf"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/presentation/pine-fixture.png.import",
+      "bytes": 1002,
+      "sha256": "93300c92b1831244ff7878ae9fc208c95f47d6437560a476e2e1bbf80139b7c9"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/presentation/service-active-fixture.png.import",
+      "bytes": 1033,
+      "sha256": "de17b073f6e8dac59ffeb28cbc9b0e47e7d05be9c2632a0a7db501746ec02e9c"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/presentation/service-complete-fixture.png.import",
+      "bytes": 1039,
+      "sha256": "4bcca35f3adfccc59d86b903c7f6f0906c527a88798f17364b4b5f903a79fa4e"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/presentation/staging-live.png.import",
+      "bytes": 1003,
+      "sha256": "480b6b95555e3f10d0b2fc3d0de82107cc5f6f65c3ebf1e0bdf885a412736f88"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/presentation/village-fixture.png.import",
+      "bytes": 1011,
+      "sha256": "9b41cb9815984dde2b40f2ae399047fd3fd03accbb4f6e556a080c2af03a0c5c"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/stability/final.png.import",
+      "bytes": 979,
+      "sha256": "0000258f4f40e7e2932ab871f719c2ef029881a5f6e304db97486562c2dbb0ca"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/stability/start.png.import",
+      "bytes": 979,
+      "sha256": "2257ca248faf83133faf49d2c56b4afc4705b38b0e85239853906f2dab23e44f"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/stability/transition-01-checkpoint.png.import",
+      "bytes": 1035,
+      "sha256": "77fea8cf3e2ae9f2dd9ee1b6d691a6441c6015aa3a09eae631aa79bd617d1051"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/stability/transition-02-mission.png.import",
+      "bytes": 1027,
+      "sha256": "3e96b70d6ba70e88156561571b42e364acb01fa8470fe722b173213dcdc3304c"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/stability/transition-13-checkpoint.png.import",
+      "bytes": 1036,
+      "sha256": "6a07eb7e3dd3d5d7f15e5d287d6223b710565c09435cab5ecf0327991a0f67f4"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-evidence/stability/transition-14-mission.png.import",
+      "bytes": 1027,
+      "sha256": "b4c51f71177de946932a67bc60f48ded9a40e6e171d76ff1eba798496bd1c060"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-finishes/battle-1024.png.import",
+      "bytes": 987,
+      "sha256": "58681dd30ad28667329d4319d215c48bd244ac6a8f8e7596fafe08273edc4f64"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-finishes/battle-1440.png.import",
+      "bytes": 986,
+      "sha256": "9b5ccae6cfc2f8a7e26933e11b0ac8d4b8440c65b4473454e75cc8c7fa0a2f5d"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-finishes/battle-390.png.import",
+      "bytes": 984,
+      "sha256": "852777b3cf60f77dbf3060090d2e3ecf151565e7f9042c8a3e458b6b067dcc74"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-finishes/disabled-station.png.import",
+      "bytes": 1002,
+      "sha256": "805372b4e13c025b9262fcef90d7e36c516f11899ddbc6dbcc8f613bb914aa69"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-finishes/integrated-1440.png.import",
+      "bytes": 999,
+      "sha256": "2ca78abe667a52e0dd02a2fe08a7f568c2d1b8834c180fd3e1cb78939b1d9123"
+    },
+    {
+      "path": "docs/_archive/armored-platoon-2026-10-11-finishes/orders.png.import",
+      "bytes": 972,
+      "sha256": "33a2aef273ac64017bf5cca6328899c3a7ddcb4092de27adc55cff5b850e3840"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/after-editor-desktop.png.import",
+      "bytes": 1029,
+      "sha256": "4ef3cc3f5c52fe275c8b81d3fd0936058efdc49094b8e5ec20120ed6c5898318"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/after-editor-mobile.png.import",
+      "bytes": 1026,
+      "sha256": "d95e193e89d2ad5f0834b8dce2773a259a38b7f0ac79ba020f9cbfe920181518"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/bare.png.import",
+      "bytes": 982,
+      "sha256": "3950f94508b0e1c414de0b8d3b0d1ab15587b788fb8d2822b64287305906f99a"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/forge-review/contact-sheet.png.import",
+      "bytes": 1022,
+      "sha256": "b0f9b85113b0268ad8f04aabfe3f882ee1a93167ad393cfa0493bbe9a2c483f6"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/forge-review/front.png.import",
+      "bytes": 998,
+      "sha256": "78ed3e74b3ffc5950234934bdc7d5a5303a59ab1a14110cc00c250df614cc089"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/forge-review/right.png.import",
+      "bytes": 998,
+      "sha256": "10f5d1577f2bee3fced17aed4495e6ff7bfc51a89a2febe1e5f2d4ef35e8a001"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/forge-review/three-quarter.png.import",
+      "bytes": 1022,
+      "sha256": "9a3e6739391bf500d32f5844470f7383c113276d16db4287d3a086ee20982ca7"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/hero.png.import",
+      "bytes": 982,
+      "sha256": "ef65b4d4ed5bb8ce67654687565badd09ad3dca99cd58f62b00de9d2148bdadd"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-artboard-godot-capture.gd.uid",
+      "bytes": 20,
+      "sha256": "476ff959ba71cfb948c673d708ae204a2ac1240c2f27eac0dedc4ead7dbb98ac"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-artboard-godot.png.import",
+      "bytes": 1024,
+      "sha256": "39fa54ac7894722e11dbce090f5afe0c4bd4c8c6a8cacee66984ce491a5536a4"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge.glb.import",
+      "bytes": 1208,
+      "sha256": "82e5d797e70587f3167b98845549a1d708a6205342bebe22f9cc3d6c8f75e9e6"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge_0.png",
+      "bytes": 7816,
+      "sha256": "1513ebd951dd7f1604ce262a56eab280b2ac9f0195af84559a392a0756ca7ca3"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge_0.png.import",
+      "bytes": 1069,
+      "sha256": "d3a6250798a4e15441b656c69e6dd5c923b25889b1e1e2c3f54896f866fbb3be"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge_1.png",
+      "bytes": 24956,
+      "sha256": "b99fbe741e2848f03ae48902941bd15028a8364510fc3487503813b8901a8dda"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge_1.png.import",
+      "bytes": 1068,
+      "sha256": "c7f42ef24e579cc59fc524654599f853a5d1379dbc60f1abefe06dac0688614d"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge_2.png",
+      "bytes": 392,
+      "sha256": "7303408c424d9420c09dcedf66f4f852023c50b579c8e4da5f46b0f6ea7db623"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge_2.png.import",
+      "bytes": 1069,
+      "sha256": "2033f2fd82740347902505d90c96ea9eb928e4b8762811b964d26229a2d35f75"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge_3.png",
+      "bytes": 13800,
+      "sha256": "b775b43dd1cff02ffae4939a55860082d6b1b82000ebd1900ba68031a68b8005"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge_3.png.import",
+      "bytes": 1069,
+      "sha256": "c5b338d3f0688520139b345450fbcce0282da8271fb2cc406b996b04bd44b216"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge_4.png",
+      "bytes": 5724,
+      "sha256": "531acc61e1cd592f5f76f5e90ea26d16c7155093b9dcb5303b0dac039f35063a"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge_4.png.import",
+      "bytes": 1069,
+      "sha256": "561fe3b66d91d96e2dbc858af5efc65d6876aa0480bd0b5d3699158e34c9df55"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge_5.png",
+      "bytes": 23632,
+      "sha256": "04ef9e370aa5d8ce26e881d620ef76aa541021d048d36261a5973c4d2b119d5d"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/pip-forge_5.png.import",
+      "bytes": 1069,
+      "sha256": "c1859fde652c529c3059cf770e5b5a805803c9cf2db3976c6166810d1c60ffb2"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/previous-portrait.png.import",
+      "bytes": 1021,
+      "sha256": "f4939c3cc152441b00557ccf36037e99cf9b541bbd4b9ef39bea37df7de78c50"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/review/contact-sheet.png.import",
+      "bytes": 1015,
+      "sha256": "02c5ba658930cec8fa0cbb9ef3101bad63b00506f15cd228f4df1004ee66ae53"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/review/frames/back.png.import",
+      "bytes": 996,
+      "sha256": "88e23a71898b31157de608a7712e3204892640702c71a88ab8f86a71de17fc4b"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/review/frames/front.png.import",
+      "bytes": 998,
+      "sha256": "26c806da7b043c4bae556b926ad6cda670f014bbad473712dc6dbd1dea6b4d4b"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/review/frames/night.png.import",
+      "bytes": 999,
+      "sha256": "4e5096420a40d96d71952b8e91f4884fb35cd41863f3327c0d6579bfec703ae7"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/review/frames/portrait.png.import",
+      "bytes": 1008,
+      "sha256": "9684618894b98c6d547a46fc599c2821967899445bc85762a2fb1b7f35911ee3"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/review/frames/side.png.import",
+      "bytes": 996,
+      "sha256": "02afb3c39aa64fa2410e224c11ee0f22ab45eb6575e4df06ebc18e5effddc8be"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/review/frames/three-quarter.png.import",
+      "bytes": 1022,
+      "sha256": "682ef29ff97cadac93bbab5c4eaf3e8393cb0939cf67b03d7767a15a63d898b9"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/review/frames/walk.png.import",
+      "bytes": 995,
+      "sha256": "58ddefdc95e3ded9db495b909573cb64d3221a87c9a822eba959da310dc2d4fa"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/review/frames/work.png.import",
+      "bytes": 996,
+      "sha256": "e0324b7b682fbf75d5c161c95c505d15953b1701c81759113f1b3328de725027"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/review/frames/world.png.import",
+      "bytes": 999,
+      "sha256": "3f969fd1800c53916d8b25b13694fa870f075a18b92037bdeafef89df04e8169"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/supplied-concept.png.import",
+      "bytes": 1018,
+      "sha256": "04538b264eb5cf15f1eeb8b8067c982f5e85b93352b9c28206bdadff35220f3a"
+    },
+    {
+      "path": "docs/_archive/verification/character-artboard-2026-10-10/evidence/supplied-unclothed-concept.png.import",
+      "bytes": 1047,
+      "sha256": "37f80e6103a432b32e55372a3eb5fbb6a30aab2605c5a5a8f777244ff58e49a5"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/after-editor-desktop.png.import",
+      "bytes": 1029,
+      "sha256": "8edae13085201bcc6d628d695190877ae27f569d653cb367bfdd07963b881694"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/after-editor-mobile.png.import",
+      "bytes": 1027,
+      "sha256": "bd823dd5fb60c7c48f039b169cfeef529f36cac1eef12182a5c78207b9fd924a"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/before-editor.png.import",
+      "bytes": 1009,
+      "sha256": "1e374205f3882ec2d97137f018aba0fe571bf182b04d1da32e105a51083c0958"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/fern-review/contact-sheet.png.import",
+      "bytes": 1020,
+      "sha256": "5d22ee8c68bb2d6fcd994b044b00522ac80d4a45eff4a92409cd069df986e3e6"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/fern-review/frames/front.png.import",
+      "bytes": 1004,
+      "sha256": "d7ef1161daa24a183f659f3070b13f897260aeb95fabcf3795f00cc7705e1a24"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/forge-review/contact-sheet.png.import",
+      "bytes": 1021,
+      "sha256": "0af44523f938bfbb3742d66518904470e3b44c1cb4f0cee06584708ea197eb3c"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/forge-review/front.png.import",
+      "bytes": 998,
+      "sha256": "f25f7daeb9ea8268b422c52ea8acf785298c12a36c230a9592fbdfd97895233f"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/forge-review/right.png.import",
+      "bytes": 998,
+      "sha256": "5d507a99a90be0a7d50d8dc6067d6928602198c1efa7755532496f0057e41e40"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/mochi-review/contact-sheet.png.import",
+      "bytes": 1022,
+      "sha256": "f6ecb2bc99c8c5e8fe03936ccdc7617674267c180e08aff0efffceaec67f2d92"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/mochi-review/frames/front.png.import",
+      "bytes": 1003,
+      "sha256": "4c8e9cb68ed335a0117264c5429387cd7dfdc67b51cbcb1efa034409eb522275"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/pip-review/contact-sheet.png.import",
+      "bytes": 1020,
+      "sha256": "5d6e3962bc8c6873f2d1c371cce409460be401ce4858b407c1cbe6d41d466571"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/pip-review/frames/front.png.import",
+      "bytes": 1003,
+      "sha256": "31a79a4d0924d565815448c509d90d1bf224ae28c580c73f8aa84a8b02b6b5e7"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/pip-trail-godot-capture.gd.uid",
+      "bytes": 18,
+      "sha256": "e3c8d58357cee372ae25e84a492fb715647c1420931043db3a88561af3659273"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/pip-trail-godot.png.import",
+      "bytes": 1014,
+      "sha256": "e6b7b92d0b0e1c4f3bfa01ec42d6be914401521d78219479531ede5df7c017eb"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/supplied-concept.png.import",
+      "bytes": 1018,
+      "sha256": "b42d32e7412190f9b621001a26427c0486e4622449cfbc6324b2eb327090041f"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/trail-review/contact-sheet.png.import",
+      "bytes": 1022,
+      "sha256": "53825489575fe712c69a334c8226e61d525608d95ffd2026e00996f19a562801"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/trail-review/frames/back.png.import",
+      "bytes": 1002,
+      "sha256": "bb41a955fefcbd8114e20ad3a9dbe3be6681e0ad68797eb79c91655f2a90b6d5"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/trail-review/frames/front.png.import",
+      "bytes": 1005,
+      "sha256": "9e086a44b9d0d588c9d2fd002da6ba6f745f3a4dc583fdd559b45272ae657369"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/trail-review/frames/night.png.import",
+      "bytes": 1005,
+      "sha256": "ce7aed18f008e146f287e5561ca71cf22ea5a0a125582a377c55179b6c02d334"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/trail-review/frames/portrait.png.import",
+      "bytes": 1013,
+      "sha256": "51ad57baef36490ed41f9c18af6634f9c516310070eb013e78300558c102119f"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/trail-review/frames/side.png.import",
+      "bytes": 1001,
+      "sha256": "6971a3691df3c0eeaa93d360677233974db22c5a3c15109ae115349272a964a0"
+    },
+    {
+      "path": "docs/_archive/verification/character-fidelity-2026-10-10/evidence/trail-review/frames/world.png.import",
+      "bytes": 1005,
+      "sha256": "28f03e7969a8d6bfba2a8ef05173794932d4acec6d80a934f54a35a66998283f"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/forge-review/back.png.import",
+      "bytes": 993,
+      "sha256": "8af4be347b8df28c255e763ef9331c7ea0c51b2cedbe55badba3f16283da59af"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/forge-review/contact-sheet.png.import",
+      "bytes": 1019,
+      "sha256": "ae8ecaa9f77b7fb07be80a56cd1b0aecb6684fca3815f403f6ac8a9f99323f6c"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/forge-review/front.png.import",
+      "bytes": 995,
+      "sha256": "274f6b84096c532b7cf2c944545f06a74bc0eb7f80467166039543efb25e9bc7"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/review/contact-sheet.png.import",
+      "bytes": 1014,
+      "sha256": "cab6382da4b117ecb5bf8d80c2877fe34bfa37e1b12f6b87c4a860ce38c163c1"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/review/frames/back.png.import",
+      "bytes": 994,
+      "sha256": "4bf77953218f66ad6552d7d493ef050efff0c1ea118a63b6daa83184c109463e"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/review/frames/front.png.import",
+      "bytes": 997,
+      "sha256": "3d56892f66b3db9deb7de33642a6b754ad8831a612859d47e2d85fd726effda4"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/review/frames/night.png.import",
+      "bytes": 997,
+      "sha256": "c0243874fcdf56f0ee7cab079c577f5551793ae9fbd5e4cbc504cc9107e79c4d"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/review/frames/portrait.png.import",
+      "bytes": 1006,
+      "sha256": "d382fdd71810353902b09eb62f11146af2860413f9cf3955a97ae8214e772055"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/review/frames/side.png.import",
+      "bytes": 994,
+      "sha256": "71f38fd5477af29de32bcb6f496e86f01ed898a218212d465f3b235f0a8ce82a"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/review/frames/world.png.import",
+      "bytes": 997,
+      "sha256": "4adef0945f3c4381371abc12fffeb24e81760c6f53444407f1ca62ae6111bfb6"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/screens/editor-back-view.png.import",
+      "bytes": 1024,
+      "sha256": "8c1a6e491251bd3fd6abb44b91cd92c5f5eb71cf688dc3742c9584186dbd0e68"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/screens/editor-desktop.png.import",
+      "bytes": 1018,
+      "sha256": "1cd0ff8ab594433c1281d4cbc3540bb0d16d345dab01ec451e9788d04ba18153"
+    },
+    {
+      "path": "docs/_archive/verification/character-studio-showcase-2026-10-10/screens/editor-mobile.png.import",
+      "bytes": 1014,
+      "sha256": "50ee7bd9ba64b7f6848f1a78a7bc4455eeec38c6197c435f842cdf5ebc9c2836"
+    }
+  ],
+  "raw_runner_receipt": "python-pinned-regression-result.json",
+  "raw_log": "python-pinned-regression.log",
+  "raw_log_sha256": "6b41c25988043761f742937c5ffc3343019dd5bb6940712b28050dd15a5e70df"
+}

@@ -1,0 +1,30 @@
+{
+  "suites-0.log": {
+    "bytes": 309862,
+    "sha256": "5beb0b7ff285c916f0354ec969125819b284b4158d7fc0fc15d097dde9cbf86d"
+  },
+  "suites-1.log": {
+    "bytes": 303623,
+    "sha256": "338e095bfdeab6819b6e074924a5cbc7712d1cc698cabe8628649b1049c70376"
+  },
+  "suites-2.log": {
+    "bytes": 378321,
+    "sha256": "1a92fd392e026e8658578f7497217e6994a21d783a948172d5f0061c22160d9f"
+  },
+  "suites-3.log": {
+    "bytes": 307948,
+    "sha256": "c0c2223a4d0c42444f4b574528a57bc347d0e3dced681268d801fb60d5ecef09"
+  },
+  "suites-4.log": {
+    "bytes": 329139,
+    "sha256": "45e589cb562094efdf5755aaff3b4c8574aab2ec60ca2a7ddca6486e06ef9db8"
+  },
+  "suites-5.log": {
+    "bytes": 292558,
+    "sha256": "4bf666be0480ec5d1254a2ac47a578b832cc9bcdb0b43162fe828d8a22e5bde3"
+  },
+  "verify.log": {
+    "bytes": 18560,
+    "sha256": "196e7bde4ae0ddada157037372215f988c164136beecb932213f1888191f0420"
+  }
+}

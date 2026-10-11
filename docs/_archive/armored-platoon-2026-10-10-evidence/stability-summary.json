@@ -1,0 +1,769 @@
+{
+  "format": "armored-software-stability-observation",
+  "version": 1,
+  "source": "187dd821316cb334f13947780bb5e135878bda2c",
+  "identity": {
+    "gitHead": "187dd821316cb334f13947780bb5e135878bda2c",
+    "artifact": {
+      "path": "demos/armored-platoon.html",
+      "bytes": 1809495,
+      "sha256": "8587053e9591e505313a86936b8b0036a1088f4cb2d270d27ffba3210742e93b"
+    },
+    "scriptSha256": "a1c75bc66cda1f22718cfb17fd253602c5d76bcc7883663c52c1e67434b3aeb6",
+    "harnessSha256": "a464f9b13b46be5a626c628a805960170bbfca74c65fee26d2ea7a4926843bad",
+    "node": "v24.19.0",
+    "playwright": "1.63.0",
+    "os": {
+      "platform": "linux",
+      "release": "6.18.44",
+      "architecture": "x64",
+      "logicalCpus": 5,
+      "cpuModel": "INTEL(R) XEON(R) PLATINUM 8573C",
+      "totalMemoryBytes": 18882699264
+    },
+    "viewport": {
+      "width": 960,
+      "height": 600
+    },
+    "deviceScaleFactor": 1,
+    "executablePath": "/usr/bin/chromium",
+    "args": [
+      "--no-sandbox",
+      "--enable-unsafe-swiftshader",
+      "--use-angle=swiftshader"
+    ],
+    "browser": "151.0.7922.173",
+    "webgl": {
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "drawingBuffer": {
+        "width": 960,
+        "height": 600
+      }
+    }
+  },
+  "wall": {
+    "startedAt": "2026-10-10T22:15:03.051Z",
+    "endedAt": "2026-10-10T22:45:03.053Z",
+    "observedSeconds": 1800.002,
+    "plannedSeconds": 1800,
+    "completed": true
+  },
+  "method": "30 wall minutes; original published HTML bytes; native requestAnimationFrame; Playwright UI actions and public command/query/checkpoint/restore ports; no injected gameplay state or private ticks",
+  "workload": {
+    "route": "Scripted bounded driving near deployment",
+    "actions": [
+      "drive",
+      "aim",
+      "main-gun fire",
+      "platoon follow/hold",
+      "untouched checkpoint roundtrip",
+      "menu/briefing/mission selection/deployment"
+    ],
+    "notCovered": [
+      "multiplayer",
+      "hardware GPU performance",
+      "GPU memory/resource residency",
+      "device/context loss",
+      "full campaign completion",
+      "worst-case crowded scenes"
+    ]
+  },
+  "missionIntervals": [
+    {
+      "missionId": "crossroads",
+      "firstAt": "2026-10-10T22:15:04.267Z",
+      "lastAt": "2026-10-10T22:18:50.417Z",
+      "firstWallSecond": 1.216,
+      "lastWallSecond": 227.366,
+      "firstTick": 18,
+      "lastTick": 6689,
+      "firstSimulationSecond": 0.3,
+      "lastSimulationSecond": 111.48333333333333,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 6,
+          "maximum": 6
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 2
+        },
+        "obstacles": {
+          "minimum": 42,
+          "maximum": 42
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 123
+        }
+      }
+    },
+    {
+      "missionId": "pine-ridge",
+      "firstAt": "2026-10-10T22:19:06.629Z",
+      "lastAt": "2026-10-10T22:22:52.641Z",
+      "firstWallSecond": 243.578,
+      "lastWallSecond": 469.59,
+      "firstTick": 20,
+      "lastTick": 4290,
+      "firstSimulationSecond": 0.3333333333333333,
+      "lastSimulationSecond": 71.5,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 3,
+          "maximum": 4
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 49,
+          "maximum": 49
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 16
+        }
+      }
+    },
+    {
+      "missionId": "iron-counterattack",
+      "firstAt": "2026-10-10T22:23:09.213Z",
+      "lastAt": "2026-10-10T22:26:55.053Z",
+      "firstWallSecond": 486.162,
+      "lastWallSecond": 712.002,
+      "firstTick": 30,
+      "lastTick": 3708,
+      "firstSimulationSecond": 0.5,
+      "lastSimulationSecond": 61.8,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 3,
+          "maximum": 3
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 42,
+          "maximum": 42
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 12
+        }
+      }
+    },
+    {
+      "missionId": "crossroads",
+      "firstAt": "2026-10-10T22:27:10.652Z",
+      "lastAt": "2026-10-10T22:31:00.355Z",
+      "firstWallSecond": 727.601,
+      "lastWallSecond": 957.304,
+      "firstTick": 19,
+      "lastTick": 3413,
+      "firstSimulationSecond": 0.31666666666666665,
+      "lastSimulationSecond": 56.88333333333333,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 6,
+          "maximum": 6
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 42,
+          "maximum": 42
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 86
+        }
+      }
+    },
+    {
+      "missionId": "pine-ridge",
+      "firstAt": "2026-10-10T22:31:15.392Z",
+      "lastAt": "2026-10-10T22:35:01.221Z",
+      "firstWallSecond": 972.341,
+      "lastWallSecond": 1198.17,
+      "firstTick": 340,
+      "lastTick": 6896,
+      "firstSimulationSecond": 5.666666666666667,
+      "lastSimulationSecond": 114.93333333333334,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 3,
+          "maximum": 6
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 49,
+          "maximum": 49
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 81
+        }
+      }
+    },
+    {
+      "missionId": "iron-counterattack",
+      "firstAt": "2026-10-10T22:35:16.246Z",
+      "lastAt": "2026-10-10T22:39:01.709Z",
+      "firstWallSecond": 1213.195,
+      "lastWallSecond": 1438.658,
+      "firstTick": 357,
+      "lastTick": 6372,
+      "firstSimulationSecond": 5.95,
+      "lastSimulationSecond": 106.2,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 3,
+          "maximum": 3
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 42,
+          "maximum": 42
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 16
+        }
+      }
+    },
+    {
+      "missionId": "crossroads",
+      "firstAt": "2026-10-10T22:39:16.749Z",
+      "lastAt": "2026-10-10T22:43:02.398Z",
+      "firstWallSecond": 1453.698,
+      "lastWallSecond": 1679.349,
+      "firstTick": 285,
+      "lastTick": 6429,
+      "firstSimulationSecond": 4.75,
+      "lastSimulationSecond": 107.15,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 6,
+          "maximum": 6
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 42,
+          "maximum": 42
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 10,
+          "maximum": 119
+        }
+      }
+    },
+    {
+      "missionId": "pine-ridge",
+      "firstAt": "2026-10-10T22:43:17.426Z",
+      "lastAt": "2026-10-10T22:45:03.085Z",
+      "firstWallSecond": 1694.375,
+      "lastWallSecond": 1800.034,
+      "firstTick": 460,
+      "lastTick": 3768,
+      "firstSimulationSecond": 7.666666666666667,
+      "lastSimulationSecond": 62.8,
+      "samples": 9,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 3,
+          "maximum": 6
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 49,
+          "maximum": 49
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 48
+        }
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 1,
+      "began": "2026-10-10T22:17:03.051Z",
+      "finishedAt": "2026-10-10T22:17:03.855Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 128280,
+      "checkpointSha256": "c936222c31cc4974c0824cfa4c42dbf7833b998e24b94e8efd25905a6068d68b",
+      "restoredSha256": "c936222c31cc4974c0824cfa4c42dbf7833b998e24b94e8efd25905a6068d68b"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 2,
+      "began": "2026-10-10T22:19:03.055Z",
+      "finishedAt": "2026-10-10T22:19:05.528Z",
+      "from": "crossroads",
+      "to": "pine-ridge",
+      "observed": "pine-ridge"
+    },
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 3,
+      "began": "2026-10-10T22:21:03.052Z",
+      "finishedAt": "2026-10-10T22:21:03.636Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 94909,
+      "checkpointSha256": "68324dadec879979526e4ea23645e5d5fd4eebdbb9a401d2ff427d6031d998eb",
+      "restoredSha256": "68324dadec879979526e4ea23645e5d5fd4eebdbb9a401d2ff427d6031d998eb"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 4,
+      "began": "2026-10-10T22:23:03.052Z",
+      "finishedAt": "2026-10-10T22:23:06.980Z",
+      "from": "pine-ridge",
+      "to": "iron-counterattack",
+      "observed": "iron-counterattack"
+    },
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 5,
+      "began": "2026-10-10T22:25:03.088Z",
+      "finishedAt": "2026-10-10T22:25:04.885Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 92706,
+      "checkpointSha256": "697b92fd98859e7c292b1b0aeece169483f7578d302e2819ea2656b1401a051f",
+      "restoredSha256": "697b92fd98859e7c292b1b0aeece169483f7578d302e2819ea2656b1401a051f"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 6,
+      "began": "2026-10-10T22:27:03.063Z",
+      "finishedAt": "2026-10-10T22:27:09.098Z",
+      "from": "iron-counterattack",
+      "to": "crossroads",
+      "observed": "crossroads"
+    },
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 7,
+      "began": "2026-10-10T22:29:03.052Z",
+      "finishedAt": "2026-10-10T22:29:03.670Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 105436,
+      "checkpointSha256": "b42a254d6843033ac861d95221e05b95ba6127acf2b91e242585444e3728629d",
+      "restoredSha256": "b42a254d6843033ac861d95221e05b95ba6127acf2b91e242585444e3728629d"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 8,
+      "began": "2026-10-10T22:31:03.051Z",
+      "finishedAt": "2026-10-10T22:31:05.490Z",
+      "from": "crossroads",
+      "to": "pine-ridge",
+      "observed": "pine-ridge"
+    },
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 9,
+      "began": "2026-10-10T22:33:03.052Z",
+      "finishedAt": "2026-10-10T22:33:03.701Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 111567,
+      "checkpointSha256": "e6c54f684089a239ac1f4882dedf4239c1efe841c969368f7140481f732e450c",
+      "restoredSha256": "e6c54f684089a239ac1f4882dedf4239c1efe841c969368f7140481f732e450c"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 10,
+      "began": "2026-10-10T22:35:03.053Z",
+      "finishedAt": "2026-10-10T22:35:06.012Z",
+      "from": "pine-ridge",
+      "to": "iron-counterattack",
+      "observed": "iron-counterattack"
+    },
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 11,
+      "began": "2026-10-10T22:37:03.052Z",
+      "finishedAt": "2026-10-10T22:37:03.871Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 93749,
+      "checkpointSha256": "da9a39ad2625f2b58e6896560c33efbbc5b4a1096c3968a2b0a0638c39d71465",
+      "restoredSha256": "da9a39ad2625f2b58e6896560c33efbbc5b4a1096c3968a2b0a0638c39d71465"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 12,
+      "began": "2026-10-10T22:39:03.052Z",
+      "finishedAt": "2026-10-10T22:39:06.261Z",
+      "from": "iron-counterattack",
+      "to": "crossroads",
+      "observed": "crossroads"
+    },
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 13,
+      "began": "2026-10-10T22:41:03.051Z",
+      "finishedAt": "2026-10-10T22:41:03.851Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 118618,
+      "checkpointSha256": "13d8a1d36565b2736c82e89b3403a1dbac1119150ce50f913b63f4bd630d5c80",
+      "restoredSha256": "13d8a1d36565b2736c82e89b3403a1dbac1119150ce50f913b63f4bd630d5c80"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 14,
+      "began": "2026-10-10T22:43:03.053Z",
+      "finishedAt": "2026-10-10T22:43:05.516Z",
+      "from": "crossroads",
+      "to": "pine-ridge",
+      "observed": "pine-ridge"
+    }
+  ],
+  "commands": {
+    "count": 371,
+    "rejected": []
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [
+    {
+      "at": "2026-10-10T22:15:00.449Z",
+      "type": "warning",
+      "message": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+    },
+    {
+      "at": "2026-10-10T22:19:04.442Z",
+      "type": "warning",
+      "message": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+    },
+    {
+      "at": "2026-10-10T22:23:04.579Z",
+      "type": "warning",
+      "message": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+    },
+    {
+      "at": "2026-10-10T22:27:07.554Z",
+      "type": "warning",
+      "message": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+    },
+    {
+      "at": "2026-10-10T22:31:04.563Z",
+      "type": "warning",
+      "message": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+    },
+    {
+      "at": "2026-10-10T22:35:04.923Z",
+      "type": "warning",
+      "message": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+    },
+    {
+      "at": "2026-10-10T22:39:05.120Z",
+      "type": "warning",
+      "message": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+    },
+    {
+      "at": "2026-10-10T22:43:04.469Z",
+      "type": "warning",
+      "message": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead."
+    }
+  ],
+  "failures": [],
+  "resources": {
+    "jsHeapUsedBytes": {
+      "first": 27340736,
+      "last": 37664388,
+      "minimum": 12895360,
+      "maximum": 57610472
+    },
+    "jsHeapTotalBytes": {
+      "first": 37871616,
+      "last": 94932992,
+      "minimum": 24309760,
+      "maximum": 97775616
+    },
+    "domNodes": {
+      "first": 389,
+      "last": 496,
+      "minimum": 389,
+      "maximum": 698
+    },
+    "documents": {
+      "first": 1,
+      "last": 1,
+      "minimum": 1,
+      "maximum": 1
+    },
+    "jsEventListeners": {
+      "first": 46,
+      "last": 58,
+      "minimum": 46,
+      "maximum": 92
+    },
+    "forcedGarbageCollection": false,
+    "gpuMemory": "unavailable",
+    "gpuResourceResidency": "unavailable",
+    "rendererGeometryAndTextureCounts": "unavailable"
+  },
+  "requests": [
+    {
+      "at": "2026-10-10T22:14:58.915Z",
+      "url": "https://armored-stability.localhost/published-demo.html",
+      "resourceType": "document",
+      "fixture": true
+    }
+  ],
+  "artifactBytesUnchanged": true,
+  "cleanup": [
+    {
+      "name": "cdp",
+      "closed": true,
+      "at": "2026-10-10T22:45:04.356Z"
+    },
+    {
+      "name": "context",
+      "closed": true,
+      "at": "2026-10-10T22:45:04.600Z"
+    },
+    {
+      "name": "browser",
+      "closed": true,
+      "at": "2026-10-10T22:45:06.446Z"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "start.png",
+      "bytes": 251877,
+      "sha256": "4563b77fc14a198ab470ba4c4230de79df5810fddfdb016d5ffcb7f72556c326",
+      "at": "2026-10-10T22:15:04.260Z"
+    },
+    {
+      "file": "transition-01-checkpoint.png",
+      "bytes": 345601,
+      "sha256": "a7098798441deb98a9dee9e4018e15f9bb026df2c4bf04cc2c3f2c3a5b88019b",
+      "at": "2026-10-10T22:17:04.932Z"
+    },
+    {
+      "file": "transition-02-mission.png",
+      "bytes": 252180,
+      "sha256": "7ff19391dd53a5e6818159ebbeb2013dbb4effe978144415a9c90b129f9c61cc",
+      "at": "2026-10-10T22:19:06.616Z"
+    },
+    {
+      "file": "transition-03-checkpoint.png",
+      "bytes": 363050,
+      "sha256": "a2cf73d6290db8989e18a4ed1fd3d5adff88b0b63accb7e3f5f8263a1541a13e",
+      "at": "2026-10-10T22:21:05.084Z"
+    },
+    {
+      "file": "transition-04-mission.png",
+      "bytes": 257743,
+      "sha256": "87443b76e2ef99b7c17e1653294fbd9c547ee86866b503fe158ebf43d21cc3ac",
+      "at": "2026-10-10T22:23:09.190Z"
+    },
+    {
+      "file": "transition-05-checkpoint.png",
+      "bytes": 366990,
+      "sha256": "37643d9fc353e8e1e8c60697b097f415d3202564602d53f500935181607ae002",
+      "at": "2026-10-10T22:25:08.284Z"
+    },
+    {
+      "file": "transition-06-mission.png",
+      "bytes": 251877,
+      "sha256": "4563b77fc14a198ab470ba4c4230de79df5810fddfdb016d5ffcb7f72556c326",
+      "at": "2026-10-10T22:27:10.647Z"
+    },
+    {
+      "file": "transition-07-checkpoint.png",
+      "bytes": 362722,
+      "sha256": "209a5a2b81f62559f3754a35b0b8c15b5ca31d7f2068024e58eeae1ba2d042df",
+      "at": "2026-10-10T22:29:06.611Z"
+    },
+    {
+      "file": "transition-08-mission.png",
+      "bytes": 252119,
+      "sha256": "ba1012d89590437f94bcdd9b9774a9880ad5dfa060883465b9fc1effe1578b9c",
+      "at": "2026-10-10T22:31:06.325Z"
+    },
+    {
+      "file": "transition-09-checkpoint.png",
+      "bytes": 366882,
+      "sha256": "a9b36f2934ecf9e518a4969705d4a98a951ddc88ec7380d78b80c478047a6941",
+      "at": "2026-10-10T22:33:04.732Z"
+    },
+    {
+      "file": "transition-10-mission.png",
+      "bytes": 257743,
+      "sha256": "87443b76e2ef99b7c17e1653294fbd9c547ee86866b503fe158ebf43d21cc3ac",
+      "at": "2026-10-10T22:35:06.837Z"
+    },
+    {
+      "file": "transition-11-checkpoint.png",
+      "bytes": 358661,
+      "sha256": "85848f23552c688301567529ff4145b08ae4feb89b855c62dad1839635c60b19",
+      "at": "2026-10-10T22:37:04.885Z"
+    },
+    {
+      "file": "transition-12-mission.png",
+      "bytes": 251877,
+      "sha256": "4563b77fc14a198ab470ba4c4230de79df5810fddfdb016d5ffcb7f72556c326",
+      "at": "2026-10-10T22:39:07.288Z"
+    },
+    {
+      "file": "transition-13-checkpoint.png",
+      "bytes": 362332,
+      "sha256": "31c49ff58887efb6c5e0c7470b60d727d1fb8d8d2cbc5a0042e658cd2fdf955a",
+      "at": "2026-10-10T22:41:04.902Z"
+    },
+    {
+      "file": "transition-14-mission.png",
+      "bytes": 252119,
+      "sha256": "ba1012d89590437f94bcdd9b9774a9880ad5dfa060883465b9fc1effe1578b9c",
+      "at": "2026-10-10T22:43:06.363Z"
+    },
+    {
+      "file": "final.png",
+      "bytes": 358347,
+      "sha256": "f76f6057df8671bcc04d35b57ff3e34fef8d33b158a98eb2abdba8f67d5e5272",
+      "at": "2026-10-10T22:45:04.344Z"
+    }
+  ],
+  "limitations": [
+    "Software SwiftShader at 960x600; no hardware performance conclusion.",
+    "Entity counts are detached visible projection counts, not total live ECS or GPU allocations.",
+    "JS heap is CDP heap usage without forced garbage collection; fluctuations do not establish leak freedom.",
+    "GPU memory, resource residency, renderer geometry/texture counters, hardware VRAM and thermal/power data are unavailable.",
+    "Native RAF elapsed times are retained; no private ticks, RAF replacement, altered content, or fabricated checkpoint state.",
+    "This bounded observation is not full Q03 acceptance or reference-fidelity evidence."
+  ],
+  "retention": {
+    "fullLocalRaw": "All raw observations, JSONL logs, untouched checkpoints, the exact served demo, exact harnesses, run log and PNG captures remain in work/armored-stability-30m.",
+    "archiveSelection": "Root chooses compact evidence and selected captures; that archive is not a copy of every local artifact."
+  },
+  "counts": {
+    "samples": 121,
+    "checkpointRoundtrips": 7,
+    "exactCheckpointRoundtrips": 7,
+    "missionSwitches": 7,
+    "commands": 371,
+    "commandRejections": 0,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "consoleWarnings": 8,
+    "observationFailures": 0
+  },
+  "warningTypes": [
+    {
+      "type": "warning",
+      "message": "THREE.WebGLShadowMap: PCFSoftShadowMap has been deprecated. Using PCFShadowMap instead.",
+      "count": 8
+    }
+  ],
+  "domCanvasBounds": {
+    "canvasCount": {
+      "minimum": 1,
+      "maximum": 1
+    },
+    "domElementCount": {
+      "minimum": 178,
+      "maximum": 178
+    },
+    "cdpDomNodes": {
+      "first": 389,
+      "last": 496,
+      "minimum": 389,
+      "maximum": 698
+    }
+  }
+}

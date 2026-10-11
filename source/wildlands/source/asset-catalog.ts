@@ -78,7 +78,7 @@
   return out;
  }
  function materialProps(input:unknown,path:string,requiredColor=false):void{
-  const value=fields(input,['color','emissive','emissiveIntensity','opacity','transparent','depthWrite','roughness','metalness','flatShading','doubleSided','sheen','sheenRoughness','sheenColor','clearcoat','clearcoatRoughness','surface'],path);
+  const value=fields(input,['color','emissive','emissiveIntensity','opacity','transparent','depthWrite','roughness','metalness','flatShading','doubleSided','sheen','sheenRoughness','sheenColor','clearcoat','clearcoatRoughness','surface','finish'],path);
   if(requiredColor&&!color(value.color))fail(path+' invalid color');
   for(const key of ['color','emissive','sheenColor'])if(value[key]!==undefined&&!color(value[key]))fail(path+' invalid '+key);
   for(const key of ['transparent','depthWrite','flatShading','doubleSided'])if(value[key]!==undefined&&typeof value[key]!=='boolean')fail(path+' invalid '+key);
@@ -86,6 +86,12 @@
   if(value.surface!==undefined){
    const surface=fields(value.surface,['kind','seed','scale','strength','version'],path+' surface');
    if((surface.version!==undefined&&surface.version!==1&&surface.version!==2)||typeof surface.kind!=='string'||!['fur','cloth','leather'].includes(surface.kind)||!Number.isInteger(surface.seed)||!finite(surface.seed)||surface.seed<0||surface.seed>65535||!finite(surface.scale)||surface.scale<1||surface.scale>16||!finite(surface.strength)||surface.strength<0||surface.strength>1)fail(path+' invalid bounded surface');
+  }
+  if(value.finish!==undefined){
+   if(value.surface!==undefined)fail(path+' cannot combine surface and finish');
+   const finish=fields(value.finish,['version','kind','seed','scale','wear','palette'],path+' finish');
+   if(finish.version!==1||typeof finish.kind!=='string'||!['painted-metal','bare-metal','rubber'].includes(finish.kind)||!Number.isInteger(finish.seed)||!finite(finish.seed)||finish.seed<0||finish.seed>65535||!finite(finish.scale)||finish.scale<1||finish.scale>16||!finite(finish.wear)||finish.wear<0||finish.wear>1)fail(path+' invalid bounded finish');
+   if(finish.palette!==undefined&&(!Array.isArray(finish.palette)||finish.palette.length<1||finish.palette.length>4||!finish.palette.every(color)))fail(path+' invalid finish palette');
   }
   const emissive=value.emissiveIntensity;
   if(emissive!==undefined&&(!finite(emissive)||emissive<0))fail(path+' invalid emissive intensity');
@@ -111,6 +117,11 @@
    for(const key of ['visible','castShadow','receiveShadow'])if(node[key]!==undefined&&typeof node[key]!=='boolean')fail(path+' invalid '+key);
    if(node.materialProps!==undefined)materialProps(node.materialProps,path+' material properties');
    if(node.primitive!=='group'&&(typeof node.material!=='string'||(!Object.hasOwn(materials,node.material)&&!/^#[0-9a-f]{6}$/i.test(node.material))))fail(path+' invalid material');
+   if(node.primitive!=='group'){
+    const base=materials[String(node.material)],effective={...(plain(base)?base:{}),...(node.materialProps as Plain??{})};
+    // Actor appearance overrides are color strings, so they retain these same descriptors.
+    if(effective.surface!==undefined&&effective.finish!==undefined)fail(path+' cannot combine surface and finish in an effective material');
+   }
    if(node.children!==undefined)nodeIds(node.children,materials,seen,path+'/'+(node.id||node.primitive),meshes);
   }
  }

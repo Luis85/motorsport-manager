@@ -1,0 +1,101 @@
+
+> wildlands@15.0.0 test
+> node --import tsx source/verification/verify.ts --tier fast --jobs 3 --keep-going
+
+RUN generate
+RUN game-folders
+RUN construction
+PASS construction 12/12
+RUN content-provider
+PASS content-provider 7/7
+RUN business-process
+PASS game-folders 16/16
+RUN cold-balancing
+PASS cold-balancing 23/23
+RUN domain
+PASS domain 86/86
+RUN game-settings
+PASS game-settings 13/13
+RUN creatures
+PASS creatures 24/24
+RUN content-boundary
+PASS content-boundary 23/23
+RUN business-process-bpmn
+PASS generate 13/13
+RUN gate-integrity
+PASS gate-integrity 31/31
+RUN engine-composition
+PASS business-process-bpmn 28/28
+RUN pet-runtime
+PASS pet-runtime 11/11
+RUN definition-source
+PASS engine-composition 30/30
+RUN runtime-optionality
+PASS definition-source 12/12
+RUN ecs-integration
+PASS ecs-integration 7/7
+RUN rts-mission-editor
+PASS runtime-optionality 13/13
+RUN presentation
+PASS presentation 49/49
+RUN armored-admission
+PASS rts-mission-editor 19/19
+RUN armored-runtime
+PASS armored-runtime 11/11
+RUN armored-combat
+PASS armored-admission 4/4
+RUN assets
+PASS armored-combat 17/17
+RUN ecs-world-integration
+PASS ecs-world-integration 6/6
+RUN ecs-economy-integration
+PASS ecs-economy-integration 9/9
+RUN canvas-renderer
+PASS canvas-renderer 29/29
+RUN pause-policy
+PASS pause-policy 53/53
+RUN rts-tools
+PASS rts-tools 10/10
+RUN rts-catalog
+PASS rts-catalog 7/7
+RUN rts-application
+PASS rts-application 6/6
+RUN renderers
+PASS renderers 16/16
+RUN simulation-profile
+PASS simulation-profile 19/19
+RUN rts-economy
+PASS rts-economy 4/4
+RUN renderer-scene-2d
+PASS renderer-scene-2d 10/10
+RUN pet-wardrobe
+PASS pet-wardrobe 7/7
+RUN rts-production
+PASS rts-production 4/4
+RUN pet-catalog
+PASS pet-catalog 4/4
+RUN pet-application
+PASS pet-application 4/4
+RUN animations
+PASS animations 6/6
+RUN storage-clock
+PASS storage-clock 15/15
+RUN behavior-tree
+PASS behavior-tree 7/7
+RUN ecs-core
+PASS ecs-core 19/19
+RUN scene-environment
+PASS scene-environment 6/6
+RUN game-settings-ui
+PASS game-settings-ui 12/12
+RUN interaction-ui
+PASS interaction-ui 12/12
+RUN ecs-activity
+PASS ecs-activity 9/9
+RUN ecs-world
+PASS ecs-world 24/24
+RUN ecs-economy
+PASS ecs-economy 15/15
+PASS business-process 79/79
+PASS assets 25/25
+partial-passed 866/866 (48 suites, 164.79s, jobs 3)

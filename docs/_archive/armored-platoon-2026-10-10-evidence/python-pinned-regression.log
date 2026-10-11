@@ -1,0 +1,1250 @@
+test_application_no_infrastructure_dependency (test_architecture_guard.ArchitectureGuardTests.test_application_no_infrastructure_dependency) ... ok
+test_complete_literal_load_allows_native_whitespace_comments_and_trailing_comma (test_architecture_guard.ArchitectureGuardTests.test_complete_literal_load_allows_native_whitespace_comments_and_trailing_comma) ... ok
+test_domain_compilers_have_no_wall_clock_exception (test_architecture_guard.ArchitectureGuardTests.test_domain_compilers_have_no_wall_clock_exception) ... ok
+test_domain_io_and_clock (test_architecture_guard.ArchitectureGuardTests.test_domain_io_and_clock) ... ok
+test_domain_static_factory_cannot_construct_engine_nodes_indirectly (test_architecture_guard.ArchitectureGuardTests.test_domain_static_factory_cannot_construct_engine_nodes_indirectly) ... ok
+test_dynamic_load_rejected_inward (test_architecture_guard.ArchitectureGuardTests.test_dynamic_load_rejected_inward) ... ok
+test_editor_cannot_read_files_or_compile_authority (test_architecture_guard.ArchitectureGuardTests.test_editor_cannot_read_files_or_compile_authority) ... ok
+test_every_presentation_component_has_the_detached_boundary (test_architecture_guard.ArchitectureGuardTests.test_every_presentation_component_has_the_detached_boundary) ... ok
+test_global_class_dependency (test_architecture_guard.ArchitectureGuardTests.test_global_class_dependency) ... ok
+test_hook_manifest_rejects_missing_extra_and_duplicate_entries (test_architecture_guard.ArchitectureGuardTests.test_hook_manifest_rejects_missing_extra_and_duplicate_entries) ... ok
+test_literal_alias_cannot_bypass_presentation_authority (test_architecture_guard.ArchitectureGuardTests.test_literal_alias_cannot_bypass_presentation_authority) ... ok
+test_literal_prefix_does_not_disguise_a_computed_load_argument (test_architecture_guard.ArchitectureGuardTests.test_literal_prefix_does_not_disguise_a_computed_load_argument) ... ok
+test_literal_pure_value_dependency_still_allowed (test_architecture_guard.ArchitectureGuardTests.test_literal_pure_value_dependency_still_allowed) ... ok
+test_no_false_edges_from_documentation (test_architecture_guard.ArchitectureGuardTests.test_no_false_edges_from_documentation) ... ok
+test_preload_and_extends_paths (test_architecture_guard.ArchitectureGuardTests.test_preload_and_extends_paths) ... ok
+test_renderer_cannot_retain_aggregate (test_architecture_guard.ArchitectureGuardTests.test_renderer_cannot_retain_aggregate) ... ok
+test_script_path_aliases_cannot_change_the_declared_dependency_layer (test_architecture_guard.ArchitectureGuardTests.test_script_path_aliases_cannot_change_the_declared_dependency_layer) ... ok
+test_ui_cannot_advance (test_architecture_guard.ArchitectureGuardTests.test_ui_cannot_advance) ... ok
+test_ui_cannot_retain_extracted_race_authority_layers (test_architecture_guard.ArchitectureGuardTests.test_ui_cannot_retain_extracted_race_authority_layers) ... ok
+test_ui_cannot_retain_schedulers_or_composition_bindings (test_architecture_guard.ArchitectureGuardTests.test_ui_cannot_retain_schedulers_or_composition_bindings) ... ok
+test_composition_may_own_developer_command_facets (test_architecture_guard.ToolboxArchitectureTests.test_composition_may_own_developer_command_facets) ... ok
+test_detached_campaign_candidate_transforms_remain_available (test_architecture_guard.ToolboxArchitectureTests.test_detached_campaign_candidate_transforms_remain_available) ... ok
+test_detached_queries_and_value_helpers_remain_available_to_ui (test_architecture_guard.ToolboxArchitectureTests.test_detached_queries_and_value_helpers_remain_available_to_ui) ... ok
+test_documentation_does_not_create_command_authority_edges (test_architecture_guard.ToolboxArchitectureTests.test_documentation_does_not_create_command_authority_edges) ... ok
+test_literal_aliases_and_inheritance_cannot_hide_toolbox_authority (test_architecture_guard.ToolboxArchitectureTests.test_literal_aliases_and_inheritance_cannot_hide_toolbox_authority) ... ok
+test_named_subclasses_cannot_hide_live_toolbox_authority (test_architecture_guard.ToolboxArchitectureTests.test_named_subclasses_cannot_hide_live_toolbox_authority) ... ok
+test_ui_cannot_advance_injected_weekend_lifetime_owner (test_architecture_guard.ToolboxArchitectureTests.test_ui_cannot_advance_injected_weekend_lifetime_owner) ... ok
+test_ui_cannot_construct_live_campaign_weekend_or_dispatch_commands (test_architecture_guard.ToolboxArchitectureTests.test_ui_cannot_construct_live_campaign_weekend_or_dispatch_commands) ... ok
+test_ui_cannot_construct_the_service_factory (test_architecture_guard.ToolboxArchitectureTests.test_ui_cannot_construct_the_service_factory) ... ok
+test_ui_cannot_reconstruct_and_advance_live_recorded_weekends (test_architecture_guard.ToolboxArchitectureTests.test_ui_cannot_reconstruct_and_advance_live_recorded_weekends) ... ok
+test_ui_cannot_retain_command_facets_even_for_query_only_use (test_architecture_guard.ToolboxArchitectureTests.test_ui_cannot_retain_command_facets_even_for_query_only_use) ... ok
+test_added_file_and_replaced_root_reject_publication (test_balance_authoring.BalanceAuthoringTests.test_added_file_and_replaced_root_reject_publication) ... ok
+test_case_collision_rejects_on_case_sensitive_filesystem (test_balance_authoring.BalanceAuthoringTests.test_case_collision_rejects_on_case_sensitive_filesystem) ... ok
+test_change_while_temporary_is_flushed_is_detected (test_balance_authoring.BalanceAuthoringTests.test_change_while_temporary_is_flushed_is_detected) ... ok
+test_changed_target_or_other_file_preserves_latest_data (test_balance_authoring.BalanceAuthoringTests.test_changed_target_or_other_file_preserves_latest_data) ... ok
+test_dry_run_reports_validated_candidate_without_writes (test_balance_authoring.BalanceAuthoringTests.test_dry_run_reports_validated_candidate_without_writes) ... ok
+test_duplicate_nonfinite_and_excessive_raw_configs_reject (test_balance_authoring.BalanceAuthoringTests.test_duplicate_nonfinite_and_excessive_raw_configs_reject) ... ok
+test_existing_scalar_only_and_protected_fields_preflight (test_balance_authoring.BalanceAuthoringTests.test_existing_scalar_only_and_protected_fields_preflight) ... ok
+test_failure_during_atomic_replace_cleans_only_owned_temporary (test_balance_authoring.BalanceAuthoringTests.test_failure_during_atomic_replace_cleans_only_owned_temporary) ... ok
+test_flush_failure_preserves_source_and_cleans_temporary (test_balance_authoring.BalanceAuthoringTests.test_flush_failure_preserves_source_and_cleans_temporary) ... ok
+test_hardlinked_file_rejects_without_changing_either_name (test_balance_authoring.BalanceAuthoringTests.test_hardlinked_file_rejects_without_changing_either_name) ... ok
+test_invalid_inspection_selection_rejects_before_native_execution (test_balance_authoring.BalanceAuthoringTests.test_invalid_inspection_selection_rejects_before_native_execution) ... ok
+test_native_rejection_and_crash_never_publish (test_balance_authoring.BalanceAuthoringTests.test_native_rejection_and_crash_never_publish) ... ok
+test_offline_reads_report_execution_false_and_do_not_write (test_balance_authoring.BalanceAuthoringTests.test_offline_reads_report_execution_false_and_do_not_write) ... ok
+test_options_before_or_after_command_and_json_error_stdout (test_balance_authoring.BalanceAuthoringTests.test_options_before_or_after_command_and_json_error_stdout) ... ok
+test_out_of_root_paths_reject_before_engine (test_balance_authoring.BalanceAuthoringTests.test_out_of_root_paths_reject_before_engine) ... ok
+test_parent_replaced_by_symlink_during_flush_cannot_write_outside (test_balance_authoring.BalanceAuthoringTests.test_parent_replaced_by_symlink_during_flush_cannot_write_outside) ... ok
+test_pointer_escapes_arrays_and_utf8_preserve_document (test_balance_authoring.BalanceAuthoringTests.test_pointer_escapes_arrays_and_utf8_preserve_document) ... ok
+test_scalar_edit_preserves_original_crlf_bytes (test_balance_authoring.BalanceAuthoringTests.test_scalar_edit_preserves_original_crlf_bytes) ... ok
+test_success_stages_whole_root_and_preserves_other_bytes (test_balance_authoring.BalanceAuthoringTests.test_success_stages_whole_root_and_preserves_other_bytes) ... ok
+test_symlink_file_parent_and_root_reject (test_balance_authoring.BalanceAuthoringTests.test_symlink_file_parent_and_root_reject) ... ok
+test_whole_root_resource_limits_preflight (test_balance_authoring.BalanceAuthoringTests.test_whole_root_resource_limits_preflight) ... ok
+test_invalid_unselected_raw_scenario_circuit_or_unlisted_file_blocks_set (test_balance_integration.BalanceIntegrationTests.test_invalid_unselected_raw_scenario_circuit_or_unlisted_file_blocks_set) ... ok
+test_native_schema_rejection_preserves_source (test_balance_integration.BalanceIntegrationTests.test_native_schema_rejection_preserves_source) ... ok
+test_trusted_copied_roots_support_validate_inspect_dry_run_set_and_diff (test_balance_integration.BalanceIntegrationTests.test_trusted_copied_roots_support_validate_inspect_dry_run_set_and_diff) ... ok
+test_clean_result_cannot_hide_native_errors_or_exit_mismatch (test_balance_native.BalanceNativeTests.test_clean_result_cannot_hide_native_errors_or_exit_mismatch) ... ok
+test_full_config_acceptance_requires_explicit_true (test_balance_native.BalanceNativeTests.test_full_config_acceptance_requires_explicit_true) ... ok
+test_import_failure_cleans_private_home (test_balance_native.BalanceNativeTests.test_import_failure_cleans_private_home) ... ok
+test_missing_engine_never_claims_acceptance (test_balance_native.BalanceNativeTests.test_missing_engine_never_claims_acceptance) ... ok
+test_missing_git_still_reports_actual_staged_source_digest (test_balance_native.BalanceNativeTests.test_missing_git_still_reports_actual_staged_source_digest) ... ok
+test_native_timeout_or_crash_reports_started_execution_and_preserves_source (test_balance_native.BalanceNativeTests.test_native_timeout_or_crash_reports_started_execution_and_preserves_source) ... ok
+test_numeric_object_keys_follow_properties_in_schema (test_balance_native.BalanceNativeTests.test_numeric_object_keys_follow_properties_in_schema) ... ok
+test_private_project_overlays_candidate_and_isolates_user_data (test_balance_native.BalanceNativeTests.test_private_project_overlays_candidate_and_isolates_user_data) ... ok
+test_schema_metadata_comes_from_declared_native_fields (test_balance_native.BalanceNativeTests.test_schema_metadata_comes_from_declared_native_fields) ... ok
+test_unconfigured_path_engine_is_never_selected_implicitly (test_balance_native.BalanceNativeTests.test_unconfigured_path_engine_is_never_selected_implicitly) ... ok
+test_unpinned_engine_rejects_before_import_or_source_copy (test_balance_native.BalanceNativeTests.test_unpinned_engine_rejects_before_import_or_source_copy) ... ok
+test_windows_missing_console_companion_returns_json_without_publication (test_balance_native.BalanceNativeTests.test_windows_missing_console_companion_returns_json_without_publication) ... ok
+test_abandoned_mutex_rechecks_latest_config_before_publication (test_balance_portable.PortablePublicationTests.test_abandoned_mutex_rechecks_latest_config_before_publication) ... ok
+test_concurrent_other_file_change_during_flush_preserves_latest_data (test_balance_portable.PortablePublicationTests.test_concurrent_other_file_change_during_flush_preserves_latest_data) ... ok
+test_failed_mutex_acquisition_cannot_publish_or_change_manifest (test_balance_portable.PortablePublicationTests.test_failed_mutex_acquisition_cannot_publish_or_change_manifest) ... ok
+test_flush_or_replace_failure_preserves_source_and_unlocks (test_balance_portable.PortablePublicationTests.test_flush_or_replace_failure_preserves_source_and_unlocks) ... ok
+test_portable_replacement_preserves_existing_posix_permissions (test_balance_portable.PortablePublicationTests.test_portable_replacement_preserves_existing_posix_permissions) ... ok
+test_windows_dispatch_uses_mutex_and_atomically_publishes_one_file (test_balance_portable.PortablePublicationTests.test_windows_dispatch_uses_mutex_and_atomically_publishes_one_file) ... ok
+test_campaign_entry_uses_authored_circuits_not_library_order (test_campaign_data_contract.CampaignDataContractTests.test_campaign_entry_uses_authored_circuits_not_library_order) ... ok
+test_core_campaign_owns_starter_content_and_tuning (test_campaign_data_contract.CampaignDataContractTests.test_core_campaign_owns_starter_content_and_tuning) ... ok
+test_core_pack_publishes_campaign_and_its_weekend (test_campaign_data_contract.CampaignDataContractTests.test_core_pack_publishes_campaign_and_its_weekend) ... ok
+test_legacy_literals_are_explicit_compatibility_not_new_content (test_campaign_data_contract.CampaignDataContractTests.test_legacy_literals_are_explicit_compatibility_not_new_content) ... ok
+test_people_and_supply_algorithms_consume_policy (test_campaign_data_contract.CampaignDataContractTests.test_people_and_supply_algorithms_consume_policy) ... ok
+test_rival_algorithm_consumes_policy_instead_of_tuning_literals (test_campaign_data_contract.CampaignDataContractTests.test_rival_algorithm_consumes_policy_instead_of_tuning_literals) ... ok
+test_starter_interprets_data_instead_of_redeclaring_it (test_campaign_data_contract.CampaignDataContractTests.test_starter_interprets_data_instead_of_redeclaring_it) ... ok
+test_archive_requires_historical_notice (test_check_docs.DocumentationChecks.test_archive_requires_historical_notice) ... ok
+test_encoded_path_reference_definition_and_duplicate_heading (test_check_docs.DocumentationChecks.test_encoded_path_reference_definition_and_duplicate_heading) ... ok
+test_game_folder_data_is_accepted_but_its_readme_must_be_indexed (test_check_docs.DocumentationChecks.test_game_folder_data_is_accepted_but_its_readme_must_be_indexed) ... ok
+test_generated_artifact_glob_does_not_exempt_literal_documents (test_check_docs.DocumentationChecks.test_generated_artifact_glob_does_not_exempt_literal_documents) ... ok
+test_installed_dependency_docs_are_not_authored_pages (test_check_docs.DocumentationChecks.test_installed_dependency_docs_are_not_authored_pages) ... ok
+test_missing_target_and_fragment (test_check_docs.DocumentationChecks.test_missing_target_and_fragment) ... ok
+test_other_nested_docs_and_dependency_links_remain_checked (test_check_docs.DocumentationChecks.test_other_nested_docs_and_dependency_links_remain_checked) ... ok
+test_stale_production_document_path (test_check_docs.DocumentationChecks.test_stale_production_document_path) ... ok
+test_unindexed_page_and_root_document (test_check_docs.DocumentationChecks.test_unindexed_page_and_root_document) ... ok
+test_valid_links_and_fenced_examples (test_check_docs.DocumentationChecks.test_valid_links_and_fenced_examples) ... ok
+test_bad_identity_creates_nothing (test_content_authoring.ContentAuthoringTests.test_bad_identity_creates_nothing) ... ok
+test_clone_checks_namespace_and_duplicate_id (test_content_authoring.ContentAuthoringTests.test_clone_checks_namespace_and_duplicate_id) ... ok
+test_clone_circuit_assigns_a_new_document_identity (test_content_authoring.ContentAuthoringTests.test_clone_circuit_assigns_a_new_document_identity) ... ok
+test_clone_rolls_back_failed_manifest_replace (test_content_authoring.ContentAuthoringTests.test_clone_rolls_back_failed_manifest_replace) ... ok
+test_engine_error_rejects_a_false_success_report (test_content_authoring.ContentAuthoringTests.test_engine_error_rejects_a_false_success_report) ... ok
+test_exit_status_must_agree (test_content_authoring.ContentAuthoringTests.test_exit_status_must_agree) ... ok
+test_init_is_explicit_and_never_overwrites (test_content_authoring.ContentAuthoringTests.test_init_is_explicit_and_never_overwrites) ... ok
+test_missing_engine_never_reports_validation (test_content_authoring.ContentAuthoringTests.test_missing_engine_never_reports_validation) ... ok
+test_schema_check_does_not_rewrite (test_content_authoring.ContentAuthoringTests.test_schema_check_does_not_rewrite) ... ok
+test_every_inventory_entry_has_valid_classification_and_live_production_consumer (test_content_consumer_inventory.ContentConsumerInventoryTests.test_every_inventory_entry_has_valid_classification_and_live_production_consumer) ... ok
+test_every_published_schema_family_is_inventoried_once (test_content_consumer_inventory.ContentConsumerInventoryTests.test_every_published_schema_family_is_inventoried_once) ... ok
+test_every_schema_leaf_has_a_declared_owner (test_content_consumer_inventory.ContentConsumerInventoryTests.test_every_schema_leaf_has_a_declared_owner) ... ok
+test_inventory_is_versioned_and_classifications_are_explicit (test_content_consumer_inventory.ContentConsumerInventoryTests.test_inventory_is_versioned_and_classifications_are_explicit) ... ok
+test_nested_schema_addition_requires_explicit_inventory_review (test_content_consumer_inventory.ContentConsumerInventoryTests.test_nested_schema_addition_requires_explicit_inventory_review) ... ok
+test_no_catch_all_prefix_can_hide_future_fields (test_content_consumer_inventory.ContentConsumerInventoryTests.test_no_catch_all_prefix_can_hide_future_fields) ... ok
+test_retained_literal_tables_and_bounds_are_explicitly_classified (test_content_consumer_inventory.ContentConsumerInventoryTests.test_retained_literal_tables_and_bounds_are_explicitly_classified) ... ok
+test_actual_engine_errors_still_reject (test_content_hardening.ContentHardeningTests.test_actual_engine_errors_still_reject) ... ok
+test_boolean_number_differences_are_not_lost_in_nested_values (test_content_hardening.ContentHardeningTests.test_boolean_number_differences_are_not_lost_in_nested_values) ... ok
+test_check_schemas_does_not_create_directories (test_content_hardening.ContentHardeningTests.test_check_schemas_does_not_create_directories) ... ok
+test_cli_invalid_result_is_a_json_failure_without_traceback (test_content_hardening.ContentHardeningTests.test_cli_invalid_result_is_a_json_failure_without_traceback) ... ok
+test_clone_reads_dependencies_before_destination_without_writing_them (test_content_hardening.ContentHardeningTests.test_clone_reads_dependencies_before_destination_without_writing_them) ... ok
+test_command_name_resolves_on_path (test_content_hardening.ContentHardeningTests.test_command_name_resolves_on_path) ... ok
+test_diff_dependencies_and_sides_are_separate (test_content_hardening.ContentHardeningTests.test_diff_dependencies_and_sides_are_separate) ... ok
+test_every_read_command_accepts_repeated_packs (test_content_hardening.ContentHardeningTests.test_every_read_command_accepts_repeated_packs) ... ok
+test_exclusive_write_preserves_existing_file_and_symlink_target (test_content_hardening.ContentHardeningTests.test_exclusive_write_preserves_existing_file_and_symlink_target) ... ok
+test_failed_initialization_rolls_back_new_directory_only (test_content_hardening.ContentHardeningTests.test_failed_initialization_rolls_back_new_directory_only) ... ok
+test_failed_write_closes_then_removes_partial_file (test_content_hardening.ContentHardeningTests.test_failed_write_closes_then_removes_partial_file) ... ok
+test_failed_write_does_not_remove_another_writers_replacement (test_content_hardening.ContentHardeningTests.test_failed_write_does_not_remove_another_writers_replacement) ... ok
+test_malformed_engine_envelopes_fail_closed (test_content_hardening.ContentHardeningTests.test_malformed_engine_envelopes_fail_closed) ... ok
+test_ordered_roots_are_canonical_and_core_is_loaded_once (test_content_hardening.ContentHardeningTests.test_ordered_roots_are_canonical_and_core_is_loaded_once) ... ok
+test_serialization_failure_creates_nothing (test_content_hardening.ContentHardeningTests.test_serialization_failure_creates_nothing) ... ok
+test_valid_author_text_is_not_an_engine_error (test_content_hardening.ContentHardeningTests.test_valid_author_text_is_not_an_engine_error) ... ok
+test_aliases_are_not_silently_loaded_twice (test_content_multipack.MultiPackTests.test_aliases_are_not_silently_loaded_twice) ... ok
+test_bare_godot_command_uses_path_lookup (test_content_multipack.MultiPackTests.test_bare_godot_command_uses_path_lookup) ... ok
+test_clone_failed_validation_cleans_its_lock_without_creating_a_directory (test_content_multipack.MultiPackTests.test_clone_failed_validation_cleans_its_lock_without_creating_a_directory) ... ok
+test_clone_forwards_dependencies_before_its_destination (test_content_multipack.MultiPackTests.test_clone_forwards_dependencies_before_its_destination) ... ok
+test_clone_rejects_a_manifest_modified_during_validation (test_content_multipack.MultiPackTests.test_clone_rejects_a_manifest_modified_during_validation) ... ok
+test_cooperating_writer_lock_is_never_removed_by_a_failed_acquisition (test_content_multipack.MultiPackTests.test_cooperating_writer_lock_is_never_removed_by_a_failed_acquisition) ... ok
+test_dependency_order_and_implicit_core_are_preserved (test_content_multipack.MultiPackTests.test_dependency_order_and_implicit_core_are_preserved) ... ok
+test_diff_does_not_equate_nested_booleans_with_numbers (test_content_multipack.MultiPackTests.test_diff_does_not_equate_nested_booleans_with_numbers) ... ok
+test_diff_supports_common_and_side_specific_dependencies (test_content_multipack.MultiPackTests.test_diff_supports_common_and_side_specific_dependencies) ... ok
+test_export_does_not_replace_a_destination_created_during_publication (test_content_multipack.MultiPackTests.test_export_does_not_replace_a_destination_created_during_publication) ... ok
+test_export_write_failure_leaves_no_partial_destination_or_temporary (test_content_multipack.MultiPackTests.test_export_write_failure_leaves_no_partial_destination_or_temporary) ... ok
+test_ids_match_the_production_length_bound (test_content_multipack.MultiPackTests.test_ids_match_the_production_length_bound) ... ok
+test_invalid_engine_result_envelopes_fail_cleanly (test_content_multipack.MultiPackTests.test_invalid_engine_result_envelopes_fail_cleanly) ... ok
+test_invalid_serialization_never_creates_a_file (test_content_multipack.MultiPackTests.test_invalid_serialization_never_creates_a_file) ... ok
+test_read_commands_forward_every_selected_pack (test_content_multipack.MultiPackTests.test_read_commands_forward_every_selected_pack) ... ok
+test_schema_check_has_no_directory_side_effects (test_content_multipack.MultiPackTests.test_schema_check_has_no_directory_side_effects) ... ok
+test_real_dependencies_clone_list_export_diff_and_rejection (test_content_multipack.NativeMultiPackTests.test_real_dependencies_clone_list_export_diff_and_rejection) ... ok
+test_clone_from_dependency_is_still_accepted_by_production (test_content_multipack_smoke.MultiPackIntegrationTests.test_clone_from_dependency_is_still_accepted_by_production) ... ok
+test_export_and_diff_resolve_shared_dependencies_and_side_addons (test_content_multipack_smoke.MultiPackIntegrationTests.test_export_and_diff_resolve_shared_dependencies_and_side_addons) ... ok
+test_missing_or_out_of_order_dependencies_are_native_rejections (test_content_multipack_smoke.MultiPackIntegrationTests.test_missing_or_out_of_order_dependencies_are_native_rejections) ... ok
+test_validate_inspect_and_list_use_the_same_ordered_selection (test_content_multipack_smoke.MultiPackIntegrationTests.test_validate_inspect_and_list_use_the_same_ordered_selection) ... ok
+test_diff_never_compares_an_invalid_catalog (test_content_operations.ContentOperationsTests.test_diff_never_compares_an_invalid_catalog) ... ok
+test_difference_reports_additions_removals_and_a_bounded_window (test_content_operations.ContentOperationsTests.test_difference_reports_additions_removals_and_a_bounded_window) ... ok
+test_differences_retain_array_order_and_escape_pointers (test_content_operations.ContentOperationsTests.test_differences_retain_array_order_and_escape_pointers) ... ok
+test_export_never_overwrites_and_identifies_inspection_format (test_content_operations.ContentOperationsTests.test_export_never_overwrites_and_identifies_inspection_format) ... ok
+test_invalid_source_cannot_export (test_content_operations.ContentOperationsTests.test_invalid_source_cannot_export) ... ok
+test_list_rejects_typo_in_kind_instead_of_claiming_empty_catalog (test_content_operations.ContentOperationsTests.test_list_rejects_typo_in_kind_instead_of_claiming_empty_catalog) ... ok
+test_test_command_calls_production_simulator_and_never_fakes_success (test_content_operations.ContentOperationsTests.test_test_command_calls_production_simulator_and_never_fakes_success) ... ok
+test_another_source_run_or_repository_is_rejected (test_download_artifacts.ArtifactDownloadTests.test_another_source_run_or_repository_is_rejected) ... ok
+test_archive_bytes_and_size_must_match_authenticated_metadata (test_download_artifacts.ArtifactDownloadTests.test_archive_bytes_and_size_must_match_authenticated_metadata) ... ok
+test_authentication_is_never_added_to_command_arguments (test_download_artifacts.ArtifactDownloadTests.test_authentication_is_never_added_to_command_arguments) ... ok
+test_changing_or_incomplete_paginated_inventory_cannot_download (test_download_artifacts.ArtifactDownloadTests.test_changing_or_incomplete_paginated_inventory_cannot_download) ... ok
+test_download_uses_owned_api_endpoint_and_separate_artifact_directories (test_download_artifacts.ArtifactDownloadTests.test_download_uses_owned_api_endpoint_and_separate_artifact_directories) ... ok
+test_empty_or_oversized_zip_is_not_evidence (test_download_artifacts.ArtifactDownloadTests.test_empty_or_oversized_zip_is_not_evidence) ... ok
+test_exact_current_run_artifact_is_selected (test_download_artifacts.ArtifactDownloadTests.test_exact_current_run_artifact_is_selected) ... ok
+test_failure_cannot_publish_partial_or_reuse_old_evidence (test_download_artifacts.ArtifactDownloadTests.test_failure_cannot_publish_partial_or_reuse_old_evidence) ... ok
+test_invalid_request_never_reaches_github (test_download_artifacts.ArtifactDownloadTests.test_invalid_request_never_reaches_github) ... ok
+test_missing_duplicate_expired_or_unidentified_artifact_is_rejected (test_download_artifacts.ArtifactDownloadTests.test_missing_duplicate_expired_or_unidentified_artifact_is_rejected) ... ok
+test_nested_unicode_files_are_extracted_without_rewriting_bytes (test_download_artifacts.ArtifactDownloadTests.test_nested_unicode_files_are_extracted_without_rewriting_bytes) ... ok
+test_pr_head_provenance_preserves_distinct_checkout_merge_identity (test_download_artifacts.ArtifactDownloadTests.test_pr_head_provenance_preserves_distinct_checkout_merge_identity) ... ok
+test_symlinks_and_case_collisions_are_rejected_on_every_os (test_download_artifacts.ArtifactDownloadTests.test_symlinks_and_case_collisions_are_rejected_on_every_os) ... ok
+test_unsafe_paths_fail_before_writing_any_file (test_download_artifacts.ArtifactDownloadTests.test_unsafe_paths_fail_before_writing_any_file) ... ok
+test_ambiguous_global_names_and_unhandled_parent_syntax_fail_closed (test_gdscript_contracts.InheritedContractTests.test_ambiguous_global_names_and_unhandled_parent_syntax_fail_closed) ... ok
+test_detached_value_subclasses_remain_available_to_ui (test_gdscript_contracts.InheritedContractTests.test_detached_value_subclasses_remain_available_to_ui) ... ok
+test_dispatch_hooks_follow_the_same_inheritance_as_godot (test_gdscript_contracts.InheritedContractTests.test_dispatch_hooks_follow_the_same_inheritance_as_godot) ... ok
+test_inheritance_through_declared_classes_preserves_source_order (test_gdscript_contracts.InheritedContractTests.test_inheritance_through_declared_classes_preserves_source_order) ... ok
+test_inline_detached_value_inheritance_remains_legal (test_gdscript_contracts.InheritedContractTests.test_inline_detached_value_inheritance_remains_legal) ... ok
+test_inline_global_class_parent_preserves_mechanics_and_authority (test_gdscript_contracts.InheritedContractTests.test_inline_global_class_parent_preserves_mechanics_and_authority) ... ok
+test_missing_cyclic_and_escaping_parents_fail_closed (test_gdscript_contracts.InheritedContractTests.test_missing_cyclic_and_escaping_parents_fail_closed) ... ok
+test_named_descendants_keep_authority_across_application_adapters (test_gdscript_contracts.InheritedContractTests.test_named_descendants_keep_authority_across_application_adapters) ... ok
+test_named_inherited_authority_cannot_bypass_ui_boundary (test_gdscript_contracts.InheritedContractTests.test_named_inherited_authority_cannot_bypass_ui_boundary) ... ok
+test_native_terminals_and_trailing_comments_are_explicitly_supported (test_gdscript_contracts.InheritedContractTests.test_native_terminals_and_trailing_comments_are_explicitly_supported) ... ok
+test_plain_domain_values_remain_available_to_ui (test_gdscript_contracts.InheritedContractTests.test_plain_domain_values_remain_available_to_ui) ... ok
+test_plain_method_overrides_and_documented_examples_are_not_dispatch (test_gdscript_contracts.InheritedContractTests.test_plain_method_overrides_and_documented_examples_are_not_dispatch) ... ok
+test_preloading_inherited_authority_cannot_bypass_the_ui_boundary (test_gdscript_contracts.InheritedContractTests.test_preloading_inherited_authority_cannot_bypass_the_ui_boundary) ... ok
+test_shadowed_dispatch_fails_both_cli_and_guard (test_gdscript_contracts.InheritedContractTests.test_shadowed_dispatch_fails_both_cli_and_guard) ... ok
+test_unresolved_global_parent_fails_both_cli_and_guard (test_gdscript_contracts.InheritedContractTests.test_unresolved_global_parent_fails_both_cli_and_guard) ... ok
+test_unresolved_non_simulation_authority_parent_fails_guard (test_gdscript_contracts.InheritedContractTests.test_unresolved_non_simulation_authority_parent_fails_guard) ... ok
+test_corpus_uses_exact_descriptive_fields (test_json_number_fixtures.JsonNumberFixtureTests.test_corpus_uses_exact_descriptive_fields) ... ok
+test_expected_bits_match_independent_python_conversion (test_json_number_fixtures.JsonNumberFixtureTests.test_expected_bits_match_independent_python_conversion) ... ok
+test_inputs_are_finite_decimal_numbers (test_json_number_fixtures.JsonNumberFixtureTests.test_inputs_are_finite_decimal_numbers) ... ok
+test_numerical_boundaries_remain_in_the_corpus (test_json_number_fixtures.JsonNumberFixtureTests.test_numerical_boundaries_remain_in_the_corpus) ... ok
+test_reference_pairs_and_order_are_unchanged (test_json_number_fixtures.JsonNumberFixtureTests.test_reference_pairs_and_order_are_unchanged) ... ok
+test_catalog_cannot_silently_drop_malformed_or_duplicate_providers (test_mechanics_tool.MechanicsToolTests.test_catalog_cannot_silently_drop_malformed_or_duplicate_providers) ... ok
+test_catalog_lists_supported_profiles_and_all_hooks (test_mechanics_tool.MechanicsToolTests.test_catalog_lists_supported_profiles_and_all_hooks) ... ok
+test_dry_plan_never_changes_project (test_mechanics_tool.MechanicsToolTests.test_dry_plan_never_changes_project) ... ok
+test_existing_target_is_not_overwritten (test_mechanics_tool.MechanicsToolTests.test_existing_target_is_not_overwritten) ... ok
+test_failed_write_rolls_back_created_files_and_preserves_registry (test_mechanics_tool.MechanicsToolTests.test_failed_write_rolls_back_created_files_and_preserves_registry) ... ok
+test_generated_execution_policy_rejects_zero_exit_engine_errors (test_mechanics_tool.MechanicsToolTests.test_generated_execution_policy_rejects_zero_exit_engine_errors) ... ok
+test_generated_noop_loads_and_runs_in_real_godot (test_mechanics_tool.MechanicsToolTests.test_generated_noop_loads_and_runs_in_real_godot) ... [generated-import] /workspace/work/armored-platoon/work/godot4.7.2/Godot_v4.7.2-stable_linux.x86_64 --headless --path /tmp/mechanic-generated-uqdcp9ne/project --editor --quit
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Started Project initialization (5 steps)[39m[0m
+[   0% ] [90m[1mfirst_scan_filesystem[22m | Scanning file structure...[39m[0m
+[  16% ] [90m[1mfirst_scan_filesystem[22m | Loading global class names...[39m[0m
+[  33% ] [90m[1mfirst_scan_filesystem[22m | Verifying GDExtensions...[39m[0m
+[  50% ] [90m[1mfirst_scan_filesystem[22m | Creating autoload scripts...[39m[0m
+[  66% ] [90m[1mfirst_scan_filesystem[22m | Initializing plugins...[39m[0m
+[  83% ] [90m[1mfirst_scan_filesystem[22m | Starting file scan...[39m[0m
+[92m[ DONE ][39m [1mfirst_scan_filesystem[22m
+[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | Started Registering global classes... (627 steps)[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | CampaignCheckpoint[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | CampaignCheckpointManagementValidation[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | CampaignCheckpointMigration[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | CampaignCommands[39m[0m
+[   0% ] [90m[1mupdate_scripts_classes[22m | CampaignCommercialQuery[39m[0m
+[   1% ] [90m[1mupdate_scripts_classes[22m | CampaignCommercialTransaction[39m[0m
+[   1% ] [90m[1mupdate_scripts_classes[22m | CampaignCompetitionTransaction[39m[0m
+[   1% ] [90m[1mupdate_scripts_classes[22m | CampaignCorrectionQuery[39m[0m
+[   1% ] [90m[1mupdate_scripts_classes[22m | CampaignDelegatedExecutor[39m[0m
+[   1% ] [90m[1mupdate_scripts_classes[22m | CampaignDelegationQuery[39m[0m
+[   1% ] [90m[1mupdate_scripts_classes[22m | CampaignDelegationTransaction[39m[0m
+[   2% ] [90m[1mupdate_scripts_classes[22m | CampaignDepartureTransaction[39m[0m
+[   2% ] [90m[1mupdate_scripts_classes[22m | CampaignDirectorQuery[39m[0m
+[   2% ] [90m[1mupdate_scripts_classes[22m | CampaignDirectorTransaction[39m[0m
+[   2% ] [90m[1mupdate_scripts_classes[22m | CampaignDistressTransaction[39m[0m
+[   2% ] [90m[1mupdate_scripts_classes[22m | CampaignEngineeringQuery[39m[0m
+[   2% ] [90m[1mupdate_scripts_classes[22m | CampaignEngineeringTransaction[39m[0m
+[   3% ] [90m[1mupdate_scripts_classes[22m | CampaignFinanceQuery[39m[0m
+[   3% ] [90m[1mupdate_scripts_classes[22m | CampaignFinanceTransaction[39m[0m
+[   3% ] [90m[1mupdate_scripts_classes[22m | CampaignFinancialPositionQuery[39m[0m
+[   3% ] [90m[1mupdate_scripts_classes[22m | CampaignGroupTransaction[39m[0m
+[   3% ] [90m[1mupdate_scripts_classes[22m | CampaignOperationsQuery[39m[0m
+[   3% ] [90m[1mupdate_scripts_classes[22m | CampaignOperationsTransaction[39m[0m
+[   3% ] [90m[1mupdate_scripts_classes[22m | CampaignPeopleTransaction[39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | CampaignPersonnelQuery[39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | CampaignPersonnelTransaction[39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | CampaignReadinessQuery[39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | CampaignRivalQuery[39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | CampaignRivalTransaction[39m[0m
+[   4% ] [90m[1mupdate_scripts_classes[22m | CampaignSeasonProgressionTransaction[39m[0m
+[   5% ] [90m[1mupdate_scripts_classes[22m | CampaignStarter[39m[0m
+[   5% ] [90m[1mupdate_scripts_classes[22m | CampaignStarterLegacy[39m[0m
+[   5% ] [90m[1mupdate_scripts_classes[22m | CampaignStarterResources[39m[0m
+[   5% ] [90m[1mupdate_scripts_classes[22m | CampaignSupplyTransaction[39m[0m
+[   5% ] [90m[1mupdate_scripts_classes[22m | CampaignWeekendManifest[39m[0m
+[   5% ] [90m[1mupdate_scripts_classes[22m | CampaignWeekendSettlement[39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | CampaignWeekendTransaction[39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | CampaignWeekendWorkflow[39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | ContentCatalog[39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | ContentCatalogValidation[39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | TrackEditorContent[39m[0m
+[   6% ] [90m[1mupdate_scripts_classes[22m | TrackEditorPort[39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | TrackEditorSession[39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | TrackPreviewHandle[39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | TrackReferencePreview[39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | MinimalDriverContext[39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | MinimalRaceControls[39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | MinimalRaceLifecycle[39m[0m
+[   7% ] [90m[1mupdate_scripts_classes[22m | MinimalDriverReadout[39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | MinimalRaceSession[39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | MinimalRaceTiming[39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | MinimalRaceHandle[39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | MinimalWeekendQuery[39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | NotebookPort[39m[0m
+[   8% ] [90m[1mupdate_scripts_classes[22m | RacePresentationServices[39m[0m
+[   9% ] [90m[1mupdate_scripts_classes[22m | RaceVisualPort[39m[0m
+[   9% ] [90m[1mupdate_scripts_classes[22m | RaceContestReadModel[39m[0m
+[   9% ] [90m[1mupdate_scripts_classes[22m | RaceDecisionViewModel[39m[0m
+[   9% ] [90m[1mupdate_scripts_classes[22m | DirectorReadModel[39m[0m
+[   9% ] [90m[1mupdate_scripts_classes[22m | EntrantReadModel[39m[0m
+[   9% ] [90m[1mupdate_scripts_classes[22m | RaceChartQuery[39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | RaceReadModel[39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | RaceSessionStatus[39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | RaceViewAnalysisQuery[39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | RaceViewQuery[39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | RaceViewStateQuery[39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | RaceViewToolsQuery[39m[0m
+[  10% ] [90m[1mupdate_scripts_classes[22m | RaceVisualSource[39m[0m
+[  11% ] [90m[1mupdate_scripts_classes[22m | WeekendSummary[39m[0m
+[  11% ] [90m[1mupdate_scripts_classes[22m | NotebookEntry[39m[0m
+[  11% ] [90m[1mupdate_scripts_classes[22m | RaceRecord[39m[0m
+[  11% ] [90m[1mupdate_scripts_classes[22m | RaceRecordFormat[39m[0m
+[  11% ] [90m[1mupdate_scripts_classes[22m | RaceReplay[39m[0m
+[  11% ] [90m[1mupdate_scripts_classes[22m | RaceReproduction[39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | RecordedWeekendContinuation[39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | ReplayScenario[39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | StateDivergence[39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | WeekendResult[39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | DeveloperCatalogQueries[39m[0m
+[  12% ] [90m[1mupdate_scripts_classes[22m | DeveloperCampaigns[39m[0m
+[  13% ] [90m[1mupdate_scripts_classes[22m | DeveloperCampaignDescriptions[39m[0m
+[  13% ] [90m[1mupdate_scripts_classes[22m | DeveloperCampaignManagementActions[39m[0m
+[  13% ] [90m[1mupdate_scripts_classes[22m | DeveloperCampaignOrganizationActions[39m[0m
+[  13% ] [90m[1mupdate_scripts_classes[22m | DeveloperCampaignPlanning[39m[0m
+[  13% ] [90m[1mupdate_scripts_classes[22m | DeveloperCampaignQueries[39m[0m
+[  13% ] [90m[1mupdate_scripts_classes[22m | DeveloperCampaignSeasonActions[39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | DeveloperCampaignSnapshots[39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | DeveloperFacetValues[39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | DeveloperTracks[39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | DeveloperTrackDescriptions[39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | DeveloperTrackEdits[39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | DeveloperWeekends[39m[0m
+[  14% ] [90m[1mupdate_scripts_classes[22m | DeveloperWeekendDescriptors[39m[0m
+[  15% ] [90m[1mupdate_scripts_classes[22m | DeveloperWeekendDispatch[39m[0m
+[  15% ] [90m[1mupdate_scripts_classes[22m | DeveloperWeekendPlanningQueries[39m[0m
+[  15% ] [90m[1mupdate_scripts_classes[22m | DeveloperWeekendQueries[39m[0m
+[  15% ] [90m[1mupdate_scripts_classes[22m | DeveloperWeekendSession[39m[0m
+[  15% ] [90m[1mupdate_scripts_classes[22m | GameToolbox[39m[0m
+[  15% ] [90m[1mupdate_scripts_classes[22m | DeveloperResponseBudget[39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | DeveloperToolResult[39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | RaceMomentDirector[39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | RaceCommands[39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | RaceMomentControl[39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | RaceSessionRunner[39m[0m
+[  16% ] [90m[1mupdate_scripts_classes[22m | RaceViewHandle[39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | RaceViewSession[39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | ReplayPlayback[39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | ReplaySessionBinding[39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | ReplayViewSession[39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | ScenarioDraft[39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | WeekendEntryStore[39m[0m
+[  17% ] [90m[1mupdate_scripts_classes[22m | WeekendLaunch[39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | WeekendLaunchPreparation[39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | CampaignScreens[39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | ContentScenarioControls[39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | MainMenuScreen[39m[0m
+[  18% ] [90m[1mupdate_scripts_classes[22m | ReplayController[39m[0m
+[  19% ] [90m[1mupdate_scripts_classes[22m | ScenarioScreens[39m[0m
+[  19% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  19% ] [90m[1mupdate_scripts_classes[22m | StandaloneSmokeFiles[39m[0m
+[  19% ] [90m[1mupdate_scripts_classes[22m | WeekendLibraryScreen[39m[0m
+[  19% ] [90m[1mupdate_scripts_classes[22m | CampaignAvailabilityReservation[39m[0m
+[  19% ] [90m[1mupdate_scripts_classes[22m | CampaignCapacityReservation[39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | CampaignCapacityResource[39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | CampaignCashCommitment[39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | CampaignCashForecast[39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | CampaignClock[39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | CampaignCommercial[39m[0m
+[  20% ] [90m[1mupdate_scripts_classes[22m | CampaignCommercialAuthority[39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | CampaignCompetition[39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | CampaignCompetitionValidation[39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | CampaignContentSnapshot[39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | CampaignDelegation[39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | CampaignDelegationAuthority[39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | CampaignDelegationGuard[39m[0m
+[  21% ] [90m[1mupdate_scripts_classes[22m | CampaignDistress[39m[0m
+[  22% ] [90m[1mupdate_scripts_classes[22m | CampaignEconomy[39m[0m
+[  22% ] [90m[1mupdate_scripts_classes[22m | CampaignEconomyLegacy[39m[0m
+[  22% ] [90m[1mupdate_scripts_classes[22m | CampaignEconomyTimeline[39m[0m
+[  22% ] [90m[1mupdate_scripts_classes[22m | CampaignEconomyValidation[39m[0m
+[  22% ] [90m[1mupdate_scripts_classes[22m | CampaignEmploymentContract[39m[0m
+[  22% ] [90m[1mupdate_scripts_classes[22m | CampaignEngineering[39m[0m
+[  23% ] [90m[1mupdate_scripts_classes[22m | CampaignEngineeringDesign[39m[0m
+[  23% ] [90m[1mupdate_scripts_classes[22m | CampaignEngineeringEconomy[39m[0m
+[  23% ] [90m[1mupdate_scripts_classes[22m | CampaignEngineeringOperations[39m[0m
+[  23% ] [90m[1mupdate_scripts_classes[22m | CampaignEngineeringProject[39m[0m
+[  23% ] [90m[1mupdate_scripts_classes[22m | CampaignEngineeringTimeline[39m[0m
+[  23% ] [90m[1mupdate_scripts_classes[22m | CampaignGroup[39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | CampaignGroupAuthority[39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | CampaignGroupValidation[39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | CampaignIdentity[39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | CampaignInventory[39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | CampaignManagement[39m[0m
+[  24% ] [90m[1mupdate_scripts_classes[22m | CampaignOperations[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | CampaignOperationsEconomy[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | CampaignOperationsPersonnel[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | CampaignOperationsTimeline[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | CampaignPartInstance[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | CampaignPeopleDevelopment[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | CampaignPeopleDevelopmentAuthority[39m[0m
+[  25% ] [90m[1mupdate_scripts_classes[22m | CampaignPeopleDevelopmentValidation[39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | CampaignPeoplePolicy[39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | CampaignPerson[39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | CampaignPersonnel[39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | CampaignPersonnelEconomy[39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | CampaignPersonnelRules[39m[0m
+[  26% ] [90m[1mupdate_scripts_classes[22m | CampaignPersonnelTimeline[39m[0m
+[  27% ] [90m[1mupdate_scripts_classes[22m | CampaignReservePolicy[39m[0m
+[  27% ] [90m[1mupdate_scripts_classes[22m | CampaignRivals[39m[0m
+[  27% ] [90m[1mupdate_scripts_classes[22m | CampaignRivalsAuthority[39m[0m
+[  27% ] [90m[1mupdate_scripts_classes[22m | CampaignRivalPolicy[39m[0m
+[  27% ] [90m[1mupdate_scripts_classes[22m | CampaignRoleAssignment[39m[0m
+[  27% ] [90m[1mupdate_scripts_classes[22m | CampaignSeason[39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | CampaignSeasonCalendar[39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | CampaignSeasonEntries[39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | CampaignSeasonPlanning[39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | CampaignSeasonPlanningAuthority[39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | CampaignSeasonRecord[39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | CampaignSeriesRules[39m[0m
+[  28% ] [90m[1mupdate_scripts_classes[22m | CampaignStandings[39m[0m
+[  29% ] [90m[1mupdate_scripts_classes[22m | CampaignState[39m[0m
+[  29% ] [90m[1mupdate_scripts_classes[22m | CampaignSupplyAuthority[39m[0m
+[  29% ] [90m[1mupdate_scripts_classes[22m | CampaignSupplyNetwork[39m[0m
+[  29% ] [90m[1mupdate_scripts_classes[22m | CampaignSupplyPolicy[39m[0m
+[  29% ] [90m[1mupdate_scripts_classes[22m | CampaignSupplyValidation[39m[0m
+[  29% ] [90m[1mupdate_scripts_classes[22m | CampaignWeekendPolicy[39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | CampaignWeekendReceipt[39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | CampaignWorkOrder[39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | RaceDriverOrders[39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | RacePitOrders[39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | RaceSessionOrders[39m[0m
+[  30% ] [90m[1mupdate_scripts_classes[22m | CampaignDefinition[39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | CampaignFinanceBalance[39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | CircuitDefinition[39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | CompetitionTuningSchema[39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | ContentVersions[39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | EditorProfileDefinition[39m[0m
+[  31% ] [90m[1mupdate_scripts_classes[22m | EntrantDefinition[39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | EntrantIdentity[39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | EnvironmentTuningSchema[39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | EnvironmentTuningValidation[39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | GameBalanceSchema[39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | LegacyCompetition[39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | LegacyEnvironment[39m[0m
+[  32% ] [90m[1mupdate_scripts_classes[22m | LegacyOperations[39m[0m
+[  33% ] [90m[1mupdate_scripts_classes[22m | LegacyRaceTuning[39m[0m
+[  33% ] [90m[1mupdate_scripts_classes[22m | LegacyRoster[39m[0m
+[  33% ] [90m[1mupdate_scripts_classes[22m | LegacySetupContent[39m[0m
+[  33% ] [90m[1mupdate_scripts_classes[22m | LegacyTyreContent[39m[0m
+[  33% ] [90m[1mupdate_scripts_classes[22m | MechanicProfileDefinition[39m[0m
+[  33% ] [90m[1mupdate_scripts_classes[22m | OperationsTuningSchema[39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | RaceContentSnapshot[39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | RacePhysicsBalance[39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | RacePlanningBalance[39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | RacePresentationBalance[39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | RaceTuningDefinition[39m[0m
+[  34% ] [90m[1mupdate_scripts_classes[22m | RaceTuningSchema[39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | RosterDefinition[39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | ContentScenarioDefinition[39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | ContentSchema[39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | SetupDefinition[39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | TyreDefinition[39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | TyreOperatingSchema[39m[0m
+[  35% ] [90m[1mupdate_scripts_classes[22m | RaceTyreRules[39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | TyreSchema[39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | TyreSurfaceResponse[39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | TyreThermalDefaults[39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | ContentValidation[39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | VehicleDefinition[39m[0m
+[  36% ] [90m[1mupdate_scripts_classes[22m | WeekendDefinition[39m[0m
+[  37% ] [90m[1mupdate_scripts_classes[22m | ExtensionProbeMechanic[39m[0m
+[  37% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  37% ] [90m[1mupdate_scripts_classes[22m | PracticeMechanic[39m[0m
+[  37% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  37% ] [90m[1mupdate_scripts_classes[22m | RaceHookContract[39m[0m
+[  37% ] [90m[1mupdate_scripts_classes[22m | RaceMechanic[39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | RaceMechanics[39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | RaceMechanicProfiles[39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | RecoveryMechanic[39m[0m
+[  38% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | StrategyMechanic[39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | WeatherMechanic[39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  39% ] [90m[1mupdate_scripts_classes[22m | RaceCar[39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | RaceEntrantFactory[39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | RacePerformanceProfile[39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | RacePitService[39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | RaceStateValue[39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | RaceStepClock[39m[0m
+[  40% ] [90m[1mupdate_scripts_classes[22m | RaceTiming[39m[0m
+[  41% ] [90m[1mupdate_scripts_classes[22m | RaceVehicleCondition[39m[0m
+[  41% ] [90m[1mupdate_scripts_classes[22m | DecisionFeed[39m[0m
+[  41% ] [90m[1mupdate_scripts_classes[22m | DuelRivalPolicy[39m[0m
+[  41% ] [90m[1mupdate_scripts_classes[22m | DuelScenarios[39m[0m
+[  41% ] [90m[1mupdate_scripts_classes[22m | PracticeEvidence[39m[0m
+[  41% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | PracticeRaceSim[39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | RacecraftController[39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | RaceForecaster[39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  42% ] [90m[1mupdate_scripts_classes[22m | RaceJournal[39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | RaceReliability[39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | RecoveryForecast[39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | RecoveryRaceSim[39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | RecoveryScenarios[39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | RivalStrategy[39m[0m
+[  43% ] [90m[1mupdate_scripts_classes[22m | RivalStyles[39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | ScenarioBrief[39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | StrategyPlan[39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | StrategyRaceSim[39m[0m
+[  44% ] [90m[1mupdate_scripts_classes[22m | TacticalDuels[39m[0m
+[  45% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  45% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  45% ] [90m[1mupdate_scripts_classes[22m | TacticalForecast[39m[0m
+[  45% ] [90m[1mupdate_scripts_classes[22m | TeamOrders[39m[0m
+[  45% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  45% ] [90m[1mupdate_scripts_classes[22m | WeatherOutlook[39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | WeatherRaceSim[39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | WeatherScenarios[39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | WeatherStrategy[39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | WeekendRaceControl[39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | WeekendScenarios[39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | WeekendWeather[39m[0m
+[  46% ] [90m[1mupdate_scripts_classes[22m | CarSetup[39m[0m
+[  47% ] [90m[1mupdate_scripts_classes[22m | RaceCheckpoint[39m[0m
+[  47% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  47% ] [90m[1mupdate_scripts_classes[22m | RaceSim[39m[0m
+[  47% ] [90m[1mupdate_scripts_classes[22m | RaceSimCore[39m[0m
+[  47% ] [90m[1mupdate_scripts_classes[22m | RaceSimFoundation[39m[0m
+[  47% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | RaceSimOperations[39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | RaceSimPort[39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  48% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  49% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  49% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  49% ] [90m[1mupdate_scripts_classes[22m | RaceSurface[39m[0m
+[  49% ] [90m[1mupdate_scripts_classes[22m | RacingLine[39m[0m
+[  49% ] [90m[1mupdate_scripts_classes[22m | TrackDiagnostics[39m[0m
+[  49% ] [90m[1mupdate_scripts_classes[22m | TrackDocument[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | TrackEdit[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | TrackGeometry[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | TrackSketch[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | TyreInventory[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | WheelTyres[39m[0m
+[  50% ] [90m[1mupdate_scripts_classes[22m | BalanceConfigValidation[39m[0m
+[  51% ] [90m[1mupdate_scripts_classes[22m | BundledContentDocuments[39m[0m
+[  51% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  51% ] [90m[1mupdate_scripts_classes[22m | JsonNumber[39m[0m
+[  51% ] [90m[1mupdate_scripts_classes[22m | ContentPackLoader[39m[0m
+[  51% ] [90m[1mupdate_scripts_classes[22m | ContentRuntimeProbe[39m[0m
+[  51% ] [90m[1mupdate_scripts_classes[22m | ContentScenarioTest[39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | ContentJson[39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | GameToolboxFactory[39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | CampaignStorage[39m[0m
+[  52% ] [90m[1mupdate_scripts_classes[22m | CircuitNotebook[39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | LocalNotebookPort[39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | LocalRacePresentationServices[39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | LocalTrackEditorPort[39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | LocalWeekendEntryStore[39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | PracticeScenarios[39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | ReplayStorage[39m[0m
+[  53% ] [90m[1mupdate_scripts_classes[22m | ResultReceipts[39m[0m
+[  54% ] [90m[1mupdate_scripts_classes[22m | RivalScenarios[39m[0m
+[  54% ] [90m[1mupdate_scripts_classes[22m | ScenarioCatalog[39m[0m
+[  54% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  54% ] [90m[1mupdate_scripts_classes[22m | Storage[39m[0m
+[  54% ] [90m[1mupdate_scripts_classes[22m | CampaignDirectorDesk[39m[0m
+[  54% ] [90m[1mupdate_scripts_classes[22m | MinimalDriverCard[39m[0m
+[  55% ] [90m[1mupdate_scripts_classes[22m | MinimalStatusGauge[39m[0m
+[  55% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  55% ] [90m[1mupdate_scripts_classes[22m | MinimalRaceStyle[39m[0m
+[  55% ] [90m[1mupdate_scripts_classes[22m | MinimalRaceTimingPresenter[39m[0m
+[  55% ] [90m[1mupdate_scripts_classes[22m | MinimalRaceWorkspace[39m[0m
+[  55% ] [90m[1mupdate_scripts_classes[22m | RaceAccessibility[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | RaceAnalysisWorkspace[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | RaceCallRoom[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | RaceCallRoomIntent[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | RaceChartNavigation[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | RaceDecisionDrawer[39m[0m
+[  56% ] [90m[1mupdate_scripts_classes[22m | RaceDecisionQueue[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | DirectorCarCard[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | DirectorStyle[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | RaceDriverEmblem[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | RaceGamepadNavigation[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | RaceInspectorPage[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | RaceJournalView[39m[0m
+[  57% ] [90m[1mupdate_scripts_classes[22m | RaceMetricChart[39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | RaceMetricChartData[39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | RacePitServicePanel[39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | RacePracticeProgrammeCard[39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | RacePracticeWorkspace[39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | RaceQualifyingWorkspace[39m[0m
+[  58% ] [90m[1mupdate_scripts_classes[22m | RaceReadPanel[39m[0m
+[  59% ] [90m[1mupdate_scripts_classes[22m | RaceObservationWorkspace[39m[0m
+[  59% ] [90m[1mupdate_scripts_classes[22m | RaceRadioInspector[39m[0m
+[  59% ] [90m[1mupdate_scripts_classes[22m | RaceResultsWorkspace[39m[0m
+[  59% ] [90m[1mupdate_scripts_classes[22m | RaceSectorTable[39m[0m
+[  59% ] [90m[1mupdate_scripts_classes[22m | RaceSessionHeader[39m[0m
+[  59% ] [90m[1mupdate_scripts_classes[22m | SessionResultsPanel[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | RaceStatusBadge[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | RaceStintHistory[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | RaceStrategyChart[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | RaceTeamIntentTimeline[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | RaceTelemetryInspector[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | RaceTimingTower[39m[0m
+[  60% ] [90m[1mupdate_scripts_classes[22m | RaceTyreReadout[39m[0m
+[  61% ] [90m[1mupdate_scripts_classes[22m | BattleOverlay[39m[0m
+[  61% ] [90m[1mupdate_scripts_classes[22m | CircuitPalette[39m[0m
+[  61% ] [90m[1mupdate_scripts_classes[22m | CircuitWorld[39m[0m
+[  61% ] [90m[1mupdate_scripts_classes[22m | ContextGuide[39m[0m
+[  61% ] [90m[1mupdate_scripts_classes[22m | DuelWorkspace[39m[0m
+[  61% ] [90m[1mupdate_scripts_classes[22m | TrackEditor[39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | TrackEditorAuthoring[39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | TrackEditorInspector[39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | TrackEditorCircuitInspector[39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | TrackEditorSelectionInspector[39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | TrackEditorWorkspaceInspector[39m[0m
+[  62% ] [90m[1mupdate_scripts_classes[22m | TrackEditorState[39m[0m
+[  63% ] [90m[1mupdate_scripts_classes[22m | TrackEditorStorage[39m[0m
+[  63% ] [90m[1mupdate_scripts_classes[22m | TrackEditorToolbar[39m[0m
+[  63% ] [90m[1mupdate_scripts_classes[22m | GameTheme[39m[0m
+[  63% ] [90m[1mupdate_scripts_classes[22m | MainMenuView[39m[0m
+[  63% ] [90m[1mupdate_scripts_classes[22m | MinimalRaceDriverPresenter[39m[0m
+[  63% ] [90m[1mupdate_scripts_classes[22m | MinimalRaceWorkspaceBuilder[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | NotebookWindow[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | PitwallCarCard[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | PitwallComparison[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | PitwallDesign[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | PitwallFinishingGuide[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | PitwallNavigator[39m[0m
+[  64% ] [90m[1mupdate_scripts_classes[22m | PitwallWorkspace[39m[0m
+[  65% ] [90m[1mupdate_scripts_classes[22m | PitwallWorkspaceBuilder[39m[0m
+[  65% ] [90m[1mupdate_scripts_classes[22m | PitwallWorkspaceLayout[39m[0m
+[  65% ] [90m[1mupdate_scripts_classes[22m | PitwallWorkspaceState[39m[0m
+[  65% ] [90m[1mupdate_scripts_classes[22m | PracticePanel[39m[0m
+[  65% ] [90m[1mupdate_scripts_classes[22m | PracticeWeekendView[39m[0m
+[  65% ] [90m[1mupdate_scripts_classes[22m | PracticeWeekendReview[39m[0m
+[  66% ] [90m[1mupdate_scripts_classes[22m | PublicRivalInspector[39m[0m
+[  66% ] [90m[1mupdate_scripts_classes[22m | RacecraftPanel[39m[0m
+[  66% ] [90m[1mupdate_scripts_classes[22m | RaceDirectorPresentation[39m[0m
+[  66% ] [90m[1mupdate_scripts_classes[22m | RaceDirectorWorkspace[39m[0m
+[  66% ] [90m[1mupdate_scripts_classes[22m | RecoveryPanel[39m[0m
+[  66% ] [90m[1mupdate_scripts_classes[22m | RecoveryWeekendView[39m[0m
+[  67% ] [90m[1mupdate_scripts_classes[22m | RejoinOverlay[39m[0m
+[  67% ] [90m[1mupdate_scripts_classes[22m | ReplayWorkspace[39m[0m
+[  67% ] [90m[1mupdate_scripts_classes[22m | ScenarioAuthor[39m[0m
+[  67% ] [90m[1mupdate_scripts_classes[22m | SettingsView[39m[0m
+[  67% ] [90m[1mupdate_scripts_classes[22m | StrategyDesk[39m[0m
+[  67% ] [90m[1mupdate_scripts_classes[22m | StrategyDeskDraft[39m[0m
+[  67% ] [90m[1mupdate_scripts_classes[22m | StrategyDeskPresentation[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | StrategyWeekendView[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | StrategyWeekendControls[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | StrategyWeekendPresentation[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | SurfaceLab[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | TacticalPlanDraft[39m[0m
+[  68% ] [90m[1mupdate_scripts_classes[22m | TacticalPlanPanel[39m[0m
+[  69% ] [90m[1mupdate_scripts_classes[22m | TacticalPlanReview[39m[0m
+[  69% ] [90m[1mupdate_scripts_classes[22m | TeamOrdersPanel[39m[0m
+[  69% ] [90m[1mupdate_scripts_classes[22m | TrackCanvas[39m[0m
+[  69% ] [90m[1mupdate_scripts_classes[22m | TrackCanvasAuthoring[39m[0m
+[  69% ] [90m[1mupdate_scripts_classes[22m | TrackCanvasGesture[39m[0m
+[  69% ] [90m[1mupdate_scripts_classes[22m | TrackCanvasInput[39m[0m
+[  70% ] [90m[1mupdate_scripts_classes[22m | TrackCanvasOverlays[39m[0m
+[  70% ] [90m[1mupdate_scripts_classes[22m | TrackCanvasOverlayRenderer[39m[0m
+[  70% ] [90m[1mupdate_scripts_classes[22m | TrackCanvasState[39m[0m
+[  70% ] [90m[1mupdate_scripts_classes[22m | UI[39m[0m
+[  70% ] [90m[1mupdate_scripts_classes[22m | WeatherPanel[39m[0m
+[  70% ] [90m[1mupdate_scripts_classes[22m | WeatherWeekendView[39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | WeekendView[39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | WeekendDriverPresenter[39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | WeekendDriverSupport[39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | WeekendEndView[39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | WeekendEntryView[39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | WeekendInspectorBuilder[39m[0m
+[  71% ] [90m[1mupdate_scripts_classes[22m | WeekendNavigation[39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | WeekendViewSupport[39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | WeekendViewState[39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | WeekendWorkspaceBuilder[39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | CampaignCommandContracts[39m[0m
+[  72% ] [90m[1mupdate_scripts_classes[22m | CampaignCommercialContracts[39m[0m
+[  73% ] [90m[1mupdate_scripts_classes[22m | CampaignCompetitionIdentityContracts[39m[0m
+[  73% ] [90m[1mupdate_scripts_classes[22m | CampaignCompetitionTransactionContracts[39m[0m
+[  73% ] [90m[1mupdate_scripts_classes[22m | CampaignCorrectionContracts[39m[0m
+[  73% ] [90m[1mupdate_scripts_classes[22m | CampaignDelegationContracts[39m[0m
+[  73% ] [90m[1mupdate_scripts_classes[22m | CampaignDirectorContracts[39m[0m
+[  73% ] [90m[1mupdate_scripts_classes[22m | CampaignEngineeringContracts[39m[0m
+[  74% ] [90m[1mupdate_scripts_classes[22m | CampaignFinanceBalanceContracts[39m[0m
+[  74% ] [90m[1mupdate_scripts_classes[22m | CampaignFinanceContracts[39m[0m
+[  74% ] [90m[1mupdate_scripts_classes[22m | CampaignFinanceTimelineContracts[39m[0m
+[  74% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  74% ] [90m[1mupdate_scripts_classes[22m | CampaignGroupContracts[39m[0m
+[  74% ] [90m[1mupdate_scripts_classes[22m | CampaignIdentityClockContracts[39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | CampaignOperationalDepthContracts[39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | CampaignOperationsContracts[39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | CampaignPeopleDepthContracts[39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | CampaignPersonnelContracts[39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | CampaignPersonnelLifecycleContracts[39m[0m
+[  75% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | CampaignReadinessContracts[39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | CampaignRivalContracts[39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | CampaignSeasonContracts[39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | CampaignSeasonProgressionContracts[39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | CampaignStateContracts[39m[0m
+[  76% ] [90m[1mupdate_scripts_classes[22m | CampaignStorageContracts[39m[0m
+[  77% ] [90m[1mupdate_scripts_classes[22m | CampaignWeekendFinanceContracts[39m[0m
+[  77% ] [90m[1mupdate_scripts_classes[22m | CampaignWeekendTransactionContracts[39m[0m
+[  77% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  77% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  77% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  77% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  78% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  79% ] [90m[1mupdate_scripts_classes[22m | RacePresentationBalanceContracts[39m[0m
+[  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  79% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  80% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  81% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  82% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  83% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  84% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  85% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  86% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  87% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  88% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  89% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  90% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  91% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  92% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  93% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  94% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  95% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  95% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  95% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  95% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  95% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  95% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  96% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  97% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  97% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  97% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  97% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  97% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  97% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  98% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  98% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  98% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  98% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  98% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  98% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  99% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  99% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  99% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  99% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[  99% ] [90m[1mupdate_scripts_classes[22m | [39m[0m
+[92m[ DONE ][39m [1mupdate_scripts_classes[22m
+[0m
+[   0% ] [90m[1m_update_scan_actions[22m | Started Scanning actions... (63 steps)[39m[0m
+[   0% ] [90m[1m_update_scan_actions[22m | contact-sheet.png[39m[0m
+[   1% ] [90m[1m_update_scan_actions[22m | front.png[39m[0m
+[   3% ] [90m[1m_update_scan_actions[22m | right.png[39m[0m
+[   4% ] [90m[1m_update_scan_actions[22m | three-quarter.png[39m[0m
+[   6% ] [90m[1m_update_scan_actions[22m | back.png[39m[0m
+[   7% ] [90m[1m_update_scan_actions[22m | front.png[39m[0m
+[   9% ] [90m[1m_update_scan_actions[22m | night.png[39m[0m
+[  10% ] [90m[1m_update_scan_actions[22m | portrait.png[39m[0m
+[  12% ] [90m[1m_update_scan_actions[22m | side.png[39m[0m
+[  14% ] [90m[1m_update_scan_actions[22m | three-quarter.png[39m[0m
+[  15% ] [90m[1m_update_scan_actions[22m | walk.png[39m[0m
+[  17% ] [90m[1m_update_scan_actions[22m | work.png[39m[0m
+[  18% ] [90m[1m_update_scan_actions[22m | world.png[39m[0m
+[  20% ] [90m[1m_update_scan_actions[22m | contact-sheet.png[39m[0m
+[  21% ] [90m[1m_update_scan_actions[22m | after-editor-desktop.png[39m[0m
+[  23% ] [90m[1m_update_scan_actions[22m | after-editor-mobile.png[39m[0m
+[  25% ] [90m[1m_update_scan_actions[22m | bare.png[39m[0m
+[  26% ] [90m[1m_update_scan_actions[22m | hero.png[39m[0m
+[  28% ] [90m[1m_update_scan_actions[22m | pip-artboard-godot.png[39m[0m
+[  29% ] [90m[1m_update_scan_actions[22m | pip-forge.glb[39m[0m
+[  31% ] [90m[1m_update_scan_actions[22m | pip-forge_0.png[39m[0m
+[  32% ] [90m[1m_update_scan_actions[22m | pip-forge_1.png[39m[0m
+[  34% ] [90m[1m_update_scan_actions[22m | pip-forge_2.png[39m[0m
+[  35% ] [90m[1m_update_scan_actions[22m | pip-forge_3.png[39m[0m
+[  37% ] [90m[1m_update_scan_actions[22m | pip-forge_4.png[39m[0m
+[  39% ] [90m[1m_update_scan_actions[22m | pip-forge_5.png[39m[0m
+[  40% ] [90m[1m_update_scan_actions[22m | previous-portrait.png[39m[0m
+[  42% ] [90m[1m_update_scan_actions[22m | supplied-concept.png[39m[0m
+[  43% ] [90m[1m_update_scan_actions[22m | supplied-unclothed-concept.png[39m[0m
+[  45% ] [90m[1m_update_scan_actions[22m | front.png[39m[0m
+[  46% ] [90m[1m_update_scan_actions[22m | contact-sheet.png[39m[0m
+[  48% ] [90m[1m_update_scan_actions[22m | contact-sheet.png[39m[0m
+[  50% ] [90m[1m_update_scan_actions[22m | front.png[39m[0m
+[  51% ] [90m[1m_update_scan_actions[22m | right.png[39m[0m
+[  53% ] [90m[1m_update_scan_actions[22m | front.png[39m[0m
+[  54% ] [90m[1m_update_scan_actions[22m | contact-sheet.png[39m[0m
+[  56% ] [90m[1m_update_scan_actions[22m | front.png[39m[0m
+[  57% ] [90m[1m_update_scan_actions[22m | contact-sheet.png[39m[0m
+[  59% ] [90m[1m_update_scan_actions[22m | back.png[39m[0m
+[  60% ] [90m[1m_update_scan_actions[22m | front.png[39m[0m
+[  62% ] [90m[1m_update_scan_actions[22m | night.png[39m[0m
+[  64% ] [90m[1m_update_scan_actions[22m | portrait.png[39m[0m
+[  65% ] [90m[1m_update_scan_actions[22m | side.png[39m[0m
+[  67% ] [90m[1m_update_scan_actions[22m | world.png[39m[0m
+[  68% ] [90m[1m_update_scan_actions[22m | contact-sheet.png[39m[0m
+[  70% ] [90m[1m_update_scan_actions[22m | after-editor-desktop.png[39m[0m
+[  71% ] [90m[1m_update_scan_actions[22m | after-editor-mobile.png[39m[0m
+[  73% ] [90m[1m_update_scan_actions[22m | before-editor.png[39m[0m
+[  75% ] [90m[1m_update_scan_actions[22m | pip-trail-godot.png[39m[0m
+[  76% ] [90m[1m_update_scan_actions[22m | supplied-concept.png[39m[0m
+[  78% ] [90m[1m_update_scan_actions[22m | back.png[39m[0m
+[  79% ] [90m[1m_update_scan_actions[22m | contact-sheet.png[39m[0m
+[  81% ] [90m[1m_update_scan_actions[22m | front.png[39m[0m
+[  82% ] [90m[1m_update_scan_actions[22m | back.png[39m[0m
+[  84% ] [90m[1m_update_scan_actions[22m | front.png[39m[0m
+[  85% ] [90m[1m_update_scan_actions[22m | night.png[39m[0m
+[  87% ] [90m[1m_update_scan_actions[22m | portrait.png[39m[0m
+[  89% ] [90m[1m_update_scan_actions[22m | side.png[39m[0m
+[  90% ] [90m[1m_update_scan_actions[22m | world.png[39m[0m
+[  92% ] [90m[1m_update_scan_actions[22m | contact-sheet.png[39m[0m
+[  93% ] [90m[1m_update_scan_actions[22m | editor-back-view.png[39m[0m
+[  95% ] [90m[1m_update_scan_actions[22m | editor-desktop.png[39m[0m
+[  96% ] [90m[1m_update_scan_actions[22m | editor-mobile.png[39m[0m
+[92m[ DONE ][39m [1m_update_scan_actions[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (63 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   1% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   3% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   4% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   6% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   7% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   9% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  10% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  12% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  14% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  15% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  17% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  18% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  20% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  21% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  23% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  25% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  26% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  28% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  29% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  31% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  32% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  34% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  35% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  37% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  39% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  40% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  42% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  43% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  45% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  46% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  48% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  50% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  51% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  53% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  54% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  56% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  57% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  59% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  60% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  62% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  64% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  65% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  67% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  68% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  70% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  71% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  73% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  75% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  76% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  78% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  79% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  81% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  82% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  84% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  85% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  87% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  89% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  90% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  92% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  93% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  95% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[  96% ] [90m[1mreimport[22m | Preparing files to reimport...[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing pre-reimport operations...[39m[0m
+[   0% ] [90m[1mpreload_reimporting_scene[22m | Started Preparing scenes for reload (1 steps)[39m[0m
+[   0% ] [90m[1mpreload_reimporting_scene[22m | Analyzing scene [empty][39m[0m
+[  50% ] [90m[1mpreload_reimporting_scene[22m | Preparation done.[39m[0m
+[92m[ DONE ][39m [1mpreload_reimporting_scene[22m
+[0m
+[   0% ] [90m[1mreimport[22m | front.png[39m[0m
+[   1% ] [90m[1mreimport[22m | right.png[39m[0m
+[   3% ] [90m[1mreimport[22m | front.png[39m[0m
+[   4% ] [90m[1mreimport[22m | contact-sheet.png[39m[0m
+[   6% ] [90m[1mreimport[22m | front.png[39m[0m
+[   7% ] [90m[1mreimport[22m | contact-sheet.png[39m[0m
+[   9% ] [90m[1mreimport[22m | back.png[39m[0m
+[  10% ] [90m[1mreimport[22m | front.png[39m[0m
+[  12% ] [90m[1mreimport[22m | night.png[39m[0m
+[  14% ] [90m[1mreimport[22m | portrait.png[39m[0m
+[  15% ] [90m[1mreimport[22m | side.png[39m[0m
+[  17% ] [90m[1mreimport[22m | world.png[39m[0m
+[  18% ] [90m[1mreimport[22m | contact-sheet.png[39m[0m
+[  20% ] [90m[1mreimport[22m | after-editor-desktop.png[39m[0m
+[  21% ] [90m[1mreimport[22m | after-editor-mobile.png[39m[0m
+[  23% ] [90m[1mreimport[22m | before-editor.png[39m[0m
+[  25% ] [90m[1mreimport[22m | pip-trail-godot.png[39m[0m
+[  26% ] [90m[1mreimport[22m | supplied-concept.png[39m[0m
+[  28% ] [90m[1mreimport[22m | back.png[39m[0m
+[  29% ] [90m[1mreimport[22m | contact-sheet.png[39m[0m
+[  31% ] [90m[1mreimport[22m | front.png[39m[0m
+[  32% ] [90m[1mreimport[22m | back.png[39m[0m
+[  34% ] [90m[1mreimport[22m | front.png[39m[0m
+[  35% ] [90m[1mreimport[22m | night.png[39m[0m
+[  37% ] [90m[1mreimport[22m | portrait.png[39m[0m
+[  39% ] [90m[1mreimport[22m | side.png[39m[0m
+[  40% ] [90m[1mreimport[22m | world.png[39m[0m
+[  42% ] [90m[1mreimport[22m | contact-sheet.png[39m[0m
+[  43% ] [90m[1mreimport[22m | editor-back-view.png[39m[0m
+[  45% ] [90m[1mreimport[22m | editor-desktop.png[39m[0m
+[  46% ] [90m[1mreimport[22m | editor-mobile.png[39m[0m
+[  48% ] [90m[1mreimport[22m | contact-sheet.png[39m[0m
+[  50% ] [90m[1mreimport[22m | front.png[39m[0m
+[  51% ] [90m[1mreimport[22m | right.png[39m[0m
+[  53% ] [90m[1mreimport[22m | three-quarter.png[39m[0m
+[  54% ] [90m[1mreimport[22m | back.png[39m[0m
+[  56% ] [90m[1mreimport[22m | front.png[39m[0m
+[  57% ] [90m[1mreimport[22m | night.png[39m[0m
+[  59% ] [90m[1mreimport[22m | portrait.png[39m[0m
+[  60% ] [90m[1mreimport[22m | side.png[39m[0m
+[  62% ] [90m[1mreimport[22m | three-quarter.png[39m[0m
+[  64% ] [90m[1mreimport[22m | walk.png[39m[0m
+[  65% ] [90m[1mreimport[22m | work.png[39m[0m
+[  67% ] [90m[1mreimport[22m | world.png[39m[0m
+[  68% ] [90m[1mreimport[22m | contact-sheet.png[39m[0m
+[  70% ] [90m[1mreimport[22m | after-editor-desktop.png[39m[0m
+[  71% ] [90m[1mreimport[22m | after-editor-mobile.png[39m[0m
+[  73% ] [90m[1mreimport[22m | bare.png[39m[0m
+[  75% ] [90m[1mreimport[22m | hero.png[39m[0m
+[  76% ] [90m[1mreimport[22m | pip-artboard-godot.png[39m[0m
+[  78% ] [90m[1mreimport[22m | pip-forge_0.png[39m[0m
+[  79% ] [90m[1mreimport[22m | pip-forge_1.png[39m[0m
+[  81% ] [90m[1mreimport[22m | pip-forge_2.png[39m[0m
+[  82% ] [90m[1mreimport[22m | pip-forge_3.png[39m[0m
+[  84% ] [90m[1mreimport[22m | pip-forge_4.png[39m[0m
+[  85% ] [90m[1mreimport[22m | pip-forge_5.png[39m[0m
+[  87% ] [90m[1mreimport[22m | previous-portrait.png[39m[0m
+[  89% ] [90m[1mreimport[22m | supplied-concept.png[39m[0m
+[  90% ] [90m[1mreimport[22m | supplied-unclothed-concept.png[39m[0m
+[  92% ] [90m[1mreimport[22m | front.png[39m[0m
+[  93% ] [90m[1mreimport[22m | contact-sheet.png[39m[0m
+[  95% ] [90m[1mreimport[22m | contact-sheet.png[39m[0m
+[  96% ] [90m[1mreimport[22m | pip-forge.glb[39m[0m
+[   0% ] [90m[1mimport[22m | Started Import Scene (104 steps)[39m[0m
+[   0% ] [90m[1mimport[22m | Importing Scene...[39m[0m
+[   1% ] [90m[1mimport[22m | Running Custom Script...[39m[0m
+[  99% ] [90m[1mimport[22m | Saving...[39m[0m
+[92m[ DONE ][39m [1mimport[22m
+[0m
+[  98% ] [90m[1mreimport[22m | Finalizing Asset Import...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mreimport[22m | Started (Re)Importing Assets (63 steps)[39m[0m
+[   0% ] [90m[1mreimport[22m | Executing post-reimport operations...[39m[0m
+[92m[ DONE ][39m [1mreimport[22m
+[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Started Loading editor (5 steps)[39m[0m
+[   0% ] [90m[1mloading_editor_layout[22m | Loading editor layout...[39m[0m
+[  16% ] [90m[1mloading_editor_layout[22m | Loading docks...[39m[0m
+[92m[ DONE ][39m [1mloading_editor_layout[22m
+[0m
+[generated-import] passed in 24.9s
+[generated-run] /workspace/work/armored-platoon/work/godot4.7.2/Godot_v4.7.2-stable_linux.x86_64 --headless --path /tmp/mechanic-generated-uqdcp9ne/project --script res://tests/extensions/extension_probe_tests.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+EXTENSION_TESTS {"checks":8,"failures":[],"passed":true}
+[generated-run] passed in 8.2s
+ok
+test_guarded_dispatch_and_documentation_preserve_all_contracts (test_mechanics_tool.MechanicsToolTests.test_guarded_dispatch_and_documentation_preserve_all_contracts) ... ok
+test_invalid_ids_hooks_and_profiles_are_rejected (test_mechanics_tool.MechanicsToolTests.test_invalid_ids_hooks_and_profiles_are_rejected) ... ok
+test_literal_definition_rejects_trailing_expression (test_mechanics_tool.MechanicsToolTests.test_literal_definition_rejects_trailing_expression) ... ok
+test_literal_predecessor_errors_include_source_and_do_not_parse_comments (test_mechanics_tool.MechanicsToolTests.test_literal_predecessor_errors_include_source_and_do_not_parse_comments) ... ok
+test_multiline_literal_definitions_and_hook_signatures_preserve_contracts (test_mechanics_tool.MechanicsToolTests.test_multiline_literal_definitions_and_hook_signatures_preserve_contracts) ... ok
+test_production_order_and_extension_cycles_fail_early (test_mechanics_tool.MechanicsToolTests.test_production_order_and_extension_cycles_fail_early) ... ok
+test_scaffold_registers_test_but_does_not_enable_gameplay (test_mechanics_tool.MechanicsToolTests.test_scaffold_registers_test_but_does_not_enable_gameplay) ... ok
+test_symlink_escape_is_rejected (test_mechanics_tool.MechanicsToolTests.test_symlink_escape_is_rejected) ... ok
+test_typed_car_scaffold_keeps_signature_and_explicit_probe (test_mechanics_tool.MechanicsToolTests.test_typed_car_scaffold_keeps_signature_and_explicit_probe) ... ok
+test_validation_delegates_to_verifier_and_preserves_caller_arguments (test_mechanics_tool.MechanicsToolTests.test_validation_delegates_to_verifier_and_preserves_caller_arguments) ... ok
+test_validation_rejects_definition_contract_errors_before_execution (test_mechanics_tool.MechanicsToolTests.test_validation_rejects_definition_contract_errors_before_execution) ... ok
+test_validation_rejects_unknown_or_unregistered_extensions (test_mechanics_tool.MechanicsToolTests.test_validation_rejects_unknown_or_unregistered_extensions) ... ok
+test_validation_uses_the_existing_registry_and_never_enables_a_provider (test_mechanics_tool.MechanicsToolTests.test_validation_uses_the_existing_registry_and_never_enables_a_provider) ... ok
+test_documentation_does_not_change_budget (test_quality.QualityMeasurementTests.test_documentation_does_not_change_budget) ... ok
+test_exact_budgets_and_first_excess_line (test_quality.QualityMeasurementTests.test_exact_budgets_and_first_excess_line) ... ok
+test_gd_hashes_quotes_escapes_and_multiline_strings (test_quality.QualityMeasurementTests.test_gd_hashes_quotes_escapes_and_multiline_strings) ... ok
+test_malformed_or_unsupported_never_zero (test_quality.QualityMeasurementTests.test_malformed_or_unsupported_never_zero) ... ok
+test_python_docstrings_not_runtime_strings (test_quality.QualityMeasurementTests.test_python_docstrings_not_runtime_strings) ... ok
+test_actions_escaping_and_bounded_report (test_quality.QualityReportingTests.test_actions_escaping_and_bounded_report) ... ok
+test_complexity_threshold (test_quality.QualityReportingTests.test_complexity_threshold) ... ok
+test_default_advisory_and_explicit_strict (test_quality.QualityReportingTests.test_default_advisory_and_explicit_strict) ... ok
+test_empty_object_is_not_valid_ruff_evidence (test_quality.QualityReportingTests.test_empty_object_is_not_valid_ruff_evidence) ... ok
+test_inventory_ignores_vendor_and_reports_without_hiding_tests (test_quality.QualityReportingTests.test_inventory_ignores_vendor_and_reports_without_hiding_tests) ... ok
+test_missing_and_timed_out_tool_is_not_clean (test_quality.QualityReportingTests.test_missing_and_timed_out_tool_is_not_clean) ... ok
+test_native_findings_and_malformed_output (test_quality.QualityReportingTests.test_native_findings_and_malformed_output) ... ok
+test_cli_retains_full_delta_without_blocking_findings (test_quality_delta.QualityDeltaTests.test_cli_retains_full_delta_without_blocking_findings) ... ok
+test_duplicate_findings_use_multiset_not_set_semantics (test_quality_delta.QualityDeltaTests.test_duplicate_findings_use_multiset_not_set_semantics) ... ok
+test_incomplete_analysis_cannot_resolve_debt (test_quality_delta.QualityDeltaTests.test_incomplete_analysis_cannot_resolve_debt) ... ok
+test_input_inventory_is_not_mutated (test_quality_delta.QualityDeltaTests.test_input_inventory_is_not_mutated) ... ok
+test_legacy_report_without_provenance_is_explicitly_incomparable (test_quality_delta.QualityDeltaTests.test_legacy_report_without_provenance_is_explicitly_incomparable) ... ok
+test_line_movement_is_unchanged_and_both_locations_are_retained (test_quality_delta.QualityDeltaTests.test_line_movement_is_unchanged_and_both_locations_are_retained) ... ok
+test_malformed_findings_fail_closed (test_quality_delta.QualityDeltaTests.test_malformed_findings_fail_closed) ... ok
+test_malformed_provenance_is_not_a_resolved_debt_claim (test_quality_delta.QualityDeltaTests.test_malformed_provenance_is_not_a_resolved_debt_claim) ... ok
+test_message_change_and_rename_are_not_inferred_equivalent (test_quality_delta.QualityDeltaTests.test_message_change_and_rename_are_not_inferred_equivalent) ... ok
+test_policy_analyzer_and_tool_changes_refuse_comparison (test_quality_delta.QualityDeltaTests.test_policy_analyzer_and_tool_changes_refuse_comparison) ... ok
+test_report_source_identity_is_required (test_quality_delta.QualityDeltaTests.test_report_source_identity_is_required) ... ok
+test_base_required_player_team_label_is_declared_on_port (test_race_refactor_contract.RaceRefactorContractTests.test_base_required_player_team_label_is_declared_on_port) ... ok
+test_concrete_aggregate_keeps_explicit_base_path (test_race_refactor_contract.RaceRefactorContractTests.test_concrete_aggregate_keeps_explicit_base_path) ... ok
+test_description_distinguishes_recorded_values_from_cause (test_reproduction_tool.ReproductionToolTests.test_description_distinguishes_recorded_values_from_cause) ... ok
+test_enforces_byte_limit_before_decoding (test_reproduction_tool.ReproductionToolTests.test_enforces_byte_limit_before_decoding) ... ok
+test_failed_replay_does_not_claim_matching_boundaries (test_reproduction_tool.ReproductionToolTests.test_failed_replay_does_not_claim_matching_boundaries) ... ok
+test_missing_engine_returns_actionable_error_without_output (test_reproduction_tool.ReproductionToolTests.test_missing_engine_returns_actionable_error_without_output) ... ok
+test_reads_unicode_bundle_without_running_engine (test_reproduction_tool.ReproductionToolTests.test_reads_unicode_bundle_without_running_engine) ... ok
+test_rejects_other_files_and_nonfinite_values (test_reproduction_tool.ReproductionToolTests.test_rejects_other_files_and_nonfinite_values) ... ok
+test_backend_cannot_change_between_individually_comparable_pairs (test_runtime_comparison.RuntimeComparisonTests.test_backend_cannot_change_between_individually_comparable_pairs) ... ok
+test_changed_hardware_or_fixture_is_not_a_speedup (test_runtime_comparison.RuntimeComparisonTests.test_changed_hardware_or_fixture_is_not_a_speedup) ... ok
+test_changed_outcome_is_not_a_speedup (test_runtime_comparison.RuntimeComparisonTests.test_changed_outcome_is_not_a_speedup) ... ok
+test_homogeneous_pairs_accept_elapsed_variation (test_runtime_comparison.RuntimeComparisonTests.test_homogeneous_pairs_accept_elapsed_variation) ... ok
+test_identically_invalid_rendering_driver_is_not_evidence (test_runtime_comparison.RuntimeComparisonTests.test_identically_invalid_rendering_driver_is_not_evidence) ... ok
+test_identically_invalid_work_is_not_comparable_evidence (test_runtime_comparison.RuntimeComparisonTests.test_identically_invalid_work_is_not_comparable_evidence) ... ok
+test_identically_malformed_controlled_records_are_rejected (test_runtime_comparison.RuntimeComparisonTests.test_identically_malformed_controlled_records_are_rejected) ... ok
+test_legacy_reports_without_driver_metadata_cannot_establish_comparability (test_runtime_comparison.RuntimeComparisonTests.test_legacy_reports_without_driver_metadata_cannot_establish_comparability) ... ok
+test_missing_failed_or_duplicate_work_is_rejected (test_runtime_comparison.RuntimeComparisonTests.test_missing_failed_or_duplicate_work_is_rejected) ... ok
+test_missing_or_invalid_deterministic_work_is_not_comparable (test_runtime_comparison.RuntimeComparisonTests.test_missing_or_invalid_deterministic_work_is_not_comparable) ... ok
+test_missing_simulation_work_cannot_produce_a_speedup (test_runtime_comparison.RuntimeComparisonTests.test_missing_simulation_work_cannot_produce_a_speedup) ... ok
+test_no_pairs_is_not_evidence (test_runtime_comparison.RuntimeComparisonTests.test_no_pairs_is_not_evidence) ... ok
+test_same_renderer_method_does_not_make_gl_and_gles_comparable (test_runtime_comparison.RuntimeComparisonTests.test_same_renderer_method_does_not_make_gl_and_gles_comparable) ... ok
+test_same_work_accepts_different_elapsed_time (test_runtime_comparison.RuntimeComparisonTests.test_same_work_accepts_different_elapsed_time) ... ok
+test_zero_discarded_frame_time_is_valid (test_runtime_comparison.RuntimeComparisonTests.test_zero_discarded_frame_time_is_valid) ... ok
+test_artifact_paths_cannot_escape_package (test_standalone.StandaloneContracts.test_artifact_paths_cannot_escape_package) ... ok
+test_binary_path_cannot_escape_package (test_standalone.StandaloneContracts.test_binary_path_cannot_escape_package) ... ok
+test_build_rejects_mixed_output_before_execution (test_standalone.StandaloneContracts.test_build_rejects_mixed_output_before_execution) ... ok
+test_build_rejects_unnamed_source_before_execution (test_standalone.StandaloneContracts.test_build_rejects_unnamed_source_before_execution) ... ok
+test_build_rejects_unsupported_mode (test_standalone.StandaloneContracts.test_build_rejects_unsupported_mode) ... ok
+test_build_stages_the_complete_config_without_old_content_homes (test_standalone.StandaloneContracts.test_build_stages_the_complete_config_without_old_content_homes) ... ok
+test_changed_pack_is_not_accepted (test_standalone.StandaloneContracts.test_changed_pack_is_not_accepted) ... ok
+test_equal_hash_symlink_is_not_an_owned_packaged_artifact (test_standalone.StandaloneContracts.test_equal_hash_symlink_is_not_an_owned_packaged_artifact) ... ok
+test_manifest_provenance_and_approval_flags_fail_closed (test_standalone.StandaloneContracts.test_manifest_provenance_and_approval_flags_fail_closed) ... ok
+test_matching_version_cannot_hide_different_editor_bytes (test_standalone.StandaloneContracts.test_matching_version_cannot_hide_different_editor_bytes) ... ok
+test_missing_pack_is_not_accepted (test_standalone.StandaloneContracts.test_missing_pack_is_not_accepted) ... ok
+test_missing_templates_fail_closed (test_standalone.StandaloneContracts.test_missing_templates_fail_closed) ... ok
+test_previous_stage_report_is_rejected_before_launch (test_standalone.StandaloneContracts.test_previous_stage_report_is_rejected_before_launch) ... ok
+test_provenance_is_required (test_standalone.StandaloneContracts.test_provenance_is_required) ... ok
+test_real_hashes_identify_pack (test_standalone.StandaloneContracts.test_real_hashes_identify_pack) ... ok
+test_real_interruption_marker_cannot_hide_engine_errors (test_standalone.StandaloneContracts.test_real_interruption_marker_cannot_hide_engine_errors) ... ok
+test_runtime_target_is_not_cross_build_success (test_standalone.StandaloneContracts.test_runtime_target_is_not_cross_build_success) ... ok
+test_smoke_rejects_mixed_evidence (test_standalone.StandaloneContracts.test_smoke_rejects_mixed_evidence) ... ok
+test_smoke_vsync_override_reaches_engine_before_user_arguments (test_standalone.StandaloneContracts.test_smoke_vsync_override_reaches_engine_before_user_arguments) ... ok
+test_stage_evidence_requires_exact_checks_stage_identity_and_user_directory (test_standalone.StandaloneContracts.test_stage_evidence_requires_exact_checks_stage_identity_and_user_directory) ... ok
+test_target_selects_only_matching_templates (test_standalone.StandaloneContracts.test_target_selects_only_matching_templates) ... ok
+test_windows_ci_selects_angle_before_application_arguments (test_standalone.StandaloneContracts.test_windows_ci_selects_angle_before_application_arguments) ... ok
+test_wrong_template_hash_is_rejected (test_standalone.StandaloneContracts.test_wrong_template_hash_is_rejected) ... ok
+test_distributed_archive_preserves_launch_and_provenance (test_standalone_archive.StandaloneArchiveTests.test_distributed_archive_preserves_launch_and_provenance) ... ok
+test_batch_file_fallback_is_pure_json_and_invalid_input_stays_structured (test_toolbox_client.ToolboxCliTests.test_batch_file_fallback_is_pure_json_and_invalid_input_stays_structured) ... ok
+test_native_rejection_and_transport_failure_have_different_exit_codes (test_toolbox_client.ToolboxCliTests.test_native_rejection_and_transport_failure_have_different_exit_codes) ... ok
+test_stdout_is_exactly_one_json_envelope (test_toolbox_client.ToolboxCliTests.test_stdout_is_exactly_one_json_envelope) ... ok
+test_bad_ready_eof_version_response_id_and_source_never_accept_zero_exit (test_toolbox_client.ToolboxClientTests.test_bad_ready_eof_version_response_id_and_source_never_accept_zero_exit) ... ok
+test_descendants_are_killed_even_after_parent_exits_successfully (test_toolbox_client.ToolboxClientTests.test_descendants_are_killed_even_after_parent_exits_successfully) ... ok
+test_engine_errors_before_or_after_forged_success_are_rejected (test_toolbox_client.ToolboxClientTests.test_engine_errors_before_or_after_forged_success_are_rejected) ... ok
+test_file_fallback_validates_fresh_correlated_evidence_and_exactly_one_batch (test_toolbox_client.ToolboxClientTests.test_file_fallback_validates_fresh_correlated_evidence_and_exactly_one_batch) ... ok
+test_incremental_calls_share_process_and_named_facets_forward_exact_arguments (test_toolbox_client.ToolboxClientTests.test_incremental_calls_share_process_and_named_facets_forward_exact_arguments) ... ok
+test_native_json_text_is_data_and_track_does_not_advertise_dead_restore (test_toolbox_client.ToolboxClientTests.test_native_json_text_is_data_and_track_does_not_advertise_dead_restore) ... ok
+test_native_rejection_raw_envelope_and_structured_exception_are_distinct (test_toolbox_client.ToolboxClientTests.test_native_rejection_raw_envelope_and_structured_exception_are_distinct) ... ok
+test_no_context_reused_id_and_double_enter_fail_before_native_mutation (test_toolbox_client.ToolboxClientTests.test_no_context_reused_id_and_double_enter_fail_before_native_mutation) ... ok
+test_timeout_closes_owned_process_and_private_resources (test_toolbox_client.ToolboxClientTests.test_timeout_closes_owned_process_and_private_resources) ... ok
+test_windows_engine_cannot_spawn_descendants_before_job_assignment (test_toolbox_client.ToolboxClientTests.test_windows_engine_cannot_spawn_descendants_before_job_assignment) ... skipped 'Windows Job Object gate regression'
+test_windows_self_contained_copy_preserves_companions_without_global_state (test_toolbox_client.ToolboxClientTests.test_windows_self_contained_copy_preserves_companions_without_global_state) ... ok
+test_writer_timeout_is_bounded_when_child_does_not_read_stdin (test_toolbox_client.ToolboxClientTests.test_writer_timeout_is_bounded_when_child_does_not_read_stdin) ... ok
+test_cli_file_batch_matches_incremental_sdk_results_and_rejected_prefix (test_toolbox_native.ToolboxNativeTests.test_cli_file_batch_matches_incremental_sdk_results_and_rejected_prefix) ... ok
+test_json_snapshot_restores_identical_fingerprint_and_fixed_tick_continuation (test_toolbox_native.ToolboxNativeTests.test_json_snapshot_restores_identical_fingerprint_and_fixed_tick_continuation) ... ok
+test_native_document_diagnostics_text_remains_detached_data (test_toolbox_native.ToolboxNativeTests.test_native_document_diagnostics_text_remains_detached_data) ... ok
+test_file_mode_create_plus_127_snapshots_preserves_complete_response (test_toolbox_native_boundaries.ToolboxNativeBoundaryTests.test_file_mode_create_plus_127_snapshots_preserves_complete_response) ... ok
+test_nested_campaign_documents_reject_without_engine_errors_or_mutation (test_toolbox_native_boundaries.ToolboxNativeBoundaryTests.test_nested_campaign_documents_reject_without_engine_errors_or_mutation) ... ok
+test_stdio_128_snapshots_exceed_request_limit_without_truncation (test_toolbox_native_boundaries.ToolboxNativeBoundaryTests.test_stdio_128_snapshots_exceed_request_limit_without_truncation) ... ok
+test_aliased_response_and_reserved_storage_paths_cannot_overwrite_request (test_toolbox_native_transport.NativeToolboxTransportTests.test_aliased_response_and_reserved_storage_paths_cannot_overwrite_request) ... ok
+test_invalid_utf8_file_publishes_rejection_and_preserves_input_bytes (test_toolbox_native_transport.NativeToolboxTransportTests.test_invalid_utf8_file_publishes_rejection_and_preserves_input_bytes) ... ok
+test_invalid_utf8_stdio_rejects_before_dispatch_and_keeps_process_available (test_toolbox_native_transport.NativeToolboxTransportTests.test_invalid_utf8_stdio_rejects_before_dispatch_and_keeps_process_available) ... ok
+test_parent_segments_cannot_hide_a_link_to_the_request_in_reserved_temporary_path (test_toolbox_native_transport.NativeToolboxTransportTests.test_parent_segments_cannot_hide_a_link_to_the_request_in_reserved_temporary_path) ... ok
+test_startup_content_failure_publishes_requested_envelope (test_toolbox_native_transport.NativeToolboxTransportTests.test_startup_content_failure_publishes_requested_envelope) ... ok
+test_windows_path_normalization_uses_native_separator_and_dot_rules_on_all_hosts (test_toolbox_native_transport.NativeToolboxTransportTests.test_windows_path_normalization_uses_native_separator_and_dot_rules_on_all_hosts) ... ok
+test_bad_correlation_never_becomes_a_gameplay_verdict (test_toolbox_protocol.ToolboxProtocolTests.test_bad_correlation_never_becomes_a_gameplay_verdict) ... ok
+test_bound_is_encoded_utf8_bytes (test_toolbox_protocol.ToolboxProtocolTests.test_bound_is_encoded_utf8_bytes) ... ok
+test_correlated_response_retains_native_json_and_metadata (test_toolbox_protocol.ToolboxProtocolTests.test_correlated_response_retains_native_json_and_metadata) ... ok
+test_false_execution_or_foreign_startup_identity_is_rejected (test_toolbox_protocol.ToolboxProtocolTests.test_false_execution_or_foreign_startup_identity_is_rejected) ... ok
+test_json_overflow_duplicate_keys_cycles_and_nonstring_keys_fail_closed (test_toolbox_protocol.ToolboxProtocolTests.test_json_overflow_duplicate_keys_cycles_and_nonstring_keys_fail_closed) ... ok
+test_request_ids_and_versions_are_bounded_without_game_rule_validation (test_toolbox_protocol.ToolboxProtocolTests.test_request_ids_and_versions_are_bounded_without_game_rule_validation) ... ok
+test_response_budget_is_separate_and_still_rejects_nonfinite_json (test_toolbox_protocol.ToolboxProtocolTests.test_response_budget_is_separate_and_still_rejects_nonfinite_json) ... ok
+test_success_and_rejection_shapes_are_explicit (test_toolbox_protocol.ToolboxProtocolTests.test_success_and_rejection_shapes_are_explicit) ... ok
+test_timeout_is_finite_positive_and_not_a_boolean (test_toolbox_protocol.ToolboxProtocolTests.test_timeout_is_finite_positive_and_not_a_boolean) ... ok
+test_exact_payload_budget_excludes_marker_and_crlf (test_toolbox_response_limits.ToolboxResponseLimitTests.test_exact_payload_budget_excludes_marker_and_crlf) ... ok
+test_oversized_payload_fails_even_when_marker_fits_the_line_budget (test_toolbox_response_limits.ToolboxResponseLimitTests.test_oversized_payload_fails_even_when_marker_fits_the_line_budget) ... ok
+test_headless_suite_does_not_request_display_settings (test_verification_evidence.SuiteEvidenceTests.test_headless_suite_does_not_request_display_settings) ... ok
+test_missing_new_report_cannot_reuse_previous_passing_report (test_verification_evidence.SuiteEvidenceTests.test_missing_new_report_cannot_reuse_previous_passing_report) ... ok
+test_native_real_display_preserves_configured_renderer (test_verification_evidence.SuiteEvidenceTests.test_native_real_display_preserves_configured_renderer) ... ok
+test_native_vsync_override_reaches_engine_before_user_arguments (test_verification_evidence.SuiteEvidenceTests.test_native_vsync_override_reaches_engine_before_user_arguments) ... ok
+test_old_screenshots_and_reports_do_not_survive_a_new_run (test_verification_evidence.SuiteEvidenceTests.test_old_screenshots_and_reports_do_not_survive_a_new_run) ... ok
+test_primary_count_is_validated_before_acceptance (test_verification_evidence.SuiteEvidenceTests.test_primary_count_is_validated_before_acceptance) ... ok
+test_secondary_failure_cannot_be_replaced_by_primary_success (test_verification_evidence.SuiteEvidenceTests.test_secondary_failure_cannot_be_replaced_by_primary_success) ... ok
+test_complete_evidence_passes (test_verification_plan.PlanTests.test_complete_evidence_passes) ... ok
+test_consistently_stale_reports_are_rejected (test_verification_plan.PlanTests.test_consistently_stale_reports_are_rejected) ... ok
+test_each_suite_appears_once_at_all_supported_counts (test_verification_plan.PlanTests.test_each_suite_appears_once_at_all_supported_counts) ... ok
+test_focused_selection_is_explicit_and_cannot_be_a_shard (test_verification_plan.PlanTests.test_focused_selection_is_explicit_and_cannot_be_a_shard) ... ok
+test_invalid_indices_are_rejected (test_verification_plan.PlanTests.test_invalid_indices_are_rejected) ... ok
+test_malformed_suite_evidence_fails_closed (test_verification_plan.PlanTests.test_malformed_suite_evidence_fails_closed) ... ok
+test_missing_duplicate_failed_mixed_and_partial_evidence_fails (test_verification_plan.PlanTests.test_missing_duplicate_failed_mixed_and_partial_evidence_fails) ... ok
+test_previous_required_suites_are_retained (test_verification_plan.PlanTests.test_previous_required_suites_are_retained) ... ok
+test_shard_identity_types_do_not_coerce_or_crash (test_verification_plan.PlanTests.test_shard_identity_types_do_not_coerce_or_crash) ... ok
+test_source_digest_ignores_runtime_evidence_but_not_rules (test_verification_plan.PlanTests.test_source_digest_ignores_runtime_evidence_but_not_rules) ... ok
+test_cli_rejects_bad_plan_before_any_engine_execution (test_verification_plan.RegistryTests.test_cli_rejects_bad_plan_before_any_engine_execution) ... ok
+test_execution_fields_do_not_coerce_invalid_types (test_verification_plan.RegistryTests.test_execution_fields_do_not_coerce_invalid_types) ... ok
+test_floor_removal_cannot_silently_shrink_full_coverage (test_verification_plan.RegistryTests.test_floor_removal_cannot_silently_shrink_full_coverage) ... ok
+test_invalid_envelopes_and_missing_fields_are_actionable (test_verification_plan.RegistryTests.test_invalid_envelopes_and_missing_fields_are_actionable) ... ok
+test_invalid_identity_and_duplicate_registration_are_rejected (test_verification_plan.RegistryTests.test_invalid_identity_and_duplicate_registration_are_rejected) ... ok
+test_invalid_json_identifies_its_source (test_verification_plan.RegistryTests.test_invalid_json_identifies_its_source) ... ok
+test_reports_are_nonempty_unique_json_filenames (test_verification_plan.RegistryTests.test_reports_are_nonempty_unique_json_filenames) ... ok
+test_script_paths_are_bounded_existing_test_scripts (test_verification_plan.RegistryTests.test_script_paths_are_bounded_existing_test_scripts) ... ok
+test_valid_plan_is_unchanged_and_allows_explicit_extensions (test_verification_plan.RegistryTests.test_valid_plan_is_unchanged_and_allows_explicit_extensions) ... ok
+test_successful_wrapper_exit_cannot_leave_a_background_child (test_verify_runner.ProcessOwnershipTests.test_successful_wrapper_exit_cannot_leave_a_background_child) ... ok
+test_timeout_stops_child_and_grandchild_and_keeps_output (test_verify_runner.ProcessOwnershipTests.test_timeout_stops_child_and_grandchild_and_keeps_output) ... ok
+test_each_phase_has_its_own_user_directory_and_application_name (test_verify_runner.RunnerIsolationTests.test_each_phase_has_its_own_user_directory_and_application_name) ... # Advisory findings comparison
+
+The complete base and candidate inventories remain retained. This comparison is not a blocking gate.
+
+Base: `abc`; candidate: `abc`.
+
+| New | Resolved | Unchanged |
+|---:|---:|---:|
+| 1 | 0 | 0 |
+
+Multiset of exact path, rule and message; line movement alone is not new debt. Renames/message changes are new/resolved findings, not inferred equivalence.
+
+Location changes are retained in each unchanged finding's base/candidate pair.
+
+[guide] godot --path /tmp/runner-isolation-regression-f0yf59ie/project --headless
+pass
+[guide] passed in 0.0s
+[compact] godot --path /tmp/runner-isolation-regression-f0yf59ie/project --headless
+pass
+[compact] passed in 0.0s
+ok
+test_native_godot_resolver_does_not_reuse_another_suites_settings (test_verify_runner.RunnerIsolationTests.test_native_godot_resolver_does_not_reuse_another_suites_settings) ... [native-write] /workspace/work/armored-platoon/work/godot4.7.2/Godot_v4.7.2-stable_linux.x86_64 --path /tmp/runner-isolation-regression-0vxeql_k/project --headless --script res://probe.gd -- write
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+USER_DIRECTORY /tmp/runner-isolation-regression-0vxeql_k/suite-users/native-write-5729c8c6b67646b8b31306838e6985c5/godot/app_userdata/MotorsportManagerVerification-native-write-5729c8c6b67646b8b31306838e6985c5
+[native-write] passed in 1.3s
+[native-read] /workspace/work/armored-platoon/work/godot4.7.2/Godot_v4.7.2-stable_linux.x86_64 --path /tmp/runner-isolation-regression-0vxeql_k/project --headless --script res://probe.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+USER_DIRECTORY /tmp/runner-isolation-regression-0vxeql_k/suite-users/native-read-e28a383cc8734cc297915928a2715831/godot/app_userdata/MotorsportManagerVerification-native-read-e28a383cc8734cc297915928a2715831
+[native-read] passed in 1.0s
+ok
+test_refuses_to_rename_a_production_project (test_verify_runner.RunnerIsolationTests.test_refuses_to_rename_a_production_project) ... ok
+test_repeated_phase_gets_fresh_identity (test_verify_runner.RunnerIsolationTests.test_repeated_phase_gets_fresh_identity) ... [probe] godot --path /tmp/runner-isolation-regression-d592260d/project --headless
+[probe] passed in 0.0s
+[probe] godot --path /tmp/runner-isolation-regression-d592260d/project --headless
+[probe] passed in 0.0s
+ok
+test_zero_exit_with_runtime_error_is_not_a_pass (test_verify_runner.RunnerIsolationTests.test_zero_exit_with_runtime_error_is_not_a_pass) ... ok
+
+----------------------------------------------------------------------
+Ran 346 tests in 1558.848s
+
+OK (skipped=1)

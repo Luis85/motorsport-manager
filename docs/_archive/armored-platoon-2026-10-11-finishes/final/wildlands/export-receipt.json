@@ -1,0 +1,42 @@
+{
+  "status": "PASS",
+  "head": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+  "checkoutMerge": "319eb893c6d10b3f5eaa387cbb1bdf2300465a75",
+  "runId": 38155883048,
+  "jobId": 114518755128,
+  "observedChecks": 23,
+  "result": {
+    "ok": true,
+    "exportedFiles": 158,
+    "archiveBytes": 6420274,
+    "native": "Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org\nOpenGL API 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 20.1.2, 256 bits)\n\nWILDLANDS_NATIVE_PASS {\"actors\":1,\"actualAwayQuest\":true,\"chartedActors\":3,\"commandAccepted\":true,\"correlatedFloorReplies\":true,\"duplicateKeyFileRejected\":true,\"equipmentAttachments\":7,\"exactStoryTextRestore\":true,\"floorCameraRestored\":true,\"floorObservationReadOnly\":true,\"floorProductionQueued\":true,\"floorVisitAccepted\":true,\"guideSteps\":11,\"inspectedFloors\":2,\"inspectionBytes\":184462,\"losslessStoryRestore\":true,\"nativeFinish\":{\"algorithm\":\"forge-finish-v1\",\"channels\":\"roughness:G,metallic:B\",\"defaultPaletteIdentity\":true,\"paletteIdentity\":true,\"roles\":3},\"personalityVariants\":true,\"questPreparationSteps\":1400,\"rejectedFileStoryUnchanged\":true,\"screenshot\":\"/home/runner/work/motorsport-manager/motorsport-manager/source/wildlands/.generated/wildlands-native.png\",\"simTime\":1.0,\"staticNodes\":391,\"timelineRestore\":true,\"validStoryFileRestore\":true}",
+    "checks": [
+      "manifest hashes",
+      "canonical authored project",
+      "default runtime closure without engine sources",
+      "explicit engine-source opt-in exact bytes",
+      "binary ZIP CRC and traversal",
+      "existing output retained",
+      "symlink ancestors rejected",
+      "actual Godot shell actors/terrain",
+      "180KiB+ threaded transport",
+      "explicit fixed-step clock",
+      "validated gameplay command",
+      "lossless full story restore",
+      "timeline restore and stale response rejection",
+      "three canonical personality variants",
+      "seven equipped socket attachments",
+      "physical clearcoat and explicit sheen approximation",
+      "exact portable surface PNG bytes and native texture assignment",
+      "read-only floor and guide observation",
+      "validated floor visit and production queue",
+      "correlated floor replies and rejection retry",
+      "real departed quest actor suppression",
+      "exact portable finish PNG bytes and native PBR channels",
+      "merged material conflict rejected before native generation"
+    ]
+  },
+  "nodeVersion": "22.23.3",
+  "logBytes": 33484,
+  "logSha256": "0febb1236ae22307d8b923a70e8e8ed49a435393df73ac63b2020939389ae299"
+}

@@ -1,0 +1,66 @@
+{
+  "scope": "Post-merge working tree, generated Forge outputs rebuilt through canonical tasks; not a committed-source CI receipt",
+  "head": "cbde2c23bf8468a192ddd163a01b8c1a3ec8a925",
+  "mergeHead": "3f56925b3532f015d9a29f19a998a05286b76f13",
+  "modelForge": {
+    "architecture": "passed",
+    "types": "passed",
+    "formatting": "passed",
+    "unitPassed": 182,
+    "unitTotal": 182,
+    "buildCli": "passed",
+    "checkCli": "passed"
+  },
+  "sceneForge": {
+    "architecture": "passed",
+    "types": "passed",
+    "formatting": "passed",
+    "unitPassed": 57,
+    "unitTotal": 57,
+    "buildDistAndCli": "passed",
+    "checkCli": "passed"
+  },
+  "browser": "Not rerun locally after merge; root coordinates final CI",
+  "files": [
+    {
+      "path": "bin/model-forge",
+      "bytes": 2367451,
+      "sha256": "0d661dd28891130d3f9331f8252d1db419138d9b200c2480462c0741e70cd412"
+    },
+    {
+      "path": "bin/scene-forge",
+      "bytes": 2518238,
+      "sha256": "e373b65162978ed79800371489fd62ec2c98a5bb58fcddc63a5664a888a918f0"
+    },
+    {
+      "path": "source/scene-forge/src/domain/schema.ts",
+      "bytes": 3522,
+      "sha256": "a7b10c90a97c49ff6c2792d62a8636d4f0cb359815280a3d0c19dff833e3899e"
+    },
+    {
+      "path": "source/scene-forge/tests/schema.test.ts",
+      "bytes": 3928,
+      "sha256": "f79af8f7ebb38f974b37e38c56ef33f79e4a11dc337b0978c9fb9bc20f1a04ab"
+    },
+    {
+      "path": "source/scene-forge/dist/cli.js",
+      "bytes": 327453,
+      "sha256": "43569e2b6e5160c1fe4eb671759841fa07bc76a606d34c6db12b49ee1e3254cc"
+    },
+    {
+      "path": "source/scene-forge/dist/index.js",
+      "bytes": 337162,
+      "sha256": "b23fdbef88bf935078a0bd8586e907bc95542ac6ebe2db85d1164c2933f3a575"
+    },
+    {
+      "path": "source/scene-forge/dist/viewer.js",
+      "bytes": 827660,
+      "sha256": "18678c8e80ff63495343355faa6c7fdd615d0566390a864a912f8a72a5591b71"
+    },
+    {
+      "path": "source/scene-forge/dist/types/scene-forge/src/domain/schema.d.ts",
+      "bytes": 619862,
+      "sha256": "347abe5c9ddb3152029f318a13ff4b0e5a429b2955514d7dabf06bf81e54990f"
+    }
+  ]
+}

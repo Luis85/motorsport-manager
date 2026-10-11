@@ -8,6 +8,7 @@ import {spawnSync} from 'node:child_process';
 import {writeGodotProject} from './tools/wildlands-godot-writer.cjs';
 require('./developer-sdk.cjs');
 const Surface=require('./asset-surface.js') as LWAssetSurfaceContract.Api;
+const Finish=require('./asset-finish.js') as LWAssetFinishContract.Api;
 const P=require('./wildlands-project.js') as {create():unknown};
 interface File {path:string;encoding:'utf8'|'base64';content:string;}
 interface Compiled {files:File[];manifest:{files:{path:string;bytes:number;sha256:string}[];runtime:string;limitations:string[]};}
@@ -23,7 +24,21 @@ async function main():Promise<void>{
   const material=project.pack.resources!.assets[0]!.materials,role=Object.keys(material)[0]!,old=material[role];
   material[role]={...(typeof old==='string'?{color:old}:old as Record<string,unknown>),surface:descriptor};
   material.legacySurface={color:'#ffffff',surface:{kind:'fur',seed:17,scale:7,strength:.24}};
+  const finish:LWAssetFinishContract.Finish={version:1,kind:'painted-metal',seed:173,scale:4,wear:.35,palette:['#40563a','#a9a076']};
+  const alternateFinish:LWAssetFinishContract.Finish={...finish,palette:['#704436','#c9b088']};
+  material.nativeFinish={color:'#abcdef',roughness:.7,metalness:.8,finish};
+  material.alternateNativeFinish={color:'#ffffff',finish:alternateFinish};
+  const defaultFinish:LWAssetFinishContract.Finish={version:1,kind:'painted-metal',seed:271,scale:2,wear:.2};
+  material.defaultNativeFinish={color:'#ffffff',finish:defaultFinish};
+  material.whiteNativeFinish={color:'#eeeeee',finish:{...defaultFinish,palette:['#ffffff']}};
   for(const scene of project.pack.scenes)if(scene.initialState.scenarioResources)scene.initialState.scenarioResources=JSON.parse(JSON.stringify(project.pack.resources));
+  const conflict=structuredClone(project);
+  const badAsset=conflict.pack.resources!.assets[0]! as {materials:Record<string,unknown>;models:Record<string,{nodes:unknown[]}>};
+  badAsset.materials.nativeConflict={color:'#ffffff',finish};
+  Object.values(badAsset.models)[0]!.nodes.push({primitive:'box',id:'native-material-conflict',material:'nativeConflict',materialProps:{surface:descriptor}});
+  let resourceReads=0;
+  await assert.rejects(G.compile(conflict,{get bundle(){resourceReads++;throw Error('Native resources read before admission');}}),/combine surface and finish/);
+  assert.equal(resourceReads,0,'Conflicting authored materials must reject before native resource reads or generation');
   const compiled=await G.compile(project,resources);
   assert.equal(compiled.manifest.runtime,'typescript-node-bridge');
   assert(compiled.manifest.limitations.some(value=>value.includes('Node.js')));
@@ -33,6 +48,24 @@ async function main():Promise<void>{
   const surfaces=JSON.parse(files.get('surfaces/index.json')!.content) as {surface:LWAssetSurfaceContract.Surface;color:string;normal:string;algorithm:string}[];
   assert.equal(surfaces.length,2);assert.equal(surfaces[0]!.algorithm,'littlewild-surface-v2');assert.equal(surfaces[1]!.algorithm,'littlewild-surface-v1');assert.deepEqual(surfaces[0]!.surface,descriptor);
   const pixels=Surface.generate(descriptor);assert.deepEqual(Buffer.from(files.get(surfaces[0]!.normal)!.content,'base64'),Buffer.from(Surface.png(pixels.normal,128,128)));
+  const finishes=JSON.parse(files.get('finishes/index.json')!.content) as {finish:LWAssetFinishContract.Finish;color:string;normal:string;orm:string;algorithm:string}[];
+  assert.equal(finishes.length,3);assert.deepEqual(finishes.map(entry=>entry.finish),[finish,alternateFinish,defaultFinish]);
+  for(const entry of finishes){
+   assert.equal(entry.algorithm,'forge-finish-v1');const baked=Finish.generate(entry.finish);
+   for(const role of ['color','normal','orm'] as const)assert.deepEqual(Buffer.from(files.get(entry[role])!.content,'base64'),Buffer.from(Surface.png(baked[role],128,128)));
+  }
+  // Reversing first-seen spelling must retain one shared native texture entry.
+  const reversedProject=structuredClone(project),reversedMaterials=reversedProject.pack.resources!.assets[0]!.materials;
+  delete reversedMaterials.defaultNativeFinish;
+  reversedMaterials.defaultNativeFinish={color:'#ffffff',finish:defaultFinish};
+  for(const scene of reversedProject.pack.scenes)if(scene.initialState.scenarioResources)scene.initialState.scenarioResources=JSON.parse(JSON.stringify(reversedProject.pack.resources));
+  const reversed=await G.compile(reversedProject,resources);
+  const reversedIndex=JSON.parse(reversed.files.find(file=>file.path==='finishes/index.json')!.content) as typeof finishes;
+  assert.equal(reversedIndex.length,3);
+  assert.deepEqual(reversedIndex[2]!.finish,{...defaultFinish,palette:['#ffffff']});
+  for(const role of ['color','normal','orm'] as const)assert.equal(reversedIndex[2]![role],finishes[2]![role]);
+  const finishPixels=Finish.generate(finish),sampleOffset=(29*128+17)*4;
+  const pixelFixture=Object.fromEntries((['color','normal','orm'] as const).map(role=>[role,Array.from(finishPixels[role].subarray(sampleOffset,sampleOffset+4))]));
   // Default payload policy: the runnable project carries the runtime closure only, never the inert engine sources.
   assert(!files.has('runtime/engine-source-bundle.json'));assert(files.has('runtime/tools/wildlands-runtime.cjs'));assert.deepEqual(JSON.parse(files.get('wildlands.project.json')!.content),project);
   const runtimeFiles=(resources.bundle as {files:{path:string}[]}).files.map(file=>file.path).sort();assert.deepEqual(compiled.files.map(file=>file.path).filter(file=>file.startsWith('runtime/')).sort(),runtimeFiles);
@@ -48,11 +81,13 @@ async function main():Promise<void>{
   const destination=path.join(scratch,'native');await writeGodotProject(project,destination);
   const identity=fs.readFileSync(path.join(destination,'wildlands.project.json'),'utf8');await assert.rejects(writeGodotProject(project,destination),/new directory/);assert.equal(fs.readFileSync(path.join(destination,'wildlands.project.json'),'utf8'),identity);
   const link=path.join(scratch,'link');fs.symlinkSync(scratch,link,'dir');await assert.rejects(writeGodotProject(project,path.join(link,'escaped')),/symlink/);assert(!fs.existsSync(path.join(scratch,'escaped')));
+  fs.writeFileSync(path.join(destination,'native-finish-pixels.json'),JSON.stringify(pixelFixture));
+  fs.writeFileSync(path.join(destination,'native-finish-reversed-index.json'),JSON.stringify(reversedIndex));
   fs.copyFileSync(path.join(projectRoot,'source/wildlands-godot/test-native.gd'),path.join(destination,'native-test.gd'));
   fs.copyFileSync(path.join(projectRoot,'source/wildlands-godot/test-native-appearance.gd'),path.join(destination,'test-native-appearance.gd'));
   const godot=process.env.WILDLANDS_GODOT??'godot',run=spawnSync(godot,[...(process.env.WILDLANDS_CAPTURE_NATIVE?[]:['--headless']),'--audio-driver','Dummy','--path',destination,'--script',path.join(destination,'native-test.gd')],{encoding:'utf8',timeout:50000,env:{...process.env,XDG_DATA_HOME:path.join(scratch,'data'),XDG_CONFIG_HOME:path.join(scratch,'config'),XDG_CACHE_HOME:path.join(scratch,'cache')}});
   assert.equal(run.status,0,run.stdout+'\n'+run.stderr);assert.match(run.stdout,/WILDLANDS_NATIVE_PASS/);assert(!/SCRIPT ERROR|ERROR:/.test(run.stdout+run.stderr),run.stdout+'\n'+run.stderr);
-  const evidence={ok:true,exportedFiles:compiled.files.length,archiveBytes:fs.statSync(archive).size,native:run.stdout.trim(),checks:['manifest hashes','canonical authored project','default runtime closure without engine sources','explicit engine-source opt-in exact bytes','binary ZIP CRC and traversal','existing output retained','symlink ancestors rejected','actual Godot shell actors/terrain','180KiB+ threaded transport','explicit fixed-step clock','validated gameplay command','lossless full story restore','timeline restore and stale response rejection','three canonical personality variants','seven equipped socket attachments','physical clearcoat and explicit sheen approximation','exact portable surface PNG bytes and native texture assignment','read-only floor and guide observation','validated floor visit and production queue','correlated floor replies and rejection retry','real departed quest actor suppression']};
+  const evidence={ok:true,exportedFiles:compiled.files.length,archiveBytes:fs.statSync(archive).size,native:run.stdout.trim(),checks:['manifest hashes','canonical authored project','default runtime closure without engine sources','explicit engine-source opt-in exact bytes','binary ZIP CRC and traversal','existing output retained','symlink ancestors rejected','actual Godot shell actors/terrain','180KiB+ threaded transport','explicit fixed-step clock','validated gameplay command','lossless full story restore','timeline restore and stale response rejection','three canonical personality variants','seven equipped socket attachments','physical clearcoat and explicit sheen approximation','exact portable surface PNG bytes and native texture assignment','read-only floor and guide observation','validated floor visit and production queue','correlated floor replies and rejection retry','real departed quest actor suppression','exact portable finish PNG bytes and native PBR channels','merged material conflict rejected before native generation']};
   fs.writeFileSync(path.join(__dirname,'wildlands-godot-results.json'),JSON.stringify(evidence,null,2)+'\n');process.stdout.write(JSON.stringify(evidence)+'\n');
  }finally{fs.rmSync(scratch,{recursive:true,force:true});}
 }

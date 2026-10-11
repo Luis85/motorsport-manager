@@ -1,0 +1,144 @@
+{
+  "status": "running",
+  "passed": 0,
+  "total": 0,
+  "suites": [
+    {
+      "name": "developer-toolbox",
+      "command": [
+        "node",
+        ".generated/test-developer-toolbox.cjs"
+      ],
+      "result": ".generated/developer-toolbox-results.json",
+      "timeout": 420,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 163.67,
+      "passed": 32,
+      "total": 32
+    },
+    {
+      "name": "office-scenario",
+      "command": [
+        "node",
+        ".generated/test-office-scenario.cjs"
+      ],
+      "result": ".generated/office-scenario-results.json",
+      "timeout": 240,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 140.8,
+      "passed": 11,
+      "total": 11
+    },
+    {
+      "name": "wildlands-browser",
+      "command": [
+        "node",
+        ".generated/verification/wildlands-browser.js"
+      ],
+      "result": "verification/v15/wildlands-browser-results.json",
+      "timeout": 690,
+      "kind": "browser",
+      "exitCode": 0,
+      "seconds": 444.54,
+      "passed": 17,
+      "total": 17
+    },
+    {
+      "name": "wildlands-cli",
+      "command": [
+        "node",
+        ".generated/test-wildlands-cli.cjs"
+      ],
+      "result": ".generated/wildlands-cli-results.json",
+      "timeout": 420,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 378.52,
+      "passed": 26,
+      "total": 26
+    },
+    {
+      "name": "storytelling-browser",
+      "command": [
+        "node",
+        ".generated/verification/storytelling-browser.js"
+      ],
+      "result": "verification/v15/storytelling-browser-results.json",
+      "timeout": 720,
+      "kind": "browser",
+      "exitCode": 1,
+      "seconds": 720.21,
+      "signal": "SIGKILL",
+      "error": "spawn node ETIMEDOUT after 720s"
+    },
+    {
+      "name": "scene-editor-browser",
+      "command": [
+        "node",
+        ".generated/verification/scene-editor-browser.js"
+      ],
+      "result": "verification/v15/scene-editor-browser-results.json",
+      "timeout": 510,
+      "kind": "browser",
+      "exitCode": 1,
+      "seconds": 359.41
+    },
+    {
+      "name": "engine-export",
+      "command": [
+        "node",
+        ".generated/test-engine-export.cjs"
+      ],
+      "result": ".generated/engine-export-results.json",
+      "timeout": 240,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 168.29,
+      "passed": 17,
+      "total": 17
+    },
+    {
+      "name": "scene-navigation",
+      "command": [
+        "node",
+        ".generated/test-scene-navigation.cjs"
+      ],
+      "result": ".generated/scene-navigation-results.json",
+      "timeout": 660,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 153.24,
+      "passed": 12,
+      "total": 12
+    }
+  ],
+  "browserIncluded": true,
+  "complete": true,
+  "selection": {
+    "tier": "full",
+    "noBrowser": false,
+    "only": null,
+    "shard": null,
+    "suites": 120
+  },
+  "execution": {
+    "jobs": 3,
+    "browserJobs": 2,
+    "keepGoing": true
+  },
+  "registrySha256": "761ef7b4cc4bfb341f5d7d6a49346fcdb4e5c2c7e7314a031e19a67318a46ff6",
+  "expectationsSha256": "bbdc2fef53adb44c64d6f6de370f405c38aacc4fdf2823dd161dc55add9a268d",
+  "sourceSha256": "ff1d5c640032943a051d897a5b3d6a1d476b56e88bf4a163df0f75b44c6a0b5c",
+  "startedAt": "2026-10-10T20:54:53.346Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "architecture": "x64",
+    "chromium": "/usr/bin/chromium",
+    "cores": 4
+  },
+  "htmlSha256": "66bfdef2754a2b9fe9c11efe3c06eaa3598b6389fad8623f9fa2ed21b3437117",
+  "htmlBytes": 20194103
+}

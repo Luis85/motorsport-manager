@@ -36,6 +36,7 @@ const publicSchemaExports = [
   'CameraSnapshotSchema',
   'CompositionSchema',
   'EnvironmentSchema',
+  'FinishSchema',
   'ForgeError',
   'GeometrySchema',
   'Id',

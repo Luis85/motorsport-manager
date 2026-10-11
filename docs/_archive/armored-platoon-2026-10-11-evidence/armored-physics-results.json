@@ -1,0 +1,46 @@
+{
+  "passed": 10,
+  "total": 10,
+  "results": [
+    {
+      "name": "Hull nose and rear stop at their full length before obstacle contact",
+      "passed": true
+    },
+    {
+      "name": "Rotated hull corners and world boundaries use the oriented footprint",
+      "passed": true
+    },
+    {
+      "name": "Continuous hull sweeps prevent tunneling through thin obstacles at extreme speed",
+      "passed": true
+    },
+    {
+      "name": "Stable contact removes inward velocity while preserving slide and reverse escape",
+      "passed": true
+    },
+    {
+      "name": "Hull pairs collide along their long axes and ignore vertically separated obstacles",
+      "passed": true
+    },
+    {
+      "name": "Destroyed obstacle topology immediately releases the collision footprint",
+      "passed": true
+    },
+    {
+      "name": "Gunner disability preserves propulsion while driver and drivetrain failures block it",
+      "passed": true
+    },
+    {
+      "name": "Bounded angular sweeps stop rotating corners before crossing thin geometry",
+      "passed": true
+    },
+    {
+      "name": "Detached v2 contact reconstruction continues identically and default selects v2",
+      "passed": true
+    },
+    {
+      "name": "Explicit v1 retains the captured legacy force and circular-contact continuation",
+      "passed": true
+    }
+  ]
+}

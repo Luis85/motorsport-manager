@@ -1,0 +1,12 @@
+{
+  "status": "interrupted_not_pass",
+  "reason": "Confirmed Armored global CSS pollution requires source correction and rebuild; retain original failed browser evidence.",
+  "sourceSha256": "ff1d5c640032943a051d897a5b3d6a1d476b56e88bf4a163df0f75b44c6a0b5c",
+  "terminatedGroups": [
+    40532,
+    40554,
+    40747,
+    40760,
+    41096
+  ]
+}

@@ -1,0 +1,303 @@
+{
+  "schemaVersion": 1,
+  "recordedAtUTC": "2026-10-11T16:08:04.844664+00:00",
+  "repository": "Luis85/motorsport-manager",
+  "run": {
+    "id": 38151353048,
+    "name": "Godot verification",
+    "status": "completed",
+    "conclusion": "success",
+    "run_number": 1813,
+    "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38151353048/jobs",
+    "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38151353048/logs",
+    "workflow_id": 365048890
+  },
+  "url": "https://github.com/Luis85/motorsport-manager/actions/runs/38151353048",
+  "implementationCommit": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "ciCheckoutCommit": "ec88210c205a674cdb77f85cc2cc59d9feb3874c",
+  "implementationTree": "7eb1dc63ee7709b75c0a835dcb14cbb3d509cf99",
+  "ciCheckoutTree": "7eb1dc63ee7709b75c0a835dcb14cbb3d509cf99",
+  "treesEqual": true,
+  "nativeSourceDigest": "63527e9bac2f56c0e8ab60c99a729e8c52732f3015f49e9f27ce21eb346381b7",
+  "godotVersion": "4.7.2",
+  "godotBinarySHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+  "aggregate": {
+    "passed": true,
+    "source": "63527e9bac2f56c0e8ab60c99a729e8c52732f3015f49e9f27ce21eb346381b7",
+    "suites": 103,
+    "checks": 21346,
+    "shards": 6
+  },
+  "checksPerformed": [
+    "All seven jobs terminal success",
+    "All six shard reports passed with identical source digest and actual CI checkout",
+    "Registered 103 suite IDs each appear exactly once",
+    "Sum of shard checks equals aggregate 21346",
+    "All six artifact IDs, bytes and digests match upload logs and API metadata; aggregate digest-verified downloads match IDs and digests",
+    "Implementation and CI merge checkout trees identical"
+  ],
+  "jobs": [
+    {
+      "id": 114505360249,
+      "name": "suites-4",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 114505360313,
+      "name": "suites-5",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 114505360315,
+      "name": "suites-3",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 114505360332,
+      "name": "suites-0",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 114505360404,
+      "name": "suites-2",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 114505360516,
+      "name": "suites-1",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "id": 114513275172,
+      "name": "verify",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "shards": [
+    {
+      "index": 0,
+      "suites": 18,
+      "checks": 3187,
+      "log": "suites-0.log",
+      "logSHA256": "1e378456c5af7edf3a479c860d0d1d12b782eeae58ee6ccdd5c373fe98a29596"
+    },
+    {
+      "index": 1,
+      "suites": 17,
+      "checks": 2321,
+      "log": "suites-1.log",
+      "logSHA256": "a77b2636915200a78f957ca56c303aef8c03b52b2259b5290ad7a8398abf1c6f"
+    },
+    {
+      "index": 2,
+      "suites": 17,
+      "checks": 2856,
+      "log": "suites-2.log",
+      "logSHA256": "7234690880a9b96ae869d829a6a251da7bcac5896ae9021cffdd65df0a0f9db1"
+    },
+    {
+      "index": 3,
+      "suites": 17,
+      "checks": 2269,
+      "log": "suites-3.log",
+      "logSHA256": "1bc99a96b21b0958ad1b82880a3a49727723d9e92b7bcf3a5bfb4f73f23eaaa9"
+    },
+    {
+      "index": 4,
+      "suites": 17,
+      "checks": 4465,
+      "log": "suites-4.log",
+      "logSHA256": "8cbdc51cbfa426b2c757acd182db0c0ec8fcb688eaf60d205758a8c76c2276f2"
+    },
+    {
+      "index": 5,
+      "suites": 17,
+      "checks": 6248,
+      "log": "suites-5.log",
+      "logSHA256": "8fe27d0c70acd07a9d980b4f46799d4eafee4d07fe16fe576e73e87e49487519"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 11707545370,
+      "name": "verification-shard-0",
+      "size_in_bytes": 18515601,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707545370",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707545370/zip",
+      "expired": false,
+      "created_at": "2026-10-11T15:37:07Z",
+      "expires_at": "2026-10-25T15:37:06Z",
+      "updated_at": "2026-10-11T15:37:07Z",
+      "digest": "sha256:afc9d6c5c97ee5f75bb0e65889a2337e25f6ace92ec688e8b50ff0553aced0a5",
+      "workflow_run": {
+        "id": 38151353048,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "09ed672642aedee855d2d45f0e8c4a611127ca7b"
+      }
+    },
+    {
+      "id": 11707840325,
+      "name": "verification-shard-1",
+      "size_in_bytes": 12427546,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707840325",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707840325/zip",
+      "expired": false,
+      "created_at": "2026-10-11T15:47:49Z",
+      "expires_at": "2026-10-25T15:47:47Z",
+      "updated_at": "2026-10-11T15:47:49Z",
+      "digest": "sha256:e2d7cc900bf3ed2b5ba3e7ab23569ba71b524c84ba1c277397e60a6cf3bbff4b",
+      "workflow_run": {
+        "id": 38151353048,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "09ed672642aedee855d2d45f0e8c4a611127ca7b"
+      }
+    },
+    {
+      "id": 11708080427,
+      "name": "verification-shard-2",
+      "size_in_bytes": 47807707,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708080427",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11708080427/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:06:24Z",
+      "expires_at": "2026-10-25T16:06:22Z",
+      "updated_at": "2026-10-11T16:06:24Z",
+      "digest": "sha256:5734524a2a9871149c9c12784f92bde7f9738f773b8e38bb983d4ad236f1eadf",
+      "workflow_run": {
+        "id": 38151353048,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "09ed672642aedee855d2d45f0e8c4a611127ca7b"
+      }
+    },
+    {
+      "id": 11707750569,
+      "name": "verification-shard-3",
+      "size_in_bytes": 9514276,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707750569",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707750569/zip",
+      "expired": false,
+      "created_at": "2026-10-11T15:47:06Z",
+      "expires_at": "2026-10-25T15:47:04Z",
+      "updated_at": "2026-10-11T15:47:06Z",
+      "digest": "sha256:828d1499dedd891db5f31028a3ccb56017797297fde5d5653629fa47d575565f",
+      "workflow_run": {
+        "id": 38151353048,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "09ed672642aedee855d2d45f0e8c4a611127ca7b"
+      }
+    },
+    {
+      "id": 11707716020,
+      "name": "verification-shard-4",
+      "size_in_bytes": 18905443,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707716020",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707716020/zip",
+      "expired": false,
+      "created_at": "2026-10-11T15:52:32Z",
+      "expires_at": "2026-10-25T15:52:30Z",
+      "updated_at": "2026-10-11T15:52:32Z",
+      "digest": "sha256:54776c7961198f97d34bee211681cdc6f9aa5604b149fc078e482bc7b41e8f11",
+      "workflow_run": {
+        "id": 38151353048,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "09ed672642aedee855d2d45f0e8c4a611127ca7b"
+      }
+    },
+    {
+      "id": 11706906763,
+      "name": "verification-shard-5",
+      "size_in_bytes": 9529093,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11706906763",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11706906763/zip",
+      "expired": false,
+      "created_at": "2026-10-11T15:36:53Z",
+      "expires_at": "2026-10-25T15:36:51Z",
+      "updated_at": "2026-10-11T15:36:53Z",
+      "digest": "sha256:ddd25b7d2a8395e784bdd4d061d5d45f52de417880fbf63dbea93b570bced747",
+      "workflow_run": {
+        "id": 38151353048,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "09ed672642aedee855d2d45f0e8c4a611127ca7b"
+      }
+    }
+  ],
+  "aggregateArtifactDownloadReceipt": {
+    "repository": "Luis85/motorsport-manager",
+    "run_id": 38151353048,
+    "source": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+    "artifacts": [
+      {
+        "id": 11707545370,
+        "name": "verification-shard-0",
+        "digest": "sha256:afc9d6c5c97ee5f75bb0e65889a2337e25f6ace92ec688e8b50ff0553aced0a5"
+      },
+      {
+        "id": 11707840325,
+        "name": "verification-shard-1",
+        "digest": "sha256:e2d7cc900bf3ed2b5ba3e7ab23569ba71b524c84ba1c277397e60a6cf3bbff4b"
+      },
+      {
+        "id": 11708080427,
+        "name": "verification-shard-2",
+        "digest": "sha256:5734524a2a9871149c9c12784f92bde7f9738f773b8e38bb983d4ad236f1eadf"
+      },
+      {
+        "id": 11707750569,
+        "name": "verification-shard-3",
+        "digest": "sha256:828d1499dedd891db5f31028a3ccb56017797297fde5d5653629fa47d575565f"
+      },
+      {
+        "id": 11707716020,
+        "name": "verification-shard-4",
+        "digest": "sha256:54776c7961198f97d34bee211681cdc6f9aa5604b149fc078e482bc7b41e8f11"
+      },
+      {
+        "id": 11706906763,
+        "name": "verification-shard-5",
+        "digest": "sha256:ddd25b7d2a8395e784bdd4d061d5d45f52de417880fbf63dbea93b570bced747"
+      }
+    ]
+  },
+  "priorCheckpoint": {
+    "runId": 38150268330,
+    "implementationCommit": "3ce1c8dfde1e479b9927e4447bcbb6e28e898ba9",
+    "ciCheckoutCommit": "dde8ae0180705e8ed2e2483aefa78536f9b36371",
+    "conclusion": "cancelled",
+    "passedShards": [
+      0,
+      5
+    ],
+    "cancelledShards": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "aggregateConclusion": "cancelled",
+    "rawLogsPrefix": "prior-suites-",
+    "note": "Preserved historical cancellation; no prior partial results count toward current acceptance."
+  },
+  "limits": [
+    "Read-only CI monitoring; no local native or browser workload executed.",
+    "Full job logs retained as returned by GitHub connector. Artifact archives were not downloaded locally; digests are cross-checked against API, upload logs, and successful CI aggregate download receipt."
+  ]
+}

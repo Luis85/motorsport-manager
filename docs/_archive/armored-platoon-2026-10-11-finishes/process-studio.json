@@ -1,0 +1,32 @@
+{
+  "typecheck": "passed",
+  "architecture": {
+    "status": "passed",
+    "files": 28
+  },
+  "build": "passed",
+  "tests": {
+    "passed": 22,
+    "failed": 0,
+    "skipped": 0,
+    "durationMilliseconds": 25395.985861
+  },
+  "freshness": "passed",
+  "binary": {
+    "path": "bin/process-studio",
+    "bytes": 1370736,
+    "sha256": "93950992bd58ca55ee70334e902d6cab4af503ffa41c4b51d6fc496451c0df7e",
+    "sourceIdentity": "095ec82c92410e0cb6669b584de0436a7bf0add28e8cc2fed2ae7495092aa84b",
+    "engine": "35bd399cee7ca10aba3c19aa7afbb4cbeffa717c5ad40cfe102c2b5ed705564c"
+  },
+  "wildlands": {
+    "path": "bin/wildlands",
+    "bytes": 14730073,
+    "sha256": "5ab1d6b2022d380fe156f29765dd1fb7cc1f4aed7f7f71b7d8c8013b39f7cdf8"
+  },
+  "demosEngine": "35bd399cee7ca10aba3c19aa7afbb4cbeffa717c5ad40cfe102c2b5ed705564c",
+  "warnings": [
+    "Node MaxListenersExceededWarning from the upstream test helper registering more than ten process exit cleanup listeners; test suite still passed."
+  ],
+  "sourceChanges": "None; generated bin/process-studio only, no git staging."
+}

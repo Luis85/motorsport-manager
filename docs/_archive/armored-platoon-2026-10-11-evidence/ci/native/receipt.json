@@ -1,0 +1,863 @@
+{
+  "status": "passed",
+  "run_id": 38120778592,
+  "url": "https://github.com/Luis85/motorsport-manager/actions/runs/38120778592",
+  "identity": {
+    "implementationCommit": "bbf8475e80d59754bef4df4448492979f492624c",
+    "ciMergeCommit": "9357f10ee7c4fb0b1b1b11735c715149ac9e2d1a",
+    "tree": "d8993c022778faa911647e77bbc4a26cf8f16a40",
+    "treeDiffEmpty": true,
+    "identityReceipt": "../checkout-identity.json"
+  },
+  "engine": {
+    "version": "4.7.2.stable.official.ed1daf0bf",
+    "sha256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e"
+  },
+  "aggregate": {
+    "job_id": 114421396940,
+    "status": "completed",
+    "conclusion": "success",
+    "log": "verify.log",
+    "summary": {
+      "passed": true,
+      "source": "1fe7299f19d496c089017167270df438b17908bab515a857881c42f4c578e2bc",
+      "suites": 103,
+      "checks": 21346,
+      "shards": 6
+    },
+    "execution": {
+      "runnerVersion": "2.337.0",
+      "operatingSystem": [
+        "Ubuntu",
+        "24.04.5",
+        "LTS"
+      ],
+      "runnerImage": [
+        "Image: ubuntu-24.04",
+        "Version: 20261004.327.1",
+        "Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md",
+        "Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327"
+      ],
+      "godotVersion": null
+    }
+  },
+  "shards": [
+    {
+      "job_id": 114414875410,
+      "name": "suites-0",
+      "status": "completed",
+      "conclusion": "success",
+      "log": "suites-0.log",
+      "summary": {
+        "source": "1fe7299f19d496c089017167270df438b17908bab515a857881c42f4c578e2bc",
+        "index": 0,
+        "count": 6,
+        "mode": "full",
+        "passed": true,
+        "suites": [
+          {
+            "id": "architecture_characterization",
+            "passed": true,
+            "checks": 36,
+            "seconds": 105.257
+          },
+          {
+            "id": "architecture_ui_tests",
+            "passed": true,
+            "checks": 45,
+            "seconds": 18.854
+          },
+          {
+            "id": "living_racecraft_ui",
+            "passed": true,
+            "checks": 33,
+            "seconds": 17.8
+          },
+          {
+            "id": "practice_scenario_runs",
+            "passed": true,
+            "checks": 17,
+            "seconds": 92.062
+          },
+          {
+            "id": "replay_performance",
+            "passed": true,
+            "checks": 15,
+            "seconds": 43.958
+          },
+          {
+            "id": "rivals_ui_tests",
+            "passed": true,
+            "checks": 60,
+            "seconds": 27.923
+          },
+          {
+            "id": "tactical_duel_ui_tests",
+            "passed": true,
+            "checks": 88,
+            "seconds": 62.195
+          },
+          {
+            "id": "ui_finish_guide_tests",
+            "passed": true,
+            "checks": 303,
+            "seconds": 63.5
+          },
+          {
+            "id": "ui_polish_tests",
+            "passed": true,
+            "checks": 208,
+            "seconds": 52.669
+          },
+          {
+            "id": "weather_ui_smoke",
+            "passed": true,
+            "checks": 33,
+            "seconds": 14.093
+          },
+          {
+            "id": "weekend_flow_ui_tests",
+            "passed": true,
+            "checks": 43,
+            "seconds": 18.302
+          },
+          {
+            "id": "storage_contract_tests",
+            "passed": true,
+            "checks": 89,
+            "seconds": 2.019
+          },
+          {
+            "id": "roster_content_ui_tests",
+            "passed": true,
+            "checks": 17,
+            "seconds": 16.148
+          },
+          {
+            "id": "editor_gesture_tests",
+            "passed": true,
+            "checks": 147,
+            "seconds": 13.795
+          },
+          {
+            "id": "content_environment_tests",
+            "passed": true,
+            "checks": 483,
+            "seconds": 9.287
+          },
+          {
+            "id": "content_mechanic_profile_tests",
+            "passed": true,
+            "checks": 106,
+            "seconds": 10.69
+          },
+          {
+            "id": "toolbox_protocol_tests",
+            "passed": true,
+            "checks": 1416,
+            "seconds": 31.995
+          },
+          {
+            "id": "balance_config_validation_tests",
+            "passed": true,
+            "checks": 48,
+            "seconds": 8.937
+          }
+        ],
+        "script_loads": 453
+      },
+      "execution": {
+        "runnerVersion": "2.337.0",
+        "operatingSystem": [
+          "Ubuntu",
+          "24.04.5",
+          "LTS"
+        ],
+        "runnerImage": [
+          "Image: ubuntu-24.04",
+          "Version: 20261004.327.1",
+          "Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md",
+          "Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327"
+        ],
+        "godotVersion": "4.7.2.stable.official.ed1daf0bf"
+      }
+    },
+    {
+      "job_id": 114414875482,
+      "name": "suites-1",
+      "status": "completed",
+      "conclusion": "success",
+      "log": "suites-1.log",
+      "summary": {
+        "source": "1fe7299f19d496c089017167270df438b17908bab515a857881c42f4c578e2bc",
+        "index": 1,
+        "count": 6,
+        "mode": "full",
+        "passed": true,
+        "suites": [
+          {
+            "id": "director_weekend_ui_tests",
+            "passed": true,
+            "checks": 49,
+            "seconds": 132.836
+          },
+          {
+            "id": "compact_ui_tests",
+            "passed": true,
+            "checks": 125,
+            "seconds": 48.121
+          },
+          {
+            "id": "minimal_tests",
+            "passed": true,
+            "checks": 113,
+            "seconds": 59.23
+          },
+          {
+            "id": "practice_tests",
+            "passed": true,
+            "checks": 78,
+            "seconds": 61.372
+          },
+          {
+            "id": "replay_scenario_runs",
+            "passed": true,
+            "checks": 39,
+            "seconds": 119.941
+          },
+          {
+            "id": "run_tests",
+            "passed": true,
+            "checks": 752,
+            "seconds": 200.939
+          },
+          {
+            "id": "ui_clarity_tests",
+            "passed": true,
+            "checks": 181,
+            "seconds": 90.306
+          },
+          {
+            "id": "ui_finish_observation_tests",
+            "passed": true,
+            "checks": 19,
+            "seconds": 19.657
+          },
+          {
+            "id": "ui_repair_tests",
+            "passed": true,
+            "checks": 89,
+            "seconds": 24.514
+          },
+          {
+            "id": "weekend_strategy_tests",
+            "passed": true,
+            "checks": 109,
+            "seconds": 41.373
+          },
+          {
+            "id": "presentation_boundary_tests",
+            "passed": true,
+            "checks": 28,
+            "seconds": 4.077
+          },
+          {
+            "id": "content_tests",
+            "passed": true,
+            "checks": 61,
+            "seconds": 7.235
+          },
+          {
+            "id": "content_tyre_tests",
+            "passed": true,
+            "checks": 57,
+            "seconds": 73.46
+          },
+          {
+            "id": "weekend_lifecycle_tests",
+            "passed": true,
+            "checks": 109,
+            "seconds": 197.016
+          },
+          {
+            "id": "content_operations_tests",
+            "passed": true,
+            "checks": 273,
+            "seconds": 11.797
+          },
+          {
+            "id": "content_wheel_operating_tests",
+            "passed": true,
+            "checks": 49,
+            "seconds": 4.026
+          },
+          {
+            "id": "toolbox_track_tests",
+            "passed": true,
+            "checks": 190,
+            "seconds": 4.076
+          }
+        ],
+        "script_loads": 453
+      },
+      "execution": {
+        "runnerVersion": "2.337.0",
+        "operatingSystem": [
+          "Ubuntu",
+          "24.04.5",
+          "LTS"
+        ],
+        "runnerImage": [
+          "Image: ubuntu-24.04",
+          "Version: 20261004.327.1",
+          "Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md",
+          "Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327"
+        ],
+        "godotVersion": "4.7.2.stable.official.ed1daf0bf"
+      }
+    },
+    {
+      "job_id": 114414875453,
+      "name": "suites-2",
+      "status": "completed",
+      "conclusion": "success",
+      "log": "suites-2.log",
+      "summary": {
+        "source": "1fe7299f19d496c089017167270df438b17908bab515a857881c42f4c578e2bc",
+        "index": 2,
+        "count": 6,
+        "mode": "full",
+        "passed": true,
+        "suites": [
+          {
+            "id": "duel_scenario_runs",
+            "passed": true,
+            "checks": 149,
+            "seconds": 1047.709
+          },
+          {
+            "id": "director_tests",
+            "passed": true,
+            "checks": 76,
+            "seconds": 119.177
+          },
+          {
+            "id": "minimal_ui_tests",
+            "passed": true,
+            "checks": 295,
+            "seconds": 38.945
+          },
+          {
+            "id": "practice_ui_smoke",
+            "passed": true,
+            "checks": 67,
+            "seconds": 30.826
+          },
+          {
+            "id": "replay_tests",
+            "passed": true,
+            "checks": 59,
+            "seconds": 21.661
+          },
+          {
+            "id": "scenario_authoring_ui",
+            "passed": true,
+            "checks": 109,
+            "seconds": 57.105
+          },
+          {
+            "id": "ui_completion_tests",
+            "passed": true,
+            "checks": 68,
+            "seconds": 31.829
+          },
+          {
+            "id": "ui_finish_populated_tests",
+            "passed": true,
+            "checks": 655,
+            "seconds": 345.648
+          },
+          {
+            "id": "ui_smoke",
+            "passed": true,
+            "checks": 116,
+            "seconds": 73.359
+          },
+          {
+            "id": "workspace_performance",
+            "passed": true,
+            "checks": 14,
+            "seconds": 80.272
+          },
+          {
+            "id": "car_entity_tests",
+            "passed": true,
+            "checks": 51,
+            "seconds": 2.42
+          },
+          {
+            "id": "content_pack_tests",
+            "passed": true,
+            "checks": 41,
+            "seconds": 7.982
+          },
+          {
+            "id": "content_tyre_ui_tests",
+            "passed": true,
+            "checks": 51,
+            "seconds": 13.041
+          },
+          {
+            "id": "shipping_runtime_tests",
+            "passed": true,
+            "checks": 88,
+            "seconds": 135.773
+          },
+          {
+            "id": "content_competition_tests",
+            "passed": true,
+            "checks": 295,
+            "seconds": 35.992
+          },
+          {
+            "id": "scenario_catalog_tests",
+            "passed": true,
+            "checks": 117,
+            "seconds": 2.019
+          },
+          {
+            "id": "toolbox_campaign_tests",
+            "passed": true,
+            "checks": 605,
+            "seconds": 157.412
+          }
+        ],
+        "script_loads": 453
+      },
+      "execution": {
+        "runnerVersion": "2.337.0",
+        "operatingSystem": [
+          "Ubuntu",
+          "24.04.5",
+          "LTS"
+        ],
+        "runnerImage": [
+          "Image: ubuntu-24.04",
+          "Version: 20261004.327.1",
+          "Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md",
+          "Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327"
+        ],
+        "godotVersion": "4.7.2.stable.official.ed1daf0bf"
+      }
+    },
+    {
+      "job_id": 114414875406,
+      "name": "suites-3",
+      "status": "completed",
+      "conclusion": "success",
+      "log": "suites-3.log",
+      "summary": {
+        "source": "1fe7299f19d496c089017167270df438b17908bab515a857881c42f4c578e2bc",
+        "index": 3,
+        "count": 6,
+        "mode": "full",
+        "passed": true,
+        "suites": [
+          {
+            "id": "minimal_weekend_ui_tests",
+            "passed": true,
+            "checks": 122,
+            "seconds": 130.136
+          },
+          {
+            "id": "director_ui_tests",
+            "passed": true,
+            "checks": 248,
+            "seconds": 68.054
+          },
+          {
+            "id": "notebook_tests",
+            "passed": true,
+            "checks": 100,
+            "seconds": 12.998
+          },
+          {
+            "id": "recovery_scenario_runs",
+            "passed": true,
+            "checks": 24,
+            "seconds": 205.405
+          },
+          {
+            "id": "replay_ui_tests",
+            "passed": true,
+            "checks": 111,
+            "seconds": 83.247
+          },
+          {
+            "id": "strategy_scenario_runs",
+            "passed": true,
+            "checks": 19,
+            "seconds": 205.962
+          },
+          {
+            "id": "ui_finish_analysis_tests",
+            "passed": true,
+            "checks": 18,
+            "seconds": 14.647
+          },
+          {
+            "id": "ui_finish_soak_tests",
+            "passed": true,
+            "checks": 15,
+            "seconds": 51.277
+          },
+          {
+            "id": "ux_performance",
+            "passed": true,
+            "checks": 8,
+            "seconds": 51.08
+          },
+          {
+            "id": "mechanics_tests",
+            "passed": true,
+            "checks": 117,
+            "seconds": 3.425
+          },
+          {
+            "id": "car_record_tests",
+            "passed": true,
+            "checks": 297,
+            "seconds": 9.291
+          },
+          {
+            "id": "content_roster_tests",
+            "passed": true,
+            "checks": 58,
+            "seconds": 197.024
+          },
+          {
+            "id": "reproduction_tests",
+            "passed": true,
+            "checks": 19,
+            "seconds": 19.367
+          },
+          {
+            "id": "record_traversal_tests",
+            "passed": true,
+            "checks": 436,
+            "seconds": 4.577
+          },
+          {
+            "id": "content_persistence_tests",
+            "passed": true,
+            "checks": 614,
+            "seconds": 12.448
+          },
+          {
+            "id": "content_editor_profile_tests",
+            "passed": true,
+            "checks": 19,
+            "seconds": 3.072
+          },
+          {
+            "id": "race_physics_balance_tests",
+            "passed": true,
+            "checks": 44,
+            "seconds": 5.679
+          }
+        ],
+        "script_loads": 453
+      },
+      "execution": {
+        "runnerVersion": "2.337.0",
+        "operatingSystem": [
+          "Ubuntu",
+          "24.04.5",
+          "LTS"
+        ],
+        "runnerImage": [
+          "Image: ubuntu-24.04",
+          "Version: 20261004.327.1",
+          "Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md",
+          "Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327"
+        ],
+        "godotVersion": "4.7.2.stable.official.ed1daf0bf"
+      }
+    },
+    {
+      "job_id": 114414875317,
+      "name": "suites-4",
+      "status": "completed",
+      "conclusion": "success",
+      "log": "suites-4.log",
+      "summary": {
+        "source": "1fe7299f19d496c089017167270df438b17908bab515a857881c42f4c578e2bc",
+        "index": 4,
+        "count": 6,
+        "mode": "full",
+        "passed": true,
+        "suites": [
+          {
+            "id": "scenario_authoring_runs",
+            "passed": true,
+            "checks": 42,
+            "seconds": 131.154
+          },
+          {
+            "id": "duel_contract_tests",
+            "passed": true,
+            "checks": 31,
+            "seconds": 2.52
+          },
+          {
+            "id": "notebook_ui_tests",
+            "passed": true,
+            "checks": 117,
+            "seconds": 53.225
+          },
+          {
+            "id": "recovery_tests",
+            "passed": true,
+            "checks": 128,
+            "seconds": 22.558
+          },
+          {
+            "id": "rival_scenario_runs",
+            "passed": true,
+            "checks": 34,
+            "seconds": 184.339
+          },
+          {
+            "id": "strategy_ui_smoke",
+            "passed": true,
+            "checks": 34,
+            "seconds": 14.042
+          },
+          {
+            "id": "ui_finish_details_tests",
+            "passed": true,
+            "checks": 111,
+            "seconds": 123.452
+          },
+          {
+            "id": "ui_finish_states_tests",
+            "passed": true,
+            "checks": 40,
+            "seconds": 16.35
+          },
+          {
+            "id": "weather_scenario_runs",
+            "passed": true,
+            "checks": 10,
+            "seconds": 92.224
+          },
+          {
+            "id": "editor_session_tests",
+            "passed": true,
+            "checks": 146,
+            "seconds": 1.919
+          },
+          {
+            "id": "game_flow_coherence_ui_tests",
+            "passed": true,
+            "checks": 382,
+            "seconds": 45.006
+          },
+          {
+            "id": "content_roster_ui_tests",
+            "passed": true,
+            "checks": 37,
+            "seconds": 12.942
+          },
+          {
+            "id": "operation_sequence_tests",
+            "passed": true,
+            "checks": 2959,
+            "seconds": 120.102
+          },
+          {
+            "id": "content_tuning_tests",
+            "passed": true,
+            "checks": 124,
+            "seconds": 10.237
+          },
+          {
+            "id": "content_catalog_tests",
+            "passed": true,
+            "checks": 87,
+            "seconds": 10.94
+          },
+          {
+            "id": "content_editor_interaction_tests",
+            "passed": true,
+            "checks": 77,
+            "seconds": 11.788
+          },
+          {
+            "id": "content_planning_balance_tests",
+            "passed": true,
+            "checks": 106,
+            "seconds": 4.525
+          }
+        ],
+        "script_loads": 453
+      },
+      "execution": {
+        "runnerVersion": "2.337.0",
+        "operatingSystem": [
+          "Ubuntu",
+          "24.04.5",
+          "LTS"
+        ],
+        "runnerImage": [
+          "Image: ubuntu-24.04",
+          "Version: 20261004.327.1",
+          "Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md",
+          "Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327"
+        ],
+        "godotVersion": "4.7.2.stable.official.ed1daf0bf"
+      }
+    },
+    {
+      "job_id": 114414875357,
+      "name": "suites-5",
+      "status": "completed",
+      "conclusion": "success",
+      "log": "suites-5.log",
+      "summary": {
+        "source": "1fe7299f19d496c089017167270df438b17908bab515a857881c42f4c578e2bc",
+        "index": 5,
+        "count": 6,
+        "mode": "full",
+        "passed": true,
+        "suites": [
+          {
+            "id": "architecture_tests",
+            "passed": true,
+            "checks": 40,
+            "seconds": 6.13
+          },
+          {
+            "id": "living_racecraft_tests",
+            "passed": true,
+            "checks": 113,
+            "seconds": 11.697
+          },
+          {
+            "id": "pitwall_ux_tests",
+            "passed": true,
+            "checks": 149,
+            "seconds": 33.283
+          },
+          {
+            "id": "recovery_ui_smoke",
+            "passed": true,
+            "checks": 41,
+            "seconds": 21.008
+          },
+          {
+            "id": "rival_styles_tests",
+            "passed": true,
+            "checks": 50,
+            "seconds": 12.744
+          },
+          {
+            "id": "tactical_duel_tests",
+            "passed": true,
+            "checks": 98,
+            "seconds": 75.028
+          },
+          {
+            "id": "ui_finish_execution_tests",
+            "passed": true,
+            "checks": 57,
+            "seconds": 46.808
+          },
+          {
+            "id": "ui_finish_tests",
+            "passed": true,
+            "checks": 47,
+            "seconds": 64.589
+          },
+          {
+            "id": "weather_tests",
+            "passed": true,
+            "checks": 97,
+            "seconds": 20.809
+          },
+          {
+            "id": "weekend_launch_tests",
+            "passed": true,
+            "checks": 962,
+            "seconds": 58.592
+          },
+          {
+            "id": "command_contract_tests",
+            "passed": true,
+            "checks": 1821,
+            "seconds": 18.504
+          },
+          {
+            "id": "roster_content_tests",
+            "passed": true,
+            "checks": 37,
+            "seconds": 152.089
+          },
+          {
+            "id": "command_responsibility_tests",
+            "passed": true,
+            "checks": 65,
+            "seconds": 2.119
+          },
+          {
+            "id": "content_weekend_ui_tests",
+            "passed": true,
+            "checks": 22,
+            "seconds": 12.388
+          },
+          {
+            "id": "content_scenario_ui_tests",
+            "passed": true,
+            "checks": 37,
+            "seconds": 11.787
+          },
+          {
+            "id": "toolbox_weekend_tests",
+            "passed": true,
+            "checks": 2545,
+            "seconds": 45.165
+          },
+          {
+            "id": "balance_campaign_presentation_tests",
+            "passed": true,
+            "checks": 67,
+            "seconds": 31.584
+          }
+        ],
+        "script_loads": 453
+      },
+      "execution": {
+        "runnerVersion": "2.337.0",
+        "operatingSystem": [
+          "Ubuntu",
+          "24.04.5",
+          "LTS"
+        ],
+        "runnerImage": [
+          "Image: ubuntu-24.04",
+          "Version: 20261004.327.1",
+          "Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md",
+          "Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327"
+        ],
+        "godotVersion": "4.7.2.stable.official.ed1daf0bf"
+      }
+    }
+  ],
+  "evidenceOrigin": {
+    "kind": "GitHub Actions decoded job logs fetched through the GitHub connector",
+    "summaries": "Parsed verbatim JSON summaries from each shard and aggregate log",
+    "artifactArchivesDownloaded": false,
+    "terminalJobs": "jobs-terminal.json",
+    "logManifest": "log-manifest.json"
+  }
+}

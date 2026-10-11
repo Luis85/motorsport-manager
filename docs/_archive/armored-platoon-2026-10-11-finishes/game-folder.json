@@ -1,0 +1,37 @@
+{
+  "digest": "670d863bca9125cf7e0aceb5991b5586473149ba883a1196c00ca0a1aba3d09f",
+  "inventoryFiles": 6,
+  "totalBytes": 3331155,
+  "files": [
+    {
+      "path": "LICENSE",
+      "bytes": 1068,
+      "sha256": "0e67f2f5063e19ca5716cc24933e860fc0112c37918c759bb8714c110998b4a3"
+    },
+    {
+      "path": "PROVENANCE.md",
+      "bytes": 4337,
+      "sha256": "929cf75314d431615113780a2d18e59e80b881ca479a558b9fadb2055c57a1f2"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1232,
+      "sha256": "6693db836aadd4fc7920b30af8453f89949a2fbb38c432de963808ea88bd3f82"
+    },
+    {
+      "path": "content/catalog.json",
+      "bytes": 190203,
+      "sha256": "0bc1e6626c153fcacbfc424534fad02cf9f38128952862715532d9cd6b249afc"
+    },
+    {
+      "path": "content/visuals.json",
+      "bytes": 3133629,
+      "sha256": "8e406de65dd806954ce24a691da434fdfbdeac93e0f4901cb800445348be19c5"
+    },
+    {
+      "path": "game.json",
+      "bytes": 686,
+      "sha256": "c0e5dc7a97e6ef7328bb39b894f64cd48dfdda596a0bfdc725e05ac75bf593f9"
+    }
+  ]
+}

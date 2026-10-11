@@ -83,6 +83,20 @@ Batch operations: `putNode`, `patchNode`, `patchNodes`, `removeNode`, `duplicate
 `setEnvironment`, `setParameter`) fail with `UNKNOWN_OPERATION` and name the model
 equivalent. Rigs bind to nested model-instance nodes, the kernel's rig scope.
 
+## Native material finishes
+
+Standard PBR materials support deterministic `finish` recipes for painted metal,
+bare metal and rubber, including optional camouflage palettes and seeded wear.
+The shared kernel produces bounded color, tangent-normal and packed
+roughness/metalness maps, retaining authored scalar multipliers and UVs. Model
+bundles and Littlewild definitions preserve editable recipes; Three.js export
+embeds typed pixels, and GLB/glTF embeds PNGs without requiring Chromium.
+
+See the [native PBR finish contract](../../docs/reference/model-forge-cli.md#native-pbr-finish-recipes)
+for versioning, field bounds, shared-resource ownership and authoring examples.
+Wear is a surface pattern, not geometry-aware edge wear or simulated damage.
+External image texture import and automatic UV unwrapping remain unsupported.
+
 ## Procedural generation
 
 `generate <generator> --out <new.model.json>` builds an ordinary, editable model document

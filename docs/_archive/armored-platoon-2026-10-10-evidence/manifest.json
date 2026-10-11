@@ -1,0 +1,319 @@
+{
+  "date": "2026-10-10",
+  "algorithm": "SHA-256",
+  "scope": "Retained evidence files; excludes this manifest and the explanatory README. Raw reports are retained with their recorded provenance; separately authored identity, receipt and summary records are labelled in the README and their fields.",
+  "files": {
+    "armored-browser-results.json": {
+      "bytes": 1193,
+      "sha256": "3941cfebe99a9a17e75c8a83448decb035403e797161f6d585db213e87360ef3"
+    },
+    "armored-chase.png": {
+      "bytes": 473917,
+      "sha256": "a2a8bc54dd876cb1dfafbc1a4a53f7df298438d2805ec8f620be0109182ec0f2"
+    },
+    "armored-gunner.png": {
+      "bytes": 273520,
+      "sha256": "acaea34cfa71d1a1ab84fe1a16e5ba038741bd66f2ce74083314bfa0e92c2e9b"
+    },
+    "armored-motion.mp4": {
+      "bytes": 302921,
+      "sha256": "4f82ddcdf1cff9cac6b9b3f3052854d837908dfb5c8f659882645f99da695889"
+    },
+    "armored-phone-observation.png": {
+      "bytes": 150306,
+      "sha256": "529c908c06cfca57e730fc4701db931976a65585654f47a71f803dafd3da87e7"
+    },
+    "base-process-present-browser-receipt.json": {
+      "bytes": 1482,
+      "sha256": "e81c1c488776b405d6a1584adc2cf48a64274294b56020e4a69c97700fcc426f"
+    },
+    "base-process-present-browser-results.json": {
+      "bytes": 1917,
+      "sha256": "6c889e2b556e7d74279530a1a0344f324735f70987d664c903a7d817b1407a5b"
+    },
+    "base-process-present-browser.log": {
+      "bytes": 251,
+      "sha256": "b3b876a02500ee1ef1eddfb3f1a0a36357bce644919af359a43ec1e385744958"
+    },
+    "base-process-present-launch-path-failure-receipt.json": {
+      "bytes": 1479,
+      "sha256": "ea47aaabc1d37de29dee67adddc54629e7821a92b2371e6bbf478ac89ed806e5"
+    },
+    "base-process-present-launch-path-failure-results.json": {
+      "bytes": 5807,
+      "sha256": "71880939cf2565cc5cb2ddfe2faafa5c5c805ab4482c97f7b3ccb3a2227763a1"
+    },
+    "base-process-present-launch-path-failure.log": {
+      "bytes": 4,
+      "sha256": "d61e82b5761ad27edd18ae5d67d671c6c8a4139b2c0f9f2606503976dad442d9"
+    },
+    "ci-attempt-1-gate.json": {
+      "bytes": 20660,
+      "sha256": "2f4e9bf5947e4a376243d13ec9ed05777e2c755af09c0b0254e33cbe50e4603f"
+    },
+    "ci-attempt-1-provenance.json": {
+      "bytes": 1272,
+      "sha256": "65ab060c810b6845b664e24996307cd38d8708c3de0b1d4d51a9cc009832d639"
+    },
+    "ci-attempt-1-renderers-browser-results.json": {
+      "bytes": 2258,
+      "sha256": "2f48ccfb52b2833b618d591f9c1336e35fa99204e2e8e211480914ecdd0194da"
+    },
+    "ci-attempt-1-renderers-browser.log": {
+      "bytes": 1460,
+      "sha256": "4399d07f006caffd2373194664cbb5487bfc4f6a345cc8f461216307bd40c81c"
+    },
+    "ci-attempt-2-jobs.json": {
+      "bytes": 6299,
+      "sha256": "d57b40333342fc4f72b65f833b80d45841e7f2d5eef1e1f8c211db694bfbed8c"
+    },
+    "ci-attempt-2-provenance.json": {
+      "bytes": 14884,
+      "sha256": "1e2c0fb22217192d65a13553606279858bc1ab5e131c02dc50781d634c740b96"
+    },
+    "ci-attempt-2-verification.log": {
+      "bytes": 6049,
+      "sha256": "59384607fa3543974d38ab5f2240e6c04917e735cc58e51d911021afdfeadc78"
+    },
+    "crossroads-session-command-report.json": {
+      "bytes": 693280,
+      "sha256": "ed9810b6d392431390a1694bde4c980c1d8210dd526edd2c151258f3c372be08"
+    },
+    "css-isolation-armored-browser-results.json": {
+      "bytes": 1302,
+      "sha256": "c7a39b1a8629592f778062c6aba818382cdd99267c0c4eedcb83fb3e7447ccad"
+    },
+    "css-isolation-armored-chase.png": {
+      "bytes": 472835,
+      "sha256": "8a41ccfc6090cf63642e7008feb9682865eaa6eb2d7c9f2a162d46460c1244a6"
+    },
+    "css-isolation-artifact-identity.json": {
+      "bytes": 3131,
+      "sha256": "5f958a2402aefe8fb1069422c0c18748ad525c1f930532fd7371a1055048ec30"
+    },
+    "css-isolation-focused-gate.json": {
+      "bytes": 1329,
+      "sha256": "a677b7b2e448d05910202414edd3ef9197100d7d0d8d913d58ef15e968e10a03"
+    },
+    "css-isolation-full-armored-browser-results.json": {
+      "bytes": 1302,
+      "sha256": "c7a39b1a8629592f778062c6aba818382cdd99267c0c4eedcb83fb3e7447ccad"
+    },
+    "css-isolation-full-armored-browser.log.gz": {
+      "bytes": 655,
+      "sha256": "9712106bfda240d104a702a001695be7b56b39fe8b314bb81602421099dd69b6"
+    },
+    "css-isolation-full-artifact-play-browser-results.json": {
+      "bytes": 1864,
+      "sha256": "0bb997aebec94e17d3b2d1370e98a3e31f27767220cac74861c37651e5ff07c9"
+    },
+    "css-isolation-full-artifact-play-browser.log": {
+      "bytes": 3874,
+      "sha256": "a5ad4cae9ee7a847a274d899f4a3f7027fbdf1cf048ed68fb49c5c5910e90d36"
+    },
+    "css-isolation-full-engine-export-browser-results.json": {
+      "bytes": 1950,
+      "sha256": "416f8e22b5de4d10d8e4dfa7b7e2e1774cc92447e3335370609ba4b4b15d5dbf"
+    },
+    "css-isolation-full-engine-export-browser.log": {
+      "bytes": 2892,
+      "sha256": "9df050b8cea837b737921291a1f6f12a94ed1e089f11f585f06673fcb63c4bb9"
+    },
+    "css-isolation-full-game-demos-browser-results.json": {
+      "bytes": 4694,
+      "sha256": "d3eb669d7cd604a3b9668de6036c91f8d649596e5d18bb99d6adabf56cbbcf2e"
+    },
+    "css-isolation-full-game-demos-browser.log": {
+      "bytes": 9998,
+      "sha256": "fd519215d2b6f85aa2dbe02fae9690b0732a6515975a7f45949fc3134de5b9ce"
+    },
+    "css-isolation-full-process-present-browser-results.json": {
+      "bytes": 1917,
+      "sha256": "6c889e2b556e7d74279530a1a0344f324735f70987d664c903a7d817b1407a5b"
+    },
+    "css-isolation-full-process-present-browser.log.gz": {
+      "bytes": 192,
+      "sha256": "fe4bbfe739a93d2c69d8b750d3e8913308154426a900e52872427a844d547ec1"
+    },
+    "css-isolation-full-scene-editor-browser-results.json": {
+      "bytes": 760,
+      "sha256": "c666c39e31b9796cae913031760a6be05dddbdf36faeb187ab3a02ec956530a2"
+    },
+    "css-isolation-full-scene-editor-browser.log": {
+      "bytes": 1452,
+      "sha256": "d4845a62ef07e047034df93704fa6a248bdb78e699ec31432030443cb6b4b20e"
+    },
+    "css-isolation-output-checks.log": {
+      "bytes": 2281,
+      "sha256": "65e7d72c0a06ec9ddce9f3898b139441759d7badda004a8fb19b1c11ec1cb24c"
+    },
+    "current-implementation-workflows.json": {
+      "bytes": 4193,
+      "sha256": "b1413c197a5d4c35691aa0863649cedd198329d0aa09748ac35b98a0b0c28125"
+    },
+    "full-gate-scene-editor-browser-results.json": {
+      "bytes": 6173,
+      "sha256": "a962f92cd3f80d090e71971270585a6af9642f98bca29370a685d072371f14d0"
+    },
+    "full-gate-scene-editor-browser.log": {
+      "bytes": 6850,
+      "sha256": "ff1e7f876179955a1e5eb775f65332db199a6bb8d7d51f4f63ea80d82bcf26ad"
+    },
+    "full-gate-storytelling-browser.log.gz": {
+      "bytes": 894,
+      "sha256": "805e48ba61b73f197cd5cca05d67d125260b138fe7aa49461c6d5e08e125c7a5"
+    },
+    "handoff-checks.json": {
+      "bytes": 2378,
+      "sha256": "fe622a34f4ca06b3353e68f19b2957ad7ac5d1cfe8eaa8ed94ce56e1e1380fe8"
+    },
+    "intermediate-browser-identity.json": {
+      "bytes": 1610,
+      "sha256": "ca84ce271809bf294e1f3b000e75dfa94e4a6132d7534050bf3cd8e2379c4930"
+    },
+    "motion-observations.json": {
+      "bytes": 53311,
+      "sha256": "90fc75216f7906ccddc631638592affce6d77d364844c6e76ba154c0ad38ac7d"
+    },
+    "native-local-interrupted.json": {
+      "bytes": 1405,
+      "sha256": "9bdd55d1ccb0c3dc01112b8dcc1e3146d91cbbc4a0c32744789c27a55f211c1f"
+    },
+    "native-remote-current.json": {
+      "bytes": 18489,
+      "sha256": "e90f6bffd6e088c253dc7983df1846c1b7649a7faefe3ca9643811746e78ef9b"
+    },
+    "native-remote-final.json": {
+      "bytes": 18165,
+      "sha256": "bba1220750c938de96f7a343a32c08e82cb3d32fc81cc1a4bb4c5020e6d956fb"
+    },
+    "pine-browser-result.json": {
+      "bytes": 593322,
+      "sha256": "26cc6db6dd2679acb5df96986433b34677720c1fdd6cdd325fefdf98b38008e1"
+    },
+    "pine-session-command-report.json": {
+      "bytes": 221975,
+      "sha256": "71717c6dd82261e90eaa4154fa18543d45ab3abd2fe5238617756d220f5b3be2"
+    },
+    "pine-victory-debrief.png": {
+      "bytes": 675678,
+      "sha256": "7afb3a55f750142ea739dd90b71e0bf7580540dfd85be11f965cb1473cd89019"
+    },
+    "pinned-browser-install.log": {
+      "bytes": 3714,
+      "sha256": "29147f88e37caf1e88d0d2c567d2b59ffa8d1d94b45b505264b156e34b51cb6d"
+    },
+    "published-identity.json": {
+      "bytes": 735,
+      "sha256": "d9d8961977b99e8e8c428431d0f945dee1e0c00d2f570ab9430711ab7777ec38"
+    },
+    "python-pinned-regression-result.json": {
+      "bytes": 1547,
+      "sha256": "be333d45e90ed441e018e4b2563a4e435bb31dee9c619376b376019bf5c1d0eb"
+    },
+    "python-pinned-regression.log": {
+      "bytes": 118776,
+      "sha256": "afc1c6c092ed5331a137049bed547fccd3e334e3d627065561ad8a7f27d8b403"
+    },
+    "raw-log-compression.json": {
+      "bytes": 1403,
+      "sha256": "cdf5ce2b8ebde729f58833134499f1d0c09d531c891adad7eaa5c1f0e367c504"
+    },
+    "serial-engine-export-browser-receipt.json": {
+      "bytes": 1564,
+      "sha256": "0c0667e6458a6de4573c9d09ee3b9cb99672a369cc8b9fd6eb7381b131a28a12"
+    },
+    "serial-engine-export-browser-results.json": {
+      "bytes": 1883,
+      "sha256": "f3db3449d7c427aff2fbdf45f384dbd501c5e45e5902e3b07d0548b225cecde4"
+    },
+    "serial-engine-export-browser.log": {
+      "bytes": 2789,
+      "sha256": "458ad4b4372eb1b4f898b542af6b27c992f2bddb1288c381cb4dcccbcbd8b6c2"
+    },
+    "serial-process-present-browser-receipt.json": {
+      "bytes": 1440,
+      "sha256": "4ea75f7919047add173a1b81c7edbf0898c25138365404f1973eed08ce550395"
+    },
+    "serial-process-present-browser-results.json": {
+      "bytes": 1917,
+      "sha256": "6c889e2b556e7d74279530a1a0344f324735f70987d664c903a7d817b1407a5b"
+    },
+    "serial-process-present-browser.log": {
+      "bytes": 251,
+      "sha256": "b3b876a02500ee1ef1eddfb3f1a0a36357bce644919af359a43ec1e385744958"
+    },
+    "serial-scene-editor-browser-receipt.json": {
+      "bytes": 1560,
+      "sha256": "57ee7d76f90f2bc819458c3a9137f5dea7ad5cf79ec3f27a97b8564afa42d36d"
+    },
+    "serial-scene-editor-browser-results.json": {
+      "bytes": 4545,
+      "sha256": "015386a933b74a821a125c7078689e6f66bfac5a01817de557b025ccc92e6846"
+    },
+    "serial-scene-editor-browser.log": {
+      "bytes": 3035,
+      "sha256": "0b493b4e6399a57d3997dca042cf08bff58f180d52e799ce4bc1d654e7fb5db7"
+    },
+    "stability-final.png": {
+      "bytes": 358347,
+      "sha256": "f76f6057df8671bcc04d35b57ff3e34fef8d33b158a98eb2abdba8f67d5e5272"
+    },
+    "stability-identity.json": {
+      "bytes": 1196,
+      "sha256": "59bb3f11802e1ba7861979aec9554656b774c97ca62732cbd2284a8a550deeb8"
+    },
+    "stability-observations.json": {
+      "bytes": 340352,
+      "sha256": "5955ec7f97d5609383af3824300ba704d31f53259002d2a8353f2ce66657bb02"
+    },
+    "stability-observe.cjs": {
+      "bytes": 16663,
+      "sha256": "a1c75bc66cda1f22718cfb17fd253602c5d76bcc7883663c52c1e67434b3aeb6"
+    },
+    "stability-run.log": {
+      "bytes": 25691,
+      "sha256": "f29a85571587867a64a098398ca83856cd7eb15cf6773f0fe1bdfebf09343fe9"
+    },
+    "stability-start.png": {
+      "bytes": 251877,
+      "sha256": "4563b77fc14a198ab470ba4c4230de79df5810fddfdb016d5ffcb7f72556c326"
+    },
+    "stability-summarize.cjs": {
+      "bytes": 8647,
+      "sha256": "e1b6a3e13659206dd414e80b6a869339ead04daac1f97fe14111a5db8703ea7d"
+    },
+    "stability-summary.json": {
+      "bytes": 21761,
+      "sha256": "b711d9e53e5a17d94bf26770723354bcbd027491e190c0165ff4714589882fd3"
+    },
+    "stability-transition-04-mission.png": {
+      "bytes": 257743,
+      "sha256": "87443b76e2ef99b7c17e1653294fbd9c547ee86866b503fe158ebf43d21cc3ac"
+    },
+    "stability-transition-14-mission.png": {
+      "bytes": 252119,
+      "sha256": "ba1012d89590437f94bcdd9b9774a9880ad5dfa060883465b9fc1effe1578b9c"
+    },
+    "wildlands-complete-gate.json": {
+      "bytes": 40684,
+      "sha256": "0b3eeb02d6edd5aea90e4f65a82e298535eece57f378c81f2f3fdd0636fa29e5"
+    },
+    "wildlands-complete-gate.log": {
+      "bytes": 6364,
+      "sha256": "060e72437a2d545df9ce5f0f74bc878071f232ff6e48965040990a0b4caecfa9"
+    },
+    "wildlands-fast-final.log": {
+      "bytes": 2256,
+      "sha256": "1409356f183c5454d7c1b0da955a3e70da5580e80538b2c6fb7a850b8627ddc3"
+    },
+    "wildlands-pre-css-interrupted.json": {
+      "bytes": 343,
+      "sha256": "8f8604e7f809784934ef8f518d66e2bd96a50586ea162cea3ed669117cdfb379"
+    },
+    "wildlands-pre-css-progress.json": {
+      "bytes": 3555,
+      "sha256": "186139e893a3196366ed4c4ad9ee974cfc0ee5bc9c84ba4c5be432c86631da27"
+    }
+  }
+}

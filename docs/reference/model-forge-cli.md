@@ -142,6 +142,46 @@ local XYZ Euler angles in degrees. Scalars may be numbers, `{"$param": "<name>"}
 or bounded `{"$expr": …}` arithmetic; see the
 [Scene Forge file formats](scene-forge-cli.md#file-formats).
 
+## Native PBR finish recipes
+
+Materials can add an offline `finish` recipe to the existing scalar PBR fields:
+
+```json
+{"color":"#ffffff","roughness":0.9,"metalness":0.85,
+ "finish":{"version":1,"kind":"painted-metal","seed":7,"scale":2,"wear":0.35,
+           "palette":["#485239","#736746","#313b2b"]}}
+```
+
+`finish.version` is exactly `1`; `kind` is `painted-metal`, `bare-metal` or
+`rubber`; `seed` is an integer from 0 to 65,535; `scale` is 1–16 repeats on
+both UV axes; and `wear` is 0–1. An optional `palette` contains one to four
+`#rrggbb` colors. Without it the map uses a white tint. Material `color`
+multiplies the palette; use white for literal palette colors. Authored
+`roughness` and `metalness` remain multipliers of their map channels. Intact
+paint and rubber have zero map metalness; worn paint exposes metal, while
+bare metal has full map metalness. Set a nonzero material metalness to show
+those metal regions. Wear is a seeded surface pattern, not geometry-aware edge
+wear or simulated battle damage.
+
+The immutable `forge-finish-v1` algorithm generates three 128 × 128 RGBA maps:
+sRGB base color, linear tangent-space normal, and linear packed roughness
+(green) / metalness (blue). The unused red channel is white and does not claim
+baked ambient occlusion. Existing geometry UVs select placement; custom meshes
+without UVs retain the documented spherical fallback. There is no automatic UV
+unwrapping. Finish requires standard PBR shading and cannot coexist with the
+organic `surface` recipe on one material. Existing surface v1/v2 and materials
+without finish retain their previous output.
+
+One compilation shares maps across identical recipes and material tints, with
+one combined limit of 256 distinct surface/finish recipes. Each finish allocates
+192 KiB of base pixels before mipmaps and runtime overhead. Its owning compiler
+or viewer releases all three maps once, including after a failed compilation.
+Three.js export embeds typed pixel data without image URLs. GLB/glTF embed
+portable PNGs, UV transforms and editable recipe metadata; OBJ/STL retain their
+existing geometry-only limitations. Model bundles and Littlewild export/import
+preserve the recipe as data. Consumers must explicitly support this recipe
+version; a scalar-only consumer cannot reproduce it by dropping the field.
+
 ## Output contract
 
 | Result | Stream | Shape | Exit |

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 export { ForgeError, fail, parse } from '../kernel.js';
 export { Id, NumberValue, expressionOperators, Scalar, Vec3, Transform, type ScalarValue, type V3, type V2, type TransformSpec, } from '../kernel.js';
-export { GeometrySchema, MaterialSchema, SurfaceSchema, PatternSchema, RigSchema, NodeSchema, type Geometry, type SurfaceSpec, type RigSpec, type NodeSpec, type MaterialSpec, } from '../kernel.js';
+export { GeometrySchema, MaterialSchema, SurfaceSchema, FinishSchema, PatternSchema, RigSchema, NodeSchema, type Geometry, type SurfaceSpec, type FinishSpec, type RigSpec, type NodeSpec, type MaterialSpec, } from '../kernel.js';
 export { CameraSchema, EnvironmentSchema, SceneSchema, ModelSchema, ModelBundleSchema, type SceneDocument, type ModelDocument, type ModelLibrary, } from '../kernel.js';
 export { NodePatchSchema, SelectorSchema, OperationSchema, BatchSchema, type NodeSelector, type Operation, } from '../kernel.js';
 export { littlewildFamilies, LittlewildId, LittlewildAssetSchema, type LittlewildAsset, } from '../kernel.js';
@@ -161,6 +161,18 @@ export declare const schemas: {
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
+            }, z.core.$strict>>;
+            finish: z.ZodOptional<z.ZodObject<{
+                version: z.ZodLiteral<1>;
+                kind: z.ZodEnum<{
+                    "painted-metal": "painted-metal";
+                    "bare-metal": "bare-metal";
+                    rubber: "rubber";
+                }>;
+                seed: z.ZodNumber;
+                scale: z.ZodNumber;
+                wear: z.ZodNumber;
+                palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
             }, z.core.$strict>>;
             sheen: z.ZodOptional<z.ZodNumber>;
             sheenColor: z.ZodOptional<z.ZodString>;
@@ -505,6 +517,18 @@ export declare const schemas: {
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
+            }, z.core.$strict>>;
+            finish: z.ZodOptional<z.ZodObject<{
+                version: z.ZodLiteral<1>;
+                kind: z.ZodEnum<{
+                    "painted-metal": "painted-metal";
+                    "bare-metal": "bare-metal";
+                    rubber: "rubber";
+                }>;
+                seed: z.ZodNumber;
+                scale: z.ZodNumber;
+                wear: z.ZodNumber;
+                palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
             }, z.core.$strict>>;
             sheen: z.ZodOptional<z.ZodNumber>;
             sheenColor: z.ZodOptional<z.ZodString>;
@@ -1146,6 +1170,18 @@ export declare const schemas: {
                     scale: z.ZodNumber;
                     strength: z.ZodNumber;
                 }, z.core.$strict>>;
+                finish: z.ZodOptional<z.ZodObject<{
+                    version: z.ZodLiteral<1>;
+                    kind: z.ZodEnum<{
+                        "painted-metal": "painted-metal";
+                        "bare-metal": "bare-metal";
+                        rubber: "rubber";
+                    }>;
+                    seed: z.ZodNumber;
+                    scale: z.ZodNumber;
+                    wear: z.ZodNumber;
+                    palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
+                }, z.core.$strict>>;
                 sheen: z.ZodOptional<z.ZodNumber>;
                 sheenColor: z.ZodOptional<z.ZodString>;
                 sheenRoughness: z.ZodOptional<z.ZodNumber>;
@@ -1621,6 +1657,18 @@ export declare const schemas: {
             scale: z.ZodNumber;
             strength: z.ZodNumber;
         }, z.core.$strict>>;
+        finish: z.ZodOptional<z.ZodObject<{
+            version: z.ZodLiteral<1>;
+            kind: z.ZodEnum<{
+                "painted-metal": "painted-metal";
+                "bare-metal": "bare-metal";
+                rubber: "rubber";
+            }>;
+            seed: z.ZodNumber;
+            scale: z.ZodNumber;
+            wear: z.ZodNumber;
+            palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        }, z.core.$strict>>;
         sheen: z.ZodOptional<z.ZodNumber>;
         sheenColor: z.ZodOptional<z.ZodString>;
         sheenRoughness: z.ZodOptional<z.ZodNumber>;
@@ -1858,6 +1906,18 @@ export declare const schemas: {
                     seed: z.ZodNumber;
                     scale: z.ZodNumber;
                     strength: z.ZodNumber;
+                }, z.core.$strict>>;
+                finish: z.ZodOptional<z.ZodObject<{
+                    version: z.ZodLiteral<1>;
+                    kind: z.ZodEnum<{
+                        "painted-metal": "painted-metal";
+                        "bare-metal": "bare-metal";
+                        rubber: "rubber";
+                    }>;
+                    seed: z.ZodNumber;
+                    scale: z.ZodNumber;
+                    wear: z.ZodNumber;
+                    palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
                 }, z.core.$strict>>;
                 sheen: z.ZodOptional<z.ZodNumber>;
                 sheenColor: z.ZodOptional<z.ZodString>;
@@ -2235,6 +2295,18 @@ export declare const schemas: {
                     scale: z.ZodNumber;
                     strength: z.ZodNumber;
                 }, z.core.$strict>>;
+                finish: z.ZodOptional<z.ZodObject<{
+                    version: z.ZodLiteral<1>;
+                    kind: z.ZodEnum<{
+                        "painted-metal": "painted-metal";
+                        "bare-metal": "bare-metal";
+                        rubber: "rubber";
+                    }>;
+                    seed: z.ZodNumber;
+                    scale: z.ZodNumber;
+                    wear: z.ZodNumber;
+                    palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
+                }, z.core.$strict>>;
                 sheen: z.ZodOptional<z.ZodNumber>;
                 sheenColor: z.ZodOptional<z.ZodString>;
                 sheenRoughness: z.ZodOptional<z.ZodNumber>;
@@ -2578,6 +2650,18 @@ export declare const schemas: {
                     seed: z.ZodNumber;
                     scale: z.ZodNumber;
                     strength: z.ZodNumber;
+                }, z.core.$strict>>;
+                finish: z.ZodOptional<z.ZodObject<{
+                    version: z.ZodLiteral<1>;
+                    kind: z.ZodEnum<{
+                        "painted-metal": "painted-metal";
+                        "bare-metal": "bare-metal";
+                        rubber: "rubber";
+                    }>;
+                    seed: z.ZodNumber;
+                    scale: z.ZodNumber;
+                    wear: z.ZodNumber;
+                    palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
                 }, z.core.$strict>>;
                 sheen: z.ZodOptional<z.ZodNumber>;
                 sheenColor: z.ZodOptional<z.ZodString>;
@@ -3016,6 +3100,18 @@ export declare const schemas: {
                         scale: z.ZodNumber;
                         strength: z.ZodNumber;
                     }, z.core.$strict>>;
+                    finish: z.ZodOptional<z.ZodObject<{
+                        version: z.ZodLiteral<1>;
+                        kind: z.ZodEnum<{
+                            "painted-metal": "painted-metal";
+                            "bare-metal": "bare-metal";
+                            rubber: "rubber";
+                        }>;
+                        seed: z.ZodNumber;
+                        scale: z.ZodNumber;
+                        wear: z.ZodNumber;
+                        palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
+                    }, z.core.$strict>>;
                     sheen: z.ZodOptional<z.ZodNumber>;
                     sheenColor: z.ZodOptional<z.ZodString>;
                     sheenRoughness: z.ZodOptional<z.ZodNumber>;
@@ -3254,6 +3350,18 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
         seed: z.ZodNumber;
         scale: z.ZodNumber;
         strength: z.ZodNumber;
+    }, z.core.$strict>>;
+    finish: z.ZodOptional<z.ZodObject<{
+        version: z.ZodLiteral<1>;
+        kind: z.ZodEnum<{
+            "painted-metal": "painted-metal";
+            "bare-metal": "bare-metal";
+            rubber: "rubber";
+        }>;
+        seed: z.ZodNumber;
+        scale: z.ZodNumber;
+        wear: z.ZodNumber;
+        palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
     }, z.core.$strict>>;
     sheen: z.ZodOptional<z.ZodNumber>;
     sheenColor: z.ZodOptional<z.ZodString>;
@@ -3668,6 +3776,18 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             scale: z.ZodNumber;
             strength: z.ZodNumber;
         }, z.core.$strict>>;
+        finish: z.ZodOptional<z.ZodObject<{
+            version: z.ZodLiteral<1>;
+            kind: z.ZodEnum<{
+                "painted-metal": "painted-metal";
+                "bare-metal": "bare-metal";
+                rubber: "rubber";
+            }>;
+            seed: z.ZodNumber;
+            scale: z.ZodNumber;
+            wear: z.ZodNumber;
+            palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
+        }, z.core.$strict>>;
         sheen: z.ZodOptional<z.ZodNumber>;
         sheenColor: z.ZodOptional<z.ZodString>;
         sheenRoughness: z.ZodOptional<z.ZodNumber>;
@@ -4010,6 +4130,18 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
             seed: z.ZodNumber;
             scale: z.ZodNumber;
             strength: z.ZodNumber;
+        }, z.core.$strict>>;
+        finish: z.ZodOptional<z.ZodObject<{
+            version: z.ZodLiteral<1>;
+            kind: z.ZodEnum<{
+                "painted-metal": "painted-metal";
+                "bare-metal": "bare-metal";
+                rubber: "rubber";
+            }>;
+            seed: z.ZodNumber;
+            scale: z.ZodNumber;
+            wear: z.ZodNumber;
+            palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
         }, z.core.$strict>>;
         sheen: z.ZodOptional<z.ZodNumber>;
         sheenColor: z.ZodOptional<z.ZodString>;
@@ -4364,6 +4496,18 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 seed: z.ZodNumber;
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
+            }, z.core.$strict>>;
+            finish: z.ZodOptional<z.ZodObject<{
+                version: z.ZodLiteral<1>;
+                kind: z.ZodEnum<{
+                    "painted-metal": "painted-metal";
+                    "bare-metal": "bare-metal";
+                    rubber: "rubber";
+                }>;
+                seed: z.ZodNumber;
+                scale: z.ZodNumber;
+                wear: z.ZodNumber;
+                palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
             }, z.core.$strict>>;
             sheen: z.ZodOptional<z.ZodNumber>;
             sheenColor: z.ZodOptional<z.ZodString>;
@@ -4998,6 +5142,18 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
             }, z.core.$strict>>;
+            finish: z.ZodOptional<z.ZodObject<{
+                version: z.ZodLiteral<1>;
+                kind: z.ZodEnum<{
+                    "painted-metal": "painted-metal";
+                    "bare-metal": "bare-metal";
+                    rubber: "rubber";
+                }>;
+                seed: z.ZodNumber;
+                scale: z.ZodNumber;
+                wear: z.ZodNumber;
+                palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
+            }, z.core.$strict>>;
             sheen: z.ZodOptional<z.ZodNumber>;
             sheenColor: z.ZodOptional<z.ZodString>;
             sheenRoughness: z.ZodOptional<z.ZodNumber>;
@@ -5605,6 +5761,18 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
             }, z.core.$strict>>;
+            finish: z.ZodOptional<z.ZodObject<{
+                version: z.ZodLiteral<1>;
+                kind: z.ZodEnum<{
+                    "painted-metal": "painted-metal";
+                    "bare-metal": "bare-metal";
+                    rubber: "rubber";
+                }>;
+                seed: z.ZodNumber;
+                scale: z.ZodNumber;
+                wear: z.ZodNumber;
+                palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
+            }, z.core.$strict>>;
             sheen: z.ZodOptional<z.ZodNumber>;
             sheenColor: z.ZodOptional<z.ZodString>;
             sheenRoughness: z.ZodOptional<z.ZodNumber>;
@@ -5949,6 +6117,18 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                 scale: z.ZodNumber;
                 strength: z.ZodNumber;
             }, z.core.$strict>>;
+            finish: z.ZodOptional<z.ZodObject<{
+                version: z.ZodLiteral<1>;
+                kind: z.ZodEnum<{
+                    "painted-metal": "painted-metal";
+                    "bare-metal": "bare-metal";
+                    rubber: "rubber";
+                }>;
+                seed: z.ZodNumber;
+                scale: z.ZodNumber;
+                wear: z.ZodNumber;
+                palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
+            }, z.core.$strict>>;
             sheen: z.ZodOptional<z.ZodNumber>;
             sheenColor: z.ZodOptional<z.ZodString>;
             sheenRoughness: z.ZodOptional<z.ZodNumber>;
@@ -6197,6 +6377,18 @@ export declare function jsonSchema(kind: string): z.core.ZodStandardJSONSchemaPa
                     seed: z.ZodNumber;
                     scale: z.ZodNumber;
                     strength: z.ZodNumber;
+                }, z.core.$strict>>;
+                finish: z.ZodOptional<z.ZodObject<{
+                    version: z.ZodLiteral<1>;
+                    kind: z.ZodEnum<{
+                        "painted-metal": "painted-metal";
+                        "bare-metal": "bare-metal";
+                        rubber: "rubber";
+                    }>;
+                    seed: z.ZodNumber;
+                    scale: z.ZodNumber;
+                    wear: z.ZodNumber;
+                    palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
                 }, z.core.$strict>>;
                 sheen: z.ZodOptional<z.ZodNumber>;
                 sheenColor: z.ZodOptional<z.ZodString>;

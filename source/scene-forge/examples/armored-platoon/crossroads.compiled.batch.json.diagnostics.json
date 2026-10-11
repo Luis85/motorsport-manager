@@ -1,0 +1,191 @@
+{
+  "mission": "crossroads",
+  "catalogPath": "docs/concepts/armored-platoon/content/catalog.json",
+  "coordinates": "metres, +Y up, +Z forward; Forge Euler degrees",
+  "terrainSamples": 2401,
+  "diagnostics": [],
+  "dryRun": {
+    "scene": "main",
+    "revision": 3,
+    "stateHash": "308b8ce6070769be27963e75b485715208e17ad746c1aebdf60a633dcc1fd57e",
+    "proposedStateHash": "44292dcb2c3f96500ace5e6b91057e2dc16fe574f75b20dd98e4f4412e5f5db1",
+    "proposedRevision": 4,
+    "changes": {
+      "nodes": {
+        "added": [],
+        "updated": [
+          "farmhouse-1",
+          "farmhouse-2",
+          "farmhouse-3",
+          "farmhouse-4",
+          "farmhouse-5",
+          "farmhouse-6",
+          "farmhouse-7",
+          "orchard-wall-0",
+          "orchard-wall-1",
+          "orchard-wall-2",
+          "orchard-wall-3",
+          "orchard-wall-4",
+          "orchard-wall-5",
+          "orchard-wall-6",
+          "orchard-wall-7",
+          "orchard-wall-8",
+          "orchard-wall-9",
+          "orchard-wall-10",
+          "orchard-wall-11",
+          "pine-0",
+          "pine-1",
+          "pine-2",
+          "pine-3",
+          "pine-4",
+          "pine-5",
+          "pine-6",
+          "pine-7",
+          "pine-8",
+          "pine-9",
+          "pine-10",
+          "pine-11",
+          "pine-12",
+          "pine-13",
+          "pine-14",
+          "pine-15",
+          "pine-16",
+          "pine-17",
+          "pine-18",
+          "pine-19",
+          "pine-20",
+          "pine-21"
+        ],
+        "removed": []
+      },
+      "geometries": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "materials": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "parameters": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "settings": []
+    },
+    "changed": true,
+    "dryRun": true,
+    "operations": 96,
+    "stats": {
+      "nodes": 1261,
+      "meshes": 1111,
+      "triangles": 29712,
+      "materials": 14,
+      "geometries": 47,
+      "bounds": {
+        "min": [0, -1.5992000102996826, 0],
+        "max": [576, 9.586870833333332, 576],
+        "size": [576, 11.186070843633015, 576]
+      },
+      "warnings": [
+        "Custom mesh uses local spherical UV fallback; author seam-aware uvs for precise surface placement."
+      ]
+    }
+  },
+  "result": {
+    "scene": "main",
+    "revision": 4,
+    "stateHash": "44292dcb2c3f96500ace5e6b91057e2dc16fe574f75b20dd98e4f4412e5f5db1",
+    "proposedStateHash": "44292dcb2c3f96500ace5e6b91057e2dc16fe574f75b20dd98e4f4412e5f5db1",
+    "proposedRevision": 4,
+    "changes": {
+      "nodes": {
+        "added": [],
+        "updated": [
+          "farmhouse-1",
+          "farmhouse-2",
+          "farmhouse-3",
+          "farmhouse-4",
+          "farmhouse-5",
+          "farmhouse-6",
+          "farmhouse-7",
+          "orchard-wall-0",
+          "orchard-wall-1",
+          "orchard-wall-2",
+          "orchard-wall-3",
+          "orchard-wall-4",
+          "orchard-wall-5",
+          "orchard-wall-6",
+          "orchard-wall-7",
+          "orchard-wall-8",
+          "orchard-wall-9",
+          "orchard-wall-10",
+          "orchard-wall-11",
+          "pine-0",
+          "pine-1",
+          "pine-2",
+          "pine-3",
+          "pine-4",
+          "pine-5",
+          "pine-6",
+          "pine-7",
+          "pine-8",
+          "pine-9",
+          "pine-10",
+          "pine-11",
+          "pine-12",
+          "pine-13",
+          "pine-14",
+          "pine-15",
+          "pine-16",
+          "pine-17",
+          "pine-18",
+          "pine-19",
+          "pine-20",
+          "pine-21"
+        ],
+        "removed": []
+      },
+      "geometries": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "materials": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "parameters": {
+        "added": [],
+        "updated": [],
+        "removed": []
+      },
+      "settings": []
+    },
+    "changed": true,
+    "dryRun": false,
+    "operations": 96,
+    "stats": {
+      "nodes": 1261,
+      "meshes": 1111,
+      "triangles": 29712,
+      "materials": 14,
+      "geometries": 47,
+      "bounds": {
+        "min": [0, -1.5992000102996826, 0],
+        "max": [576, 9.586870833333332, 576],
+        "size": [576, 11.186070843633015, 576]
+      },
+      "warnings": [
+        "Custom mesh uses local spherical UV fallback; author seam-aware uvs for precise surface placement."
+      ]
+    }
+  },
+  "limitations": [
+    "Visual objective-access review required; diagnostics do not prove reachability.",
+    "Run against a fresh scene when changing mission; this upserts and does not delete unrelated nodes."
+  ]
+}

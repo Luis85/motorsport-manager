@@ -52,7 +52,8 @@
         "colony",
         "rts",
         "pet",
-        "process"
+        "process",
+        "armored"
       ]
     },
     "engine": {
@@ -270,6 +271,35 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "template": {
+            "const": "armored"
+          }
+        },
+        "required": [
+          "template"
+        ]
+      },
+      "then": {
+        "properties": {
+          "content": {
+            "$ref": "#/$defs/armoredContent"
+          },
+          "features": {
+            "type": "array",
+            "maxItems": 0
+          },
+          "targets": {
+            "type": "object",
+            "properties": {
+              "godot": false
+            }
+          }
+        }
+      }
     }
   ],
   "$defs": {
@@ -446,6 +476,28 @@
           }
         }
       ]
+    },
+    "armoredContent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "catalog",
+        "visuals"
+      ],
+      "properties": {
+        "catalog": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^(?:[a-z0-9][a-z0-9_-]*(?:\\.[a-z0-9_-]+)*/){0,7}[a-z0-9][a-z0-9_-]*(?:\\.[a-z0-9_-]+)*\\.json$"
+        },
+        "visuals": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^(?:[a-z0-9][a-z0-9_-]*(?:\\.[a-z0-9_-]+)*/){0,7}[a-z0-9][a-z0-9_-]*(?:\\.[a-z0-9_-]+)*\\.json$"
+        }
+      }
     }
   }
 }
