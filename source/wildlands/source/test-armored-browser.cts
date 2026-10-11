@@ -35,6 +35,7 @@ async function main():Promise<void>{
   });
   const page=await context.newPage();page.setDefaultTimeout(15000);
   await openArtifact(page,ARTIFACT);await waitForReady(page,{host:'armored',timeout:60000});
+  const initialMission=await page.evaluate(()=>(window as any).WildlandsArmored.checkpoint());
   await check('Armored compiled artifact enters a mission through briefing and renders WebGL',async()=>{
    assert(await page.locator('[data-ap-screen=menu]').isVisible());
    await page.locator('[data-ap-screen=menu] [data-ap-action=briefing]').click();
@@ -134,6 +135,69 @@ async function main():Promise<void>{
   // Observational small-screen capture; mobile input/play support is outside this desktop M0 claim.
   await page.setViewportSize({width:390,height:844});
   await page.screenshot({path:path.join(OUT,'armored-phone-observation.png'),timeout:30000});
+  // Explicit bounded UI fixture: one missing round at the authored depot. Enemy
+  // ammunition is empty to isolate service from combat. No progress, elapsed ticks,
+  // completion event or transferred stock is injected; the application clock owns them.
+  async function supplyFixture():Promise<{id:string;ammo:string;rounds:number;stocks:any;depotId:string;name:string;seconds:number}>{
+   await page.setViewportSize({width:1440,height:900});
+   const fixture=await page.evaluate(original=>{
+    const save=structuredClone(original),state=save.entities.find((e:any)=>e.id==='armored-state').components['armored-state'];
+    const mission=save.catalog.missions.find((m:any)=>m.id===save.missionId),depot=mission.supplies.find((d:any)=>d.faction===mission.playerFaction);
+    const vehicle=save.entities.find((e:any)=>e.id===state.controlled).components;
+    const definition=save.catalog.vehicles.find((v:any)=>v.id===vehicle['armored-identity'].definition);
+    vehicle['armored-transform'].position={...depot.position,y:depot.position.y+definition.groundClearance};
+    vehicle['armored-previous']=structuredClone(vehicle['armored-transform']);
+    vehicle['armored-body'].velocity={x:0,y:0,z:0};vehicle['armored-body'].yawVelocity=0;
+    vehicle['armored-motor']={throttle:0,steer:0,brake:1,cruise:0};
+    const weapon=vehicle['armored-weapon'];weapon.reserves[weapon.ammo]--;
+    for(const entity of save.entities){const c=entity.components;if(c['armored-identity']?.faction!==mission.playerFaction&&c['armored-weapon'])for(const ammo of Object.keys(c['armored-weapon'].reserves))c['armored-weapon'].reserves[ammo]=0;}
+    (window as any).WildlandsArmored.restore(save);
+    return {id:state.controlled,ammo:weapon.ammo,rounds:weapon.reserves[weapon.ammo],stocks:structuredClone(depot.ammunition),depotId:depot.id,name:depot.name,seconds:depot.transferSeconds};
+   },initialMission);
+   await page.locator('[data-ap-action=resume]').click();await page.locator('#armored-canvas').focus();await page.keyboard.down('Space');
+   await page.waitForFunction(id=>{const q=(window as any).WildlandsArmored.query();return q.vehicles.find((v:any)=>v.id===id).motor.brake===1;},fixture.id);
+   return fixture;
+  }
+  await check('Armored bounded depot fixture shows stock and progress and U cancels without transferring supplies',async()=>{
+   const previous=await page.evaluate(()=>(window as any).WildlandsArmored.checkpoint());
+   try{
+    const fixture=await supplyFixture();
+    assert(await page.locator('[data-ap-service]').isVisible());
+    await page.waitForFunction(name=>document.querySelector('[data-ap-depot-name]')?.textContent?.includes(name),fixture.name);
+    const stocks=await page.locator('[data-ap-supply-stocks]').innerText();
+    for(const count of Object.values(fixture.stocks))assert(stocks.includes(String(count)));
+    await page.locator('[data-ap-action=resupply]').click();
+    await page.waitForFunction(()=>{const el=document.querySelector('[data-ap-supply-progress]');return el&&!el.hasAttribute('hidden')&&Number(el.getAttribute('aria-valuenow'))>0;});
+    assert.match(await page.locator('[data-ap-action=resupply]').innerText(),/Cancel transfer/i);
+    const active=await page.evaluate(id=>{const q=(window as any).WildlandsArmored.query();return q.vehicles.find((v:any)=>v.id===id).supply;},fixture.id);
+    assert(active.remaining>0&&active.remaining<fixture.seconds);assert.equal(active.depotId,fixture.depotId);
+    await page.locator('#armored-canvas').focus();await page.keyboard.press('u');
+    await page.waitForFunction(id=>{const q=(window as any).WildlandsArmored.query();return q.vehicles.find((v:any)=>v.id===id).supply.remaining===0;},fixture.id);
+    const after=await page.evaluate(()=>(window as any).WildlandsArmored.query());
+    assert.equal(after.vehicles.find((v:any)=>v.id===fixture.id).weapon.reserves[fixture.ammo],fixture.rounds);
+    assert.deepEqual(after.depots.find((d:any)=>d.id===fixture.depotId).ammunition,fixture.stocks);
+    assert.equal(after.events.filter((e:any)=>e.kind==='resupply-cancelled'&&e.entityId===fixture.id).length,1);
+    assert.equal(after.events.some((e:any)=>e.kind==='resupply-completed'),false);
+    await page.waitForFunction(()=>document.querySelector('[data-ap-supply-progress]')?.hasAttribute('hidden'));
+   }finally{await page.keyboard.up('Space');await page.evaluate(save=>(window as any).WildlandsArmored.restore(save),previous);}
+  });
+  await check('Armored bounded depot fixture completes on the application clock and conserves displayed ammunition',async()=>{
+   const previous=await page.evaluate(()=>(window as any).WildlandsArmored.checkpoint());
+   try{
+    const fixture=await supplyFixture();await page.locator('[data-ap-action=resupply]').click();
+    await page.waitForFunction(id=>(window as any).WildlandsArmored.query().events.some((e:any)=>e.kind==='resupply-completed'&&e.entityId===id),fixture.id,{timeout:90000});
+    const after=await page.evaluate(()=>(window as any).WildlandsArmored.query());
+    const started=after.events.find((e:any)=>e.kind==='resupply-started'&&e.entityId===fixture.id),completed=after.events.filter((e:any)=>e.kind==='resupply-completed'&&e.entityId===fixture.id);
+    assert.equal(completed.length,1);assert(completed[0].tick-started.tick>=Math.ceil(fixture.seconds*60)-1);
+    const vehicle=after.vehicles.find((v:any)=>v.id===fixture.id);assert.equal(vehicle.supply.remaining,0);assert.equal(vehicle.weapon.reserves[fixture.ammo],fixture.rounds+1);
+    const expected={...fixture.stocks,[fixture.ammo]:fixture.stocks[fixture.ammo]-1};
+    assert.deepEqual(after.depots.find((d:any)=>d.id===fixture.depotId).ammunition,expected);
+    await page.waitForFunction(rounds=>document.querySelector('[data-ap-reserves]')?.textContent===String(rounds),fixture.rounds+1);
+    await page.waitForFunction(()=>document.querySelector('[data-ap-feedback]')?.textContent?.includes('Supplies transferred'));
+    assert((await page.locator('[data-ap-supply-stocks]').innerText()).includes(String(expected[fixture.ammo])));
+    assert.match(await page.locator('[data-ap-action=resupply]').innerText(),/Resupply/i);
+   }finally{await page.keyboard.up('Space');await page.evaluate(save=>(window as any).WildlandsArmored.restore(save),previous);}
+  });
   await check('Armored offline play completes without script errors or external requests',async()=>{
    assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.requests,[]);
   });

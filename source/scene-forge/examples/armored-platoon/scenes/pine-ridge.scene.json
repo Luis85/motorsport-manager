@@ -3,7 +3,7 @@
   "kind": "scene",
   "id": "pine-ridge",
   "name": "Pine Ridge authoring scene",
-  "revision": 1,
+  "revision": 2,
   "units": "meters",
   "parameters": {},
   "geometries": {
@@ -3511,7 +3511,7 @@
     {
       "id": "orchard-wall-0",
       "transform": {
-        "position": [180, 3.8579, 230]
+        "position": [180, 3.8409, 230]
       },
       "visible": true,
       "tags": ["obstacle:stone"],
@@ -3522,7 +3522,7 @@
     {
       "id": "orchard-wall-1",
       "transform": {
-        "position": [183.5, 3.8579, 230]
+        "position": [183.5, 3.90350625, 230]
       },
       "visible": true,
       "tags": ["obstacle:stone"],
@@ -3533,7 +3533,7 @@
     {
       "id": "orchard-wall-2",
       "transform": {
-        "position": [187, 4.0692, 230]
+        "position": [187, 3.9661125, 230]
       },
       "visible": true,
       "tags": ["obstacle:stone"],
@@ -3544,7 +3544,7 @@
     {
       "id": "orchard-wall-3",
       "transform": {
-        "position": [190.5, 4.0692, 230]
+        "position": [190.5, 4.02871875, 230]
       },
       "visible": true,
       "tags": ["obstacle:stone"],
@@ -3555,7 +3555,7 @@
     {
       "id": "orchard-wall-4",
       "transform": {
-        "position": [194, 4.0692, 230]
+        "position": [194, 4.093116666666667, 230]
       },
       "visible": true,
       "tags": ["obstacle:stone"],
@@ -3566,7 +3566,7 @@
     {
       "id": "orchard-wall-5",
       "transform": {
-        "position": [197.5, 4.0692, 230]
+        "position": [197.5, 4.158858333333333, 230]
       },
       "visible": true,
       "tags": ["obstacle:stone"],
@@ -3577,7 +3577,7 @@
     {
       "id": "orchard-wall-6",
       "transform": {
-        "position": [201, 4.2911, 230]
+        "position": [201, 4.224600000000001, 230]
       },
       "visible": true,
       "tags": ["obstacle:stone"],
@@ -3588,7 +3588,7 @@
     {
       "id": "orchard-wall-7",
       "transform": {
-        "position": [204.5, 4.2911, 230]
+        "position": [204.5, 4.290477083333333, 230]
       },
       "visible": true,
       "tags": ["obstacle:stone"],
@@ -3599,7 +3599,7 @@
     {
       "id": "orchard-wall-8",
       "transform": {
-        "position": [208, 4.2911, 230]
+        "position": [208, 4.357166666666666, 230]
       },
       "visible": true,
       "tags": ["obstacle:stone"],
@@ -3610,7 +3610,7 @@
     {
       "id": "orchard-wall-9",
       "transform": {
-        "position": [211.5, 4.5162, 230]
+        "position": [211.5, 4.42385625, 230]
       },
       "visible": true,
       "tags": ["obstacle:stone"],
@@ -3621,7 +3621,7 @@
     {
       "id": "orchard-wall-10",
       "transform": {
-        "position": [215, 4.5162, 230]
+        "position": [215, 4.490545833333334, 230]
       },
       "visible": true,
       "tags": ["obstacle:stone"],
@@ -3632,7 +3632,7 @@
     {
       "id": "orchard-wall-11",
       "transform": {
-        "position": [218.5, 4.5162, 230]
+        "position": [218.5, 4.556409027777778, 230]
       },
       "visible": true,
       "tags": ["obstacle:stone"],
@@ -3643,7 +3643,7 @@
     {
       "id": "pine-0",
       "transform": {
-        "position": [95, 6.4401, 280]
+        "position": [95, 6.364744444444445, 280]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3654,7 +3654,7 @@
     {
       "id": "pine-1",
       "transform": {
-        "position": [117, 6.468, 280]
+        "position": [117, 6.377625, 280]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3665,7 +3665,7 @@
     {
       "id": "pine-2",
       "transform": {
-        "position": [139, 6.6933, 280]
+        "position": [139, 6.556769444444445, 280]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3676,7 +3676,7 @@
     {
       "id": "pine-3",
       "transform": {
-        "position": [161, 6.8719, 280]
+        "position": [161, 6.883022222222222, 280]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3687,7 +3687,7 @@
     {
       "id": "pine-4",
       "transform": {
-        "position": [183, 7.3323, 280]
+        "position": [183, 7.3220833333333335, 280]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3698,7 +3698,7 @@
     {
       "id": "pine-5",
       "transform": {
-        "position": [95, 5.713, 309]
+        "position": [95, 5.77828125, 309]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3709,7 +3709,7 @@
     {
       "id": "pine-6",
       "transform": {
-        "position": [117, 5.7402999999999995, 309]
+        "position": [117, 5.79089375, 309]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3720,7 +3720,7 @@
     {
       "id": "pine-7",
       "transform": {
-        "position": [139, 5.9618, 309]
+        "position": [139, 5.9673375, 309]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3731,7 +3731,7 @@
     {
       "id": "pine-8",
       "transform": {
-        "position": [161, 6.1373999999999995, 309]
+        "position": [161, 6.288702083333333, 309]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3742,7 +3742,7 @@
     {
       "id": "pine-9",
       "transform": {
-        "position": [183, 6.59, 309]
+        "position": [183, 6.72118125, 309]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3753,7 +3753,7 @@
     {
       "id": "pine-10",
       "transform": {
-        "position": [95, 5.2734, 338]
+        "position": [95, 5.247197222222222, 338]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3764,7 +3764,7 @@
     {
       "id": "pine-11",
       "transform": {
-        "position": [117, 5.2981, 338]
+        "position": [117, 5.258395833333333, 338]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3775,7 +3775,7 @@
     {
       "id": "pine-12",
       "transform": {
-        "position": [139, 5.4983, 338]
+        "position": [139, 5.414884722222222, 338]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3786,7 +3786,7 @@
     {
       "id": "pine-13",
       "transform": {
-        "position": [161, 5.657, 338]
+        "position": [161, 5.699859722222222, 338]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3797,7 +3797,7 @@
     {
       "id": "pine-14",
       "transform": {
-        "position": [183, 6.0661000000000005, 338]
+        "position": [183, 6.083433333333333, 338]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3808,7 +3808,7 @@
     {
       "id": "pine-15",
       "transform": {
-        "position": [95, 4.8235, 367]
+        "position": [95, 4.874313194444444, 367]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3819,7 +3819,7 @@
     {
       "id": "pine-16",
       "transform": {
-        "position": [117, 4.8413, 367]
+        "position": [117, 4.883004166666667, 367]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3830,7 +3830,7 @@
     {
       "id": "pine-17",
       "transform": {
-        "position": [139, 4.9851, 367]
+        "position": [139, 5.004034027777778, 367]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3841,7 +3841,7 @@
     {
       "id": "pine-18",
       "transform": {
-        "position": [161, 5.099, 367]
+        "position": [161, 5.224444444444445, 367]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3852,7 +3852,7 @@
     {
       "id": "pine-19",
       "transform": {
-        "position": [183, 5.3927, 367]
+        "position": [183, 5.521045833333334, 367]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3863,7 +3863,7 @@
     {
       "id": "pine-20",
       "transform": {
-        "position": [95, 4.7315, 396]
+        "position": [95, 4.73365, 396]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3874,7 +3874,7 @@
     {
       "id": "pine-21",
       "transform": {
-        "position": [117, 4.743, 396]
+        "position": [117, 4.738925, 396]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3885,7 +3885,7 @@
     {
       "id": "ridge-tree-0",
       "transform": {
-        "position": [305, 8.7742, 310]
+        "position": [305, 8.840381944444445, 310]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3896,7 +3896,7 @@
     {
       "id": "ridge-tree-1",
       "transform": {
-        "position": [329, 8.792300000000001, 310]
+        "position": [329, 8.816729166666667, 310]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3907,7 +3907,7 @@
     {
       "id": "ridge-tree-2",
       "transform": {
-        "position": [353, 8.6131, 310]
+        "position": [353, 8.598609722222223, 310]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3918,7 +3918,7 @@
     {
       "id": "ridge-tree-3",
       "transform": {
-        "position": [377, 8.2598, 310]
+        "position": [377, 8.214088888888888, 310]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3929,7 +3929,7 @@
     {
       "id": "ridge-tree-4",
       "transform": {
-        "position": [401, 7.7776, 310]
+        "position": [401, 7.712469444444445, 310]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3940,7 +3940,7 @@
     {
       "id": "ridge-tree-5",
       "transform": {
-        "position": [305, 7.6373999999999995, 343]
+        "position": [305, 7.817608333333334, 343]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3951,7 +3951,7 @@
     {
       "id": "ridge-tree-6",
       "transform": {
-        "position": [329, 7.6524, 343]
+        "position": [329, 7.797275000000001, 343]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3962,7 +3962,7 @@
     {
       "id": "ridge-tree-7",
       "transform": {
-        "position": [353, 7.503299999999999, 343]
+        "position": [353, 7.609963194444445, 343]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3973,7 +3973,7 @@
     {
       "id": "ridge-tree-8",
       "transform": {
-        "position": [377, 7.2092, 343]
+        "position": [377, 7.279703472222223, 343]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3984,7 +3984,7 @@
     {
       "id": "ridge-tree-9",
       "transform": {
-        "position": [401, 6.8077000000000005, 343]
+        "position": [401, 6.848790277777779, 343]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -3995,7 +3995,7 @@
     {
       "id": "ridge-tree-10",
       "transform": {
-        "position": [305, 6.8103, 376]
+        "position": [305, 6.684522222222222, 376]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -4006,7 +4006,7 @@
     {
       "id": "ridge-tree-11",
       "transform": {
-        "position": [329, 6.822, 376]
+        "position": [329, 6.670041666666667, 376]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -4017,7 +4017,7 @@
     {
       "id": "ridge-tree-12",
       "transform": {
-        "position": [353, 6.7058, 376]
+        "position": [353, 6.536980555555556, 376]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -4028,7 +4028,7 @@
     {
       "id": "ridge-tree-13",
       "transform": {
-        "position": [377, 6.4765, 376]
+        "position": [377, 6.302305555555556, 376]
       },
       "visible": true,
       "tags": ["obstacle:wood"],
@@ -4039,7 +4039,7 @@
     {
       "id": "ridge-tree-14",
       "transform": {
-        "position": [401, 6.1635, 376]
+        "position": [401, 5.996130555555556, 376]
       },
       "visible": true,
       "tags": ["obstacle:wood"],

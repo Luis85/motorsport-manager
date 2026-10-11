@@ -1,9 +1,9 @@
 /** Deterministic tracked-force adapter. Contact-plane approximation, not a full rigid-body solver.
  * Six terrain probes support pitch/roll. No airborne angular dynamics, articulated suspension,
- * joint constraints, full hull collision footprint or rollover: those remain a measured Rapier integration milestone. */
+ * joint constraints or rollover. Oriented hull contacts use a bounded swept terrain-plane adapter. */
 (function(input:unknown){
  'use strict';
- const root=input as {LWArmoredPhysics?:LWArmoredRuntime.Physics};
+ const root=input as {LWArmoredPhysics?:LWArmoredRuntime.Physics;LWArmoredPhysicsLegacy:LWArmoredRuntime.Physics;LWArmoredCollision:LWArmoredCollisionTypes.Api;LWArmoredCombat?:{canMove?(damage:LWArmoredRuntime.Damage):boolean}};
  type C=LWArmoredRuntime.Context;type T=LWArmoredRuntime.Transform;type B=LWArmoredRuntime.Body;
  const clamp=(value:number,min:number,max:number)=>Math.max(min,Math.min(max,value));
  function height(t:LWArmoredData.Terrain,x:number,z:number):number{
@@ -12,29 +12,6 @@
   const a=gx-ix,b=gz-iz;
   const sample=(dx:number,dz:number)=>t.heights[(iz+dz)*t.width+ix+dx]!;
   return (sample(0,0)*(1-a)+sample(1,0)*a)*(1-b)+(sample(0,1)*(1-a)+sample(1,1)*a)*b;
- }
- function obstacleCollision(ctx:C,id:string,t:T,b:B,radius:number):void{
-  for(const obstacle of ctx.mission.obstacles){
-   if(ctx.world.get('obstacle:'+obstacle.id,'armored-obstacle')?.destroyed)continue;
-   if(t.position.y>obstacle.position.y+obstacle.size.y)continue;
-   const hx=obstacle.size.x/2+radius,hz=obstacle.size.z/2+radius;
-   const dx=t.position.x-obstacle.position.x,dz=t.position.z-obstacle.position.z;
-   if(Math.abs(dx)>=hx||Math.abs(dz)>=hz)continue;
-   if(hx-Math.abs(dx)<hz-Math.abs(dz)){t.position.x=obstacle.position.x+(dx>=0?hx:-hx);b.velocity.x=0;}
-   else {t.position.z=obstacle.position.z+(dz>=0?hz:-hz);b.velocity.z=0;}
-   b.yawVelocity*=.8;
-  }
-  for(const other of ctx.world.query(['armored-transform','armored-identity'])){
-   if(other===id)continue;
-   const position=ctx.world.get<T>(other,'armored-transform')!.position;
-   const spec=ctx.catalog.vehicles.find(v=>v.id===ctx.world.get<LWArmoredRuntime.Identity>(other,'armored-identity')!.definition)!;
-   const dx=t.position.x-position.x,dz=t.position.z-position.z,distance=Math.hypot(dx,dz),minimum=radius+spec.width/2;
-   if(distance>=minimum||Math.abs(position.y-t.position.y)>spec.height)continue;
-   const nx=distance>1e-8?dx/distance:(id<other?-1:1),nz=distance>1e-8?dz/distance:0;
-   t.position.x=position.x+nx*minimum;t.position.z=position.z+nz*minimum;
-   const toward=b.velocity.x*nx+b.velocity.z*nz;
-   if(toward<0){b.velocity.x-=toward*nx;b.velocity.z-=toward*nz;}
-  }
  }
  function integrate(ctx:C,id:string,dt:number):void{
   const w=ctx.world,t=w.get<T>(id,'armored-transform')!,previous=w.get<T>(id,'armored-previous')!;
@@ -59,7 +36,8 @@
   const inclination=Math.atan(Math.hypot(slope,crossSlope));
   let throttle=motor.throttle;
   if(motor.cruise!==0&&throttle===0)throttle=clamp((motor.cruise-forward)*.5,-1,1);
-  const mobility=damage.status==='destroyed'||damage.status==='disabled'||damage.status==='immobilized'?0:Math.min(1,(damage.components.engine??spec.componentHealth)/spec.componentHealth);
+  const canMove=root.LWArmoredCombat?.canMove?.(damage)??(damage.status!=='destroyed'&&damage.crew.driver!>0&&['engine','transmission','leftTrack','rightTrack'].every(key=>damage.components[key]!>0));
+  const mobility=canMove?Math.min(1,damage.components.engine!/spec.componentHealth):0;
   const traction=b.grounded?surface.friction*spec.mass*9.81/2:0;
   const demand=spec.engineForce*mobility/2;
   b.leftForce=clamp((throttle+motor.steer)*demand,-traction,traction);
@@ -84,18 +62,13 @@
   const torque=(b.leftForce-b.rightForce)*spec.trackWidth/2;
   b.yawVelocity+=torque/inertia*dt;
   b.yawVelocity*=Math.exp(-(b.grounded?1.8+motor.brake*4:0)*dt);
-  t.yaw=Math.atan2(Math.sin(t.yaw+b.yawVelocity*dt),Math.cos(t.yaw+b.yawVelocity*dt));
-  t.position.x+=b.velocity.x*dt;t.position.z+=b.velocity.z*dt;
   if(b.grounded){t.position.y=support;b.velocity.y=0;t.pitch=Math.atan(slope);t.roll=Math.atan(crossSlope);}
   else {b.velocity.y-=9.81*dt;t.position.y+=b.velocity.y*dt;}
-  const radius=spec.width/2,maxX=(terrain.width-1)*terrain.cellSize-radius,maxZ=(terrain.depth-1)*terrain.cellSize-radius;
-  const x=clamp(t.position.x,radius,maxX),z=clamp(t.position.z,radius,maxZ);
-  if(x!==t.position.x)b.velocity.x=0;if(z!==t.position.z)b.velocity.z=0;
-  t.position.x=x;t.position.z=z;
-  obstacleCollision(ctx,id,t,b,radius);
+  root.LWArmoredCollision.move(ctx,id,t,b,spec,dt);
   b.slip=Math.abs(lateral)+Math.max(0,Math.abs((throttle+motor.steer)*demand)-traction)/spec.mass;
  }
  function register(scheduler:LWArmoredRuntime.Scheduler,ctx:C):void{
+  if(ctx.solver==='tracked-force-v1'){root.LWArmoredPhysicsLegacy.register(scheduler,ctx);return;}
   scheduler.register({id:'armored.physics',phase:'simulate',order:10,query:['armored-transform','armored-body','armored-motor'],update(_world,id,dt){integrate(ctx,id,dt);}});
  }
  const api={height,register};root.LWArmoredPhysics=api;

@@ -322,6 +322,25 @@ campaign/content/mode coverage and online multiplayer remain incomplete. See the
 [parity ledger](armored-platoon-parity.md) for explicit gaps and the
 [dated evidence](../_archive/armored-platoon-2026-10-10-integration.md) for actual checks.
 
+The current v2 slice adds yaw-oriented continuous planar hull collisions,
+station-specific mobility/fire eligibility, bounded occluded HE track damage,
+useful AP/HE selection and finite timed depot service. New sessions use
+`tracked-force-v2`; runtime v1 restore preserves its old arithmetic and topology.
+Browser restore retains its installed-catalog match restriction: old saves
+predating depot/terrain changes require their matching old HTML build.
+Final v2 source passed the fast tier **902/902 in 51 suites**, including **68/68
+Armored Node checks**. Corrected captures report zero errors/warnings after all
+133 obstacle bases and Forge center alignment were corrected. Final browser
+**12/12**, CLI current-output and all seven demo freshness checks passed; the
+complete **123-suite/2,192-check** gate remains pending CI. Public-command depot routes reached
+all three locations: Pine/Iron received one round each, while enemy fire
+cancelled Crossroads service without consuming stock. The
+[11 October evidence](../_archive/armored-platoon-2026-10-11-evidence/README.md)
+separates final source/artifacts from intermediate results. No earlier green CI
+or software observation below verifies this changed implementation. Depots lack restocking/transport and
+campaign economics; collision remains a bounded terrain-plane approximation.
+
+The following verification concerns the earlier `187dd821` implementation.
 An automated original Pine Ridge mission has reached a visible browser debrief
 through public input/query ports, using software SwiftShader and an explicitly
 supplied accelerated clock. The [portable evidence](../_archive/armored-platoon-2026-10-10-evidence/README.md)
@@ -352,7 +371,7 @@ completed seven exact checkpoint restores, seven mission switches and 371
 accepted commands without errors/rejections; eight identical Three.js warnings
 were retained. Q03 remains partial: software SwiftShader, bounded workload and
 unforced-GC heap observations do not establish hardware performance, leak
-freedom, worst-case stress or context-loss recovery. All current implementation
-CI workflows are successful; no verification run is active. Remaining reference
+freedom, worst-case stress or context-loss recovery. All `187dd821` implementation
+CI workflows succeeded; this is historical evidence for that source. Remaining reference
 parity and browser/hardware acceptance are tracked in the dated integration
 record; no complete parity gate is claimed. Earlier mission captures retain their own artifact identities.

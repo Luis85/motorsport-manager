@@ -121,6 +121,9 @@
     {"name": "armored-admission", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-admission.cjs", "result": ".generated/armored-admission-results.json", "timeout": 120, "cost": 1.0},
     {"name": "armored-runtime", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-runtime.cjs", "result": ".generated/armored-runtime-results.json", "timeout": 120, "cost": 1.0},
     {"name": "armored-combat", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-combat.cjs", "result": ".generated/armored-combat-results.json", "timeout": 120, "cost": 1.0},
+    {"name": "armored-physics", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-physics.cjs", "result": ".generated/armored-physics-results.json", "timeout": 120, "cost": 1.0},
+    {"name": "armored-combat-v2", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-combat-v2.cjs", "result": ".generated/armored-combat-v2-results.json", "timeout": 120, "cost": 1.0},
+    {"name": "armored-logistics", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-logistics.cjs", "result": ".generated/armored-logistics-results.json", "timeout": 120, "cost": 1.0},
     {"name": "armored-browser", "kind": "browser", "tier": "full", "entry": ".generated/test-armored-browser.cjs", "result": "verification/v15/armored-browser-results.json", "timeout": 300, "cost": 30.0}
   ]
 }

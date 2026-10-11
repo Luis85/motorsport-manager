@@ -5,17 +5,18 @@
  const root=inputRoot as {LWArmoredUI?:unknown};
  function create(parent:HTMLElement,catalog:LWArmoredData.Catalog,hooks:LWArmoredPresentation.Hooks):LWArmoredPresentation.UI {
   const lifecycle=new AbortController(),camera:LWArmoredPresentation.Camera={mode:'chase',yaw:0,pitch:-.025,fov:58,sensitivity:1,shake:.5};
-  let currentScreen='menu',pendingOrder:string|null=null,lastSnapshot=hooks.query(),lastHud=-1,noticeUntil=0;
+  let currentScreen='menu',pendingOrder:string|null=null,lastSnapshot=hooks.query(),lastHud=-1,noticeUntil=0,eventMission='',eventTick=-1;
+  const supplyEvents=new Set<string>();
   const wrapper=document.createElement('div');
   wrapper.innerHTML=`<div class="ap-hud" hidden>
    <div class="ap-top"><div class="ap-operation"><h2 data-ap-title></h2><div data-ap-objectives></div></div><div class="ap-toolbar"><button data-ap-camera="chase">Chase · V</button><button data-ap-camera="gunner">Gunner · V</button><button data-ap-camera="binocular">Binoculars · B</button><button data-ap-action="pause" aria-label="Pause game">Pause · Esc</button></div></div>
    <div class="ap-compass"><strong data-ap-heading>000°</strong><span>W ─── N ─── E</span></div><div class="ap-optics"></div><div class="ap-sight"><b></b></div><div class="ap-sight-label" data-ap-sight>MAIN GUN</div>
    <div class="ap-bottom"><div><section class="ap-vehicle" aria-label="Vehicle status"><h3 data-ap-vehicle-name></h3><div class="ap-readouts"><strong class="ap-speed" data-ap-speed>0</strong><span class="ap-unit">KM/H</span><span class="ap-condition" data-ap-condition></span></div><div class="ap-ammo"><button data-ap-action="ammo" data-ap-ammo>AP</button><span data-ap-load-status>READY</span><strong data-ap-reserves>0</strong></div><div class="ap-reload" role="progressbar" aria-label="Main gun reload" aria-valuemin="0" aria-valuemax="100" data-ap-reload><i></i></div><div class="ap-components" data-ap-components></div><button class="ap-repair" data-ap-action="repair" data-ap-repair>Repair · T</button></section><div class="ap-platoon" data-ap-platoon></div></div>
    <div class="ap-center-bottom"><div class="ap-controls-hint"><kbd>W A S D</kbd> Drive &nbsp; <kbd>Space</kbd> Brake &nbsp; <kbd>Click</kbd> Fire<br><kbd>Q E</kbd> Traverse &nbsp; <kbd>↑ ↓</kbd> Elevation &nbsp; <kbd>Tab</kbd> Platoon orders</div></div>
-   <section class="ap-map-wrap" aria-label="Tactical map"><div class="ap-map-title"><span>PLATOON NET</span><span>N ↑</span></div><canvas data-ap-map width="376" height="304" aria-label="Known vehicle positions"></canvas><div class="ap-orders-label" data-ap-active-order></div><button data-ap-action="orders">Platoon orders · Tab</button></section></div>
+   <section class="ap-map-wrap" aria-label="Tactical map"><div class="ap-map-title"><span>PLATOON NET</span><span>N ↑</span></div><canvas data-ap-map width="376" height="304" aria-label="Known vehicle positions"></canvas><div class="ap-orders-label" data-ap-active-order></div><button data-ap-action="orders">Platoon orders · Tab</button><section class="ap-service" data-ap-service aria-label="Friendly supply depot" hidden><h3 data-ap-depot-name></h3><p data-ap-supply-status></p><p class="ap-supply-stocks" data-ap-supply-stocks></p><div class="ap-supply-progress" data-ap-supply-progress role="progressbar" aria-label="Supply transfer" aria-valuemin="0" aria-valuemax="100" hidden><i></i></div><button data-ap-action="resupply" data-ap-resupply>Resupply · U</button></section></section></div>
    <div class="ap-feedback" role="status" aria-live="polite" data-ap-feedback></div><section class="ap-orders" hidden data-ap-orders aria-label="Platoon order"><h3 data-ap-order-title>Choose an order</h3><div data-ap-order-options></div><p class="ap-order-help" data-ap-order-help></p></section>
   </div>
-  <section class="ap-panel" data-ap-screen="menu"><div class="ap-panel-content"><h1>Armored<br>Platoon</h1><div class="ap-rule"></div><p>Take the commander's seat. Lead your platoon through the fields, find your firing line, and bring the armor home.</p><div class="ap-menu-actions"><button class="primary" data-ap-action="briefing">Enter the battlefield</button><button data-ap-action="load">Load checkpoint</button></div><div class="ap-help"><details><summary>Controls & settings</summary><dl><dt>W A S D / Space</dt><dd>Drive / brake</dd><dt>Mouse / Q E / ↑ ↓</dt><dd>Aim / turret / gun elevation</dd><dt>Click / R</dt><dd>Fire main gun</dd><dt>V / B / X</dt><dd>Camera / binoculars / ammunition</dd><dt>Tab / 1–4</dt><dd>Orders / command tank</dd><dt>C / T / Escape</dt><dd>Cruise / repair / pause</dd></dl><div class="ap-settings"><label>Look sensitivity<input data-ap-setting="sensitivity" type="range" min="0.2" max="2" step="0.1" value="1"></label><label>Chase field of view<input data-ap-setting="fov" type="range" min="45" max="85" step="1" value="58"></label><label>Camera shake<input data-ap-setting="shake" type="range" min="0" max="1" step="0.1" value="0.5"></label></div></details></div><div class="ap-version">INTEGRATED DEVELOPMENT BUILD<br>Original assets · Two opposing vehicles · Single-player missions<br>Full campaign, multiplayer and reference fidelity remain in development.</div></div></section>
+  <section class="ap-panel" data-ap-screen="menu"><div class="ap-panel-content"><h1>Armored<br>Platoon</h1><div class="ap-rule"></div><p>Take the commander's seat. Lead your platoon through the fields, find your firing line, and bring the armor home.</p><div class="ap-menu-actions"><button class="primary" data-ap-action="briefing">Enter the battlefield</button><button data-ap-action="load">Load checkpoint</button></div><div class="ap-help"><details><summary>Controls & settings</summary><dl><dt>W A S D / Space</dt><dd>Drive / brake</dd><dt>Mouse / Q E / ↑ ↓</dt><dd>Aim / turret / gun elevation</dd><dt>Click / R</dt><dd>Fire main gun</dd><dt>V / B / X</dt><dd>Camera / binoculars / ammunition</dd><dt>Tab / 1–4</dt><dd>Orders / command tank</dd><dt>C / T / U</dt><dd>Cruise / repair / resupply</dd><dt>Escape</dt><dd>Pause / release mouse</dd></dl><div class="ap-settings"><label>Look sensitivity<input data-ap-setting="sensitivity" type="range" min="0.2" max="2" step="0.1" value="1"></label><label>Chase field of view<input data-ap-setting="fov" type="range" min="45" max="85" step="1" value="58"></label><label>Camera shake<input data-ap-setting="shake" type="range" min="0" max="1" step="0.1" value="0.5"></label></div></details></div><div class="ap-version">INTEGRATED DEVELOPMENT BUILD<br>Original assets · Two opposing vehicles · Single-player missions<br>Full campaign, multiplayer and reference fidelity remain in development.</div></div></section>
   <section class="ap-panel" data-ap-screen="briefing" hidden><div class="ap-panel-content"><h2>Mission briefing</h2><label for="ap-mission">Choose a mission</label><select class="ap-mission-select" id="ap-mission" data-ap-mission></select><p data-ap-description></p><div class="ap-briefing-meta"><div><span>Command</span><b data-ap-force></b></div><div><span>Deployment</span>Armored platoon</div><div><span>Conditions</span>Daylight · Clear</div></div><ul class="ap-briefing-objectives" data-ap-briefing-objectives></ul><div class="ap-menu-actions"><button class="primary" data-ap-action="deploy">Deploy platoon</button><button data-ap-action="menu">Back</button></div><div class="ap-help">Drive with W A S D. Click the battlefield to capture your mouse; move it to aim. Escape releases the mouse and pauses. Use Q / E and arrow keys for keyboard aiming.</div></div></section>
   <section class="ap-panel" data-ap-screen="pause" hidden><div class="ap-panel-content"><h2>Battle paused</h2><p>Your platoon is holding position. Resume when you're ready.</p><div class="ap-menu-actions"><button class="primary" data-ap-action="resume">Return to battle</button><button data-ap-action="save">Save checkpoint</button><button data-ap-action="load">Load checkpoint</button><button data-ap-action="restart">Restart mission</button><button data-ap-action="menu">Main menu</button></div><div class="ap-help">Checkpoints are saved in this browser. Loading restores the complete admitted simulation state. A failed load leaves your current match intact.</div><p data-ap-pause-feedback role="status" aria-live="polite"></p></div></section>
   <section class="ap-panel" data-ap-screen="debrief" hidden><div class="ap-panel-content"><h2 data-ap-result></h2><p data-ap-summary></p><ul class="ap-briefing-objectives" data-ap-debrief-objectives></ul><div class="ap-menu-actions"><button class="primary" data-ap-action="briefing">Choose next mission</button><button data-ap-action="restart">Replay mission</button><button data-ap-action="menu">Main menu</button></div></div></section>`;
@@ -63,6 +64,7 @@
    pendingOrder=null;el('[data-ap-orders]').hidden=true;parent.querySelector<HTMLCanvasElement>('#armored-canvas')?.focus();
   }
   function repair():void {const result=hooks.command({kind:'repair',entityId:lastSnapshot.controlled});notice(result.message,!result.ok);}
+  function resupply():void {const result=hooks.command({kind:'resupply',entityId:lastSnapshot.controlled});notice(result.message,!result.ok);}
   function ammo():void {
    const vehicle=lastSnapshot.vehicles.find(v=>v.id===lastSnapshot.controlled);if(!vehicle)return;
    const definition=catalog.vehicles.find(v=>v.id===vehicle.definition)!;const next=definition.ammunition[(definition.ammunition.indexOf(vehicle.weapon.ammo)+1)%definition.ammunition.length]!;
@@ -79,7 +81,7 @@
     case 'deploy':case 'resume':screen('battle');break;
     case 'pause':screen('pause');break;case 'save':hooks.save();break;case 'load':hooks.load();break;
     case 'restart':hooks.control('restart');lastSnapshot=hooks.query();screen('battle');break;
-    case 'orders':orders();break;case 'ammo':ammo();break;case 'repair':repair();break;
+    case 'orders':orders();break;case 'ammo':ammo();break;case 'repair':repair();break;case 'resupply':resupply();break;
    }
   },{signal:lifecycle.signal});
   options.addEventListener('change',()=>{hooks.mission(options.value);lastSnapshot=hooks.query();briefing();},{signal:lifecycle.signal});
@@ -90,6 +92,7 @@
    if(event.code==='Tab'){event.preventDefault();orders();}
    if(event.code==='KeyX')ammo();
    if(event.code==='KeyT')repair();
+   if(event.code==='KeyU')resupply();
    if(event.code==='KeyV')setCamera(camera.mode==='chase'?'gunner':'chase');
    if(event.code==='KeyB')setCamera(camera.mode==='binocular'?'chase':'binocular');
   },{signal:lifecycle.signal});
@@ -100,10 +103,40 @@
    for(let i=1;i<5;i++){ctx.beginPath();ctx.moveTo(i*w/5,0);ctx.lineTo(i*w/5,h);ctx.moveTo(0,i*h/5);ctx.lineTo(w,i*h/5);ctx.stroke();}
    for(const obstacle of snapshot.obstacles){if(obstacle.destroyed)continue;const p=xy(obstacle.position);ctx.fillStyle='#849078';ctx.fillRect(p.x-obstacle.size.x/size*w/2,p.y-obstacle.size.z/size*h/2,obstacle.size.x/size*w,obstacle.size.z/size*h);}
    for(const objective of mission.objectives){if(objective.kind!=='reach')continue;const p=xy(objective.position);ctx.strokeStyle='#e7c775';ctx.beginPath();ctx.arc(p.x,p.y,8,0,Math.PI*2);ctx.stroke();}
+   for(const depot of snapshot.depots??[]){
+    if(depot.faction!==snapshot.playerFaction)continue;const p=xy(depot.position);ctx.strokeStyle='#c7dbc5';ctx.lineWidth=2;ctx.strokeRect(p.x-7,p.y-7,14,14);ctx.beginPath();ctx.moveTo(p.x-4,p.y);ctx.lineTo(p.x+4,p.y);ctx.moveTo(p.x,p.y-4);ctx.lineTo(p.x,p.y+4);ctx.stroke();
+   }
    for(const vehicle of snapshot.vehicles){const p=xy(vehicle.transform.position);ctx.save();ctx.translate(p.x,p.y);ctx.rotate(vehicle.transform.yaw);ctx.fillStyle=vehicle.id===snapshot.controlled?'#f3db8d':vehicle.faction===snapshot.playerFaction?'#c4d4b5':'#e58d72';ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(5,5);ctx.lineTo(-5,5);ctx.closePath();ctx.fill();ctx.restore();}
   }
+  function supplyReadout(snapshot:LWArmoredRuntime.Snapshot,vehicle:LWArmoredRuntime.VehicleView):void {
+   const candidates=(snapshot.depots??[]).filter(d=>d.faction===snapshot.playerFaction);
+   const distance=(depot:LWArmoredData.SupplyDepot)=>Math.hypot(depot.position.x-vehicle.transform.position.x,depot.position.z-vehicle.transform.position.z);
+   const depot=candidates.find(d=>d.id===vehicle.supply?.depotId)??candidates.sort((a,b)=>distance(a)-distance(b))[0];
+   el('[data-ap-service]').hidden=!depot;if(!depot)return;
+   const active=vehicle.supply?.depotId===depot.id,remaining=vehicle.supply?.remaining??0;
+   set('[data-ap-depot-name]',depot.name);
+   set('[data-ap-supply-status]',active?'Transferring · '+remaining.toFixed(1)+'s':distance(depot)<=depot.radius?'Inside service pad · stop to resupply':Math.ceil(distance(depot))+'m to service pad');
+   const stock=Object.entries(depot.ammunition).map(([id,count])=>(catalog.ammunition.find(a=>a.id===id)?.kind??id)+' '+count);
+   set('[data-ap-supply-stocks]',stock.join(' / ')+' · Kits '+depot.repairKits);
+   set('[data-ap-resupply]',active?'Cancel transfer · U':'Resupply · U');
+   el('[data-ap-resupply]').title='Stop inside the friendly service pad. Movement, fire or damage interrupts transfer. Stocks are shared and finite.';
+   const progress=el('[data-ap-supply-progress]'),percent=Math.round(Math.max(0,Math.min(1,1-remaining/depot.transferSeconds))*100);
+   progress.hidden=!active;progress.setAttribute('aria-valuenow',String(percent));el('[data-ap-supply-progress] i').style.width=percent+'%';
+  }
+  function supplyFeedback(snapshot:LWArmoredRuntime.Snapshot):void {
+   if(eventMission!==snapshot.missionId||snapshot.tick<eventTick){supplyEvents.clear();eventMission=snapshot.missionId;}
+   eventTick=snapshot.tick;const retained=new Set<string>();
+   for(const event of snapshot.events){
+    if(!event.kind.startsWith('resupply-'))continue;
+    const key=event.tick+':'+event.sequence+':'+event.kind+':'+String(event.entityId);
+    retained.add(key);
+    if(supplyEvents.has(key))continue;supplyEvents.add(key);
+    if(event.entityId===snapshot.controlled&&typeof event.message==='string')notice(event.message,event.kind==='resupply-cancelled');
+   }
+   for(const key of supplyEvents)if(!retained.has(key))supplyEvents.delete(key);
+  }
   function render(snapshot:LWArmoredRuntime.Snapshot,_seconds:number):void {
-   lastSnapshot=snapshot;
+   lastSnapshot=snapshot;supplyFeedback(snapshot);
    if(snapshot.status!=='running'&&currentScreen==='battle'){
     set('[data-ap-result]',snapshot.status==='victory'?'Mission accomplished':'Platoon lost');
     set('[data-ap-summary]',`Battle concluded after ${Math.floor(snapshot.seconds/60)}m ${Math.floor(snapshot.seconds%60)}s. Review the objectives and choose your next deployment.`);
@@ -119,10 +152,11 @@
    set('[data-ap-heading]',((Math.round(camera.yaw*180/Math.PI)%360+360)%360).toString().padStart(3,'0')+'°');
    set('[data-ap-repair]',vehicle.damage.repair>0?'REPAIRING · '+vehicle.damage.repair.toFixed(1)+'s':'Repair · T · '+Number(vehicle.damage.repairKits??0)+' kits');
    el('[data-ap-repair]').title='Stop the vehicle, then begin repairs. Moving or taking damage interrupts repairs.';
+   supplyReadout(snapshot,vehicle);
    set('[data-ap-condition]',vehicle.damage.status);set('[data-ap-ammo]',vehicle.weapon.ammo.toUpperCase()+' · X');
    set('[data-ap-reserves]',String(vehicle.weapon.reserves[vehicle.weapon.ammo]??0));set('[data-ap-load-status]',vehicle.weapon.reload>0?vehicle.weapon.reload.toFixed(1)+'s':'READY');
    const progress=Math.round((1-Math.min(1,vehicle.weapon.reload/definition.reloadSeconds))*100);el('[data-ap-reload]').setAttribute('aria-valuenow',String(progress));el('[data-ap-reload] i').style.width=progress+'%';
-   set('[data-ap-components]',Object.entries(vehicle.damage.components).map(([name,value])=>`${name.toUpperCase()} ${Math.round(value)}%`).join(' · '));
+   set('[data-ap-components]',Object.entries(vehicle.damage.components).map(([name,value])=>`${name.toUpperCase()} ${Math.round(value/definition.componentHealth*100)}%`).join(' · '));
    set('[data-ap-active-order]',snapshot.vehicles.filter(v=>v.faction===snapshot.playerFaction&&v.id!==snapshot.controlled).map(v=>v.id+' / '+v.order.kind.toUpperCase()).join(' · '));
    const objectives=el('[data-ap-objectives]');
    if(!objectives.childElementCount||objectives.dataset.mission!==mission.id){objectives.dataset.mission=mission.id;objectives.replaceChildren(...mission.objectives.map(o=>{const line=document.createElement('div');line.className='ap-objective';line.dataset.objective=o.id;line.textContent=o.name;return line;}));}

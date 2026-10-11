@@ -7,7 +7,7 @@
  function create(scene:any,mission:LWArmoredData.Mission,models:LWArmoredPresentation.Models){
   const geometry=new Map<string,any>(),materials=new Map<string,any>(),vehicles=new Map<string,any>(),obstacles=new Map<string,any>();
   const effects:any[]=[],seenEvents=new Set<string>();let eventTick=-1;
-  const templates=new Map<string,any>(),projectiles=new Map<string,any>(),smoke=new Map<string,any>(),world=new T.Group();
+  const templates=new Map<string,any>(),projectiles=new Map<string,any>(),smoke=new Map<string,any>(),depots=new Map<string,any>(),world=new T.Group();
   scene.add(world);
   const mat=(color:string)=>{if(!materials.has(color))materials.set(color,new T.MeshStandardMaterial({color,roughness:.95}));return materials.get(color);};
   const geo=(kind:string)=>{if(!geometry.has(kind))geometry.set(kind,kind==='box'?new T.BoxGeometry(1,1,1):kind==='ball'?new T.IcosahedronGeometry(1,1):kind==='cone'?new T.ConeGeometry(1,1,7):new T.CylinderGeometry(1,1,1,10));return geometry.get(kind);};
@@ -24,12 +24,23 @@
   const position=terrainGeo.attributes.position;
   for(let i=0;i<position.count;i++)position.setY(i,height(position.getX(i),position.getZ(i)));
   terrainGeo.computeVertexNormals();
-  const textureCanvas=document.createElement('canvas');textureCanvas.width=textureCanvas.height=512;
-  const ctx=textureCanvas.getContext('2d')!;ctx.fillStyle='#788064';ctx.fillRect(0,0,512,512);
   let seed=8173;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)|0;return (seed>>>0)/4294967296;};
-  for(let i=0;i<21000;i++){const l=Math.floor(65+random()*55);ctx.fillStyle=`rgba(${l+12},${l+15},${l-10},.24)`;ctx.fillRect(random()*512,random()*512,1+random()*3,1+random()*3);}
-  const texture=new T.CanvasTexture(textureCanvas);texture.wrapS=texture.wrapT=T.RepeatWrapping;texture.repeat.set(14,14);texture.anisotropy=4;
-  const groundMat=new T.MeshStandardMaterial({map:texture,color:'#b1b794',roughness:1});
+  const textureCanvas=document.createElement('canvas');textureCanvas.width=textureCanvas.height=1024;
+  const ctx=textureCanvas.getContext('2d')!,pixels=ctx.createImageData(1024,1024);
+  // Broad soil variations and fine grain share the actual terrain footprint. No decorative collision geometry.
+  for(let z=0;z<1024;z++)for(let x=0;x<1024;x++){
+   const broad=Math.sin(x*.012+Math.sin(z*.008)*2)*Math.cos(z*.015)+Math.sin((x+z)*.037)*.3;
+   const grain=(random()-.5)*20,dry=Math.max(0,Math.sin(x*.006-z*.01))*13,index=(z*1024+x)*4;
+   pixels.data[index]=105+broad*12+grain+dry;pixels.data[index+1]=113+broad*13+grain;pixels.data[index+2]=76+broad*8+grain;pixels.data[index+3]=255;
+  }
+  ctx.putImageData(pixels,0,0);
+  const texture=new T.CanvasTexture(textureCanvas);texture.anisotropy=4;if(T.SRGBColorSpace)texture.colorSpace=T.SRGBColorSpace;
+  const detailCanvas=document.createElement('canvas');detailCanvas.width=detailCanvas.height=256;
+  const detailContext=detailCanvas.getContext('2d')!,detailPixels=detailContext.createImageData(256,256);
+  for(let i=0;i<detailPixels.data.length;i+=4){const value=90+random()*90;detailPixels.data[i]=detailPixels.data[i+1]=detailPixels.data[i+2]=value;detailPixels.data[i+3]=255;}
+  detailContext.putImageData(detailPixels,0,0);
+  const detail=new T.CanvasTexture(detailCanvas);detail.wrapS=detail.wrapT=T.RepeatWrapping;detail.repeat.set(95,95);detail.anisotropy=4;
+  const groundMat=new T.MeshStandardMaterial({map:texture,bumpMap:detail,bumpScale:.07,roughness:1});
   const ground=new T.Mesh(terrainGeo,groundMat);ground.receiveShadow=true;world.add(ground);
   const horizon=mesh(world,'box','#6e795b',[0,-8,0],[3000,12,3000]);horizon.castShadow=false;
   const centerX=(terrain.width-1)*terrain.cellSize/2,centerZ=(terrain.depth-1)*terrain.cellSize/2,extent=Math.hypot(centerX,centerZ);
@@ -39,23 +50,53 @@
   }
   function obstacle(item:LWArmoredData.Obstacle){
    const g=new T.Group();g.position.set(item.position.x,item.position.y+item.size.y/2,item.position.z);world.add(g);
-   const {x,y,z}=item.size,color=/wood|timber|hedge|tree|foliage|vegetation/i.test(item.material)?'#5b6650':'#a09882';
-   if(/tree|foliage|hedge|vegetation/i.test(item.material)){
-    mesh(g,'cylinder','#675740',[0,-y*.15,0],[Math.min(x,z)*.14,y*.7,Math.min(x,z)*.14]);
-    for(let i=0;i<5;i++)mesh(g,'ball',i%2?'#4f6243':'#61724f',[(random()-.5)*x*.55,y*.12+(random()-.5)*y*.4,(random()-.5)*z*.5],[x*.5,y*.44,z*.5]);
-   }else{
-    mesh(g,'box',color,[0,0,0],[x,y,z]);
-    if(y>2.5&&x>3){
-     const roof=mesh(g,'cylinder','#726454',[0,y*.56,0],[x*.74,y*.25,z*.74]);roof.rotation.y=Math.PI/4;
-     for(const side of [-1,1])for(let j=0;j<Math.max(1,Math.floor(x/3));j++)mesh(g,'box','#39413b',[-x*.35+j*2.5,y*.13,side*(z*.5+.012)],[.72,.88,.035]);
-     mesh(g,'box','#635b4c',[0,-y*.25,z*.5+.025],[1.1,y*.5,.04]);
-    }else if(/wood|timber/i.test(item.material)){
-     for(let j=-1;j<=1;j++)mesh(g,'box','#675a46',[j*x*.35,0,0],[.1,y+.18,z+.06]);
+   const {x,y,z}=item.size,wood=/wood|timber|tree|foliage|hedge|vegetation/i.test(item.material);
+   if(wood&&y>Math.max(x,z)*2){
+    mesh(g,'cylinder','#615344',[0,-y*.2,0],[Math.min(x,z)*.12,y*.6,Math.min(x,z)*.12]);
+    for(let i=0;i<6;i++){
+     const level=i/6,radius=.49*(1-level*.78),crown=mesh(g,'cone',i%2?'#455a43':'#53694b',[0,-y*.16+level*y*.56,0],[x*radius,y*.38,z*radius]);
+     crown.rotation.y=i*.91;
     }
+   }else if(wood){
+    mesh(g,'box','#60694d',[0,0,0],[x,y,z]);
+   }else if(y>2.5&&x>3){
+    // The roof, facade and trim remain inside the admitted obstacle's AABB.
+    const eave=y*.2,wallHeight=y*.7,plaster=['#b6ad96','#a69d87','#c0b49a'][Math.floor(random()*3)]!;
+    mesh(g,'box',plaster,[0,-y*.15,0],[x,wallHeight,z-.08]);
+    mesh(g,'box','#7d7a67',[0,-y*.43,0],[x,y*.14,z]);
+    const roofGeometry=new T.BufferGeometry();
+    const a=[-x/2,eave,-z/2],b=[x/2,eave,-z/2],c=[0,y/2,-z/2],d=[-x/2,eave,z/2],e=[x/2,eave,z/2],f=[0,y/2,z/2];
+    roofGeometry.setAttribute('position',new T.Float32BufferAttribute([...a,...d,...f,...a,...f,...c,...b,...c,...f,...b,...f,...e,...a,...c,...b,...d,...e,...f],3));roofGeometry.computeVertexNormals();
+    const roof=new T.Mesh(roofGeometry,mat('#716659'));roof.castShadow=true;roof.receiveShadow=true;g.add(roof);
+    for(const side of [-1,1])for(let row=0;row<2;row++)for(let j=0;j<Math.max(1,Math.floor(x/3));j++){
+     const px=-x*.36+j*x*.72/Math.max(1,Math.floor(x/3)-1),py=-y*.22+row*y*.25;
+     mesh(g,'box','#d1c8af',[px,py,side*(z/2-.035)],[.96,1.2,.06]);
+     mesh(g,'box','#354343',[px,py,side*(z/2-.012)],[.68,.91,.02]);
+     mesh(g,'box','#b0aa91',[px,py,side*(z/2-.002)],[.065,.94,.003]);
+    }
+    mesh(g,'box','#605c4a',[0,-y*.34,z/2-.012],[1.1,y*.32,.02]);
+   }else{
+    mesh(g,'box','#898977',[0,0,0],[x,y,z]);
+    for(let row=0;row<3;row++)mesh(g,'box','#686d5d',[0,-y/2+(row+1)*y/3-.04,z/2-.01],[x,.055,.015]);
    }
    obstacles.set(item.id,g);
   }
   mission.obstacles.forEach(obstacle);
+  function servicePad(depot:LWArmoredData.SupplyDepot){
+   const group=new T.Group(),padGeometry=new T.RingGeometry(depot.radius-.2,depot.radius,80);padGeometry.rotateX(-Math.PI/2);
+   const points=padGeometry.attributes.position;
+   for(let i=0;i<points.count;i++){const x=points.getX(i)+depot.position.x,z=points.getZ(i)+depot.position.z;points.setXYZ(i,x,height(x,z)+.045,z);}
+   const paint=new T.MeshBasicMaterial({color:'#c7bd88',transparent:true,opacity:.7,depthWrite:false,side:T.DoubleSide});
+   group.add(new T.Mesh(padGeometry,paint));
+   // Flat painted bars only: service markings never invent an obstacle or conceal a firing line.
+   for(const axis of [0,1]){
+    const marking=new T.PlaneGeometry(axis?1.2:4,axis?4:1.2,4,4);marking.rotateX(-Math.PI/2);
+    const p=marking.attributes.position;
+    for(let i=0;i<p.count;i++){const x=p.getX(i)+depot.position.x,z=p.getZ(i)+depot.position.z;p.setXYZ(i,x,height(x,z)+.05,z);}
+    group.add(new T.Mesh(marking,paint));
+   }
+   world.add(group);return group;
+  }
   function template(asset:string){
    if(!templates.has(asset)){
     const source=models[asset];if(!source)throw Error(`Vehicle model “${asset}” is missing. Rebuild the game asset pack.`);
@@ -65,6 +106,9 @@
    return templates.get(asset);
   }
   function update(snapshot:LWArmoredRuntime.Snapshot,catalog:LWArmoredData.Catalog,alpha:number,seconds:number){
+   const visibleDepots=new Set<string>();
+   for(const depot of snapshot.depots??[]){if(depot.faction!==snapshot.playerFaction)continue;visibleDepots.add(depot.id);if(!depots.has(depot.id))depots.set(depot.id,servicePad(depot));}
+   depots.forEach((pad,id)=>{pad.visible=visibleDepots.has(id);});
    const live=new Set<string>();
    for(const vehicle of snapshot.vehicles){
     live.add(vehicle.id);let entry=vehicles.get(vehicle.id);
@@ -114,7 +158,7 @@
   }
   return {update,height,vehicles,obstacles,dispose(){
    world.traverse((obj:any)=>{if(obj.isMesh){obj.geometry?.dispose();if(Array.isArray(obj.material))obj.material.forEach((m:any)=>m.dispose());else obj.material?.dispose();}});
-   texture.dispose();scene.remove(world);templates.clear();vehicles.clear();obstacles.clear();geometry.clear();materials.clear();
+   texture.dispose();detail.dispose();scene.remove(world);templates.clear();vehicles.clear();obstacles.clear();depots.clear();geometry.clear();materials.clear();
   }};
  }
  root.LWArmoredWorld={create};

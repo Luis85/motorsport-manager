@@ -1,0 +1,41 @@
+[
+  {
+    "mission": "crossroads",
+    "depot": "crossroads-depot",
+    "position": {
+      "x": 264,
+      "y": -0.213433,
+      "z": 128
+    },
+    "nearestObstacleSurfaceMetres": 110.639,
+    "padClearanceMetres": 98.639,
+    "spawnHullClearance": "all6 pass",
+    "friendlyStraightApproaches": "all3 pass with circumradius +0.5m margin"
+  },
+  {
+    "mission": "pine-ridge",
+    "depot": "pine-ridge-depot",
+    "position": {
+      "x": 264,
+      "y": 1.9556,
+      "z": 128
+    },
+    "nearestObstacleSurfaceMetres": 110.639,
+    "padClearanceMetres": 98.639,
+    "spawnHullClearance": "all6 pass",
+    "friendlyStraightApproaches": "all3 pass with circumradius +0.5m margin"
+  },
+  {
+    "mission": "iron-counterattack",
+    "depot": "iron-counterattack-depot",
+    "position": {
+      "x": 264,
+      "y": 4.124633,
+      "z": 128
+    },
+    "nearestObstacleSurfaceMetres": 110.639,
+    "padClearanceMetres": 98.639,
+    "spawnHullClearance": "all6 pass",
+    "friendlyStraightApproaches": "all3 pass with circumradius +0.5m margin"
+  }
+]

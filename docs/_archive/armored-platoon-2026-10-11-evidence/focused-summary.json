@@ -1,0 +1,32 @@
+[
+  {
+    "name": "admission",
+    "passed": 5,
+    "total": 5
+  },
+  {
+    "name": "runtime",
+    "passed": 11,
+    "total": 11
+  },
+  {
+    "name": "combat",
+    "passed": 17,
+    "total": 17
+  },
+  {
+    "name": "physics",
+    "passed": 10,
+    "total": 10
+  },
+  {
+    "name": "combat-v2",
+    "passed": 12,
+    "total": 12
+  },
+  {
+    "name": "logistics",
+    "passed": 13,
+    "total": 13
+  }
+]

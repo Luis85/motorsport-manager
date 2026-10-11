@@ -46,6 +46,42 @@ check('Armored visuals reject external resources corrupt geometry and missing re
         (a: any) => a.semantics.bindings.find((b: any) => b.kind === 'articulation').path = 'missing'
     ]) { const copy = structuredClone(pack); mutate(Object.values(copy.assets)[0]); assert.throws(() => visuals.validate(copy)); }
 });
+check('Canonical Armored obstacle bases match terrain and Scene Forge box centers preserve that ground contact', () => {
+    const physics = require('./armored-physics.js') as LWArmoredRuntime.Physics;
+    const authoring = path.resolve(__dirname, '../../scene-forge/examples/armored-platoon');
+    const admitted = catalog.validate(data);
+    let checked = 0;
+    for (const mission of admitted.missions) {
+        const sceneId = mission.id === 'crossroads' ? 'main' : mission.id;
+        const scene = JSON.parse(fs.readFileSync(path.join(authoring, 'scenes', sceneId + '.scene.json'), 'utf8'));
+        const batch = JSON.parse(fs.readFileSync(path.join(authoring, mission.id + '.compiled.batch.json'), 'utf8'));
+        const sceneNodes = scene.nodes.filter((node: any) => node.tags?.some((tag: string) => tag.startsWith('obstacle:')));
+        const batchNodes = batch.operations.filter((op: any) => op.op === 'putNode' && op.node.tags?.some((tag: string) => tag.startsWith('obstacle:'))).map((op: any) => op.node);
+        assert.equal(sceneNodes.length, mission.obstacles.length, mission.id + ' scene obstacle coverage');
+        assert.equal(batchNodes.length, mission.obstacles.length, mission.id + ' batch obstacle coverage');
+        for (const obstacle of mission.obstacles) {
+            const ground = physics.height(mission.terrain, obstacle.position.x, obstacle.position.z);
+            assert(Math.abs(obstacle.position.y - ground) <= 1e-6, mission.id + '/' + obstacle.id + ' runtime ground base');
+            for (const [label, nodes, geometry] of [
+                ['scene', sceneNodes, scene.geometries[obstacle.id]],
+                ['compiled batch', batchNodes, batch.operations.find((op: any) => op.op === 'putGeometry' && op.id === obstacle.id)?.geometry]
+            ] as const) {
+                const matches = nodes.filter((node: any) => node.id === obstacle.id);
+                assert.equal(matches.length, 1, mission.id + '/' + obstacle.id + ' ' + label + ' identity');
+                assert.equal(geometry?.type, 'box');
+                assert.deepEqual(geometry.size, [obstacle.size.x, obstacle.size.y, obstacle.size.z]);
+                const center = matches[0].transform.position;
+                assert.equal(center[0], obstacle.position.x); assert.equal(center[2], obstacle.position.z);
+                assert(Math.abs(center[1] - geometry.size[1] / 2 - obstacle.position.y) <= 1e-6, mission.id + '/' + obstacle.id + ' ' + label + ' base-to-center conversion');
+            }
+            checked++;
+        }
+    }
+    assert(checked > 0, 'Canonical obstacle contact coverage must not be empty');
+    // Ground support is this authored pack's choice; the public schema still permits elevated obstacles.
+    const elevated = structuredClone(data); elevated.missions[0].obstacles[0].position.y += 10;
+    assert.doesNotThrow(() => catalog.validate(elevated));
+});
 const passed = results.filter(r => r.passed).length;
 fs.writeFileSync(__dirname + '/armored-admission-results.json', JSON.stringify({passed, total: results.length, results}, null, 2) + '\n');
 console.log(passed + '/' + results.length + ' armored admission checks passed');

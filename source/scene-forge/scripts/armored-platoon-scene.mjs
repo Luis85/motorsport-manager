@@ -133,7 +133,8 @@ for (const obstacle of mission.obstacles) {
       type: 'mesh',
       geometry: obstacle.id,
       material: obstacle.material,
-      transform: { position: [p.x, p.y, p.z] },
+      // Armored policy stores the base; Forge box primitives are centered.
+      transform: { position: [p.x, p.y + s.y / 2, p.z] },
       tags: [`obstacle:${obstacle.material}`],
     },
   });

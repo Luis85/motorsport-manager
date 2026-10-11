@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-for(const file of ['ecs','armored-catalog','armored-physics','armored-combat','armored-ai','armored-missions','armored-checkpoint','armored-session','armored-application'])require('./'+file+'.js');
+for(const file of ['ecs','armored-catalog','armored-physics-legacy','armored-collision','armored-physics','armored-combat','armored-logistics','armored-ai','armored-missions','armored-checkpoint','armored-session','armored-application'])require('./'+file+'.js');
 const root=globalThis as any;
 const results:{name:string;passed:boolean}[]=[];
 function test(name:string,run:()=>void):void{run();results.push({name,passed:true});console.log('PASS '+name);}

@@ -61,8 +61,10 @@ own documented approximation rather than consuming these AABBs.
 
 Change `content/catalog.json` against the versioned armored catalog contract.
 Terrain is a row-major Z/X array; width and depth count samples, and `cellSize`
-is metres. Spawn coordinates are world metres; yaw is radians. Stable obstacle IDs
-and explicit collider centres are shared with Scene Forge placement batches.
+is metres. Spawn coordinates are world metres; yaw is radians. Stable obstacle IDs are shared with Scene Forge placement batches. Runtime obstacle
+`position.y` is its base, grounded by the runtime bilinear height sampler at its
+X/Z location. Forge box primitives are centered, so the scene compiler writes
+`position.y + size.y / 2` to the authored mesh transform.
 `crossroads.batch.json` preserves the initial layout and `terrain.batch.json`
 replaces its initial base plane with the exact source terrain vertex samples.
 Both were dry-run and committed with revision and state guards; their `.workflow`
@@ -75,6 +77,49 @@ campaign.
 Validate the whole folder and rebuild the engine artifact through the normal
 Wildlands build. Any kernel change must rebuild and check both Forge executables.
 Generated `bin/` and `demos/` files are never edited directly.
+
+## Author finite supply depots
+
+Catalog version 1 accepts optional `mission.supplies` with at most 64 entries.
+Each entry has exactly `id`, `name`, `faction`, `position`, `radius`,
+`ammunition`, `repairKits` and `transferSeconds`. IDs are unique within the
+mission; position uses world metres inside the map. Radius is 1–100 metres,
+transfer duration 0.1–300 seconds, ammunition keys must exist in the catalog,
+and stock counts are integers: 0–100,000 per ammunition type and 0–10,000 kits.
+Unknown fields, invalid references and nonfinite values are rejected. A mission
+without `supplies` remains valid. Catalogs declaring `supplies` reserve runtime
+entity IDs beginning `depot:`; legacy catalogs without that field retain their
+previous spawn-ID rules.
+
+For example, the current scenarios each place one friendly depot at X=264,
+Z=128, with 12 m radius, 36 AP / 18 HE / 12 smoke rounds, six kits and an
+eight-second transfer duration. Use actual catalog ammunition IDs as map keys.
+Stock is finite per mission instance; it is not a spawn-time vehicle loadout or
+an inexhaustible refill. At service completion, selected ammunition has priority,
+then the vehicle's authored ammunition order, up to its shared ammo capacity;
+kits fill only to its authored kit capacity. Multiple vehicles compete for the
+same remaining stock deterministically. Cancelled service consumes no stock.
+
+Depots are gameplay data, not geometry or a second authority in Scene Forge.
+Validate and rebuild the closed game folder after editing. Review friendly
+access, radius, intended scarcity and reachable service positions through play;
+a syntactically valid position does not establish a safe navigable depot.
+Fresh v2 sessions instantiate these stocks and checkpoint their remaining
+amounts and active service transactions. Existing `tracked-force-v1` saves keep
+their original semantics and do not gain depot entities or service on runtime
+restore. Browser restore also requires a byte-equivalent installed catalog:
+old saves predating depot/terrain changes need the matching old HTML build.
+Retain that artifact when changing a pack; solver compatibility does not bypass
+the browser content-match restriction.
+Do not hand-edit saves to migrate them or claim earlier v1 test evidence covers
+new supplies. Final v2 source passed 68/68 Armored Node checks (including 13
+logistics checks) within the 902/902-check fast tier. The final rebuilt artifact
+passed 12/12 browser checks, CLI current-output and all seven demo freshness
+checks. Earlier intermediate results retain separate artifact identities. Public-command routes reached all three depots: Pine/Iron each
+received one ammunition round; fire cancelled Crossroads service without stock consumption.
+These focused checks do not complete the pending 123-suite/2,192-check gate. The
+[11 October evidence archive](../_archive/armored-platoon-2026-10-11-evidence/README.md)
+records final artifact identities and preserves earlier results separately.
 
 ## Current fidelity boundary
 

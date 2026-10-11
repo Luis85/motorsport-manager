@@ -17,7 +17,8 @@ declare namespace LWArmoredData {
  interface Ammunition {id:string;name:string;kind:'AP'|'HE'|'SMOKE';velocity:number;mass:number;penetration:number;damage:number;drag:number;ricochetAngle:number;blastRadius:number;smokeSeconds:number;}
  interface Spawn {id:string;vehicle:string;faction:string;position:Vec3;yaw:number;player:boolean;}
  interface Objective {id:string;name:string;kind:'eliminate'|'reach'|'survive';target:string;position:Vec3;radius:number;required:number;}
- interface Mission {id:string;name:string;description:string;playerFaction:string;seed:number;terrain:Terrain;obstacles:Obstacle[];spawns:Spawn[];objectives:Objective[];timeLimit:number;}
+ interface SupplyDepot {id:string;name:string;faction:string;position:Vec3;radius:number;ammunition:Record<string,number>;repairKits:number;transferSeconds:number;}
+ interface Mission {supplies?:SupplyDepot[];id:string;name:string;description:string;playerFaction:string;seed:number;terrain:Terrain;obstacles:Obstacle[];spawns:Spawn[];objectives:Objective[];timeLimit:number;}
  interface Catalog {format:'wildlands-armored-catalog';version:1;vehicles:Vehicle[];ammunition:Ammunition[];surfaces:Surface[];missions:Mission[];}
  interface CatalogApi {validate(input:unknown):Catalog;}
 }
@@ -47,11 +48,14 @@ declare namespace LWArmoredRuntime {
  interface Event extends Data {kind:string;tick?:number;sequence?:number;}
  interface Command extends Data {kind:string;sequence?:number;entityId?:string;entityIds?:string[];faction?:string;throttle?:number;steer?:number;brake?:number;cruise?:number;yaw?:number;elevation?:number;pressed?:boolean;ammo?:string;order?:string;targetId?:string;position?:Vec3;}
  interface Result {ok:boolean;message:string;sequence?:number;}
- interface Context {world:World;catalog:LWArmoredData.Catalog;mission:LWArmoredData.Mission;state:State;emit(event:Event):void;random():number;}
- interface VehicleView {id:string;definition:string;faction:string;transform:Transform;previous:Transform;body:Body;motor:Motor;weapon:Weapon;damage:Damage;order:Order;}
+ type Solver='tracked-force-v1'|'tracked-force-v2';
+ interface Supply extends Data {depotId:string;remaining:number;condition:string;}
+ interface Depot extends Data {ammunition:Record<string,number>;repairKits:number;}
+ interface Context {solver?:Solver;world:World;catalog:LWArmoredData.Catalog;mission:LWArmoredData.Mission;state:State;emit(event:Event):void;random():number;}
+ interface VehicleView {supply?:Supply;id:string;definition:string;faction:string;transform:Transform;previous:Transform;body:Body;motor:Motor;weapon:Weapon;damage:Damage;order:Order;}
  interface ObstacleView extends LWArmoredData.Obstacle {destroyed:boolean;}
- interface Snapshot {obstacles:ObstacleView[];smoke:{id:string;position:Vec3;radius:number;remaining:number}[];format:'wildlands-armored-snapshot';version:1;tick:number;seconds:number;status:string;controlled:string;missionId:string;playerFaction:string;vehicles:VehicleView[];projectiles:(Projectile&{id:string})[];events:Event[];objectives:Record<string,number>;terrainRevision:number;}
- interface Checkpoint {format:'wildlands-armored-checkpoint';version:1;solver:'tracked-force-v1';fixedStep:number;catalog:LWArmoredData.Catalog;missionId:string;entities:{id:string;components:Data}[];events:Event[];}
+ interface Snapshot {depots?:LWArmoredData.SupplyDepot[];obstacles:ObstacleView[];smoke:{id:string;position:Vec3;radius:number;remaining:number}[];format:'wildlands-armored-snapshot';version:1;tick:number;seconds:number;status:string;controlled:string;missionId:string;playerFaction:string;vehicles:VehicleView[];projectiles:(Projectile&{id:string})[];events:Event[];objectives:Record<string,number>;terrainRevision:number;}
+ interface Checkpoint {format:'wildlands-armored-checkpoint';version:1;solver:Solver;fixedStep:number;catalog:LWArmoredData.Catalog;missionId:string;entities:{id:string;components:Data}[];events:Event[];}
  interface Session {command(input:Command):Result;query(faction?:string):Snapshot;step(ticks?:number):void;checkpoint():Checkpoint;}
  interface SessionApi {create(catalog:LWArmoredData.Catalog,missionId?:string,checkpoint?:Checkpoint):Session;restore(value:unknown):Session;}
  interface Extension {register(scheduler:Scheduler,context:Context):void;command?(context:Context,input:Command):Result|null;}

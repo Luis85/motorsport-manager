@@ -106,11 +106,11 @@
             integer(v.repairKits, 'repairKits', 0, 20); number(v.repairSeconds, 'repairSeconds', .1, 300); number(v.repairRate, 'repairRate', .1, 10000);
             number(v.aimSeconds, 'aimSeconds', .1, 60); number(v.accuracy, 'accuracy', 0, 1);
         }
-        for (const value of missions) validateMission(value, vehicleIds, surfaceIds);
+        for (const value of missions) validateMission(value, vehicleIds, surfaceIds, ammoIds);
         return JSON.parse(JSON.stringify(input)) as LWArmoredData.Catalog;
     }
-    function validateMission(value: unknown, vehicleIds: Set<string>, surfaceIds: Set<string>): void {
-        const m = object(value, 'mission', ['id','name','description','playerFaction','seed','terrain','obstacles','spawns','objectives','timeLimit']);
+    function validateMission(value: unknown, vehicleIds: Set<string>, surfaceIds: Set<string>, ammoIds: Set<string>): void {
+        const m = object(value, 'mission', ['id','name','description','playerFaction','seed','terrain','obstacles','spawns','objectives','timeLimit',...(value && typeof value === 'object' && Object.hasOwn(value,'supplies')?['supplies']:[])]);
         text(m.name, 'mission.name'); text(m.description, 'mission.description', 4000); id(m.playerFaction, 'playerFaction');
         integer(m.seed, 'seed', 0, 0xffffffff); number(m.timeLimit, 'timeLimit', 0, 86400);
         const terrain = object(m.terrain, 'terrain', ['width','depth','cellSize','heights','surface']);
@@ -127,10 +127,25 @@
             number(p.x, label + '.x', 0, (width - 1) * Number(terrain.cellSize));
             number(p.z, label + '.z', 0, (depth - 1) * Number(terrain.cellSize));
         };
+        if (m.supplies !== undefined) {
+            const depots = list(m.supplies, 'supplies', 0, 64); unique(depots, 'supplies');
+            for (const value of depots) {
+                const d = object(value, 'supply', ['id','name','faction','position','radius','ammunition','repairKits','transferSeconds']);
+                text(d.name, 'supply.name'); id(d.faction, 'supply.faction'); mapPosition(d.position, 'supply.position');
+                number(d.radius, 'supply.radius', 1, 100); number(d.transferSeconds, 'supply.transferSeconds', .1, 300);
+                integer(d.repairKits, 'supply.repairKits', 0, 10000);
+                if (!d.ammunition || typeof d.ammunition !== 'object' || Array.isArray(d.ammunition)) fail('supply.ammunition', 'expected ammunition stocks');
+                const stock = d.ammunition as RecordValue;
+                for (const key of Object.keys(stock)) {
+                    if (!ammoIds.has(key)) fail('supply.ammunition', 'unknown ammunition');
+                    integer(stock[key], 'supply.ammunition.' + key, 0, 100000);
+                }
+            }
+        }
         let players = 0;
         for (const value of spawns) {
             const s = object(value, 'spawn', ['id','vehicle','faction','position','yaw','player']);
-            if (s.id === 'armored-state' || String(s.id).startsWith('shell:') || String(s.id).startsWith('obstacle:') || String(s.id).startsWith('projectile:') || String(s.id).startsWith('smoke:') || obstacleIds.has(String(s.id).replace(/^obstacle:/, ''))) fail('spawn.id', 'reserved entity identity');
+            if (s.id === 'armored-state' || String(s.id).startsWith('shell:') || String(s.id).startsWith('obstacle:') || String(s.id).startsWith('projectile:') || String(s.id).startsWith('smoke:') || m.supplies !== undefined && String(s.id).startsWith('depot:') || obstacleIds.has(String(s.id).replace(/^obstacle:/, ''))) fail('spawn.id', 'reserved entity identity');
             if (!vehicleIds.has(String(s.vehicle))) fail('spawn.vehicle', 'unknown vehicle');
             id(s.faction, 'spawn.faction'); mapPosition(s.position, 'spawn.position'); number(s.yaw, 'spawn.yaw', -Math.PI * 2, Math.PI * 2);
             if (typeof s.player !== 'boolean') fail('spawn.player', 'expected boolean');

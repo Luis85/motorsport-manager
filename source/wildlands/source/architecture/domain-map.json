@@ -462,8 +462,11 @@
       "files": [
         "armored-catalog.ts",
         "armored-visuals.ts",
+        "armored-physics-legacy.ts",
+        "armored-collision.ts",
         "armored-physics.ts",
         "armored-combat.ts",
+        "armored-logistics.ts",
         "armored-ai.ts",
         "armored-missions.ts",
         "armored-checkpoint.ts"
@@ -587,8 +590,11 @@
     "LWProcessDefinitions",
     "LWArmoredCatalog",
     "LWArmoredVisualsAdmission",
+    "LWArmoredPhysicsLegacy",
+    "LWArmoredCollision",
     "LWArmoredPhysics",
     "LWArmoredCombat",
+    "LWArmoredLogistics",
     "LWArmoredAI",
     "LWArmoredMission",
     "LWArmoredCheckpoint",

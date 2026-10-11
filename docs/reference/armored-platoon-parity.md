@@ -3,8 +3,11 @@
 The full requested parity target remains **incomplete**. This is a provisional
 requirements and evidence inventory, not a claim that a reduced proving ground
 matches the complete reference. Initial baseline audit is against `749a9f6296f3beb665eedf1eda57ae8cbfd00b39`.
-The implementation update records published corrected checkpoint `187dd821316cb334f13947780bb5e135878bda2c`
-and scoped reports; integrated changes require source-bound evidence before rows can close. See [current status](current-state.md)
+Earlier verification records implementation checkpoint `187dd821316cb334f13947780bb5e135878bda2c`.
+The regenerated v2 collision/combat/logistics build passed focused integrated
+Node/browser checks; its complete 123-suite / 2,192-check gate is pending.
+Earlier evidence does not verify v2.
+Integrated changes require source-bound evidence before rows can close. See [current status](current-state.md)
 and the [dated reference register, situations and budget proposals](../_archive/armored-platoon-2026-10-10-reference.md).
 
 ## Reading and updating rows
@@ -63,7 +66,7 @@ them. Rows with S evidence retain the text locator; all have n/a playback time.
 | G19 | Mantlet | S5/2026-05-12; damage section | verified-claim | Impair aim/elevation while preserving firing | Component state | Combat | Mantlet injury slows aim, valid shot still fires | partial | Distinct barrel/turret-drive rules |
 | G20 | Vehicle lifecycle | B §7 | planned | Impaired/immobile/disabled/abandoned/destroyed as verified | State transactions | Combat | Damage/repair/death transitions and unavailable actions | partial | Reference state distinctions |
 | G21 | Repair/fire/recovery | B §7 | planned | Explicit eligibility, resources and duration | Transactions | Combat/Content | Exhaust kits, interrupted repair, extinguish and recovery | partial | Costs/timings and station behavior |
-| G22 | Resupply | B §7 | planned | Authoritative ammo/resource transfer | Transactions | Runtime/Content | Partial/full resupply and repeat request | open | Reference station and capacity rules |
+| G22 | Resupply | B §7 | planned | Authoritative ammo/resource transfer | Transactions | Runtime/Content | Partial/full resupply and repeat request | partial | Finite v2 depot service implemented; reference station rules and advanced logistics remain |
 | G23 | Death explanation | B §7; S3 August Death Cam | verified-claim | Retain shot/plate/component evidence for presentation | Hit records | Combat/World | R08 inspect final shot without changing state | partial | Camera/UI and trajectory accuracy |
 | G24 | Direct handover | B §7 | planned | Select vehicle independently of orders; no held-input leak | Input/ownership | Runtime/Shell | Switch while accelerating and streaming | partial | All stations and controller navigation |
 | G25 | Two-stage orders | B §7; S3 August orders | verified-claim | Order then recipient; whole-platoon first stage | Validated commands | Shell/Combat | Stage/cancel/release/replace without selecting wrong tank | partial | Exact interaction observations |
@@ -180,10 +183,11 @@ for the initial slice. This is a capability boundary, not M1/M2 completion.
 
 | Area / ledger rows | Current source | Implemented foundation / remaining limit |
 |---|---|---|
-| G01–G05, P12 | [session](../../source/wildlands/source/armored-session.ts), [physics](../../source/wildlands/source/armored-physics.ts), [checkpoint](../../source/wildlands/source/armored-checkpoint.ts) | Separate 60 Hz ECS authority and tracked-force reconstruction; this is an explicit approximation, not proven rigid-body suspension/contact parity. Source tests cover query isolation, differential forces, braking/reverse, command rejection and checkpoint continuation. |
-| G13, G16–G21 | [combat](../../source/wildlands/source/armored-combat.ts) | AP/HE/SMOKE ammo, reload, swept fixed trajectories, coarse oriented hull regions/angle outcomes, component/crew/fire state and timed repair. No historical calibration, complete spall, exposed-crew volumes, machine guns, blast-radius HE damage or resupply. |
-| G25–G32 | [AI](../../source/wildlands/source/armored-ai.ts) | Orders, contact memory, 10 Hz acquisition and fresh line-of-sight checks before live target aiming; bounded grid path proposals feed motors. No complete traffic/cover tactics, swept footprint navigation or formation-through-choke guarantee. |
-| G35–G39 | [mission rules](../../source/wildlands/source/armored-missions.ts) | Eliminate/reach/survive and time-limit outcomes only; cumulative crew damage and disabled-vehicle neutralization correction is present; Pine and corrected Crossroads command-only completion are demonstrated; Pine also reaches a visible browser debrief through public commands with an accelerated supplied clock. No complete trigger graph, campaign, Field HQ/logistics or reward progression. |
+| G01–G05, P12 | [session](../../source/wildlands/source/armored-session.ts), [physics](../../source/wildlands/source/armored-physics.ts), [checkpoint](../../source/wildlands/source/armored-checkpoint.ts) | Separate 60 Hz ECS authority; new v2 sessions add yaw-oriented rectangular continuous terrain-plane hull sweeps and bounded angular contacts. V1 restore preserves legacy force/circular-contact arithmetic without migration. No full rigid-body suspension, pitch/roll-oriented hull collision, impulse transfer or rollover parity. |
+| G13, G16–G21 | [combat](../../source/wildlands/source/armored-combat.ts) | AP/HE/SMOKE ammo, swept fixed trajectories, coarse hull regions/angle outcomes and timed repair. V2 separates station eligibility from aggregate disabled status and adds occluded radial HE track damage. No historical calibration, complete spall, exposed-crew/internal blast, radial obstacle destruction or machine guns. |
+| G22 | [logistics](../../source/wildlands/source/armored-logistics.ts) | V2 finite friendly depots, stationary timed service, selected-ammo priority, cancellation without partial consumption, deterministic shared stock and checkpointed transactions. No stock transport/replenishment, campaign economics or full reference logistics. |
+| G25–G32 | [AI](../../source/wildlands/source/armored-ai.ts) | Orders, contact memory, 10 Hz acquisition and fresh line-of-sight checks before aiming. V2 selects useful finite AP/HE shots from sampled geometry and holds ineffective fire; bounded grid paths feed motors. No complete traffic/cover tactics, swept footprint navigation or formation-through-choke guarantee. |
+| G35–G39 | [mission rules](../../source/wildlands/source/armored-missions.ts) | Eliminate/reach/survive and time-limit outcomes only; cumulative crew damage and disabled-vehicle neutralization correction is present; Pine and corrected Crossroads command-only completion are demonstrated; Pine also reaches a visible browser debrief through public commands with an accelerated supplied clock. No complete trigger graph, campaign, Field HQ/advanced logistics or reward progression. |
 | T01–T06 | [catalog admission](../../source/wildlands/source/armored-catalog.ts), [visual admission](../../source/wildlands/source/armored-visuals.ts) | Bounded v1 data and static scalar-PBR Forge visuals/semantic bindings; production texture/skin/animation ingest and binary streaming remain open. |
 | P01–P10 | [renderer](../../source/wildlands/source/armored-renderer.ts), [world](../../source/wildlands/source/armored-world.ts), [audio](../../source/wildlands/source/armored-audio.ts) | Developing direct-control browser presentation with original assembled vehicle assets; no reference-matched motion/fidelity or baseline hardware claim. |
 
@@ -197,9 +201,73 @@ rejection. These ad hoc boundary checks are not the complete registered gate;
 consult the integration record for final source identity and executed suites.
 All complete-scope gates remain open until their own acceptance evidence exists.
 
-## Verification checkpoint and mission progression defect
+## Current v2 slice — focused integrated verification
 
-As of this ledger update, the authoritative integration branch is
+New sessions select `tracked-force-v2`; checkpoint/catalog envelope version 1
+is retained, and the saved solver determines behavior. Legacy v1 restores keep
+their prior arithmetic and topology, without depot migration. This is runtime
+restore compatibility: the browser host still requires a byte-equivalent
+installed catalog. Saves predating supply/terrain catalog changes require their
+matching old HTML build; new-demo compatibility with every old save is not claimed.
+The final source passed the registered fast tier: **902/902 checks, 51 suites,
+56.72 seconds**, explicitly partial acceptance. Included Armored Node suites
+passed **68/68**: admission 5, runtime 11, original combat 17, collision 10,
+v2 combat/AI 12 and logistics 13. Final source SHA-256 is
+`8b0c2b056e3bd005cc44ac5374709ec6cdc49e20fbc46c147a79b5f9ef74e7d1`.
+The complete **123-suite / 2,192-check** gate remains pending CI. The final
+12-check browser rerun **passed 12/12** using installed Chromium 151,
+Playwright 1.63, software SwiftShader and offline fixture routing, including two
+application-clock eight-second depot fixtures. Final CLI current-output and all
+seven demo freshness checks also passed. An earlier intermediate build had its
+own 12/12 result, retained separately from this corrected-artifact rerun.
+
+The [11 October evidence archive](../_archive/armored-platoon-2026-10-11-evidence/README.md)
+retains both identities. Its corrected visual captures observed zero page/console
+errors and zero WebGL warnings, including mission replacement. These captures
+use native RAF and explicitly admitted checkpoint positioning/enemy-ammunition
+fixtures for isolated inspection; they are not command-only gameplay evidence.
+All 133 obstacle bases now follow exact bilinear terrain, with Forge box centers
+aligned to those authored bases. Earlier floating geometry and upload warnings
+remain preserved as initial evidence. The collision legacy oracle uses unchanged
+`0e7fede9` code; no broad reference parity follows.
+
+| Final v2 artifact | Bytes | SHA-256 |
+|---|---:|---|
+| Published demo HTML | 1,843,079 | `d6371d5507f2d1d7ea442ca906b4ca4a499db216ee255f99356745ec28b80419` |
+| Wildlands CLI | 13,722,773 | `cb23241d1863562fbc72b4c41372d08d20a99686de3c7c4d7f212cbd088e51bb` |
+| Generated Armored HTML | 1,842,769 | `484b17fb09be946345d9efa5d6c7ddc109765590aabce8e2fee698e7feee51b7` |
+
+The earlier 67/67 Node and 12/12 browser results and HTML SHA-256
+`d7f8fde96476c39d8663a4d4ed3bd089d0d6e4ddcd33d466236c351d40a8ee2c`
+remain intermediate evidence in that archive. Final browser/output acceptance
+has its own rerun; complete-gate acceptance remains pending CI.
+Public-command Node routes, without checkpoint edits, reached the depot in all
+three scenarios. Pine Ridge and Iron Counterattack each received one ammunition
+round; enemy fire interrupted Crossroads service with depot stock unchanged.
+These are route/service checks, not full v2 browser mission victories or human
+balance evidence.
+
+Continuous hull sweeps are planar yaw rectangles with a vertical height interval,
+up to 64 subdivisions per tick, angular step at most 0.025 rad and total angular
+travel capped at 1.6 rad/tick. Conservative turning, eight bounded depenetration
+passes and four sliding iterations do not replace a full 3D rigid-body solver.
+V2 mobility follows surviving driver/drivetrain/tracks even when aggregate status
+is disabled; aim/fire follow gunner, gun and crew eligibility. Repair consumes a
+kit on completion and cannot resurrect crew. HE affects one exposed track per
+nearby hull, including friendlies, with cover occlusion and no internal blast.
+
+Optional authored depots use finite ammo/kits, stationary timed transactions,
+atomic completion and interruption without partial stock consumption. Faction
+queries do not expose enemy depot stocks or active supply state. The
+[current contract](armored-platoon.md) and [authoring guide](../how-to/armored-platoon-authoring.md)
+specify limits and eligibility. UI depot fixtures now have focused evidence;
+full gate and complete v2 mission journeys still need new source/artifact-bound
+evidence. All prior mission, CI and
+software stability records below remain attached to their earlier implementation.
+
+## Earlier verification checkpoint and mission progression defect
+
+At the earlier verified checkpoint, the integration branch was
 `codex/armored-platoon`, published source checkpoint `187dd821316cb334f13947780bb5e135878bda2c`,
 on base `749a9f6296f3beb665eedf1eda57ae8cbfd00b39`. Per-run source/content hashes
 and complete-gate results belong
@@ -225,7 +293,7 @@ rebuilding. Native records under local `022da2a4` describe the same tree as publ
 | Model Forge complete gate | 176 unit + 4 end-to-end tests passed after formatting correction | Tool gate evidence; no production-art or other-project gate acceptance inferred. |
 | Scene Forge and generated-output checks | Existing inline-HTML e2e mode passed 15/15 after file-URL policy blocked the initial run; all four CLI and all seven demo checks passed at the earlier checkpoint, including both Forge check:cli | `FORGE_TEST_INLINE_HTML=1` disclosed; Character final handoff passed eight variants with all four CLI hashes unchanged. Complete Wildlands/native gate success is not inferred. |
 | Native baseline | VIEWS failed at untouched `749a9f6296f3beb665eedf1eda57ae8cbfd00b39` with Godot 4.6.3; the same targeted test passed on CI-SHA-verified Godot 4.7.2: 1 test, 73.962 seconds | Targeted environment mismatch resolved; local full run on public-equivalent tree `3e2bca33faef0d74aa3e400321b7e610a8365c3b` was interrupted to free CPU; separate remote native gate passed 103 suites / 21,346 checks at `f6d7c48d`. |
-| Wildlands complete gate | Current `187dd821` CI attempt 2 succeeded: 120 suites / 2,154 checks in 1,870.39 seconds; additional Storytelling 24/24 and Godot export passed. Original local run remains failed: 115/120 suites in 2,545.07 seconds | Engine-source SHA-256 `6f000038fcbdf3b3702cdb15af81c117c479492c25089dc049964e66ad10b541`. Local 2,084/2,084 excludes 70 expected checks from failing suites; successful CI has its own complete 2,154/2,154 evidence. Earlier interrupted/failed runs remain separate. |
+| Wildlands complete gate | Earlier `187dd821` CI attempt 2 succeeded: 120 suites / 2,154 checks in 1,870.39 seconds; additional Storytelling 24/24 and Godot export passed. Original local run remains failed: 115/120 suites in 2,545.07 seconds | Engine-source SHA-256 `6f000038fcbdf3b3702cdb15af81c117c479492c25089dc049964e66ad10b541`. Local 2,084/2,084 excludes 70 expected checks from failing suites; successful CI has its own complete 2,154/2,154 evidence. Earlier interrupted/failed runs remain separate. |
 | Forge authoring | Two distinct original studies and guarded Model Forge → Scene Forge → runtime handoff are present | Scalar-PBR development geometry with semantic pivots/volumes; not production-textured M1 assets. Damage still uses its approximation rather than authored semantic-volume collision. |
 
 Earlier published head `f6d7c48d03f5bf85da5af63ee008933f45b831e6` has passing Model
@@ -285,8 +353,8 @@ Storytelling **24/24** and Godot export passed. Armored admission **4/4**, runti
 **11/11**, combat **17/17**, browser **10/10**, and Artifact play **4/4** passed.
 `ci-attempt-2-verification.log` and `ci-attempt-2-provenance.json` retain successful
 identities. Neither later success rewrites the original failed local run or CI
-attempt 1. All current implementation CI workflows have passed; no verification,
-native or software stability observation remains active.
+attempt 1. All `187dd821` implementation CI workflows passed; those historical
+verification, native and software stability runs completed.
 
 The receipt is derived from the exact workflow log/status, not a raw gate JSON.
 The diagnostic artifact reached File Service, but its signed URL returned HTTP
@@ -314,7 +382,7 @@ the demo is 1,809,495 bytes, SHA-256
 22 inline scripts matching the earlier demo. CSS differs; previous Pine/motion
 captures retain their earlier artifact identities and are not new-byte execution.
 
-Current runnable `187dd821` has passed focused/output checks and complete
+Earlier runnable `187dd821` passed focused/output checks and complete
 registered CI acceptance. That does not establish full reference parity or M1. The
 selected base `749a9f62` passed complete CI run 38068118648; that result does
 not validate this implementation. Preserve tested implementation SHA `187dd821`
@@ -433,7 +501,11 @@ executed/failed/skipped checks and report paths. The immediate executable work i
 2. Retain the intermediate 9/9 browser report and motion capture; revalidate
    changed shipping artifacts and remaining focus/mobile/persistence edges
    without weakening assertions or inventing performance from sparse frames.
-3. Preserve the CSS-corrected local Wildlands 115/120 failure, interrupted
+3. Preserve the v2 final fast 902/902 and Armored Node 68/68 results, corrected
+   captures, final browser 12/12 and output checks, plus distinct intermediate
+   evidence; finish the new 123-suite/2,192-check gate
+   before claiming another complete green implementation gate.
+   Preserve the CSS-corrected local Wildlands 115/120 failure, interrupted
    pre-CSS run, CI attempt 1 renderer failure and successful complete CI attempt 2
    as separate evidence. Retain unchanged-budget serial reruns, exact-base
    Process Present reproduction and concrete file-policy/download blocks.

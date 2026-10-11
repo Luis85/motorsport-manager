@@ -3,11 +3,46 @@
  'use strict';
  type C=LWArmoredRuntime.Context;type V=LWArmoredRuntime.Vec3;type T=LWArmoredRuntime.Transform;
  type Perception=LWArmoredRuntime.Perception;type Order=LWArmoredRuntime.Order;
- const root=input as {LWArmoredAI?:unknown;LWArmoredPhysics:LWArmoredRuntime.Physics;LWArmoredCombat:{trace(ctx:C,from:V,to:V,ignoreId?:string,vehicles?:boolean):{id:string;fraction:number}|null}};
+ const root=input as {LWArmoredAI?:unknown;LWArmoredPhysics:LWArmoredRuntime.Physics;LWArmoredCombat:{trace(ctx:C,from:V,to:V,ignoreId?:string,vehicles?:boolean):{id:string;fraction:number;normal:V;local:V}|null;canMove(d:LWArmoredRuntime.Damage):boolean;canFire(d:LWArmoredRuntime.Damage):boolean}};
  const distance=(a:V,b:V)=>Math.hypot(a.x-b.x,a.z-b.z);
  const wrap=(value:number)=>Math.atan2(Math.sin(value),Math.cos(value));
  const clamp=(value:number,min:number,max:number)=>Math.max(min,Math.min(max,value));
  const vehicle=(ctx:C,id:string)=>ctx.catalog.vehicles.find(v=>v.id===ctx.world.get<LWArmoredRuntime.Identity>(id,'armored-identity')!.definition)!;
+ const modern=(ctx:C)=>ctx.solver==='tracked-force-v2';
+ interface ShotChoice {ammo:LWArmoredData.Ammunition;point:V;score:number;}
+ /** Catalog armor and observed aspect guide expenditure; no hidden transform or random probing.
+  * A bounded drag estimate guides selection; the projectile still resolves actual armor. */
+ function chooseShot(ctx:C,id:string,targetId:string):ShotChoice|null{
+  const d=ctx.world.get<LWArmoredRuntime.Damage>(targetId,'armored-damage')!,own=ctx.world.get<LWArmoredRuntime.Damage>(id,'armored-damage')!;
+  if(!root.LWArmoredCombat.canFire(own)||['disabled','destroyed'].includes(d.status))return null;
+  const a=ctx.world.get<T>(id,'armored-transform')!,b=ctx.world.get<T>(targetId,'armored-transform')!,v=vehicle(ctx,id),target=vehicle(ctx,targetId),w=ctx.world.get<LWArmoredRuntime.Weapon>(id,'armored-weapon')!;
+  const from={x:a.position.x,y:a.position.y-v.groundClearance+v.muzzleHeight,z:a.position.z},range=distance(a.position,b.position),c=Math.cos(b.yaw),s=Math.sin(b.yaw);
+  const side=(c*(a.position.x-b.position.x)-s*(a.position.z-b.position.z))<0?-1:1;
+  let best:ShotChoice|null=null;
+  for(const ammo of ctx.catalog.ammunition){
+   if(!v.ammunition.includes(ammo.id)||w.reserves[ammo.id]!<=0||ammo.kind==='SMOKE'||w.reload>0&&ammo.id!==w.ammo)continue;
+   for(const height of ammo.kind==='AP'?[.5,.75]:[.18]){
+    const offset=ammo.kind==='HE'?target.width*.42*side:0;
+    const point={x:b.position.x+c*offset,y:b.position.y-target.groundClearance+target.height*height,z:b.position.z-s*offset};
+    const elevation=Math.atan2(point.y-from.y+4.905*Math.pow(range/ammo.velocity,2),range);
+    if(elevation<v.minElevation||elevation>v.maxElevation)continue;
+    const hit=root.LWArmoredCombat.trace(ctx,from,point,id);if(!hit||hit.id!==targetId)continue;
+    let score=0;
+    if(ammo.kind==='AP'){
+     const dx=point.x-from.x,dy=point.y-from.y,dz=point.z-from.z,length=Math.hypot(dx,dy,dz);
+     const cosine=clamp(-(dx*hit.normal.x+dy*hit.normal.y+dz*hit.normal.z)/Math.max(.001,length),.001,1),nz=s*hit.normal.x+c*hit.normal.z;
+     const region=hit.normal.y>.5?'roof':nz>.5?'front':nz<-.5?'rear':'side';
+     const armor=target.armor[region]/cosine,penetration=ammo.penetration*Math.max(0,1-ammo.drag*length/ammo.velocity)*.95;
+     const component=hit.local.y>target.height*.55?(region==='front'?'mantlet':'turretDrive'):region==='rear'?'engine':region==='front'?'transmission':'ammunition';
+     if(Math.acos(cosine)<ammo.ricochetAngle&&penetration>=armor&&d.components[component]!>0)score=100+Math.min(d.components[component]!,ammo.damage*clamp((penetration-armor)/Math.max(1,penetration)+.3,.3,1));
+    }else if(root.LWArmoredCombat.canMove(d)&&hit.local.y<target.height*.35){
+     const track=hit.local.x<0?'leftTrack':'rightTrack';score=Math.min(d.components[track]!,ammo.damage*.25);
+    }
+    if(score>0&&(!best||score>best.score))best={ammo,point,score};
+   }
+  }
+  return best;
+ }
  function smokeObscures(ctx:C,from:V,to:V):boolean{
   const dx=to.x-from.x,dy=to.y-from.y,dz=to.z-from.z,length=dx*dx+dy*dy+dz*dz;
   for(const id of ctx.world.query(['armored-smoke'])){
@@ -41,7 +76,8 @@
    }
    p.contacts=p.contacts.filter(c=>ctx.state.tick-c.tick<=180);
    seen.sort((a,b)=>distance(position,ctx.world.get<T>(a,'armored-transform')!.position)-distance(position,ctx.world.get<T>(b,'armored-transform')!.position)||a.localeCompare(b));
-   const target=seen.includes(p.targetId)?p.targetId:seen[0]||'';
+   const candidates=modern(ctx)?seen.filter(target=>chooseShot(ctx,id,target)!==null):seen;
+   const target=candidates.includes(p.targetId)?p.targetId:candidates[0]||'';
    if(target!==p.targetId){p.targetId=target;p.acquired=0;}
    p.visible=seen;
   }
@@ -117,15 +153,20 @@
   if(p.targetId&&(p.visible as string[]||[]).includes(p.targetId)&&visible(ctx,id,p.targetId)){
    const target=ctx.world.get<T>(p.targetId,'armored-transform');
    if(target){
-    enemy=target.position;const targetVehicle=vehicle(ctx,p.targetId),height=targetVehicle.height*.5+enemy.y-targetVehicle.groundClearance-t.position.y+v.groundClearance-v.muzzleHeight,range=distance(t.position,enemy);
-    const ammo=ctx.catalog.ammunition.find(a=>a.id===w.ammo)!;
-    w.aimYaw=Math.atan2(enemy.x-t.position.x,enemy.z-t.position.z);
-    w.aimElevation=clamp(Math.atan2(height+4.905*Math.pow(range/ammo.velocity,2),range),v.minElevation,v.maxElevation);
-    const settled=Math.abs(wrap(w.aimYaw-w.turretYaw))<.025&&Math.abs(w.aimElevation-w.elevation)<.018;
-    w.trigger=p.acquired>=v.aimSeconds&&settled;
+    enemy=target.position;
+    const choice=modern(ctx)?chooseShot(ctx,id,p.targetId):null;
+    if(!modern(ctx)||choice){
+     if(choice&&w.reload===0)w.ammo=choice.ammo.id;
+     const targetVehicle=vehicle(ctx,p.targetId),point=choice?.point||{...enemy,y:targetVehicle.height*.5+enemy.y-targetVehicle.groundClearance};
+     const height=point.y-t.position.y+v.groundClearance-v.muzzleHeight,range=distance(t.position,point),ammo=ctx.catalog.ammunition.find(a=>a.id===w.ammo)!;
+     w.aimYaw=Math.atan2(point.x-t.position.x,point.z-t.position.z);
+     w.aimElevation=clamp(Math.atan2(height+4.905*Math.pow(range/ammo.velocity,2),range),v.minElevation,v.maxElevation);
+     const settled=Math.abs(wrap(w.aimYaw-w.turretYaw))<.025&&Math.abs(w.aimElevation-w.elevation)<.018;
+     w.trigger=p.acquired>=v.aimSeconds&&settled;
+    }
    }
   }
-  if(['immobilized','disabled'].includes(damage.status))return;
+  if(modern(ctx)?!root.LWArmoredCombat.canMove(damage):['immobilized','disabled'].includes(damage.status))return;
   if(order.kind==='hold'){order.reason='Holding';return;}
   if(order.kind==='follow'){
    const leader=ctx.world.get<T>(order.targetId||ctx.state.controlled,'armored-transform');if(!leader||order.targetId===id)return;

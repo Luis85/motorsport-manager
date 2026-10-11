@@ -4,7 +4,14 @@ Armored Platoon is an independently versioned `armored` Wildlands game template.
 It is an early integrated browser implementation, not a completed recreation or
 an M1 fidelity acceptance. The [parity ledger](armored-platoon-parity.md) retains
 the full requested scope and remaining gaps. The [dated integration record](../_archive/armored-platoon-2026-10-10-integration.md)
-records branch ancestry and verification limits.
+records the earlier `187dd821` implementation and verification limits. The
+final v2 source passed the fast tier: **902/902 checks in 51 suites**, including
+**68/68 Armored Node checks**. Corrected visual captures reported zero errors
+and warnings; final browser **12/12**, CLI current-output and all seven demo
+freshness checks passed. The complete **123-suite / 2,192-check** gate remains
+pending CI. The [11 October evidence archive](../_archive/armored-platoon-2026-10-11-evidence/README.md)
+separates intermediate passes from the final source and artifacts. Earlier green
+gates do not verify these changes.
 
 ## Build and play
 
@@ -38,15 +45,69 @@ queries and render calls do not advance time. RTS retains its 0.1 second step.
 
 Commands validate their whole payload, ownership and accepted sequence before
 mutation. Physics owns transforms; player and AI submit the same motor inputs.
-The `tracked-force-v1` solver applies bounded differential track forces, torque,
-terrain contact probes, gravity/resistance and approximate collision response.
-It does not implement full rigid-body joints, articulated suspension, rollover,
-or accurate hull footprints. Those omissions prevent handling parity approval.
+Fresh sessions use `tracked-force-v2`: bounded differential track forces,
+torque, terrain contact probes, gravity/resistance and continuous planar hull
+collision. Hulls are yaw-oriented rectangles from authored width/length, with
+a vertical interval from ground clearance and height. Continuous separating-axis
+translation sweeps catch thin barriers; bounded angular subdivision and a
+conservative envelope may stop turning slightly before contact. Inward velocity
+is removed while tangential motion slides; vehicles do not transfer collision
+impulses. This is not a pitch/roll-oriented 3D hull, full rigid-body joints,
+articulated suspension or rollover simulation.
+
+Restoring `tracked-force-v1` retains its original force/circular-contact and
+combat arithmetic, without topology migration or depot service. The solver field
+versions these semantics; the checkpoint and catalog envelopes remain version 1.
+A new mission uses v2, while a runtime-restored old checkpoint continues its
+saved solver. Browser restore separately requires a byte-equivalent installed
+catalog and rejects different content packs. An old browser save made before
+the depot/terrain catalog changes requires its matching old HTML build; runtime
+solver compatibility does not make every old browser save loadable in this demo.
 
 The checkpoint captures frozen catalog, solver version, exact step, ECS records,
 RNG, accepted-command sequence, shell state and obstacle/topology state. Restore
 stages admission before replacing the authority. Deterministic continuation is
-tested within this solver/runtime; cross-browser lockstep is not established.
+tested within each solver/runtime; cross-browser lockstep is not established.
+V2 additionally preserves vehicle supply transactions and finite depot stocks;
+admission checks their identities, bounds and consistency before replacement,
+including funded repair duration and mutual exclusion of repair/supply commitments.
+
+## Combat eligibility and supplies
+
+V2 separates aggregate damage status from station eligibility. A vehicle can
+move with a living driver and nonzero engine, transmission and both tracks,
+even if another station makes its aggregate status disabled. Aim requires a
+living gunner outside repair. Fire additionally requires a working gun and at
+least two living crew. A missing loader retains the 1.8× reload duration.
+Repairs need surviving crew, speed at most 0.3 m/s, yaw speed at most 0.03 rad/s,
+neutral throttle/steer/cruise and no active resupply. Movement or external
+component damage interrupts repair; a kit is consumed only at completion.
+Onboard fire continues until completed repair extinguishes it or the vehicle
+is destroyed. Repairs do not resurrect crew.
+
+HE applies bounded radial damage to one exposed track per nearby hull, up to
+25% of authored damage with linear distance falloff. The direct target is
+excluded from the secondary blast. Terrain, cover and other hulls, including
+wrecks, occlude it before direct-hit cover destruction; friendly vehicles are
+also eligible. There is no fragment simulation, internal/crew blast model or
+radial obstacle destruction. AI chooses finite AP for estimated penetrable
+sampled hull/turret hits, otherwise HE against mobile targets' tracks, and holds
+fire when those options are ineffective. It never selects smoke automatically;
+this adds no flanking tactics or reference-calibrated armor knowledge.
+
+An optional mission depot supplies finite ammunition and repair kits. The
+`resupply` command chooses the nearest friendly in-range depot with needed
+compatible stock; repeating it cancels. Service requires surviving crew, the
+same stationary bounds as repair, neutral throttle/steer/cruise, released fire,
+no burning and no active repair. A positive damaging hit interrupts service even
+if the affected component was already at zero health. Movement or firing also interrupts service
+without consuming partial stock; repair and supply cannot run together. At the
+authored duration, one deterministic transaction fills selected ammunition first,
+then the vehicle's remaining authored types up to total `ammoCapacity`, and
+repair kits up to the vehicle's kit capacity. Competing vehicles consume remaining
+stock without duplication. Depots do not replenish themselves. Faction-scoped
+queries expose only that faction's depot stocks and vehicle service state.
+Transport, restocking and campaign supply economics remain unimplemented.
 
 ## Content and authoring
 
@@ -73,12 +134,15 @@ production-textured reference-quality tanks.
 
 Implemented foundations include chase/gunner/binocular presentation, driving,
 fixed-trajectory shells, angular armor outcomes, component damage, finite ammo,
-reload, repairs, smoke, four platoon orders, visibility/acquisition, destructible
+reload, repairs, finite depot service, bounded HE track blast, smoke, four
+platoon orders, visibility/acquisition, destructible
 obstacles and original objective examples. These are approximations with focused
 regression evidence; the ledger defines the unfulfilled acceptance scenarios.
 
 Online multiplayer, the verified full vehicle/mission roster, campaigns,
 Field HQ progression, infantry, machine guns, advanced logistics, production
 streaming/asset caches, reference-calibrated handling and audiovisual fidelity
-remain incomplete. No real GPU performance, Safari/device coverage, 30-minute
-soak or shipping-host configuration has been accepted.
+remain incomplete. An earlier bounded 30-minute software observation is
+archived; it does not verify v2 or establish full Q03 acceptance. Real GPU
+performance, Safari/device coverage, production stress/context-loss recovery
+and shipping-host configuration remain unaccepted.

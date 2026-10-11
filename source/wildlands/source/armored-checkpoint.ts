@@ -16,12 +16,13 @@
   // ECS rejects accessors, cycles, executable properties, non-finite numbers and prototypes before copying.
   const preview=new root.LWECS.World();preview.create('admission');preview.set('admission','checkpoint',value as D);
   const save=JSON.parse(JSON.stringify(value)) as CP;
-  if(save.format!=='wildlands-armored-checkpoint'||save.version!==1||save.solver!=='tracked-force-v1'||save.fixedStep!==1/60)fail('unsupported format or solver');
+  if(save.format!=='wildlands-armored-checkpoint'||save.version!==1||!['tracked-force-v1','tracked-force-v2'].includes(save.solver)||save.fixedStep!==1/60)fail('unsupported format or solver');
+  const modern=save.solver==='tracked-force-v2';
   save.catalog=root.LWArmoredCatalog.validate(save.catalog);
   const mission=save.catalog.missions.find(m=>m.id===save.missionId);if(!mission)fail('unknown mission');
   const entities=list(save.entities,2048) as CP['entities'],ids=new Set<string>();
   const components=new Map<string,D>();
-  const allowed=new Set(['armored-state','armored-transform','armored-previous','armored-body','armored-motor','armored-identity','armored-weapon','armored-damage','armored-order','armored-perception','armored-projectile','armored-obstacle','armored-smoke']);
+  const allowed=new Set(['armored-state','armored-transform','armored-previous','armored-body','armored-motor','armored-identity','armored-weapon','armored-damage','armored-order','armored-perception','armored-projectile','armored-obstacle','armored-smoke',...(modern?['armored-supply','armored-depot']:[])]);
   for(const entity of entities){
    if(typeof entity.id!=='string'||ids.has(entity.id))fail('duplicate or invalid entity');ids.add(entity.id);
    preview.create(entity.id);const data=record(entity.components);components.set(entity.id,data);
@@ -33,7 +34,7 @@
   const vehicles=new Set<string>();
   for(const [id,data]of components){
    if(data['armored-identity']){
-    exact(data,['armored-identity','armored-transform','armored-previous','armored-body','armored-motor','armored-weapon','armored-damage','armored-order','armored-perception']);
+    exact(data,['armored-identity','armored-transform','armored-previous','armored-body','armored-motor','armored-weapon','armored-damage','armored-order','armored-perception',...(modern?['armored-supply']:[])]);
     vehicles.add(id);const identity=record(data['armored-identity']);const spec=save.catalog.vehicles.find(v=>v.id===identity.definition);
     const spawn=mission!.spawns.find(s=>s.id===id);
     if(!spec||!spawn||spawn.vehicle!==identity.definition||spawn.faction!==identity.faction)fail('vehicle identity changed');
@@ -49,6 +50,25 @@
     exact(record(damage.crew),['commander','gunner','driver','loader']);whole(damage.repairKits,0,spec!.repairKits);number(damage.componentMaximum,spec!.componentHealth,spec!.componentHealth);
     for(const value of Object.values(record(damage.components)))number(value,0,spec!.componentHealth);
     for(const value of Object.values(record(damage.crew)))number(value,0,1);number(damage.fire,0,1e5);number(damage.repair,0,1e5);
+    if(modern){
+     if(Number(damage.repair)>spec!.repairSeconds||Number(damage.repair)>0&&Number(damage.repairKits)<1)fail('invalid repair commitment');
+     const supply=record(data['armored-supply']);exact(supply,['depotId','remaining','condition']);
+     const depot=mission!.supplies?.find(d=>d.id===supply.depotId);
+     if(typeof supply.depotId!=='string'||typeof supply.condition!=='string'||String(supply.condition).length>4096)fail('invalid service state');
+     if(supply.depotId===''){if(supply.remaining!==0||supply.condition!=='')fail('invalid idle service');}
+     else{
+      if(Number(damage.repair)>0)fail('repair and resupply cannot overlap');
+      if(!depot||depot.faction!==identity.faction)fail('invalid service depot');
+      number(supply.remaining,Number.MIN_VALUE,depot!.transferSeconds);
+      // The damage signature is data captured at service start, never executable input.
+      let condition:unknown;try{condition=JSON.parse(supply.condition as string);}catch{fail('invalid service condition');}
+      if(!Array.isArray(condition)||condition.length!==3)fail('invalid service condition');
+      const signature=condition as unknown[];
+      exact(record(signature[0]),Object.keys(record(damage.components)));exact(record(signature[1]),Object.keys(record(damage.crew)));
+      for(const n of Object.values(record(signature[0])))number(n,0,spec!.componentHealth);
+      for(const n of Object.values(record(signature[1])))number(n,0,1);number(signature[2],0,1e5);
+     }
+    }
     const order=record(data['armored-order']);if(!['hold','follow','charge','secure'].includes(String(order.kind)))fail('invalid order');vector(order.position);if(typeof order.targetId!=='string'||order.targetId&&!mission!.spawns.some(s=>s.id===order.targetId))fail('invalid order target');
     if(order.kind==='follow'){const leader=mission!.spawns.find(s=>s.id===order.targetId);if(!leader||leader.id===id||leader.faction!==identity.faction)fail('invalid follow leader');}
     if(order.path!==undefined){const route=list(order.path,2048);for(const point of route)vector(point);whole(order.cursor,0,route.length);}
@@ -57,6 +77,13 @@
     const perception=record(data['armored-perception']);number(perception.acquired,0,1e9);if(typeof perception.targetId!=='string'||perception.targetId&&!mission!.spawns.some(s=>s.id===perception.targetId))fail('invalid perception target');
     if(perception.visible!==undefined)for(const target of list(perception.visible,256))if(typeof target!=='string'||!mission!.spawns.some(s=>s.id===target))fail('invalid visibility');
     for(const contact of list(perception.contacts,256)){const c=record(contact);if(typeof c.id!=='string'||!mission!.spawns.some(s=>s.id===c.id))fail('invalid contact');vector(c.position);whole(c.tick,0,state.tick);}
+   }else if(data['armored-depot']){
+    exact(data,['armored-depot']);const depot=mission!.supplies?.find(d=>id==='depot:'+d.id);
+    if(!modern||!depot)fail('invalid depot identity');
+    const stock=record(data['armored-depot']);exact(stock,['ammunition','repairKits']);
+    exact(record(stock.ammunition),Object.keys(depot!.ammunition));
+    for(const [ammo,count]of Object.entries(record(stock.ammunition)))whole(count,0,depot!.ammunition[ammo]!);
+    whole(stock.repairKits,0,depot!.repairKits);
    }else if(data['armored-projectile']){
     if(!/^shell:[0-9]{6,10}$/.test(id)||Number(id.slice(6))>state.serial)fail('invalid shell serial');
     exact(data,['armored-projectile']);const p=record(data['armored-projectile']);const source=mission!.spawns.find(s=>s.id===p.source);if(!source||source.faction!==p.faction||!save.catalog.ammunition.some(a=>a.id===p.ammo))fail('invalid projectile source');
@@ -69,6 +96,7 @@
   }
   if(vehicles.size!==mission!.spawns.length||!vehicles.has(state.controlled)||mission!.spawns.find(s=>s.id===state.controlled)!.faction!==mission!.playerFaction)fail('missing vehicles or invalid control');
   if(mission!.obstacles.some(o=>!components.get('obstacle:'+o.id)?.['armored-obstacle']))fail('missing obstacle');
+  if(modern&&(mission!.supplies??[]).some(d=>!components.get('depot:'+d.id)?.['armored-depot']))fail('missing depot');
   exact(record(state.objectives),mission!.objectives.map(o=>o.id));
   for(const [key,progress]of Object.entries(record(state.objectives))){if(!mission!.objectives.some(o=>o.id===key))fail('unknown objective');number(progress,0,1e9);}
   for(const event of list(save.events,128)){const e=record(event);if(typeof e.kind!=='string')fail('invalid event');whole(e.tick,0,state.tick);if(e.sequence!==undefined)whole(e.sequence,0,state.sequence);for(const key of ['source','target','entityId'])if(e[key]!==undefined&&(typeof e[key]!=='string'||!ids.has(String(e[key]))&&e[key]!=='terrain'))fail('invalid event entity');}

@@ -11,6 +11,23 @@
  const mix=(a:V,b:V,t:number):V=>({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,z:a.z+(b.z-a.z)*t});
  const direction=(yaw:number,elevation:number):V=>({x:Math.sin(yaw)*Math.cos(elevation),y:Math.sin(elevation),z:Math.cos(yaw)*Math.cos(elevation)});
  const definition=(ctx:C,id:string)=>ctx.catalog.vehicles.find(v=>v.id===ctx.world.get<LWArmoredRuntime.Identity>(id,'armored-identity')!.definition)!;
+ const modern=(ctx:C)=>ctx.solver==='tracked-force-v2';
+ // Aggregate status describes combat effectiveness; each station retains separate authority.
+ const canMove=(d:D)=>d.status!=='destroyed'&&d.crew.driver!>0&&['engine','transmission','leftTrack','rightTrack'].every(key=>d.components[key]!>0);
+ const canAim=(d:D)=>d.status!=='destroyed'&&d.crew.gunner!>0&&d.repair===0;
+ const canFire=(d:D)=>canAim(d)&&d.components.gun!>0&&Object.values(d.crew).filter(value=>value>0).length>=2;
+ function interruptServices(ctx:C,id:string,d:D):void{
+  if(d.repair>0){d.repair=0;ctx.emit({kind:'repair-cancelled',entityId:id});}
+  const supply=modern(ctx)?ctx.world.get<LWArmoredRuntime.Supply>(id,'armored-supply'):undefined;
+  if(supply&&supply.remaining>0){
+   supply.depotId='';supply.remaining=0;supply.condition='';
+   ctx.emit({kind:'resupply-cancelled',entityId:id,message:'Combat interrupted resupply.'});
+  }
+ }
+ function serviceStationary(ctx:C,id:string):boolean{
+  const body=ctx.world.get<LWArmoredRuntime.Body>(id,'armored-body')!,motor=ctx.world.get<LWArmoredRuntime.Motor>(id,'armored-motor')!;
+  return magnitude(body.velocity)<=.3&&Math.abs(body.yawVelocity)<=.03&&Math.abs(motor.throttle)<=.01&&Math.abs(motor.steer)<=.01&&motor.cruise===0;
+ }
  function initialDamage(v:LWArmoredData.Vehicle):D{
   return {status:'operational',components:Object.fromEntries(['leftTrack','rightTrack','engine','transmission','turretDrive','mantlet','gun','ammunition'].map(k=>[k,v.componentHealth])),crew:{commander:1,gunner:1,driver:1,loader:1},fire:0,repair:0,repairKits:v.repairKits,componentMaximum:v.componentHealth};
  }
@@ -95,15 +112,37 @@
    component=hit.local.x<0?'leftTrack':'rightTrack';amount=ammo.damage*.25;
    d.components[component]=Math.max(0,d.components[component]!-amount);
   }
-  if(amount>0&&d.repair>0){d.repair=0;ctx.emit({kind:'repair-cancelled',entityId:id});}
+  if(amount>0)interruptServices(ctx,id,d);
   refresh(d);
   ctx.emit({kind:'armor-impact',source:shot.source,target:id,position:hit.position,normal:hit.normal,ammo:ammo.id,region,outcome,angle,effectiveArmor:effective,penetration,component,damage:amount,status:d.status});
   if(refresh(d)==='destroyed')ctx.emit({kind:'destroyed',entityId:id,position:hit.position});
   if(ricochet){const dot=shot.velocity.x*hit.normal.x+shot.velocity.y*hit.normal.y+shot.velocity.z*hit.normal.z;for(const axis of ['x','y','z'] as const)shot.velocity[axis]=(shot.velocity[axis]-2*dot*hit.normal[axis])*.45;shot.ricochets=1;shot.position={x:hit.position.x+hit.normal.x*.06,y:hit.position.y+hit.normal.y*.06,z:hit.position.z+hit.normal.z*.06};}
   return ricochet;
  }
+ /** HE fragments damage exposed tracks, not sealed crew or internal components.
+  * One nearest hull point per actor; linear distance falloff and hard geometry occlusion.
+  * Direct target is excluded: its armor resolution already owns the single direct hit. */
+ function blast(ctx:C,shot:P,hit:Hit,ammo:LWArmoredData.Ammunition):void{
+  if(ammo.kind!=='HE'||ammo.blastRadius<=0)return;
+  const origin={x:hit.position.x+hit.normal.x*.06,y:hit.position.y+hit.normal.y*.06,z:hit.position.z+hit.normal.z*.06};
+  for(const id of ctx.world.query(['armored-transform','armored-identity','armored-damage'])){
+   if(id===hit.id)continue;
+   const d=ctx.world.get<D>(id,'armored-damage')!;if(d.status==='destroyed')continue;
+   const v=definition(ctx,id),t=ctx.world.get<T>(id,'armored-transform')!,ground={...t,position:{...t.position,y:t.position.y-v.groundClearance}},p=local(origin,ground);
+   const q={x:clamp(p.x,-v.width/2,v.width/2),y:clamp(p.y,0,v.height),z:clamp(p.z,-v.length/2,v.length/2)};
+   const range=magnitude({x:p.x-q.x,y:p.y-q.y,z:p.z-q.z});if(range>=ammo.blastRadius)continue;
+   const c=Math.cos(t.yaw),s=Math.sin(t.yaw),point={x:ground.position.x+c*q.x+s*q.z,y:ground.position.y+q.y,z:ground.position.z-s*q.x+c*q.z};
+   const obstruction=trace(ctx,origin,point);if(obstruction&&obstruction.id!==id)continue;
+   const component=q.x<0?'leftTrack':'rightTrack',amount=ammo.damage*.25*(1-range/ammo.blastRadius);
+   const applied=Math.min(d.components[component]!,amount);if(applied<=0)continue;
+   d.components[component]=Math.max(0,d.components[component]!-applied);interruptServices(ctx,id,d);refresh(d);
+   ctx.emit({kind:'blast-damage',source:shot.source,target:id,position:point,ammo:ammo.id,component,damage:applied,distance:range,status:d.status});
+  }
+ }
  function impact(ctx:C,shot:P,hit:Hit):boolean{
   const ammo=ctx.catalog.ammunition.find(a=>a.id===shot.ammo)!;
+  // Resolve occlusion before direct destruction can remove the impact cover.
+  if(modern(ctx))blast(ctx,shot,hit,ammo);
   if(ammo.kind==='SMOKE'){
    const id='smoke:'+String(++ctx.state.serial).padStart(6,'0');ctx.world.defer('create',id);ctx.world.defer('set',id,'armored-smoke',{position:hit.position,radius:ammo.blastRadius,remaining:ammo.smokeSeconds});
   }else if(hit.kind==='vehicle')return damage(ctx,hit.id,hit,shot,ammo);
@@ -117,6 +156,7 @@
   const w=ctx.world.get<W>(id,'armored-weapon')!,d=ctx.world.get<D>(id,'armored-damage')!,v=definition(ctx,id),t=ctx.world.get<T>(id,'armored-transform')!;
   w.reload=Math.max(0,w.reload-dt);w.recoil=Math.max(0,w.recoil-dt*2.8);
   if(d.status==='destroyed'){w.trigger=false;return;}
+  if(modern(ctx)&&!canAim(d)){w.trigger=false;return;}
   const impaired=d.components.mantlet!/v.componentHealth,drive=d.components.turretDrive!/v.componentHealth;
   w.turretYaw=wrap(w.turretYaw+clamp(wrap(w.aimYaw-w.turretYaw),-v.turretSpeed*dt,v.turretSpeed*dt)*(.15+.85*Math.min(impaired,drive)));
   w.elevation=clamp(w.elevation+clamp(w.aimElevation-w.elevation,-v.elevationSpeed*dt,v.elevationSpeed*dt)*(.15+.85*impaired),v.minElevation,v.maxElevation);
@@ -149,6 +189,7 @@
   const id=input.entityId||ctx.state.controlled,w=ctx.world.get<W>(id,'armored-weapon'),d=ctx.world.get<D>(id,'armored-damage');
   if(!w||!d||d.status==='destroyed')return {ok:false,message:'Vehicle unavailable.'};
   if(input.kind==='aim'){
+   if(modern(ctx)&&!canAim(d))return {ok:false,message:'Aiming requires an available gunner outside repair.'};
    const v=definition(ctx,id);
    if(typeof input.yaw!=='number'||!Number.isFinite(input.yaw)||Math.abs(input.yaw)>Math.PI*2||typeof input.elevation!=='number'||!Number.isFinite(input.elevation)||input.elevation<v.minElevation||input.elevation>v.maxElevation)return {ok:false,message:'Aim outside weapon limits.'};
    w.aimYaw=wrap(input.yaw);w.aimElevation=input.elevation;return {ok:true,message:'Aim accepted.'};
@@ -160,22 +201,28 @@
   }
   if(input.kind==='fire'){
    if(typeof input.pressed!=='boolean')return {ok:false,message:'Fire requires a pressed flag.'};
+   if(modern(ctx)&&input.pressed&&!canFire(d))return {ok:false,message:'Gun or crew unavailable while repairing or combat-disabled.'};
    w.trigger=input.pressed;return {ok:true,message:'Trigger updated.'};
   }
   const v=definition(ctx,id),body=ctx.world.get<LWArmoredRuntime.Body>(id,'armored-body')!;
+  if(modern(ctx)&&Number(ctx.world.get(id,'armored-supply')?.remaining)>0)return {ok:false,message:'Finish or cancel resupply before repairing.'};
+  if(modern(ctx)&&(!serviceStationary(ctx,id)||!Object.values(d.crew).some(value=>value>0)))return {ok:false,message:'Repair needs a living crew, neutral drive controls and no hull motion.'};
   if(d.repair>0||Number(d.repairKits)<=0||magnitude(body.velocity)>.3)return {ok:false,message:'Repair needs a stationary vehicle and an available kit.'};
   if(d.fire===0&&!Object.values(d.components).some(n=>n<v.componentHealth))return {ok:false,message:'No repairable damage.'};
   d.repair=v.repairSeconds;w.trigger=false;ctx.emit({kind:'repair-started',entityId:id,seconds:d.repair});return {ok:true,message:'Repair started; moving or taking damage interrupts it.'};
  }
  function service(ctx:C,id:string,dt:number):void{
   const d=ctx.world.get<D>(id,'armored-damage')!,v=definition(ctx,id);
-  if(d.status==='destroyed')return;
+  if(d.status==='destroyed'){if(modern(ctx))interruptServices(ctx,id,d);return;}
   if(d.repair>0){
    const body=ctx.world.get<LWArmoredRuntime.Body>(id,'armored-body')!,motor=ctx.world.get<LWArmoredRuntime.Motor>(id,'armored-motor')!;
-   if(magnitude(body.velocity)>.3||Math.abs(motor.throttle)>.01){d.repair=0;ctx.emit({kind:'repair-cancelled',entityId:id});}
+   if(modern(ctx)?!serviceStationary(ctx,id)||!Object.values(d.crew).some(value=>value>0):magnitude(body.velocity)>.3||Math.abs(motor.throttle)>.01)interruptServices(ctx,id,d);
    else {d.repair=Math.max(0,d.repair-dt);if(d.repair<=1e-9){d.repair=0;d.repairKits=Number(d.repairKits)-1;for(const key of Object.keys(d.components))d.components[key]=Math.min(v.componentHealth,d.components[key]!+v.componentHealth*v.repairRate);d.fire=0;refresh(d);ctx.emit({kind:'repair-completed',entityId:id});}}
   }
-  if(d.fire>0){d.components.engine=Math.max(0,d.components.engine!-dt*v.componentHealth*.025);d.components.ammunition=Math.max(0,d.components.ammunition!-dt*v.componentHealth*.01);refresh(d);if(refresh(d)==='destroyed')ctx.emit({kind:'destroyed',entityId:id});}
+  if(d.fire>0){
+   d.components.engine=Math.max(0,d.components.engine!-dt*v.componentHealth*.025);d.components.ammunition=Math.max(0,d.components.ammunition!-dt*v.componentHealth*.01);refresh(d);
+   if(refresh(d)==='destroyed'){if(modern(ctx))interruptServices(ctx,id,d);ctx.emit({kind:'destroyed',entityId:id});}
+  }
  }
  function register(scheduler:LWArmoredRuntime.Scheduler,ctx:C):void{
   scheduler.register({id:'armored.weapons',phase:'simulate',order:20,query:['armored-weapon','armored-damage','armored-transform'],update(_world,id,dt){weapons(ctx,id,dt);}});
@@ -183,6 +230,6 @@
   scheduler.register({id:'armored.repairs',phase:'post',order:20,query:['armored-damage'],update(_world,id,dt){service(ctx,id,dt);}});
   scheduler.register({id:'armored.smoke',phase:'post',order:30,query:['armored-smoke'],update(world,id,dt){const smoke=world.get(id,'armored-smoke')!;smoke.remaining=Number(smoke.remaining)-dt;if(Number(smoke.remaining)<=0)world.defer('destroy',id);}});
  }
- root.LWArmoredCombat=Object.freeze({register,command,initialDamage,initialWeapon,trace,box,refresh});
+ root.LWArmoredCombat=Object.freeze({register,command,initialDamage,initialWeapon,trace,box,refresh,canMove,canAim,canFire});
  if(typeof module!=='undefined'&&module.exports)module.exports=root.LWArmoredCombat;
 })(globalThis);

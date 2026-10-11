@@ -1,0 +1,255 @@
+{
+  "method": "Fresh authored missions, accepted public commands and explicit Node fixed-step clock only. No checkpoint edits or private component mutations. Functional catalog reachability, completed/interrupted transfer observation and stock conservation evidence, not browser play/performance acceptance.",
+  "results": [
+    {
+      "mission": "crossroads",
+      "ticks": 926,
+      "seconds": 15.433333333333334,
+      "position": {
+        "x": 264.0115615686755,
+        "y": 0.2161528365145071,
+        "z": 128.7460910066527
+      },
+      "event": {
+        "kind": "resupply-cancelled",
+        "entityId": "able-1",
+        "message": "Combat interrupted resupply.",
+        "tick": 612,
+        "sequence": 5
+      },
+      "commands": [
+        {
+          "tick": 0,
+          "cmd": {
+            "kind": "fire",
+            "pressed": true
+          },
+          "result": {
+            "ok": true,
+            "message": "Trigger updated.",
+            "sequence": 1
+          }
+        },
+        {
+          "tick": 1,
+          "cmd": {
+            "kind": "fire",
+            "pressed": false
+          },
+          "result": {
+            "ok": true,
+            "message": "Trigger updated.",
+            "sequence": 2
+          }
+        },
+        {
+          "tick": 1,
+          "cmd": {
+            "kind": "drive",
+            "throttle": 0.7,
+            "steer": 0,
+            "brake": 0
+          },
+          "result": {
+            "ok": true,
+            "message": "Motor input accepted.",
+            "sequence": 3
+          }
+        },
+        {
+          "tick": 343,
+          "cmd": {
+            "kind": "drive",
+            "throttle": 0,
+            "brake": 1
+          },
+          "result": {
+            "ok": true,
+            "message": "Motor input accepted.",
+            "sequence": 4
+          }
+        },
+        {
+          "tick": 445,
+          "cmd": {
+            "kind": "resupply"
+          },
+          "result": {
+            "ok": true,
+            "message": "Receiving supplies. Movement, firing or damage interrupts service.",
+            "sequence": 5
+          }
+        }
+      ],
+      "checkpointSha256": "281c51ef766a27ddaec863c2a6dcc1755339ca3beedfbab8988909cd5fc5341f"
+    },
+    {
+      "mission": "pine-ridge",
+      "ticks": 950,
+      "seconds": 15.833333333333334,
+      "position": {
+        "x": 264.0122479609993,
+        "y": 2.3756793892902013,
+        "z": 127.99221599781119
+      },
+      "event": {
+        "kind": "resupply-completed",
+        "entityId": "able-1",
+        "depotId": "pine-ridge-depot",
+        "amount": 1,
+        "message": "Supplies transferred.",
+        "tick": 949,
+        "sequence": 5
+      },
+      "commands": [
+        {
+          "tick": 0,
+          "cmd": {
+            "kind": "fire",
+            "pressed": true
+          },
+          "result": {
+            "ok": true,
+            "message": "Trigger updated.",
+            "sequence": 1
+          }
+        },
+        {
+          "tick": 1,
+          "cmd": {
+            "kind": "fire",
+            "pressed": false
+          },
+          "result": {
+            "ok": true,
+            "message": "Trigger updated.",
+            "sequence": 2
+          }
+        },
+        {
+          "tick": 1,
+          "cmd": {
+            "kind": "drive",
+            "throttle": 0.7,
+            "steer": 0,
+            "brake": 0
+          },
+          "result": {
+            "ok": true,
+            "message": "Motor input accepted.",
+            "sequence": 3
+          }
+        },
+        {
+          "tick": 373,
+          "cmd": {
+            "kind": "drive",
+            "throttle": 0,
+            "brake": 1
+          },
+          "result": {
+            "ok": true,
+            "message": "Motor input accepted.",
+            "sequence": 4
+          }
+        },
+        {
+          "tick": 469,
+          "cmd": {
+            "kind": "resupply"
+          },
+          "result": {
+            "ok": true,
+            "message": "Receiving supplies. Movement, firing or damage interrupts service.",
+            "sequence": 5
+          }
+        }
+      ],
+      "checkpointSha256": "e0b3f239cb8dd3d5529635e8ce00993ba6814c45570d51c79ed5ddf6c4036735"
+    },
+    {
+      "mission": "iron-counterattack",
+      "ticks": 950,
+      "seconds": 15.833333333333334,
+      "position": {
+        "x": 264.01321018129164,
+        "y": 4.380664379900052,
+        "z": 125.29465180298762
+      },
+      "event": {
+        "kind": "resupply-completed",
+        "entityId": "able-1",
+        "depotId": "iron-counterattack-depot",
+        "amount": 1,
+        "message": "Supplies transferred.",
+        "tick": 949,
+        "sequence": 5
+      },
+      "commands": [
+        {
+          "tick": 0,
+          "cmd": {
+            "kind": "fire",
+            "pressed": true
+          },
+          "result": {
+            "ok": true,
+            "message": "Trigger updated.",
+            "sequence": 1
+          }
+        },
+        {
+          "tick": 1,
+          "cmd": {
+            "kind": "fire",
+            "pressed": false
+          },
+          "result": {
+            "ok": true,
+            "message": "Trigger updated.",
+            "sequence": 2
+          }
+        },
+        {
+          "tick": 1,
+          "cmd": {
+            "kind": "drive",
+            "throttle": 0.7,
+            "steer": 0,
+            "brake": 0
+          },
+          "result": {
+            "ok": true,
+            "message": "Motor input accepted.",
+            "sequence": 3
+          }
+        },
+        {
+          "tick": 397,
+          "cmd": {
+            "kind": "drive",
+            "throttle": 0,
+            "brake": 1
+          },
+          "result": {
+            "ok": true,
+            "message": "Motor input accepted.",
+            "sequence": 4
+          }
+        },
+        {
+          "tick": 469,
+          "cmd": {
+            "kind": "resupply"
+          },
+          "result": {
+            "ok": true,
+            "message": "Receiving supplies. Movement, firing or damage interrupts service.",
+            "sequence": 5
+          }
+        }
+      ],
+      "checkpointSha256": "2509a95d89654ccc1af5544a4d70e3681a15b7fcb4d84955547918578759c0b7"
+    }
+  ]
+}

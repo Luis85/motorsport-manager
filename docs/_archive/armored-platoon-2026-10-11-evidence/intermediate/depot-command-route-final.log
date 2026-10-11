@@ -1,0 +1,20 @@
+[
+  {
+    mission: 'crossroads',
+    ticks: 926,
+    commands: 5,
+    event: 'resupply-cancelled'
+  },
+  {
+    mission: 'pine-ridge',
+    ticks: 950,
+    commands: 5,
+    event: 'resupply-completed'
+  },
+  {
+    mission: 'iron-counterattack',
+    ticks: 950,
+    commands: 5,
+    event: 'resupply-completed'
+  }
+]

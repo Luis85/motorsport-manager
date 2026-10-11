@@ -479,8 +479,11 @@
     "source/test-support/scene-journeys.cts",
     "source/armored-catalog.ts",
     "source/armored-visuals.ts",
+    "source/armored-physics-legacy.ts",
+    "source/armored-collision.ts",
     "source/armored-physics.ts",
     "source/armored-combat.ts",
+    "source/armored-logistics.ts",
     "source/armored-ai.ts",
     "source/armored-missions.ts",
     "source/armored-checkpoint.ts",
@@ -495,6 +498,9 @@
     "source/test-armored-admission.cts",
     "source/test-armored-runtime.cts",
     "source/test-armored-combat.cts",
+    "source/test-armored-combat-v2.cts",
+    "source/test-armored-physics.cts",
+    "source/test-armored-logistics.cts",
     "source/test-armored-browser.cts"
   ],
   "include": []

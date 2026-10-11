@@ -3345,7 +3345,7 @@
         "geometry": "farmhouse-1",
         "material": "masonry",
         "transform": {
-          "position": [302, 5.0637, 282]
+          "position": [302, 5.060716666666667, 282]
         },
         "tags": ["obstacle:masonry"]
       }
@@ -3366,7 +3366,7 @@
         "geometry": "farmhouse-2",
         "material": "masonry",
         "transform": {
-          "position": [220, 3.6467, 326]
+          "position": [220, 3.732244444444444, 326]
         },
         "tags": ["obstacle:masonry"]
       }
@@ -3387,7 +3387,7 @@
         "geometry": "farmhouse-3",
         "material": "masonry",
         "transform": {
-          "position": [311, 4.9046, 334]
+          "position": [311, 4.916555555555556, 334]
         },
         "tags": ["obstacle:masonry"]
       }
@@ -3408,7 +3408,7 @@
         "geometry": "farmhouse-4",
         "material": "masonry",
         "transform": {
-          "position": [210, 3.651, 267]
+          "position": [210, 3.51295, 267]
         },
         "tags": ["obstacle:masonry"]
       }
@@ -3429,7 +3429,7 @@
         "geometry": "farmhouse-5",
         "material": "masonry",
         "transform": {
-          "position": [338, 5.006, 303]
+          "position": [338, 4.9783, 303]
         },
         "tags": ["obstacle:masonry"]
       }
@@ -3450,7 +3450,7 @@
         "geometry": "farmhouse-6",
         "material": "masonry",
         "transform": {
-          "position": [290, 4.2757, 379]
+          "position": [290, 4.349081944444444, 379]
         },
         "tags": ["obstacle:masonry"]
       }
@@ -3471,7 +3471,7 @@
         "geometry": "farmhouse-7",
         "material": "masonry",
         "transform": {
-          "position": [239, 3.9465, 371]
+          "position": [239, 3.9378472222222225, 371]
         },
         "tags": ["obstacle:masonry"]
       }
@@ -3492,7 +3492,7 @@
         "geometry": "orchard-wall-0",
         "material": "stone",
         "transform": {
-          "position": [180, 0.3647, 230]
+          "position": [180, 0.3562666666666666, 230]
         },
         "tags": ["obstacle:stone"]
       }
@@ -3513,7 +3513,7 @@
         "geometry": "orchard-wall-1",
         "material": "stone",
         "transform": {
-          "position": [183.5, 0.3647, 230]
+          "position": [183.5, 0.418892361111111, 230]
         },
         "tags": ["obstacle:stone"]
       }
@@ -3534,7 +3534,7 @@
         "geometry": "orchard-wall-2",
         "material": "stone",
         "transform": {
-          "position": [187, 0.5761000000000001, 230]
+          "position": [187, 0.4815180555555556, 230]
         },
         "tags": ["obstacle:stone"]
       }
@@ -3555,7 +3555,7 @@
         "geometry": "orchard-wall-3",
         "material": "stone",
         "transform": {
-          "position": [190.5, 0.5761000000000001, 230]
+          "position": [190.5, 0.5441437499999999, 230]
         },
         "tags": ["obstacle:stone"]
       }
@@ -3576,7 +3576,7 @@
         "geometry": "orchard-wall-4",
         "material": "stone",
         "transform": {
-          "position": [194, 0.5761000000000001, 230]
+          "position": [194, 0.6085361111111114, 230]
         },
         "tags": ["obstacle:stone"]
       }
@@ -3597,7 +3597,7 @@
         "geometry": "orchard-wall-5",
         "material": "stone",
         "transform": {
-          "position": [197.5, 0.5761000000000001, 230]
+          "position": [197.5, 0.674253472222222, 230]
         },
         "tags": ["obstacle:stone"]
       }
@@ -3618,7 +3618,7 @@
         "geometry": "orchard-wall-6",
         "material": "stone",
         "transform": {
-          "position": [201, 0.7979, 230]
+          "position": [201, 0.7399708333333334, 230]
         },
         "tags": ["obstacle:stone"]
       }
@@ -3639,7 +3639,7 @@
         "geometry": "orchard-wall-7",
         "material": "stone",
         "transform": {
-          "position": [204.5, 0.7979, 230]
+          "position": [204.5, 0.8058305555555558, 230]
         },
         "tags": ["obstacle:stone"]
       }
@@ -3660,7 +3660,7 @@
         "geometry": "orchard-wall-8",
         "material": "stone",
         "transform": {
-          "position": [208, 0.7979, 230]
+          "position": [208, 0.8725444444444442, 230]
         },
         "tags": ["obstacle:stone"]
       }
@@ -3681,7 +3681,7 @@
         "geometry": "orchard-wall-9",
         "material": "stone",
         "transform": {
-          "position": [211.5, 1.0231000000000001, 230]
+          "position": [211.5, 0.9392583333333333, 230]
         },
         "tags": ["obstacle:stone"]
       }
@@ -3702,7 +3702,7 @@
         "geometry": "orchard-wall-10",
         "material": "stone",
         "transform": {
-          "position": [215, 1.0231000000000001, 230]
+          "position": [215, 1.0059722222222225, 230]
         },
         "tags": ["obstacle:stone"]
       }
@@ -3723,7 +3723,7 @@
         "geometry": "orchard-wall-11",
         "material": "stone",
         "transform": {
-          "position": [218.5, 1.0231000000000001, 230]
+          "position": [218.5, 1.0718249999999998, 230]
         },
         "tags": ["obstacle:stone"]
       }
@@ -3744,7 +3744,7 @@
         "geometry": "pine-0",
         "material": "wood",
         "transform": {
-          "position": [95, 3.4318999999999997, 280]
+          "position": [95, 3.431138888888889, 280]
         },
         "tags": ["obstacle:wood"]
       }
@@ -3765,7 +3765,7 @@
         "geometry": "pine-1",
         "material": "wood",
         "transform": {
-          "position": [117, 3.4596999999999998, 280]
+          "position": [117, 3.443975, 280]
         },
         "tags": ["obstacle:wood"]
       }
@@ -3786,7 +3786,7 @@
         "geometry": "pine-2",
         "material": "wood",
         "transform": {
-          "position": [139, 3.685, 280]
+          "position": [139, 3.6231027777777776, 280]
         },
         "tags": ["obstacle:wood"]
       }
@@ -3807,7 +3807,7 @@
         "geometry": "pine-3",
         "material": "wood",
         "transform": {
-          "position": [161, 3.8636, 280]
+          "position": [161, 3.9493833333333335, 280]
         },
         "tags": ["obstacle:wood"]
       }
@@ -3828,7 +3828,7 @@
         "geometry": "pine-4",
         "material": "wood",
         "transform": {
-          "position": [183, 4.324, 280]
+          "position": [183, 4.388458333333333, 280]
         },
         "tags": ["obstacle:wood"]
       }
@@ -3849,7 +3849,7 @@
         "geometry": "pine-5",
         "material": "wood",
         "transform": {
-          "position": [95, 3.4585, 309]
+          "position": [95, 3.4547541666666666, 309]
         },
         "tags": ["obstacle:wood"]
       }
@@ -3870,7 +3870,7 @@
         "geometry": "pine-6",
         "material": "wood",
         "transform": {
-          "position": [117, 3.4859, 309]
+          "position": [117, 3.4674187499999998, 309]
         },
         "tags": ["obstacle:wood"]
       }
@@ -3891,7 +3891,7 @@
         "geometry": "pine-7",
         "material": "wood",
         "transform": {
-          "position": [139, 3.7074, 309]
+          "position": [139, 3.6438770833333334, 309]
         },
         "tags": ["obstacle:wood"]
       }
@@ -3912,7 +3912,7 @@
         "geometry": "pine-8",
         "material": "wood",
         "transform": {
-          "position": [161, 3.883, 309]
+          "position": [161, 3.965227083333333, 309]
         },
         "tags": ["obstacle:wood"]
       }
@@ -3933,7 +3933,7 @@
         "geometry": "pine-9",
         "material": "wood",
         "transform": {
-          "position": [183, 4.3355, 309]
+          "position": [183, 4.3976500000000005, 309]
         },
         "tags": ["obstacle:wood"]
       }
@@ -3954,7 +3954,7 @@
         "geometry": "pine-10",
         "material": "wood",
         "transform": {
-          "position": [95, 3.6067, 338]
+          "position": [95, 3.6295819444444444, 338]
         },
         "tags": ["obstacle:wood"]
       }
@@ -3975,7 +3975,7 @@
         "geometry": "pine-11",
         "material": "wood",
         "transform": {
-          "position": [117, 3.6314, 338]
+          "position": [117, 3.6407583333333333, 338]
         },
         "tags": ["obstacle:wood"]
       }
@@ -3996,7 +3996,7 @@
         "geometry": "pine-12",
         "material": "wood",
         "transform": {
-          "position": [139, 3.8316, 338]
+          "position": [139, 3.7972680555555556, 338]
         },
         "tags": ["obstacle:wood"]
       }
@@ -4017,7 +4017,7 @@
         "geometry": "pine-13",
         "material": "wood",
         "transform": {
-          "position": [161, 3.9903, 338]
+          "position": [161, 4.082259722222222, 338]
         },
         "tags": ["obstacle:wood"]
       }
@@ -4038,7 +4038,7 @@
         "geometry": "pine-14",
         "material": "wood",
         "transform": {
-          "position": [183, 4.3994, 338]
+          "position": [183, 4.4658, 338]
         },
         "tags": ["obstacle:wood"]
       }
@@ -4059,7 +4059,7 @@
         "geometry": "pine-15",
         "material": "wood",
         "transform": {
-          "position": [95, 3.9996, 367]
+          "position": [95, 3.9401201388888887, 367]
         },
         "tags": ["obstacle:wood"]
       }
@@ -4080,7 +4080,7 @@
         "geometry": "pine-16",
         "material": "wood",
         "transform": {
-          "position": [117, 4.0174, 367]
+          "position": [117, 3.9488291666666666, 367]
         },
         "tags": ["obstacle:wood"]
       }
@@ -4101,7 +4101,7 @@
         "geometry": "pine-17",
         "material": "wood",
         "transform": {
-          "position": [139, 4.1611, 367]
+          "position": [139, 4.06985, 367]
         },
         "tags": ["obstacle:wood"]
       }
@@ -4122,7 +4122,7 @@
         "geometry": "pine-18",
         "material": "wood",
         "transform": {
-          "position": [161, 4.275, 367]
+          "position": [161, 4.290218749999999, 367]
         },
         "tags": ["obstacle:wood"]
       }
@@ -4143,7 +4143,7 @@
         "geometry": "pine-19",
         "material": "wood",
         "transform": {
-          "position": [183, 4.5687999999999995, 367]
+          "position": [183, 4.586870833333333, 367]
         },
         "tags": ["obstacle:wood"]
       }
@@ -4164,7 +4164,7 @@
         "geometry": "pine-20",
         "material": "wood",
         "transform": {
-          "position": [95, 4.3497, 396]
+          "position": [95, 4.35185, 396]
         },
         "tags": ["obstacle:wood"]
       }
@@ -4185,7 +4185,7 @@
         "geometry": "pine-21",
         "material": "wood",
         "transform": {
-          "position": [117, 4.3612, 396]
+          "position": [117, 4.357125, 396]
         },
         "tags": ["obstacle:wood"]
       }

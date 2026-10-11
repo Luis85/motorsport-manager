@@ -1,0 +1,56 @@
+{
+  "suite": "armored-combat-v2",
+  "passed": 12,
+  "total": 12,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Armored v2 gunner loss stops aim and fire while healthy driver retains motor authority",
+      "passed": true
+    },
+    {
+      "name": "Armored v1 retains crew aiming and legacy AI ammunition behavior",
+      "passed": true
+    },
+    {
+      "name": "Armored v2 driver loss preserves gunnery while gun damage independently rejects firing",
+      "passed": true
+    },
+    {
+      "name": "Armored v2 repair eligibility rejects drive intent and yaw motion without mutation",
+      "passed": true
+    },
+    {
+      "name": "Armored v2 pivot and cruise interrupt repair without spending or delayed completion",
+      "passed": true
+    },
+    {
+      "name": "Armored v2 completed repair restores components and extinguishes fire without reviving crew",
+      "passed": true
+    },
+    {
+      "name": "Armored v2 AI conserves AP against thick armor and stops HE after immobilization",
+      "passed": true
+    },
+    {
+      "name": "Armored v2 AI holds unviable AP then reacquires a penetrable visible flank",
+      "passed": true
+    },
+    {
+      "name": "Armored v2 AI changes an empty selection but preserves ammunition during reload",
+      "passed": true
+    },
+    {
+      "name": "Armored v2 HE blast applies bounded distance falloff once and includes friendly vehicles",
+      "passed": true
+    },
+    {
+      "name": "Armored v2 HE blast respects cover before the same impact destroys that cover",
+      "passed": true
+    },
+    {
+      "name": "Armored v2 HE direct hit excludes duplicate blast and nearby blast interrupts repair once",
+      "passed": true
+    }
+  ]
+}
