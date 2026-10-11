@@ -1265,9 +1265,9 @@ function fineHeights(surface, heights) {
 function sphereUVs(positions) {
   const out = [];
   for (let i = 0; i < positions.length; i += 3) {
-    const x = positions[i], y = positions[i + 1], z13 = positions[i + 2], r = Math.hypot(x, y, z13);
+    const x = positions[i], y = positions[i + 1], z14 = positions[i + 2], r = Math.hypot(x, y, z14);
     out.push(
-      0.5 + Math.atan2(z13, x) / (2 * Math.PI),
+      0.5 + Math.atan2(z14, x) / (2 * Math.PI),
       r ? Math.acos(Math.max(-1, Math.min(1, y / r))) / Math.PI : 0.5
     );
   }
@@ -1808,8 +1808,8 @@ function tubeGeometry(spec) {
 
 // ../model-forge/src/kernel/application/heightfield.ts
 import * as THREE8 from "three";
-function lattice(x, z13, octave, seed) {
-  let h = Math.imul(x | 0, 668265261) ^ Math.imul(z13 | 0, 374761393);
+function lattice(x, z14, octave, seed) {
+  let h = Math.imul(x | 0, 668265261) ^ Math.imul(z14 | 0, 374761393);
   h = Math.imul(h ^ seed, 2246822507) ^ Math.imul(octave + 1, 3266489909);
   h ^= h >>> 15;
   h = Math.imul(h, 739982445);
@@ -1821,8 +1821,8 @@ function lattice(x, z13, octave, seed) {
 var fade = (t) => t * t * t * (t * (t * 6 - 15) + 10);
 var clamp01 = (v) => v < 0 ? 0 : v > 1 ? 1 : v;
 var smooth = (t) => t * t * (3 - 2 * t);
-function valueNoise(x, z13, octave, seed) {
-  const x0 = Math.floor(x), z0 = Math.floor(z13), tx = fade(x - x0), tz = fade(z13 - z0);
+function valueNoise(x, z14, octave, seed) {
+  const x0 = Math.floor(x), z0 = Math.floor(z14), tx = fade(x - x0), tz = fade(z14 - z0);
   const a = lattice(x0, z0, octave, seed), b = lattice(x0 + 1, z0, octave, seed), c = lattice(x0, z0 + 1, octave, seed), d = lattice(x0 + 1, z0 + 1, octave, seed);
   const top = a + (b - a) * tx, bottom = c + (d - c) * tx;
   return top + (bottom - top) * tz;
@@ -1861,8 +1861,8 @@ function heightfieldSampler(spec) {
   const grid = heightGrid(spec);
   const [nx, nz] = spec.resolution, [sx, sz] = spec.size;
   const cellX = sx / (nx - 1), cellZ = sz / (nz - 1);
-  return (x, z13) => {
-    const gx = (x + sx / 2) / cellX, gz = (z13 + sz / 2) / cellZ;
+  return (x, z14) => {
+    const gx = (x + sx / 2) / cellX, gz = (z14 + sz / 2) / cellZ;
     const inside2 = gx >= -1e-9 && gz >= -1e-9 && gx <= nx - 1 + 1e-9 && gz <= nz - 1 + 1e-9;
     const cx = Math.min(nx - 1, Math.max(0, gx)), cz = Math.min(nz - 1, Math.max(0, gz));
     const ix = Math.min(nx - 2, Math.floor(cx)), iz = Math.min(nz - 2, Math.floor(cz));
@@ -1882,8 +1882,8 @@ function heightfieldSampler(spec) {
     return { y, normal: [-slopeX / length, 1 / length, -slopeZ / length], inside: inside2 };
   };
 }
-function sampleHeightfield(spec, x, z13) {
-  return heightfieldSampler(spec)(x, z13);
+function sampleHeightfield(spec, x, z14) {
+  return heightfieldSampler(spec)(x, z14);
 }
 function heightfieldGeometry(spec) {
   const grid = heightGrid(spec);
@@ -2401,7 +2401,7 @@ function fitCamera(box, aspect, request, authored) {
   const corners = [];
   for (const x of [-0.5, 0.5])
     for (const y of [-0.5, 0.5])
-      for (const z13 of [-0.5, 0.5]) corners.push(new Vector37(size.x * x, size.y * y, size.z * z13));
+      for (const z14 of [-0.5, 0.5]) corners.push(new Vector37(size.x * x, size.y * y, size.z * z14));
   const orthographic = request.projection === "orthographic" || request.projection === "auto" && !["iso", "orbit", "authored"].includes(request.view);
   let camera;
   const target = center.clone();
@@ -3733,18 +3733,18 @@ function assertLittlewildComplexity(visual) {
 
 // ../model-forge/src/kernel/application/terrain.ts
 var identity = () => ({ scale: 1, yaw: 0, translation: [0, 0, 0] });
-function turn(yaw, x, z13) {
-  if (yaw === 0) return [x, z13];
+function turn(yaw, x, z14) {
+  if (yaw === 0) return [x, z14];
   const c = Math.cos(yaw), s = Math.sin(yaw);
-  return [x * c + z13 * s, -x * s + z13 * c];
+  return [x * c + z14 * s, -x * s + z14 * c];
 }
 function applySimilarity(f, p) {
-  const [x, z13] = turn(f.yaw, p[0] * f.scale, p[2] * f.scale);
-  return [x + f.translation[0], p[1] * f.scale + f.translation[1], z13 + f.translation[2]];
+  const [x, z14] = turn(f.yaw, p[0] * f.scale, p[2] * f.scale);
+  return [x + f.translation[0], p[1] * f.scale + f.translation[1], z14 + f.translation[2]];
 }
 function invertSimilarity(f, p) {
-  const [x, z13] = turn(-f.yaw, p[0] - f.translation[0], p[2] - f.translation[2]);
-  return [x / f.scale, (p[1] - f.translation[1]) / f.scale, z13 / f.scale];
+  const [x, z14] = turn(-f.yaw, p[0] - f.translation[0], p[2] - f.translation[2]);
+  return [x / f.scale, (p[1] - f.translation[1]) / f.scale, z14 / f.scale];
 }
 function nodeFrame(scene, id, role) {
   const chain = [];
@@ -3801,8 +3801,8 @@ function terrainSpec(scene, id) {
 function terrainSampler(scene, terrain, frameNode) {
   const sample = heightfieldSampler(terrainSpec(scene, terrain));
   const terrainFrame = nodeFrame(scene, terrain, "terrain"), frame = nodeFrame(scene, frameNode, "scatter parent");
-  return (x, z13) => {
-    const local = invertSimilarity(terrainFrame, applySimilarity(frame, [x, 0, z13]));
+  return (x, z14) => {
+    const local = invertSimilarity(terrainFrame, applySimilarity(frame, [x, 0, z14]));
     const hit = sample(local[0], local[2]);
     const world = applySimilarity(terrainFrame, [local[0], hit.y, local[2]]);
     const [nx, nz] = turn(terrainFrame.yaw - frame.yaw, hit.normal[0], hit.normal[2]);
@@ -3815,7 +3815,7 @@ function terrainSampler(scene, terrain, frameNode) {
 }
 function sampleTerrainNode(scene, terrain, points) {
   const sample = terrainSampler(scene, terrain);
-  return points.map(([x, z13]) => ({ x, z: z13, ...sample(x, z13) }));
+  return points.map(([x, z14]) => ({ x, z: z14, ...sample(x, z14) }));
 }
 
 // ../model-forge/src/kernel/application/terrain-presets.ts
@@ -3926,7 +3926,7 @@ function terrainPreset(name, options = {}) {
 
 // ../model-forge/src/kernel/application/placement.ts
 var round4 = (value) => Math.round(value * 1e4) / 1e4 + 0;
-var point = (x, z13) => [round4(x), round4(z13)];
+var point = (x, z14) => [round4(x), round4(z14)];
 function budget(count, what) {
   if (count > PROCEDURAL_MAX_CANDIDATES)
     fail(
@@ -3942,8 +3942,8 @@ function budget(count, what) {
 function areaBounds(area) {
   if (area.type === "rect") return { min: [...area.min], max: [...area.max] };
   if (area.type === "circle") {
-    const [x, z13] = area.center;
-    return { min: [x - area.radius, z13 - area.radius], max: [x + area.radius, z13 + area.radius] };
+    const [x, z14] = area.center;
+    return { min: [x - area.radius, z14 - area.radius], max: [x + area.radius, z14 + area.radius] };
   }
   const pad = area.type === "path" ? area.width / 2 : 0;
   const xs = area.points.map((p) => p[0]), zs = area.points.map((p) => p[1]);
@@ -4003,9 +4003,9 @@ function poissonDisk(bounds, minDistance, random) {
   ];
   const free = (p) => {
     const [cx, cz] = cellOf(p);
-    for (let z13 = Math.max(0, cz - 2); z13 <= Math.min(rows - 1, cz + 2); z13++)
+    for (let z14 = Math.max(0, cz - 2); z14 <= Math.min(rows - 1, cz + 2); z14++)
       for (let x = Math.max(0, cx - 2); x <= Math.min(columns - 1, cx + 2); x++) {
-        const index = grid.get(z13 * columns + x);
+        const index = grid.get(z14 * columns + x);
         if (index === void 0) continue;
         const dx = points[index][0] - p[0], dz = points[index][1] - p[1];
         if (dx * dx + dz * dz < r2) return false;
@@ -4048,10 +4048,10 @@ function gridLayout(bounds, step, jitter, random) {
   budget(columns * rows, "Grid layout");
   const startX = bounds.min[0] + (width - (columns - 1) * step) / 2, startZ = bounds.min[1] + (depth - (rows - 1) * step) / 2;
   const points = [];
-  for (let z13 = 0; z13 < rows; z13++)
+  for (let z14 = 0; z14 < rows; z14++)
     for (let x = 0; x < columns; x++) {
       const ox = jitter > 0 ? (random.next() - 0.5) * jitter * step : 0, oz = jitter > 0 ? (random.next() - 0.5) * jitter * step : 0;
-      points.push(point(startX + x * step + ox, startZ + z13 * step + oz));
+      points.push(point(startX + x * step + ox, startZ + z14 * step + oz));
     }
   return points;
 }
@@ -4258,8 +4258,8 @@ function grounding(scene, recipe) {
   if (ground.mode === "plane") return () => ground.y;
   const sample = terrainSampler(scene, ground.node, recipe.parent);
   const steepest = ground.maxSlope >= 90 ? -Infinity : Math.cos(ground.maxSlope * Math.PI / 180);
-  return ([x, z13]) => {
-    const hit = sample(x, z13);
+  return ([x, z14]) => {
+    const hit = sample(x, z14);
     if (!hit.inside) return "outside";
     if (hit.normal[1] < steepest - 1e-12) return "slope";
     return hit.y - ground.sink;
@@ -5436,6 +5436,9 @@ function semanticBindings(root, required2 = []) {
 }
 
 // src/domain/schema.ts
+import { z as z11 } from "zod";
+
+// src/domain/schema-project.ts
 import { z as z10 } from "zod";
 var ProjectSchema = z10.object({
   schemaVersion: z10.literal(1),
@@ -5471,6 +5474,8 @@ var LittlewildExportSchema = z10.object({
   target: z10.string().min(1).max(512),
   assets: z10.array(LittlewildAssetSchema).min(1).max(128)
 }).strict();
+
+// src/domain/schema.ts
 var schemas = {
   scene: SceneSchema,
   model: ModelSchema,
@@ -5497,7 +5502,7 @@ var schemaKinds = Object.keys(schemas);
 function jsonSchema(kind) {
   if (!Object.hasOwn(schemas, kind))
     fail("UNKNOWN_SCHEMA", `Unknown schema ${kind}.`, { available: Object.keys(schemas) });
-  return z10.toJSONSchema(schemas[kind], {
+  return z11.toJSONSchema(schemas[kind], {
     target: "draft-2020-12",
     io: "input"
   });
@@ -6173,19 +6178,19 @@ function registerRigCommands(c) {
 }
 
 // src/infra/examples.ts
-import { z as z11 } from "zod";
-var Entry = z11.object({
+import { z as z12 } from "zod";
+var Entry = z12.object({
   id: Id,
-  name: z11.string(),
-  description: z11.string(),
-  features: z11.array(z11.string()),
-  models: z11.array(Id),
-  stats: z11.unknown()
+  name: z12.string(),
+  description: z12.string(),
+  features: z12.array(z12.string()),
+  models: z12.array(Id),
+  stats: z12.unknown()
 }).strict();
 async function exampleData(name) {
   return JSON.parse(await readAsset(`examples/${name}`));
 }
-var listExamples = async () => parse(z11.array(Entry), await exampleData("index.json"));
+var listExamples = async () => parse(z12.array(Entry), await exampleData("index.json"));
 async function exampleBundle(id) {
   parse(Id, id);
   const examples = await listExamples();
@@ -6302,7 +6307,7 @@ var sourceOptions = (cmd) => cmd.option("--file <path>", "Read JSON from file, o
 var editOptions = (cmd) => cmd.option("--expected-revision <n>", "Reject if current revision differs", integer).option("--expected-state <hash>", "Reject if the scene or model library changed").option("--dry-run", "Validate and compile without writing");
 
 // src/commands/input.ts
-import { z as z12 } from "zod";
+import { z as z13 } from "zod";
 import path10 from "node:path";
 async function readInputFile(file, flag) {
   try {
@@ -6338,7 +6343,7 @@ async function readInput(runtime, options) {
   }
   return readInputFile(path10.resolve(runtime.cwd, options.file), "--file");
 }
-var parseParameters = (value) => parse(z12.record(Id, NumberValue), parseJson(value));
+var parseParameters = (value) => parse(z13.record(Id, NumberValue), parseJson(value));
 
 // src/commands/discovery.ts
 import { Option } from "commander";
@@ -7556,8 +7561,8 @@ function parseArea(text, flag = "--area") {
     };
   }
   if (type === "circle") {
-    const [x, z13, radius] = numbersOf(body, flag, "circle:x,z,radius", 3);
-    return { type: "circle", center: [x, z13], radius };
+    const [x, z14, radius] = numbersOf(body, flag, "circle:x,z,radius", 3);
+    return { type: "circle", center: [x, z14], radius };
   }
   if (type === "polygon") return { type: "polygon", points: parsePoints(body, flag, 3) };
   return invalid(flag, "rect:x0,z0,x1,z1, circle:x,z,r or polygon:x,z;x,z;x,z", text);
@@ -7644,8 +7649,8 @@ function terrainFootprint(scene, node) {
     [sx / 2, -sz / 2],
     [sx / 2, sz / 2],
     [-sx / 2, sz / 2]
-  ].map(([x, z13]) => {
-    const p = applySimilarity(frame, [x, 0, z13]);
+  ].map(([x, z14]) => {
+    const p = applySimilarity(frame, [x, 0, z14]);
     return [p[0], p[2]];
   });
   if (Math.abs(frame.yaw % (2 * Math.PI)) > 1e-12) return { type: "polygon", points: corners };

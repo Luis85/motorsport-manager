@@ -1,3 +1,5 @@
+// Material contracts: physically based properties (including sheen, clearcoat and depth
+// writes) and the seeded fur/cloth/leather surface a material may carry.
 import { z } from 'zod';
 import { Color } from './schema-values.js';
 

@@ -10,40 +10,75 @@
     {id: 'end', name: 'Handover', kind: 'end', scene: {id: 'scene-end', position: [24, 0], color: '#77b5a0'}}],
    flows: [{id: 'start-work', from: 'start', to: 'work'}, {id: 'work-end', from: 'work', to: 'end'}], arrivals: [{at: 0, count: 1, interval: 0, data: {}}]});
  }
- /** Process-setting operations: they write one optional top-level field, and null (or `process` for the genre) removes it. */
- const SETTINGS = {setDescription: 'description', setSeed: 'seed', setGenre: 'genre', setSipoc: 'sipoc', setTrack: 'track'} as const;
+ /**
+  * Process-setting operations: they write one optional top-level field, and null (or `process` for the genre) removes it.
+  * `setCalendar` writes the display-only working calendar ({minutesPerDay, daysPerWeek}); `setWorkingHours` writes the run
+  * calendar ({opensAt, closesAt, daysPerWeek}, LWProcessHours), placed after `calendar` in schema order. The catalog judges both,
+  * including that a definition holds at most one of them.
+  */
+ const SETTINGS = {setDescription: 'description', setSeed: 'seed', setGenre: 'genre', setSipoc: 'sipoc', setTrack: 'track',
+  setCalendar: 'calendar', setWorkingHours: 'workingHours'} as const;
  /** Writes or removes a top-level field; a new field is placed in schema order among the existing keys, which keep their order. */
  function setting(d: LWProcess.Definition, key: string, value: unknown, remove: boolean): void {
   const record = d as unknown as Record<string, unknown>;
-  if (remove) { delete record[key]; return; }
-  if (Object.hasOwn(record, key)) { record[key] = value; return; }
-  const order = Object.keys(root.LWProcessCatalog.schema.properties as Record<string, unknown>), rank = (k: string) => { const i = order.indexOf(k); return i < 0 ? order.length : i; };
+  if (remove) {
+   delete record[key];
+   return;
+  }
+  if (Object.hasOwn(record, key)) {
+   record[key] = value;
+   return;
+  }
+  const order = Object.keys(root.LWProcessCatalog.schema.properties as Record<string, unknown>);
+  const rank = (k: string) => {
+   const i = order.indexOf(k);
+   return i < 0 ? order.length : i;
+  };
   const entries = Object.entries(record), at = entries.findIndex(([k]) => rank(k) > rank(key));
   entries.splice(at < 0 ? entries.length : at, 0, [key, value]);
   for (const k of Object.keys(record)) delete record[k];
   Object.assign(record, Object.fromEntries(entries));
+ }
+ /** The list each put or remove operation edits. */
+ const COLLECTIONS = {
+  putStep: 'steps', putFlow: 'flows', putResource: 'resources', removeStep: 'steps', removeFlow: 'flows', removeResource: 'resources',
+ } as const;
+ /** The id a list operation names: its `id`, or the `id` of the value it puts; '' when there is none. */
+ function operationId(operation: LWProcess.Recipe['operations'][number]): string {
+  if ('id' in operation) return operation.id;
+  const value = 'value' in operation ? operation.value : undefined;
+  return value && typeof value === 'object' && 'id' in value ? String(value.id) : '';
  }
  function edit(input: unknown, raw: unknown, draft = false): ReturnType<LWProcess.Authoring['edit']> {
   const base = root.LWProcessCatalog.validate(input, true);
   if (!base.acceptable) throw Error(base.diagnostics.map(e => e.path + ': ' + e.message).join('\n'));
   root.LWProcessCatalog.fingerprint(raw); // Enforce plain JSON and complexity bounds before reading fields.
   const recipe = raw as LWProcess.Recipe;
-  if (!recipe || typeof recipe !== 'object' || Array.isArray(recipe) || Object.keys(recipe).some(k => !['expectedRevision', 'expectedFingerprint', 'operations'].includes(k)) ||
-   recipe.expectedRevision !== base.definition!.revision || recipe.expectedFingerprint !== root.LWProcessCatalog.fingerprint(base.definition)) throw Error('Stale or invalid edit guard; inspect the definition again.');
+  const shaped = !!recipe && typeof recipe === 'object' && !Array.isArray(recipe)
+   && !Object.keys(recipe).some(k => !['expectedRevision', 'expectedFingerprint', 'operations'].includes(k));
+  if (!shaped || recipe.expectedRevision !== base.definition!.revision
+   || recipe.expectedFingerprint !== root.LWProcessCatalog.fingerprint(base.definition)) {
+   throw Error('Stale or invalid edit guard; inspect the definition again.');
+  }
   if (!Array.isArray(recipe.operations) || recipe.operations.length < 1 || recipe.operations.length > 256) throw Error('An edit needs 1–256 operations.');
   const definition = base.definition!;
   for (const [index, operation] of recipe.operations.entries()) {
    if (!operation || typeof operation !== 'object' || Array.isArray(operation) || typeof operation.op !== 'string') throw Error('Invalid operation ' + index);
    const remove = operation.op.startsWith('remove');
    if (Object.keys(operation).some(k => !['op', remove ? 'id' : 'value'].includes(k))) throw Error('Unknown operation field at ' + index);
-   const collections = {putStep: 'steps', putFlow: 'flows', putResource: 'resources', removeStep: 'steps', removeFlow: 'flows', removeResource: 'resources'} as const;
-   if (Object.hasOwn(collections, operation.op)) {
-    const field = collections[operation.op as keyof typeof collections], list = definition[field] as {id: string}[];
-    const id = 'id' in operation ? operation.id : 'value' in operation && operation.value && typeof operation.value === 'object' && 'id' in operation.value ? String(operation.value.id) : '';
+   if (Object.hasOwn(COLLECTIONS, operation.op)) {
+    const field = COLLECTIONS[operation.op as keyof typeof COLLECTIONS], list = definition[field] as {id: string}[];
+    const id = operationId(operation);
     if (!id) throw Error('Operation needs an ID at ' + index);
     const at = list.findIndex(v => v.id === id);
-    if (remove) { if (at < 0) throw Error('Cannot remove unknown ID ' + id); list.splice(at, 1); }
-    else { const value = (operation as {value: {id: string}}).value; if (at < 0) list.push(value); else list[at] = value; }
+    if (remove) {
+     if (at < 0) throw Error('Cannot remove unknown ID ' + id);
+     list.splice(at, 1);
+    } else {
+     const value = (operation as {value: {id: string}}).value;
+     if (at < 0) list.push(value);
+     else list[at] = value;
+    }
    } else if (operation.op === 'setArrivals') definition.arrivals = operation.value;
    else if (operation.op === 'setStart') definition.start = operation.value;
    else if (operation.op === 'rename') definition.name = operation.value;

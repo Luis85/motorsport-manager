@@ -1,3 +1,6 @@
+// Shared value contracts: stable identifiers, bounded numbers, parametric scalar
+// expressions, vectors, colors and node transforms. Every other schema family builds
+// on these; they carry no document or operation semantics of their own.
 import { z } from 'zod';
 
 /** Shared identifiers, bounded numbers and the scalar expression grammar. */

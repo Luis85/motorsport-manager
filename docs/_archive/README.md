@@ -23,3 +23,5 @@ a record does not rerun its tests or establish acceptance for the current checko
 - [Armored Platoon reference evidence](armored-platoon-2026-10-10-reference.md)
 - [Armored Platoon capability inventory](armored-platoon-2026-10-10-capabilities.md)
 - [Armored Platoon bounded verification evidence](armored-platoon-2026-10-10-evidence/README.md) — artifact identities, browser captures, motion, and mission command reports.
+
+- [Armored Platoon native finishes and navigation](armored-platoon-2026-10-11-finishes/README.md) — portable materials, versioned routing and integrated verification.

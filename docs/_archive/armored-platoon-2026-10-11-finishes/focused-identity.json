@@ -1,0 +1,40 @@
+{
+  "scope": "Focused CPU/resource integration only; no shared build, browser or GPU performance claim",
+  "files": {
+    "asset-renderer.ts": "600015088021d84a8f86380aab15914f79cd5eaa40fb5afdbf5cbaeab803beed",
+    "asset-catalog.ts": "2d78bc253abcb16ebad30b8a5784529873f4f76294b4d4b6e229a9369a172ce2",
+    "asset-finish.ts": "5f24b7f7528f31098e1789fb7777904b4fce50acb8d7dde00afb64bef84b113a",
+    "image-data.ts": "cc072a934b25ec1da1547b05cb4cd6e2073df806fde46d30fd5233d6770aeb88",
+    "visual-resources.ts": "4b8741e3a59b34e49657773e7bde9e3a2fa9e395e262c1c2821d1e918eda3f8c",
+    "armored-visuals.ts": "9a461d92f737211fadf11ee0fb385dc81739e56f8a3bb9848efbddcc597f4fe5",
+    "test-armored-visual-resources.cts": "d963a6de730525d4826b0f70271a03d2e859a03c8f6ec78ef2a64655c12dc119",
+    "test-armored-admission.cts": "efba66d439cc77fe5c6656c592fab962c9737910eabe7b8cd244979994670e5c",
+    "test-asset-finish.cts": "d3bae211ff94c7b142a19dd232ba42ad35a5aaacd4ff1ccf23e0ba7df758df3b"
+  },
+  "limitations": [
+    "Focused CPU/resource integration only, not a full registered gate",
+    "No browser, GPU performance or visual fidelity claim"
+  ],
+  "verification": {
+    "strict": {
+      "command": "npm run typecheck --silent",
+      "cwd": "source/wildlands",
+      "exitCode": 0
+    },
+    "asset-finish": {
+      "passed": 8,
+      "total": 8,
+      "method": "isolated TypeScript transpile of frozen modules and unchanged whole suite into work/; actual pinned Three"
+    },
+    "armored-visual-resources": {
+      "passed": 10,
+      "total": 10,
+      "method": "node --import tsx source/test-armored-visual-resources.cts"
+    },
+    "armored-admission": {
+      "passed": 6,
+      "total": 6,
+      "method": "node --import tsx source/test-armored-admission.cts"
+    }
+  }
+}

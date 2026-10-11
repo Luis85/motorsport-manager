@@ -81,7 +81,7 @@ balance or human validation. See the [canonical RTS contract](rts-engine.md) and
 
 ## Standalone command-line tools
 
-Four separate TypeScript projects ship checked-in, self-contained command-line
+Five separate TypeScript projects ship checked-in, self-contained command-line
 bundles under `bin/`. Each needs only Node.js 22 or newer and runs from a fresh
 clone without `npm ci` or `node_modules`:
 
@@ -125,6 +125,14 @@ clone without `npm ci` or `node_modules`:
 - [`bin/character-studio`](character-studio-cli.md) edits Littlewild companions
   through a local browser editor, JSON CLI and HTTP API from
   `source/character-studio/`.
+- [`bin/process-studio`](process-studio-cli.md) is the standalone command line
+  for Wildlands business-process definitions from `source/process-studio/`: every
+  `bin/wildlands process` subcommand with identical options, results, written
+  files and exit codes (checked byte for byte against `bin/wildlands` by its
+  project tests), plus `version`, `doctor` and `--compact`. It bundles the
+  Wildlands process engine through one bridge module, and its `build` embeds the
+  process slice of the engine kit of the checked-in `bin/wildlands`, so it needs
+  no Wildlands CLI; any Wildlands engine change requires rebuilding it.
 
 The bundles are generated from their source projects and checked by each
 project's `npm run check:cli`. The three procedural generators (Model Forge
@@ -171,12 +179,35 @@ people, machine and system pools, typed decisions with chance routes and
 bounded rework loops, timers, counters, needs and backlogs, multi-instance work,
 boundary deadlines (interrupting or escalating), seeded random timing, outcomes
 and arrival streams, and customer and user journeys with touchpoints, outcomes,
-conversion and tracked measures. The studio shows one detached run in 2D, Three.js
-3D and a SIPOC or journey lens, with an Activity modal, a Definition editor, a step
-editor, a **Present** mode (the slide deck of the active definition beside the studio's
-own 2D map, on a phone from the **⋯** menu) and offline HTML downloads; it has a dark
-theme only. Navigation, dialogs, lenses and Present mode never tick the clock; entering
-Present pauses a running simulation with a command.
+conversion and tracked measures. An optional display calendar words long durations in business
+days and weeks without changing a run; opt-in working hours (one weekly opening window) instead make
+work and arrivals pause outside them, with the clock counting elapsed minutes and closed time as its
+own state. Non-blocking advisories flag whole-minute rounding bias.
+The studio holds up to 8 processes, each with its own detached paused run, and shows the active
+run in 2D, Three.js 3D, a SIPOC or journey lens and a **Dashboard** of metrics and charts (flow,
+where time goes, lead-time percentiles, quality, cost, journey outcomes, a step focus, a measuring
+window and What-if replications across seeds, including the applied design against the draft),
+with an Activity modal, a Definition editor, a step editor, a **Present** mode (the slide deck or
+its brief cut beside the studio's own 2D map, with **Full screen** and **Wide text**, on a phone from
+the **⋯** menu) and offline HTML downloads. It is dark by default with a **Light theme** toggle that
+lasts for the page and is not stored. A paused run can be exported as a run checkpoint file and
+loaded again (Cancel first, same definition fingerprint only) to continue exactly. The studio builds and tunes definitions: **New process…**,
+**Import as a new process…**, **Add step…**, **Tidy layout**, dragging cards on the 2D map and the
+step editor's **Step structure** (add after, duplicate, change kind, delete with reconnect, make
+start) write the unapplied draft, which has in-memory undo and redo; applying starts a fresh paused
+run. Switching process keeps every run, importing JSON over a run past minute 0 or an unapplied
+draft asks first (starting on Cancel), applying a new revision of the same process keeps a typed
+run seed and the selected step, and leaving the page with an unapplied draft asks the browser to
+confirm. A recovery copy of an unapplied draft is kept in the browser's `localStorage` per process
+and running definition and offered after a reload (the studio's only storage use; runs are never
+stored). The 2D map updates in place, is one keyboard tab stop and shares a shape-coded work-state
+encoding with its legend, the 3D view and the step list. Run metrics report a work cost, a capacity
+cost and idle cost, mean cycle time over finished cases only ("—" before the first), the mean age
+of cases in progress, blocked work and the read model's waits, cost splits, throughput, lead time
+by work state and distributions with exact lead-time percentiles up to 50,000 finished cases (bin
+ranges beyond); one run is one seeded sample, and the Dashboard and the CLI give
+replications with exact Student t 95% intervals across seeds. Navigation, dialogs, lenses, the Dashboard
+and Present mode never tick the clock; entering Present pauses a running simulation with a command.
 
 The [agency delivery lab](../concepts/agency-delivery/README.md) holds seven
 synthetic processes behind a **Process** switch (an agency pipeline, an agile
@@ -192,7 +223,10 @@ BPMN maps tasks and their types, lanes (as pools), exclusive, parallel and
 inclusive gateways, event-based gateways (as a race by chance), multi-instance and
 standard loops, embedded sub-processes and call activities (both inlined), timer
 catch events and timer boundary events (as deadlines) with ISO-8601 durations, and
-reads BPSim times, distributions, probabilities, arrivals, capacities and costs. It
+reads BPSim times, distributions, probabilities, arrivals, capacities, costs and the scenario
+seed. A process beyond four times the definition limits (512 flow nodes or 1,024 sequence flows)
+is rejected before analysis, and `process export-bpmn` lists in `fidelity` what only the Wildlands
+extension carries. It
 reports every mapping and warning, and rejects unsupported constructs with their
 element ids or, in drop mode, removes or approximates them with a warning each. The
 CLI and the studio's **Import BPMN** dialog (options, live preview, Cancel-first
@@ -203,22 +237,32 @@ dialog's informational Standards check, and the registered gate checks every dem
 example export with it; an earlier one-off run used the OMG schema files
 ([record](../_archive/verification/bpmn-schema-conformance-2026-10-08.md)).
 `process slides` explains an admitted definition as a deterministic plain-text slide
-deck (JSON or Markdown; optional read-only facts from one bounded seeded run) built by
-the pure `LWProcessSlides` model, `process diff` compares two definitions, and guarded
-recipe operations set or remove the description, seed, genre, SIPOC parties and tracked
-fields without changing the definition schema. `npm run process:shots` (in
+deck (JSON or Markdown, full or `--brief`; optional read-only facts from one bounded seeded run)
+built by the pure `LWProcessSlides` model, `process diff` compares two definitions and itemises
+every changed value with its old and new value, `process replicate` and `process compare` run a
+definition (or two, on the same seeds) over consecutive seeds and report means, sample standard
+deviations, exact Student t 95% intervals and percentiles per KPI (optionally after a warm-up minute),
+`process run --event-log` streams every engine event to a CSV or XES file, `process run
+--checkpoint-out` and `--checkpoint` save and continue a run, `process validate` and
+`process inspect` print advisories, and guarded recipe operations set or remove the description,
+seed, genre, SIPOC parties, tracked fields, display calendar and working hours. `npm run process:shots` (in
 `source/wildlands`) captures one process of a game at a chosen minute in desktop and phone
 layouts, including Present mode and the DejaVu Sans fallback font, and reports horizontal
 overflow and console errors; it is a review aid, not usability validation.
 
-Not implemented: BPMN execution, external service execution, calendars or working
-hours for timers, event-driven gateway semantics, complex gateways beyond the drop
-approximation, compensation, nested gateways inside a fork region, process
-checkpoints or saved-run restoration, light theme and Godot process export. A
+Not implemented: BPMN execution, external service execution, shift patterns, holidays or dated
+calendars (working hours are one weekly window), event-driven gateway
+semantics, complex gateways beyond the drop approximation, compensation, nested gateways inside a
+fork region, moving a saved run onto a changed definition, and Godot process export (out of scope by
+decision; BPMN 2.0 with BPSim is the interchange path). A
 mapped BPMN model, a seeded run and the passing process suites are automated
 scenario evidence, not a validated process model, forecast or human usability
-review. See the [contract](business-process-engine.md) and
-[authoring workflow](../how-to/business-process-authoring.md).
+review. See the [contract](business-process-engine.md), the
+[authoring workflow](../how-to/business-process-authoring.md),
+[Present a process to stakeholders](../how-to/present-a-process.md),
+[Read a process dashboard](../how-to/read-a-process-dashboard.md),
+[Save and resume a process run](../how-to/save-and-resume-a-process-run.md) and the
+[first business process tutorial](../tutorials/first-business-process.md).
 
 ## Interface selection and retained specialist tools
 
@@ -331,8 +375,12 @@ visual package embeds bounded offline maps and refined original fittings.
 Hull-aware navigation and bounded reverse recovery are separately versioned so
 older v2 saves retain grid behavior. The HUD consumes authoritative action
 availability, improves order keyboard focus and makes detailed damage optional.
-These changes remain an intermediate checkpoint; their verification must use the
-new source identity rather than the earlier results below.
+These changes remain an intermediate checkpoint. After integrating merged main
+(including Process Studio), the local fast gate passed 1,057/1,057 checks in
+56 suites and the integrated browser passed 16/16. The
+[native-finish evidence](../_archive/armored-platoon-2026-10-11-finishes/README.md)
+separates the new identities from the earlier results below; complete CI and the
+long observation remain pending at this documentation checkpoint.
 
 The preceding v2 slice added yaw-oriented continuous planar hull collisions,
 station-specific mobility/fire eligibility, bounded occluded HE track damage,

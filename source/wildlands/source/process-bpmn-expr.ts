@@ -1,5 +1,8 @@
 /// <reference path="./process-contracts.d.ts" />
-/** Safe condition grammar of the BPMN interchange: comparisons of a case field with a literal or another field, joined by and/or/not. No call, member access or arithmetic is ever evaluated. */
+/**
+ * Safe condition grammar of the BPMN interchange: comparisons of a case field with a literal or another field, joined by
+ * and/or/not. No call, member access or arithmetic is ever evaluated.
+ */
 declare namespace LWProcessBpmnExpr {
  interface Api {
   /** Parses `${a > 1 && !(b == 'x')}` style text into a `When`; throws an Error naming the problem when the text is outside the grammar or the limits. */
@@ -13,11 +16,30 @@ declare namespace LWProcessBpmnExpr {
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessBpmnExpr?: LWProcessBpmnExpr.Api};
- const OPS: Record<string, LWProcess.Op> = {'==': 'eq', '=': 'eq', eq: 'eq', '!=': 'ne', ne: 'ne', '>': 'gt', gt: 'gt', '>=': 'gte', ge: 'gte', gte: 'gte', '<': 'lt', lt: 'lt', '<=': 'lte', le: 'lte', lte: 'lte'};
+ const OPS: Record<string, LWProcess.Op> = {
+  '==': 'eq', '=': 'eq', eq: 'eq',
+  '!=': 'ne', ne: 'ne',
+  '>': 'gt', gt: 'gt',
+  '>=': 'gte', ge: 'gte', gte: 'gte',
+  '<': 'lt', lt: 'lt',
+  '<=': 'lte', le: 'lte', lte: 'lte',
+ };
  const SYMBOLS: Record<string, string> = {eq: '==', ne: '!=', gt: '>', gte: '>=', lt: '<', lte: '<='};
  const FLIP: Record<LWProcess.Op, LWProcess.Op> = {eq: 'eq', ne: 'ne', gt: 'lt', gte: 'lte', lt: 'gt', lte: 'gte'};
  const FIELD = /^[a-z][a-zA-Z0-9_]{0,63}$/, MAX_LEAVES = 8, MAX_LEVELS = 3, MAX_LIST = 8;
  type Tok = {t: 'num' | 'str' | 'id' | 'cmp' | 'and' | 'or' | 'not' | 'open' | 'close' | 'lit'; v: string};
+ /** Symbol tokens other than the comparison operators. */
+ const SYMBOL_KINDS: Record<string, Tok['t']> = {'&&': 'and', '||': 'or', '!': 'not', '(': 'open', ')': 'close'};
+ /** A word token: and/or/not in any case, an operator word written in lower case, a literal, or else a field name. */
+ function wordKind(w: string): Tok['t'] {
+  const lower = w.toLowerCase();
+  if (lower === 'and') return 'and';
+  if (lower === 'or') return 'or';
+  if (lower === 'not') return 'not';
+  if (Object.hasOwn(OPS, lower) && lower.length > 1 && /^[a-z]+$/.test(w) && lower === w) return 'cmp';
+  if (['true', 'false', 'null'].includes(w)) return 'lit';
+  return 'id';
+ }
  function tokens(text: string): Tok[] {
   const out: Tok[] = []; let i = 0;
   while (i < text.length) {
@@ -26,16 +48,16 @@ declare namespace LWProcessBpmnExpr {
    const sym = /^(&&|\|\||==|!=|>=|<=|>|<|=|!|\(|\))/.exec(rest);
    if (sym) {
     const s = sym[1]!; i += s.length;
-    out.push(s === '&&' ? {t: 'and', v: s} : s === '||' ? {t: 'or', v: s} : s === '!' ? {t: 'not', v: s} : s === '(' ? {t: 'open', v: s} : s === ')' ? {t: 'close', v: s} : {t: 'cmp', v: s});
+    out.push({t: SYMBOL_KINDS[s] ?? 'cmp', v: s});
     continue;
    }
    const num = /^-?\d+(?:\.\d+)?/.exec(rest), str = /^'([^']*)'|^"([^"]*)"/.exec(rest), word = /^[A-Za-z_][A-Za-z0-9_]*/.exec(rest);
    if (num) { out.push({t: 'num', v: num[0]}); i += num[0].length; }
    else if (str) { out.push({t: 'str', v: str[1] ?? str[2] ?? ''}); i += str[0].length; }
    else if (word) {
-    const w = word[0], lower = w.toLowerCase(); i += w.length;
-    out.push(lower === 'and' ? {t: 'and', v: w} : lower === 'or' ? {t: 'or', v: w} : lower === 'not' ? {t: 'not', v: w} : Object.hasOwn(OPS, lower) && lower.length > 1 && /^[a-z]+$/.test(w) && lower === w ? {t: 'cmp', v: w}
-     : ['true', 'false', 'null'].includes(w) ? {t: 'lit', v: w} : {t: 'id', v: w});
+    const w = word[0];
+    i += w.length;
+    out.push({t: wordKind(w), v: w});
    } else throw Error('unexpected character "' + rest[0] + '"');
   }
   return out;
@@ -52,7 +74,10 @@ declare namespace LWProcessBpmnExpr {
    if (t.t === 'num') return {value: Number(t.v)};
    if (t.t === 'str') return {value: t.v};
    if (t.t === 'lit') return {value: t.v === 'true' ? true : t.v === 'false' ? false : null};
-   if (t.t === 'id') { if (!FIELD.test(t.v)) throw Error('"' + t.v + '" is not a usable case field name (lower-case start, letters, digits and _)'); return {field: t.v}; }
+   if (t.t === 'id') {
+    if (!FIELD.test(t.v)) throw Error('"' + t.v + '" is not a usable case field name (lower-case start, letters, digits and _)');
+    return {field: t.v};
+   }
    throw Error('expected a field or a value near "' + t.v + '"');
   };
   const comparison = (): LWProcess.When => {
@@ -97,7 +122,11 @@ declare namespace LWProcessBpmnExpr {
   walk(when, 1);
  }
  /** A field name the grammar would read as something else (a literal, an operator word or and/or/not) has no standard expression. */
- const plain = (name: string) => !['true', 'false', 'null'].includes(name) && !(Object.hasOwn(OPS, name) && /^[a-z]+$/.test(name)) && !['and', 'or', 'not'].includes(name.toLowerCase());
+ function plain(name: string): boolean {
+  if (['true', 'false', 'null'].includes(name)) return false;
+  if (Object.hasOwn(OPS, name) && /^[a-z]+$/.test(name)) return false;
+  return !['and', 'or', 'not'].includes(name.toLowerCase());
+ }
  /** The right-hand side as grammar text: a plain field, a quoted text (single quotes, else double quotes; text holding both has none) or a plain number. */
  function operandText(c: LWProcess.Condition): string | undefined {
   if (c.valueField !== undefined) return plain(c.valueField) ? c.valueField : undefined;

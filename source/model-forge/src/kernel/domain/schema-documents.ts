@@ -1,3 +1,5 @@
+// Persisted document contracts: scenes (with camera and environment), parametric models
+// and the portable model bundle that carries a model with its dependency closure.
 import { z } from 'zod';
 import { Id, NumberValue, Color } from './schema-values.js';
 import { GeometrySchema } from './schema-geometry.js';

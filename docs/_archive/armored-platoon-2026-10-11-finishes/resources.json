@@ -1,0 +1,46 @@
+{
+  "passed": 10,
+  "total": 10,
+  "results": [
+    {
+      "name": "Armored v2 typed textures realize with actual pinned Three and preserve detached pixel and material roles",
+      "passed": true
+    },
+    {
+      "name": "Armored scalar visual version one remains unchanged and rejects textured version two payloads",
+      "passed": true
+    },
+    {
+      "name": "Armored typed image admission rejects external resources malformed bytes and accessors before allocation",
+      "passed": true
+    },
+    {
+      "name": "Armored texture resource closure rejects dangling duplicate orphaned resources and absent UV coordinates",
+      "passed": true
+    },
+    {
+      "name": "Armored texture sampling color-space and normal interpretation reject unsafe material upload state",
+      "passed": true
+    },
+    {
+      "name": "Armored aggregate image budget charges independent assets rather than only individual texture records",
+      "passed": true
+    },
+    {
+      "name": "Visual disposal releases shared template clone array-material textures and extras exactly once per owner",
+      "passed": true
+    },
+    {
+      "name": "Visual cleanup drains remaining identities when one disposer fails",
+      "passed": true
+    },
+    {
+      "name": "Failed Three material construction releases already staged geometry textures and materials",
+      "passed": true
+    },
+    {
+      "name": "Armored world destruction is idempotent isolates surviving worlds and prevents resource resurrection",
+      "passed": true
+    }
+  ]
+}

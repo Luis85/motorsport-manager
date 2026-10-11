@@ -2,23 +2,15 @@
 
 Armored Platoon is an independently versioned `armored` Wildlands game template.
 It is an early integrated browser implementation, not a completed recreation or
-an M1 fidelity acceptance. The [parity ledger](armored-platoon-parity.md) retains
-the full requested scope and remaining gaps. The [dated integration record](../_archive/armored-platoon-2026-10-10-integration.md)
-records the earlier `187dd821` implementation and verification limits. The
-v2 implementation `bbf8475e80d59754bef4df4448492979f492624c` passed the fast
-tier: **902/902 checks in 51 suites**, including
-**68/68 Armored Node checks**. Corrected visual captures reported zero errors
-and warnings; final browser **12/12**, CLI current-output and all seven demo
-freshness checks passed. Full CI passed **2,192/2,192 checks across 123 suites**
-in 2,076.55 seconds; separate guarded Storytelling 24 and Godot export 21 checks
-also passed. Native CI passed all six shards and aggregation: 103 suites /
-21,346 checks. All ten implementation workflows are terminal successes. A
-bounded 30-minute software observation
-of `bbf8475e` completed 338/338 scripted workload commands without errors or
-warnings; it does not establish hardware performance or leak freedom. The
-[11 October evidence archive](../_archive/armored-platoon-2026-10-11-evidence/README.md)
-separates intermediate passes from the final source and artifacts. Earlier green
-gates do not verify these changes.
+an M1 fidelity acceptance. The [parity ledger](armored-platoon-parity.md) retains the full requested scope
+and remaining gaps. The native-finish/navigation increment adds portable PBR maps,
+refined original vehicles, hull-aware routes and accessible action feedback.
+After integration with merged Model Forge/Process Studio main, the local fast
+gate passed **1,057/1,057 checks in 56 suites**, and the browser passed **16/16**.
+The [dated evidence](../_archive/armored-platoon-2026-10-11-finishes/README.md)
+separates pre-integration and integrated results, failures and remaining checks.
+The earlier [v2 archive](../_archive/armored-platoon-2026-10-11-evidence/README.md)
+retains its full CI and 30-minute observation; those do not verify newer source.
 
 ## Build and play
 

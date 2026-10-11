@@ -1,0 +1,62 @@
+{
+  "passed": 14,
+  "total": 14,
+  "results": [
+    {
+      "name": "Swept routes reject thin barriers between lattice nodes and impossible chokes",
+      "passed": true
+    },
+    {
+      "name": "Straight narrow passages admit full hull width while blocked destinations fail closed",
+      "passed": true
+    },
+    {
+      "name": "Detours reserve hull length at turns and stay outside obstacle geometry",
+      "passed": true
+    },
+    {
+      "name": "Known wrecks and stationary allies obstruct routes without hidden enemy pose leakage",
+      "passed": true
+    },
+    {
+      "name": "Destroyed cover and vertically separated structures release their route footprint",
+      "passed": true
+    },
+    {
+      "name": "Reverse escape remains latched while moving and stops after its bounded duration",
+      "passed": true
+    },
+    {
+      "name": "A blocked pivot automatically reverses clear before resuming its commanded route",
+      "passed": true
+    },
+    {
+      "name": "Reverse escape refuses a rear wall or known allied hull and never drives through either",
+      "passed": true
+    },
+    {
+      "name": "Blocked goals stay bounded without phantom movement or accumulating recovery state",
+      "passed": true
+    },
+    {
+      "name": "Detached mid-recovery continuation preserves every motor and navigation field",
+      "passed": true
+    },
+    {
+      "name": "Explicit v1 retains the independently captured legacy route choice",
+      "passed": true
+    },
+    {
+      "name": "Old v2 saves retain original path and motor arithmetic when navigation is absent or explicitly legacy",
+      "passed": true
+    },
+    {
+      "name": "Navigation policy persists exactly through new and legacy checkpoint restoration and recovery",
+      "passed": true
+    },
+    {
+      "name": "Checkpoint admission rejects unknown navigation policies and incompatible legacy solver selection",
+      "passed": true
+    }
+  ]
+}

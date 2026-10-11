@@ -1,3 +1,5 @@
+// Edit transaction contracts: the guarded operation batch applied by `apply`. The
+// revision/state guards are shared with Scene Forge composition files.
 import { z } from 'zod';
 import { Id, NumberValue, Vec3 } from './schema-values.js';
 import { GeometrySchema } from './schema-geometry.js';

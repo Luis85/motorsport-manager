@@ -8,6 +8,11 @@
  * studio state establishes it (fresh load, import, process switch, open dialog). After every check the page is
  * returned to the suite's desktop viewport with motion allowed, so a failed check cannot change the geometry
  * that later checks start from.
+ *
+ * Every page load starts with empty browser storage: the studio keeps a recovery copy of an unapplied draft in
+ * `localStorage` (LWProcessRecovery), and a copy left by an earlier check would otherwise be offered in a modal
+ * question on the next fresh load. A check that tests recovery across a reload opts in for its tab by setting
+ * `sessionStorage[KEEP_STORAGE] = '1'` (and removes it again when done).
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -24,10 +29,17 @@ export const GAME_DIR = path.resolve(PROJECT, '../../docs/concepts/agency-delive
 export const CLI = path.join(PROJECT, '.generated/tools/wildlands-cli.cjs');
 /** The viewport every suite starts at and every check returns to. */
 export const DESKTOP = {width: 1440, height: 1060} as const;
+/** The sessionStorage flag that keeps localStorage across the next page loads of this tab. */
+export const KEEP_STORAGE = 'wildlands-verification-keep-storage';
 /** Routed document URLs: the studio itself, then the pages that reopen downloaded or rebuilt artifacts. */
-const FIXTURE_URLS = ['https://localhost/process', 'https://localhost/exported', 'https://localhost/escaped', 'https://localhost/multi-exported', 'https://localhost/single'] as const;
+const FIXTURE_URLS = [
+ 'https://localhost/process', 'https://localhost/exported', 'https://localhost/escaped', 'https://localhost/multi-exported', 'https://localhost/single'
+] as const;
 
-export interface StudioQuery {snapshot: LWProcess.Snapshot; definition: LWProcess.Definition; mode: string; selected: string | null; playing: boolean; horizon: number | null; active: number; processes: {id: string; name: string}[]; presenting: {index: number; count: number; id: string} | null}
+export interface StudioQuery {
+ snapshot: LWProcess.Snapshot; definition: LWProcess.Definition; mode: string; selected: string | null; playing: boolean; horizon: number | null;
+ active: number; processes: {id: string; name: string}[]; presenting: {index: number; count: number; id: string} | null
+}
 export async function query(page: Page): Promise<StudioQuery> {
  return page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {query(): any}}).LWProcessStudio.query());
 }
@@ -43,23 +55,43 @@ function studioHelpers(page: Page, context: BrowserContext, file: string, count:
  const freshStudio = async () => { await openArtifact(page, file, {url: FIXTURE_URLS[0]}); await waitForReady(page, {host: 'process'}); };
  // The Definition editor is a modal (dialog id "de"): these helpers open it from the header, leave it, restore the draft and apply through it.
  const defOpen = page.locator('dialog.de-dialog[open]');
- const openDef = async () => { await page.locator('#open-definition').click(); await defOpen.waitFor(); if (await page.locator('.de-tabs').isVisible()) await page.locator('#de-tab-json').click(); };
+ const openDef = async () => {
+  await page.locator('#open-definition').click();
+  await defOpen.waitFor();
+  if (await page.locator('.de-tabs').isVisible()) await page.locator('#de-tab-json').click();
+ };
  const closeDef = async () => { if (await defOpen.count()) { await page.locator('#de-cancel').click(); await defOpen.waitFor({state: 'hidden'}); } };
  const restoreDef = async () => { await page.locator('#de-restore').click(); await page.locator('#de-restore-confirm').click(); };
- const applyDef = async () => { await page.locator('#de-apply').click(); const reset = page.locator('#de-apply-reset'); if (await reset.isVisible()) await reset.click(); await defOpen.waitFor({state: 'hidden'}); };
+ const applyDef = async () => {
+  await page.locator('#de-apply').click();
+  const reset = page.locator('#de-apply-reset');
+  if (await reset.isVisible()) await reset.click();
+  await defOpen.waitFor({state: 'hidden'});
+ };
  // Exports live in the header's Export menu; Inputs & outputs is a collapsible panel that is closed below 1600px wide until opened.
  const exportVia = async (id: string) => { await page.locator('#export-menu').click(); await page.locator(id).click(); };
- const showIo = async () => { if (!(await page.locator('#io-panel').evaluate((d: HTMLDetailsElement) => d.open))) await page.locator('#io-panel > summary').click(); };
+ // The panel draws on its toggle event, a task after the click, so wait for its content.
+ const showIo = async () => {
+  if (!(await page.locator('#io-panel').evaluate((d: HTMLDetailsElement) => d.open))) await page.locator('#io-panel > summary').click();
+  await page.locator('#process-data > *').first().waitFor();
+ };
  const draftText = () => page.evaluate(() => (document.getElementById('draft') as HTMLTextAreaElement).value);
  const defOf = async () => JSON.parse(await draftText()) as LWProcess.Definition;
  const inSync = () => page.waitForFunction(() => document.getElementById('de-sync')!.textContent === 'Form in sync');
  const dialogOpen = () => page.locator('dialog.pd-dialog[open]').count();
  const activeId = () => page.evaluate(() => document.activeElement?.id ?? '');
+ // Importing over a run past minute 0 (or an unapplied draft) asks first; these helpers answer with the confirming choice. Switching never
+ // asks (each process keeps its own paused run); a recovery offer after a switch only appears in checks that keep storage on purpose.
+ const asked = page.locator('dialog.ask-dialog[open]');
+ const confirmIfAsked = async () => { if (await asked.count()) { await page.locator('#ask-go').click(); await asked.waitFor({state: 'hidden'}); } };
  const switchTo = async (index: number) => {
   const select = page.locator('#process-switch'); await select.focus(); await select.selectOption(String(index));
-  await page.waitForFunction(i => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === i, index);
+  const active = (i: number) => (globalThis as unknown as {LWProcessStudio: {query(): {active: number}}}).LWProcessStudio.query().active === i;
+  await page.waitForFunction(i => (globalThis as any).LWProcessStudio.query().active === i || !!document.querySelector('dialog.ask-dialog[open]'), index);
+  await confirmIfAsked(); await page.waitForFunction(active, index);
  };
- const nameOf = (i: number) => page.evaluate(n => (globalThis as unknown as {LWProcessStudio: {definitions(): {name: string}[]}}).LWProcessStudio.definitions()[n]!.name, i);
+ const nameOf = (i: number) => page.evaluate(
+  n => (globalThis as unknown as {LWProcessStudio: {definitions(): {name: string}[]}}).LWProcessStudio.definitions()[n]!.name, i);
  const allNames = async () => { const names: string[] = []; for (let i = 0; i < count; i++) names.push(await nameOf(i)); return names; };
  const applyDraft = async (change: (d: LWProcess.Definition) => void) => {
   await openDef(); const d = JSON.parse(await page.locator('#draft').inputValue()) as LWProcess.Definition; change(d);
@@ -67,7 +99,10 @@ function studioHelpers(page: Page, context: BrowserContext, file: string, count:
  };
  const importJson = async (name: string, definition: object) => {
   await page.locator('#file').setInputFiles({name, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(definition))});
-  await page.waitForFunction(n => document.getElementById('message')!.textContent!.includes('Imported ' + n), name);
+  const settled = (n: string) => document.getElementById('message')!.textContent!.includes('Imported ' + n)
+   || !!document.querySelector('dialog.ask-dialog[open]');
+  await page.waitForFunction(settled, name);
+  await confirmIfAsked(); await page.waitForFunction(n => document.getElementById('message')!.textContent!.includes('Imported ' + n), name);
  };
  const importFeed = async (extra: object = {}) => { await freshStudio(); await importJson('feed-line.json', feedFixture(extra)); };
  const importRandom = async () => {
@@ -75,7 +110,11 @@ function studioHelpers(page: Page, context: BrowserContext, file: string, count:
   await page.locator('#file').setInputFiles({name, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(randomLine()))});
   await page.waitForFunction(n => document.getElementById('message')!.textContent!.includes('Imported ' + n), name);
  };
- const openRandom = async (id: string) => { await page.locator(`[data-step="${id}"]`).click(); await page.locator('#edit-step').click(); await page.locator('dialog.pd-dialog[open]').waitFor(); };
+ const openRandom = async (id: string) => {
+  await page.locator(`[data-step="${id}"]`).click();
+  await page.locator('#edit-step').click();
+  await page.locator('dialog.pd-dialog[open]').waitFor();
+ };
  const savedStep = async (id: string) => (JSON.parse(await draftText()) as LWProcess.Definition).steps.find(s => s.id === id)!;
  const importJourney = async () => {
   await freshStudio(); const name = 'web-shop-journey.json';
@@ -95,8 +134,8 @@ function studioHelpers(page: Page, context: BrowserContext, file: string, count:
   const area = page.locator('#draft'); await area.focus(); await area.press('ControlOrMeta+A'); await area.press('ControlOrMeta+V');
   await page.waitForFunction(t => (document.getElementById('draft') as HTMLTextAreaElement).value === t, text);
  };
- return {freshStudio, defOpen, openDef, closeDef, restoreDef, applyDef, exportVia, showIo, draftText, defOf, inSync, dialogOpen, activeId, switchTo, nameOf, allNames, applyDraft,
-  importJson, importFeed, importRandom, openRandom, savedStep, importJourney, importClaims, pasteDraft};
+ return {freshStudio, defOpen, openDef, closeDef, restoreDef, applyDef, exportVia, showIo, draftText, defOf, inSync, dialogOpen, activeId, switchTo,
+  nameOf, allNames, applyDraft, importJson, importFeed, importRandom, openRandom, savedStep, importJourney, importClaims, pasteDraft};
 }
 
 export type Studio = ReturnType<typeof studioHelpers> & {
@@ -125,11 +164,16 @@ export function runSuite(harness: string, resultFile: string, suite: (studio: St
   fs.mkdirSync(OUT, {recursive: true}); const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'process-browser-'));
   try {
    const file = path.join(dir, 'process.html'); buildGame(GAME_DIR, file);
-   const gameDefinitions = (JSON.parse(fs.readFileSync(path.join(GAME_DIR, 'game.json'), 'utf8')) as {content: {definitions: string[]}}).content.definitions, COUNT = gameDefinitions.length;
-   assert(COUNT >= 5, 'the agency game holds three business processes and two journeys');
+   const gameDefinitions = (JSON.parse(fs.readFileSync(path.join(GAME_DIR, 'game.json'), 'utf8')) as {content: {definitions: string[]}}).content.definitions,
+    COUNT = gameDefinitions.length;
+   assert(COUNT >= 5, `the agency game holds at least five process definitions (game.json lists ${COUNT})`);
    const browser = await launchBrowser();
    try {
-    const context = await browser.newContext({viewport: {...DESKTOP}}), diagnostics = monitorContext(context, {fixtureUrls: FIXTURE_URLS}), page = await context.newPage();
+    const context = await browser.newContext({viewport: {...DESKTOP}}), diagnostics = monitorContext(context, {fixtureUrls: FIXTURE_URLS}),
+     page = await context.newPage();
+    await context.addInitScript(flag => {
+     try { if (sessionStorage.getItem(flag) !== '1') localStorage.clear(); } catch { /* storage blocked */ }
+    }, KEEP_STORAGE);
     page.setDefaultTimeout(15000);
     const check = async (name: string, work: () => Promise<void>) => {
      let failed = false;
@@ -141,7 +185,8 @@ export function runSuite(harness: string, resultFile: string, suite: (studio: St
      assert.deepEqual(diagnostics.consoleProblems.filter(x => x.startsWith('error:')), []);
     });
     await openArtifact(page, file, {url: FIXTURE_URLS[0]}); await waitForReady(page, {host: 'process'});
-    await suite({...studioHelpers(page, context, file, COUNT), page, context, diagnostics, dir, file, cli: CLI, gameDir: GAME_DIR, gameDefinitions, COUNT, fixtureUrls: FIXTURE_URLS, check, checkLifecycle});
+    await suite({...studioHelpers(page, context, file, COUNT), page, context, diagnostics, dir, file, cli: CLI, gameDir: GAME_DIR, gameDefinitions, COUNT,
+     fixtureUrls: FIXTURE_URLS, check, checkLifecycle});
    } finally {await browser.close();}
   } finally {fs.rmSync(dir, {recursive: true, force: true});}
  };

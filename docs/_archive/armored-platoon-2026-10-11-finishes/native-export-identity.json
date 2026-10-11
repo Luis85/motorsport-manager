@@ -1,0 +1,33 @@
+{
+  "environment": "existing isolated copied source project, with three assigned files refreshed from current worktree; shared .generated untouched",
+  "godot": "4.7.2.stable.official.ed1daf0bf",
+  "checks": 22,
+  "sourceIdentities": [
+    {
+      "path": "source/wildlands-godot/assets.gd",
+      "bytes": 12359,
+      "sha256": "df367393269987c973af5b1e5eb7bd100940acfac64bdcb0da56b287a9dc16cf"
+    },
+    {
+      "path": "source/wildlands-godot/test-native-appearance.gd",
+      "bytes": 9411,
+      "sha256": "c21272ed528e5dee2771b7c52f8c6cab5cd9616b2f91abcfb1da4d61917e0686"
+    },
+    {
+      "path": "source/test-wildlands-godot.cts",
+      "bytes": 10703,
+      "sha256": "3f6e57b7a2fca57b987d0c55dcf2b2b4c5f469bda489a11725141879b28ebce3"
+    },
+    {
+      "path": ".generated/wildlands-godot-templates.json",
+      "bytes": 72266,
+      "sha256": "686c0eb966490a3297c369ca16b821aad95358103f4063aff6d29d015f88fc63"
+    },
+    {
+      "path": ".generated/wildlands-runtime-bundle.json",
+      "bytes": 1447078,
+      "sha256": "052d2537a55648edb18aa52890a7c64783b72c1ed1bad226fe6183399b4c3e11"
+    }
+  ],
+  "scope": "Native default palette identity matches runtime key with both first-seen descriptor orders. Headless export/material contract check, no rendered or hardware performance claim."
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "m4-sherman",
+    "replayByteIdentical": true,
+    "threeSHA256": "550cc7ed9c95e7e92342264ad96c107d14b1b0ea11918ad7963cc0f24e9b65fd",
+    "threeBytes": 5203967,
+    "compactBytes": 3659025
+  },
+  {
+    "id": "panzer-iv",
+    "replayByteIdentical": true,
+    "threeSHA256": "0971a8a2c55e823bb06ab7ec928a7b75eeef4c0fa00eeaab67e701a71d234b82",
+    "threeBytes": 5021483,
+    "compactBytes": 3505133
+  }
+]

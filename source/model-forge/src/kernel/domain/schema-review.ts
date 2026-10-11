@@ -1,3 +1,5 @@
+// Capture and audit contracts: named review views, exact camera snapshots, camera
+// requests, multi-frame review plans and visible-geometry quality policies.
 import { z } from 'zod';
 import { Id, NumberValue, Color } from './schema-values.js';
 
