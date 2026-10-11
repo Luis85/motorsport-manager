@@ -948,12 +948,12 @@
     },
     {
       "source": "work/armored-v3-final-ci-wildlands/artifact-download.headers",
-      "path": "wildlands/artifact-download.headers",
+      "path": "wildlands/artifact-download.headers.gz",
       "sourceBytes": 143,
       "sourceSha256": "5116e42bce4767bb17923893a344de600b718d141b5550cdbb56875120b68215",
-      "bytes": 143,
-      "sha256": "5116e42bce4767bb17923893a344de600b718d141b5550cdbb56875120b68215",
-      "gzip": false
+      "bytes": 141,
+      "sha256": "eb7859f62d38ad77b459236432971b3531e90e1711cf8411d330dd2de01e1ec8",
+      "gzip": true
     },
     {
       "source": "work/armored-v3-final-ci-wildlands/checkout-identity.json",

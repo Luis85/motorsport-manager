@@ -104,3 +104,6 @@ alongside readable summaries and complete compressed job logs.
 
 The [runtime archive map](runtime/archive-map.json) resolves preserved execution-time
 relative paths and compressed log names without rewriting original receipts.
+
+HTTP response headers are stored as lossless gzip to preserve their original
+CRLF bytes through Git checkout. The staging manifest records this transformation.
