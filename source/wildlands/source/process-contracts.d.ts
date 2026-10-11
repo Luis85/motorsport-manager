@@ -114,6 +114,11 @@ declare namespace LWProcess {
  /** `entered` equals `visits` (every entry); `reached` counts distinct cases that entered at least once. */
  interface StepMetric {
   id: string; queued: number; active: number; timers: TimerMetric; visits: number; completed: number; waitMinutes: number; entered: number; reached: number; tracked: Record<string, TrackedEntry>;
+  /**
+   * Read model: tokens at the step with status `held`, i.e. work that finished here and is blocked until the next step's backlog has
+   * room (a subset of `queued`, which counts every token here that is neither active nor on a timer). Blocked time is not in `waitMinutes`.
+   */
+  held: number;
   /** Only on steps that declare a `deadline`: cumulative deadline outcomes. */
   deadlines?: {interrupted: number; escalated: number};
   /** Only on steps that declare `instances`: cumulative items started and finished (`queued` and `active` count items there). */
@@ -133,6 +138,13 @@ declare namespace LWProcess {
   minute: number; status: 'ready' | 'running' | 'completed' | 'blocked' | 'limit';
   cases: Case[]; tokens: Token[]; receipts: Receipt[]; receiptsDropped: number; steps: StepMetric[]; resources: PoolMetric[]; events: Event[];
   metrics: { arrived: number; completed: number; failed: number; dropped: number; active: number; cost: number; meanCycleMinutes: number; throughputPerHour: number;
+   /** Read model: every pool unit charged for every minute so far, busy or idle (Σ capacity × costPerMinute × minute); `cost` stays the work cost. */
+   capacityCost: number;
+   /**
+    * Read model: mean minutes since arrival of the cases still in progress (3 decimals); `null` when none is.
+    * `meanCycleMinutes` covers finished cases only and is 0 until one finishes.
+    */
+   meanAgeMinutes: number | null;
    /** Completed cases that ended at a `goal` / `lost` end step; `conversion` is goals*1000/(goals+lost) rounded half up (permille), `null` when neither happened. */
    goals: number; lost: number; conversion: number | null; tracked: Record<string, TrackedFinish>; };
   /** Seed in use; every random draw is a pure function of it and a stable identity. */

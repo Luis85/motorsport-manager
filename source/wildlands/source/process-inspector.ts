@@ -10,9 +10,15 @@ declare namespace LWProcessInspector {
   overview(view: LWProcessApp.View, moreOpen: boolean): string;
   /** One step: description, timing, branching, multiple instances and deadline (with their live counters), random timing and outcomes, needs, outputs, backlog and the steps that can follow. */
   step(view: LWProcessApp.View, step: LWProcess.Step): string;
-  /** The KPI strip cells under the stage: counts and cost, plus goals, lost, conversion and up to two tracked measures for journeys. HTML without the seed note. */
+  /**
+   * The KPI strip cells under the stage: counts, mean cycle ('—' until a case finishes), mean age in progress, work cost and capacity cost,
+   * plus goals, lost, conversion and up to two tracked measures for journeys. HTML without the seed note.
+   */
   kpis(view: LWProcessApp.View): string;
-  /** Shared resources as utilisation meters. Colour is never the only signal: the percentage and the busy count are text. */
+  /**
+   * Shared resources as utilisation meters, then one sentence on work and capacity cost. The percentage is the average utilisation
+   * since minute 0 and the busy count is right now; both are text, so colour is never the only signal.
+   */
   pools(view: LWProcessApp.View): string;
  }
 }
@@ -31,7 +37,11 @@ declare namespace LWProcessInspector {
  function kpis(view: LWProcessApp.View): string {
   const m = view.snapshot.metrics, t = root.LWProcessTerms.of(view.definition), cells: string[][] = [[t.finished, num(m.completed)]];
   const outcomes = m.goals + m.lost > 0 ? [['Goals', num(m.goals)], ['Lost', num(m.lost)], ['Conversion', (m.conversion! / 10).toFixed(1) + '%']] : [];
-  cells.push(...outcomes, ['In progress', num(m.active)], ['Mean cycle', num(m.meanCycleMinutes) + ' min'], ['Simulated cost', num(m.cost)], ['Failed', num(m.failed)]);
+  // Mean cycle covers finished cases only: '—' until one finishes, with the mean age of the cases still in progress beside it.
+  const age = m.meanAgeMinutes === null ? '—' : num(m.meanAgeMinutes) + ' min';
+  const cycle = m.completed ? num(m.meanCycleMinutes) + ' min' : '—';
+  cells.push(...outcomes, ['In progress', num(m.active)], ['Mean cycle', cycle], ['Mean age in progress', age]);
+  cells.push(['Work cost', num(m.cost)], ['Capacity cost', num(m.capacityCost)], ['Failed', num(m.failed)]);
   if (m.dropped > 0) cells.push(['Dropped', num(m.dropped)]);
   cells.push(...trackedFinish(view).slice(0, 2).map(x => [esc(x.label) + ' (avg)', dec(x.mean)]));
   return cells.map(([label, value]) => `<div><span>${label}</span><strong>${value}</strong></div>`).join('');
@@ -114,9 +124,14 @@ declare namespace LWProcessInspector {
   }
   return html;
  }
+ /** 'Blocked after finishing': work done here that waits for room in the next step's backlog; shown when a next step has a backlog or work is blocked. */
+ function blockedHtml(view: LWProcessApp.View, s: LWProcess.Step, m: LWProcess.StepMetric): string {
+  const d = view.definition, next = d.flows.filter(f => f.from === s.id).map(f => d.steps.find(x => x.id === f.to));
+  return next.some(x => x?.backlog) || m.held > 0 ? row('Blocked after finishing', `${num(m.held)} blocked · waiting for room in the next backlog`) : '';
+ }
  function step(view: LWProcessApp.View, s: LWProcess.Step): string {
   const q = view.snapshot, m = q.steps.find(m => m.id === s.id)!, busy = (s.instances ? 'Items ' : '') + (automated(s) ? 'running / waiting' : 'working / waiting');
-  return `<p>${esc(s.description ?? s.name)}</p>${automated(s) ? `<p class="process-auto">Runs automatically${s.technology ? ' on ' + esc(s.technology) : ''}. No people are needed.</p>` : ''}<dl>${timingHtml(s, m)}<dt>${busy[0]!.toUpperCase() + busy.slice(1)}</dt><dd>${m.active} / ${m.queued}</dd><dt>Completed visits</dt><dd>${num(m.completed)}</dd><dt>Total queue time</dt><dd>${num(m.waitMinutes)} min</dd><dt>Fixed cost per visit</dt><dd>${num(s.cost ?? 0)}</dd></dl>${journeyHtml(view, s, m)}${logicHtml(view, s, m)}${randomHtml(s)}${needsHtml(view, s)}${outputsHtml(s, q)}${backlogHtml(s, q)}<h3>Next steps</h3>${nextHtml(view, s)}`;
+  return `<p>${esc(s.description ?? s.name)}</p>${automated(s) ? `<p class="process-auto">Runs automatically${s.technology ? ' on ' + esc(s.technology) : ''}. No people are needed.</p>` : ''}<dl>${timingHtml(s, m)}<dt>${busy[0]!.toUpperCase() + busy.slice(1)}</dt><dd>${m.active} / ${m.queued - m.held}</dd>${blockedHtml(view, s, m)}<dt>Completed visits</dt><dd>${num(m.completed)}</dd><dt>Total queue time</dt><dd>${num(m.waitMinutes)} min</dd><dt>Fixed cost per visit</dt><dd>${num(s.cost ?? 0)}</dd></dl>${journeyHtml(view, s, m)}${logicHtml(view, s, m)}${randomHtml(s)}${needsHtml(view, s)}${outputsHtml(s, q)}${backlogHtml(s, q)}<h3>Next steps</h3>${nextHtml(view, s)}`;
  }
  /** Counts of the BPMN-class steps with their cumulative item and deadline counters; '' when the process has none. */
  function logicSummary(view: LWProcessApp.View): string {
@@ -135,12 +150,16 @@ declare namespace LWProcessInspector {
    <dl><dt>Steps</dt><dd>${d.steps.length}</dd><dt>Connections</dt><dd>${d.flows.length}</dd><dt>Revision</dt><dd>${d.revision}</dd><dt>Seed</dt><dd>${seed}${seed !== (d.seed ?? 1) ? ' · set for this run' : ''}</dd>${t.journey ? `<dt>Process type</dt><dd>${t.label}</dd>` : ''}</dl>${tracked.length ? `<h3>Tracked measures</h3><dl class="process-tracked">${tracked.map(x => `<dt>${esc(x.label)}</dt><dd>${dec(x.mean)} average · ${dec(x.min!)} to ${dec(x.max!)} · ${num(x.n)} ${x.n === 1 ? t.one : t.many}</dd>`).join('')}</dl>` : ''}${logicSummary(view)}
    <h3>Arrivals</h3>${d.arrivals.length ? `<ul class="process-adds" aria-label="Arrival streams">${d.arrivals.map(a => `<li>${esc(v.describeArrival(a, t))}</li>`).join('')}</ul>` : '<p>No arrivals defined.</p>'}`;
  }
+ /** One plain sentence under the meters that tells the two KPI costs apart. */
+ const COST_NOTE = '<p class="process-cost-note">Work cost charges pools only for the minutes they work, plus fixed step costs. '
+  + 'Capacity cost charges every pool unit for every minute, busy or idle. Both are simulated units, not money.</p>';
  function pools(view: LWProcessApp.View): string {
   const d = view.definition;
-  return view.snapshot.resources.map(p => {
+  const meters = view.snapshot.resources.map(p => {
    const name = d.resources.find(r => r.id === p.id)!.name, pct = Math.round(p.utilization * 100), level = pct >= 85 ? 'hot' : pct >= 70 ? 'warm' : 'ok';
-   return `<div class="process-pool"><div class="pool-head"><strong>${esc(name)}</strong><span class="pool-pct">${pct}%</span></div><div class="pool-bar" data-level="${level}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-valuetext="${pct}% used${level === 'hot' ? ', nearly full' : ''}" aria-label="${esc(name)} utilisation"><i style="width:${Math.min(100, pct)}%"></i></div><small>${p.busy}/${p.capacity} busy now</small></div>`;
-  }).join('') || '<p>No shared resources defined.</p>';
+   return `<div class="process-pool"><div class="pool-head"><strong>${esc(name)}</strong><span class="pool-pct">${pct}%</span></div><div class="pool-bar" data-level="${level}" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-valuetext="${pct}% average utilisation since minute 0${level === 'hot' ? ', nearly full' : ''}; ${p.busy} of ${p.capacity} busy now" aria-label="${esc(name)} utilisation"><i style="width:${Math.min(100, pct)}%"></i></div><small>Average since minute 0 · ${p.busy}/${p.capacity} busy now</small></div>`;
+  }).join('');
+  return meters ? meters + COST_NOTE : '<p>No shared resources defined.</p>';
  }
  root.LWProcessInspector = {overview, step, kpis, pools};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessInspector;

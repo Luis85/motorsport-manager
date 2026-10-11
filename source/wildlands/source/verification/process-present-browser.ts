@@ -97,7 +97,8 @@ runSuite('process present browser harness', 'process-present-browser-results.jso
   await freshStudio(); await page.locator('#advance').click(); await page.waitForFunction(() => (globalThis as unknown as PageGlobals).LWProcessStudio.query().snapshot.minute === 30);
   const before = await query(page); assert.equal(before.playing, false); const snapshot = JSON.stringify(before.snapshot);
   await page.locator('#steps [data-step="discovery"]').click(); await openPresent(); const deck = await expectedDeck();
-  assert.deepEqual([await page.locator('#present-note').isHidden(), await page.locator('#present-run').innerText(), await page.locator('#message').innerText()], [true, `Live facts come from one simulated run at minute 30 (seed ${before.snapshot.seed}).`, 'Presenting slides.']);
+  const run = `Live facts come from one simulated run at business minute 30 (seed ${before.snapshot.seed}, still running).`;
+  assert.deepEqual([await page.locator('#present-note').isHidden(), await page.locator('#present-run').innerText(), await page.locator('#message').innerText()], [true, run, 'Presenting slides.']);
   await press('Home');
   for (let i = 0; i < deck.slides.length; i++) {
    if (i > 0) await press('ArrowRight');
@@ -121,7 +122,8 @@ runSuite('process present browser harness', 'process-present-browser-results.jso
   assert.equal(entered.playing, false, 'entering paused the run'); assert.ok(minute > running);
   assert.deepEqual([await page.locator('#present-note').isVisible(), await page.locator('#present-note').innerText(), await page.locator('#message').innerText()],
    [true, 'The run is paused while you present.', 'Presenting slides. The run is paused while you present.']);
-  assert.equal(await page.locator('#present-run').innerText(), `Live facts come from one simulated run at minute ${minute.toLocaleString('en-US')} (seed ${entered.snapshot.seed}).`);
+  const run = `Live facts come from one simulated run at business minute ${minute.toLocaleString('en-US')} (seed ${entered.snapshot.seed}, still running).`;
+  assert.equal(await page.locator('#present-run').innerText(), run);
   await nextFrames(page, PULSE_FRAMES); await press('End'); await press('Home'); assert.deepEqual([await minuteOf(), (await query(page)).playing], [minute, false], 'nothing ticks while presenting');
   await escapeOut(); await nextFrames(page, PULSE_FRAMES); const left = await query(page);
   assert.deepEqual([left.snapshot.minute, left.playing, await page.locator('#play').innerText()], [minute, false, 'Run simulation'], 'nothing resumes on exit');
@@ -131,7 +133,9 @@ runSuite('process present browser harness', 'process-present-browser-results.jso
  await check('Present opens on the selected step slide or slide 1, and a step chosen on the map moves the deck to its slide', async () => {
   await freshStudio(); const deck = await expectedDeck(), index = deck.slides.findIndex(s => s.id === 'step-design-ready');
   assert.equal(index, 10); await page.locator('#steps [data-step="design-ready"]').click(); await openPresent();
-  await at(deck, index, 'opens on the selected step'); assert.equal((await query(page)).selected, 'design-ready'); assert.deepEqual(await mapSteps(), ['design-ready'], 'the map shows that step');
+  await at(deck, index, 'opens on the selected step'); assert.equal((await query(page)).selected, 'design-ready');
+  const near = ['architecture', 'design-ready', 'implementation', 'product-design'];
+  assert.deepEqual((await mapSteps()).sort(), near, 'the map shows that step with its direct neighbours');
   await escapeOut(); assert.equal((await query(page)).selected, 'design-ready');
   await page.locator('#overview').click(); await openPresent(); await at(deck, 0, 'the overview opens on slide 1'); assert.equal((await query(page)).selected, null);
   const all = (await query(page)).definition.steps.map(s => s.id); assert.deepEqual((await mapSteps()).sort(), [...all].sort(), 'slide 1 shows the whole map');
@@ -238,6 +242,54 @@ runSuite('process present browser harness', 'process-present-browser-results.jso
   for (const key of ['Tab', 'Shift+Tab']) for (let i = 0; i < 12; i++) { await press(key); assert.equal(await page.evaluate(() => !!document.activeElement?.closest('#present')), true, `${key} ${i} stays in the presentation`); }
   assert.deepEqual([await page.locator('dialog.pd-dialog[open]').count(), await defOpen.count()], [0, 0]);
   await escapeOut(); assert.equal(await page.evaluate(() => document.getElementById('process-shell')!.inert), false);
+ });
+
+ await check('Present names the run status and an unapplied draft, shows key results and pool use, '
+  + 'and pages with Space, ArrowDown, n and p from the slide', async () => {
+  await freshStudio(); await page.setViewportSize({width: 1440, height: 1060});
+  // A completed run: the header says so, the title slide leads with key results, the resources slide shows pool use.
+  await page.locator('#horizon').selectOption('100000');
+  for (let i = 0; i < 40 && (await query(page)).snapshot.status !== 'completed'; i++) await page.locator('#advance').click();
+  const q = await query(page); assert.equal(q.snapshot.status, 'completed'); const deck = await expectedDeck(); await openPresent(); await at(deck, 0, 'title');
+  const run = `Live facts come from one simulated run at business minute ${q.snapshot.minute.toLocaleString('en-US')} (seed ${q.snapshot.seed}, completed).`;
+  assert.equal(await page.locator('#present-run').innerText(), run);
+  assert.equal(await page.locator('#present-draft').isHidden(), true, 'no draft, no draft note');
+  const facts = () => page.locator('#present-slide .present-facts').innerText();
+  const key = /^Key results · One simulated run · business minute [\d,]+ · seed \d+\n[\s\S]*Run status: completed[\s\S]*Most utilised pool: /;
+  assert.match(await facts(), key);
+  assert.match(await page.locator('#present-slide').innerText(), /Times are simulated business minutes \(min\)/);
+  await press('ArrowRight'); await press('ArrowRight'); await at(deck, 2, 'resources');
+  const pools = await facts(); assert.match(pools, /\d+% average utilisation since minute 0, busy /);
+  for (const pool of q.definition.resources) assert(pools.includes(pool.name + ': '), pool.name);
+  // The summary speaks to the audience: no command-line tip on screen.
+  await press('End'); assert.match(await facts(), /Run status: completed/);
+  assert.doesNotMatch(await page.locator('#present').innerText(), /command line|process slides/);
+  // Paging from the focused slide: Space, ArrowDown and n forward, p, Shift+Space and ArrowUp back.
+  await press('Home'); await press('PageDown'); await press('PageDown'); await press('PageDown'); await at(deck, 3);
+  await page.locator('#present-slide').focus(); assert.equal(await activeId(), 'present-slide');
+  for (const [key, index] of [['Space', 4], ['ArrowDown', 5], ['n', 6], ['p', 5], ['Shift+Space', 4], ['ArrowUp', 3]] as const) {
+   await press(key); await at(deck, index, key + ' from the slide');
+  }
+  assert.equal(await activeId(), 'present-slide', 'focus stays on the slide'); assert.equal((await query(page)).snapshot.minute, q.snapshot.minute);
+  await escapeOut();
+  // A long slide scrolls with Space first and pages only once its end is in view.
+  await switchTo(gameDefinitions.findIndex(f => f.includes('delivery-release')));
+  await page.setViewportSize({width: 1440, height: 700}); await nextFrames(page);
+  const long = await expectedDeck(); await openPresent(); await at(long, 0); const slide = page.locator('#present-slide'); await slide.focus();
+  assert.ok(await slide.evaluate(e => e.scrollHeight > e.clientHeight + 40), 'the title slide is longer than the window');
+  await press('Space'); await at(long, 0, 'Space scrolls a long slide first');
+  await page.waitForFunction(() => document.getElementById('present-slide')!.scrollTop > 0);
+  for (let i = 0; i < 40 && (await query(page)).presenting!.index === 0; i++) await press('Space');
+  await at(long, 1, 'then pages'); await escapeOut();
+  // An unapplied draft is not presented, and Present says so (also to assistive technology).
+  await page.setViewportSize({width: 1440, height: 1060}); await openDef();
+  const draft = JSON.parse(await page.locator('#draft').inputValue()) as LWProcess.Definition;
+  await page.locator('#draft').fill(JSON.stringify({...draft, name: 'Draft name only'})); await closeDef();
+  assert.equal(await page.locator('#draft-chip').isVisible(), true);
+  await openPresent(); assert.equal(await page.locator('#present-process').innerText(), draft.name, 'the applied definition is presented');
+  const note = page.locator('#present-draft');
+  assert.deepEqual([await note.isVisible(), await note.innerText()], [true, 'Showing the applied definition; your unapplied draft is not included.']);
+  assert.match((await page.locator('#present').getAttribute('aria-describedby'))!, /\bpresent-draft\b/); await escapeOut();
  });
 
  await checkLifecycle('Process present browser lifecycle emits no runtime errors or network requests');

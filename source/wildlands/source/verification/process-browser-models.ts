@@ -85,3 +85,15 @@ export const claimsDesk = (rich: boolean, lateFirst = false) => {
    {id: 'f3', from: 'insure', to: 'merge'}, {id: 'f4', from: 'gift', to: 'merge'}, {id: 'f5', from: 'merge', to: 'inspect'}, {id: 'f6', from: 'inspect', to: 'approve'}, ...lateFirst ? [late, normal] : [normal, late], {id: 'f8', from: 'notify', to: 'alert'}],
   arrivals: [{at: 0, count: 6, interval: 6, data: {lines: 3}, draws: [{field: 'insured', kind: 'chance', percent: 50}, {field: 'gift', kind: 'chance', percent: 50}]}]};
 };
+/** A fast step feeding a slow step whose one-item backlog fills, so finished work is held (blocked) upstream. */
+export const blockedLine = (d: LWProcess.Definition) => {
+ const scene = (id: string, x: number) => ({id: 'scene-' + id, position: [x, 0] as [number, number], color: '#91b9d5'});
+ Object.assign(d, {id: 'blocked-line', name: 'Blocked line', description: 'A fast step feeds a slow step with a one-item backlog.', start: 'begin',
+  arrivals: [{at: 0, count: 6, interval: 0, data: {}}],
+  resources: [{id: 'crew', name: 'Crew', capacity: 4, costPerMinute: 1}, {id: 'expert', name: 'Expert', capacity: 1, costPerMinute: 1}],
+  steps: [{id: 'begin', name: 'Begin', kind: 'start', scene: scene('begin', 0)},
+   {id: 'make', name: 'Make the part', kind: 'task', duration: 2, resources: {crew: 1}, scene: scene('make', 14)},
+   {id: 'check', name: 'Check the part', kind: 'task', duration: 120, resources: {expert: 1}, backlog: {capacity: 1}, scene: scene('check', 28)},
+   {id: 'finish', name: 'Finish', kind: 'end', scene: scene('finish', 42)}],
+  flows: [{id: 'f1', from: 'begin', to: 'make'}, {id: 'f2', from: 'make', to: 'check'}, {id: 'f3', from: 'check', to: 'finish'}]});
+};

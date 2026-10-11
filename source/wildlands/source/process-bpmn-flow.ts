@@ -18,10 +18,17 @@ declare namespace LWProcessBpmnFlow {
  const root = inputRoot as {LWProcessBpmnExt: LWProcessBpmnExt.Api; LWProcessBpmnExpr: LWProcessBpmnExpr.Api; LWProcessBpmnFlow?: LWProcessBpmnFlow.Api};
  type Net = LWProcessBpmnGraph.Net; type Ctx = LWProcessBpmnGraph.Ctx; type Edge = LWProcessBpmnGraph.Edge; type Item = LWProcessBpmnGraph.Item;
  const ext = () => root.LWProcessBpmnExt;
- const outOf = (net: Net, k: string) => net.edges.filter(e => e.from === k && !e.deadline), into = (net: Net, k: string) => net.edges.filter(e => e.to === k);
+ /** Edges indexed once by source (deadline flows left out, as they leave a work step beside its normal flow) and by target; the lists keep edge order. */
+ function index(net: Net): {outOf(k: string): Edge[]; into(k: string): Edge[]} {
+  const outs = new Map<string, Edge[]>(), ins = new Map<string, Edge[]>();
+  const add = (m: Map<string, Edge[]>, k: string, e: Edge) => { const l = m.get(k); if (l) l.push(e); else m.set(k, [e]); };
+  for (const e of net.edges) { if (!e.deadline) add(outs, e.from, e); add(ins, e.to, e); }
+  return {outOf: k => outs.get(k) ?? [], into: k => ins.get(k) ?? []};
+ }
  function roles(ctx: Ctx, net: Net): void {
+  const {outOf, into} = index(net);
   for (const i of net.items) {
-   const n = outOf(net, i.key).length, m = into(net, i.key).length;
+   const n = outOf(i.key).length, m = into(i.key).length;
    if (i.gateway === 'parallel' || i.gateway === 'inclusive') {
     if (m === 1 && n >= 2) i.kind = 'fork'; else if (m >= 2 && n === 1) i.kind = 'join';
     else ctx.reject(i.xml, i.local, i.gateway === 'parallel' ? 'Parallel gateway ' + i.xml + ' must split (1 in, 2+ out) or join (2+ in, 1 out).' : 'inclusiveGateway ' + i.xml + ' must split (1 in, 2+ out) or join (2+ in, 1 out) to be simulated.');
@@ -34,7 +41,7 @@ declare namespace LWProcessBpmnFlow {
   if (net.items.filter(i => i.kind === 'start').length !== 1) ctx.reject('', 'startEvent', 'Exactly one start event is required.');
  }
  function pair(ctx: Ctx, net: Net): Map<string, string> {
-  const joins = new Map<string, string>(), byKey = new Map(net.items.map(i => [i.key, i] as const));
+  const joins = new Map<string, string>(), byKey = new Map(net.items.map(i => [i.key, i] as const)), {outOf} = index(net);
   for (const fork of net.items.filter(i => i.kind === 'fork')) {
    const declared = ext().first(fork.node, 'step')?.attrs.join, label = fork.gateway === 'inclusive' ? 'Inclusive gateway ' + fork.xml : 'Parallel branches of ' + fork.xml;
    if (declared) {
@@ -43,9 +50,9 @@ declare namespace LWProcessBpmnFlow {
     joins.set(fork.key, target.key); continue;
    }
    const ends = new Set<string>(); let nested = '';
-   for (const flow of outOf(net, fork.key)) {
+   for (const flow of outOf(fork.key)) {
     let at = byKey.get(flow.to)!; const seen = new Set<string>();
-    while ((at.kind === 'task' || at.kind === 'timer') && !seen.has(at.key)) { seen.add(at.key); const next = outOf(net, at.key)[0]; if (!next) break; at = byKey.get(next.to) ?? at; }
+    while ((at.kind === 'task' || at.kind === 'timer') && !seen.has(at.key)) { seen.add(at.key); const next = outOf(at.key)[0]; if (!next) break; at = byKey.get(next.to) ?? at; }
     if (at.kind !== 'join') nested = nested || at.local + ' ' + at.xml;
     ends.add(at.kind === 'join' ? at.key : '?');
    }
@@ -80,7 +87,7 @@ declare namespace LWProcessBpmnFlow {
  const canonical = (w: LWProcess.When) => JSON.stringify(flat(w), ['all', 'any', 'not', 'field', 'op', 'value', 'valueField', 'chance']);
  const FIELD_HINT = 'Use comparisons of case fields with values or other fields, joined by and, or, not.';
  function conditions(ctx: Ctx, net: Net): void {
-  const E = ext(), byKey = new Map(net.items.map(i => [i.key, i] as const)), pct = (n: number) => Math.round(n * 1000) / 10;
+  const E = ext(), byKey = new Map(net.items.map(i => [i.key, i] as const)), pct = (n: number) => Math.round(n * 1000) / 10, {outOf} = index(net);
   const branches = (i: Item) => i.kind === 'decision' || i.kind === 'fork' && i.gateway === 'inclusive';
   /** The condition one flow carries: extension first, then the expression text; `undefined` means none. */
   const failed = new Set<Edge>();
@@ -107,7 +114,7 @@ declare namespace LWProcessBpmnFlow {
   }
   for (const e of net.edges) { const from = byKey.get(e.from); if (from && !e.deadline && !branches(from)) own(e, from); }
   for (const g of net.items.filter(branches)) {
-   const out = outOf(net, g.key), inclusive = g.kind === 'fork', prefix = g.key.slice(0, g.key.length - g.xml.length), declared = g.node.attrs.default, race = g.gateway === 'event';
+   const out = outOf(g.key), inclusive = g.kind === 'fork', prefix = g.key.slice(0, g.key.length - g.xml.length), declared = g.node.attrs.default, race = g.gateway === 'event';
    const mine = new Map<Edge, LWProcess.When | undefined>(out.map(e => [e, own(e, g)] as const));
    if (out.some(e => failed.has(e))) continue;
    let probs = out.map(e => ctx.bps?.elements.get(e.xml)?.probability);

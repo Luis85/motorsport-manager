@@ -71,6 +71,12 @@ test('Dangling links, duplicate IDs and scene identities are rejected', () => {
  for (const mutate of [(d: LWProcess.Definition) => {d.flows[0]!.to = 'missing';}, (d: LWProcess.Definition) => {d.steps[1]!.id = 'start';}, (d: LWProcess.Definition) => {d.steps[1]!.scene.id = d.steps[0]!.scene.id;}]) {
   const d = base(); mutate(d); assert.equal(catalog.validate(d).ok, false);
  }
+ // One bad flow target is reported once: no "unreachable" or "no route to an end" cascade on the steps around it.
+ const dangling = base(); dangling.flows[0]!.to = 'missing'; const found = catalog.validate(dangling, true).diagnostics.map(e => e.path + ' ' + e.message);
+ assert.deepEqual(found, ['/flows/0 Both endpoints must exist.']);
+ // A wrong number of outgoing flows says what the kind expects and what it found.
+ const bare = base(), task = bare.steps.findIndex(s => s.kind === 'task'), id = bare.steps[task]!.id; bare.flows = bare.flows.filter(f => f.from !== id);
+ assert(catalog.validate(bare, true).diagnostics.some(e => e.path === '/steps/' + task && e.message === 'A task needs exactly 1 outgoing flow; this one has 0.'));
 });
 test('Unreachable work and paths with no end are rejected', () => {
  const d = base(); d.steps.push({...copy(d.steps[1]!), id: 'orphan', scene: {...d.steps[1]!.scene, id: 'scene-orphan'}}); d.flows.push({id: 'orphan-end', from: 'orphan', to: 'end'});

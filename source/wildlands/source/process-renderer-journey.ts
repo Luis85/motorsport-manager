@@ -1,4 +1,5 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-route.ts" />
 /** Journey map: phases as columns, lanes for touchpoints, channel, feeling, pain points, opportunities and the live funnel. Renders detached view values; selection sends intent only. */
 declare namespace LWProcessJourney {
  interface Surface {draw(view: LWProcessApp.View): void; frame(): void; dispose(): void;}
@@ -7,10 +8,16 @@ declare namespace LWProcessJourney {
  interface Node {step: LWProcess.Step; phase: string; depth: number; main: boolean; slot: number;}
  interface Group {phase: string; main: Node[]; branches: Node[]; start: number; span: number;}
  interface Layout {nodes: Node[]; groups: Group[]; slots: number; byId: Map<string, Node>;}
+ /**
+  * Funnel facts of one main-route step about the stretch from the previous main-route step to it: `lost` counts cases that
+  * finished at a lost end branching off in that stretch, `wip` the cases still in progress there (at the previous step or on
+  * a branch from it), and `rejoin` names the later main-route step where a branch from the previous step comes back.
+  */
+ interface FunnelFacts {lost: number; wip: number; rejoin: string | null;}
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessJourney?: LWProcessJourney.Api; LWProcessRooms: LWProcessRooms.Api};
+ const root = inputRoot as {LWProcessJourney?: LWProcessJourney.Api; LWProcessRooms: LWProcessRooms.Api; LWProcessRoute: LWProcessRoute.Api};
  const NS = 'http://www.w3.org/2000/svg', LANE_WIDE = 132, LANE_NARROW = 112, SLOT_DEFAULT = 172, SLOT_MIN = 148, SLOT_MAX = 172, FEEL_H = 176, FACE_R = 12;
  const KINDS: Record<string, string> = {start: 'Start', task: 'Task', touchpoint: 'Touchpoint', machine: 'Machine', system: 'System', timer: 'Timer', decision: 'Decision', fork: 'Fork', join: 'Join', end: 'End'};
  const PHASE_COLORS = ['#7fb3e0', '#ffbb73', '#8fd68a', '#e58ac8', '#a79bf0', '#6fc7e8', '#d9c58a'];
@@ -23,13 +30,15 @@ declare namespace LWProcessJourney {
  const div = (cls: string, text?: string, tag: 'div' | 'span' | 'button' | 'b' | 'em' | 'i' = 'div'): HTMLElement => {const n = document.createElement(tag); n.className = cls; if (text !== undefined) n.textContent = text; return n;};
  const signed = (n: number, minus = '-') => n > 0 ? '+' + n : n < 0 ? minus + Math.abs(n) : '0';
  const pct = (part: number, whole: number) => whole > 0 ? Math.round(part * 100 / whole) : 0;
- /** Phase columns in order of first appearance along the main route (first unconditional flow at each step, never a deadline flow); everything else is a branch under the phase it hangs from. */
+ /**
+  * Phase columns in order of first appearance along the main route; everything else is a branch under the phase it hangs from. The
+  * route follows LWProcessRoute.next at each step (the rule SIPOC and the slides share), but unlike LWProcessRoute.walk a fork is not
+  * expanded: its first branch stays on the route and the other branches are drawn as branches.
+  */
  function layout(d: LWProcess.Definition): LWProcessJourney.Layout {
-  const steps = new Map(d.steps.map(s => [s.id, s])), out = new Map<string, LWProcess.Flow[]>();
-  for (const f of d.flows) (out.get(f.from) ?? out.set(f.from, []).get(f.from)!).push(f);
-  const route: LWProcess.Step[] = [], seen = new Set<string>();
+  const steps = new Map(d.steps.map(s => [s.id, s])), route: LWProcess.Step[] = [], seen = new Set<string>();
   for (let cur = steps.get(d.start); cur && !seen.has(cur.id);) {
-   seen.add(cur.id); route.push(cur); const next = (out.get(cur.id) ?? []).filter(x => x.on !== 'deadline'), f = next.find(x => !x.when) ?? next[0]; cur = f ? steps.get(f.to) : undefined;
+   seen.add(cur.id); route.push(cur); const f = root.LWProcessRoute.next(d, cur.id); cur = f ? steps.get(f.to) : undefined;
   }
   const anyPhase = d.steps.some(s => s.phase), fallback = !anyPhase && (d.genre ?? 'process') === 'process' ? 'Process' : 'Journey';
   const phaseOf = new Map<string, string>(); let previous = fallback;
@@ -54,6 +63,43 @@ declare namespace LWProcessJourney {
    slot += g.span; groups.push(g); for (const n of [...main, ...branches]) {nodes.push(n); byId.set(n.step.id, n);}
   }
   return {nodes, groups, slots: slot, byId};
+ }
+ /**
+  * Funnel facts per main-route step (see FunnelFacts). A branch step belongs to the last main-route step it can be reached from
+  * without passing another main-route step; only cases at a `lost` end count as drop-off, so an alternative route that rejoins
+  * is a split and unfinished cases are in progress, never lost. Failed cases carry no step in the snapshot and are not counted.
+  */
+ function funnelFacts(d: LWProcess.Definition, q: LWProcess.Snapshot, order: LWProcess.Step[]): Map<string, LWProcessJourney.FunnelFacts> {
+  const index = new Map(order.map((s, i) => [s.id, i])), origin = new Map<string, number>(), rejoin = new Map<number, string>();
+  order.forEach((s, i) => {
+   const queue = d.flows.filter(f => f.from === s.id).map(f => f.to), seen = new Set<string>();
+   for (let k = 0; k < queue.length; k++) {
+    const id = queue[k]!, j = index.get(id); if (seen.has(id)) continue; seen.add(id);
+    if (j !== undefined) { if (j > i + 1 && !rejoin.has(i)) rejoin.set(i, order[j]!.name); continue; }
+    origin.set(id, i); queue.push(...d.flows.filter(f => f.from === id).map(f => f.to));
+   }
+  });
+  const at = (id: string) => index.get(id) ?? origin.get(id), lost = new Map<number, number>(), wip = new Map<number, Set<string>>();
+  const reached = new Map(q.steps.map(m => [m.id, m.reached])), left = new Map(q.steps.map(m => [m.id, m.completed]));
+  const count = (i: number, n: number) => { if (n > 0) lost.set(i, (lost.get(i) ?? 0) + n); };
+  // A lost end shared by several stretches is split by its ways in: a branch step whose only way out is this end hands over every case
+  // that completed it; the rest came straight from a main-route step (or a busier branch) and counts at the latest such stretch.
+  for (const e of d.steps.filter(s => s.kind === 'end' && s.outcome === 'lost' && !index.has(s.id))) {
+   let rest = reached.get(e.id) ?? 0, last = -1;
+   for (const f of d.flows.filter(x => x.to === e.id)) {
+    const i = at(f.from); if (i === undefined) continue;
+    const branchOnlyHere = !index.has(f.from) && d.flows.filter(x => x.from === f.from).length === 1;
+    if (branchOnlyHere) { const n = Math.min(rest, left.get(f.from) ?? 0); count(i, n); rest -= n; } else last = Math.max(last, i);
+   }
+   if (last < 0) last = origin.get(e.id) ?? -1;
+   if (last >= 0) count(last, rest);
+  }
+  // A detached view built by hand (a test or an export) may carry no tokens; nothing is then in progress.
+  for (const t of q.tokens ?? []) {
+   const i = t.status === 'spent' ? undefined : at(t.stepId); if (i !== undefined) (wip.get(i) ?? wip.set(i, new Set()).get(i)!).add(t.caseId);
+  }
+  const facts = (i: number): LWProcessJourney.FunnelFacts => ({lost: lost.get(i) ?? 0, wip: wip.get(i)?.size ?? 0, rejoin: rejoin.get(i) ?? null});
+  return new Map(order.map((s, i) => [s.id, i ? facts(i - 1) : {lost: 0, wip: 0, rejoin: null}]));
  }
  /** Catmull-Rom spline through the points as a cubic Bezier path. */
  function smooth(points: {x: number; y: number}[]): string {
@@ -83,7 +129,9 @@ declare namespace LWProcessJourney {
    lastView = view; if (view.definition !== lastDefinition) {lastDefinition = view.definition; map = layout(view.definition); lastSignature = '';}
    const d = view.definition, q = view.snapshot, m = map!, field = d.track?.[0]?.field, metrics = new Map(q.steps.map(s => [s.id, s]));
    laneW = region.clientWidth > 0 && region.clientWidth < 600 ? LANE_NARROW : LANE_WIDE;
-   const signature = [view.selected, slotW, laneW, q.metrics.goals, q.metrics.lost, q.metrics.conversion, ...m.nodes.map(n => { const s = metrics.get(n.step.id); return `${s?.reached ?? 0}:${field ? s?.tracked[field]?.mean ?? '' : ''}`; })].join('|');
+   const signature = [view.selected, slotW, laneW, q.metrics.goals, q.metrics.lost, q.metrics.conversion, ...m.nodes.map(n => { const s = metrics.get(n.step.id); return `${s?.reached ?? 0}:${field ? s?.tracked[field]?.mean ?? '' : ''}`; })].join('|')
+    // Work moving between steps changes the funnel's in-progress counts without changing any reached count.
+    + '|' + m.nodes.map(n => { const s = metrics.get(n.step.id); return (s?.active ?? 0) + (s?.queued ?? 0); }).join(',');
    if (signature === lastSignature) return; lastSignature = signature;
    const focusId = grid.contains(document.activeElement) ? (document.activeElement as HTMLElement).dataset.step : undefined, previousSelected = selected; selected = view.selected;
    render(d, q, m, field, metrics); rove(); if (focusId) grid.querySelector<HTMLElement>(`[data-step="${CSS.escape(focusId)}"]`)?.focus({preventScroll: true});
@@ -97,14 +145,20 @@ declare namespace LWProcessJourney {
    const conv = q.metrics.conversion, first = m.nodes.find(n => n.main), start = metrics.get(first?.step.id ?? '')?.reached ?? 0;
    summary.textContent = `${m.groups.length} ${m.groups.length === 1 ? 'phase' : 'phases'} · ${m.nodes.length} steps · Goals ${q.metrics.goals} · Lost ${q.metrics.lost} · Conversion ${conv === null ? '–' : (conv / 10).toFixed(1) + '%'}`;
    grid.replaceChildren(); grid.style.setProperty('--slot', slotW + 'px'); grid.style.setProperty('--lane', laneW + 'px'); grid.style.gridTemplateColumns = `${laneW}px repeat(${m.slots}, ${slotW}px)`;
-   let row = 0; const rows: HTMLElement[] = [];
+   // ARIA table columns: 1 is the lane header, 2 + slot a step column; a phase or lane cell spans its slots, so every cell sits under its phase header.
+   let row = 0; const rows: HTMLElement[] = []; grid.setAttribute('aria-colcount', String(m.slots + 1));
    const addRow = (name: string, cls = ''): HTMLElement => {
     row++; const r = div('jm-row'); r.setAttribute('role', 'row'); const head = div('jm-lane ' + cls); head.setAttribute('role', 'rowheader'); head.style.gridRow = String(row); head.style.gridColumn = '1';
-    head.append(div('jm-lane-name', name, 'b')); r.append(head); grid.append(r); rows.push(r); return r;
+    head.setAttribute('aria-colindex', '1'); head.append(div('jm-lane-name', name, 'b')); r.append(head); grid.append(r); rows.push(r); return r;
    };
-   const cell = (r: HTMLElement, start: number, span: number, cls = ''): HTMLElement => {const c = div('jm-cell ' + cls); c.setAttribute('role', 'cell'); c.style.gridRow = String(row); c.style.gridColumn = `${2 + start} / span ${span}`; r.append(c); return c;};
+   const cell = (r: HTMLElement, start: number, span: number, cls = ''): HTMLElement => {
+    const c = div('jm-cell ' + cls); c.setAttribute('role', 'cell'); c.setAttribute('aria-colindex', String(2 + start));
+    if (span > 1) c.setAttribute('aria-colspan', String(span));
+    c.style.gridRow = String(row); c.style.gridColumn = `${2 + start} / span ${span}`; r.append(c); return c;
+   };
    // Phase header row.
    row++; const header = div('jm-row'); header.setAttribute('role', 'row'); const corner = div('jm-lane jm-corner'); corner.setAttribute('role', 'columnheader'); corner.style.gridRow = String(row); corner.style.gridColumn = '1'; corner.append(div('jm-lane-name', 'Phase', 'b')); header.append(corner);
+   corner.setAttribute('aria-colindex', '1');
    m.groups.forEach((g, i) => {const c = cell(header, g.start, g.span, 'jm-phase'); c.setAttribute('role', 'columnheader'); c.style.borderTopColor = PHASE_COLORS[i % PHASE_COLORS.length]!; c.append(div('jm-phase-name', g.phase, 'b'), div('jm-phase-count', `${g.main.length + g.branches.length} ${g.main.length + g.branches.length === 1 ? 'step' : 'steps'}`, 'span'));});
    grid.append(header);
    const card = (n: LWProcessJourney.Node): HTMLElement => {
@@ -148,13 +202,24 @@ declare namespace LWProcessJourney {
    lane.append(legend);
    r = addRow('Pain points'); for (const g of m.groups) for (const n of g.main) cell(r, n.slot, 1, 'jm-slot jm-pain').append(div('jm-note', n.step.pain ?? '', 'span'));
    r = addRow('Opportunities'); for (const g of m.groups) for (const n of g.main) cell(r, n.slot, 1, 'jm-slot jm-opp').append(div('jm-note', n.step.opportunity ?? '', 'span'));
-   // Funnel: distinct cases that reached each main-route step, relative to the first step, with the drop-off from the previous step.
+   // Funnel: distinct cases that reached each main-route step, relative to the first step. Drop-off is only the cases lost since the previous
+   // step; a split that rejoins later and the cases still in progress are said apart, so neither reads as a loss.
    r = addRow('Funnel', 'jm-lane-funnel'); const routeOrder = m.nodes.filter(n => n.main).sort((a, b) => a.depth - b.depth);
+   const facts = funnelFacts(d, q, routeOrder.map(n => n.step));
    for (const n of routeOrder) {
-    const reached = metrics.get(n.step.id)?.reached ?? 0, before = routeOrder[routeOrder.indexOf(n) - 1], prev = before ? metrics.get(before.step.id)?.reached ?? 0 : 0, drop = before && prev > 0 ? Math.round((prev - reached) * 100 / prev) : 0;
-    const c = cell(r, n.slot, 1, 'jm-slot jm-funnel'), track = div('jm-track'), fill = div('jm-fill', undefined, 'i'); fill.style.height = Math.round(start > 0 ? Math.max(reached > 0 ? 3 : 0, reached / start * 64) : 0) + 'px'; track.append(fill);
-    c.append(track, div('jm-count', String(reached), 'b'), div('jm-pct', `${pct(reached, start)}% of start`, 'span'), div('jm-drop' + (drop > 0 ? ' loss' : ''), before ? (drop > 0 ? `−${drop}% vs previous` : 'no drop-off') : 'entry point', 'em'));
-    c.setAttribute('aria-label', `${n.step.name}: ${reached} reached, ${pct(reached, start)}% of start${before ? ', ' + (drop > 0 ? drop + '% drop-off' : 'no drop-off') : ''}`);
+    const reached = metrics.get(n.step.id)?.reached ?? 0, before = routeOrder[routeOrder.indexOf(n) - 1], prev = before ? metrics.get(before.step.id)?.reached ?? 0 : 0;
+    const f = facts.get(n.step.id)!, drop = before && prev > 0 ? Math.round(f.lost * 100 / prev) : 0;
+    const lossText = f.lost > 0 ? `−${drop}% lost (${f.lost})` : 'no drop-off';
+    const c = cell(r, n.slot, 1, 'jm-slot jm-funnel'), track = div('jm-track'), fill = div('jm-fill', undefined, 'i');
+    fill.style.height = Math.round(start > 0 ? Math.max(reached > 0 ? 3 : 0, reached / start * 64) : 0) + 'px'; track.append(fill);
+    c.append(track, div('jm-count', String(reached), 'b'), div('jm-pct', `${pct(reached, start)}% of start`, 'span'));
+    c.append(div('jm-drop' + (f.lost > 0 ? ' loss' : ''), before ? lossText : 'entry point', 'em'));
+    if (f.rejoin) c.append(div('jm-drop jm-split', `split, rejoins at ${f.rejoin}`, 'em'));
+    if (f.wip) c.append(div('jm-drop jm-wip', `${f.wip} in progress`, 'em'));
+    const loss = before ? ', ' + (f.lost > 0 ? `${drop}% drop-off, ${f.lost} lost` : 'no drop-off') : '';
+    const extra = [f.rejoin ? `split after the previous step, rejoins at ${f.rejoin}` : '', f.wip ? `${f.wip} still in progress before it` : '']
+     .filter(Boolean);
+    c.setAttribute('aria-label', `${n.step.name}: ${reached} reached, ${pct(reached, start)}% of start${loss}${extra.map(x => ', ' + x).join('')}`);
    }
   }
   /** Roving tab stop: the selected card (else the first) is the single Tab target of the map. */

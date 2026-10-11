@@ -29,6 +29,16 @@
   };
   visit(input, 0);
  }
+ /** Plain names of the top-level lists, so a definition over a limit is told the limit and its own count. */
+ const LISTS: Record<string, [string, string]> = {
+  '/steps': ['step', 'steps'], '/flows': ['flow', 'flows'], '/resources': ['resource pool', 'resource pools'], '/arrivals': ['arrival rule', 'arrival rules']};
+ function lengthMessage(path: string, length: number, schema: Schema): string {
+  const min = Number(schema.minItems ?? 0), max = Number(schema.maxItems ?? Infinity), words = LISTS[path], n = (k: number) => k.toLocaleString('en-US');
+  if (!words) return 'Array length is out of range: ' + (length > max ? 'at most ' + n(max) : 'at least ' + n(min)) + ' entries, found ' + n(length) + '.';
+  const [one, many] = words, plural = (k: number) => n(k) + ' ' + (k === 1 ? one : many);
+  if (length > max) return `A process holds at most ${plural(max)}; this one has ${n(length)}.`;
+  return `A process needs at least ${plural(min)}; this one has ${n(length)}.`;
+ }
  function shape(value: unknown, node: Schema, path: string, errors: LWProcess.Diagnostic[]): void {
   // Only the local `#/definitions/<name>` reference form exists; it makes recursive condition combinators expressible.
   const schema = typeof node.$ref === 'string' ? definitions[node.$ref.slice('#/definitions/'.length)]! : node;
@@ -41,7 +51,7 @@
   if (typeof value === 'number' && (value < Number(schema.minimum ?? -Infinity) || value > Number(schema.maximum ?? Infinity))) fail('Number is out of range.');
   if (typeof value === 'string' && (value.length < Number(schema.minLength ?? 0) || value.length > Number(schema.maxLength ?? Infinity) || typeof schema.pattern === 'string' && !new RegExp(schema.pattern).test(value))) fail('String has invalid length or format.');
   if (Array.isArray(value)) {
-   if (value.length < Number(schema.minItems ?? 0) || value.length > Number(schema.maxItems ?? Infinity)) fail('Array length is out of range.');
+   if (value.length < Number(schema.minItems ?? 0) || value.length > Number(schema.maxItems ?? Infinity)) fail(lengthMessage(path, value.length, schema));
    if (schema.items) value.forEach((v, i) => shape(v, schema.items as Schema, path + '/' + i, errors));
   } else if (value && typeof value === 'object') {
    const record = value as Record<string, unknown>, properties = schema.properties as Record<string, Schema> | undefined;

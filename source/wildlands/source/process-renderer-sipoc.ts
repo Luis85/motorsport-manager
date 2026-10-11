@@ -35,14 +35,19 @@ declare namespace LWProcessSipoc {
   rootEl.append(scroller, strip); host.append(rootEl); let drawn = '';
   const party = (p: LWProcessSipoc.Party) => { const li = h('li', 'sipoc-card' + (p.placeholder ? ' sipoc-muted' : '')); li.append(h('strong', 'sipoc-name', p.name)); if (p.detail) li.append(h('span', 'sipoc-detail', p.detail)); return li; };
   function stage(s: LWProcessSipoc.Stage, index: number, selected: boolean): HTMLLIElement {
-   const li = h('li', 'sipoc-stage-item'), label = `Stage ${s.name}, ${plural(s.steps, 'step')}, ${s.active} in progress, ${s.queued ? s.queued + ' waiting, ' : ''}${s.completed} completed${s.variant ? ', has alternative paths' : ''}`;
+   const blocked = s.held ? `${s.held} blocked, ` : '', waiting = s.queued ? s.queued + ' waiting, ' : '';
+   const li = h('li', 'sipoc-stage-item');
+   const label = `Stage ${s.name}, ${plural(s.steps, 'step')}, ${s.active} in progress, ${waiting}${blocked}${s.completed} completed`
+    + (s.variant ? ', has alternative paths' : '');
    const b = h('button', 'sipoc-card sipoc-stage' + (s.variant ? ' sipoc-variant' : '') + (selected ? ' selected' : ''), undefined, {type: 'button', 'aria-label': label, 'aria-pressed': String(selected), 'data-stage': s.id});
    const head = h('span', 'sipoc-stage-head'), kinds = h('span', 'sipoc-kinds'), counts = h('span', 'sipoc-counts');
    head.append(h('span', 'sipoc-badge', String(index + 1)), h('strong', 'sipoc-name', s.name));
    kinds.append(...s.kinds.slice(0, 6).map(icon), h('span', 'sipoc-detail', plural(s.steps, 'step')));
    if (s.parallel) kinds.append(h('span', 'sipoc-tag', 'in parallel'));
    if (s.variant) kinds.append(h('span', 'sipoc-tag sipoc-tag-variant', 'variant', {title: 'Contains a decision or rework loop'}));
-   counts.append(h('span', 'sipoc-count', `${s.active} in progress`), h('span', 'sipoc-count', `${s.queued} waiting`), h('span', 'sipoc-count', `${s.completed} completed`));
+   counts.append(h('span', 'sipoc-count', `${s.active} in progress`), h('span', 'sipoc-count', `${s.queued} waiting`));
+   if (s.held) counts.append(h('span', 'sipoc-count', `${s.held} blocked`));
+   counts.append(h('span', 'sipoc-count', `${s.completed} completed`, {title: 'Cases that left this stage'}));
    b.append(head, kinds, counts); b.addEventListener('click', () => onSelect(s.first)); li.append(b); return li;
   }
   function draw(view: LWProcessSipoc.ViewLike): void {

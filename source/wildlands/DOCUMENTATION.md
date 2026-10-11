@@ -94,6 +94,7 @@ Wildlands checkout; the PR25 records retain their original Littlewild scope.
 - [Littlewild post-push review and polish](PR25-POSTPUSH-REVIEW.md)
 - [PR #25 — TypeScript, Clean Architecture, DDD, ECS and data-driven review](PR25-TYPESCRIPT-ARCHITECTURE-REVIEW.md)
 - [Independent cumulative Littlewild review — 6664900](PR25-FINAL-AUTHORING-REVIEW.md)
+- [Process Studio review and improvement pass](PROCESS-STUDIO-REVIEW.md)
 - [Littlewild v15 — publication record](publication/README.md)
 - [Littlewild v15 verification — 29 September 2026](publication/VERIFICATION.md)
 

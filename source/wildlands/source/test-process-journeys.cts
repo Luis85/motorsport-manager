@@ -109,8 +109,8 @@ test('Journey definitions are rejected explicitly when malformed', () => {
  assert.match(bad(d => { delete at(d, 'cart').duration; }), /\/steps\/4\/duration graph Touchpoints need a positive whole-minute duration/);
  assert.match(bad(d => { at(d, 'cart').duration = 0; }), /\/steps\/4\/duration shape/); assert.match(bad(d => { at(d, 'cart').until = 5; }), /\/steps\/4\/until graph Only timers wait until a minute/);
  assert.match(bad(d => { at(d, 'cart').technology = 'CMS'; }), /\/steps\/4\/technology graph Technology is declared only on machine and system steps/);
- assert.match(bad(d => { at(d, 'cart').resources = {missing: 1}; }), /\/steps\/4\/resources\/missing graph Demand exceeds the available pool/); assert.match(bad(d => { at(d, 'checkout').resources = {shop: 3}; }), /\/steps\/5\/resources\/shop graph Demand exceeds the available pool/);
- assert.match(bad(d => { d.flows.push({id: 'extra', from: 'cart', to: 'lost'}); }), /\/steps\/4 graph Invalid outgoing flow count for touchpoint/);
+ assert.match(bad(d => { at(d, 'cart').resources = {missing: 1}; }), /\/steps\/4\/resources\/missing graph Uses pool "missing", which is not defined\./); assert.match(bad(d => { at(d, 'checkout').resources = {shop: 3}; }), /\/steps\/5\/resources\/shop graph Demand exceeds the available pool/);
+ assert.match(bad(d => { d.flows.push({id: 'extra', from: 'cart', to: 'lost'}); }), /\/steps\/4 graph A touchpoint needs exactly 1 outgoing flow; this one has 2\./);
  assert.match(bad(d => { at(d, 'cart').timing = {dist: 'uniform', min: 5, max: 2}; }), /\/steps\/4\/timing graph A uniform distribution needs min at most max/);
  assert.match(bad(d => { at(d, 'cart').draws = [{field: 'x', kind: 'int', min: 3, max: 1}]; }), /\/steps\/4\/draws\/0 graph An int draw needs whole min and max/);
  assert.match(bad(d => { at(d, 'cart').set = {a: 1}; at(d, 'cart').draws = [{field: 'a', kind: 'int', min: 1, max: 2}]; }), /\/steps\/4\/draws\/0\/field graph Draw field a is also given a fixed value/);

@@ -116,7 +116,7 @@ test('Inclusive forks activate every matching branch and the join waits for exac
  for (const chunks of [[1], [2, 5, 9]]) assert.deepEqual(sim(d, 30, chunks), q);
  // Needs: a field delivered on only some activated branches is not guaranteed after the join; fields before the fork and parallel forks are.
  const needs = (steps: Partial<LWProcess.Step>) => { const x = inclusive({steps: [S('prep', 'task', {duration: 1, set: {prepared: true}})]}); Object.assign(x.steps.find(s => s.id === 'end')!, steps); return x; };
- assert.match(invalid(needs({needs: [{field: 'aDone'}]})), /\/needs\/0 Needs aDone delivered, but Delivered only on some routes; possible values: true, not delivered/);
+ assert.match(invalid(needs({needs: [{field: 'aDone'}]})), /\/needs\/0 Needs aDone delivered, but it is delivered only on some routes; possible values: true, not delivered/);
  assert.equal(catalog.validate(needs({needs: [{field: 'prepared'}]})).ok, true);
  const parallel = inclusive(); delete parallel.steps.find(s => s.id === 'fork')!.mode; for (const f of parallel.flows) delete f.when;
  assert.equal(catalog.validate(copy(parallel)).ok, true); parallel.steps.find(s => s.id === 'end')!.needs = [{field: 'aDone'}, {field: 'bDone'}, {field: 'cDone'}]; assert.equal(catalog.validate(parallel).ok, true);

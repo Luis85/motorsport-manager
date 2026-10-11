@@ -14,13 +14,18 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
    const v = (globalThis as unknown as {LWProcessRandomView: LWProcessRandomView.Api}).LWProcessRandomView;
    return [v.describeDist({dist: 'triangular', min: 4, mode: 6, max: 10}), v.describeDist({dist: 'uniform', min: 7, max: 11}), v.describeDist({dist: 'exponential', mean: 4, max: 12}), v.describeDist({dist: 'exponential', mean: 4}),
     v.describeTiming({duration: 12}), v.describeTiming({duration: 12, timing: {dist: 'uniform', min: 7, max: 11}}), v.describeTiming({until: 5}),
+    v.describeTiming({duration: 9, timing: {dist: 'uniform', min: 7, max: 11}}),
+    v.describeTiming({duration: 720, timing: {dist: 'triangular', min: 240, mode: 720, max: 1800}}),
     v.describeDraw({field: 'defect', kind: 'chance', percent: 12}), v.describeDraw({field: 'priority', kind: 'choice', values: [{value: 'express', weight: 20}, {value: 'standard', weight: 80}]}),
     v.describeDraw({field: 'x', kind: 'int', min: 1, max: 6}), v.describeDraw({field: 'ok', kind: 'chance', percent: 30, whenTrue: 'pass', whenFalse: 'fail'}),
     v.describeWhen({chance: 8}), v.describeWhen({field: 'iteration', op: 'lt', valueField: 'iterations'} as unknown as LWProcess.Condition), v.describeWhen({field: 'priority', op: 'eq', value: 'express'}), v.describeWhen(undefined),
     v.describeArrival({at: 0, open: true, interval: 4, gap: {dist: 'exponential', mean: 4}, data: {}}), v.describeArrival({at: 10, until: 600, interval: 5, data: {}}), v.describeArrival({at: 0, count: 8, interval: 3, data: {}})];
   });
   assert.deepEqual(out, ['Random between 4 and 10 min, most often 6', 'Uniform 7–11 min', 'Exponential, mean 4 min (max 12)', 'Exponential, mean 4 min', 'Takes 12 min',
-   'Planned 12 min (the average shown in estimates); each visit draws its own time: Uniform 7–11 min', '', 'Sets defect to true in 12% of cases, otherwise false', 'Sets priority to express (20%) or standard (80%)',
+   'Planned 12 min; draws average about 9 min; each visit draws its own time: Uniform 7–11 min', '',
+   'Planned 9 min (the average shown in estimates); each visit draws its own time: Uniform 7–11 min',
+   'Planned 720 min; draws average about 920 min; each visit draws its own time: Random between 240 and 1800 min, most often 720',
+   'Sets defect to true in 12% of cases, otherwise false', 'Sets priority to express (20%) or standard (80%)',
    'Sets x to a whole number from 1 to 6', 'Sets ok to pass in 30% of cases, otherwise fail', '8% of cases take this path', 'If iteration < iterations', 'If priority = "express"', 'Otherwise (no condition)',
    'Keeps arriving: every ~4 min, random gap (exponential, mean 4), first at minute 0', 'Until minute 600: every 5 min, first at minute 10', '8 cases: every 3 min, first at minute 0']);
  });
@@ -37,7 +42,9 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   const lines = () => page.locator('#process-desc').evaluate(e => ({shown: e.clientHeight, full: e.scrollHeight, line: parseFloat(getComputedStyle(e).lineHeight)})); let l = await lines(); assert(l.shown <= l.line * 3 + 2 && l.full > l.shown, JSON.stringify(l));
   await more.click(); assert.deepEqual([await more.innerText(), await more.getAttribute('aria-expanded')], ['Less', 'true']); l = await lines(); assert(l.shown >= l.full - 1 && l.shown > l.line * 3, JSON.stringify(l)); await more.click(); assert.equal(await more.innerText(), 'More');
   await page.locator('[data-step="pack"]').click(); let detail = await text();
-  assert.match(detail, /Random timing/); assert.match(detail, /Planned 12 min \(the average shown in estimates\); each visit draws its own time: Uniform 7–11 min/); assert.match(detail, /Random outcomes/); assert.match(detail, /Sets defect to true in 12% of cases, otherwise false/);
+  assert.match(detail, /Random timing/); assert.match(detail, /Random outcomes/);
+  const timing = /Planned 12 min; draws average about 9 min; each visit draws its own time: Uniform 7–11 min/;
+  assert.match(detail, timing); assert.match(detail, /Sets defect to true in 12% of cases, otherwise false/);
   await page.locator('[data-step="gate"]').click(); detail = await text(); const next = await page.locator('.next-step').allInnerTexts();
   assert.deepEqual(next, ['Repack\n20% of cases take this path', 'Done\nOtherwise, 80% of cases']);
   await page.locator('[data-step="repack"]').click(); detail = await text(); assert.doesNotMatch(detail, /Random timing|Random outcomes/); assert.match(detail, /Takes|Duration/);
@@ -46,6 +53,12 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   await page.locator('#horizon').selectOption('100000'); for (let i = 0; i < 4; i++) await page.locator('#advance').click();
   const meter = page.locator('#pools [role=meter]').first(), pct = Number(await meter.getAttribute('aria-valuenow')); assert(pct > 0 && pct <= 100); assert.equal(await meter.getAttribute('aria-label'), 'Operators utilisation'); assert.equal(await page.locator('#pools .pool-pct').first().innerText(), pct + '%');
   const bar = await meter.evaluate(e => ({h: e.getBoundingClientRect().height, track: getComputedStyle(e).backgroundColor, fill: getComputedStyle(e.firstElementChild!).backgroundColor, level: (e as HTMLElement).dataset.level}));
+  const busy = (await query(page)).snapshot.resources[0]!;
+  const valuetext = `${pct}% average utilisation since minute 0${pct >= 85 ? ', nearly full' : ''}; ${busy.busy} of ${busy.capacity} busy now`;
+  assert.equal(await meter.getAttribute('aria-valuetext'), valuetext);
+  assert.equal(await page.locator('#pools .process-pool small').first().innerText(), `Average since minute 0 · ${busy.busy}/${busy.capacity} busy now`);
+  const note = await page.locator('#pools .process-cost-note').innerText();
+  assert.match(note, /^Work cost charges pools only for the minutes they work, plus fixed step costs\. Capacity cost charges every pool unit/);
   assert.equal(bar.h, 8); assert.equal(bar.track, 'rgb(44, 55, 68)'); assert.equal(bar.fill, {ok: 'rgb(255, 187, 115)', warm: 'rgb(245, 158, 91)', hot: 'rgb(255, 122, 89)'}[bar.level as 'ok'], JSON.stringify(bar)); assert.equal(bar.level, pct >= 85 ? 'hot' : pct >= 70 ? 'warm' : 'ok');
   await page.locator('#overview').click();
  });
@@ -67,11 +80,17 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   const model = (await page.evaluate(d => { const w = globalThis as any; return w.LWProcessSipoc.model(d, w.LWProcessStudio.query().snapshot); }, def)) as LWProcessSipoc.Model;
   assert.deepEqual(model.suppliers, [{name: 'Client', detail: 'brief and budget'}]); assert.deepEqual(model.customers, [{name: 'Product owner', detail: 'a working feature'}, {name: 'End users'}]);
   assert.deepEqual(model.inputs.map(i => i.field), ['needsRework', 'priority', 'budget', 'brief']); const byField = (f: string) => model.inputs.find(i => i.field === f)!;
-  assert.equal(byField('priority').example, '2'); assert.equal(byField('budget').example, 'random, 1 to 5'); assert.deepEqual([byField('brief').label, byField('brief').arrived, byField('brief').example], ['Client brief', null, null]); assert.equal(byField('priority').arrived, 1);
+  const rework = byField('needsRework');
+  assert.deepEqual([rework.label, rework.example], ['needsRework', 'false, true'], 'a need condition label never names the input');
+  assert.equal(byField('priority').example, '2, 1'); assert.equal(byField('budget').example, 'random, 1 to 5'); assert.deepEqual([byField('brief').label, byField('brief').arrived, byField('brief').example], ['Client brief', null, null]); assert.equal(byField('priority').arrived, 1);
   assert.deepEqual(model.stages.map(s => s.name), ['Discover', 'Design', 'Build', 'Deliver']); const stage = (n: string) => model.stages.find(s => s.name === n)!;
   assert.deepEqual([stage('Design').steps, stage('Design').parallel, stage('Design').variant, stage('Design').first], [4, true, false, 'design-split']);
   assert.deepEqual([stage('Build').steps, stage('Build').variant, stage('Discover').variant], [4, true, false]); assert(stage('Build').stepIds.includes('rework') && stage('Build').kinds.includes('decision'));
-  assert.deepEqual(model.outputs.map(o => o.label), ['Delivered feature', 'Reached Delivered']); assert.deepEqual(model.measures.map(m => m.id).slice(0, 5), ['completed', 'active', 'cycle', 'cost', 'throughput']);
+  assert.deepEqual(model.outputs.map(o => o.label), ['Delivered feature', 'Reached Delivered']);
+  assert.deepEqual(model.measures.map(m => m.id).slice(0, 7), ['completed', 'active', 'cycle', 'age', 'cost', 'capacity-cost', 'throughput']);
+  const costs = model.measures.filter(m => ['cycle', 'cost', 'capacity-cost'].includes(m.id)).map(m => [m.label, m.value]);
+  const started = (await query(page)).snapshot.metrics.cost;
+  assert.deepEqual(costs, [['Mean cycle', '—'], ['Work cost', String(started)], ['Capacity cost', '0']], 'nothing has finished at minute 0');
   await mountSipoc(def); const host = page.locator('#sipoc-host');
   assert.deepEqual(await host.locator('.sipoc-col > h3').allInnerTexts(), ['S\nSuppliers', 'I\nInputs', 'P\nProcess', 'O\nOutputs', 'C\nCustomers']);
   assert.equal(await host.locator('section.sipoc-col[aria-labelledby]').count(), 5); assert.equal(await host.locator('.sipoc-col-suppliers').innerText().then(t => /Client/.test(t) && /brief and budget/.test(t)), true);
@@ -80,7 +99,14 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   const unchanged = await host.evaluate(h => { const first = h.querySelector('.sipoc-grid'); (first as any).__mark = 1; return true; }); await redrawSipoc(); assert.equal(await host.evaluate(h => (h.querySelector('.sipoc-grid') as any).__mark), 1, 'identical view must not redraw'); assert(unchanged);
   await page.locator('#horizon').selectOption('100000'); await page.locator('#advance').click(); await page.waitForFunction(() => (globalThis as any).LWProcessStudio.query().snapshot.minute > 0); await page.locator('#advance').click(); await redrawSipoc();
   const live = await host.locator('.sipoc-stage').evaluateAll(b => b.map(x => x.getAttribute('aria-label')!)); assert(live.some(l => /[1-9]\d* in progress|[1-9]\d* completed/.test(l)), live.join('|'));
-  assert.match(await host.locator('.sipoc-col-inputs').innerText(), /[1-9]\d* cases? arrived/); assert.notEqual(await host.locator('.sipoc-measure', {hasText: 'Mean cycle'}).count(), 0); assert.equal(await host.locator('.sipoc-measure', {hasText: 'In progress'}).locator('dd').innerText() !== '0' || (await query(page)).snapshot.metrics.active === 0, true);
+  // A stage counts the cases that left it: never more than arrived, and Discover is left by exactly the cases that reached the design fork.
+  const ran = await query(page);
+  const after = await page.evaluate(d => {
+   const w = globalThis as any; return w.LWProcessSipoc.model(d, w.LWProcessStudio.query().snapshot);
+  }, def) as LWProcessSipoc.Model;
+  assert(after.stages.every(s => s.completed <= ran.snapshot.metrics.arrived), JSON.stringify(after.stages.map(s => s.completed)));
+  assert.equal(after.stages[0]!.completed, ran.snapshot.steps.find(s => s.id === 'design-split')!.reached);
+  assert.match(await host.locator('.sipoc-col-inputs').innerText(), /[1-9]\d* cases? arrived/); assert.notEqual(await host.locator('.sipoc-measure', {hasText: 'Mean cycle'}).count(), 0); assert.equal(await host.locator('.sipoc-measure', {hasText: /^In progress/}).locator('dd').innerText() !== '0' || (await query(page)).snapshot.metrics.active === 0, true);
   await host.locator('.sipoc-stage', {hasText: 'Design'}).click(); assert.deepEqual(await page.evaluate(() => (globalThis as any).__picks), ['design-split']);
   await redrawSipoc('design-split'); assert.equal(await host.locator('.sipoc-stage[aria-pressed=true]').count(), 1); assert.match((await host.locator('.sipoc-stage[aria-pressed=true]').getAttribute('aria-label'))!, /^Stage Design/);
   await unmountSipoc(); assert.equal(await page.locator('#sipoc-host').count(), 0);
@@ -113,6 +139,38 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   w.jsel = []; w.jsurface = w.LWProcessJourney.create(host, (id: string | null) => w.jsel.push(id)); w.jsurface.draw(w.LWProcessStudio.query());
  });
  const redrawJourney = () => page.evaluate(() => (globalThis as any).jsurface.draw((globalThis as any).LWProcessStudio.query()));
+ /** Every cell of the journey table sits inside one phase header's columns (aria-colindex/colspan), within aria-colcount. */
+ const tableColumns = async () => {
+  const t = await page.evaluate(() => {
+   const grid = document.querySelector('#jtest [role=table]')!, all = (role: string) => [...grid.querySelectorAll(`[role=${role}]`)].map(range);
+   function range(n: Element): [number, number] {
+    const at = Number(n.getAttribute('aria-colindex')); return [at, at + Number(n.getAttribute('aria-colspan') ?? 1) - 1];
+   }
+   return {count: Number(grid.getAttribute('aria-colcount')), heads: all('columnheader'), cells: all('cell'), rows: all('rowheader')};
+  });
+  assert.deepEqual(t.heads[0], [1, 1]); assert.equal(t.heads.at(-1)![1], t.count, 'the last phase ends at aria-colcount');
+  assert(t.rows.every(r => r[0] === 1 && r[1] === 1), 'lane names are column 1');
+  // A cell lies inside one phase header's columns, or is the Feeling chart that spans every step column.
+  const inside = (c: [number, number]) => t.heads.slice(1).some(h => c[0] >= h[0] && c[1] <= h[1]) || c[0] === 2 && c[1] === t.count;
+  assert(t.cells.every(c => c[0] >= 2 && c[1] <= t.count && inside(c)), JSON.stringify(t));
+ };
+ /** Funnel cells: reached at the previous step = reached here + lost + still in progress, when no split rejoins later. */
+ const funnelAdds = async (route: string[], reached: Map<string, number>, why: string) => {
+  const cells = await page.evaluate(() => [...document.querySelectorAll('#jtest .jm-funnel')].map(c => {
+   const text = (cls: string) => c.querySelector(cls)?.textContent ?? null;
+   return {drop: text('.jm-drop')!, wip: text('.jm-wip'), split: text('.jm-split')};
+  }));
+  const facts = cells.map(c => {
+   const lost = /\((\d+)\)$/.exec(c.drop);
+   return {lost: lost ? Number(lost[1]) : 0, wip: c.wip, inProgress: c.wip ? Number(c.wip.split(' ')[0]) : 0, split: c.split, drop: c.drop};
+  });
+  assert.equal(facts[0]!.drop, 'entry point');
+  for (let i = 1; i < route.length; i++) {
+   const f = facts[i]!; assert(f.lost > 0 ? /^−\d+% lost \(\d+\)$/.test(f.drop) : f.drop === 'no drop-off', f.drop); assert.equal(f.split, null, why);
+   assert.equal(reached.get(route[i - 1]!)!, reached.get(route[i]!)! + f.lost + f.inProgress, `${why}: ${route[i]} adds up`);
+  }
+  return facts;
+ };
  const journeyFacts = () => page.evaluate(() => {
   const text = (sel: string) => [...document.querySelectorAll(`#jtest ${sel}`)].map(n => n.textContent!.trim());
   return {phases: text('.jm-phase-name'), lanes: text('.jm-lane-name'), cards: document.querySelectorAll('#jtest .jm-card').length, branches: document.querySelectorAll('#jtest .jm-card.branch').length, faces: document.querySelectorAll('#jtest .jm-face').length,
@@ -130,6 +188,7 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   const running = await query(page); await redrawJourney(); const live = await journeyFacts(); const reached = new Map(running.snapshot.steps.map(s => [s.id, s.reached]));
   assert.deepEqual(live.counts, route.map(id => reached.get(id))); assert(live.counts[0]! > idle.counts[0]! && live.counts[0]! >= live.counts.at(-1)!, 'the funnel follows the run');
   assert.deepEqual(live.pcts, route.map(id => `${Math.round(reached.get(id)! * 100 / reached.get('start')!)}% of start`)); assert.equal(live.measured, 1, 'measured curve appears once the tracked field has data');
+  await funnelAdds(route, reached, 'mid-run'); await tableColumns();
   assert.match(live.labels.find(l => l.startsWith('Browse the shop'))!, new RegExp(`^Browse the shop, Website, phase Consideration, feeling \\+1, ${reached.get('browse')} reached$`));
   assert.match(live.labels.find(l => l.startsWith('Order delivered'))!, /^Order delivered, End, goal, phase Delivery, \d+ reached$/); assert.match(live.summary, new RegExp(`Goals ${running.snapshot.metrics.goals} · Lost ${running.snapshot.metrics.lost}`));
   await page.locator('#jtest .jm-lane-name', {hasText: 'Funnel'}).waitFor(); assert.match(await page.locator('#jtest .jm-badge.goal').innerText(), /^Goal · \d+$/); assert.match(await page.locator('#jtest .jm-badge.lost').innerText(), /^Lost · \d+$/);
@@ -143,6 +202,12 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   assert.deepEqual([phone.page, phone.inner], [false, true], 'the map scrolls inside its own container'); assert(phone.min >= 12, `smallest map text is ${phone.min}px`);
   await page.locator('#jtest .jm-fit').click(); assert.equal(await page.locator('#jtest .jm-fit').getAttribute('aria-pressed'), 'true'); assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
   await page.setViewportSize({width: 1440, height: 1060}); assert.equal((await query(page)).snapshot.minute, running.snapshot.minute, 'drawing the map never ticks the run');
+  // Finished run: nothing is in progress, so every gap between neighbouring steps is a loss, and a bounce is a loss only where it happened.
+  for (let i = 0; i < 40 && (await query(page)).snapshot.status !== 'completed'; i++) await page.locator('#advance').click();
+  const done = await query(page), final = new Map(done.snapshot.steps.map(s => [s.id, s.reached])); await redrawJourney();
+  const finished = await funnelAdds(route, final, 'completed'); assert(finished.every(f => f.wip === null), 'a completed run has nothing in progress');
+  assert.equal(finished[route.indexOf('support')]!.lost, final.get('lost')! - final.get('cart')!, 'bounces at "Interested?" are lost before support');
+  assert.equal(finished[route.indexOf('confirm')]!.lost, final.get('cart')!, 'abandoned carts are lost after payment');
   // A plain process has no phases: one column, and a long chain stays inside its own scroller.
   const plain = await page.evaluate(() => {
    const w = globalThis as any, steps = Array.from({length: 26}, (_, i) => ({id: 's' + i, name: 'Step ' + i, kind: i === 0 ? 'start' : i === 25 ? 'end' : 'task', scene: {id: 'sc' + i, position: [i * 14, 0], color: '#fff'}})), view = {definition: {format: 'wildlands-process', schemaVersion: 1, revision: 0, id: 'long', name: 'Long', start: 's0', resources: [], steps, arrivals: [], flows: steps.slice(1).map((s, i) => ({id: 'f' + i, from: 's' + i, to: s.id}))}, selected: null,
@@ -150,7 +215,20 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
    document.getElementById('jtest')?.remove(); w.jsurface.dispose(); const host = document.createElement('div'); host.id = 'jtest'; document.body.append(host); w.jsurface = w.LWProcessJourney.create(host, () => {}); w.jsurface.draw(view);
    return {phases: [...host.querySelectorAll('.jm-phase-name')].map(n => n.textContent), cards: host.querySelectorAll('.jm-card').length, measured: host.querySelectorAll('.jm-line.measured').length, last: host.querySelectorAll('.jm-funnel .jm-count')[25]!.textContent};
   });
-  assert.deepEqual(plain, {phases: ['Process'], cards: 26, measured: 0, last: '75'});
+  assert.deepEqual(plain, {phases: ['Process'], cards: 26, measured: 0, last: '75'}); await tableColumns();
+  // The onboarding demo: the email form loses no one to the social sign-up, which is a split that rejoins at the permissions prompt.
+  const onboarding = JSON.parse(fs.readFileSync(path.join(gameDir, gameDefinitions.find(f => f.includes('onboarding'))!), 'utf8')) as LWProcess.Definition;
+  const email = await page.evaluate(d => {
+   // A separate detached run of the demo: the studio's own run never ticks here.
+   const w = globalThis as any, s = w.LWProcessRuntime.create(d, {}), q = s.advance(600); s.dispose();
+   w.jsurface.draw({definition: d, snapshot: q, selected: null});
+   const labels = [...document.querySelectorAll('#jtest .jm-funnel')].map(c => c.getAttribute('aria-label')!);
+   return {label: labels.find(l => l.startsWith('Fills in the email form'))!,
+    split: [...document.querySelectorAll('#jtest .jm-split')].map(n => n.textContent)};
+  }, onboarding);
+  const rejoins = /^Fills in the email form: \d+ reached, \d+% of start, no drop-off, split after the previous step, rejoins at Sees the permissions prompt/;
+  assert.match(email.label, rejoins, email.label);
+  assert(email.split.includes('split, rejoins at Sees the permissions prompt'), JSON.stringify(email.split)); await tableColumns();
   await page.evaluate(() => {(globalThis as any).jsurface.dispose(); document.getElementById('jtest')?.remove();});
  });
  const modeOf = async () => (await query(page)).mode, minuteOf = async () => (await query(page)).snapshot.minute;
@@ -219,17 +297,26 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   await page.setViewportSize({width: 1440, height: 1060}); await freshStudio(); await showIo();
   const kpis = async () => Object.fromEntries(await page.locator('#metrics > div').evaluateAll(cells => cells.map(c => [c.querySelector('span')!.textContent, c.querySelector('strong')!.textContent])));
   const labelsOf = async () => Object.keys(await kpis());
-  // A business process keeps its wording and shows no journey numbers, even after it has run.
-  assert.deepEqual(await labelsOf(), ['Completed', 'In progress', 'Mean cycle', 'Simulated cost', 'Failed']); assert.equal(await page.locator('#steps-heading').innerText(), 'Step scenes');
+  // The KPI strip: mean cycle beside the mean age of the cases in progress, then the work cost and the capacity-basis cost.
+  const PROCESS_KPIS = ['Completed', 'In progress', 'Mean cycle', 'Mean age in progress', 'Work cost', 'Capacity cost', 'Failed'];
+  const JOURNEY_KPIS = ['Finished', ...PROCESS_KPIS.slice(1)];
+  // A business process keeps its wording and shows no journey numbers, even after it has run. Nothing has finished yet: Mean cycle is '—'.
+  const fresh = await kpis(), m0 = (await query(page)).snapshot.metrics;
+  const age0 = m0.meanAgeMinutes === null ? '—' : `${m0.meanAgeMinutes} min`;
+  assert.deepEqual([fresh['Mean cycle'], fresh['Mean age in progress'], m0.completed], ['—', age0, 0]);
+  assert.deepEqual(await labelsOf(), PROCESS_KPIS); assert.equal(await page.locator('#steps-heading').innerText(), 'Step scenes');
   assert.equal(await page.locator('label[for="process-case"]').innerText(), 'Case'); assert.match(await page.locator('#scene-subtitle').innerText(), /\d cases? admitted$/);
   for (let i = 0; i < 6; i++) await page.locator('#advance').click();
-  assert.deepEqual(await labelsOf(), ['Completed', 'In progress', 'Mean cycle', 'Simulated cost', 'Failed']); assert.doesNotMatch(await page.locator('#inspector').innerText(), /Process type|Tracked measures|Conversion/);
+  const ran = (await query(page)).snapshot, after = await kpis(); assert(ran.metrics.completed > 0);
+  assert.equal(after['Mean cycle'], Number(ran.metrics.meanCycleMinutes.toFixed(1)).toLocaleString() + ' min');
+  assert.equal(after['Capacity cost'], Number(ran.metrics.capacityCost.toFixed(1)).toLocaleString());
+  assert.deepEqual(await labelsOf(), PROCESS_KPIS); assert.doesNotMatch(await page.locator('#inspector').innerText(), /Process type|Tracked measures|Conversion/);
   await page.locator('#open-activity').click(); await page.locator('dialog.act-dialog[open]').waitFor(); assert.equal(await page.locator('#act-case-label').innerText(), 'Case'); assert.equal(await page.locator('#act-case option').first().innerText(), 'All cases'); await page.keyboard.press('Escape'); await page.locator('dialog.act-dialog[open]').waitFor({state: 'hidden'});
   // The two journeys: customers and users, journey headings, and conversion with tracked measures once cases have finished.
   for (const [index, one, many, label, tracked] of [[3, 'customer', 'customers', 'Customer journey', 'Customer sentiment'], [4, 'user', 'users', 'User journey', 'Sessions']] as const) {
    await switchTo(index); await showIo(); const def = (await query(page)).definition;
    assert.equal(await page.locator('#steps-heading').innerText(), 'Touchpoints and steps'); assert.equal(await page.locator('label[for="process-case"]').innerText(), one[0]!.toUpperCase() + one.slice(1));
-   assert.match(await page.locator('#scene-subtitle').innerText(), new RegExp(`\\d ${one}s? admitted$`)); assert.deepEqual(await labelsOf(), ['Finished', 'In progress', 'Mean cycle', 'Simulated cost', 'Failed']);
+   assert.match(await page.locator('#scene-subtitle').innerText(), new RegExp(`\\d ${one}s? admitted$`)); assert.deepEqual(await labelsOf(), JOURNEY_KPIS);
    assert.match(await page.locator('#inspector').innerText(), new RegExp(`Process type\\s+${label}`)); assert.doesNotMatch(await page.locator('#inspector [aria-label="Arrival streams"]').innerText(), /\bcases?\b/i);
    for (let i = 0; i < 80; i++) { const m = (await query(page)).snapshot.metrics; if (m.goals + m.lost >= 3 && Object.values(m.tracked).every(t => t.n > 0)) break; await page.locator('#advance').click(); }
    const q = await query(page), m = q.snapshot.metrics; assert(m.goals + m.lost >= 3 && m.conversion !== null, 'the journey finished with outcomes'); assert.equal(q.snapshot.minute > 0, true);
@@ -250,7 +337,7 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
    await page.locator('#overview').click(); await page.locator('#open-activity').click(); await page.locator('dialog.act-dialog[open]').waitFor();
    assert.equal(await page.locator('#act-case-label').innerText(), one[0]!.toUpperCase() + one.slice(1)); assert.equal(await page.locator('#act-case option').first().innerText(), 'All ' + many); await page.keyboard.press('Escape'); await page.locator('dialog.act-dialog[open]').waitFor({state: 'hidden'});
   }
-  await switchTo(0); assert.deepEqual(await labelsOf(), ['Completed', 'In progress', 'Mean cycle', 'Simulated cost', 'Failed']); assert.equal(await page.locator('#steps-heading').innerText(), 'Step scenes'); assert.equal(await page.locator('label[for="process-case"]').innerText(), 'Case');
+  await switchTo(0); assert.deepEqual(await labelsOf(), PROCESS_KPIS); assert.equal(await page.locator('#steps-heading').innerText(), 'Step scenes'); assert.equal(await page.locator('label[for="process-case"]').innerText(), 'Case');
  });
  await checkLifecycle('Process lenses browser lifecycle emits no runtime errors or network requests');
 });

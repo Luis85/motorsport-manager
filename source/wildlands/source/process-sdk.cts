@@ -30,6 +30,7 @@ require('./process-authoring.js');
 require('./process-diff.js');
 require('./process-route.js');
 require('./process-sipoc-model.js');
+require('./process-time.js');
 require('./process-random-view.js');
 require('./process-terms.js');
 require('./process-slides-text.js');

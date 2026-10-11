@@ -92,7 +92,20 @@ is written. This one validates strictly (no `--draft` needed).
 4. Process counts in prose are manual: `docs/reference/current-state.md` (agency lab paragraph),
    `docs/concepts/README.md` (agency bullet), `source/wildlands/README.md` ("Business process scenes").
    The browser suites derive the count from `game.json` (`process-browser-fixture.ts` `COUNT`), and the
-   BPMN conformance check exports every `content/*.process.json` automatically.
+   BPMN conformance check exports every `content/*.process.json` automatically. Two checks pin each
+   deck instead, so a new process, or an edit that adds, removes, renames or re-phases steps, must
+   update them (take the numbers from `bin/wildlands process slides --input F`, which prints `slides`):
+   - `PINNED` in `source/wildlands/source/verification/process-present-browser.ts`: one slide count
+     per process in `content.definitions` order (append the new deck's count);
+     `process-present-browser` asserts `COUNT === PINNED.length` and every deck's length.
+   - `PINNED` in `source/wildlands/source/test-process-slides.cts`: per file name, the slide count,
+     section ids and ordered slide titles (the Node `business-process` suite); that file's demo
+     checks also expect the number of bundled demos and that no deck shows "No description
+     authored.", and its check "SIPOC model is pinned for every demo, counts cases per stage and
+     shares the LWProcessRoute main route with the slides" hashes the SIPOC models of every demo at
+     minute 0 and after 1,440 minutes with seed 7 (`SIPOC_LENGTH`, `SIPOC_SHA`): a new demo, or a
+     change to phases, the main route, the SIPOC, arrival data or anything that changes those runs,
+     changes that hash. Re-pin it and say why in the handoff.
 5. `bin/wildlands validate-game --game docs/concepts/agency-delivery` (exit 0, `errors: []`).
 
 ## 3. Pin a Node check
@@ -103,7 +116,8 @@ application demo ..." and "Weekly delivery and release train ..." (~:230 and ~:2
 - `catalog.validate(d)` ok with `diagnostics: []`; `catalog.fingerprint(d)` equals the pinned value
   (`process inspect` prints it); id, seed, genre, every step `scene` without `asset` and a `phase`.
 - Structure that matters (instances, deadlines, inclusive forks, chance flows, arrivals).
-- `run(d, MINUTES)`: exact `[seed, minute, status, arrived, completed, failed, cost, meanCycleMinutes]`,
+- `run(d, MINUTES)`: exact `[seed, minute, status, arrived, completed, failed, cost, meanCycleMinutes]`
+  (`cost` is the work cost; `capacityCost` and `meanAgeMinutes` are read-model values you may pin too),
   resource `busyMinutes`, step `completed`/`visits`/`items`/`deadlines`, final case data.
   Take the numbers from `bin/wildlands process run --input F --minutes N --output $W/run.json`.
 - Chunked-advance identity: one advance equals chunks `[1]`, `[7]`, `[60]`, `[1, 7, 60]`, and capacity
@@ -136,8 +150,13 @@ bin/wildlands process slides --input $F --format md --minutes 2400 --seed 7 --ou
 ```
 
 - `diff --input NEW --against OLD` reports what changed from OLD to NEW (`summary`, `changes`,
-  `changedSteps` with names, `changedSettings`, both revisions and fingerprints). Run it after every
-  guarded edit and before replacing a file in the game folder; nothing unintended may appear.
+  `changedSteps` with names, `changedSettings`, `changedResources`, `changedFlows`,
+  `changedArrivals`, both revisions and fingerprints) and `fields`, every changed value as
+  `{path, before, after}`. Run it after every guarded edit and before replacing a file in the game
+  folder; read `fields` line by line: nothing unintended may appear.
+- `export-bpmn` prints `fidelity`: what only the Wildlands extension carries. Check that the
+  BPSim list says nothing surprising (for example a second arrival rule a foreign tool would
+  drop) and mention notable entries in the README's BPMN results.
 - Read `slides.md` as a learner: intro (title, overview/SIPOC, resources), one section per phase in
   main-route order, variants, summary. Every step has exactly one `step-<id>` slide; no step may read
   "No description authored."; phases appear in the intended order (an unphased step joins the phase
@@ -149,10 +168,11 @@ Screenshots (Playwright Chromium; never `waitForTimeout`):
 ```sh
 PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/opt/pw-browsers/chromium \
   npm --prefix source/wildlands run process:shots -- \
-  --game docs/concepts/agency-delivery --process 8 --minute 2400 --out /tmp/pd/shots
+  --game docs/concepts/agency-delivery --process N --minute 2400 --out /tmp/pd/shots
 ```
 
-`--process` is the 1-based position in `content.definitions`. The tool builds the game with
+`--process` is the 1-based position in `content.definitions`: the lab holds 7 processes, so an
+existing demo is 1 to 7 and a new eighth one is 8. The tool builds the game with
 `--cli FILE`, else `source/wildlands/.generated/tools/wildlands-cli.cjs` when present (run
 `npm run build` first so it matches the source), else `bin/wildlands`; `shots.json` names the one used
 (`cli`). It runs to the minute through **Run until**/speed 30/**Run** and writes `desktop-2d`,
@@ -163,7 +183,9 @@ for Present), `consoleErrors: []`, then open the PNGs: truncated names, clipped 
 Exit 0 all available captures written, 1 a failure, 2 bad arguments.
 
 Present mode review (in the PNGs, or by hand in the built HTML): the header reads "Slide n of N" and,
-past minute 0, names the run's minute and seed; the step slide shows that step framed on the map;
+past minute 0, "Live facts come from one simulated run at business minute M (seed S, status)."; the
+title slide's lead is short and **Key results** follow it; the resources slide lists each pool's
+utilisation; the step slide shows that step framed on the map with its direct neighbours;
 slide text is not cut off and Previous/Next stay visible (on a phone the map follows the slide, below
 it); the DejaVu variants do not overflow; Contents lists every section; Exit returns to the previous
 view with the run still paused.

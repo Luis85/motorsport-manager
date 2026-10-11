@@ -14,6 +14,14 @@ declare namespace LWProcessDiff {
   invalid: boolean;
   changedSteps: {id: string; name: string; change: 'added' | 'removed' | 'changed'}[];
  }
+ type Change = 'added' | 'removed' | 'changed';
+ /** One changed entity: steps, resources and flows by id; arrival rules by their 0-based position, named "Arrival rule <n>". */
+ interface Entity {id: string; name: string; change: Change}
+ interface Arrival {index: number; name: string; change: Change}
+ /** One changed scalar value; `before` or `after` is absent when the value was added or removed. Paths use ids, and indexes inside lists. */
+ interface Field {path: string; before?: LWProcess.Scalar; after?: LWProcess.Scalar}
+ /** What changed, itemised for review: entities by id and every scalar value with its old and new value. */
+ interface Detail {changedResources: Entity[]; changedFlows: Entity[]; changedArrivals: Arrival[]; fields: Field[];}
  interface Options {
   /** Ignore this step and its outgoing flows, to report only changes outside it. */
   ignoreStep?: string;
@@ -24,6 +32,8 @@ declare namespace LWProcessDiff {
   settings(before: LWProcess.Definition, after: LWProcess.Definition): string[];
   /** A zero summary; `invalid` marks a draft that is not process JSON. */
   empty(invalid: boolean): Changes;
+  /** Changed resources, flows and arrival rules, and each changed scalar value (`/resources/developers/capacity` from 2 to 3). */
+  detail(before: LWProcess.Definition, after: LWProcess.Definition): Detail;
   /** '3 steps, 1 resource changed' after the prefix, 'formatting only' when nothing differs. */
   describe(changes: Changes, prefix?: string): string;
  }
@@ -63,11 +73,48 @@ declare namespace LWProcessDiff {
   out.meta = settings(active, draft).length;
   return out;
  }
+ const scalar = (v: unknown): v is LWProcess.Scalar => v === null || typeof v !== 'object';
+ /** Every scalar difference below `path`; a whole object added or removed is reported by its entity, not value by value. */
+ function walk(path: string, a: unknown, b: unknown, out: LWProcessDiff.Field[]): void {
+  if (same(a, b)) return;
+  if ((a === undefined || scalar(a)) && (b === undefined || scalar(b))) {
+   out.push({path, ...a === undefined ? {} : {before: a}, ...b === undefined ? {} : {after: b}}); return;
+  }
+  if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || Array.isArray(a) !== Array.isArray(b)) return;
+  const x = a as Record<string, unknown>, y = b as Record<string, unknown>;
+  const keys = Array.isArray(a) ? Array.from({length: Math.max(a.length, (b as unknown[]).length)}, (_, i) => String(i))
+   : [...new Set([...Object.keys(x), ...Object.keys(y)])].sort();
+  for (const k of keys) walk(path + '/' + k, x[k], y[k], out);
+ }
+ function entities<T extends {id: string}>(before: T[], after: T[], name: (item: T) => string): LWProcessDiff.Entity[] {
+  const a = byId(before), b = byId(after), out: LWProcessDiff.Entity[] = [];
+  for (const [id, item] of b) {
+   if (!a.has(id)) out.push({id, name: name(item), change: 'added'}); else if (!same(a.get(id), item)) out.push({id, name: name(item), change: 'changed'});
+  }
+  for (const [id, item] of a) if (!b.has(id)) out.push({id, name: name(item), change: 'removed'});
+  return out;
+ }
+ function detail(before: LWProcess.Definition, after: LWProcess.Definition): LWProcessDiff.Detail {
+  const fields: LWProcessDiff.Field[] = [], changedArrivals: LWProcessDiff.Arrival[] = [], n = Math.max(before.arrivals.length, after.arrivals.length);
+  for (let i = 0; i < n; i++) {
+   const a = before.arrivals[i], b = after.arrivals[i];
+   if (!same(a, b)) changedArrivals.push({index: i, name: 'Arrival rule ' + (i + 1), change: !a ? 'added' : !b ? 'removed' : 'changed'});
+  }
+  const left = rest(before), right = rest(after);
+  for (const k of settings(before, after)) walk('/' + k, left[k], right[k], fields);
+  for (const list of ['steps', 'resources', 'flows'] as const) {
+   const a = byId<{id: string}>(before[list]), b = byId<{id: string}>(after[list]);
+   for (const [id, item] of b) walk('/' + list + '/' + id, a.get(id), item, fields);
+  }
+  walk('/arrivals', before.arrivals, after.arrivals, fields);
+  const changedFlows = entities(before.flows, after.flows, f => f.label ?? f.from + ' → ' + f.to);
+  return {changedResources: entities(before.resources, after.resources, r => r.name), changedFlows, changedArrivals, fields};
+ }
  function describe(c: LWProcessDiff.Changes, prefix = 'Unapplied draft'): string {
   if (c.invalid) return `${prefix}: not valid process JSON yet`;
   const parts = [c.steps && plural(c.steps, 'step'), c.flows && plural(c.flows, 'flow'), c.resources && plural(c.resources, 'resource'), c.arrivals && plural(c.arrivals, 'arrival rule'), c.meta && plural(c.meta, 'process setting')].filter(Boolean);
   return parts.length ? `${prefix}: ${parts.join(', ')} changed` : `${prefix}: formatting only`;
  }
- root.LWProcessDiff = {compare, settings, empty, describe};
+ root.LWProcessDiff = {compare, settings, empty, detail, describe};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessDiff;
 })(globalThis);

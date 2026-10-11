@@ -8,8 +8,14 @@ declare namespace LWProcessRandomView {
  interface Api {
   /** 'Uniform 7–11 min', 'Random between 4 and 10 min, most often 6', 'Exponential, mean 4 min (max 12)', 'Normal, mean 30 min, sd 5 (between 20 and 45)', 'Erlang, 3 phases, mean 30 min'. */
   describeDist(dist: LWProcess.Dist | undefined): string;
-  /** 'Takes 12 min', or 'Planned 12 min (the average shown in estimates); each visit draws its own time: Uniform 7–11 min'. '' without a duration. */
+  /**
+   * 'Takes 12 min'; with random timing 'Planned 9 min (the average shown in estimates); each visit draws its own time: Uniform 7–11 min',
+   * or, when the draws average more than 5% away from the planned duration, 'Planned 12 min; draws average about 9 min; each visit draws
+   * its own time: Uniform 7–11 min'. '' without a duration.
+   */
   describeTiming(step: Pick<LWProcess.Step, 'duration' | 'until' | 'timing'>): string;
+  /** Average whole-minute value of a distribution's draws, rounding and clamping included (triangular 240/720/1800: about 920); null when unknown. */
+  meanOf(dist: LWProcess.Dist | undefined): number | null;
   /** 'Sets defect to true in 12% of cases, otherwise false'. */
   describeDraw(draw: LWProcess.Draw): string;
   /** 'If iteration < iterations', '8% of cases take this path', 'Otherwise (no condition)' or, for all/any/not combinators, 'If A and (B or not C)'. */
@@ -66,10 +72,67 @@ declare namespace LWProcessRandomView {
   if (d.dist === 'erlang') return `erlang, ${phases(d.k)}, mean ${num(d.mean)}`;
   return `exponential, mean ${num(d.mean)}${d.max === undefined ? '' : `, max ${num(d.max)}`}`;
  }
+ // The engine's run limit in minutes: the highest value any draw can take (LWProcessLimits.minutes).
+ const LIMIT = 100000;
+ /** Standard normal CDF (Abramowitz and Stegun 7.1.26, error below 2e-7): enough for a displayed average. */
+ function phi(z: number): number {
+  const x = Math.abs(z) / Math.SQRT2, t = 1 / (1 + .3275911 * x);
+  const erf = 1 - ((((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - .284496736) * t + .254829592) * t * Math.exp(-x * x);
+  return z >= 0 ? (1 + erf) / 2 : (1 - erf) / 2;
+ }
+ /** Erlang CDF with k phases of mean `mean / k` each. */
+ function erlangCdf(x: number, k: number, mean: number): number {
+  if (x <= 0) return 0;
+  const rate = k / mean; let term = 1, sum = 0;
+  for (let n = 0; n < k; n++) { sum += term; term *= rate * x / (n + 1); }
+  return 1 - Math.exp(-rate * x) * sum;
+ }
+ /**
+  * Expected value of a whole-minute value `clamp(round(X), low, high)` for a continuous X with CDF `cdf`, as process-random
+  * samples it: E = low + Σ P(value > m) for m from low to high - 1, where P(value > m) = 1 - cdf(m + 0.5). Stops once the
+  * tail is negligible, so even the 100,000-minute limit costs little.
+  */
+ function roundedMean(cdf: (x: number) => number, low: number, high: number): number {
+  let mean = low;
+  for (let m = low; m < high; m++) { const tail = 1 - cdf(m + .5); if (tail < 1e-9) break; mean += tail; }
+  return mean;
+ }
+ /** The average a step's draws actually take, following process-random's sampling rules (rounding and clamping included); null when unknown. */
+ function meanOf(d: LWProcess.Dist | undefined): number | null {
+  if (!d) return null;
+  const ok = (...values: (number | undefined)[]) => values.every(v => v !== undefined && Number.isFinite(v));
+  if (d.dist === 'uniform') {
+   if (!ok(d.min, d.max) || d.max! < d.min!) return null;
+   const low = Math.max(1, d.min!), high = Math.min(LIMIT, d.max!), span = d.max! - d.min! + 1;
+   // Whole values min..max are equally likely; values outside [low, high] are clamped onto the bound.
+   let sum = 0; for (let v = d.min!; v <= d.max! && v - d.min! < 200000; v++) sum += Math.min(high, Math.max(low, v));
+   return sum / span;
+  }
+  if (d.dist === 'triangular') {
+   const min = d.min ?? 1, max = d.max ?? LIMIT, mode = d.mode ?? min, span = max - min;
+   if (!ok(min, max, mode) || span < 0) return null;
+   if (span === 0) return Math.max(1, Math.min(LIMIT, min));
+   const cdf = (x: number) => x <= min ? 0 : x >= max ? 1 : x <= mode ? (x - min) ** 2 / (span * (mode - min)) : 1 - (max - x) ** 2 / (span * (max - mode));
+   return roundedMean(cdf, Math.max(1, min), Math.min(LIMIT, max));
+  }
+  if (d.dist === 'normal') {
+   if (!ok(d.mean, d.sd) || d.sd! <= 0) return null;
+   return roundedMean(x => phi((x - d.mean!) / d.sd!), d.min ?? 1, Math.min(LIMIT, d.max ?? d.mean! + 6 * d.sd!));
+  }
+  if (d.dist === 'erlang') return ok(d.k, d.mean) && d.k! >= 1 && d.mean! > 0 ? roundedMean(x => erlangCdf(x, d.k!, d.mean!), 1, LIMIT) : null;
+  const mean = d.mean ?? 1;
+  return mean > 0 ? roundedMean(x => 1 - Math.exp(-x / mean), 1, Math.min(LIMIT, d.max ?? LIMIT)) : null;
+ }
+ /** A displayed average: whole minutes from 100 up, one decimal below. */
+ const average = (n: number) => n >= 100 ? String(Math.round(n)) : String(Math.round(n * 10) / 10);
  function describeTiming(step: Pick<LWProcess.Step, 'duration' | 'until' | 'timing'>): string {
   if (step.duration === undefined) return '';
   if (!step.timing) return `Takes ${step.duration} min`;
-  return `Planned ${step.duration} min (the average shown in estimates); each visit draws its own time: ${describeDist(step.timing)}`;
+  // The planned duration is what estimates use. When the draws average more than 5% away from it, say so instead of calling it the average.
+  const mean = meanOf(step.timing), apart = mean !== null && step.duration > 0 && Math.abs(mean - step.duration) / step.duration > .05;
+  const lead = apart ? `Planned ${step.duration} min; draws average about ${average(mean)} min`
+   : `Planned ${step.duration} min (the average shown in estimates)`;
+  return `${lead}; each visit draws its own time: ${describeDist(step.timing)}`;
  }
  function describeDraw(d: LWProcess.Draw): string {
   if (d.kind === 'chance') {
@@ -129,6 +192,7 @@ declare namespace LWProcessRandomView {
  const describeEmotion = (n: number | undefined): string => EMOTIONS.find(([value]) => value === n)?.[1] ?? '';
  const describeChannel = (channel: string | undefined): string => CHANNELS.find(([value]) => value === channel)?.[1] ?? '';
  const describeOutcome = (outcome: string | undefined): string => (outcome !== undefined && Object.hasOwn(OUTCOMES, outcome) ? OUTCOMES[outcome] : undefined) ?? '';
- root.LWProcessRandomView = {describeDist, describeTiming, describeDraw, describeWhen, describeInstances, describeDeadline, describeFork, describeArrival, scalar, describeEmotion, describeChannel, describeOutcome, EMOTIONS, CHANNELS};
+ root.LWProcessRandomView = {describeDist, describeTiming, meanOf, describeDraw, describeWhen, describeInstances, describeDeadline, describeFork,
+  describeArrival, scalar, describeEmotion, describeChannel, describeOutcome, EMOTIONS, CHANNELS};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessRandomView;
 })(globalThis);

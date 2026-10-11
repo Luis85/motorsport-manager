@@ -37,6 +37,15 @@
   const alive = () => { if (disposed) throw Error('Process session is disposed.'); };
   // Means are rounded to 3 decimals; an empty aggregate has no mean.
   const mean = (a: LWProcess.Aggregate | undefined) => a ? Math.round(a.sum / a.n * 1000) / 1000 : null;
+  // Read-model only: neither value feeds the engine. Capacity cost charges every pool unit for every minute, busy or idle.
+  const capacityCost = () => definition.resources.reduce((n, r) => {
+   const pool = world.get<LWProcess.Pool>('pool-' + r.id, 'process-pool')!; return n + pool.capacity * r.costPerMinute * clock.minute;
+  }, 0);
+  /** Mean minutes since arrival of the cases still in progress (they are never pruned); null when none is. */
+  const meanAge = (cases: LWProcess.Case[]) => {
+   const open = cases.filter(c => c.status === 'active');
+   return open.length ? Math.round(open.reduce((n, c) => n + clock.minute - c.entered, 0) / open.length * 1000) / 1000 : null;
+  };
   function query(): LWProcess.Snapshot {
    alive();
    const cases = world.query(['process-case']).map(id => world.get<LWProcess.Case>(id, 'process-case')!).sort((a, b) => a.id.length - b.id.length || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
@@ -49,12 +58,14 @@
    return copy({minute: clock.minute, status, cases, tokens, events: state.events, receipts: state.receipts, receiptsDropped: state.receiptsDropped,
     steps: definition.steps.map(step => ({...world.get<LWProcess.Station>('station-' + step.id, 'process-station')!,
      queued: tokens.filter(t => t.stepId === step.id && t.status !== 'active' && t.status !== 'timer').length, active: tokens.filter(t => t.stepId === step.id && t.status === 'active').length,
+     held: tokens.filter(t => t.stepId === step.id && t.status === 'held').length,
      entered: world.get<LWProcess.Station>('station-' + step.id, 'process-station')!.visits, timers: timers(step.id),
      tracked: Object.fromEntries((definition.track ?? []).map(t => { const a = state.entryAgg.get(step.id + '|' + t.field); return [t.field, {n: a?.n ?? 0, mean: mean(a)}]; }))})),
     resources: definition.resources.map(r => { const p = world.get<LWProcess.Pool>('pool-' + r.id, 'process-pool')!;
      return {id: r.id, kind: r.kind ?? 'people', capacity: p.capacity, busy: p.busy, busyMinutes: p.busyMinutes, utilization: clock.minute ? p.busyMinutes / (clock.minute * p.capacity) : 0}; }),
     metrics: {arrived: clock.arrived, completed: clock.completed, failed: clock.failed, dropped: clock.dropped, active: live, cost: clock.cost,
-     meanCycleMinutes: clock.completed ? clock.cycle / clock.completed : 0, throughputPerHour: clock.minute ? clock.completed * 60 / clock.minute : 0,
+     capacityCost: capacityCost(), meanCycleMinutes: clock.completed ? clock.cycle / clock.completed : 0, meanAgeMinutes: meanAge(cases),
+     throughputPerHour: clock.minute ? clock.completed * 60 / clock.minute : 0,
      goals: clock.goals, lost: clock.lost, conversion: clock.goals + clock.lost ? Math.floor((2000 * clock.goals + clock.goals + clock.lost) / (2 * (clock.goals + clock.lost))) : null,
      tracked: Object.fromEntries((definition.track ?? []).map(t => { const a = state.finishAgg.get(t.field); return [t.field, {label: t.label ?? t.field, n: a?.n ?? 0, mean: mean(a), min: a?.min ?? null, max: a?.max ?? null}]; }))},
     seed, retention: {finishedDropped: clock.pruned}});

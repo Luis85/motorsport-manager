@@ -22,7 +22,8 @@ declare namespace LWProcessBpmnGraph {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessBpmnExport: {vocabulary: LWProcessBpmn.Vocabulary}; LWProcessBpmnExt: LWProcessBpmnExt.Api; LWProcessBpmnBpsim: LWProcessBpmnBpsim.Api; LWProcessBpmnExpr: LWProcessBpmnExpr.Api; LWProcessBpmnGraph?: LWProcessBpmnGraph.Api};
+ const root = inputRoot as {LWProcessBpmnExport: {vocabulary: LWProcessBpmn.Vocabulary}; LWProcessBpmnExt: LWProcessBpmnExt.Api; LWProcessBpmnBpsim: LWProcessBpmnBpsim.Api; LWProcessBpmnExpr: LWProcessBpmnExpr.Api; LWProcessBpmnGraph?: LWProcessBpmnGraph.Api;
+  LWProcessCatalog: LWProcess.Catalog};
  const {MODEL} = root.LWProcessBpmnExport.vocabulary;
  type X = LWProcessXml.Node; type Item = LWProcessBpmnGraph.Item; type Edge = LWProcessBpmnGraph.Edge; type Net = LWProcessBpmnGraph.Net; type Ctx = LWProcessBpmnGraph.Ctx;
  const ext = () => root.LWProcessBpmnExt, kids = (n: X, local: string, ns?: string) => ext().kids(n, local, ns), first = (n: X, local: string) => ext().first(n, local);
@@ -31,7 +32,30 @@ declare namespace LWProcessBpmnGraph {
  const CONTAINERS = ['subProcess', 'transaction', 'adHocSubProcess', 'callActivity'];
  const ARTIFACTS = new Set(['documentation', 'extensionElements', 'textAnnotation', 'association', 'group', 'dataObject', 'dataObjectReference', 'dataStoreReference', 'dataStore', 'property', 'ioSpecification', 'category', 'categoryValue', 'auditing', 'monitoring', 'resourceRole', 'correlationSubscription']);
  const MAX_DEPTH = 3;
- const defs = (n: X): string[] => n.children.filter(c => c.ns === MODEL && c.local.endsWith('EventDefinition')).map(c => c.local);
+ /** Events, pass-through gateways and inlined container boundaries fold away, so a file may hold this many times the steps and flows of a definition. */
+ const FOLD = 4;
+ /** The analysis bound, derived from the definition limits (`maxItems` of steps and flows in the schema). */
+ function bound(): {steps: number; flows: number; nodes: number; edges: number} {
+  const p = root.LWProcessCatalog.schema.properties as Record<string, {maxItems: number}>, steps = p.steps!.maxItems, flows = p.flows!.maxItems;
+  return {steps, flows, nodes: steps * FOLD, edges: flows * FOLD};
+ }
+ const isFlowNode = (local: string) => local.endsWith('Event') || Object.hasOwn(GATEWAYS, local) || [...PLAIN, ...SERVICE, ...CONTAINERS].includes(local);
+ /** Flow nodes and sequence flows written in a process and its nested sub-processes, counted in one linear pass. */
+ function written(proc: X): {nodes: number; flows: number} {
+  let nodes = 0, flows = 0;
+  const walk = (n: X): void => {
+   for (const c of n.children) if (c.ns === MODEL) { if (c.local === 'sequenceFlow') flows++; else if (isFlowNode(c.local)) { nodes++; walk(c); } }
+  };
+  walk(proc); return {nodes, flows};
+ }
+ const count = (n: number) => n.toLocaleString('en-US');
+ /** Rejects before any analysis that grows with the file: a process this large could never become a definition. */
+ function tooLarge(b: ReturnType<typeof bound>, found: string): Error {
+  return Error('This process is too large to import: ' + found + ', but a Wildlands process holds at most ' + b.steps + ' steps and ' + b.flows + ' flows. '
+   + 'Import reads at most ' + count(b.nodes) + ' flow nodes and ' + count(b.edges) + ' sequence flows, which leaves room for events and gateways '
+   + 'that fold away; split the model into smaller processes.');
+ }
+ const defs =(n: X): string[] => n.children.filter(c => c.ns === MODEL && c.local.endsWith('EventDefinition')).map(c => c.local);
  /** The single timer definition of an event: an ISO-8601 `timeDuration` read like a boundary timer; the Wildlands extension restores exact values. */
  function timerOf(ctx: Ctx, node: X, xmlId: string, item: Item): void {
   const list = node.children.filter(c => c.ns === MODEL && c.local === 'timerEventDefinition'), step = first(node, 'step');
@@ -51,8 +75,12 @@ declare namespace LWProcessBpmnGraph {
  };
  function build(ctx: Ctx, proc: X): Net {
   const net: Net = {items: [], edges: [], byKey: new Map(), lanes: new Map(), callees: new Set(), ignored: new Map()}, boundaries: Item[] = [];
-  const containers = new Map<string, {entry: string; exits: string[]}>(), fields = new Set<string>();
-  const ignore = (local: string, id: string) => { if (!net.ignored.has(local)) net.ignored.set(local, []); net.ignored.get(local)!.push(id); };
+  const containers = new Map<string, {entry: string; exits: string[]}>(), fields = new Set<string>(), limit = bound(), size = written(proc);
+  if (size.nodes > limit.nodes || size.flows > limit.edges) {
+   throw tooLarge(limit, 'it has ' + count(size.nodes) + ' flow nodes and ' + count(size.flows) + ' sequence flows');
+  }
+  const inlined = (what: string, n: number) => tooLarge(limit, 'with its call activities inlined it has more than ' + count(n) + ' ' + what);
+  const ignore =(local: string, id: string) => { if (!net.ignored.has(local)) net.ignored.set(local, []); net.ignored.get(local)!.push(id); };
   /** Marks every flow node of a lane (and nested lanes) so tasks can later demand its pool. */
   function laneMap(container: X): Map<string, string> {
    const out = new Map<string, string>();
@@ -77,7 +105,7 @@ declare namespace LWProcessBpmnGraph {
     const key = scope + xml;
     if (net.byKey.has(key)) { ctx.reject(xml, local, 'Duplicate BPMN id ' + xml + '.'); continue; }
     const item: Item = {key, xml, local, node: child, trail, kind: 'task', lane: lanes.get(xml) ?? inherited, phase, how: ''};
-    net.byKey.set(key, item);
+    net.byKey.set(key, item); if (net.byKey.size > limit.nodes) throw inlined('flow nodes', limit.nodes);
     const bad = (why: string) => ctx.unsupported(item, xml, local, local + ' ' + xml + ' is not supported: ' + why);
     const d = defs(child);
     if (gateway) {
@@ -122,6 +150,7 @@ declare namespace LWProcessBpmnGraph {
     const id = f.attrs.id ?? '', exprs = kids(f, 'conditionExpression');
     if (exprs.length > 1) { ctx.reject(id, 'sequenceFlow', 'Flow ' + id + ' has ' + exprs.length + ' conditionExpression elements; at most one is allowed.'); continue; }
     net.edges.push({key: scope + id, xml: id, from: scope + (f.attrs.sourceRef ?? ''), to: scope + (f.attrs.targetRef ?? ''), node: f, label: f.attrs.name || undefined, expression: exprs[0]?.text, exprNode: exprs[0]});
+    if (net.edges.length > limit.edges) throw inlined('sequence flows', limit.edges);
    }
    return {starts, ends};
 
@@ -268,24 +297,31 @@ declare namespace LWProcessBpmnGraph {
  }
  /** Folds pass-through nodes: events, merging exclusive gateways and one-in-one-out parallel or inclusive gateways disappear into their flows. */
  function contract(ctx: Ctx, net: Net): void {
-  const into = (k: string) => net.edges.filter(e => e.to === k), outOf = (k: string) => net.edges.filter(e => e.from === k);
+  // Edges are indexed by source and target once; folding re-points in-flows, so only the target index changes. Edge and item order stay as written.
+  const ins = new Map<string, Set<Edge>>(), outs = new Map<string, Edge[]>(), gone = new Set<Edge>(), folded = new Set<Item>();
+  const list = <V>(m: Map<string, V>, k: string, make: () => V) => { let v = m.get(k); if (!v) m.set(k, v = make()); return v; };
+  for (const e of net.edges) { list(outs, e.from, () => [] as Edge[]).push(e); list(ins, e.to, () => new Set<Edge>()).add(e); }
+  const outOf = (k: string) => outs.get(k) ?? [], into = (k: string) => ins.get(k)?.size ?? 0;
+  const settle = () => { net.edges = net.edges.filter(e => !gone.has(e)); net.items = net.items.filter(i => !folded.has(i)); };
   const passes = (i: Item) => {
    const out = outOf(i.key).length;
    if (i.kind === 'pass') return out === 1;
    if (i.gateway === 'exclusive' || i.gateway === 'event') return out === 1;
-   return (i.gateway === 'parallel' || i.gateway === 'inclusive') && into(i.key).length < 2 && out === 1;
+   return (i.gateway === 'parallel' || i.gateway === 'inclusive') && into(i.key) < 2 && out === 1;
   };
   for (let progress = true; progress;) {
    progress = false;
    for (const g of net.items.filter(passes)) {
-    const o = outOf(g.key)[0]!; if (o.to === g.key) { ctx.reject(g.xml, g.local, 'Gateway ' + g.xml + ' loops onto itself.'); return; }
-    for (const e of into(g.key)) e.to = o.to;
-    net.edges = net.edges.filter(e => e !== o); net.items = net.items.filter(i => i !== g); g.folded = 'folded'; progress = true;
+    const o = outOf(g.key)[0]!; if (o.to === g.key) { settle(); ctx.reject(g.xml, g.local, 'Gateway ' + g.xml + ' loops onto itself.'); return; }
+    const target = list(ins, o.to, () => new Set<Edge>()); target.delete(o);
+    for (const e of ins.get(g.key) ?? []) { e.to = o.to; target.add(e); }
+    ins.delete(g.key); gone.add(o); folded.add(g); g.folded = 'folded'; progress = true;
     ctx.note(o.xml, 'sequenceFlow', 'none', 'folded: the flow leaving ' + g.xml + ' is replaced by the flow into the next element');
     if (g.gateway) { ctx.warn('Merge or pass-through gateway ' + g.xml + ' was folded into its flows; Wildlands steps accept several incoming flows.'); g.how = 'merge or pass-through gateway folded into its flows'; }
     else g.how = g.how || 'pass-through event folded into its flows';
     ctx.note(g.xml, g.local, 'none', g.how);
    }
+   settle();
   }
  }
  root.LWProcessBpmnGraph = {build, defs, prune, contract};

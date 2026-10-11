@@ -10,9 +10,11 @@
  *    selection command (`env.show`), and choosing a step on the map moves the deck to that step's slide (`follow`).
  *  - It never ticks: `env.enter` pauses a playing run with a command and nothing resumes on exit. The studio root is inert while
  *    presenting, and it does not open while an LWProcessDialog is open.
- *  - Keys: ArrowRight/PageDown next, ArrowLeft/PageUp previous, Home first, End last (arrow keys inside the map pan it instead);
+ *  - Keys: ArrowRight/PageDown/n next, ArrowLeft/PageUp/p previous, Home first, End last (arrow keys inside the map pan it instead);
+ *    while the slide itself has focus, Space and ArrowDown page forward (Shift+Space and ArrowUp back) once the slide cannot scroll further;
  *    Escape closes the contents list when it is open, otherwise exits and returns focus to the invoker (or the fallback).
- * Ids: present, present-title, present-count, present-toc, present-exit, present-contents, present-prev, present-next, present-live.
+ * Ids: present, present-title, present-count, present-run, present-note, present-draft (shown when the studio has an unapplied draft),
+ *   present-toc, present-exit, present-contents, present-prev, present-next, present-live.
  */
 declare namespace LWProcessPresent {
  interface State {index: number; count: number; id: string}
@@ -22,7 +24,7 @@ declare namespace LWProcessPresent {
   /** The studio's one 2D map host; it moves into the presentation and back. */
   map: HTMLElement;
   /** Prepares the studio (pauses a playing run with a command, 2D view) and returns the detached view to present. Never ticks. */
-  enter(): {view: LWProcessApp.View; paused: boolean};
+  enter(): {view: LWProcessApp.View; paused: boolean; draft?: boolean};
   /** Shows one step's scene, or the whole map for null, through the studio's selection command. */
   show(step: string | null): void;
   /** Restores the studio view after the map has moved back. `paused` tells whether entering paused the run. */
@@ -52,15 +54,18 @@ declare namespace LWProcessPresent {
  function slideHtml(s: LWProcessSlides.Slide, section: string): string {
   const concepts = s.concepts.map((c, i) => `<aside class="present-concept" aria-labelledby="present-concept-${i}"><p class="present-tag">Concept</p><h3 id="present-concept-${i}">${esc(c.name)}</h3><p>${esc(c.text)}</p></aside>`).join('');
   const live = s.live ? `<aside class="present-facts" aria-labelledby="present-facts-title"><h3 id="present-facts-title">${esc(s.live.heading)}</h3>${list(s.live)}</aside>` : '';
+  // The title slide's key results follow its lead; on every other slide the live facts close the slide.
+  const first = s.kind === 'title' ? live : '', last = s.kind === 'title' ? '' : live;
   return `<div class="present-body"><p class="present-kicker">${esc(section)}</p><h2 id="present-title" tabindex="-1">${esc(s.title)}</h2>`
-   + (s.subtitle ? `<p class="present-subtitle">${esc(s.subtitle)}</p>` : '') + (s.lead ? `<p class="present-lead">${esc(s.lead)}</p>` : '')
-   + s.blocks.map(b => `<section class="present-block"><h3>${esc(b.heading)}</h3>${list(b)}</section>`).join('') + concepts + live + '</div>';
+   + (s.subtitle ? `<p class="present-subtitle">${esc(s.subtitle)}</p>` : '') + (s.lead ? `<p class="present-lead">${esc(s.lead)}</p>` : '') + first
+   + s.blocks.map(b => `<section class="present-block"><h3>${esc(b.heading)}</h3>${list(b)}</section>`).join('') + concepts + last + '</div>';
  }
  function create(host: HTMLElement, env: LWProcessPresent.Env): LWProcessPresent.Surface {
   const dlg = document.createElement('dialog');
   dlg.id = 'present'; dlg.className = 'present'; dlg.setAttribute('aria-labelledby', 'present-title');
   dlg.innerHTML = `<header class="present-head"><div class="present-heading"><p id="present-process" class="present-process"></p>
-   <p id="present-count" class="present-meta"></p><p id="present-run" class="present-run" hidden></p><p id="present-note" class="present-note" hidden>The run is paused while you present.</p></div>
+   <p id="present-count" class="present-meta"></p><p id="present-run" class="present-run" hidden></p><p id="present-note" class="present-note" hidden>The run is paused while you present.</p>
+   <p id="present-draft" class="present-note" hidden>Showing the applied definition; your unapplied draft is not included.</p></div>
    <div class="present-actions"><button type="button" id="present-toc" aria-expanded="false" aria-controls="present-contents">Contents</button><button type="button" id="present-exit">Exit</button></div></header>
    <nav id="present-contents" class="present-contents" aria-label="Slides" hidden></nav>
    <div class="present-main"><article id="present-slide" class="present-slide" aria-labelledby="present-title" tabindex="0"></article>
@@ -70,6 +75,7 @@ declare namespace LWProcessPresent {
   host.append(dlg);
   const q = <T extends HTMLElement = HTMLElement>(id: string) => dlg.querySelector<T>('#' + id)!;
   const main = dlg.querySelector<HTMLElement>('.present-main')!, contents = q('present-contents'), toc = q<HTMLButtonElement>('present-toc');
+  const foot = dlg.querySelector<HTMLElement>('.present-foot')!;
   const prev = q<HTMLButtonElement>('present-prev'), next = q<HTMLButtonElement>('present-next');
   let deck: LWProcessSlides.Deck | null = null, index = 0, opened = false, moving = false, paused = false, escapedNow = false;
   let invoker: HTMLElement | null = null, fallback: () => HTMLElement | null = () => null, home: {parent: Node; next: Node | null} | null = null;
@@ -114,9 +120,22 @@ declare namespace LWProcessPresent {
    }
    // Arrow keys inside the map pan it; they are not slide navigation.
    if (e.key.startsWith('Arrow') && target && env.map.contains(target)) return;
-   const to = e.key === 'ArrowRight' || e.key === 'PageDown' ? index + 1 : e.key === 'ArrowLeft' || e.key === 'PageUp' ? index - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? Infinity : null;
+   const step = slideKey(e, target);
+   const forward = e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === 'n', back = e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'p';
+   const to = step !== null ? index + step : forward ? index + 1 : back ? index - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? Infinity : null;
    if (to === null) return;
    e.preventDefault(); go(to);
+  }
+  /**
+   * Space and ArrowDown (Shift+Space and ArrowUp back) page only while the slide itself has focus, and only once the slide cannot
+   * scroll further that way, so a long slide still scrolls with the keyboard first. Null leaves the key to the browser.
+   */
+  function slideKey(e: KeyboardEvent, target: Element | null): 1 | -1 | null {
+   const slide = q('present-slide'), forward = e.key === 'ArrowDown' || e.key === ' ' && !e.shiftKey, back = e.key === 'ArrowUp' || e.key === ' ' && e.shiftKey;
+   if (!target || !slide.contains(target) || !forward && !back) return null;
+   const box = slide.getBoundingClientRect();
+   if (forward) return slide.scrollHeight - slide.clientHeight - slide.scrollTop <= 1 && box.bottom <= foot.getBoundingClientRect().top + 1 ? 1 : null;
+   return slide.scrollTop <= 1 && box.top >= dlg.getBoundingClientRect().top - 1 ? -1 : null;
   }
   dlg.addEventListener('click', e => {
    const t = e.target as HTMLElement, item = t.closest<HTMLButtonElement>('button[data-slide]');
@@ -129,18 +148,24 @@ declare namespace LWProcessPresent {
   // Escape is handled on keydown; a cancel or close that still arrives (the browser's close watcher) is the same exit intent.
   dlg.addEventListener('cancel', e => { e.preventDefault(); if (!escapedNow) close(); });
   dlg.addEventListener('close', () => { if (opened) close(); });
+  /** 'Live facts come from one simulated run at business minute 217 (seed 1, completed).' */
+  function runText(live: NonNullable<LWProcessSlides.Deck['live']>): string {
+   const text = root.LWProcessSlidesText, status = text.statusText({status: live.status as LWProcess.Snapshot['status']});
+   return `Live facts come from one simulated run at business minute ${text.number(live.minute)} (seed ${live.seed}, ${status}).`;
+  }
   function open(from: HTMLElement, focusFallback: () => HTMLElement | null): boolean {
    if (opened || root.LWProcessDialog.active()) return false;
    opened = true; invoker = from; fallback = focusFallback; moving = true;
-   let view: LWProcessApp.View;
-   try { const entered = env.enter(); view = entered.view; paused = entered.paused; } catch (e) { opened = false; throw e; } finally { moving = false; }
+   let view: LWProcessApp.View, draft = false;
+   try { const entered = env.enter(); view = entered.view; paused = entered.paused; draft = entered.draft === true; }
+   catch (e) { opened = false; throw e; } finally { moving = false; }
    // Entering already paused the run and switched the view: any failure from here on is undone by close(), never left half open.
    try {
     const d = root.LWProcessSlides.build(view.definition, view.snapshot.minute > 0 ? view.snapshot : null); deck = d;
-    q('present-process').textContent = d.process.name; q('present-note').hidden = !paused;
-    q('present-run').hidden = !d.live; q('present-run').textContent = d.live ? `Live facts come from one simulated run at minute ${root.LWProcessSlidesText.number(d.live.minute)} (seed ${d.live.seed}).` : '';
-    // The studio's status region is inert behind the modal, so the dialog itself describes the pause and the live facts.
-    const described = [paused ? 'present-note' : '', d.live ? 'present-run' : ''].filter(Boolean).join(' ');
+    q('present-process').textContent = d.process.name; q('present-note').hidden = !paused; q('present-draft').hidden = !draft;
+    q('present-run').hidden = !d.live; q('present-run').textContent = d.live ? runText(d.live) : '';
+    // The studio's status region is inert behind the modal, so the dialog itself describes the pause, the draft and the live facts.
+    const described = [paused ? 'present-note' : '', draft ? 'present-draft' : '', d.live ? 'present-run' : ''].filter(Boolean).join(' ');
     if (described) dlg.setAttribute('aria-describedby', described); else dlg.removeAttribute('aria-describedby');
     q('present-map-hint').textContent = matchMedia('(pointer: coarse)').matches ? 'Drag to pan · Pinch or + − to zoom · Tap a step to show its slide' : 'Drag to pan · Scroll to zoom · Arrow keys pan while the map has focus · Select a step to show its slide';
     renderContents(d); setContents(false, false);
