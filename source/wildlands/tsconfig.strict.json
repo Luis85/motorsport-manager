@@ -577,6 +577,7 @@
     "source/verification/process-browser-shell-checks.ts",
     "source/verification/process-browser-draft-checks.ts",
     "source/verification/process-browser-recovery-checks.ts",
+    "source/verification/process-browser-io-checks.ts",
     "source/verification/process-map-probe.ts",
     "source/verification/process-map-update-checks.ts",
     "source/verification/process-map-label-checks.ts",
