@@ -103,7 +103,8 @@ test('Open arrival streams keep an unlimited run alive and drop arrivals when th
  const t0 = Date.now(), full = run(jam, 1500); assert(Date.now() - t0 < 15000);
  assert.equal(full.status, 'running');
  assert(full.metrics.active >= 499 && full.metrics.active <= 500); // a completion frees its slot only after that minute's arrivals were admitted
- // assert(full.metrics.dropped > 800); assert.equal(full.metrics.arrived + full.metrics.dropped, 1501);
+ assert(full.metrics.dropped > 800);
+ assert.equal(full.metrics.arrived + full.metrics.dropped, 1501);
  assert.equal(full.metrics.completed, 150);
  assert.equal(full.metrics.arrived - full.metrics.completed, full.metrics.active);
  const dropped = full.events.filter(e => e.kind === 'arrival-dropped');

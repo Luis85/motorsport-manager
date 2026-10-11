@@ -146,8 +146,9 @@ is written. This one validates strictly (no `--draft` needed).
 
 ## 3. Pin a Node check
 
-Append a `test(...)` to `source/wildlands/source/test-process-steps.cts`, modelled on "Loan
-application demo ..." and "Weekly delivery and release train ..." (~:230 and ~:254):
+Append a `test(...)` to `source/wildlands/source/test-process-demos.cts` (the pinned demo evidence of
+the `business-process` suite), modelled on "Loan application demo ..." and "Weekly delivery and
+release train ...":
 
 - `catalog.validate(d)` ok with `diagnostics: []`; `catalog.fingerprint(d)` equals the pinned value
   (`process inspect` prints it); id, seed, genre, every step `scene` without `asset` and a `phase`.
