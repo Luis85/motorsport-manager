@@ -16,9 +16,10 @@ walks through one small process from `process create` to Present and export.
 > moves it. **Edit step…** (the step editor) changes one step's fields and paths and, under **Step
 > structure**, adds a step after it, duplicates it, changes its kind, deletes it (optionally
 > reconnecting its neighbours) or makes it the start. **Edit process…** (the Definition editor)
-> changes process settings, the display calendar, resources and arrivals, and also offers **Add
-> step** and **Tidy layout**. Every change goes into the unapplied draft with undo and redo, and
-> nothing runs until you apply it. The forms do not rename a step's id or edit a step's scene
+> changes process settings, the display calendar or working hours, resources and arrivals, and also
+> offers **Add step** and **Tidy layout**. Every change goes into the unapplied draft with undo and
+> redo, and nothing runs until you apply it. A run itself can be saved and loaded as a run checkpoint
+> file ([Save and resume a process run](save-and-resume-a-process-run.md)). The forms do not rename a step's id or edit a step's scene
 > geometry (use Scene Forge and `process attach`); the Definition editor's **Raw JSON** pane edits
 > any field, and guarded CLI recipes, with their revision and fingerprint checks, remain the way
 > for agents and for reviewable changes.
@@ -90,7 +91,9 @@ operations, so nothing needs to be hand-edited into the JSON: `setDescription`
 `null` is rejected),
 `setSipoc` (`{suppliers, customers}` or `null`), `setTrack` (a tracked-field list
 or `null`) and `setCalendar` (the display calendar `{"minutesPerDay": 480, "daysPerWeek": 5}`
-or `null`; it only changes how views word long durations, never a run). `null` removes the
+or `null`; it only changes how views word long durations, never a run) and `setWorkingHours` (the
+run calendar `{"opensAt": 540, "closesAt": 1020, "daysPerWeek": 5}` or `null`; it changes the run,
+see [Run on working hours](#run-on-working-hours)). `null` removes the
 field; a new field is written in schema order. Admission still validates every value.
 `validate` and `inspect` also print `advisories`, notes that never block admission, such as
 "Whole-minute rounding: an exponential distribution with mean 2 min draws about 2.2 min on
@@ -293,7 +296,8 @@ A sprint timebox is a `timer` step: `{"id": "timebox", "kind": "timer", "duratio
 people or cost, then continues. Use `"until": 4800` to wait to an absolute minute (a
 release date); it passes straight through if that minute has already arrived. Place a
 timer beside tasks in a fork so the sprint ends when both the work and the timebox have
-finished. Timers cannot be interrupted or cancelled and have no calendars.
+finished. Timers cannot be interrupted or cancelled and have no calendars of their own: they count
+elapsed minutes, also when the process has working hours.
 
 The complete [agency example](../concepts/agency-delivery/README.md) demonstrates
 all of these rules in its [JSON definition](../concepts/agency-delivery/content/agency.process.json).
@@ -352,6 +356,47 @@ Uniform task timing with a random case attribute written at completion:
 minutes when its work starts and the receipt records the realized `duration`. The
 drawn `severity` appears in the receipt `changes` and can feed a later bare `needs`
 entry or a decision condition.
+
+## Run on working hours
+
+By default every minute is working time, so a process that runs for days works through every night
+and weekend. Opt-in working hours make work and arrivals pause outside a weekly opening window. Use
+them when overnight and weekend pauses matter to lead time; use the display calendar instead when
+you only want long durations worded in business days (a definition holds one or the other, not both).
+
+1. **Add the hours.** From the command line, add a `setWorkingHours` operation to a guarded recipe:
+
+   ```json
+   {"op": "setWorkingHours", "value": {"opensAt": 540, "closesAt": 1020, "daysPerWeek": 5}}
+   ```
+
+   `opensAt` and `closesAt` are minutes after midnight (540 is 09:00, 1020 is 17:00, 1440 is
+   midnight at the end of the day) and `daysPerWeek` counts working days from Monday (5 is Monday to
+   Friday). In the studio, open **Edit process…**, choose **Add working hours** in the **Working
+   hours** group of **Tune values** (it starts at 09:00 to 17:00, Monday to Friday) and adjust
+   **Opens at**, **Closes at** and **Working days**; the sentence under them gives the working hours
+   per week. If **Add working hours** is disabled, the reason beside it says to remove the display
+   calendar first.
+2. **Check the result.** `process inspect` prints `workingHours` with the hours in words and the start
+   ("Day 1 · Mon 09:00"); a closing before the opening, or a display calendar beside working hours, is
+   a diagnostic that names the field. `process diff` lists the change under `changedSettings` with
+   paths such as `/workingHours/closesAt`.
+3. **Apply and run.** Minute 0 is Monday at the opening. The clock still counts elapsed minutes, and
+   the line under it shows the run's day and time ("Day 2 · Tue 09:30"); outside working time it adds
+   the next opening ("Day 1 · Mon 17:30 · Closed until Tue 09:00 on day 2").
+4. **Read the results.** Running work pauses at closing with its pool units and resumes at the next
+   opening; arrival streams pause, because `at`, `interval`, `gap` and `until` count working minutes;
+   timers and deadlines keep counting elapsed minutes and may fire while closed. Lead time, mean cycle
+   and throughput count every elapsed minute, while costs and utilisation count working minutes only.
+   The time outside working hours appears as its own `closed` state in `minutesBy` and `leadTime`, and
+   the inspector, the slides and the Dashboard say that the run uses working hours.
+
+Working hours travel through BPMN exactly in the Wildlands extension (`<wl:workingHours/>`); with
+`--bpsim` the scenario also gains a weekly iCalendar `Calendar` for pool availability and arrival
+timing, and the fidelity notes say what only the extension carries (that running work pauses and
+resumes). A foreign BPMN file never gains working hours. There are no shifts, breaks, holidays or
+dated calendars: the hours are one window that repeats every week for every pool. The full rules are
+in [Working hours](../reference/business-process-engine.md#working-hours).
 
 ## Model BPMN-class behaviour
 
@@ -512,7 +557,8 @@ bin/wildlands process run --input /tmp/process-work/loan.json --minutes 3000 --s
    arrival `data` and `draws` afterwards in **Edit process…**. Timer and BPSim durations are
    ISO-8601 (`PT90M`, `PT1H30M`, `P1D`, `P1W`); `--minutes-per-day` (default 480) and
    `--minutes-per-hour` (default 60) say how many business minutes a day and an hour are, and a
-   week is 5 days. There are no calendars or working hours: a timer counts business minutes.
+   week is 5 days. A timer counts business minutes; BPSim calendars are reported and ignored, and
+   working hours are read only from a Wildlands export's extension.
 4. **Handle rejections.** Exit code 2 prints `rejections` with the element id and the reason;
    nothing is written. Fix the model, or accept the approximation with `--unsupported drop`: every
    dropped element gets a warning, the flows around a dropped element with one way out are
@@ -571,7 +617,9 @@ snapshot. It includes business-minute time, resource utilization, queues, cost,
 cycle time, completed and failed cases. The event tail retains the latest 128
 events; aggregate metrics retain the complete run. A run may finish earlier than
 the requested horizon when all scheduled cases have ended. It does not execute
-real services or update external systems.
+real services or update external systems. `--checkpoint-out FILE` also saves the run where it ended,
+and a later `process run --checkpoint FILE` continues it exactly (see
+[Save and resume a process run](save-and-resume-a-process-run.md)).
 
 Open the HTML directly. Use **Run simulation**, **Pause**, **Step 1 min**,
 **Advance 30 min** (it names fewer minutes when fewer remain before the run length), **Run to end**
@@ -678,7 +726,7 @@ every field and its range.
 
 **Edit the whole process.** The Definition editor is a dialog with two panes: **Tune values** (process name,
 description, **Process type** (business process, customer journey or user journey), **Seed**, a
-**Working calendar (display only)**, up to six **Tracked measures** that the simulation averages to draw the measured curve, shared resources with their kind People, Machine or System,
+**Working calendar (display only)** or **Working hours**, up to six **Tracked measures** that the simulation averages to draw the measured curve, shared resources with their kind People, Machine or System,
 each arrival's end rule, first arrival, planning interval, optional random gap,
 case data and random case fields, and the **Steps** section with **Add step** and **Tidy layout**) and **Raw JSON** (the draft with line numbers, the
 exact line and column of a syntax error, every problem the catalog reports as a button
@@ -704,7 +752,9 @@ values**, choose **Business days and weeks** under **Working calendar (display o
 **Minutes per business day** (480 is an eight-hour day) and **Business days per week**. After you
 apply, durations of a business day or more read "2,400 min (5 business days)" in the clock, **Run
 until**, the inspector, the KPI strip, the SIPOC view, the slides and the Dashboard. The run itself
-is unchanged: one business minute is still one tick, and timers still count plain minutes.
+is unchanged: one business minute is still one tick, and timers still count plain minutes. For pauses
+that do change the run, use [working hours](#run-on-working-hours) instead; the calendar group then
+says it is unavailable.
 
 **Recover a draft after a reload.** The studio keeps a copy of an unapplied draft in this browser
 about a second after each change. When you reopen the page (or switch back to a process) with such
@@ -771,7 +821,10 @@ backlog shows **Blocked after finishing**. On a phone the header keeps **Edit** 
 the run bar stays at the top with **Run options** holding the secondary controls, and steps
 become a horizontal scroller above the stage. In a short window (for example 200% zoom on a
 laptop) dialogs become one scrolling page with the main action kept at the bottom. The studio
-follows your browser's default font size and has a dark theme only.
+follows your browser's default font size. It is dark by default; **Light theme**, the last item of the
+**Export ▾** or **⋯** menu, switches the whole studio, Present and the Dashboard to light colours (the
+3D rooms stay dark and only their background changes). The choice is not stored and ends when you
+reload the page; with forced colours (high contrast) the system colours win over either theme.
 
 **Reading the 2D map.** Card borders and work markers follow the legend: a filled disc is working,
 a ring waiting, an hourglass a timer, a square a backlog and a cross blocked work, and a card's
@@ -797,9 +850,10 @@ branching, instances and deadline with live counters.
 
 **Export ▾** holds **Export JSON**, **Export draft JSON** (while a draft exists), **Export BPMN**,
 **Export BPMN with BPSim**, **Show export notes…** (after a BPMN export with notes), **Export run
-report**, **Download HTML**, **New process…** and **Import as a new process…**, and below 1,200 px
-also **Add step…** and **Tidy layout**
-(arrow keys, Home, End and Escape work; the menu closes after a choice). **Activity** opens the
+report**, **Export run checkpoint…**, **Load checkpoint…**, **Download HTML**, **New process…**,
+**Import as a new process…** and **Light theme**, and below 1,200 px also **Add step…** and **Tidy
+layout** (arrow keys, Home, End and Escape work; the menu closes after a choice, except **Light theme**,
+which keeps it open). **Activity** opens the
 **Run activity** modal without pausing the run; its badge appears only for new problems (failed
 work, blocked work and dropped arrivals) since you last looked (99+ at most), and each process keeps its own feed. Filter by kind, step or case, choose a step name to select that step and return
 to it in the list, and **Export CSV** or **Export JSON** the filtered events (`<process-id>.events.csv`
@@ -811,9 +865,10 @@ otherwise a "N new events — Show" button waits.
 
 **Export run report** downloads observed results, including retained task I/O. **Download HTML** embeds every
 applied process in list order, including processes added in the page,
-and starts a fresh paused run when reopened. There is no
-checkpoint import: runs live only in the open page, and the only thing the studio stores in the
-browser is the recovery copy of an unapplied draft.
+and starts a fresh paused run when reopened. Runs live only in the open page: to keep one, choose
+**Export run checkpoint…** and later **Load checkpoint…** to continue it exactly (see
+[Save and resume a process run](save-and-resume-a-process-run.md)). The only thing the studio stores
+in the browser is the recovery copy of an unapplied draft.
 
 For reusable game folders, copy the agency `game.json` shape, choose an ID equal
 to the folder name, set `template: process`, and point `content.definition` at

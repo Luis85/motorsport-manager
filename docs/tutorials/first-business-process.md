@@ -228,6 +228,9 @@ BPMN with BPSim**, **Export run report** and **Download HTML**.
   (`demos/agency-delivery.html`).
 - Read every Dashboard panel with
   [Read a process dashboard](../how-to/read-a-process-dashboard.md).
+- Keep a run and continue it later with
+  [Save and resume a process run](../how-to/save-and-resume-a-process-run.md), or let work pause
+  overnight with [working hours](../how-to/business-process-authoring.md#run-on-working-hours).
 - Look up commands and exit codes in the
   [CLI handbook](../reference/wildlands-cli.md#business-processes).
 

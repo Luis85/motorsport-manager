@@ -2,7 +2,8 @@
 
 > **Dated record, 10 October 2026.** This record describes the follow-up pass that resolved the
 > deferred, open and partial findings of the [Process Studio review](PROCESS-STUDIO-REVIEW.md) and
-> added the per-process Dashboard. The current contract is the
+> added the per-process Dashboard, and the [close-out pass](#close-out-pass) that closed what this
+> pass still deferred. The current contract is the
 > [business process reference](../../docs/reference/business-process-engine.md); current
 > capability claims live in [current status](../../docs/reference/current-state.md).
 
@@ -192,6 +193,11 @@ and its browser checks in `process-dashboard-browser`.
 
 ## What remains deferred
 
+This list is kept as the follow-up pass left it. The [close-out pass](#close-out-pass) takes up every
+item: Godot process export stays out of scope by decision, human and assistive-technology validation
+is still not done, and the reflow of older test files is recorded there; see
+[Deferred items closed](#deferred-items-closed).
+
 - **PR-11 presenter ergonomics:** full-screen Present and a wider slide column. The deck reads well at
   the current widths and nothing in this pass needed it; it is a presentation change of its own.
 - **ENG-10 test files:** older Node and browser-suite files (for example `process-definition-browser.ts`,
@@ -254,3 +260,118 @@ and its browser checks in `process-dashboard-browser`.
   - `python3 scripts/quality.py`: advisory, and run by CI's "Code quality (warnings only)" job;
   - the 1366 x 768 capture of process 7, which `process:shots` does not take. Its label rules are
     covered by `process-readability-browser`.
+
+## Close-out pass
+
+> **Dated record, 10 October 2026.** The user asked to "close the open items" that the follow-up
+> pass left in [What remains deferred](#what-remains-deferred) and the known notes of PR #46. This
+> section records that pass; the current contract is the
+> [business process reference](../../docs/reference/business-process-engine.md).
+
+### Scope and method
+
+- **Base:** `a541e17` (the follow-up pass's final verification record). **Head of the
+  implementation:** `5eaf01b` ("Merge package LT: a Light theme toggle for the studio, dark by
+  default, never stored"), followed by documentation-only commits and the coordinator's integration
+  (see [Close-out verification](#close-out-verification)).
+- **Packages**, each in its own worktree and merged by the coordinator with `git merge --no-ff`:
+  **P** full-screen Present, Wide text and faster paging; **S** Run to end speed; **V** the
+  Dashboard under the phone's sticky run bar and the visual-review fixes; **T** exact Student t
+  quantiles and exact lead-time percentiles; **SF** the Scene Forge schema and viewer split; **CK**
+  run checkpoints; **RC** opt-in working hours; **LT** the light theme. The CLI bundle and the demos
+  were rebuilt in `289acc6` (after S and T) and `783850f` (after RC), before LT merged.
+- Five further agents reflowed long lines in older process test files while this record was
+  written; the coordinator records their outcome below.
+- Every behaviour below was checked against the code at `5eaf01b` by the documentation pass, and the
+  reference, the how-to guides (including the new
+  [Save and resume a process run](../../docs/how-to/save-and-resume-a-process-run.md)), the CLI
+  handbook, current status, the Wildlands README and the `process-demo` skill were synchronised with
+  it.
+
+### The user's decisions
+
+| Decision | Outcome |
+|---|---|
+| Calendars that change a run | **Opt-in working hours.** One weekly window, `workingHours: {opensAt, closesAt, daysPerWeek}`, refused beside a display `calendar`; without it every definition, fingerprint and pinned number is unchanged. |
+| Saved runs | **Checkpoints as files.** A run is exported and loaded as a `wildlands-process-checkpoint` JSON file in the studio and the CLI; nothing is written to browser storage. |
+| Light theme | **A toggle, dark by default, not stored.** The choice lasts for the page and ends at a reload. |
+| Godot process export | **Out of scope.** BPMN 2.0 with BPSim stays the interchange path. |
+
+### Deferred items closed
+
+| Deferred item | Resolution | Where | Pinned by |
+|---|---|---|---|
+| PR-11 presenter ergonomics: full screen | Resolved. A **Full screen** button and F act on the page root (a `<dialog>` cannot be the fullscreen element); the first Escape while full screen only leaves it; a disabled reason where the API is missing, not permitted or refused. | `process-present-view.ts`, `process-present.ts` | `process-present-screen-browser` "Full screen enters and leaves with its button and F …", "An Escape dated before full screen was left does not close Present …", "Full screen says why it is unavailable …" |
+| PR-11 presenter ergonomics: a wider slide column | Resolved. **Wide text** gives the slide about three fifths of a side-by-side window and lasts for the page; a footer key hint names the keys. | `process-present-view.ts`, `process-present.css` | `process-present-screen-browser` "Wide text gives the slide most of a 1440x900 or 1920x1080 window …", "Present fits 1366x768, 1440x1060 and 390x844 …" |
+| ENG-10 test files: long lines | TODO(coordinator): record the outcome of the five reflow agents (files, long lines before and after, checks unchanged). | | |
+| Calendars that change a run | Resolved for weekly working hours (the user's decision): an elapsed clock from Monday at the opening; work and arrivals pause; timers and deadlines count elapsed minutes; costs and utilisation cover working minutes; a `closed` state; `setWorkingHours` (16 edit operations), `process diff` and `inspect`; BPMN `<wl:workingHours/>` and a BPSim `Calendar` with fidelity notes; Tune values **Working hours**; the run bar clock; inspector, Dashboard and slide notes; checkpoints. Shifts, holidays and dated timers are still not modelled. | `process-hours.ts`, `process-systems.ts`, `process-ledger.ts`, `process-series.ts`, `process-bpmn-bpsim-write.ts`, `process-tuning-hours.ts`, `process-time.ts` | `business-process-analysis` "Working hours pause work overnight …", "Working hours skip weekends …", "Working hours pause arrival streams …", "Timers and deadlines count elapsed minutes across a closed period", "Working-hours runs are deterministic and chunk-invariant …", "BPMN round trip carries working hours exactly, with a BPSim calendar …"; `process-hours-browser`; `business-process-checkpoint` "A working-hours run restored while closed and while open …" |
+| Statistical limits: the t-table | Resolved. `t95` is the exact two-sided Student t quantile for every whole df (A&S 26.7.3/26.7.4 up to 1,000 df, Cornish-Fisher beyond); `ci95` uses it, and the 3-decimal table and the 1.96 fallback are gone. | `process-replicate.ts`, `process-dashboard-whatif.ts` | `business-process-analysis` "Student t quantiles are exact to 1e-6 for any whole df …", "Replication intervals use the exact Student t quantile for every df …" |
+| Statistical limits: bracket-only percentiles | Resolved within a bound. Exact nearest-rank lead-time percentiles while at most 50,000 cases have completed (whole run and per outcome, `distributions().percentiles`), bin brackets past the bound with the reason stated; step distributions stay brackets. | `process-ledger-exact.ts`, `process-dashboard-panels.ts`, `process-dashboard-tiles.ts` | `business-process-analysis` "Exact lead-time percentiles of a small run …", "… fall back to bin brackets past the bound …", "Kept lead times give the same percentiles under random chunkings …" |
+| Process checkpoints and saved-run restoration | Resolved as files (the user's decision). Format `wildlands-process-checkpoint` version 1 with strict validation and a 16 MiB limit; the read model (ledger, series, exact store) is carried, so a restore equals an uninterrupted run. Studio **Export run checkpoint…** and **Load checkpoint…** (Cancel first, fingerprint check, active process only, no storage); CLI `process run --checkpoint` and `--checkpoint-out`. | `process-checkpoint.ts`, `process-checkpoint-check.ts`, `process-engine-state.ts`, `process-application.ts`, `process-io.ts`, `tools/process-cli-analytics.cts` | `business-process-checkpoint` (13 checks); `process-checkpoint-browser` (5 checks); `process-hostile-editors-browser` "A hostile run checkpoint exports, asks with the hostile names as text …" |
+| A light theme | Resolved (the user's decision). A **Light theme** `menuitemcheckbox`, dark by default and not stored; a light token block whose 106 meaningful pairs reach WCAG 2.2 AA; `LWProcessPalette` per theme; 3D keeps its dark rooms and changes only its background; forced colours win over either theme. | `process-theme.ts`, `process.css`, `process-palette.ts`, `process-renderer-3d.ts` | `business-process-analysis` "Light theme: every colour token has a light value, and the light pairs reach WCAG 2.2 AA …"; `process-theme-browser` (7 checks) |
+| Godot process export | Out of scope by the user's decision; BPMN 2.0 with BPSim is the interchange path. | | |
+| Human and assistive-technology validation | Still not done: no human usability test, screen-reader session or real Windows High Contrast run in this pass either. | | |
+
+### Known notes from PR #46
+
+| Note | Outcome |
+|---|---|
+| Speed: Run to end about 3 s and a Present slide about 220–390 ms at 128 steps | Resolved. Package S indexes live tokens and the join plan instead of rescanning on every settle, steps the clock entity directly, skips empty ECS flushes and groups tokens by step once per snapshot: Run to end over 10,000 minutes of the generated 128-step process fell from 2,257–3,138 ms to 762–1,202 ms (click to the first frame after it, six runs at load average 7 to 16), with identical results. Package P hides the studio behind Present (`content-visibility: hidden`), draws the map once per slide and skips the entrance animation when paging fast: synchronous work per Next fell from about 32 ms to 13 ms, and the mean per slide from 217–391 ms to 85–192 ms. The `process-scale-browser` bounds tightened (Run to end 20,000 to 8,000 ms, the frame after it 2,500 to 2,200 ms, paging 2,000 to 1,000 ms). `business-process-readmodel` pins the fast paths: "The generated 128-step process reproduces its reference run in one advance, in random chunks and through Run to end" compares a SHA-256 recorded with the engine before the fast paths. |
+| KPI strip wrapping to a second row | Handled outside this pass (a separate session owns the KPI strip and the stage height). |
+| 2D behaviour change (an untouched camera re-frames on every draw) | Unchanged; it remains the intended behaviour. |
+| Pre-existing Scene Forge debt: `src/domain/schema.ts` 620 and `src/preview/viewer.ts` 784 code lines | Resolved. `schema.ts` is 150 code lines (schema families in `schema-values.ts`, `-content.ts`, `-documents.ts`, `-operations.ts`, `-littlewild.ts` and `-capture.ts`; public exports unchanged, generated schemas byte-identical) and `viewer.ts` 385 (camera rig, transform gizmo, node commands, scene tree, picking, shortcuts and other preview modules), counted with the repository's code-line rule. Scene Forge's own `docs/CODE_QUALITY.md` and `docs/EDITOR_EXTENSIONS.md` name the new owners, and `tests/schema.test.ts` and `tests/preview.test.ts` pin the seams. No repository document referenced the old files. The advisory TypeScript long-line warnings: TODO(coordinator) with the reflow outcome. |
+| Phone run bar covering the Dashboard | Resolved. The Dashboard publishes the sticky run bar's bottom edge as `--db-sticky-top`, used as the page's `scroll-padding-top` while it is shown; Fit to view and tooltips respect it. Pinned by `process-dashboard-browser` "On a phone no dashboard focus stop or scrolled-to heading hides under the sticky run bar …" (390x844, 320x640, a 24 px root font and DejaVu Sans). |
+| Run bar status written twice per command | Unchanged by this pass. |
+| Escalated colour (new in this pass, with the light theme) | Known limit. The escalated-work colour fails the categorical palette validator's normal-vision floor (ΔE 15) beside the working and timer colours in both themes (dark ΔE 11.1 and 14.0, light ΔE 14.0 and 13.4, measured by the documentation pass with the dataviz `validate_palette.py`). Escalated 2D markers are also drawn 1.3 times larger with an outline, and cards, 3D captions and the inspector count escalations in words, so colour is not their only cue. |
+
+### Visual-review fixes in the Dashboard
+
+Package V captured four processes at 1440x1060, 1366x768 and 390x844, in DejaVu Sans and at a 24 px
+root font, and fixed what it found: wide tables that widened their panel and the whole Dashboard (a
+figure now has one `minmax(0, 1fr)` column and tables scroll inside it; text columns are no longer
+flagged numeric); time axes labelled as offsets from the first sample (now round 1-2-5 minutes);
+throughput columns over other minutes' labels (each labels its own interval end, and dense ones draw
+as lines); half-case count ticks (whole ticks for whole values); the recent-cases scatter pressed into
+the last sliver of a 0..T axis (it starts at the first drawn case, and bands on one edge share a
+label); touching percentile labels ("p85p95", now joined); an arrivals chart that ended at the last
+sample (it now ends at the run's minute with the snapshot's exact counts); What-if saying "no random
+behaviour" for a random design whose seeds agreed (it now says the draws did not change the
+measures); and section spacing.
+
+### Deliberate expectation changes, suites and timeouts
+
+- **Checks:** `totalChecks` grew from 2,266 to 2,330 at `5eaf01b` through 64 reviewed additions:
+  `business-process-analysis` 86 to 110, `business-process-readmodel` 4 to 6,
+  `process-dashboard-browser` 13 to 15, `process-hostile-editors-browser` 9 to 10, and the new suites
+  below. No `renames` or `retirements` entry was added (package T renamed its own new check in place
+  before it shipped). TODO(coordinator): the final count after the reflow merges.
+- **New suites (5):** `business-process-checkpoint` (Node, full tier, 180 s, 13 checks),
+  `process-present-screen-browser` (180 s, 7), `process-hours-browser` (180 s, 3),
+  `process-checkpoint-browser` (240 s, 5) and `process-theme-browser` (300 s, 7), each added so an
+  existing suite stays within its time budget. No existing timeout changed.
+- **Re-pinned on purpose:** two replication intervals that came from the 3-decimal t table (7 df:
+  `[3.212228, 6.787772]` to `[3.212512, 6.787488]`; 1 df: `[-10.706, 14.706]` to
+  `[-10.706205, 14.706205]`); the What-if honesty text ("Intervals use exact Student t quantiles for
+  runs − 1 degrees of freedom."); the `discover` lists (`setWorkingHours`, `--checkpoint`,
+  `--checkpoint-out`); the menu item lists with the two checkpoint items and the theme toggle last
+  (End and ArrowUp-on-open now land on `#theme-item`); the cumulative arrivals chart's extra point at
+  the run's minute; `process-present-browser` reading the studio status line as text content while
+  the studio is not rendered behind Present; the scale reference SHA, which now covers every field the
+  reference engine had while `distributions.percentiles` is checked as exact on its own; and the
+  tightened `process-scale-browser` bounds. Each is explained in its commit message.
+
+### Close-out verification
+
+- **Source identity:** TODO(coordinator): branch, final head SHA and the merges it contains
+  (documentation, reflow, regenerated `bin/` and `demos/` after LT).
+- **Complete registered gate:** TODO(coordinator): the `npm run verify` command, checks passed of
+  `totalChecks`, suites, duration, environment (Node, Playwright, Chromium) and load.
+- **Check counts:** TODO(coordinator): fast tier, typecheck, architecture, `gate-integrity`, Python
+  unittest and `check_docs.py` results on the final head.
+- **Generated artifacts:** TODO(coordinator): `npm run check:cli` and `npm run check:demos` on the
+  final head (`bin/` and `demos/` were last rebuilt in `783850f`, before LT merged).
+- **Screenshots:** TODO(coordinator): the `process:shots` captures reviewed (and any manual captures
+  of Present full screen, Wide text, the light theme and the Dashboard), with `overflowing` and
+  `consoleErrors`. Screenshots of synthetic fixture states are review material, not usability,
+  accessibility or balance validation.
+- **Documentation pass:** `python3 scripts/check_docs.py` passed after the documentation commits.

@@ -61,12 +61,19 @@ is written. This one validates strictly (no `--draft` needed).
 - Process settings PR #42 had to write into the JSON by hand now have guarded operations:
   `setDescription {value: string|null}`, `setSeed {value: int|null}`, `setSipoc {value|null}`,
   `setTrack {value|null}`, `setCalendar {value: {minutesPerDay, daysPerWeek}|null}` (`null` removes
-  the field) and `setGenre {value}` with `process`, `customer-journey` or `user-journey` (`process`
-  removes the field; `null` is rejected). `process discover` lists all 15 in `editOperations`. Do not
-  hand-edit the definition JSON.
+  the field), `setWorkingHours {value: {opensAt, closesAt, daysPerWeek}|null}` and `setGenre {value}`
+  with `process`, `customer-journey` or `user-journey` (`process` removes the field; `null` is
+  rejected). `process discover` lists all 16 in `editOperations`. Do not hand-edit the definition JSON.
 - A display calendar (`setCalendar`, for example 480 minutes per day and 5 days per week) only
   changes how long durations are worded; it changes the fingerprint but never a run. Add one only
   when the process is measured in working days, and say so in the README.
+- Working hours (`setWorkingHours`, for example `{opensAt: 540, closesAt: 1020, daysPerWeek: 5}`)
+  **change the run**: work and arrivals pause outside them, the clock counts elapsed minutes from
+  Monday at the opening, and costs and utilisation count working minutes only. A definition cannot
+  hold both a display calendar and working hours. No bundled demo uses them; adding them to a demo
+  changes its fingerprint, its run numbers and its deck (the title slide names the hours), so every
+  pin and hash below that covers it. Say so in the README, and give the `export-bpmn --bpsim`
+  fidelity note about the BPSim calendar in its BPMN results.
 - `process validate` and `inspect` print `advisories` (whole-minute rounding bias of a short random
   timing or gap). Treat each as a modelling note: raise the mean, or keep it and mention it in the
   README.
@@ -131,6 +138,10 @@ is written. This one validates strictly (no `--draft` needed).
      agency game holds seven processes, so that New process fills the eighth and last slot. An eighth
      demo leaves no free slot: that check (and the studio's New process and Import as a new process
      in the published demo) then needs a deliberate change, reported in the handoff.
+   - `business-process-checkpoint` ("Checkpoint restore equals an uninterrupted run on every demo …",
+     `source/wildlands/source/test-process-checkpoint.cts`) restores every `content/*.process.json`
+     at several seeds and minutes and asserts that there are seven demo files: a new demo must
+     restore exactly, and an eighth file changes that count deliberately (report it).
 5. `bin/wildlands validate-game --game docs/concepts/agency-delivery` (exit 0, `errors: []`).
 
 ## 3. Pin a Node check
@@ -156,7 +167,7 @@ text edits** (never reformat or re-serialize the file): append the exact name to
 `reviewedAdditions`, and raise `totalChecks` by one
 (`totalChecks = historicalBaseline.checks + reviewedAdditions.length - retirements.length`).
 A renamed or removed check needs a `renames`/`retirements` entry. Never weaken an assertion.
-Quick partial run: `cd source/wildlands && npm run verify -- --only business-process,business-process-analysis,business-process-bpmn`.
+Quick partial run: `cd source/wildlands && npm run verify -- --only business-process,business-process-analysis,business-process-bpmn,business-process-checkpoint`.
 A partial `--only` run does not compare the check inventory with `gate-expectations.json`; run
 `npm test` (the fast tier, which includes `gate-integrity`) before pushing a registration change.
 
@@ -222,13 +233,21 @@ title slide's lead is short and **Key results** follow it; the resources slide l
 utilisation; the step slide shows that step framed on the map with its direct neighbours;
 slide text is not cut off and Previous/Next stay visible (on a phone the map follows the slide, below
 it); the DejaVu variants do not overflow; Contents lists every section; Exit returns to the previous
-view with the run still paused.
+view with the run still paused. By hand, also try **Full screen** (F, then Escape leaves full screen
+without closing Present) and **Wide text** on a desktop window, and the deck under **Light theme**
+(Export menu; `process:shots` captures the dark default only).
 
 Dashboard review (by hand in the built HTML; `process:shots` does not capture it): choose
 **Dashboard** at the review minute. The strip names the seed and minute; **Waiting by step** and
 **Capacity: pool utilisation** should point at the bottleneck the README describes; journeys and
 processes with outcomes show **Journey outcomes**; **What-if** with 20 runs finishes without
-touching the run's minute. Nothing may read "NaN" or show a chart without its data table.
+touching the run's minute. Nothing may read "NaN" or show a chart without its data table. The
+lead-time note says whether percentiles are exact (they are, below 50,000 finished cases). At phone
+width no focused control or heading may hide under the sticky run bar.
+
+Checkpoint review (optional, for a demo whose README quotes a run): `bin/wildlands process run --input
+$F --minutes M1 --output $W/a.json --checkpoint-out $W/c.json`, then `--minutes M2 --checkpoint $W/c.json
+--output $W/b.json`; `b.json`'s `snapshot` must equal one `--minutes M1+M2` run with the same seed.
 
 ## 5. Rebuild and gate
 

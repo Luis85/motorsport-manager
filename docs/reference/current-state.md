@@ -113,14 +113,18 @@ bounded rework loops, timers, counters, needs and backlogs, multi-instance work,
 boundary deadlines (interrupting or escalating), seeded random timing, outcomes
 and arrival streams, and customer and user journeys with touchpoints, outcomes,
 conversion and tracked measures. An optional display calendar words long durations in business
-days and weeks without changing a run, and non-blocking advisories flag whole-minute rounding bias.
+days and weeks without changing a run; opt-in working hours (one weekly opening window) instead make
+work and arrivals pause outside them, with the clock counting elapsed minutes and closed time as its
+own state. Non-blocking advisories flag whole-minute rounding bias.
 The studio holds up to 8 processes, each with its own detached paused run, and shows the active
 run in 2D, Three.js 3D, a SIPOC or journey lens and a **Dashboard** of metrics and charts (flow,
 where time goes, lead-time percentiles, quality, cost, journey outcomes, a step focus, a measuring
 window and What-if replications across seeds, including the applied design against the draft),
 with an Activity modal, a Definition editor, a step editor, a **Present** mode (the slide deck or
-its brief cut beside the studio's own 2D map, on a phone from the **⋯** menu) and offline HTML
-downloads; it has a dark theme only. The studio builds and tunes definitions: **New process…**,
+its brief cut beside the studio's own 2D map, with **Full screen** and **Wide text**, on a phone from
+the **⋯** menu) and offline HTML downloads. It is dark by default with a **Light theme** toggle that
+lasts for the page and is not stored. A paused run can be exported as a run checkpoint file and
+loaded again (Cancel first, same definition fingerprint only) to continue exactly. The studio builds and tunes definitions: **New process…**,
 **Import as a new process…**, **Add step…**, **Tidy layout**, dragging cards on the 2D map and the
 step editor's **Step structure** (add after, duplicate, change kind, delete with reconnect, make
 start) write the unapplied draft, which has in-memory undo and redo; applying starts a fresh paused
@@ -133,8 +137,9 @@ stored). The 2D map updates in place, is one keyboard tab stop and shares a shap
 encoding with its legend, the 3D view and the step list. Run metrics report a work cost, a capacity
 cost and idle cost, mean cycle time over finished cases only ("—" before the first), the mean age
 of cases in progress, blocked work and the read model's waits, cost splits, throughput, lead time
-by work state and distributions; one run is one seeded sample, and the Dashboard and the CLI give
-replications with t-based 95% intervals across seeds. Navigation, dialogs, lenses, the Dashboard
+by work state and distributions with exact lead-time percentiles up to 50,000 finished cases (bin
+ranges beyond); one run is one seeded sample, and the Dashboard and the CLI give
+replications with exact Student t 95% intervals across seeds. Navigation, dialogs, lenses, the Dashboard
 and Present mode never tick the clock; entering Present pauses a running simulation with a command.
 
 The [agency delivery lab](../concepts/agency-delivery/README.md) holds seven
@@ -169,25 +174,27 @@ deck (JSON or Markdown, full or `--brief`; optional read-only facts from one bou
 built by the pure `LWProcessSlides` model, `process diff` compares two definitions and itemises
 every changed value with its old and new value, `process replicate` and `process compare` run a
 definition (or two, on the same seeds) over consecutive seeds and report means, sample standard
-deviations, t-based 95% intervals and percentiles per KPI (optionally after a warm-up minute),
-`process run --event-log` streams every engine event to a CSV or XES file, `process validate` and
+deviations, exact Student t 95% intervals and percentiles per KPI (optionally after a warm-up minute),
+`process run --event-log` streams every engine event to a CSV or XES file, `process run
+--checkpoint-out` and `--checkpoint` save and continue a run, `process validate` and
 `process inspect` print advisories, and guarded recipe operations set or remove the description,
-seed, genre, SIPOC parties, tracked fields and display calendar. `npm run process:shots` (in
+seed, genre, SIPOC parties, tracked fields, display calendar and working hours. `npm run process:shots` (in
 `source/wildlands`) captures one process of a game at a chosen minute in desktop and phone
 layouts, including Present mode and the DejaVu Sans fallback font, and reports horizontal
 overflow and console errors; it is a review aid, not usability validation.
 
-Not implemented: BPMN execution, external service execution, calendars or working
-hours that change a run (the display calendar only changes wording), event-driven gateway
+Not implemented: BPMN execution, external service execution, shift patterns, holidays or dated
+calendars (working hours are one weekly window), event-driven gateway
 semantics, complex gateways beyond the drop approximation, compensation, nested gateways inside a
-fork region, process checkpoints or saved-run restoration (only an unapplied draft is recovered),
-full-screen Present, a light theme and Godot process export. A
+fork region, moving a saved run onto a changed definition, and Godot process export (out of scope by
+decision; BPMN 2.0 with BPSim is the interchange path). A
 mapped BPMN model, a seeded run and the passing process suites are automated
 scenario evidence, not a validated process model, forecast or human usability
 review. See the [contract](business-process-engine.md), the
 [authoring workflow](../how-to/business-process-authoring.md),
 [Present a process to stakeholders](../how-to/present-a-process.md),
-[Read a process dashboard](../how-to/read-a-process-dashboard.md) and the
+[Read a process dashboard](../how-to/read-a-process-dashboard.md),
+[Save and resume a process run](../how-to/save-and-resume-a-process-run.md) and the
 [first business process tutorial](../tutorials/first-business-process.md).
 
 ## Interface selection and retained specialist tools
