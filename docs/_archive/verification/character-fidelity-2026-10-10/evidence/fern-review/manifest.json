@@ -1,0 +1,36 @@
+{
+  "format": "character-studio-review",
+  "schemaVersion": 1,
+  "characterId": "fern",
+  "recipeHash": "32641804c44e1ca4c925ae738bcadacfa8d992e920ae5e3c514b50d59adf20b3",
+  "visualHash": "16808c7b432568cd7e28b98b52472be8c7be22210e879e568cb1b6d4d72dd4d8",
+  "compilerRevision": 3,
+  "renderer": "wildlands-three",
+  "paused": true,
+  "time": 0,
+  "plan": "replay-plan.json",
+  "contactSheet": {
+    "file": "contact-sheet.png",
+    "sha256": "1fb6b89a04e45f88c1320373507aa9fa3a8c29f5a0cfa1278eaae3303d2c93b0"
+  },
+  "frames": [
+    {
+      "id": "front",
+      "file": "frames/front.png",
+      "sha256": "4c8411c2fc062c646e90daec7f1d555cc8c758f8eece1fc3b1e9ffea8b2fe758",
+      "bytes": 203228,
+      "preview": {
+        "mode": "studio",
+        "light": "studio",
+        "pose": "idle",
+        "camera": "front",
+        "width": 768,
+        "height": 768
+      }
+    }
+  ],
+  "limits": [
+    "Presentation stage is not gameplay state.",
+    "Compare using the same replay plan, tool build and browser for reproducible visual review."
+  ]
+}

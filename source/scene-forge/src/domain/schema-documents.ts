@@ -22,6 +22,7 @@ export const EnvironmentSchema = z
     background: Color.default('#171d25'),
     exposure: z.number().min(0.1).max(4).optional(),
     toneMapping: z.enum(['filmic', 'neutral', 'linear']).optional(),
+    presentation: z.enum(['inspection', 'portrait']).optional(),
     ambient: z.number().min(0).max(5).default(1.8),
     keyIntensity: z.number().min(0).max(10).default(3.5),
     keyPosition: z.tuple([NumberValue, NumberValue, NumberValue]).default([5, 10, 7]),

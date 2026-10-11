@@ -24,6 +24,7 @@ export async function writeGodotProject(project:unknown,output:string,options:Go
  if(fs.existsSync(destination)||fs.realpathSync(parent)!==parent)throw Error('Godot output must be a new directory with a real parent and no symlink ancestors.');
  // Installs the WildlandsProject validator that compile() admits the project with.
  require('../wildlands-project.js');
+ require('../asset-surface.js');
  const G=require('../wildlands-godot.js') as {compile(project:unknown,resources:Resources,options:GodotWriteOptions):Promise<Result>};
  const compiled=await G.compile(project,godotResources(options),options),temporary=path.join(parent,'.'+path.basename(destination)+'.wildlands-'+randomUUID());
  // Exclusive directory claim closes the normal concurrent-publisher collision window.

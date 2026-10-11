@@ -1,3 +1,4 @@
+import { ensureSurfaceTangents } from './surfaces.js';
 import { bindRig } from './rigging.js';
 import { createLight } from './lights.js';
 import * as THREE from 'three';
@@ -81,7 +82,10 @@ export function compileScene(
         meshCount++;
         if (triangleCount > 2e6)
           fail('SCENE_BUDGET', 'Expanded scene exceeds 2,000,000 triangles.');
-        object = new THREE.Mesh(g, material(node.material));
+        const surface = material(node.material);
+        if (surface instanceof THREE.MeshStandardMaterial && surface.normalMap)
+          ensureSurfaceTangents(g);
+        object = new THREE.Mesh(g, surface);
         object.castShadow = true;
         object.receiveShadow = true;
       } else if (node.type === 'light') {
@@ -122,6 +126,7 @@ export function compileScene(
         ...(node.type === 'mesh'
           ? {
               geometry: node.geometry,
+              geometryType: scope.geometries[node.geometry].type,
               material: node.material,
               materialSlots: slots(node.material),
             }

@@ -1,0 +1,93 @@
+{
+  "ok": true,
+  "executableHashes": {
+    "studio": "f54fce70fe8c427e65d0495a6328a10fe7e0870a6b3529a60acf198217d785a6",
+    "sceneForge": "9f8586747129b4ed502be80fccc4a566e2c9aff4759e27681ae0dd0caa051ee6",
+    "engine": "bb11f00ce951734ac4393d41fcf1dbaced51c61b965d40822e0d34be203b586c"
+  },
+  "reports": [
+    {
+      "id": "river-pip",
+      "characterState": "b061017f74169a245039f1ac33faa25dfab5d1062ffcf42fa0471f0865268264",
+      "packageSha256": "58ff87c3aca4fd4036983f2a9e6f941f4b4026bc9b32070c2d4339a6ddbb7e49",
+      "forgeState": "b8309558b9c6221b559476f1a211dd11fcb38782af40784a0a2944c7300b059e",
+      "variants": [
+        "world",
+        "world-round",
+        "world-long",
+        "world-pointed"
+      ],
+      "exports": [
+        {
+          "model": "riverPipWorld",
+          "sha256": "bcd7ef6a3d94fe9e90bac47c6ec6eb667e71e8ba13ba2c8bc2f38d5abd71c3ef",
+          "triangles": 67112
+        },
+        {
+          "model": "riverPipWorldRound",
+          "sha256": "168f0e32a4ead6c151addfecfae8feb80ff3ada1b61d6aee6b17077c014d9e77",
+          "triangles": 68656
+        },
+        {
+          "model": "riverPipWorldLong",
+          "sha256": "00291a0be00ac2025de6293d34d2fa6467dc2f4ea130b096dd02e0edc3751fc2",
+          "triangles": 67112
+        },
+        {
+          "model": "riverPipWorldPointed",
+          "sha256": "d09b4b0f386d3ba7f46caa341c37ea1eeca5db01541723f64db9a0e83c06b825",
+          "triangles": 67112
+        }
+      ],
+      "lifecycle": {
+        "sourceFingerprint": "4ed5715504640a15",
+        "installedFingerprint": "db656dfe0a188e4a",
+        "refinedFingerprint": "16a45a4f736d46a3",
+        "model": "riverPipWorld",
+        "variant": "world",
+        "preserved": [
+          "gameplay",
+          "assetReferences",
+          "rig",
+          "sourceProjects",
+          "studioRecipe"
+        ],
+        "visualChanged": true
+      }
+    },
+    {
+      "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "characterState": "41958c0f9dcc876c7e874039f3d1f2b79654f2f09c5034382eb4c8d34dad52e3",
+      "packageSha256": "ed8a2d23e0a44e519471773f4cfd82d3a323497485dd299d80d132649e6eaf4a",
+      "forgeState": "c100d9d9270095e4be30910711d8febcfa4d435b55249685d7b652ee458cac4b",
+      "variants": [
+        "world",
+        "world-round",
+        "world-long",
+        "world-pointed"
+      ],
+      "exports": [
+        {
+          "model": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaWorld",
+          "sha256": "bcd7ef6a3d94fe9e90bac47c6ec6eb667e71e8ba13ba2c8bc2f38d5abd71c3ef",
+          "triangles": 67112
+        },
+        {
+          "model": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaWorldRound",
+          "sha256": "168f0e32a4ead6c151addfecfae8feb80ff3ada1b61d6aee6b17077c014d9e77",
+          "triangles": 68656
+        },
+        {
+          "model": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaWorldLong",
+          "sha256": "00291a0be00ac2025de6293d34d2fa6467dc2f4ea130b096dd02e0edc3751fc2",
+          "triangles": 67112
+        },
+        {
+          "model": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaWorldPointed",
+          "sha256": "d09b4b0f386d3ba7f46caa341c37ea1eeca5db01541723f64db9a0e83c06b825",
+          "triangles": 67112
+        }
+      ]
+    }
+  ]
+}

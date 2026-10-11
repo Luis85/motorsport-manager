@@ -190,6 +190,16 @@ reviews are each bounded to 32. Close handles when finished, and send `shutdown`
 or close stdin to release the runtime. Transport requests and responses are each bounded to 64 MiB. Diagnostics use stderr; protocol results use stdout.
 There is no network listener or automatic gameplay clock in this interface.
 
+For persistence, request `{"id":7,"method":"story.export","params":{}}`.
+Its `result` is the engine's complete JSON story **string**. Write that string
+verbatim as UTF-8, then supply the original file text as `story` to
+`session.openStory`. The `story` method still returns a detached object for
+inspection. Do not parse and reserialize a saved story in another runtime:
+Godot's JSON parser can change floating point bits even when its serializer
+requests full precision, invalidating authored-content fingerprints. Native
+Save story uses the same opaque-text contract. Both operations leave time
+unchanged; strict fingerprints and duplicate-key validation still apply.
+
 ## Runnable Godot compiler
 
 The compiler produces a desktop Godot project containing:

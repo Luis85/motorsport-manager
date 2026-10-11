@@ -1,0 +1,15 @@
+{
+  "format": "character-studio-review-plan",
+  "schemaVersion": 1,
+  "views": [
+    {
+      "id": "front",
+      "mode": "studio",
+      "light": "studio",
+      "pose": "idle",
+      "camera": "front",
+      "width": 768,
+      "height": 768
+    }
+  ]
+}

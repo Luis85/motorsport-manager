@@ -1,0 +1,140 @@
+{
+  "ok": true,
+  "data": {
+    "directory": "/workspace/work/artboard-pass2-final/evidence/forge-review",
+    "manifest": "/workspace/work/artboard-pass2-final/evidence/forge-review/review.json",
+    "replayPlan": "/workspace/work/artboard-pass2-final/evidence/forge-review/replay-plan.json",
+    "contactSheet": "/workspace/work/artboard-pass2-final/evidence/forge-review/contact-sheet.png",
+    "frames": [
+      {
+        "id": "front",
+        "file": "front.png",
+        "width": 720,
+        "height": 800,
+        "camera": {
+          "projection": "orthographic",
+          "position": [
+            0.0013450070619583088,
+            0.4875000000000003,
+            3.9806591963332623
+          ],
+          "target": [
+            0.0013450070619583088,
+            0.4875000000000001,
+            -0.025237378578405027
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "near": 0.0013352988583038889,
+          "far": 1335.298858303889,
+          "zoom": 1,
+          "left": -0.4934160000000001,
+          "right": 0.4934160000000001,
+          "top": 0.5482400000000001,
+          "bottom": -0.5482400000000001
+        },
+        "sha256": "a9f91710bcc2c8baa707274b64d173158ea279567bea4172b5d7e22ea83d667a",
+        "bytes": 247337,
+        "path": "/workspace/work/artboard-pass2-final/evidence/forge-review/front.png"
+      },
+      {
+        "id": "three-quarter",
+        "file": "three-quarter.png",
+        "width": 720,
+        "height": 800,
+        "camera": {
+          "projection": "orthographic",
+          "position": [
+            2.103487811775649,
+            1.0450130484557618,
+            3.3388943367801116
+          ],
+          "target": [
+            0.0013450070619583088,
+            0.4875000000000001,
+            -0.025237378578405027
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "near": 0.0013352988583038889,
+          "far": 1335.298858303889,
+          "zoom": 1,
+          "left": -0.5505718288117162,
+          "right": 0.5505718288117162,
+          "top": 0.6117464764574624,
+          "bottom": -0.6117464764574624
+        },
+        "sha256": "f8b6a912044701167bc1db5fd15a400b8da1b10900c14dba3f96e1313f558f13",
+        "bytes": 213905,
+        "path": "/workspace/work/artboard-pass2-final/evidence/forge-review/three-quarter.png"
+      },
+      {
+        "id": "right",
+        "file": "right.png",
+        "width": 720,
+        "height": 800,
+        "camera": {
+          "projection": "orthographic",
+          "position": [
+            4.007241581973625,
+            0.4875000000000003,
+            -0.02523737857840478
+          ],
+          "target": [
+            0.0013450070619583088,
+            0.4875000000000001,
+            -0.025237378578405027
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "near": 0.0013352988583038889,
+          "far": 1335.298858303889,
+          "zoom": 1,
+          "left": -0.4934160000000001,
+          "right": 0.4934160000000001,
+          "top": 0.5482400000000001,
+          "bottom": -0.5482400000000001
+        },
+        "sha256": "bf264de4aa37413ec20c52fedcc7e51ac59834e91487f3995377ace6f8e3b463",
+        "bytes": 191132,
+        "path": "/workspace/work/artboard-pass2-final/evidence/forge-review/right.png"
+      }
+    ],
+    "stats": {
+      "nodes": 121,
+      "meshes": 97,
+      "triangles": 77984,
+      "materials": 33,
+      "geometries": 47,
+      "bounds": {
+        "min": [
+          -0.322,
+          -0.0019999999999999914,
+          -0.34397475739522865
+        ],
+        "max": [
+          0.3244740068912506,
+          0.9755389232334495,
+          0.392
+        ],
+        "size": [
+          0.6464740068912507,
+          0.9775389232334495,
+          0.7359747573952287
+        ]
+      },
+      "warnings": []
+    },
+    "durationMs": 24545,
+    "sourceStateHash": "c06931bff9213d69a9c873bb44380a117ba4d1295129ecb40710d04000c7dd18"
+  }
+}

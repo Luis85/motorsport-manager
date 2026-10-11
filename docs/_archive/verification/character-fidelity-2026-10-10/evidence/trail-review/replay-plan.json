@@ -1,0 +1,60 @@
+{
+  "format": "character-studio-review-plan",
+  "schemaVersion": 1,
+  "views": [
+    {
+      "id": "front",
+      "mode": "studio",
+      "light": "studio",
+      "pose": "idle",
+      "camera": "front",
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "side",
+      "mode": "studio",
+      "light": "studio",
+      "pose": "idle",
+      "camera": "side",
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "back",
+      "mode": "studio",
+      "light": "studio",
+      "pose": "idle",
+      "camera": "back",
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "portrait",
+      "mode": "portrait",
+      "light": "studio",
+      "pose": "idle",
+      "camera": "front",
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "world",
+      "mode": "world",
+      "light": "daylight",
+      "pose": "idle",
+      "camera": "front",
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "night",
+      "mode": "world",
+      "light": "night",
+      "pose": "idle",
+      "camera": "front",
+      "width": 768,
+      "height": 768
+    }
+  ]
+}

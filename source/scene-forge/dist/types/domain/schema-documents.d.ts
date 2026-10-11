@@ -12,6 +12,10 @@ export declare const EnvironmentSchema: z.ZodObject<{
         filmic: "filmic";
         neutral: "neutral";
     }>>;
+    presentation: z.ZodOptional<z.ZodEnum<{
+        inspection: "inspection";
+        portrait: "portrait";
+    }>>;
     ambient: z.ZodDefault<z.ZodNumber>;
     keyIntensity: z.ZodDefault<z.ZodNumber>;
     keyPosition: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber, z.ZodNumber], null>>;
@@ -30,6 +34,10 @@ export declare const SceneSchema: z.ZodObject<{
             filmic: "filmic";
             neutral: "neutral";
         }>>;
+        presentation: z.ZodOptional<z.ZodEnum<{
+            inspection: "inspection";
+            portrait: "portrait";
+        }>>;
         ambient: z.ZodDefault<z.ZodNumber>;
         keyIntensity: z.ZodDefault<z.ZodNumber>;
         keyPosition: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber, z.ZodNumber], null>>;
@@ -41,6 +49,19 @@ export declare const SceneSchema: z.ZodObject<{
         type: z.ZodLiteral<"sphere">;
         radius: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
         segments: z.ZodOptional<z.ZodNumber>;
+    }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"organic">;
+        size: z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>;
+        roundness: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+        taper: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+        bend: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+        segments: z.ZodDefault<z.ZodNumber>;
+        profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            at: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+            width: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+            depth: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+            offset: z.ZodDefault<z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>>;
+        }, z.core.$strict>>>;
     }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"cylinder">;
         radiusTop: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
@@ -115,9 +136,26 @@ export declare const SceneSchema: z.ZodObject<{
         color: z.ZodString;
         metalness: z.ZodDefault<z.ZodNumber>;
         roughness: z.ZodDefault<z.ZodNumber>;
+        surface: z.ZodOptional<z.ZodObject<{
+            kind: z.ZodEnum<{
+                fur: "fur";
+                cloth: "cloth";
+                leather: "leather";
+            }>;
+            version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
+            seed: z.ZodNumber;
+            scale: z.ZodNumber;
+            strength: z.ZodNumber;
+        }, z.core.$strict>>;
+        sheen: z.ZodOptional<z.ZodNumber>;
+        sheenColor: z.ZodOptional<z.ZodString>;
+        sheenRoughness: z.ZodOptional<z.ZodNumber>;
+        clearcoat: z.ZodOptional<z.ZodNumber>;
+        clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
         emissive: z.ZodOptional<z.ZodString>;
         emissiveIntensity: z.ZodOptional<z.ZodNumber>;
         opacity: z.ZodDefault<z.ZodNumber>;
+        depthWrite: z.ZodOptional<z.ZodBoolean>;
         doubleSided: z.ZodDefault<z.ZodBoolean>;
         flatShading: z.ZodDefault<z.ZodBoolean>;
         shading: z.ZodOptional<z.ZodEnum<{
@@ -328,6 +366,19 @@ export declare const ModelSchema: z.ZodObject<{
         radius: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
         segments: z.ZodOptional<z.ZodNumber>;
     }, z.core.$strict>, z.ZodObject<{
+        type: z.ZodLiteral<"organic">;
+        size: z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>;
+        roundness: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+        taper: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+        bend: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+        segments: z.ZodDefault<z.ZodNumber>;
+        profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+            at: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+            width: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+            depth: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+            offset: z.ZodDefault<z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>>;
+        }, z.core.$strict>>>;
+    }, z.core.$strict>, z.ZodObject<{
         type: z.ZodLiteral<"cylinder">;
         radiusTop: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
         radiusBottom: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
@@ -401,9 +452,26 @@ export declare const ModelSchema: z.ZodObject<{
         color: z.ZodString;
         metalness: z.ZodDefault<z.ZodNumber>;
         roughness: z.ZodDefault<z.ZodNumber>;
+        surface: z.ZodOptional<z.ZodObject<{
+            kind: z.ZodEnum<{
+                fur: "fur";
+                cloth: "cloth";
+                leather: "leather";
+            }>;
+            version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
+            seed: z.ZodNumber;
+            scale: z.ZodNumber;
+            strength: z.ZodNumber;
+        }, z.core.$strict>>;
+        sheen: z.ZodOptional<z.ZodNumber>;
+        sheenColor: z.ZodOptional<z.ZodString>;
+        sheenRoughness: z.ZodOptional<z.ZodNumber>;
+        clearcoat: z.ZodOptional<z.ZodNumber>;
+        clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
         emissive: z.ZodOptional<z.ZodString>;
         emissiveIntensity: z.ZodOptional<z.ZodNumber>;
         opacity: z.ZodDefault<z.ZodNumber>;
+        depthWrite: z.ZodOptional<z.ZodBoolean>;
         doubleSided: z.ZodDefault<z.ZodBoolean>;
         flatShading: z.ZodDefault<z.ZodBoolean>;
         shading: z.ZodOptional<z.ZodEnum<{
@@ -631,6 +699,19 @@ export declare const ModelBundleSchema: z.ZodObject<{
             radius: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
             segments: z.ZodOptional<z.ZodNumber>;
         }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"organic">;
+            size: z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>;
+            roundness: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+            taper: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+            bend: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+            segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+                width: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+                depth: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
+        }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
             radiusBottom: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
@@ -704,9 +785,26 @@ export declare const ModelBundleSchema: z.ZodObject<{
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            surface: z.ZodOptional<z.ZodObject<{
+                kind: z.ZodEnum<{
+                    fur: "fur";
+                    cloth: "cloth";
+                    leather: "leather";
+                }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
+                seed: z.ZodNumber;
+                scale: z.ZodNumber;
+                strength: z.ZodNumber;
+            }, z.core.$strict>>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -932,6 +1030,10 @@ export declare const SceneBundleSchema: z.ZodObject<{
                 filmic: "filmic";
                 neutral: "neutral";
             }>>;
+            presentation: z.ZodOptional<z.ZodEnum<{
+                inspection: "inspection";
+                portrait: "portrait";
+            }>>;
             ambient: z.ZodDefault<z.ZodNumber>;
             keyIntensity: z.ZodDefault<z.ZodNumber>;
             keyPosition: z.ZodDefault<z.ZodTuple<[z.ZodNumber, z.ZodNumber, z.ZodNumber], null>>;
@@ -943,6 +1045,19 @@ export declare const SceneBundleSchema: z.ZodObject<{
             type: z.ZodLiteral<"sphere">;
             radius: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
             segments: z.ZodOptional<z.ZodNumber>;
+        }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"organic">;
+            size: z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>;
+            roundness: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+            taper: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+            bend: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+            segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+                width: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+                depth: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
         }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
@@ -1017,9 +1132,26 @@ export declare const SceneBundleSchema: z.ZodObject<{
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            surface: z.ZodOptional<z.ZodObject<{
+                kind: z.ZodEnum<{
+                    fur: "fur";
+                    cloth: "cloth";
+                    leather: "leather";
+                }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
+                seed: z.ZodNumber;
+                scale: z.ZodNumber;
+                strength: z.ZodNumber;
+            }, z.core.$strict>>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{
@@ -1230,6 +1362,19 @@ export declare const SceneBundleSchema: z.ZodObject<{
             radius: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
             segments: z.ZodOptional<z.ZodNumber>;
         }, z.core.$strict>, z.ZodObject<{
+            type: z.ZodLiteral<"organic">;
+            size: z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>;
+            roundness: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+            taper: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+            bend: z.ZodDefault<z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>>;
+            segments: z.ZodDefault<z.ZodNumber>;
+            profile: z.ZodOptional<z.ZodArray<z.ZodObject<{
+                at: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+                width: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+                depth: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
+                offset: z.ZodDefault<z.ZodTuple<[z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>, z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>], null>>;
+            }, z.core.$strict>>>;
+        }, z.core.$strict>, z.ZodObject<{
             type: z.ZodLiteral<"cylinder">;
             radiusTop: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
             radiusBottom: z.ZodType<import("./schema-values.js").ScalarValue, unknown, z.core.$ZodTypeInternals<import("./schema-values.js").ScalarValue, unknown>>;
@@ -1303,9 +1448,26 @@ export declare const SceneBundleSchema: z.ZodObject<{
             color: z.ZodString;
             metalness: z.ZodDefault<z.ZodNumber>;
             roughness: z.ZodDefault<z.ZodNumber>;
+            surface: z.ZodOptional<z.ZodObject<{
+                kind: z.ZodEnum<{
+                    fur: "fur";
+                    cloth: "cloth";
+                    leather: "leather";
+                }>;
+                version: z.ZodOptional<z.ZodUnion<readonly [z.ZodLiteral<1>, z.ZodLiteral<2>]>>;
+                seed: z.ZodNumber;
+                scale: z.ZodNumber;
+                strength: z.ZodNumber;
+            }, z.core.$strict>>;
+            sheen: z.ZodOptional<z.ZodNumber>;
+            sheenColor: z.ZodOptional<z.ZodString>;
+            sheenRoughness: z.ZodOptional<z.ZodNumber>;
+            clearcoat: z.ZodOptional<z.ZodNumber>;
+            clearcoatRoughness: z.ZodOptional<z.ZodNumber>;
             emissive: z.ZodOptional<z.ZodString>;
             emissiveIntensity: z.ZodOptional<z.ZodNumber>;
             opacity: z.ZodDefault<z.ZodNumber>;
+            depthWrite: z.ZodOptional<z.ZodBoolean>;
             doubleSided: z.ZodDefault<z.ZodBoolean>;
             flatShading: z.ZodDefault<z.ZodBoolean>;
             shading: z.ZodOptional<z.ZodEnum<{

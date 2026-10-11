@@ -1,0 +1,36 @@
+{
+  "format": "littlewild-character",
+  "schemaVersion": 1,
+  "id": "mochi",
+  "identity": {
+    "name": "Mochi",
+    "pronouns": "they/them",
+    "gender": "",
+    "voice": "Soft"
+  },
+  "appearance": {
+    "preset": "mochi",
+    "body": "round",
+    "ears": "pointed",
+    "coat": "#e0cbb0",
+    "belly": "#fbecd1",
+    "inner": "#dca08e",
+    "tail": "fluffy",
+    "headSize": 1,
+    "earSize": 1,
+    "eyeSize": 1,
+    "eyeColor": "#805039"
+  },
+  "personality": "curious",
+  "skills": {},
+  "outfits": {
+    "head": null,
+    "body": null,
+    "back": null,
+    "feet": null,
+    "tool": null,
+    "charm": null
+  },
+  "locks": [],
+  "status": "draft"
+}

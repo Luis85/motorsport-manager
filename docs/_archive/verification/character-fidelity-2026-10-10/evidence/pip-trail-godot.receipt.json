@@ -1,0 +1,44 @@
+{
+  "format": "littlewild-native-visual-evidence",
+  "schemaVersion": 1,
+  "asset": {
+    "path": "pip-trail.visual.json",
+    "sha256": "8944f8093acc324b12194bb3630dac7e2ca1583c4aba213b21641354793c8687"
+  },
+  "capture": {
+    "path": "pip-trail-godot.png",
+    "sha256": "d770cfca668ffd117b00978d5c8467fb14d728cf793241c2827028f35e2e6857",
+    "width": 960,
+    "height": 1100
+  },
+  "renderer": "Godot 4.6.3 compatibility / OpenGL4.5 Mesa25.0.7 llvmpipe",
+  "nativeAssetFactorySha256": "4a9995076fbf1cb2b0a46ba86ca69acaa308f7dc242fd5ba062e7963dc5cb5e0",
+  "captureScriptSha256": "1532e94f1cb0009117e8f9d586311b4a0f327df22ed2b4785916ef83448070eb",
+  "model": "world-round",
+  "camera": {
+    "projection": "orthographic",
+    "size": 1.35,
+    "position": [
+      0.12,
+      0.65,
+      5
+    ],
+    "target": [
+      0,
+      0.5,
+      0
+    ]
+  },
+  "lighting": {
+    "ambientEnergy": 0.3,
+    "sunEnergy": 0.65,
+    "fillEnergy": 0.12,
+    "toneMapper": "ACES",
+    "exposure": 0.55
+  },
+  "limitations": [
+    "Godot cloth sheen uses albedo-tinted rim bounded to 8% additive strength; lighting and materials do not claim pixel parity with WebGL.",
+    "This fixed visual fixture does not demonstrate a completed gameplay journey."
+  ],
+  "captureScript": "pip-trail-godot-capture.gd"
+}
