@@ -581,6 +581,7 @@
     "source/verification/process-map-update-checks.ts",
     "source/verification/process-map-label-checks.ts",
     "source/verification/process-layout-browser.ts",
+    "source/verification/process-layout-activity-checks.ts",
     "source/verification/process-step-editor-browser.ts",
     "source/verification/process-step-editor-structure-checks.ts",
     "source/verification/process-definition-browser.ts",
