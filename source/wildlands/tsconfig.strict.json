@@ -589,6 +589,8 @@
     "source/verification/process-definition-inspector-checks.ts",
     "source/verification/process-renderers-browser.ts",
     "source/verification/process-renderers-3d-checks.ts",
+    "source/verification/process-renderers-rooms-checks.ts",
+    "source/verification/process-renderers-features-checks.ts",
     "source/verification/process-lenses-browser.ts",
     "source/verification/process-lenses-sipoc-checks.ts",
     "source/verification/process-lenses-journey-checks.ts",
