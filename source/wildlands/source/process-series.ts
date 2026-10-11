@@ -193,7 +193,8 @@ declare namespace LWProcessSeries {
   }
   const offset = after && after.level === store.level ? Math.min(after.count, store.count) : 0, w = store.width;
   const column = (c: number) => Array.from({length: store.count - offset}, (_, i) => store.data[(offset + i) * w + c]!);
-  const block = <K extends string>(names: readonly K[], at: number) => Object.fromEntries(names.map((name, i) => [name, column(at + i)])) as Record<K, number[]>;
+  const block = <K extends string>(names: readonly K[], at: number) =>
+   Object.fromEntries(names.map((name, i) => [name, column(at + i)])) as Record<K, number[]>;
   return {base: store.base, every: store.every, level: store.level, points: store.points, perSample: w, count: store.count, offset, minutes: column(0),
    run: block(RUN_NAMES, 1), steps: Object.fromEntries(store.steps.map((id, i) => [id, block(STEP_NAMES, RUN + STEP * i)])),
    pools: Object.fromEntries(store.pools.map((id, i) => [id, block(['busy', 'busyMinutes'] as const, RUN + STEP * store.steps.length + POOL * i)]))};

@@ -10,7 +10,8 @@
 /**
  * The "Tune values" form of the Definition editor: process name, description, process type, seed, display-only working
  * calendar (process-tuning-calendar.ts) and working hours (process-tuning-hours.ts; removing them asks first), shared resources
- * (name, kind, capacity, cost), case arrivals, tracked measures and the SIPOC suppliers and customers. It edits the unapplied draft TEXT through the `write` callback; applying still goes through
+ * (name, kind, capacity, cost), case arrivals, tracked measures and the SIPOC suppliers and customers. It edits the unapplied
+ * draft TEXT through the `write` callback; applying still goes through
  * catalog admission and resets the run. The catalog's diagnostics are handed in with `setDiagnostics` and shown beside the field
  * they name, with `aria-invalid` on the control; the form never decides what is valid. Per-step values belong to the step editor.
  * All markup is built with LWProcessHtml's `html` template, so every draft value (names, descriptions, field names, arrival data)
