@@ -1,0 +1,8 @@
+{
+  "implementation": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+  "ciCheckout": "319eb893c6d10b3f5eaa387cbb1bdf2300465a75",
+  "tree": "b63851baa951f93b87859c222d706e00cf6bf0f6",
+  "base": "3f56925b3532f015d9a29f19a998a05286b76f13",
+  "method": "Read actual git log checkout hash from CI logs; git rev-parse both locally available tree objects; git diff empty",
+  "equal": true
+}

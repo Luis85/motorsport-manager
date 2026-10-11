@@ -1,0 +1,178 @@
+{
+  "implementationCommit": "e9c5571cd116723e285dad5af1bb9adbb8badd3d",
+  "implementationTree": "61796691e66afcc440731dab2305ad72579e8b77",
+  "actualCICheckoutObserved": "ac15a782eccec6a59a8707660d05cd5be14a5d02",
+  "run": {
+    "id": 38154996028,
+    "name": "Godot verification",
+    "status": "completed",
+    "conclusion": "cancelled",
+    "run_number": 1815,
+    "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38154996028/jobs",
+    "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38154996028/logs",
+    "workflow_id": 365048890
+  },
+  "jobs": [
+    {
+      "id": 114516097781,
+      "name": "suites-0",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "id": 114516097895,
+      "name": "suites-4",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "id": 114516097936,
+      "name": "suites-1",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "id": 114516097938,
+      "name": "suites-5",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "id": 114516097951,
+      "name": "suites-2",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "id": 114516097966,
+      "name": "suites-3",
+      "status": "completed",
+      "conclusion": "cancelled"
+    },
+    {
+      "id": 114518713473,
+      "name": "verify",
+      "status": "completed",
+      "conclusion": "cancelled"
+    }
+  ],
+  "shardReportsCompleted": 0,
+  "nativeSourceDigest": null,
+  "note": "Superseded by Character focus correction de06f7c353e0a170f8f9f9681a28f2544c9393c2; all six shards and aggregate were cancelled. Six full shard logs retained; no completed shard verification report or aggregate count observed. No pass claim transfers to the new run. Aggregate was never executed and has no fetched log.",
+  "logs": [
+    {
+      "log": "suites-0.log",
+      "bytes": 308008,
+      "sha256": "883b8bd9fe55e45f0e61d2c7cdf152e102b4cea7e71f28aa26ce44ada5287875",
+      "ciSourceRevisions": [
+        "ac15a782eccec6a59a8707660d05cd5be14a5d02"
+      ],
+      "godotPinnedSHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+      "cancellationObserved": true,
+      "artifacts": [
+        {
+          "name": "verification-shard-0",
+          "bytes": 15745479,
+          "id": 11707559868,
+          "sha256": "12379e85679371bbd55fb87b8e2907ac205b3ed7479d059141353ef100c55f15"
+        }
+      ],
+      "verification": null
+    },
+    {
+      "log": "suites-1.log",
+      "bytes": 290468,
+      "sha256": "a48b3fb4aee4d589be24f9db897740965d6d94929de25639d59c7b3d3488ad0f",
+      "ciSourceRevisions": [
+        "ac15a782eccec6a59a8707660d05cd5be14a5d02"
+      ],
+      "godotPinnedSHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+      "cancellationObserved": true,
+      "artifacts": [
+        {
+          "name": "verification-shard-1",
+          "bytes": 3631744,
+          "id": 11707534803,
+          "sha256": "9fcca10a97c8fd23b9cce1507877954e6faf8017c74a00b84f75eaa91be5ed73"
+        }
+      ],
+      "verification": null
+    },
+    {
+      "log": "suites-2.log",
+      "bytes": 278162,
+      "sha256": "ca4c9a6a59abfea9aa893238cf68f30370235bd0fdc15e6c4cf86b63310db7ea",
+      "ciSourceRevisions": [
+        "ac15a782eccec6a59a8707660d05cd5be14a5d02"
+      ],
+      "godotPinnedSHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+      "cancellationObserved": true,
+      "artifacts": [
+        {
+          "name": "verification-shard-2",
+          "bytes": 19309,
+          "id": 11707539792,
+          "sha256": "1688e6ae04331fc4c2bd5b34ef3753fddb9ec10ca543fc093fa4cdfd03cbe385"
+        }
+      ],
+      "verification": null
+    },
+    {
+      "log": "suites-3.log",
+      "bytes": 296401,
+      "sha256": "c40d5409076e910c36cd41a3de81cbd0033bb9321692a66569255e6b178c5e80",
+      "ciSourceRevisions": [
+        "ac15a782eccec6a59a8707660d05cd5be14a5d02"
+      ],
+      "godotPinnedSHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+      "cancellationObserved": true,
+      "artifacts": [
+        {
+          "name": "verification-shard-3",
+          "bytes": 8265601,
+          "id": 11708427970,
+          "sha256": "42780529f3e11d79d34a9d299f081ffa5ed698e1a47dcedf5c00e6040eb56815"
+        }
+      ],
+      "verification": null
+    },
+    {
+      "log": "suites-4.log",
+      "bytes": 310734,
+      "sha256": "f9b03ba6d1b01766c460f3f1b7f00bff0808f7329d08bb4cd484d6a09e9125ef",
+      "ciSourceRevisions": [
+        "ac15a782eccec6a59a8707660d05cd5be14a5d02"
+      ],
+      "godotPinnedSHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+      "cancellationObserved": true,
+      "artifacts": [
+        {
+          "name": "verification-shard-4",
+          "bytes": 7485471,
+          "id": 11708373015,
+          "sha256": "88b7c596794f3c1f57156e6287a16727713ce101c29e15614deda3c1fa30192c"
+        }
+      ],
+      "verification": null
+    },
+    {
+      "log": "suites-5.log",
+      "bytes": 291231,
+      "sha256": "f090fe519cf5114b25ad0247cb3716988a3adec848ffef707b66ad263a56c4c4",
+      "ciSourceRevisions": [
+        "ac15a782eccec6a59a8707660d05cd5be14a5d02"
+      ],
+      "godotPinnedSHA256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+      "cancellationObserved": true,
+      "artifacts": [
+        {
+          "name": "verification-shard-5",
+          "bytes": 8120789,
+          "id": 11708457788,
+          "sha256": "e56bc1d5ac533c74840aab849ce71c3b35e88e9142e3816e07c7bfaa94c59c0c"
+        }
+      ],
+      "verification": null
+    }
+  ]
+}

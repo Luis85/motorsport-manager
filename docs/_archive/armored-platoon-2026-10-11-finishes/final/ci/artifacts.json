@@ -1,0 +1,50 @@
+{
+  "implementation": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+  "tree": "b63851baa951f93b87859c222d706e00cf6bf0f6",
+  "engine": "de4233eee6ec157e2144166cd7f05af2a8f42795356b9b75608ceb4d366919ed",
+  "gameFolderDigest": "670d863bca9125cf7e0aceb5991b5586473149ba883a1196c00ca0a1aba3d09f",
+  "artifacts": [
+    {
+      "path": "bin/wildlands",
+      "bytes": 14733367,
+      "sha256": "bbcfed16d21034f33119ec1382de8d7ddc2de7260488cfed1d1843341530061b",
+      "matchesCommit": true
+    },
+    {
+      "path": "bin/model-forge",
+      "bytes": 2367903,
+      "sha256": "165c5239ce7052bc4dec096d745dab5616d50d247585b54547999db1980d693b",
+      "matchesCommit": true
+    },
+    {
+      "path": "bin/scene-forge",
+      "bytes": 2518690,
+      "sha256": "a15f7aba1290d62410fba4c71831c17b6be48ec930a850ce9a71a8e9a8a16388",
+      "matchesCommit": true
+    },
+    {
+      "path": "bin/character-studio",
+      "bytes": 1650684,
+      "sha256": "deed938f3d4cdc4310b41944ad511bee0c2fa92855f410960aeee257bcd272b3",
+      "matchesCommit": true
+    },
+    {
+      "path": "bin/process-studio",
+      "bytes": 1371418,
+      "sha256": "e2630b0ccb470d62efa915bbcfd94b5c06204172e6aaedb9a70745ec0cd3900f",
+      "matchesCommit": true
+    },
+    {
+      "path": "demos/armored-platoon.html",
+      "bytes": 4439139,
+      "sha256": "783d8dc2fba68251420b2ee61b477677994b8839be62f0660f03f0c49ceda883",
+      "matchesCommit": true
+    },
+    {
+      "path": "docs/concepts/armored-platoon/content/visuals.json",
+      "bytes": 3133629,
+      "sha256": "8e406de65dd806954ce24a691da434fdfbdeac93e0f4901cb800445348be19c5",
+      "matchesCommit": true
+    }
+  ]
+}

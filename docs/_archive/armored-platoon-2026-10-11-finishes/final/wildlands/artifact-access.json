@@ -1,0 +1,10 @@
+{
+  "artifactId": 11709661938,
+  "artifactName": "littlewild-ecs-diagnostics",
+  "connectorReturnedFileReference": true,
+  "workspaceDownloadSucceeded": false,
+  "error": "curl exit22: HTTP403 Forbidden from configured route; headers retained",
+  "responseHeaders": "artifact-download.headers",
+  "retriedOrBypassed": false,
+  "signedUrlRetained": false
+}

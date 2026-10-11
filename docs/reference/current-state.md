@@ -383,12 +383,105 @@ visual package embeds bounded offline maps and refined original fittings.
 Hull-aware navigation and bounded reverse recovery are separately versioned so
 older v2 saves retain grid behavior. The HUD consumes authoritative action
 availability, improves order keyboard focus and makes detailed damage optional.
-These changes remain an intermediate checkpoint. After integrating merged main
-(including Process Studio), the local fast gate passed 1,057/1,057 checks in
-56 suites and the integrated browser passed 16/16. The
-[native-finish evidence](../_archive/armored-platoon-2026-10-11-finishes/README.md)
-separates the new identities from the earlier results below; complete CI and the
-long observation remain pending at this documentation checkpoint.
+Character Studio consumes the same finish generator; merged material conflicts
+reject before native allocation, and captured input releases when orders receive
+focus. These remain development capabilities, not completed reference fidelity.
+
+Implementation `de06f7c353e0a170f8f9f9681a28f2544c9393c2` and CI merge
+`319eb893c6d10b3f5eaa387cbb1bdf2300465a75` share tree
+`b63851baa951f93b87859c222d706e00cf6bf0f6`. The unchanged Wildlands inputs passed
+**1,058/1,058 fast checks across 56 suites in 88.38 seconds** at `e9c5571c`.
+The **17/17 Armored browser checks** retain raw implementation identity
+`e9c5571c`. A separate source/artifact association proves their Wildlands test,
+engine and demo inputs are unchanged in `de06f7c3`; the earlier raw record is
+not relabeled. All **11 final CI workflows passed** on the identical-tree CI merge. The
+complete Wildlands gate passed **2,491/2,491 checks across 141 suites in
+1,771.98 seconds**, including **17/17 Armored browser checks**. Native export
+passed **23 checks**; the additional guarded Storytelling step succeeded,
+although its raw count receipt was unavailable through this environment's
+artifact download route. The formerly timed-out finish suite passed **9/9**
+in approximately **3.55 seconds** from CI log timestamps under its unchanged
+120-second cutoff. The actual native aggregate passed **103 suites / 21,346
+checks / 6 shards**, with source digest
+`2c1b0164566553e7e83e4177b535f977095e2355a3986dcc41527c9ca067b823`.
+Linux/Windows Runtime confidence, all four Forge/Studio workflows, Source,
+Content, Standalone and Advisory quality also passed. Full logs and terminal
+metadata are retained; unavailable redirected Python totals are not inferred.
+
+The Character Studio focus repair in this implementation prevents a queued
+modal-close event from overriding a newer deliberate focus choice or a reopened
+dialog. The same bounded transition diagnostic improved from **17/20 to 20/20**;
+**52 unit, 2 integration and 3 browser checks**, standalone handoff, type checks
+and bundle freshness passed locally. The
+[focus diagnosis](../_archive/armored-platoon-2026-10-11-finishes/character-focus/README.md)
+retains the failure and corrected results. This is a shared authoring UI repair,
+not a change to Armored gameplay or finish pixels.
+
+The preceding `e9c5571c` Character Studio CI failed its keyboard chapter journey.
+Its **221.7-second** Armored observation was interrupted for focus reproduction;
+it was not a completed 30-minute observation. A fresh `de06f7c3` observation is
+reported separately below; no prior counts substitute for it.
+
+Since `e9c5571c`, only the Character Studio dialog UI, its journey test and
+`bin/character-studio` changed. The recorded commit comparison confirms unchanged
+Wildlands, Model Forge and Scene Forge source, the Wildlands/Forge/Process
+executables, all demos and game folders. Verification of those unchanged inputs
+is associated explicitly; the new Character Studio source has its own results.
+
+The current published demo is **4,439,139 bytes**, SHA-256
+`783d8dc2fba68251420b2ee61b477677994b8839be62f0660f03f0c49ceda883`.
+Its engine identity is
+`de4233eee6ec157e2144166cd7f05af2a8f42795356b9b75608ceb4d366919ed`.
+
+The corresponding CommonJS profiles improved by approximately **25–31%**;
+the roughly **33×** native VM improvement chiefly removes repeated contextified
+global lookup. These are CPU profiles, not frame-rate or GPU measurements. The
+three Float64 fields add **384 KiB of bounded temporary storage per call**, plus
+small tables; they are not a retained cache and imply no peak-memory reduction.
+All 81 recipes / 243 channel hashes retain their original pixels and the test
+harness, assertions and timeout remain unchanged.
+
+The fresh `de06f7c3` observation completed **1,800.000 seconds / 121 samples**,
+with **375/375** accepted scripted public workload commands, **7/7** exact
+paused checkpoint restores and **7** mission switches. It recorded zero page
+or console errors, warnings, rejections or observation failures. The frozen
+committed demo and 31 tracked inputs remained unchanged; browser cleanup
+completed after the final capture. This used native RAF in Chromium 151 /
+SwiftShader at 960×600, without private ticks or injected gameplay state.
+
+Of **363** friendly-vehicle snapshots, **8** reported “No safe route” and **1**
+“Route obstructed”; these are samples, not distinct incidents or durations.
+Allied traffic handling remains partial. Sampled JS heap used moved from
+**20,374,208 to 31,212,664 bytes**, ranging **16,340,864–48,024,628 bytes**
+without forced collection. These observations do not establish leak freedom,
+GPU residency, target-hardware performance, ordinary human play quality or
+reference fidelity. Repair/resupply were covered by separate browser checks,
+not this bounded long-session workload.
+
+The earlier `09ed672642aedee855d2d45f0e8c4a611127ca7b` full gate **failed**:
+106 of 141 suites were attempted, with 2,055 accepted checks passing before
+`asset-finish` exceeded its unchanged 120-second limit and was killed. Those
+2,055 checks are an incomplete result, not a complete-gate pass. The timeout,
+initial profiles and correction are retained in the
+[performance diagnosis](../_archive/armored-platoon-2026-10-11-finishes/performance-correction/README.md).
+
+The separate `09ed6726`-associated observation completed **1,800.000 seconds /
+121 samples**, with **375/375** accepted scripted public workload commands,
+**7/7** exact paused restores and **7** mission switches in Chromium 151 /
+SwiftShader at 960×600. It recorded zero page/console errors, warnings,
+rejections or observation failures. Its raw launch HEAD remains `3ce1c8df`;
+a separate source/artifact comparison establishes its association with
+`09ed6726`. This older observation does not verify current `de06f7c3`.
+Conservative allied blocking appeared in **16 of 363 friendly-vehicle samples**
+on that older build. Separate offline copies of five blocked contexts admitted
+routes after omitting allied hulls; this does not prove every blocked sample had
+the same cause or change the observed gameplay. These are sample counts, not
+distinct incidents. The new observation's results must be assessed separately.
+
+The [final evidence](../_archive/armored-platoon-2026-10-11-finishes/final/README.md) retains final receipts and each prior implementation identity.
+Ordinary human play, actual Safari/target GPUs, production stress/context loss,
+comprehensive memory measurements, full content and multiplayer remain separate
+acceptance work. No software result here establishes leak freedom or AAA quality.
 
 The preceding v2 slice added yaw-oriented continuous planar hull collisions,
 station-specific mobility/fire eligibility, bounded occluded HE track damage,
@@ -404,7 +497,7 @@ complete Wildlands gate passed **2,192/2,192 checks across 123 suites in
 2,076.55 seconds**, plus separate guarded Storytelling 24 and Godot export 21
 checks. All ten implementation workflows passed; native
 passed all six shards and aggregation, **103 suites / 21,346 checks**.
-The new bounded `bbf8475e` software observation completed 1,800.000 wall
+The preceding bounded `bbf8475e` software observation completed 1,800.000 wall
 seconds: seven exact restores, seven mission switches and 338/338 scripted
 workload commands, with no errors or warnings. Counts exclude automatic shell
 aim; three handovers after combat disability succeeded. Q03 remains partial,

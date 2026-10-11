@@ -1,0 +1,142 @@
+[
+  {
+    "file": "STOP.json",
+    "bytes": 340,
+    "sha256": "2aa28f9fb8468d320456703aaae32b4d3829cc26659466a0fe9f4114736bf336"
+  },
+  {
+    "file": "associate-commit.py",
+    "bytes": 2229,
+    "sha256": "f562cabe9d1e75047770f96f881f003eda4b4082b9e907581fd4b32d520d5aff"
+  },
+  {
+    "file": "browser-harness-used.js",
+    "bytes": 10022,
+    "sha256": "a464f9b13b46be5a626c628a805960170bbfca74c65fee26d2ea7a4926843bad"
+  },
+  {
+    "file": "captures.jsonl",
+    "bytes": 451,
+    "sha256": "56b3fe44132e7e10a24f2dcd362756519491d63cefcde890bdd16d98655ee617"
+  },
+  {
+    "file": "checkpoint-1.json",
+    "bytes": 108913,
+    "sha256": "d5495d56d024f0d57f2b8efe6ad5a04fabe049b7edd595049e8058aa2e407912"
+  },
+  {
+    "file": "commands.jsonl",
+    "bytes": 9948,
+    "sha256": "17a5957123f5b348e16ae155f62398fba9b8e5a8ec493cea732b1e066f2c03f3"
+  },
+  {
+    "file": "committed-association-during.json",
+    "bytes": 13800,
+    "sha256": "ab5aed204ebb0ce6c98cf86e3b5e5d98a4521bec92e7773fcf573f010f4ea469"
+  },
+  {
+    "file": "committed-association-final.json",
+    "bytes": 13800,
+    "sha256": "92964fafc780ef64e0e3b46f37aedb313c1559600493904f7b9b36403319b2c7"
+  },
+  {
+    "file": "compact-report.json",
+    "bytes": 18426,
+    "sha256": "0a3ec8e30931d126f082a276b8dd30a5d30e28f88b39fa74f3ab88e830e25d27"
+  },
+  {
+    "file": "compact-report.md",
+    "bytes": 4039,
+    "sha256": "29184ae3a5870ce4d87588f1730529957abced12c19681478b85f7128a60c70f"
+  },
+  {
+    "file": "failures.jsonl",
+    "bytes": 429,
+    "sha256": "a60e58f8a9195fc805f1a1bd4fbacc50ca776ec2d67094e8c57a64a27c2bad51"
+  },
+  {
+    "file": "final.png",
+    "bytes": 388639,
+    "sha256": "d18ff2173a87c3e31dabc2e8bf19bb5a28839d596b96dc1ecca23f8089e1a48f"
+  },
+  {
+    "file": "freeze.json",
+    "bytes": 6284,
+    "sha256": "3c290a25f7a1ca691eba09515cfbd2b85f7494f80d526fb56fe769166298a2a3"
+  },
+  {
+    "file": "identity.json",
+    "bytes": 8703,
+    "sha256": "718a090c640480ad109fdfb3deb29c9104f5f4a0dbf777a93152b03c60c29784"
+  },
+  {
+    "file": "observations.json",
+    "bytes": 101500,
+    "sha256": "2958c69832479633fc7b3c48e48cf604338df2064fbfe80cf43e7afcb49626ce"
+  },
+  {
+    "file": "observe.cjs",
+    "bytes": 18221,
+    "sha256": "a58c5ca0ef7c61048654316c6bbcc6b0356e87698f9eb8edd3dfdaf55fcbb701"
+  },
+  {
+    "file": "progress.json",
+    "bytes": 4137,
+    "sha256": "1bc62db63337465182f4119bab842a1de830c4a4bc25dd7a7be01128d9a0c68b"
+  },
+  {
+    "file": "report.md",
+    "bytes": 1862,
+    "sha256": "4946e64aa47cc884b9c36e4ce62db9a9888441da544a9460929c294c69dba4bd"
+  },
+  {
+    "file": "requests.jsonl",
+    "bytes": 136,
+    "sha256": "acfe34162aa40d377a83ad95fc465bab5a876f3c8b6a531b7b726364b3863168"
+  },
+  {
+    "file": "run.log",
+    "bytes": 5405,
+    "sha256": "9d9432489f327e3293823c89e39d7c4354c80746c3a6b85f5cfb475cad12eb17"
+  },
+  {
+    "file": "samples.jsonl",
+    "bytes": 38907,
+    "sha256": "017d5ca422f400e58c583846e73127df7c76bbf41b855c72286a914f4290987f"
+  },
+  {
+    "file": "served-demo.html",
+    "bytes": 4439139,
+    "sha256": "783d8dc2fba68251420b2ee61b477677994b8839be62f0660f03f0c49ceda883"
+  },
+  {
+    "file": "start.png",
+    "bytes": 287708,
+    "sha256": "2612f0ec801cc73f6313deb3cd9bb3e8cf3fbfa2341a5ac9c8caf2837c88ec08"
+  },
+  {
+    "file": "started.json",
+    "bytes": 8791,
+    "sha256": "8c712340049f6616565a0ee03011407e64352892613278bae45780bf3635c801"
+  },
+  {
+    "file": "summarize.cjs",
+    "bytes": 12231,
+    "sha256": "b11c2ded3c865dd1c4562210fc810aa652726acfdfb46ac8a434a1ff99c9e219"
+  },
+  {
+    "file": "summary.json",
+    "bytes": 18426,
+    "sha256": "0a3ec8e30931d126f082a276b8dd30a5d30e28f88b39fa74f3ab88e830e25d27"
+  },
+  {
+    "file": "transition-01-checkpoint.png",
+    "bytes": 404289,
+    "sha256": "d1a8b91333c1683207683fb0bd25d2426fc0a79ac997324ef4ddde19be84602b"
+  },
+  {
+    "file": "transitions.jsonl",
+    "bytes": 329,
+    "sha256": "272f509eda9341e1ad3617fe515a81fe26a08e21cfe10944e3dfff3b75740599"
+  }
+]

@@ -1,0 +1,123 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Action completed."
+    }
+  ],
+  "structuredContent": {
+    "workflow_runs": [
+      {
+        "id": 38155883042,
+        "name": "Model Forge verification",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 25,
+        "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883042/jobs",
+        "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883042/logs",
+        "workflow_id": 380495171
+      },
+      {
+        "id": 38155883039,
+        "name": "Scene Forge verification",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 74,
+        "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883039/jobs",
+        "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883039/logs",
+        "workflow_id": 376636682
+      },
+      {
+        "id": 38155883031,
+        "name": "Standalone application",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 706,
+        "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883031/jobs",
+        "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883031/logs",
+        "workflow_id": 369342042
+      },
+      {
+        "id": 38155883035,
+        "name": "Process Studio verification",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 14,
+        "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883035/jobs",
+        "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883035/logs",
+        "workflow_id": 380653293
+      },
+      {
+        "id": 38155883077,
+        "name": "Source project",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 1140,
+        "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883077/jobs",
+        "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883077/logs",
+        "workflow_id": 365410735
+      },
+      {
+        "id": 38155883074,
+        "name": "Advisory code quality",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 1429,
+        "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883074/jobs",
+        "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883074/logs",
+        "workflow_id": 369027077
+      },
+      {
+        "id": 38155883057,
+        "name": "Character Studio verification",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 33,
+        "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883057/jobs",
+        "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883057/logs",
+        "workflow_id": 380010561
+      },
+      {
+        "id": 38155883038,
+        "name": "Content and exported runtime",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 1119,
+        "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883038/jobs",
+        "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883038/logs",
+        "workflow_id": 369373749
+      },
+      {
+        "id": 38155883106,
+        "name": "Runtime confidence",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 709,
+        "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883106/jobs",
+        "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883106/logs",
+        "workflow_id": 369299594
+      },
+      {
+        "id": 38155883048,
+        "name": "Littlewild ECS verification",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 386,
+        "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883048/jobs",
+        "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883048/logs",
+        "workflow_id": 371449231
+      },
+      {
+        "id": 38155883073,
+        "name": "Godot verification",
+        "status": "completed",
+        "conclusion": "success",
+        "run_number": 1816,
+        "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883073/jobs",
+        "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38155883073/logs",
+        "workflow_id": 365048890
+      }
+    ]
+  },
+  "isError": false
+}

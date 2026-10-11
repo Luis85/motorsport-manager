@@ -1,0 +1,41 @@
+{
+  "implementation": "e9c5571cd116723e285dad5af1bb9adbb8badd3d",
+  "tree": "61796691e66afcc440731dab2305ad72579e8b77",
+  "files": [
+    {
+      "path": ".generated/test-armored-browser.cjs",
+      "bytes": 39191,
+      "sha256": "0cd9e590bb2afd46fce9332b39721660ee5c2cfa5b1b9b13562137780fe1b4de"
+    },
+    {
+      "path": ".generated/verification/browser-harness.js",
+      "bytes": 10022,
+      "sha256": "a464f9b13b46be5a626c628a805960170bbfca74c65fee26d2ea7a4926843bad"
+    },
+    {
+      "path": ".generated/artifacts/armored-play.html",
+      "bytes": 4438829,
+      "sha256": "0890b4b9b8e8be967e7032062e1bbd7e24362140e452f49a43b32dcf6def7fda"
+    },
+    {
+      "path": "source/armored-ui.ts",
+      "bytes": 27109,
+      "sha256": "886932790d9cacdf0e242c24322d744263b08edcc11e66d9603d3df96139ad58"
+    },
+    {
+      "path": "source/armored-controls.ts",
+      "bytes": 7138,
+      "sha256": "db33b18e023b51e2193b1db7a79e8ac7f5cd8889613b8a150c6b899dc305c213"
+    },
+    {
+      "path": "source/test-armored-browser.cts",
+      "bytes": 31527,
+      "sha256": "9e11eb4669aa05443f88679a2abd4499bdf3e41f460567619ffd109b7c085a14"
+    },
+    {
+      "path": "source/armored.css",
+      "bytes": 24106,
+      "sha256": "477acb759d746abeb9a959993a73c8de037b65c517ebb0edfe5b184c8277bfbb"
+    }
+  ]
+}

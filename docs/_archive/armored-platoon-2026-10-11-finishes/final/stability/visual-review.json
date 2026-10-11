@@ -1,0 +1,15 @@
+{
+  "reviewedAt": "2026-10-11T17:04:08.628911+00:00",
+  "file": "final.png",
+  "sha256": "b43a1999ee69f91195075f7e506dbed9d1695b0e2d8a6dc127489b0cb7276f70",
+  "observations": [
+    "Final960x600 screenshot shows the paused battle menu with readable title, action buttons and checkpoint explanation.",
+    "Terrain, trees, distant geometry and three tanks remain rendered; native hull finish shading is visible beneath the pause overlay.",
+    "Two friendly tanks are close together in the foreground. Sampled navigation includes8 No safe route and1 Route obstructed actor snapshots; the image alone does not establish a geometric collision or explain every blocked route.",
+    "No missing-texture placeholder, blank canvas or error overlay is visible in this capture."
+  ],
+  "limits": [
+    "Single software-rendered capture, not a hardware performance or visual-fidelity acceptance judgment.",
+    "No additional browser or gameplay manipulation was used for this review."
+  ]
+}

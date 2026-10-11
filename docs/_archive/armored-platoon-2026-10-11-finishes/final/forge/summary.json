@@ -1,0 +1,73 @@
+{
+  "requestedHead": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+  "actualCheckout": "319eb893c6d10b3f5eaa387cbb1bdf2300465a75",
+  "tree": "b63851baa951f93b87859c222d706e00cf6bf0f6",
+  "base": "3f56925b3532f015d9a29f19a998a05286b76f13",
+  "checkoutKind": "Synthetic PR merge; identical git tree confirmed",
+  "workflows": [
+    {
+      "name": "Model Forge",
+      "run": 38155883042,
+      "job": 114518650394,
+      "conclusion": "success",
+      "units": 182,
+      "binFreshness": "passed",
+      "artifact": {
+        "path": "bin/model-forge",
+        "bytes": 2367903,
+        "sha256": "165c5239ce7052bc4dec096d745dab5616d50d247585b54547999db1980d693b",
+        "identityEvidence": "CI freshness log"
+      }
+    },
+    {
+      "name": "Scene Forge",
+      "run": 38155883039,
+      "job": 114518650219,
+      "conclusion": "success",
+      "units": 57,
+      "binFreshness": "passed",
+      "artifact": {
+        "path": "bin/scene-forge",
+        "bytes": 2518690,
+        "sha256": "a15f7aba1290d62410fba4c71831c17b6be48ec930a850ce9a71a8e9a8a16388",
+        "identityEvidence": "CI freshness log"
+      }
+    },
+    {
+      "name": "Process Studio",
+      "run": 38155883035,
+      "job": 114518650603,
+      "conclusion": "success",
+      "units": 22,
+      "binFreshness": "passed",
+      "artifact": {
+        "path": "bin/process-studio",
+        "bytes": 1371418,
+        "sha256": "e2630b0ccb470d62efa915bbcfd94b5c06204172e6aaedb9a70745ec0cd3900f",
+        "engine": "de4233eee6ec157e2144166cd7f05af2a8f42795356b9b75608ceb4d366919ed",
+        "identityEvidence": "CI freshness log"
+      }
+    },
+    {
+      "name": "Character Studio",
+      "run": 38155883057,
+      "job": 114518650351,
+      "conclusion": "success",
+      "units": 52,
+      "integration": 2,
+      "browserE2E": 3,
+      "standaloneHandoff": "passed",
+      "standaloneSmoke": "passed",
+      "binFreshness": "passed",
+      "artifact": {
+        "path": "bin/character-studio",
+        "bytes": 1650684,
+        "sha256": "deed938f3d4cdc4310b41944ad511bee0c2fa92855f410960aeee257bcd272b3",
+        "identityEvidence": "Locally hashed file verified byte-identical to de06 committed artifact; CI confirms bundle matches source without printing its hash."
+      },
+      "installedBrowser": "Chrome for Testing153.0.8010.12 (Playwright chromium v1243)",
+      "browserEvidenceLimit": "Log records installed browser version, not selected executable/browser.version."
+    }
+  ],
+  "limits": "Model/Scene workflows do not run browser tiers. Prior e9c Character browser failure is retained separately and not relabeled. These workflows expose no retained upload-artifact step; complete job logs and terminal metadata are collected."
+}

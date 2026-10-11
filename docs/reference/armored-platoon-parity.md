@@ -171,7 +171,7 @@ must pass in the same shipping gameplay route used for performance measurement.
 | T08 | Renderer fallback | Feature matrix; controlled fallback resource reconstruction | Pinned Three.js | World | Force optional backend failure while simulation continues | No WebGPU parity assumed | open |
 | Q01 | Performance | Named primary/compatibility targets and disclosed reductions | Shipping route/instrumentation | Verification | 12 vehicles/40 infantry/6 plumes plus max parity content | Real baseline GPUs unavailable | open |
 | Q02 | Loading/memory | Separate cold/warm reports and class budgets | Asset manifest/profiler | Verification | Declared bandwidth/device then M1 budget freeze | Proposed caps unmeasured | open |
-| Q03 | Long sessions | 30-minute combat and repeated mission cycles stabilize resources | Lifecycle counters | Verification | Hidden/pause/resume/control switching during streaming | Separate `187dd821` and `bbf8475e` bounded software observations completed; hardware/full stress/context loss and disposal remain | partial |
+| Q03 | Long sessions | 30-minute combat and repeated mission cycles stabilize resources | Lifecycle counters | Verification | Hidden/pause/resume/control switching during streaming | Separate `187dd821`, `bbf8475e` and historical `09ed6726`-associated bounded software observations completed; current `de06f7c3` is reported separately; hardware/full stress/context loss and comprehensive resource measurements remain | partial |
 | Q04 | Visual regression | Own approved captures separate from reference assessment | Deterministic fixtures | Verification | Fixed seed/time/camera/weather/assets and independent review | No capture proves parity by itself | partial |
 | Q05 | Network quality | Independent clients with latency/jitter/loss/interruption | Impairment harness | Network/Verification | Reconnect and no duplicate shots/rewards or private state | Real authoritative online service | open |
 | Q06 | Replay claim | Exact tested version/content/init order only | Recorded command stream | Runtime/Verification | Re-run declared scope; compare canonical checkpoints | Cross-browser lockstep unverified | partial |
@@ -247,6 +247,161 @@ below; a later integrated artifact needs its own source-bound verification.
 The base64 pack passed the actual source admission and game-folder inventory checks.
 Reproduction and remaining toolchain limits are in the
 [authoring guide](../how-to/armored-platoon-authoring.md).
+
+## Finish performance and dialog focus — current verification
+
+Implementation `de06f7c353e0a170f8f9f9681a28f2544c9393c2` and CI merge
+`319eb893c6d10b3f5eaa387cbb1bdf2300465a75` share tree
+`b63851baa951f93b87859c222d706e00cf6bf0f6`. The unchanged Wildlands inputs passed
+**1,058/1,058 fast checks across 56 suites in 88.38 seconds** at `e9c5571c`.
+The **17/17 Armored browser checks** retain raw implementation identity
+`e9c5571c`. A separate source/artifact association proves their Wildlands test,
+engine and demo inputs are unchanged in `de06f7c3`; the earlier raw record is
+not relabeled. All **11 final CI workflows passed** on the identical-tree CI merge. The
+complete Wildlands gate passed **2,491/2,491 checks across 141 suites in
+1,771.98 seconds**, including **17/17 Armored browser checks**. Native export
+passed **23 checks**; the additional guarded Storytelling step succeeded,
+although its raw count receipt was unavailable through this environment's
+artifact download route. The formerly timed-out finish suite passed **9/9**
+in approximately **3.55 seconds** from CI log timestamps under its unchanged
+120-second cutoff. The actual native aggregate passed **103 suites / 21,346
+checks / 6 shards**, with source digest
+`2c1b0164566553e7e83e4177b535f977095e2355a3986dcc41527c9ca067b823`.
+Linux/Windows Runtime confidence, all four Forge/Studio workflows, Source,
+Content, Standalone and Advisory quality also passed. Full logs and terminal
+metadata are retained; unavailable redirected Python totals are not inferred.
+
+The Character Studio focus repair in this implementation prevents a queued
+modal-close event from overriding a newer deliberate focus choice or a reopened
+dialog. The same bounded transition diagnostic improved from **17/20 to 20/20**;
+**52 unit, 2 integration and 3 browser checks**, standalone handoff, type checks
+and bundle freshness passed locally. The
+[focus diagnosis](../_archive/armored-platoon-2026-10-11-finishes/character-focus/README.md)
+retains the failure and corrected results. This is a shared authoring UI repair,
+not a change to Armored gameplay or finish pixels.
+
+The preceding `e9c5571c` Character Studio CI failed its keyboard chapter journey.
+Its **221.7-second** Armored observation was interrupted for focus reproduction;
+it was not a completed 30-minute observation. A fresh `de06f7c3` observation is
+reported separately below; no prior counts substitute for it.
+
+Since `e9c5571c`, only the Character Studio dialog UI, its journey test and
+`bin/character-studio` changed. The recorded commit comparison confirms unchanged
+Wildlands, Model Forge and Scene Forge source, the Wildlands/Forge/Process
+executables, all demos and game folders. Verification of those unchanged inputs
+is associated explicitly; the new Character Studio source has its own results.
+
+The current published demo is **4,439,139 bytes**, SHA-256
+`783d8dc2fba68251420b2ee61b477677994b8839be62f0660f03f0c49ceda883`.
+Its engine identity is
+`de4233eee6ec157e2144166cd7f05af2a8f42795356b9b75608ceb4d366919ed`.
+
+The finish generator now precomputes bounded periodic noise fields, captures
+Math functions from its own realm and writes typed-array channels directly.
+All **81 recipes / 243 channel hashes** retain the original `forge-finish-v1`
+pixels. Local CommonJS profiles improved by approximately **25–31%**; the
+roughly **33×** improvement measured in the isolated native VM probe primarily
+reflects avoiding repeated contextified global lookup. These are CPU profiles,
+not browser frame-rate or hardware-performance measurements. Three Float64
+fields add **384 KiB of bounded temporary storage per generator call**, plus
+small lattice/index tables; no retained cache or peak-memory reduction is claimed.
+The nine-check finish suite, all recipe and owner-budget assertions, and its
+120-second cutoff remain unchanged.
+
+The earlier `09ed672642aedee855d2d45f0e8c4a611127ca7b` full gate **failed**:
+106 of 141 suites were attempted, with 2,055 accepted checks passing before
+`asset-finish` exceeded its unchanged 120-second limit and was killed. Those
+2,055 checks are an incomplete result, not a complete-gate pass. The timeout,
+initial profiles and correction are retained in the
+[performance diagnosis](../_archive/armored-platoon-2026-10-11-finishes/performance-correction/README.md).
+
+The fresh `de06f7c3` observation completed **1,800.000 seconds / 121 samples**,
+with **375/375** accepted scripted public workload commands, **7/7** exact
+paused checkpoint restores and **7** mission switches. It recorded zero page
+or console errors, warnings, rejections or observation failures. The frozen
+committed demo and 31 tracked inputs remained unchanged; browser cleanup
+completed after the final capture. This used native RAF in Chromium 151 /
+SwiftShader at 960×600, without private ticks or injected gameplay state.
+
+Of **363** friendly-vehicle snapshots, **8** reported “No safe route” and **1**
+“Route obstructed”; these are samples, not distinct incidents or durations.
+Allied traffic handling remains partial. Sampled JS heap used moved from
+**20,374,208 to 31,212,664 bytes**, ranging **16,340,864–48,024,628 bytes**
+without forced collection. These observations do not establish leak freedom,
+GPU residency, target-hardware performance, ordinary human play quality or
+reference fidelity. Repair/resupply were covered by separate browser checks,
+not this bounded long-session workload.
+
+Current results and raw identities belong to the [final evidence](../_archive/armored-platoon-2026-10-11-finishes/final/README.md).
+Do not substitute the `09ed6726` observation counts below for this new run.
+The earlier allied-traffic blockage remains a recorded limitation until a
+source-bound follow-up establishes its behavior. No M1–M5 or complete parity row
+closes from regression tests or software observations: production asset/content
+coverage, reference calibration, infantry, campaign/mode completeness, genuine
+online authority and target-hardware acceptance remain open.
+
+## Native finishes, navigation and input — integrated verification (historical `09ed6726`)
+
+Implementation `09ed672642aedee855d2d45f0e8c4a611127ca7b` integrates the native
+asset refinement and independently versioned hull routing with current main.
+CI merge `ec88210c205a674cdb77f85cc2cc59d9feb3874c` has the identical tree
+`7eb1dc63ee7709b75c0a835dcb14cbb3d509cf99`.
+The local fast tier passed 1,058 checks across 56 suites; Armored browser
+verification passed 17/17. The complete gate subsequently **failed** after
+106 of 141 suites were attempted and 2,055 accepted checks passed: `asset-finish`
+exceeded 120 seconds and was killed. This incomplete result does not establish
+full acceptance; the optimized successor and its separate evidence are above.
+
+The frozen published demo completed **1,800.000 seconds / 121 samples** using
+native browser timing in Chromium 151 with SwiftShader at 960×600:
+**375/375 accepted scripted public workload commands**, **7/7 exact paused
+checkpoint restores** and **7 mission switches**. Page errors, console errors,
+console warnings, command rejections and observation failures were all zero.
+The workload covered driving near deployment, aiming/main-gun fire and platoon
+follow/hold orders. Automatic shell control/aim responses are excluded from the
+command count. Repair/resupply, complete missions, worst-case crowded scenes,
+multiplayer and context loss were not exercised by this observation.
+
+The launch record retains precommit HEAD `3ce1c8df`; it is not relabeled as the
+final implementation. A separate committed-association receipt proves that the
+frozen demo and tracked source inventory match `09ed6726`. The observed demo is
+4,438,590 bytes, SHA-256
+`a15cb9df9468a2dbd5373f4ea4f345f8bf1ec83d80a0c598b63b59a626f7fdb6`;
+it is distinct from the browser-test artifact.
+
+Navigation remains conservative around allied hulls: **16 of 363 sampled
+friendly-vehicle projections** reported `No safe route`, and one reported
+`Reverse escape`. These are repeated sample observations, not distinct incidents
+or a failure rate. Offline diagnostics of five saved blocked-actor contexts
+found empty routes; separate copies omitting other allied hulls admitted direct
+routes. That isolates allied blocking in those five contexts without changing
+the observed gameplay or proving the cause of every blocked sample.
+
+The final paused capture shows readable UI and visible original tanks/material
+detail, with development-level stylized visual fidelity. It is not a mission
+completion or reference-matched quality review. Unforced-GC JavaScript heap
+measurements do not establish leak freedom; GPU memory, resource residency and
+renderer geometry/texture counters were unavailable. Target-hardware performance,
+actual Safari/device coverage, ordinary human play and full Q03 remain unaccepted.
+
+
+Character Studio passed 52 unit, 2 integration and 3 browser checks, including
+portable finish preview ownership; Model Forge passed 182 units, Scene Forge 57
+and Process Studio 22. The clean advisory inventory covers 1,812 files, with
+zero physical-code-budget overruns and 6,927 long-line advisories retained.
+The final Runtime confidence Linux and Windows jobs passed on the identical
+implementation/CI-merge tree. Their redirected Python test totals were not
+retrieved because artifact download returned HTTP 403; no final totals are
+inferred from the earlier local run. The separate
+local `3ce1c8df` pinned run passed 360 of 361 discovered tests with one Windows skip;
+its extra directory guard failure is explained by 110 native-generated files,
+with original source bytes unchanged.
+
+The archive retains pointer-lock failure reproduction, stale Character bundle
+failure, merged-material admission regression, and both interrupted observations.
+No acceptance row closes from software-only rendering or green regression alone.
+The current material/physics/content/network/device gaps remain in the rows above.
+See the [final receipts](../_archive/armored-platoon-2026-10-11-finishes/README.md).
 
 ## Previously verified physics-v2 slice — focused integrated verification
 

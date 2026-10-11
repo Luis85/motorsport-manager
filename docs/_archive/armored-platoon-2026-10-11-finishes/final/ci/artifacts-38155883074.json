@@ -1,0 +1,23 @@
+{
+  "artifacts": [
+    {
+      "id": 11707824345,
+      "name": "quality-report",
+      "size_in_bytes": 396735,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707824345",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707824345/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:35:22Z",
+      "expires_at": "2026-10-25T16:35:21Z",
+      "updated_at": "2026-10-11T16:35:22Z",
+      "digest": "sha256:23c800b143f77dd14b556d9494f4fea39ee631f948c4239bf5d7204274e04a3a",
+      "workflow_run": {
+        "id": 38155883074,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "de06f7c353e0a170f8f9f9681a28f2544c9393c2"
+      }
+    }
+  ]
+}

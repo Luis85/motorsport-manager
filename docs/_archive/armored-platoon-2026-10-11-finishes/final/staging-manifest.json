@@ -1,0 +1,1661 @@
+{
+  "implementation": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+  "files": [
+    {
+      "source": "work/armored-v3-final-ci-de06/artifacts-38155883031.json",
+      "path": "ci/artifacts-38155883031.json",
+      "sourceBytes": 7552,
+      "sourceSha256": "9576ab6b1f857a31a02470a39846efed3b18f105b8ee133b1ace84448c3e06e7",
+      "bytes": 7552,
+      "sha256": "9576ab6b1f857a31a02470a39846efed3b18f105b8ee133b1ace84448c3e06e7",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/artifacts-38155883038.json",
+      "path": "ci/artifacts-38155883038.json",
+      "sourceBytes": 3369,
+      "sourceSha256": "e5d1620ec8fe82fe39674839bd215ece681e38517713d1f992cc2c91f8473846",
+      "bytes": 3369,
+      "sha256": "e5d1620ec8fe82fe39674839bd215ece681e38517713d1f992cc2c91f8473846",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/artifacts-38155883074.json",
+      "path": "ci/artifacts-38155883074.json",
+      "sourceBytes": 844,
+      "sourceSha256": "9b7d4adb66e7600e9a3b88f08b0d37edc67d44198b633a35d1920c3faa237468",
+      "bytes": 844,
+      "sha256": "9b7d4adb66e7600e9a3b88f08b0d37edc67d44198b633a35d1920c3faa237468",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/artifacts.json",
+      "path": "ci/artifacts.json",
+      "sourceBytes": 1639,
+      "sourceSha256": "7937029fe6401a2acf2495361ed618164d066802904615f88a5514c67969d285",
+      "bytes": 1639,
+      "sha256": "7937029fe6401a2acf2495361ed618164d066802904615f88a5514c67969d285",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/checkout-identity.json",
+      "path": "ci/checkout-identity.json",
+      "sourceBytes": 554,
+      "sourceSha256": "cdf45cc01074eae5892b9c43d6ede6beba963d9f61a7b75a79353092e384f8fc",
+      "bytes": 554,
+      "sha256": "cdf45cc01074eae5892b9c43d6ede6beba963d9f61a7b75a79353092e384f8fc",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/job-114518650154.log",
+      "path": "ci/job-114518650154.log.gz",
+      "sourceBytes": 21351,
+      "sourceSha256": "5575c91655c5e010c44cb80d27a8711c681819399436bdc0d7e8c3eb99874906",
+      "bytes": 5477,
+      "sha256": "b9f4e5d7950cdc13faebca5581aafa0d819eb0261b806cbbdf58aa23e76dd575",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/job-114518650372.log",
+      "path": "ci/job-114518650372.log.gz",
+      "sourceBytes": 390469,
+      "sourceSha256": "b4d25014bcd4242d9de33cb4d09611b010de0981db83cc110ccd9197e80135b9",
+      "bytes": 54064,
+      "sha256": "78202e6566ab1e02ce88656b8612d1bd9bb147e08f9ac427f0112ec3cb88d3c0",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/job-114518650390.log",
+      "path": "ci/job-114518650390.log.gz",
+      "sourceBytes": 43438,
+      "sourceSha256": "7937f0cf25f6ea375b50ca2f341e17893414896fe1b395fb8bd8b707bc8bbb67",
+      "bytes": 9128,
+      "sha256": "e03f7d332c8a759d2766c22e20ac95652b77be94330295ab29fbf837b81b41af",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/job-114518780020.log",
+      "path": "ci/job-114518780020.log.gz",
+      "sourceBytes": 25984,
+      "sourceSha256": "492a81145b5d09450f66ace73031ac4bef1d3630315b5530e730a66cf81d4356",
+      "bytes": 6131,
+      "sha256": "c95e0e536d50b2a689d75b26eb08a577f7bb9c61e3cb32aaaa6ec76a8ef332d6",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/job-114518780027.log",
+      "path": "ci/job-114518780027.log.gz",
+      "sourceBytes": 26015,
+      "sourceSha256": "39c5b412c94199c3c0db91b1795ecf6804bfabbc1374bd112a139268ba9bac5e",
+      "bytes": 6110,
+      "sha256": "8d60e339eb85f16d7d829e82abc702059d9c2b66cf7746f046f44b49a53f7904",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/job-114518780048.log",
+      "path": "ci/job-114518780048.log.gz",
+      "sourceBytes": 25928,
+      "sourceSha256": "ef651cff0c60b4efcdf7dd7cde2baeebd1a4eded74110a0c22be1593353dc3ef",
+      "bytes": 6081,
+      "sha256": "ffa3a61c34665da8351c3741600db24f716c4ce16d6fa28de405d9e50adf0109",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/job-114518780075.log",
+      "path": "ci/job-114518780075.log.gz",
+      "sourceBytes": 26003,
+      "sourceSha256": "f44bfd75d1ce272ebe8bf17b0998ae2d44fb9e14fe426d25cd461b5da7526a35",
+      "bytes": 6143,
+      "sha256": "c74cabe031e7d39aed77dec6acbbf3859641963f61f02c5cde830a767fa1028e",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/job-114518907422.log",
+      "path": "ci/job-114518907422.log.gz",
+      "sourceBytes": 23395,
+      "sourceSha256": "756ad3ed040a5404f79afb1b06e75490db3fcf5c2c1306589e417e108ea4368d",
+      "bytes": 5438,
+      "sha256": "79e0a077d328b83bddb441e87c4aedecb29d9444960c4923337e2f4168c09a23",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/job-114518907431.log",
+      "path": "ci/job-114518907431.log.gz",
+      "sourceBytes": 25963,
+      "sourceSha256": "fb29e2c4498ecab01cb46a03dc3621a0e71b1b6b44071fb7ed47d77d2fd8adc1",
+      "bytes": 6003,
+      "sha256": "879db4961021feb8e18895ff56750469ada6b9292348a8b69d80e422a1c37047",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/job-114518907574.log",
+      "path": "ci/job-114518907574.log.gz",
+      "sourceBytes": 31890,
+      "sourceSha256": "b3a2f593e9a64a266bf7aff65498ebd1f1679fcc19a12cfcfcbe3da87a47ae56",
+      "bytes": 7473,
+      "sha256": "7dae65efeecd44217136c801193635ca4609251ab8f6d2f98a51622bc13434fd",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/job-114518907618.log",
+      "path": "ci/job-114518907618.log.gz",
+      "sourceBytes": 31920,
+      "sourceSha256": "820af77a72c1b8b8657c2b0a92b96fff94f95c2e9152175578dea8ccdc9adec9",
+      "bytes": 7474,
+      "sha256": "519889f68eb6392f4cf714da03792cdabefe4259e7cd9931965e2b8a6a53f4ca",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/jobs-38155883031.json",
+      "path": "ci/jobs-38155883031.json",
+      "sourceBytes": 20107,
+      "sourceSha256": "7c0bfb13004ae7f70221e9ff67261685078c0f6f6cc3a7574dd854aae01c3a13",
+      "bytes": 20107,
+      "sha256": "7c0bfb13004ae7f70221e9ff67261685078c0f6f6cc3a7574dd854aae01c3a13",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/jobs-38155883038.json",
+      "path": "ci/jobs-38155883038.json",
+      "sourceBytes": 2844,
+      "sourceSha256": "075e6c3d58c1f6aaf37e256b5e304b622e978d786e7cfd00d5a951ae6e40fd45",
+      "bytes": 2844,
+      "sha256": "075e6c3d58c1f6aaf37e256b5e304b622e978d786e7cfd00d5a951ae6e40fd45",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/jobs-38155883074.json",
+      "path": "ci/jobs-38155883074.json",
+      "sourceBytes": 2335,
+      "sourceSha256": "84df1af31a857b465b4e36bfecf550f0dcb908d594d221ddc69a478d626de701",
+      "bytes": 2335,
+      "sha256": "84df1af31a857b465b4e36bfecf550f0dcb908d594d221ddc69a478d626de701",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/root-jobs-receipt.json",
+      "path": "ci/root-jobs-receipt.json",
+      "sourceBytes": 6954,
+      "sourceSha256": "2d076a225a85539af0cbf5e4b677362f0d4855f1ab8dc7777533e6684c151957",
+      "bytes": 6954,
+      "sha256": "2d076a225a85539af0cbf5e4b677362f0d4855f1ab8dc7777533e6684c151957",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/source-job.log",
+      "path": "ci/source-job.log.gz",
+      "sourceBytes": 17388,
+      "sourceSha256": "7cb8259196d63188b3d31b4d10eef50956d8acaee2a914d2f56b3b2866d10a6a",
+      "bytes": 4305,
+      "sha256": "61d92eafe0d723e65841fcfd1c807f5c8cc5ca1e5aff49d3fa44824f8b10dd2d",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/terminal-workflows.json",
+      "path": "ci/terminal-workflows.json",
+      "sourceBytes": 4504,
+      "sourceSha256": "ff9a086789895ca9a128ec46d6228d57baf99e9ee4fdf4bbc542b31c81851dae",
+      "bytes": 4504,
+      "sha256": "ff9a086789895ca9a128ec46d6228d57baf99e9ee4fdf4bbc542b31c81851dae",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/ci-wildlands/cancelled-receipt.json",
+      "path": "earlier-e9c/ci-wildlands/cancelled-receipt.json",
+      "sourceBytes": 477,
+      "sourceSha256": "1a39b28140c60d95f6fe69f9f7f4f3b679498b3b1befb1cc7bb3b21cdde39d99",
+      "bytes": 477,
+      "sha256": "1a39b28140c60d95f6fe69f9f7f4f3b679498b3b1befb1cc7bb3b21cdde39d99",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/ci-wildlands/cancelled-verify.log",
+      "path": "earlier-e9c/ci-wildlands/cancelled-verify.log.gz",
+      "sourceBytes": 70455,
+      "sourceSha256": "df77afb3f2b61bd284b8941361e69498df5470a474d41e04d7fe79a2f4de6f7d",
+      "bytes": 15980,
+      "sha256": "9ebddcef9e07ceafc02c60b9b2876c69c61820ce8cbdee7953a7b423095022e0",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/ci-wildlands/export-job.log",
+      "path": "earlier-e9c/ci-wildlands/export-job.log.gz",
+      "sourceBytes": 33548,
+      "sourceSha256": "2949cd0279ddf0f6dc86285d597f2c4d1f9b37c379ef14358a790cda6600e310",
+      "bytes": 8575,
+      "sha256": "cda4feeaf6dcd58e2907de7fafa883f0d0fe30a88868ecb0d2d5c17ef0f8e496",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/ci-wildlands/export-receipt.json",
+      "path": "earlier-e9c/ci-wildlands/export-receipt.json",
+      "sourceBytes": 3867,
+      "sourceSha256": "eb08f3e685025701aaff5a31edc9e7eae7dc4ec8685768b2b860c2272beaade5",
+      "bytes": 3867,
+      "sha256": "eb08f3e685025701aaff5a31edc9e7eae7dc4ec8685768b2b860c2272beaade5",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/ci-wildlands/terminal-artifacts.json",
+      "path": "earlier-e9c/ci-wildlands/terminal-artifacts.json",
+      "sourceBytes": 3354,
+      "sourceSha256": "74972a4c70b44ded328b9fa99c88f09f8f7ecf5f2513039731e892ffddaaf7f1",
+      "bytes": 3354,
+      "sha256": "74972a4c70b44ded328b9fa99c88f09f8f7ecf5f2513039731e892ffddaaf7f1",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/ci-wildlands/terminal-jobs.json",
+      "path": "earlier-e9c/ci-wildlands/terminal-jobs.json",
+      "sourceBytes": 6303,
+      "sourceSha256": "910c5fb437f09e814d07bcb6af6f9de6b769de48f94e66eafa7b7526aa2ce1cb",
+      "bytes": 6303,
+      "sha256": "910c5fb437f09e814d07bcb6af6f9de6b769de48f94e66eafa7b7526aa2ce1cb",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/ci-wildlands/terminal-workflows.json",
+      "path": "earlier-e9c/ci-wildlands/terminal-workflows.json",
+      "sourceBytes": 4510,
+      "sourceSha256": "d4910bfbcd480655be1883021bfef92897230333930e75dd77dedbda4f4dbd18",
+      "bytes": 4510,
+      "sha256": "d4910bfbcd480655be1883021bfef92897230333930e75dd77dedbda4f4dbd18",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci/artifacts-terminal.json",
+      "path": "earlier-e9c/native-ci/artifacts-terminal.json",
+      "sourceBytes": 5354,
+      "sourceSha256": "9d333f5e1cf4ac2bce8f4aa3f2f8bd247599301dd0a95369f215ac1ba17bad21",
+      "bytes": 5354,
+      "sha256": "9d333f5e1cf4ac2bce8f4aa3f2f8bd247599301dd0a95369f215ac1ba17bad21",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci/jobs-after-focus-fix.json",
+      "path": "earlier-e9c/native-ci/jobs-after-focus-fix.json",
+      "sourceBytes": 10438,
+      "sourceSha256": "b15050cb65a6cb75693695cebbcc3a120a9a56fa343bafee76b13cd9c9c3a20c",
+      "bytes": 10438,
+      "sha256": "b15050cb65a6cb75693695cebbcc3a120a9a56fa343bafee76b13cd9c9c3a20c",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci/log-evidence.json",
+      "path": "earlier-e9c/native-ci/log-evidence.json",
+      "sourceBytes": 3566,
+      "sourceSha256": "dcca5bb8aa67090a4ad87162ba10895308593bf79855a9446b76a6d8ea8f680e",
+      "bytes": 3566,
+      "sha256": "dcca5bb8aa67090a4ad87162ba10895308593bf79855a9446b76a6d8ea8f680e",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci/receipt.json",
+      "path": "earlier-e9c/native-ci/receipt.json",
+      "sourceBytes": 5702,
+      "sourceSha256": "0f9c493c80e74dd96bc5284621161cf5904edf9eacc97a69687044eaf9770da3",
+      "bytes": 5702,
+      "sha256": "0f9c493c80e74dd96bc5284621161cf5904edf9eacc97a69687044eaf9770da3",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci/runs-after-focus-fix.json",
+      "path": "earlier-e9c/native-ci/runs-after-focus-fix.json",
+      "sourceBytes": 4871,
+      "sourceSha256": "229f1862e39476447b70a414d617bd9420d17dd508c693bfd0c7814a37917634",
+      "bytes": 4871,
+      "sha256": "229f1862e39476447b70a414d617bd9420d17dd508c693bfd0c7814a37917634",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci/suites-0.log",
+      "path": "earlier-e9c/native-ci/suites-0.log.gz",
+      "sourceBytes": 308008,
+      "sourceSha256": "883b8bd9fe55e45f0e61d2c7cdf152e102b4cea7e71f28aa26ce44ada5287875",
+      "bytes": 41768,
+      "sha256": "6f2a4554bcbb0cba8fc6e2864d7d68e7a49684ff163a2afb111bec35edabf2e3",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci/suites-1.log",
+      "path": "earlier-e9c/native-ci/suites-1.log.gz",
+      "sourceBytes": 290468,
+      "sourceSha256": "a48b3fb4aee4d589be24f9db897740965d6d94929de25639d59c7b3d3488ad0f",
+      "bytes": 39754,
+      "sha256": "73e9432a9619830c047860f85a3d4c83b8a72ca09e0e64e1fda1649686fd7946",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci/suites-2.log",
+      "path": "earlier-e9c/native-ci/suites-2.log.gz",
+      "sourceBytes": 278162,
+      "sourceSha256": "ca4c9a6a59abfea9aa893238cf68f30370235bd0fdc15e6c4cf86b63310db7ea",
+      "bytes": 36690,
+      "sha256": "ef8d102332bbc93951f2cb760602e28d46d4ac5f8a2e6d2b2b758924db2b2a9a",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci/suites-3.log",
+      "path": "earlier-e9c/native-ci/suites-3.log.gz",
+      "sourceBytes": 296401,
+      "sourceSha256": "c40d5409076e910c36cd41a3de81cbd0033bb9321692a66569255e6b178c5e80",
+      "bytes": 40249,
+      "sha256": "985ece2316d4d7a107edd7b657caf0f58da460e7f3229f0b9ca01e4f897af5a3",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci/suites-4.log",
+      "path": "earlier-e9c/native-ci/suites-4.log.gz",
+      "sourceBytes": 310734,
+      "sourceSha256": "f9b03ba6d1b01766c460f3f1b7f00bff0808f7329d08bb4cd484d6a09e9125ef",
+      "bytes": 42535,
+      "sha256": "4b7d7c32a1b81df1683b8f6c9b886f00168410d1cd95c50737661bf152fd6883",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci/suites-5.log",
+      "path": "earlier-e9c/native-ci/suites-5.log.gz",
+      "sourceBytes": 291231,
+      "sourceSha256": "f090fe519cf5114b25ad0247cb3716988a3adec848ffef707b66ad263a56c4c4",
+      "bytes": 40009,
+      "sha256": "516dfd34f4d0f38bb9918069b03f4c008b8082fa07fff479fd1f50ff465b8c33",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/stability/STOP.json",
+      "path": "earlier-e9c/stability/STOP.json",
+      "sourceBytes": 340,
+      "sourceSha256": "2aa28f9fb8468d320456703aaae32b4d3829cc26659466a0fe9f4114736bf336",
+      "bytes": 340,
+      "sha256": "2aa28f9fb8468d320456703aaae32b4d3829cc26659466a0fe9f4114736bf336",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/stability/browser-harness-used.js",
+      "path": "earlier-e9c/stability/browser-harness-used.js.txt.gz",
+      "sourceBytes": 10022,
+      "sourceSha256": "a464f9b13b46be5a626c628a805960170bbfca74c65fee26d2ea7a4926843bad",
+      "bytes": 3948,
+      "sha256": "9e3e7aed9ad6bd2f60b65b4a245574bc463b54533cb60e8ab5d68c3a8a5497de",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/stability/captures.jsonl",
+      "path": "earlier-e9c/stability/captures.jsonl.gz",
+      "sourceBytes": 451,
+      "sourceSha256": "56b3fe44132e7e10a24f2dcd362756519491d63cefcde890bdd16d98655ee617",
+      "bytes": 276,
+      "sha256": "187fc2d44fecdcd92da7f9ce1feece66fe9280997beaab3ab013a8d7cbdea176",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/stability/checkpoint-1.json",
+      "path": "earlier-e9c/stability/checkpoint-1.json.gz",
+      "sourceBytes": 108913,
+      "sourceSha256": "d5495d56d024f0d57f2b8efe6ad5a04fabe049b7edd595049e8058aa2e407912",
+      "bytes": 30898,
+      "sha256": "5e0b6d19a509463180284e3cb4ac1f2eb03a0d6026afb25e73443fdae0f2c933",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/stability/commands.jsonl",
+      "path": "earlier-e9c/stability/commands.jsonl.gz",
+      "sourceBytes": 9948,
+      "sourceSha256": "17a5957123f5b348e16ae155f62398fba9b8e5a8ec493cea732b1e066f2c03f3",
+      "bytes": 1039,
+      "sha256": "8fac6180456b2dcacc8feb7340e2addea8a22b212629e166d20491c37375a1eb",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/stability/committed-association-final.json",
+      "path": "earlier-e9c/stability/committed-association-final.json",
+      "sourceBytes": 13800,
+      "sourceSha256": "92964fafc780ef64e0e3b46f37aedb313c1559600493904f7b9b36403319b2c7",
+      "bytes": 13800,
+      "sha256": "92964fafc780ef64e0e3b46f37aedb313c1559600493904f7b9b36403319b2c7",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/stability/compact-report.json",
+      "path": "earlier-e9c/stability/compact-report.json",
+      "sourceBytes": 18426,
+      "sourceSha256": "0a3ec8e30931d126f082a276b8dd30a5d30e28f88b39fa74f3ab88e830e25d27",
+      "bytes": 18426,
+      "sha256": "0a3ec8e30931d126f082a276b8dd30a5d30e28f88b39fa74f3ab88e830e25d27",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/stability/failures.jsonl",
+      "path": "earlier-e9c/stability/failures.jsonl.gz",
+      "sourceBytes": 429,
+      "sourceSha256": "a60e58f8a9195fc805f1a1bd4fbacc50ca776ec2d67094e8c57a64a27c2bad51",
+      "bytes": 312,
+      "sha256": "e0c2bfd175314fbea8a72436c5653e448c05b8e90df1e1bd49a9de4db7eac1e2",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/stability/files.sha256.json",
+      "path": "earlier-e9c/stability/files.sha256.json",
+      "sourceBytes": 3954,
+      "sourceSha256": "326f816361d61f700b7cb8a05f0bcbce4e10b5e8cbf979f8c8c9e0cc99f623e9",
+      "bytes": 3954,
+      "sha256": "326f816361d61f700b7cb8a05f0bcbce4e10b5e8cbf979f8c8c9e0cc99f623e9",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/stability/freeze.json",
+      "path": "earlier-e9c/stability/freeze.json",
+      "sourceBytes": 6284,
+      "sourceSha256": "3c290a25f7a1ca691eba09515cfbd2b85f7494f80d526fb56fe769166298a2a3",
+      "bytes": 6284,
+      "sha256": "3c290a25f7a1ca691eba09515cfbd2b85f7494f80d526fb56fe769166298a2a3",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/stability/identity.json",
+      "path": "earlier-e9c/stability/identity.json",
+      "sourceBytes": 8703,
+      "sourceSha256": "718a090c640480ad109fdfb3deb29c9104f5f4a0dbf777a93152b03c60c29784",
+      "bytes": 8703,
+      "sha256": "718a090c640480ad109fdfb3deb29c9104f5f4a0dbf777a93152b03c60c29784",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/stability/observations.json",
+      "path": "earlier-e9c/stability/observations.json.gz",
+      "sourceBytes": 101500,
+      "sourceSha256": "2958c69832479633fc7b3c48e48cf604338df2064fbfe80cf43e7afcb49626ce",
+      "bytes": 11625,
+      "sha256": "207cc8de77dd7397026edafa0ff861fab81c00c9923c693bf433256addfd2440",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/stability/observe.cjs",
+      "path": "earlier-e9c/stability/observe.cjs.txt.gz",
+      "sourceBytes": 18221,
+      "sourceSha256": "a58c5ca0ef7c61048654316c6bbcc6b0356e87698f9eb8edd3dfdaf55fcbb701",
+      "bytes": 6479,
+      "sha256": "e2ee4fee34b6a7531cbfd97743869e734af2019eacdd1fb9e79145f4db0e3af3",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/stability/requests.jsonl",
+      "path": "earlier-e9c/stability/requests.jsonl.gz",
+      "sourceBytes": 136,
+      "sourceSha256": "acfe34162aa40d377a83ad95fc465bab5a876f3c8b6a531b7b726364b3863168",
+      "bytes": 137,
+      "sha256": "7b2005e27ae82a3bda57a3e3192235cdd35b8c763c4bccfce5fcc617457a5721",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/stability/run.log",
+      "path": "earlier-e9c/stability/run.log.gz",
+      "sourceBytes": 5405,
+      "sourceSha256": "9d9432489f327e3293823c89e39d7c4354c80746c3a6b85f5cfb475cad12eb17",
+      "bytes": 1543,
+      "sha256": "d9258fcb676756b2ad829b24484a81cb894da3a9b7be89619ce6aba7d698b55c",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/stability/samples.jsonl",
+      "path": "earlier-e9c/stability/samples.jsonl.gz",
+      "sourceBytes": 38907,
+      "sourceSha256": "017d5ca422f400e58c583846e73127df7c76bbf41b855c72286a914f4290987f",
+      "bytes": 5311,
+      "sha256": "3336a29352d43e3910e939d1c54e8d67d9716fd6d17144f434e7e03e7b6782f6",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/stability/started.json",
+      "path": "earlier-e9c/stability/started.json",
+      "sourceBytes": 8791,
+      "sourceSha256": "8c712340049f6616565a0ee03011407e64352892613278bae45780bf3635c801",
+      "bytes": 8791,
+      "sha256": "8c712340049f6616565a0ee03011407e64352892613278bae45780bf3635c801",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/stability/summary.json",
+      "path": "earlier-e9c/stability/summary.json",
+      "sourceBytes": 18426,
+      "sourceSha256": "0a3ec8e30931d126f082a276b8dd30a5d30e28f88b39fa74f3ab88e830e25d27",
+      "bytes": 18426,
+      "sha256": "0a3ec8e30931d126f082a276b8dd30a5d30e28f88b39fa74f3ab88e830e25d27",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/stability/transitions.jsonl",
+      "path": "earlier-e9c/stability/transitions.jsonl.gz",
+      "sourceBytes": 329,
+      "sourceSha256": "272f509eda9341e1ad3617fe515a81fe26a08e21cfe10944e3dfff3b75740599",
+      "bytes": 206,
+      "sha256": "a56f99a42ffb81e5297e1964b4f9ce166f83efb353b2fc9f18e3ffbe04fec442",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/verification/receipt.json",
+      "path": "earlier-e9c/verification/receipt.json",
+      "sourceBytes": 9043,
+      "sourceSha256": "ef730d032b6ec56aac4854f8ed59d49337bc63b2a36a8a3255384968a51c4745",
+      "bytes": 9043,
+      "sha256": "ef730d032b6ec56aac4854f8ed59d49337bc63b2a36a8a3255384968a51c4745",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/verification/runtime-linux-job.log",
+      "path": "earlier-e9c/verification/runtime-linux-job.log.gz",
+      "sourceBytes": 285703,
+      "sourceSha256": "3836f1b61126854f8c7b2ebcd999e855d6d31d5e1a8a90f1db23a987a578daa7",
+      "bytes": 38193,
+      "sha256": "6f0b799a579482198e4b98b42feebad9413b263c08d89c8ffc1fce2ad39ba5c9",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/verification/runtime-terminal-artifacts.json",
+      "path": "earlier-e9c/verification/runtime-terminal-artifacts.json",
+      "sourceBytes": 2528,
+      "sourceSha256": "c96832297ccb8e8be36e853fb7eb2e2c7f61b02ab8e34b6dea7a6287f7dc59b1",
+      "bytes": 2528,
+      "sha256": "c96832297ccb8e8be36e853fb7eb2e2c7f61b02ab8e34b6dea7a6287f7dc59b1",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/verification/runtime-terminal-jobs.json",
+      "path": "earlier-e9c/verification/runtime-terminal-jobs.json",
+      "sourceBytes": 4030,
+      "sourceSha256": "9cb2bcda75f9e7ec9fa700ee238805f77901923c8c06d06becb153cbb306a1e7",
+      "bytes": 4030,
+      "sha256": "9cb2bcda75f9e7ec9fa700ee238805f77901923c8c06d06becb153cbb306a1e7",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/verification/runtime-terminal-run.json",
+      "path": "earlier-e9c/verification/runtime-terminal-run.json",
+      "sourceBytes": 363,
+      "sourceSha256": "957a254945ad966292f76e658fa104375b1308555b69a2db517682cf4b3cb736",
+      "bytes": 363,
+      "sha256": "957a254945ad966292f76e658fa104375b1308555b69a2db517682cf4b3cb736",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/verification/runtime-windows-job.log",
+      "path": "earlier-e9c/verification/runtime-windows-job.log.gz",
+      "sourceBytes": 24897,
+      "sourceSha256": "8f6ab486a7623f1411155e649de0229189b55e10d53e251a39bace17938f7e25",
+      "bytes": 5758,
+      "sha256": "b42e4622098da96495bb8c551bbffd58800abf80ca15b4a3a2f37d0294318297",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci-de06/character-job-114518650351.log",
+      "path": "forge/character-job-114518650351.log.gz",
+      "sourceBytes": 89824,
+      "sourceSha256": "e83988224c74234717b5262beb7d278120934eeccde11064ed1d30613c3ab991",
+      "bytes": 19431,
+      "sha256": "11ff3f67b6111ad35a24f4d6e58ea3aad2c7e370dccb2f260b29093bd9769a51",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci-de06/checkout-identity.json",
+      "path": "forge/checkout-identity.json",
+      "sourceBytes": 381,
+      "sourceSha256": "b379f048f4cf4535dea52a2a38517722f8cd81328b6d047f1d73112990cead6d",
+      "bytes": 381,
+      "sha256": "b379f048f4cf4535dea52a2a38517722f8cd81328b6d047f1d73112990cead6d",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci-de06/model-job-114518650394.log",
+      "path": "forge/model-job-114518650394.log.gz",
+      "sourceBytes": 92921,
+      "sourceSha256": "44af0178b840625de3a1eb3433a0ac5d056080aa4dcf0dffdb5ff3a52e2dd9b3",
+      "bytes": 20090,
+      "sha256": "f9668ffc569d46539437627736bd48fff835a16376a986f2e95c8c37c193e6da",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci-de06/process-job-114518650603.log",
+      "path": "forge/process-job-114518650603.log.gz",
+      "sourceBytes": 29119,
+      "sourceSha256": "bcb1721a97ccbfdfc2c14023f691edfce23509525477fd33959cd51ab730fe33",
+      "bytes": 7149,
+      "sha256": "7680a714ff958f975ee82548cbc4d867a136ac890b29533aceba183821dd9ee1",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci-de06/scene-job-114518650219.log",
+      "path": "forge/scene-job-114518650219.log.gz",
+      "sourceBytes": 42727,
+      "sourceSha256": "237848f5354bbf2f6a9406d2d5dd492ab54113401161a62c0e239093987f4ab7",
+      "bytes": 10278,
+      "sha256": "fb1162adb55f8c8f4d38da892f9f65f9d839ac9e39bc63e1da067fb314e32885",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci-de06/summary.json",
+      "path": "forge/summary.json",
+      "sourceBytes": 2718,
+      "sourceSha256": "f4ed2ef955db39f2811e2023020a66ead07455db8c1facfa0696669ffb17c959",
+      "bytes": 2718,
+      "sha256": "f4ed2ef955db39f2811e2023020a66ead07455db8c1facfa0696669ffb17c959",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci-de06/terminal-jobs-38155883035.json",
+      "path": "forge/terminal-jobs-38155883035.json",
+      "sourceBytes": 2665,
+      "sourceSha256": "df5bfb2eec3e46e4d179c983e985b460b11bad1d81755d399bef482e5486d715",
+      "bytes": 2665,
+      "sha256": "df5bfb2eec3e46e4d179c983e985b460b11bad1d81755d399bef482e5486d715",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci-de06/terminal-jobs-38155883039.json",
+      "path": "forge/terminal-jobs-38155883039.json",
+      "sourceBytes": 2762,
+      "sourceSha256": "c51ae8259385b7480d3a8b5efe6c64b9f4f0ebb0b4415b5e45d80e6278eedb3c",
+      "bytes": 2762,
+      "sha256": "c51ae8259385b7480d3a8b5efe6c64b9f4f0ebb0b4415b5e45d80e6278eedb3c",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci-de06/terminal-jobs-38155883042.json",
+      "path": "forge/terminal-jobs-38155883042.json",
+      "sourceBytes": 2790,
+      "sourceSha256": "3a0fdc777faa8a01b039570758d1986ee8f2f313ee27f24f40d3d44c7b64b643",
+      "bytes": 2790,
+      "sha256": "3a0fdc777faa8a01b039570758d1986ee8f2f313ee27f24f40d3d44c7b64b643",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci-de06/terminal-jobs-38155883057.json",
+      "path": "forge/terminal-jobs-38155883057.json",
+      "sourceBytes": 3307,
+      "sourceSha256": "440e84b0ced1bf31ba341426e8050085323f11810697505886322638f0643fac",
+      "bytes": 3307,
+      "sha256": "440e84b0ced1bf31ba341426e8050085323f11810697505886322638f0643fac",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/forge-ci-de06/terminal-runs.json",
+      "path": "forge/terminal-runs.json",
+      "sourceBytes": 4853,
+      "sourceSha256": "ae84e9f948223942b1aee4c687cfc7b860f44ccbd355cf5b45126bacdb601502",
+      "bytes": 4853,
+      "sha256": "ae84e9f948223942b1aee4c687cfc7b860f44ccbd355cf5b45126bacdb601502",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/architecture.log",
+      "path": "local/architecture.log.gz",
+      "sourceBytes": 134,
+      "sourceSha256": "25015e83435629a0af54ba0661e48ac6e445a4b04a358a1f1e33cecfd3ab56e9",
+      "bytes": 122,
+      "sha256": "7c828f4e228d2900b23858d98589725d85feb5b222954410b1b982f96458e310",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/browser/browser.log",
+      "path": "local/browser/browser.log.gz",
+      "sourceBytes": 3063,
+      "sourceSha256": "58b328b707c41ab2502c72579bfe81170d1587e425eeb050596ab167af0809fe",
+      "bytes": 923,
+      "sha256": "7a655314a874ca93830fbda6ee905c7a186547cc9fd5a1c887f5442f2976900c",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/browser/isolated-inputs.json",
+      "path": "local/browser/isolated-inputs.json",
+      "sourceBytes": 1301,
+      "sourceSha256": "853d0524ccd6b93e8a58840fd6234f4a1d7507fb01da6b012303597471ee3fa7",
+      "bytes": 1301,
+      "sha256": "853d0524ccd6b93e8a58840fd6234f4a1d7507fb01da6b012303597471ee3fa7",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/browser/receipt.json",
+      "path": "local/browser/receipt.json",
+      "sourceBytes": 1631,
+      "sourceSha256": "d32b58c157f31432a829fe3816e6884fbe5773c8f3c68b51606f13b27acad7a4",
+      "bytes": 1631,
+      "sha256": "d32b58c157f31432a829fe3816e6884fbe5773c8f3c68b51606f13b27acad7a4",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/browser/runtime/verification/v15/armored-1024.png",
+      "path": "local/browser/runtime/verification/v15/armored-1024.png",
+      "sourceBytes": 374093,
+      "sourceSha256": "41dcebd1098a3b6f119c8c95fa05bec3bcba413eca294aa27201af949e94331d",
+      "bytes": 374093,
+      "sha256": "41dcebd1098a3b6f119c8c95fa05bec3bcba413eca294aa27201af949e94331d",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/browser/runtime/verification/v15/armored-1440.png",
+      "path": "local/browser/runtime/verification/v15/armored-1440.png",
+      "sourceBytes": 566616,
+      "sourceSha256": "7926732d8f9737d618a4ba9ed5f334800ca1255e47a2a38b9613607dbbd65a1f",
+      "bytes": 566616,
+      "sha256": "7926732d8f9737d618a4ba9ed5f334800ca1255e47a2a38b9613607dbbd65a1f",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/browser/runtime/verification/v15/armored-browser-results.json",
+      "path": "local/browser/runtime/verification/v15/armored-browser-results.json",
+      "sourceBytes": 2234,
+      "sourceSha256": "231ef65b890361902f2b6ac846cde28783d534ebb45ac3229dd4033e9c57e2d5",
+      "bytes": 2234,
+      "sha256": "231ef65b890361902f2b6ac846cde28783d534ebb45ac3229dd4033e9c57e2d5",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/browser/runtime/verification/v15/armored-chase.png",
+      "path": "local/browser/runtime/verification/v15/armored-chase.png",
+      "sourceBytes": 550187,
+      "sourceSha256": "3f46cb3b39acd5f85b887cd92ce750302030ab93d006badb4b95e911c4be8153",
+      "bytes": 550187,
+      "sha256": "3f46cb3b39acd5f85b887cd92ce750302030ab93d006badb4b95e911c4be8153",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/browser/runtime/verification/v15/armored-gunner.png",
+      "path": "local/browser/runtime/verification/v15/armored-gunner.png",
+      "sourceBytes": 279904,
+      "sourceSha256": "92a6897e9aa36336eee8dd7eb9d91b0661f202c4d0e2fc2231de435e1c797c44",
+      "bytes": 279904,
+      "sha256": "92a6897e9aa36336eee8dd7eb9d91b0661f202c4d0e2fc2231de435e1c797c44",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/browser/runtime/verification/v15/armored-phone-observation.png",
+      "path": "local/browser/runtime/verification/v15/armored-phone-observation.png",
+      "sourceBytes": 160426,
+      "sourceSha256": "ca83e30f6ad82cc88dd8a573f0d15b584ff0a5fadc1f23c77f76daa81e031929",
+      "bytes": 160426,
+      "sha256": "ca83e30f6ad82cc88dd8a573f0d15b584ff0a5fadc1f23c77f76daa81e031929",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/build-cli.log",
+      "path": "local/build-cli.log.gz",
+      "sourceBytes": 1054,
+      "sourceSha256": "aea863714f17d6494a73b1412a6705cc5e472af7360be7078f50e3712fc32375",
+      "bytes": 346,
+      "sha256": "3cef5e30dc00333d16b343860943cbd5d71e7994bec6462ed5eab6e95cd3311f",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/build-demos.log",
+      "path": "local/build-demos.log.gz",
+      "sourceBytes": 1219,
+      "sourceSha256": "15ab72317b87d025b05171409e154c17d33cbffc9f9e2126f086188489ac524e",
+      "bytes": 429,
+      "sha256": "c502d9f6f5ccc29f3c780b2cdc56e8c0062248d8f32ae8fa1229f5cfe90febd2",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/check-cli.log",
+      "path": "local/check-cli.log.gz",
+      "sourceBytes": 1058,
+      "sourceSha256": "eb46ee8d4b85de917cfae0610ac3f1568c0ecb8e760639d57778bb308de8c8bb",
+      "bytes": 353,
+      "sha256": "255b23d5ba22d8412be2e5c5149c82b4fea2bdc53989565369dd2d8dd89b80ea",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/check-demos.log",
+      "path": "local/check-demos.log.gz",
+      "sourceBytes": 1223,
+      "sourceSha256": "9f608e289af0ae363f38b256083d470bb4b6a8df1374987ab6743c179ed7b750",
+      "bytes": 437,
+      "sha256": "25adf5b22227061fcfb2a04058972c65e734d0eca0bf8ab1983373a795346ae3",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/committed-archive-hashes.json",
+      "path": "local/committed-archive-hashes.json",
+      "sourceBytes": 206,
+      "sourceSha256": "b455e8f7090bc023fc3913516d12715fc3321cb263241f187809539b251d8b37",
+      "bytes": 206,
+      "sha256": "b455e8f7090bc023fc3913516d12715fc3321cb263241f187809539b251d8b37",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/fast-results.json",
+      "path": "local/fast-results.json",
+      "sourceBytes": 18730,
+      "sourceSha256": "f9fb84bf21bdfdd04b782d91f4bd23fd3ba183398965dfd66c880ab7adda6ce2",
+      "bytes": 18730,
+      "sha256": "f9fb84bf21bdfdd04b782d91f4bd23fd3ba183398965dfd66c880ab7adda6ce2",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/fast-source-comparison.json",
+      "path": "local/fast-source-comparison.json",
+      "sourceBytes": 170,
+      "sourceSha256": "b4de0f11108167899c74a3ea5e46e3e51a6453aaf2ae5dd80a8c76c5b158d773",
+      "bytes": 170,
+      "sha256": "b4de0f11108167899c74a3ea5e46e3e51a6453aaf2ae5dd80a8c76c5b158d773",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/focus-fix-association.json",
+      "path": "local/focus-fix-association.json",
+      "sourceBytes": 847,
+      "sourceSha256": "79d43d745bfc3b188c86c71954840bc35774ad5cf2f9cd63c898112235d7067d",
+      "bytes": 847,
+      "sha256": "79d43d745bfc3b188c86c71954840bc35774ad5cf2f9cd63c898112235d7067d",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/test.log",
+      "path": "local/test.log.gz",
+      "sourceBytes": 2655,
+      "sourceSha256": "c2dc942b6fa7522df06fcd7c55f48531ad96a735257064c118cea6a54444e443",
+      "bytes": 894,
+      "sha256": "37570ebf1443591ad6d19dec7e70362f39da82c8cb366aa28bcc36638ae7652c",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/typecheck.log",
+      "path": "local/typecheck.log.gz",
+      "sourceBytes": 61,
+      "sourceSha256": "b2c2f9929a0afeaddfaabbad5f8c17e6d23cbe04d1c8693dd4c94cfc47b1f1ff",
+      "bytes": 78,
+      "sha256": "163dea7433ce63cf6c85fd7811b56bf8c7692ecdd9a506c5bc019022b1230c3f",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/wildlands-build-checks.json",
+      "path": "local/wildlands-build-checks.json",
+      "sourceBytes": 528,
+      "sourceSha256": "5cddf2a1dd45fddf93aa28d284699ce68b5c01ba890650d299681c2c5da3fb19",
+      "bytes": 528,
+      "sha256": "5cddf2a1dd45fddf93aa28d284699ce68b5c01ba890650d299681c2c5da3fb19",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/artifacts-final.json",
+      "path": "native/artifacts-final.json",
+      "sourceBytes": 5359,
+      "sourceSha256": "d042ed832a009a7df53a3015fd57e75d02a98a4f8670058488b30ec2427d2713",
+      "bytes": 5359,
+      "sha256": "d042ed832a009a7df53a3015fd57e75d02a98a4f8670058488b30ec2427d2713",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/checkout-identity.json",
+      "path": "native/checkout-identity.json",
+      "sourceBytes": 715,
+      "sourceSha256": "6c3e4aea8eaba78bdf638b2a64a8713dbb835740e7f2f948b545cddf02b93a09",
+      "bytes": 715,
+      "sha256": "6c3e4aea8eaba78bdf638b2a64a8713dbb835740e7f2f948b545cddf02b93a09",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/extract-log-evidence.py",
+      "path": "native/extract-log-evidence.py.txt.gz",
+      "sourceBytes": 2189,
+      "sourceSha256": "cf4288f428c164162a3c96786598007f9dec6c3b245d2c6ff6c175ffb3eeac6b",
+      "bytes": 1066,
+      "sha256": "0fe7b7cd3d2e98039174a9f803d9b7021907f03ad77d8a8aebc546ccdf828be9",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/jobs-final.json",
+      "path": "native/jobs-final.json",
+      "sourceBytes": 11538,
+      "sourceSha256": "4e564afb19c1cfca5c728fb5ac55b8c1eb209ee53c0ac84109dbf858e0a67b4e",
+      "bytes": 11538,
+      "sha256": "4e564afb19c1cfca5c728fb5ac55b8c1eb209ee53c0ac84109dbf858e0a67b4e",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/log-evidence.json",
+      "path": "native/log-evidence.json",
+      "sourceBytes": 20058,
+      "sourceSha256": "e808a7b1e23e6eb8c183f01e28f31d26a0a2c3d45e213fc600ca6da3c6969881",
+      "bytes": 20058,
+      "sha256": "e808a7b1e23e6eb8c183f01e28f31d26a0a2c3d45e213fc600ca6da3c6969881",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/manifest.json",
+      "path": "native/manifest.json",
+      "sourceBytes": 8821,
+      "sourceSha256": "aa80b4bb6e2f7aa052e45f6ef19bc7a84e79f44efde79c42707df8003a6b82d6",
+      "bytes": 8821,
+      "sha256": "aa80b4bb6e2f7aa052e45f6ef19bc7a84e79f44efde79c42707df8003a6b82d6",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/receipt.json",
+      "path": "native/receipt.json",
+      "sourceBytes": 11062,
+      "sourceSha256": "1000392e26f92fb2ab7f950899672682adf7e74dc4d6c57fa3de0cdf2d87b7ed",
+      "bytes": 11062,
+      "sha256": "1000392e26f92fb2ab7f950899672682adf7e74dc4d6c57fa3de0cdf2d87b7ed",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/registry.json",
+      "path": "native/registry.json",
+      "sourceBytes": 3295,
+      "sourceSha256": "044918e8e04cffd2f8385989d8a17246ef092b26bde51d0e43be738c04e8a343",
+      "bytes": 3295,
+      "sha256": "044918e8e04cffd2f8385989d8a17246ef092b26bde51d0e43be738c04e8a343",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/suites-0.log",
+      "path": "native/suites-0.log.gz",
+      "sourceBytes": 318108,
+      "sourceSha256": "0b629a21a430ffafa84fc36ffdb55a8ba16628f0d85687c36a10c6752d8d6b26",
+      "bytes": 43226,
+      "sha256": "8701d96e17a3d2119ac277ab8c0fe58ad609f51cbf52dbe7d593bbb7343ec120",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/suites-1.log",
+      "path": "native/suites-1.log.gz",
+      "sourceBytes": 311982,
+      "sourceSha256": "3642a1130e72a5bf7619f2d778e21a7c1181589b1bc460ad819969f19c573a17",
+      "bytes": 42301,
+      "sha256": "f33d1dba434027baa194e7cd0adb26c11dd8afc005fa4af68ce8aa46d76ae9fc",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/suites-2.log",
+      "path": "native/suites-2.log.gz",
+      "sourceBytes": 386568,
+      "sourceSha256": "d51e8d3d57faa8f858362db55cb3c4e00d345c756f639eaf94e7b0c4e6992c15",
+      "bytes": 48273,
+      "sha256": "815e41faf648eee4474f4f0393667ed1967099e32decffa2eb719cb1a0a944cb",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/suites-3.log",
+      "path": "native/suites-3.log.gz",
+      "sourceBytes": 316198,
+      "sourceSha256": "e543e917bfa998366ec7bc901c1346bc241f3bdc6b75acd0d838e092459452b7",
+      "bytes": 44420,
+      "sha256": "9cd740bfb379595380dd61645934e97a1bd9f7e27b1be170e1e1fb2e1ca84633",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/suites-4.log",
+      "path": "native/suites-4.log.gz",
+      "sourceBytes": 337503,
+      "sourceSha256": "0d4e2507edf49ad8310bbf440072606a358b5a00a60f3fa1b34368152ad60d30",
+      "bytes": 46331,
+      "sha256": "0c38ba396eed4bb57f1422cede15a474824beaa85ed82d5f7c84091a2939bfa3",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/suites-5.log",
+      "path": "native/suites-5.log.gz",
+      "sourceBytes": 300807,
+      "sourceSha256": "ab3ddf07e490b0aeee45338d04da4cebfab441453235d264a641cf3c1b8d0ab4",
+      "bytes": 41548,
+      "sha256": "1fedaf79db7b8f09aed3c785d66c147bd1e1bf74d59396a52ad5a8727b8e3f13",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/verify.log",
+      "path": "native/verify.log.gz",
+      "sourceBytes": 18552,
+      "sourceSha256": "7b5af660570bb9126f7979de38c293cba56172b6d4f86da04f8f2524d258f850",
+      "bytes": 4479,
+      "sha256": "6cc0d7af7b2ebe4e56aaa1ace711d7750d1822f698720b037940f4b2372e0616",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/workflow-final.json",
+      "path": "native/workflow-final.json",
+      "sourceBytes": 466,
+      "sourceSha256": "2d1541990341335736db6c9f70d69519ded4e5c17f6c10a9122b31bc854ed34a",
+      "bytes": 466,
+      "sha256": "2d1541990341335736db6c9f70d69519ded4e5c17f6c10a9122b31bc854ed34a",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-performance/native-ci-focus/workflows-final.json",
+      "path": "native/workflows-final.json",
+      "sourceBytes": 4865,
+      "sourceSha256": "519cd6c6a88e0eba248c3f5111cd5d9fc2877d7696335332ad914259f74adc76",
+      "bytes": 4865,
+      "sha256": "519cd6c6a88e0eba248c3f5111cd5d9fc2877d7696335332ad914259f74adc76",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/compact-summary.json",
+      "path": "quality/compact-summary.json",
+      "sourceBytes": 538,
+      "sourceSha256": "2fbba7c351d07455db01a5492b04d00f43c48617ab0c073365c24ee263ae7030",
+      "bytes": 538,
+      "sha256": "2fbba7c351d07455db01a5492b04d00f43c48617ab0c073365c24ee263ae7030",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/gdformat.log",
+      "path": "quality/gdformat.log.gz",
+      "sourceBytes": 34,
+      "sourceSha256": "ae47611dc50469dc4f82167e160e8c2921880f781d58b8c268f538b3f7b2e1c4",
+      "bytes": 54,
+      "sha256": "17899730ddd7719e08e552a8f403f050bd4340de0f361c1a9a3b934ddf0a1001",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/gdlint.log",
+      "path": "quality/gdlint.log.gz",
+      "sourceBytes": 27,
+      "sourceSha256": "d2f45ecead8ebe024d64d724cef92d4c7b89f8d0150b30b296320bddb760e4be",
+      "bytes": 47,
+      "sha256": "cb91ad3addc0fd1005e361ccf8a4bcb73f5ea93a0ff87ef26aa6d3c2551e9a31",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/gdradon.log.gz",
+      "path": "quality/gdradon.log.gz",
+      "sourceBytes": 33014,
+      "sourceSha256": "1fa40af2dd3376d24d451cd5b8b0dbf9c22bcf7a6aff01ad13df86db372974dc",
+      "bytes": 33014,
+      "sha256": "1fa40af2dd3376d24d451cd5b8b0dbf9c22bcf7a6aff01ad13df86db372974dc",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/invocation.log",
+      "path": "quality/invocation.log.gz",
+      "sourceBytes": 159,
+      "sourceSha256": "516f4de50ac7adf70e001a305254d51e4d693b4f6147d7c7e38cac70871fc67f",
+      "bytes": 148,
+      "sha256": "8588194d7b7ca8f9653cf2117ac845f628ed4c0f96c404cc1956d29c75a20b7f",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/quality.json.gz",
+      "path": "quality/quality.json.gz",
+      "sourceBytes": 112468,
+      "sourceSha256": "b9e21cba89091c4d3102de45002717fd6a93dc1f946912429eb1d502fe6da940",
+      "bytes": 112468,
+      "sha256": "b9e21cba89091c4d3102de45002717fd6a93dc1f946912429eb1d502fe6da940",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/receipt.json",
+      "path": "quality/receipt.json",
+      "sourceBytes": 629,
+      "sourceSha256": "293ab0822c0336f9493bb9b6597577a7c9474721bb4388fa7af35765d985b8f8",
+      "bytes": 629,
+      "sha256": "293ab0822c0336f9493bb9b6597577a7c9474721bb4388fa7af35765d985b8f8",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/ruff-format.log",
+      "path": "quality/ruff-format.log.gz",
+      "sourceBytes": 27,
+      "sourceSha256": "b75cbfdc648a3350a77e0c7831035d830c486ab9918dbdf3f315551293017f8e",
+      "bytes": 47,
+      "sha256": "2c8cfe662578f5e625329f1edb6db995e320b779405843b61a72a1152eef073e",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/ruff.log",
+      "path": "quality/ruff.log.gz",
+      "sourceBytes": 2,
+      "sourceSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 22,
+      "sha256": "d15254cd9d142b950433cb8d1c0efb328352fa04db90c0f4d6eb2a68dead445f",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/summary.md",
+      "path": "quality/summary.md.txt",
+      "sourceBytes": 2233,
+      "sourceSha256": "c9cda31ae9ea2eaf2b0ec3a2fd47e11e24d9c938597f694ad6522ac9167d15e9",
+      "bytes": 2233,
+      "sha256": "c9cda31ae9ea2eaf2b0ec3a2fd47e11e24d9c938597f694ad6522ac9167d15e9",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/README.md",
+      "path": "runtime/README.md.txt",
+      "sourceBytes": 2409,
+      "sourceSha256": "0d42cf967b9f4246789e99333aa91109248d5d8fa44cc3a392365aabca7e3c1d",
+      "bytes": 2409,
+      "sha256": "0d42cf967b9f4246789e99333aa91109248d5d8fa44cc3a392365aabca7e3c1d",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/checkout-identity.json",
+      "path": "runtime/checkout-identity.json",
+      "sourceBytes": 554,
+      "sourceSha256": "cdf45cc01074eae5892b9c43d6ede6beba963d9f61a7b75a79353092e384f8fc",
+      "bytes": 554,
+      "sha256": "cdf45cc01074eae5892b9c43d6ede6beba963d9f61a7b75a79353092e384f8fc",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/manifest.json",
+      "path": "runtime/original-selection-manifest.json",
+      "sourceBytes": 3040,
+      "sourceSha256": "bebc1c128e5643c4f0f5a1846b61cad04e3258f4116dfd0e7dbdad978fc716eb",
+      "bytes": 3040,
+      "sha256": "bebc1c128e5643c4f0f5a1846b61cad04e3258f4116dfd0e7dbdad978fc716eb",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/compact-summary.json",
+      "path": "runtime/quality/compact-summary.json",
+      "sourceBytes": 538,
+      "sourceSha256": "2fbba7c351d07455db01a5492b04d00f43c48617ab0c073365c24ee263ae7030",
+      "bytes": 538,
+      "sha256": "2fbba7c351d07455db01a5492b04d00f43c48617ab0c073365c24ee263ae7030",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/gdformat.log",
+      "path": "runtime/quality/gdformat.log",
+      "sourceBytes": 34,
+      "sourceSha256": "ae47611dc50469dc4f82167e160e8c2921880f781d58b8c268f538b3f7b2e1c4",
+      "bytes": 34,
+      "sha256": "ae47611dc50469dc4f82167e160e8c2921880f781d58b8c268f538b3f7b2e1c4",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/gdlint.log",
+      "path": "runtime/quality/gdlint.log",
+      "sourceBytes": 27,
+      "sourceSha256": "d2f45ecead8ebe024d64d724cef92d4c7b89f8d0150b30b296320bddb760e4be",
+      "bytes": 27,
+      "sha256": "d2f45ecead8ebe024d64d724cef92d4c7b89f8d0150b30b296320bddb760e4be",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/gdradon.log.gz",
+      "path": "runtime/quality/gdradon.log.gz",
+      "sourceBytes": 33014,
+      "sourceSha256": "1fa40af2dd3376d24d451cd5b8b0dbf9c22bcf7a6aff01ad13df86db372974dc",
+      "bytes": 33014,
+      "sha256": "1fa40af2dd3376d24d451cd5b8b0dbf9c22bcf7a6aff01ad13df86db372974dc",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/invocation.log",
+      "path": "runtime/quality/invocation.log",
+      "sourceBytes": 159,
+      "sourceSha256": "516f4de50ac7adf70e001a305254d51e4d693b4f6147d7c7e38cac70871fc67f",
+      "bytes": 159,
+      "sha256": "516f4de50ac7adf70e001a305254d51e4d693b4f6147d7c7e38cac70871fc67f",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/quality.json.gz",
+      "path": "runtime/quality/quality.json.gz",
+      "sourceBytes": 112468,
+      "sourceSha256": "b9e21cba89091c4d3102de45002717fd6a93dc1f946912429eb1d502fe6da940",
+      "bytes": 112468,
+      "sha256": "b9e21cba89091c4d3102de45002717fd6a93dc1f946912429eb1d502fe6da940",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/receipt.json",
+      "path": "runtime/quality/receipt.json",
+      "sourceBytes": 629,
+      "sourceSha256": "293ab0822c0336f9493bb9b6597577a7c9474721bb4388fa7af35765d985b8f8",
+      "bytes": 629,
+      "sha256": "293ab0822c0336f9493bb9b6597577a7c9474721bb4388fa7af35765d985b8f8",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/ruff-format.log",
+      "path": "runtime/quality/ruff-format.log",
+      "sourceBytes": 27,
+      "sourceSha256": "b75cbfdc648a3350a77e0c7831035d830c486ab9918dbdf3f315551293017f8e",
+      "bytes": 27,
+      "sha256": "b75cbfdc648a3350a77e0c7831035d830c486ab9918dbdf3f315551293017f8e",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/ruff.log",
+      "path": "runtime/quality/ruff.log",
+      "sourceBytes": 2,
+      "sourceSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/quality/summary.md",
+      "path": "runtime/quality/summary.md.txt",
+      "sourceBytes": 2233,
+      "sourceSha256": "c9cda31ae9ea2eaf2b0ec3a2fd47e11e24d9c938597f694ad6522ac9167d15e9",
+      "bytes": 2233,
+      "sha256": "c9cda31ae9ea2eaf2b0ec3a2fd47e11e24d9c938597f694ad6522ac9167d15e9",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/receipt.json",
+      "path": "runtime/receipt.json",
+      "sourceBytes": 9795,
+      "sourceSha256": "92fd5dd8407a5a8bcd47b8e133c28e123a86a03d00c59ad4332d02385b353ef0",
+      "bytes": 9795,
+      "sha256": "92fd5dd8407a5a8bcd47b8e133c28e123a86a03d00c59ad4332d02385b353ef0",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/runtime-linux-job.log.gz",
+      "path": "runtime/runtime-linux-job.log.gz",
+      "sourceBytes": 38486,
+      "sourceSha256": "0780e9ccab2c74d8a9adcead3798377f882abb6b50c0bdb61349a34116df777a",
+      "bytes": 38486,
+      "sha256": "0780e9ccab2c74d8a9adcead3798377f882abb6b50c0bdb61349a34116df777a",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/runtime-terminal-artifacts.json",
+      "path": "runtime/runtime-terminal-artifacts.json",
+      "sourceBytes": 2528,
+      "sourceSha256": "bce3f69d2e4d3ed1799e5740758c80b87c37b00dbef16b27b8f653628d5bb422",
+      "bytes": 2528,
+      "sha256": "bce3f69d2e4d3ed1799e5740758c80b87c37b00dbef16b27b8f653628d5bb422",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/runtime-terminal-jobs.json",
+      "path": "runtime/runtime-terminal-jobs.json",
+      "sourceBytes": 4026,
+      "sourceSha256": "6d15c6bf26cd4a03582d023a6905d096a5b231d9f0326639acd4f3ec01655752",
+      "bytes": 4026,
+      "sha256": "6d15c6bf26cd4a03582d023a6905d096a5b231d9f0326639acd4f3ec01655752",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/runtime-terminal-run.json",
+      "path": "runtime/runtime-terminal-run.json",
+      "sourceBytes": 361,
+      "sourceSha256": "c1fec038d5383ee7237f90c3b06cd64f13740cd0027adff5722296e64b748260",
+      "bytes": 361,
+      "sha256": "c1fec038d5383ee7237f90c3b06cd64f13740cd0027adff5722296e64b748260",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-verification-de06/runtime-windows-job.log.gz",
+      "path": "runtime/runtime-windows-job.log.gz",
+      "sourceBytes": 5169,
+      "sourceSha256": "247f5f463136012c87ab1e25fb44d09f48432da556b93439da7b67ee92e4f47a",
+      "bytes": 5169,
+      "sha256": "247f5f463136012c87ab1e25fb44d09f48432da556b93439da7b67ee92e4f47a",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/artifact-comparison.json",
+      "path": "stability/artifact-comparison.json",
+      "sourceBytes": 670,
+      "sourceSha256": "1b5deb352dec2319ae37db234999b8c80b27da0d0cb12d53173b7e1c9a71c6a8",
+      "bytes": 670,
+      "sha256": "1b5deb352dec2319ae37db234999b8c80b27da0d0cb12d53173b7e1c9a71c6a8",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/associate-commit.py",
+      "path": "stability/associate-commit.py.txt.gz",
+      "sourceBytes": 2228,
+      "sourceSha256": "1d3308789babd9e8f32dd85e07477922151c6d47f4c90a56e1ca22ac7f898473",
+      "bytes": 1020,
+      "sha256": "c07e07882cd1941d7fe14c2da3e5f4f854c22d5c508da28ac053a01e721c505f",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/browser-harness-used.js",
+      "path": "stability/browser-harness-used.js.txt.gz",
+      "sourceBytes": 10022,
+      "sourceSha256": "a464f9b13b46be5a626c628a805960170bbfca74c65fee26d2ea7a4926843bad",
+      "bytes": 3948,
+      "sha256": "9e3e7aed9ad6bd2f60b65b4a245574bc463b54533cb60e8ab5d68c3a8a5497de",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/captures.jsonl",
+      "path": "stability/captures.jsonl.gz",
+      "sourceBytes": 2549,
+      "sourceSha256": "85afb255430b9c3a988f3b16828f7f2c922e41e0ad08ec94791816cead3aeaa7",
+      "bytes": 797,
+      "sha256": "2e073b5d208b31bf29f5b971dd7602f018d7fc63162b8f25e0f5316f845ecac6",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/checkpoint-1.json",
+      "path": "stability/checkpoint-1.json.gz",
+      "sourceBytes": 108022,
+      "sourceSha256": "f01247a180e287654d202ef009e0e18a226564cd91d85c8aecf3f0a46ebc97d1",
+      "bytes": 30744,
+      "sha256": "b282b1dbf0b7df0804788595813dad15c87cd4060044c022e4505981663da6e7",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/checkpoint-11.json",
+      "path": "stability/checkpoint-11.json.gz",
+      "sourceBytes": 95953,
+      "sourceSha256": "bb8bbbf790905564061887ba090158098062778efb807dab878f9e3248e60b95",
+      "bytes": 27329,
+      "sha256": "9c869ee1517a675ce67911d056792f598d5684994cc1d38ffc2ff839c0d30e48",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/checkpoint-13.json",
+      "path": "stability/checkpoint-13.json.gz",
+      "sourceBytes": 110614,
+      "sourceSha256": "507d9ae3cf279b4c98ce69272582cc4c07296afcc37e465bdccc4ccc2d5135cb",
+      "bytes": 31319,
+      "sha256": "a07c3a8038f6bf75272f76ed5ba4c34aa688dbd43c5e87791a61dff3b29c8b54",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/checkpoint-3.json",
+      "path": "stability/checkpoint-3.json.gz",
+      "sourceBytes": 104081,
+      "sourceSha256": "5cf715283c3443c0ead25f230f11d0760ca2cc4935876d140657bf13e5a49f64",
+      "bytes": 29534,
+      "sha256": "405f4744958460e4b900f597f8601eaeef5633e79ef200e6cdb10949be25a14a",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/checkpoint-5.json",
+      "path": "stability/checkpoint-5.json.gz",
+      "sourceBytes": 95828,
+      "sourceSha256": "77fa6bc545253dd84761c512e6445f2590925674cf91049ad74280bac6420f12",
+      "bytes": 27219,
+      "sha256": "a90c360aafc8ceda6e36e7ceee2d76388c40d834ce6d6c1c2e564d2ef58cffa0",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/checkpoint-7.json",
+      "path": "stability/checkpoint-7.json.gz",
+      "sourceBytes": 110931,
+      "sourceSha256": "dc7562d3fb1c80a03a8957d63a0381281524faecc87d82bbf2d551101b1a980f",
+      "bytes": 31478,
+      "sha256": "1fc3ba570d26b06797a4f2a7882b58561af846f95c879e79e480993a31ad6ce0",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/checkpoint-9.json",
+      "path": "stability/checkpoint-9.json.gz",
+      "sourceBytes": 103661,
+      "sourceSha256": "08ba9b0b8ce2b5e82227ad6e38bd3cb8f3d97bb9800a47f70b1cefa48a480b8c",
+      "bytes": 29410,
+      "sha256": "f1879a11709925773b5b16e3d5b88bf55fc4dbb862bbcea86727554fe6acfea5",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/commands.jsonl",
+      "path": "stability/commands.jsonl.gz",
+      "sourceBytes": 79706,
+      "sourceSha256": "71c52c0c1fd1f6de6e864e4910d0a6abc5ac99d663103b7d2102061b2233c974",
+      "bytes": 5540,
+      "sha256": "303862c9aa2f00b65c606b31fa64a9e4dbd43cccd7f1f15a80dc36d7d3f5bcf9",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/committed-association-during.json",
+      "path": "stability/committed-association-during.json",
+      "sourceBytes": 13800,
+      "sourceSha256": "0ce518a83f75d4d9fd1941ef1c81805a72ce57f6b65e94ff6eda0ba5f6b8ff81",
+      "bytes": 13800,
+      "sha256": "0ce518a83f75d4d9fd1941ef1c81805a72ce57f6b65e94ff6eda0ba5f6b8ff81",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/committed-association-final.json",
+      "path": "stability/committed-association-final.json",
+      "sourceBytes": 13800,
+      "sourceSha256": "9664fb1530d96a3d658caff94374e71b7a1a45519b457524b7e14206a5a9904b",
+      "bytes": 13800,
+      "sha256": "9664fb1530d96a3d658caff94374e71b7a1a45519b457524b7e14206a5a9904b",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/compact-report.md",
+      "path": "stability/compact-report.md.txt",
+      "sourceBytes": 4434,
+      "sourceSha256": "ac1ca98565a52a54463881c6c4e10fa1f606add8dd7f40fd0eff7dc8a4753942",
+      "bytes": 4434,
+      "sha256": "ac1ca98565a52a54463881c6c4e10fa1f606add8dd7f40fd0eff7dc8a4753942",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/files.sha256.json",
+      "path": "stability/files.sha256.json",
+      "sourceBytes": 6986,
+      "sourceSha256": "6f1636fef902e4f835a97639660996b247c56872bbe0a84838ff2a2d6c14eca6",
+      "bytes": 6986,
+      "sha256": "6f1636fef902e4f835a97639660996b247c56872bbe0a84838ff2a2d6c14eca6",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/final.png",
+      "path": "stability/final.png",
+      "sourceBytes": 385613,
+      "sourceSha256": "b43a1999ee69f91195075f7e506dbed9d1695b0e2d8a6dc127489b0cb7276f70",
+      "bytes": 385613,
+      "sha256": "b43a1999ee69f91195075f7e506dbed9d1695b0e2d8a6dc127489b0cb7276f70",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/focus-fix-association.json",
+      "path": "stability/focus-fix-association.json",
+      "sourceBytes": 847,
+      "sourceSha256": "79d43d745bfc3b188c86c71954840bc35774ad5cf2f9cd63c898112235d7067d",
+      "bytes": 847,
+      "sha256": "79d43d745bfc3b188c86c71954840bc35774ad5cf2f9cd63c898112235d7067d",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/freeze.json",
+      "path": "stability/freeze.json",
+      "sourceBytes": 6274,
+      "sourceSha256": "98c29e9794afc8a6ed5e4bdca8be073c635aab740be9280b62eb1fb5d19c6164",
+      "bytes": 6274,
+      "sha256": "98c29e9794afc8a6ed5e4bdca8be073c635aab740be9280b62eb1fb5d19c6164",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/identity.json",
+      "path": "stability/identity.json",
+      "sourceBytes": 8691,
+      "sourceSha256": "d595f851f571ab871392bc7c1231f7ede743a813fe95f0a0330197530c85378c",
+      "bytes": 8691,
+      "sha256": "d595f851f571ab871392bc7c1231f7ede743a813fe95f0a0330197530c85378c",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/observations.json",
+      "path": "stability/observations.json.gz",
+      "sourceBytes": 697314,
+      "sourceSha256": "24e812401889c1706770d1157de954a33650baa783423b07feeb213c25a69eb0",
+      "bytes": 50417,
+      "sha256": "2b93df3394f135680f266dc01c77848f56add10b335212c809b96592711da970",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/observe.cjs",
+      "path": "stability/observe.cjs.txt.gz",
+      "sourceBytes": 18217,
+      "sourceSha256": "afcc42e914a2ec3df5390db29c26c28be322978375de9e0a938bace2468e2c4b",
+      "bytes": 6480,
+      "sha256": "b843a11eddf00e9adb893cfbf90021d56d3c402b8b152bf26e17b8139093d990",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/requests.jsonl",
+      "path": "stability/requests.jsonl.gz",
+      "sourceBytes": 136,
+      "sourceSha256": "71f52c80ab64d1c3fb026d3727bb114c060bd52f01768de50a3eb39e340ddce7",
+      "bytes": 138,
+      "sha256": "4f52e30c3b2e08882893aade0c287027e7713c4ac01c65d2871fc3504784b1f8",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-ci-de06/start-capture-review.json",
+      "path": "stability/root-start-capture-review.json",
+      "sourceBytes": 788,
+      "sourceSha256": "93f5d77940cb9100f85fb37d9a69537d3f57b7024e5f743a91cfd21fa4eb7e47",
+      "bytes": 788,
+      "sha256": "93f5d77940cb9100f85fb37d9a69537d3f57b7024e5f743a91cfd21fa4eb7e47",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/run.log",
+      "path": "stability/run.log.gz",
+      "sourceBytes": 25675,
+      "sourceSha256": "7bb586bc4c169bb03cae35f9e0565dcf1db59888db1c08a0e66b5d0afcfd105d",
+      "bytes": 3387,
+      "sha256": "93572b9c55bdefe1d677c23ebabfc22a83970b37d1ed6fdaf020d0e872d9f9ca",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/samples.jsonl",
+      "path": "stability/samples.jsonl.gz",
+      "sourceBytes": 293587,
+      "sourceSha256": "8e7f8530e77f5440fa7696befe96716ffc6e8eca8faaf6a5fd573b5ed4693349",
+      "bytes": 34308,
+      "sha256": "1b14c93055a3eea998a99f836642034ee59d691732756b7b035be9bd699e8d44",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/start.png",
+      "path": "stability/start.png",
+      "sourceBytes": 287708,
+      "sourceSha256": "2612f0ec801cc73f6313deb3cd9bb3e8cf3fbfa2341a5ac9c8caf2837c88ec08",
+      "bytes": 287708,
+      "sha256": "2612f0ec801cc73f6313deb3cd9bb3e8cf3fbfa2341a5ac9c8caf2837c88ec08",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/started.json",
+      "path": "stability/started.json",
+      "sourceBytes": 8779,
+      "sourceSha256": "01395a1af1135df05507a2c76a61a7f2c98e026db9ba2b893134b9685a92ca95",
+      "bytes": 8779,
+      "sha256": "01395a1af1135df05507a2c76a61a7f2c98e026db9ba2b893134b9685a92ca95",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/summarize.cjs",
+      "path": "stability/summarize.cjs.txt.gz",
+      "sourceBytes": 13124,
+      "sourceSha256": "d6d6afb92a525d3c2a222ba8eaa10be88459216f9e05f7bfb58a0fd910870457",
+      "bytes": 4439,
+      "sha256": "aea2531a20f1fbee65d073750eb373b16ee09a4d2290ee162e08969bf8675c62",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/summary.json",
+      "path": "stability/summary.json",
+      "sourceBytes": 39417,
+      "sourceSha256": "2e20cd55fc4be0685cc83b8d5b358f7eed30e86bb36dbddb00eab2251fd04236",
+      "bytes": 39417,
+      "sha256": "2e20cd55fc4be0685cc83b8d5b358f7eed30e86bb36dbddb00eab2251fd04236",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/transitions.jsonl",
+      "path": "stability/transitions.jsonl.gz",
+      "sourceBytes": 3628,
+      "sourceSha256": "0c13868b7c5004c268a7655fdff00a05f0a748b5195998bbb055d2d6db4fcdc0",
+      "bytes": 809,
+      "sha256": "590f26928e2066a6beef29f347c7fbcaaf98ca3fc0b437a102ec177d6aa837d3",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-final-stability-de06/visual-review.json",
+      "path": "stability/visual-review.json",
+      "sourceBytes": 982,
+      "sourceSha256": "7f41eabae7d71e27a5b5a1b80c4fe7bc3134d1eb6c73744b3a580dc042874cb8",
+      "bytes": 982,
+      "sha256": "7f41eabae7d71e27a5b5a1b80c4fe7bc3134d1eb6c73744b3a580dc042874cb8",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-focus-ci-wildlands/artifact-access.json",
+      "path": "wildlands/artifact-access.json",
+      "sourceBytes": 356,
+      "sourceSha256": "099c827650d0510d06b4e80555320acbd3f7112f9f43a10c7379e9690f1f8fce",
+      "bytes": 356,
+      "sha256": "099c827650d0510d06b4e80555320acbd3f7112f9f43a10c7379e9690f1f8fce",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-focus-ci-wildlands/artifact-download.headers",
+      "path": "wildlands/artifact-download.headers.gz",
+      "sourceBytes": 143,
+      "sourceSha256": "93a860b6466ca5d1a512064d87cd5e8c7d9a1be0b5312bcfeb3b4a985a7f1d44",
+      "bytes": 143,
+      "sha256": "53b191b510105d346bcc80592631a99f01c4cdff859ee13e39965a72c0dd7237",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-focus-ci-wildlands/export-job.log",
+      "path": "wildlands/export-job.log.gz",
+      "sourceBytes": 33484,
+      "sourceSha256": "0febb1236ae22307d8b923a70e8e8ed49a435393df73ac63b2020939389ae299",
+      "bytes": 8591,
+      "sha256": "2c1a0939e79f53c7bd42628fca1b5b1f48f183827564de154a49e121760c4108",
+      "gzip": true
+    },
+    {
+      "source": "work/armored-v3-focus-ci-wildlands/export-receipt.json",
+      "path": "wildlands/export-receipt.json",
+      "sourceBytes": 2677,
+      "sourceSha256": "4e03213ba055f03881e02e55847a885dd93bd92370c13929bf8d1de00c34f53a",
+      "bytes": 2677,
+      "sha256": "4e03213ba055f03881e02e55847a885dd93bd92370c13929bf8d1de00c34f53a",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-focus-ci-wildlands/receipt.json",
+      "path": "wildlands/receipt.json",
+      "sourceBytes": 16881,
+      "sourceSha256": "a449e8087c7bd7f904615df6a29182447ebfb55b0341ef2151f9baa385204704",
+      "bytes": 16881,
+      "sha256": "a449e8087c7bd7f904615df6a29182447ebfb55b0341ef2151f9baa385204704",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-focus-ci-wildlands/terminal-artifacts.json",
+      "path": "wildlands/terminal-artifacts.json",
+      "sourceBytes": 3355,
+      "sourceSha256": "48250fccb2c0db00014500fe59418dbfd4ec27350a7425126477fe3afdce9e79",
+      "bytes": 3355,
+      "sha256": "48250fccb2c0db00014500fe59418dbfd4ec27350a7425126477fe3afdce9e79",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-focus-ci-wildlands/terminal-jobs.json",
+      "path": "wildlands/terminal-jobs.json",
+      "sourceBytes": 6299,
+      "sourceSha256": "cca352039058a96a82368e69728510e30ae7d04412878567e930b708c3f794ff",
+      "bytes": 6299,
+      "sha256": "cca352039058a96a82368e69728510e30ae7d04412878567e930b708c3f794ff",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-focus-ci-wildlands/terminal-workflows.json",
+      "path": "wildlands/terminal-workflows.json",
+      "sourceBytes": 4501,
+      "sourceSha256": "767ece16ed5db2425a8ef28ee007e200fafb13ed0034cd6907d921a2d2509494",
+      "bytes": 4501,
+      "sha256": "767ece16ed5db2425a8ef28ee007e200fafb13ed0034cd6907d921a2d2509494",
+      "gzip": false
+    },
+    {
+      "source": "work/armored-v3-focus-ci-wildlands/verify-job.log",
+      "path": "wildlands/verify-job.log.gz",
+      "sourceBytes": 98839,
+      "sourceSha256": "163e85072bc001bf13be3d3bdd02f3c62254f0e1de1e07e0c39e54bcbd927f2f",
+      "bytes": 23004,
+      "sha256": "c437baa5d9d4fe9a26b5575a25e07e9b89db246280cada288f290d8544683f23",
+      "gzip": true
+    }
+  ]
+}

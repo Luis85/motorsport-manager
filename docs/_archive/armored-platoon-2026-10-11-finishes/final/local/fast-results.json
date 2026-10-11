@@ -1,0 +1,820 @@
+{
+  "status": "partial-passed",
+  "passed": 1058,
+  "total": 1058,
+  "suites": [
+    {
+      "name": "rts-mission-editor",
+      "command": [
+        "node",
+        ".generated/test-rts-mission-editor.cjs"
+      ],
+      "result": ".generated/rts-mission-editor-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.75,
+      "passed": 19,
+      "total": 19
+    },
+    {
+      "name": "rts-catalog",
+      "command": [
+        "node",
+        ".generated/test-rts-catalog.cjs"
+      ],
+      "result": ".generated/rts-catalog-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.26,
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "rts-economy",
+      "command": [
+        "node",
+        ".generated/test-rts-economy.cjs"
+      ],
+      "result": ".generated/rts-economy-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.2,
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "name": "rts-production",
+      "command": [
+        "node",
+        ".generated/test-rts-production.cjs"
+      ],
+      "result": ".generated/rts-production-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.08,
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "name": "rts-tools",
+      "command": [
+        "node",
+        ".generated/test-rts-tools.cjs"
+      ],
+      "result": ".generated/rts-tools-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.3,
+      "passed": 10,
+      "total": 10
+    },
+    {
+      "name": "rts-application",
+      "command": [
+        "node",
+        ".generated/test-rts-application.cjs"
+      ],
+      "result": ".generated/rts-application-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.24,
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "name": "pet-catalog",
+      "command": [
+        "node",
+        ".generated/test-pet-catalog.cjs"
+      ],
+      "result": ".generated/pet-catalog-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.08,
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "name": "pet-runtime",
+      "command": [
+        "node",
+        ".generated/test-pet-runtime.cjs"
+      ],
+      "result": ".generated/pet-runtime-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 1.31,
+      "passed": 11,
+      "total": 11
+    },
+    {
+      "name": "pet-application",
+      "command": [
+        "node",
+        ".generated/test-pet-application.cjs"
+      ],
+      "result": ".generated/pet-application-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.08,
+      "passed": 4,
+      "total": 4
+    },
+    {
+      "name": "pet-wardrobe",
+      "command": [
+        "node",
+        ".generated/test-pet-wardrobe.cjs"
+      ],
+      "result": ".generated/pet-wardrobe-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.13,
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "animations",
+      "command": [
+        "node",
+        ".generated/test-animations.cjs"
+      ],
+      "result": "verification/v15/animations-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.06,
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "name": "cold-balancing",
+      "command": [
+        "node",
+        ".generated/test-cold-balancing.cjs"
+      ],
+      "result": ".generated/cold-balancing-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 4.77,
+      "passed": 23,
+      "total": 23
+    },
+    {
+      "name": "renderer-scene-2d",
+      "command": [
+        "node",
+        ".generated/test-renderer-scene-2d.cjs"
+      ],
+      "result": ".generated/renderer-scene-2d-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.18,
+      "passed": 10,
+      "total": 10
+    },
+    {
+      "name": "construction",
+      "command": [
+        "node",
+        ".generated/test-construction.cjs"
+      ],
+      "result": ".generated/construction-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 4.05,
+      "passed": 12,
+      "total": 12
+    },
+    {
+      "name": "renderers",
+      "command": [
+        "node",
+        ".generated/test-renderers.cjs"
+      ],
+      "result": ".generated/renderer-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.2,
+      "passed": 16,
+      "total": 16
+    },
+    {
+      "name": "canvas-renderer",
+      "command": [
+        "node",
+        ".generated/test-canvas-renderer.cjs"
+      ],
+      "result": ".generated/canvas-renderer-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.33,
+      "passed": 29,
+      "total": 29
+    },
+    {
+      "name": "storage-clock",
+      "command": [
+        "node",
+        ".generated/test-storage-clock.cjs"
+      ],
+      "result": ".generated/storage-clock-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.07,
+      "passed": 15,
+      "total": 15
+    },
+    {
+      "name": "gate-integrity",
+      "command": [
+        "node",
+        ".generated/test-gate-integrity.cjs"
+      ],
+      "result": ".generated/gate-integrity-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 2.57,
+      "passed": 31,
+      "total": 31
+    },
+    {
+      "name": "behavior-tree",
+      "command": [
+        "node",
+        ".generated/test-behavior-tree.cjs"
+      ],
+      "result": ".generated/behavior-tree-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.06,
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "content-boundary",
+      "command": [
+        "node",
+        ".generated/test-content-boundary.cjs"
+      ],
+      "result": ".generated/content-boundary-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 2.33,
+      "passed": 23,
+      "total": 23
+    },
+    {
+      "name": "definition-source",
+      "command": [
+        "node",
+        ".generated/test-definition-source.cjs"
+      ],
+      "result": ".generated/definition-source-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.41,
+      "passed": 12,
+      "total": 12
+    },
+    {
+      "name": "assets",
+      "command": [
+        "node",
+        ".generated/test-assets.cjs"
+      ],
+      "result": ".generated/asset-catalog-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 12.1,
+      "passed": 25,
+      "total": 25
+    },
+    {
+      "name": "creatures",
+      "command": [
+        "node",
+        ".generated/test-creatures.cjs"
+      ],
+      "result": ".generated/creature-catalog-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 2.38,
+      "passed": 24,
+      "total": 24
+    },
+    {
+      "name": "ecs-core",
+      "command": [
+        "node",
+        ".generated/test-ecs.cjs"
+      ],
+      "result": ".generated/ecs-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.09,
+      "passed": 19,
+      "total": 19
+    },
+    {
+      "name": "simulation-profile",
+      "command": [
+        "node",
+        ".generated/test-simulation-profile.cjs"
+      ],
+      "result": ".generated/simulation-profile-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.2,
+      "passed": 19,
+      "total": 19
+    },
+    {
+      "name": "scene-environment",
+      "command": [
+        "node",
+        ".generated/test-scene-environment.cjs"
+      ],
+      "result": ".generated/scene-environment-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.07,
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "name": "game-settings",
+      "command": [
+        "node",
+        ".generated/test-game-settings.cjs"
+      ],
+      "result": ".generated/game-settings-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 2.02,
+      "passed": 13,
+      "total": 13
+    },
+    {
+      "name": "game-settings-ui",
+      "command": [
+        "node",
+        ".generated/test-game-settings-ui.cjs"
+      ],
+      "result": ".generated/game-settings-ui-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.07,
+      "passed": 12,
+      "total": 12
+    },
+    {
+      "name": "interaction-ui",
+      "command": [
+        "node",
+        ".generated/test-interaction-ui.cjs"
+      ],
+      "result": ".generated/interaction-ui-results.json",
+      "timeout": 60,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.08,
+      "passed": 12,
+      "total": 12
+    },
+    {
+      "name": "engine-composition",
+      "command": [
+        "node",
+        ".generated/test-engine-composition.cjs"
+      ],
+      "result": ".generated/engine-composition-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 1.45,
+      "passed": 30,
+      "total": 30
+    },
+    {
+      "name": "ecs-activity",
+      "command": [
+        "node",
+        ".generated/test-ecs-activity.cjs"
+      ],
+      "result": ".generated/ecs-activity-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.08,
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "name": "ecs-world",
+      "command": [
+        "node",
+        ".generated/test-ecs-world.cjs"
+      ],
+      "result": ".generated/ecs-world-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.07,
+      "passed": 24,
+      "total": 24
+    },
+    {
+      "name": "ecs-economy",
+      "command": [
+        "node",
+        ".generated/test-economy-ecs.cjs"
+      ],
+      "result": ".generated/economy-ecs-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.09,
+      "passed": 15,
+      "total": 15
+    },
+    {
+      "name": "ecs-integration",
+      "command": [
+        "node",
+        ".generated/test-ecs-integration.cjs"
+      ],
+      "result": ".generated/ecs-integration-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.76,
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "ecs-world-integration",
+      "command": [
+        "node",
+        ".generated/test-ecs-world-integration.cjs"
+      ],
+      "result": ".generated/ecs-world-integration-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.52,
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "name": "ecs-economy-integration",
+      "command": [
+        "node",
+        ".generated/test-economy-integration.cjs"
+      ],
+      "result": ".generated/economy-integration-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.45,
+      "passed": 9,
+      "total": 9
+    },
+    {
+      "name": "presentation",
+      "command": [
+        "node",
+        ".generated/test-presentation.cjs"
+      ],
+      "result": ".generated/presentation-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.57,
+      "passed": 49,
+      "total": 49
+    },
+    {
+      "name": "pause-policy",
+      "command": [
+        "node",
+        ".generated/test-pause-policy.cjs"
+      ],
+      "result": ".generated/pause-policy-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.23,
+      "passed": 53,
+      "total": 53
+    },
+    {
+      "name": "domain",
+      "command": [
+        "node",
+        ".generated/test-domain.cjs"
+      ],
+      "result": ".generated/domain-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 3.61,
+      "passed": 86,
+      "total": 86
+    },
+    {
+      "name": "runtime-optionality",
+      "command": [
+        "node",
+        ".generated/test-runtime-optionality.cjs"
+      ],
+      "result": ".generated/runtime-optionality-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.77,
+      "passed": 13,
+      "total": 13
+    },
+    {
+      "name": "content-provider",
+      "command": [
+        "node",
+        ".generated/test-content-provider.cjs"
+      ],
+      "result": ".generated/content-provider-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 1.46,
+      "passed": 7,
+      "total": 7
+    },
+    {
+      "name": "game-folders",
+      "command": [
+        "node",
+        ".generated/test-game-folders.cjs"
+      ],
+      "result": ".generated/game-folders-results.json",
+      "timeout": 240,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 9.28,
+      "passed": 16,
+      "total": 16
+    },
+    {
+      "name": "business-process",
+      "command": [
+        "node",
+        ".generated/test-process.cjs"
+      ],
+      "result": ".generated/process-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 33.56,
+      "passed": 80,
+      "total": 80
+    },
+    {
+      "name": "business-process-bpmn",
+      "command": [
+        "node",
+        ".generated/test-process-bpmn.cjs"
+      ],
+      "result": ".generated/process-bpmn-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 3.38,
+      "passed": 31,
+      "total": 31
+    },
+    {
+      "name": "business-process-analysis",
+      "command": [
+        "node",
+        ".generated/test-process-analysis.cjs"
+      ],
+      "result": ".generated/process-analysis-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 24.6,
+      "passed": 110,
+      "total": 110
+    },
+    {
+      "name": "generate",
+      "command": [
+        "node",
+        ".generated/test-generate.cjs"
+      ],
+      "result": ".generated/generate-results.json",
+      "timeout": 180,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 29.58,
+      "passed": 13,
+      "total": 13
+    },
+    {
+      "name": "armored-admission",
+      "command": [
+        "node",
+        ".generated/test-armored-admission.cjs"
+      ],
+      "result": ".generated/armored-admission-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.89,
+      "passed": 6,
+      "total": 6
+    },
+    {
+      "name": "armored-runtime",
+      "command": [
+        "node",
+        ".generated/test-armored-runtime.cjs"
+      ],
+      "result": ".generated/armored-runtime-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.21,
+      "passed": 11,
+      "total": 11
+    },
+    {
+      "name": "armored-combat",
+      "command": [
+        "node",
+        ".generated/test-armored-combat.cjs"
+      ],
+      "result": ".generated/armored-combat-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.12,
+      "passed": 17,
+      "total": 17
+    },
+    {
+      "name": "armored-physics",
+      "command": [
+        "node",
+        ".generated/test-armored-physics.cjs"
+      ],
+      "result": ".generated/armored-physics-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.12,
+      "passed": 10,
+      "total": 10
+    },
+    {
+      "name": "armored-combat-v2",
+      "command": [
+        "node",
+        ".generated/test-armored-combat-v2.cjs"
+      ],
+      "result": ".generated/armored-combat-v2-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.14,
+      "passed": 12,
+      "total": 12
+    },
+    {
+      "name": "armored-logistics",
+      "command": [
+        "node",
+        ".generated/test-armored-logistics.cjs"
+      ],
+      "result": ".generated/armored-logistics-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.45,
+      "passed": 13,
+      "total": 13
+    },
+    {
+      "name": "armored-navigation",
+      "command": [
+        "node",
+        ".generated/test-armored-navigation.cjs"
+      ],
+      "result": ".generated/armored-navigation-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.55,
+      "passed": 14,
+      "total": 14
+    },
+    {
+      "name": "armored-actions",
+      "command": [
+        "node",
+        ".generated/test-armored-actions.cjs"
+      ],
+      "result": ".generated/armored-actions-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 0.39,
+      "passed": 8,
+      "total": 8
+    },
+    {
+      "name": "armored-visual-resources",
+      "command": [
+        "node",
+        ".generated/test-armored-visual-resources.cjs"
+      ],
+      "result": ".generated/armored-visual-resources-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 10.99,
+      "passed": 10,
+      "total": 10
+    },
+    {
+      "name": "asset-finish",
+      "command": [
+        "node",
+        ".generated/test-asset-finish.cjs"
+      ],
+      "result": ".generated/asset-finish-results.json",
+      "timeout": 120,
+      "kind": "node",
+      "exitCode": 0,
+      "seconds": 1.95,
+      "passed": 9,
+      "total": 9
+    }
+  ],
+  "browserIncluded": false,
+  "complete": false,
+  "selection": {
+    "tier": "fast",
+    "noBrowser": false,
+    "only": null,
+    "shard": null,
+    "suites": 56
+  },
+  "execution": {
+    "jobs": 3,
+    "browserJobs": 2,
+    "keepGoing": false,
+    "wallSeconds": 88.38
+  },
+  "registrySha256": "ca65f3da7e0ab0e0abe4fe1e5cf5f3be0c8e87a20d6475cf7cd18427b9975977",
+  "expectationsSha256": "67a3eab1f774a97f07e918bc94c71ad695d407566006a96b6140d4336a00e9c9",
+  "sourceSha256": "146fb136009a05cdce7140330378ab4bd008d00663aef780813505f934686c0d",
+  "startedAt": "2026-10-11T16:17:14.827Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "architecture": "x64",
+    "chromium": "playwright-bundled",
+    "cores": 4
+  },
+  "htmlSha256": "ae608d24c61a587a2329c1b6fb375121d622e8d08c19c7c0ded6e60e8d1d2b27",
+  "htmlBytes": 24812177,
+  "finishedAt": "2026-10-11T16:18:43.207Z"
+}

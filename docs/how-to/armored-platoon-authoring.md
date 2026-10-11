@@ -5,6 +5,23 @@ the Model Forge and Scene Forge source projects as the editable asset source.
 The assets were authored independently under the repository MIT license;
 [provenance](../concepts/armored-platoon/PROVENANCE.md) explains their limits.
 
+The current build is `de06f7c3`; its source-bound verification is in the
+[development checkpoint](../reference/armored-platoon.md) and
+[final evidence](../_archive/armored-platoon-2026-10-11-finishes/final/README.md).
+The generator optimization retains every `forge-finish-v1` pixel, descriptor and
+resource cap. It precomputes three temporary Float64 fields (384 KiB per call,
+plus small tables), captures realm-local Math functions and avoids per-pixel
+arrays. This does not change authored colors, UVs, material multipliers or the
+bounded lossless image transport. Earlier validation results below retain their
+own implementation identities; rerun the toolchain after changing content.
+
+Character Studio now guards queued dialog-close callbacks so they respect later
+keyboard focus and reopened dialogs. The
+[focus diagnosis](../_archive/armored-platoon-2026-10-11-finishes/character-focus/README.md)
+records the reproduced race and corrected authoring journey. This follow-up
+changes only Character Studio UI, its journey test and its generated executable;
+the Wildlands/Forge inputs, game folders and generated Armored demo are unchanged.
+
 ## Edit a tank safely
 
 Read the [Model Forge handbook](../reference/model-forge-cli.md). Discover its
@@ -194,7 +211,8 @@ refinement or its regenerated browser artifact.
 
 ## Current fidelity boundary
 
-These remain stylized original studies. Revision 3 has 7,508 triangles and 213
+These remain stylized original studies with development-level visual fidelity.
+Revision 3 has 7,508 triangles and 213
 visible meshes for the Sherman, and 6,572 triangles and 224 visible meshes for
 the Panzer. Alongside the road wheels, track shoes, turret profiles, side skirts/
 bogies, cupolas, optics, vents, antennae and gun parts, they now include driver
@@ -209,9 +227,10 @@ or AAA acceptance. The models do not provide photogrammetry, bespoke UV-atlas
 painting, LODs, tank interiors, crew animation, continuous deforming tracks or
 reference-quality vehicle models. Primitive UV seams and inconsistent texture
 density remain visible limits.
-Character Studio's creature/outfit pipeline does not provide WWII crew and was
-read but not used to manufacture a false crew-animation claim. Production materials,
-crew tooling, mission compilation and measured reference parity remain work.
+Character Studio's creature/outfit preview now consumes the shared native finish
+generator, with catalog, PBR channel and disposal regression coverage. It does
+not provide WWII crew assets or crew animation. Production materials, crew
+tooling, mission compilation and measured reference parity remain work.
 
 The reusable scene bridge is
 `node source/scene-forge/scripts/armored-platoon-scene.mjs --catalog <catalog.json>

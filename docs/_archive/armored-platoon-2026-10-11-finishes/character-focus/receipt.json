@@ -1,0 +1,87 @@
+{
+  "historical": true,
+  "baselineCommit": "e9c5571cd116723e285dad5af1bb9adbb8badd3d",
+  "implementationCommit": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+  "implementationTree": "b63851baa951f93b87859c222d706e00cf6bf0f6",
+  "failedCi": {
+    "run": 38154995981,
+    "job": 114516090614,
+    "checkout": "ac15a782eccec6a59a8707660d05cd5be14a5d02",
+    "units": 52,
+    "integration": 2,
+    "browserPassed": 2,
+    "browserTotal": 3,
+    "failure": "journey.test.ts:182 expected /Coat/ but observed Identity; standalone smoke skipped."
+  },
+  "diagnosis": "Native Escape closes the modal and restores its invoker before dispatching a queued close event. A deliberate chapter focus between those moments was overridden by the shared close listener; Enter then reopened Accessibility instead of navigating to Coat. Passive event records demonstrate this order.",
+  "before": {
+    "boundedTransitions": 20,
+    "correctCoat": 17,
+    "incorrectAccessibilityReopens": 3,
+    "trace": "modal-loop-trace.json.gz",
+    "control": "The full unchanged journey passed once locally; bounded isolated modal transitions exposed the timing defect."
+  },
+  "after": {
+    "boundedTransitions": 20,
+    "correctCoat": 20,
+    "incorrectAccessibilityReopens": 0,
+    "trace": "modal-loop-fixed-trace.json.gz"
+  },
+  "fix": "Ignore obsolete close callbacks when the modal has reopened or a connected outside element holds newer focus. Retain original invoker and returnAction restoration when focus remains in the closed dialog/body or original invoker.",
+  "regression": "Original three E2E tests and Escape/chapter Enter/Coat assertion retained. Existing journey additionally exercises native close then deliberate focus and native close then reopen before queued event delivery, with no sleeps or timeout changes.",
+  "localChecks": {
+    "types": "passed",
+    "freshness": "passed",
+    "units": {
+      "passed": 52,
+      "total": 52,
+      "durationMs": 43422.441318
+    },
+    "standaloneHandoff": "passed, both identity lengths and all three model variants",
+    "integration": {
+      "passed": 2,
+      "total": 2,
+      "durationMs": 12885.15147
+    },
+    "browser": {
+      "passed": 3,
+      "total": 3,
+      "durationMs": 39608.171523
+    },
+    "whitespace": "passed"
+  },
+  "environment": {
+    "node": "v24.19.0",
+    "playwright": "1.63.0",
+    "browser": "Chromium151.0.7922.173 Debian13",
+    "executable": "/usr/bin/chromium",
+    "setting": "CHARACTER_STUDIO_CHROMIUM_PATH=/usr/bin/chromium",
+    "cleanup": "All browser finally blocks completed, Node exited0, process scan found no active Chromium or Character Studio server."
+  },
+  "files": [
+    {
+      "path": "source/character-studio/src/ui/dialogs.ts",
+      "bytes": 6758,
+      "sha256": "d52ee6222a036578af39c18d2e6f07fe6d7d8a22d4e9dd753ab0eceeee89bf0b",
+      "matchesCommittedBytes": true
+    },
+    {
+      "path": "source/character-studio/tests/e2e/journey.test.ts",
+      "bytes": 14185,
+      "sha256": "81565197db454d29ee82cd02187b18648aee9e64fdd1bd40d8b9032791640104",
+      "matchesCommittedBytes": true
+    },
+    {
+      "path": "bin/character-studio",
+      "bytes": 1650684,
+      "sha256": "deed938f3d4cdc4310b41944ad511bee0c2fa92855f410960aeee257bcd272b3",
+      "matchesCommittedBytes": true
+    }
+  ],
+  "limitations": [
+    "Local browser151 differs from CI installed153; local reproduction establishes the actual queued-close product race, not exact CI browser identity.",
+    "The failed CI log identifies installed Chromium153 but does not identify selected executable/browser.version.",
+    "Final committed-source CI is recorded separately; local checks were run on these exact file bytes before/during commit creation.",
+    "The retained modal-loop-prelaunch-parse-error.log is a diagnostic scratch-file syntax mistake before browser launch, not a product failure."
+  ]
+}

@@ -1,0 +1,51 @@
+# Thirty-minute software-browser stability observation
+
+Committed freeze/launch checkout HEAD: de06f7c353e0a170f8f9f9681a28f2544c9393c2. This identity belongs to this new observation; the earlier 09ed run remains separate.
+Separately proven implementation: de06f7c353e0a170f8f9f9681a28f2544c9393c2, tree b63851baa951f93b87859c222d706e00cf6bf0f6; frozen/working/committed artifact bytes and all tracked source inventory entries match (committed-association-final.json).
+Frozen artifact: 4439139 bytes, SHA-256 783d8dc2fba68251420b2ee61b477677994b8839be62f0660f03f0c49ceda883.
+Browser: Chromium 151.0.7922.173; Playwright 1.63.0; SwiftShader; 960×600.
+Native wall-time observation: 1800.000 seconds, 2026-10-11T16:33:00.839Z to 2026-10-11T17:03:00.839Z; planned duration completed: true.
+
+Page errors: 0. Console errors: 0. Console warnings: 0. Observation failures: 0.
+Accepted public commands: 375/375. Recorded transitions: 14. Frozen artifact bytes unchanged: true.
+
+## Mission intervals
+
+| Mission | Sampled wall interval (s) | First → last tick | First → last simulation seconds | Samples |
+|---|---:|---:|---:|---:|
+| crossroads | 1.47–227.21 | 18 → 4962 | 0.300 → 82.700 | 16 |
+| pine-ridge | 243.61–469.14 | 18 → 5820 | 0.300 → 97.000 | 16 |
+| iron-counterattack | 484.18–709.54 | 42 → 6134 | 0.700 → 102.233 | 16 |
+| crossroads | 724.57–949.94 | 60 → 5568 | 1.000 → 92.800 | 16 |
+| pine-ridge | 964.98–1191.15 | 55 → 5844 | 0.917 → 97.400 | 16 |
+| iron-counterattack | 1206.18–1431.42 | 96 → 6148 | 1.600 → 102.467 | 16 |
+| crossroads | 1446.44–1672.80 | 108 → 5590 | 1.800 → 93.167 | 16 |
+| pine-ridge | 1687.81–1800.01 | 139 → 3040 | 2.317 → 50.667 | 9 |
+
+These are separate sampled intervals. Tick counts are not added across resets. The observations do not measure FPS.
+
+## Resource observations
+
+CDP JavaScript heap used: first 20374208, final 31212664, sampled minimum 16340864, maximum 48024628 bytes. No garbage collection was forced; these values do not establish leak freedom.
+DOM nodes: {"first":505,"last":507,"minimum":501,"maximum":934}. Documents: {"first":1,"last":1,"minimum":1,"maximum":1}. JavaScript event listeners: {"first":48,"last":48,"minimum":48,"maximum":61}.
+GPU memory, resource residency and renderer geometry/texture counters were unavailable. Snapshot entity counts represent visible detached projections, not total ECS allocations.
+
+## Warnings and errors
+
+
+Actual order-reason sample counts: {"No order reason":121,"Holding":114,"Advancing":58,"Aligning hull":59,"No safe route":8,"On station":2,"Route obstructed":1}. These count actor snapshots, not distinct incidents or durations; blocked/recovery contexts are retained in summary.json. Actual sampled statuses and readiness reasons are retained there as well. No earlier-run totals are reused; raw observations are unchanged.
+
+## Scope and retention
+
+- Software SwiftShader at 960x600; no hardware performance conclusion.
+- Entity counts are detached visible projection counts, not total live ECS or GPU allocations.
+- JS heap is CDP heap usage without forced garbage collection; fluctuations do not establish leak freedom.
+- GPU memory, resource residency, renderer geometry/texture counters, hardware VRAM and thermal/power data are unavailable.
+- Native RAF elapsed times are retained; no private ticks, RAF replacement, altered content, or fabricated checkpoint state.
+- This bounded observation is not full Q03 acceptance or reference-fidelity evidence.
+- Scripted workload calls only. Automatic shell control/aim command responses were not instrumented or included in these totals.
+- Repair and resupply actions were not part of this thirty-minute workload; their separate integrated browser checks are distinct evidence.
+- Workload: scripted driving near deployment, aiming/main-gun fire, platoon follow/hold orders, unmodified checkpoint restores and mission switches. No multiplayer, device loss, full campaign completion or worst-case crowded-scene coverage.
+- All local raw records, unmodified checkpoints, served demo bytes, exact scripts and PNG captures are retained under work/armored-v3-final-stability-de06. Root may archive a selected subset with explicit scope.
+
+Cleanup: [{"name":"cdp","closed":true,"at":"2026-10-11T17:03:02.142Z"},{"name":"context","closed":true,"at":"2026-10-11T17:03:02.165Z"},{"name":"browser","closed":true,"at":"2026-10-11T17:03:02.460Z"}]

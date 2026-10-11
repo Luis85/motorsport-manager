@@ -1,0 +1,272 @@
+{
+  "source_commit": "e9c5571cd116723e285dad5af1bb9adbb8badd3d",
+  "ci_checkout_commit": "ac15a782eccec6a59a8707660d05cd5be14a5d02",
+  "equal_git_tree": "61796691e66afcc440731dab2305ad72579e8b77",
+  "source_equivalence_receipt": "checkout-identity.json",
+  "runtime_confidence": {
+    "run": {
+      "id": 38154996009,
+      "name": "Runtime confidence",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "run_number": 708,
+      "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38154996009/jobs",
+      "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38154996009/logs",
+      "workflow_id": 369299594
+    },
+    "jobs": [
+      {
+        "id": 114516095436,
+        "name": "reproduction",
+        "status": "completed",
+        "conclusion": "success",
+        "run_id": 38154996009,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Install and identify the pinned reproduction engine",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Verify documentation links and navigation",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Verify developer tooling contracts with the pinned native engine",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 5
+          },
+          {
+            "name": "Exercise recorded boundary diagnostics",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Reproduce the deliberate test defect in a second isolated process",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 7
+          },
+          {
+            "name": "Retain diagnostic evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 8
+          },
+          {
+            "name": "Retain exact developer reproduction toolchain",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 9
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 18
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 19
+          }
+        ]
+      },
+      {
+        "id": 114516095611,
+        "name": "Native toolbox SDK (Windows)",
+        "status": "completed",
+        "conclusion": "cancelled",
+        "run_id": 38154996009,
+        "logs_url": null,
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 1
+          },
+          {
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 2
+          },
+          {
+            "name": "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 3
+          },
+          {
+            "name": "Install checksum-verified pinned Windows editor",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 4
+          },
+          {
+            "name": "Exercise native SDK, strict transport and process-family cleanup",
+            "status": "completed",
+            "conclusion": "cancelled",
+            "number": 5
+          },
+          {
+            "name": "Retain exact-source Windows SDK evidence",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 6
+          },
+          {
+            "name": "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+            "status": "completed",
+            "conclusion": "skipped",
+            "number": 11
+          },
+          {
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 12
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success",
+            "number": 13
+          }
+        ]
+      }
+    ],
+    "observed_log_counts": {
+      "reproduction_checks": 19,
+      "script_loads": 453
+    },
+    "linux_full_python_count": null,
+    "windows_toolbox_count": null,
+    "windows_balance_count": null,
+    "limit": "Linux full pinned Python command succeeded but its aggregate result was redirected to the uploaded artifact. Windows native test step was cancelled after newer de06 head push; not a Windows pass or full workflow pass. No exact redirected totals inferred; no artifact download attempted after prior-session HTTP403 boundary."
+  },
+  "quality": {
+    "analysis_complete": true,
+    "files": 1812,
+    "findings_by_rule": {
+      "long-line": 6927
+    },
+    "tools": [
+      {
+        "name": "ruff",
+        "status": "clean",
+        "exit_code": 0
+      },
+      {
+        "name": "ruff-format",
+        "status": "clean",
+        "exit_code": 0
+      },
+      {
+        "name": "gdlint",
+        "status": "clean",
+        "exit_code": 0
+      },
+      {
+        "name": "gdformat",
+        "status": "clean",
+        "exit_code": 0
+      },
+      {
+        "name": "gdradon",
+        "status": "clean",
+        "exit_code": 0
+      }
+    ]
+  },
+  "quality_receipt": "quality/receipt.json",
+  "artifacts": [
+    {
+      "id": 11707759161,
+      "name": "pinned-linux-reproduction-toolchain",
+      "size_in_bytes": 77832310,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707759161",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707759161/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:30:03Z",
+      "expires_at": "2026-10-18T16:30:01Z",
+      "updated_at": "2026-10-11T16:30:03Z",
+      "digest": "sha256:7ed2e61703f4c504c9c91fa29f6fb1f1ff1e54f075c9907def45129e02f6c31d",
+      "workflow_run": {
+        "id": 38154996009,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "e9c5571cd116723e285dad5af1bb9adbb8badd3d"
+      }
+    },
+    {
+      "id": 11707579588,
+      "name": "toolbox-windows-evidence",
+      "size_in_bytes": 5234,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707579588",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707579588/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:32:23Z",
+      "expires_at": "2026-10-25T16:32:22Z",
+      "updated_at": "2026-10-11T16:32:23Z",
+      "digest": "sha256:f63a737716e11ef1bdda5d670c973f70dbe58c16cc804a78da786d69be0fc1fe",
+      "workflow_run": {
+        "id": 38154996009,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "e9c5571cd116723e285dad5af1bb9adbb8badd3d"
+      }
+    },
+    {
+      "id": 11707484749,
+      "name": "runtime-confidence-evidence",
+      "size_in_bytes": 266953,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707484749",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707484749/zip",
+      "expired": false,
+      "created_at": "2026-10-11T16:30:00Z",
+      "expires_at": "2026-10-25T16:30:00Z",
+      "updated_at": "2026-10-11T16:30:00Z",
+      "digest": "sha256:a8587d7d371fff315f60e5ad6c339d2552d587d3d0601ad5f351f390313ffa07",
+      "workflow_run": {
+        "id": 38154996009,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "e9c5571cd116723e285dad5af1bb9adbb8badd3d"
+      }
+    }
+  ],
+  "logs": {
+    "runtime-linux-job.log": {
+      "bytes": 285703,
+      "sha256": "3836f1b61126854f8c7b2ebcd999e855d6d31d5e1a8a90f1db23a987a578daa7"
+    },
+    "runtime-windows-job.log": {
+      "bytes": 24897,
+      "sha256": "8f6ab486a7623f1411155e649de0229189b55e10d53e251a39bace17938f7e25"
+    }
+  }
+}

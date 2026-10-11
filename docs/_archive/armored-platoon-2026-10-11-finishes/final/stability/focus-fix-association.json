@@ -1,0 +1,27 @@
+{
+  "head": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+  "tree": "b63851baa951f93b87859c222d706e00cf6bf0f6",
+  "priorBrowserHead": "e9c5571cd116723e285dad5af1bb9adbb8badd3d",
+  "unchangedPaths": [
+    "source/wildlands",
+    "source/model-forge",
+    "source/scene-forge",
+    "bin/wildlands",
+    "bin/model-forge",
+    "bin/scene-forge",
+    "bin/process-studio",
+    "demos",
+    "docs/concepts"
+  ],
+  "method": "git diff between commits is empty for listed inputs; browser artifact/test hashes retained separately",
+  "artifact": {
+    "path": "demos/armored-platoon.html",
+    "bytes": 4439139,
+    "sha256": "783d8dc2fba68251420b2ee61b477677994b8839be62f0660f03f0c49ceda883"
+  },
+  "changedFiles": [
+    "bin/character-studio",
+    "source/character-studio/src/ui/dialogs.ts",
+    "source/character-studio/tests/e2e/journey.test.ts"
+  ]
+}

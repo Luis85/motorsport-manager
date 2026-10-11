@@ -1,0 +1,265 @@
+{
+  "recordedAt": "2026-10-11T16:26:24.581992+00:00",
+  "implementationCommit": "e9c5571cd116723e285dad5af1bb9adbb8badd3d",
+  "tree": "61796691e66afcc440731dab2305ad72579e8b77",
+  "committedFreezeHead": "e9c5571cd116723e285dad5af1bb9adbb8badd3d",
+  "artifact": {
+    "committedBytes": 4439139,
+    "committedSha256": "783d8dc2fba68251420b2ee61b477677994b8839be62f0660f03f0c49ceda883",
+    "matchesFrozenDemo": true,
+    "workingDemoMatchesCommit": true
+  },
+  "frozenTrackedSourceFilesMatch": true,
+  "sourceFiles": [
+    {
+      "file": "docs/concepts/armored-platoon/content/catalog.json",
+      "freezeSha256": "0bc1e6626c153fcacbfc424534fad02cf9f38128952862715532d9cd6b249afc",
+      "committedSha256": "0bc1e6626c153fcacbfc424534fad02cf9f38128952862715532d9cd6b249afc",
+      "currentSha256": "0bc1e6626c153fcacbfc424534fad02cf9f38128952862715532d9cd6b249afc",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "docs/concepts/armored-platoon/content/visuals.json",
+      "freezeSha256": "8e406de65dd806954ce24a691da434fdfbdeac93e0f4901cb800445348be19c5",
+      "committedSha256": "8e406de65dd806954ce24a691da434fdfbdeac93e0f4901cb800445348be19c5",
+      "currentSha256": "8e406de65dd806954ce24a691da434fdfbdeac93e0f4901cb800445348be19c5",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/model-forge/src/kernel/application/finish-pattern.ts",
+      "freezeSha256": "53fd6b90a5763aa5784d4795179e7571a70151aacd6a81cbc38c923688f71aeb",
+      "committedSha256": "53fd6b90a5763aa5784d4795179e7571a70151aacd6a81cbc38c923688f71aeb",
+      "currentSha256": "53fd6b90a5763aa5784d4795179e7571a70151aacd6a81cbc38c923688f71aeb",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/model-forge/src/kernel/application/littlewild-materials.ts",
+      "freezeSha256": "a438966594a58ecbd019b8fb15371db6ea410d51895703883cacaff55486cbc4",
+      "committedSha256": "a438966594a58ecbd019b8fb15371db6ea410d51895703883cacaff55486cbc4",
+      "currentSha256": "a438966594a58ecbd019b8fb15371db6ea410d51895703883cacaff55486cbc4",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/model-forge/src/kernel/application/materials.ts",
+      "freezeSha256": "3eed945f8bf7b1c60dd5f933703e175c1ef3921ffeb5bdcaacbc13089976719f",
+      "committedSha256": "3eed945f8bf7b1c60dd5f933703e175c1ef3921ffeb5bdcaacbc13089976719f",
+      "currentSha256": "3eed945f8bf7b1c60dd5f933703e175c1ef3921ffeb5bdcaacbc13089976719f",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/model-forge/src/kernel/application/surface-pattern.ts",
+      "freezeSha256": "39cbc5738453580ac03e7ad1672a3ac3cdcb76d249616cca10a6892581a385af",
+      "committedSha256": "39cbc5738453580ac03e7ad1672a3ac3cdcb76d249616cca10a6892581a385af",
+      "currentSha256": "39cbc5738453580ac03e7ad1672a3ac3cdcb76d249616cca10a6892581a385af",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/model-forge/src/kernel/application/surfaces.ts",
+      "freezeSha256": "63fa7f0475e821b4d3acb860e6dc8cd0a4a3f759d414480bfe0742f1733db189",
+      "committedSha256": "63fa7f0475e821b4d3acb860e6dc8cd0a4a3f759d414480bfe0742f1733db189",
+      "currentSha256": "63fa7f0475e821b4d3acb860e6dc8cd0a4a3f759d414480bfe0742f1733db189",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/model-forge/src/kernel/domain/schema-material.ts",
+      "freezeSha256": "581524c8c1f43a3dd1229a2bfced9b61b24fd7b91641993e755b2d01e52f2ebb",
+      "committedSha256": "581524c8c1f43a3dd1229a2bfced9b61b24fd7b91641993e755b2d01e52f2ebb",
+      "currentSha256": "581524c8c1f43a3dd1229a2bfced9b61b24fd7b91641993e755b2d01e52f2ebb",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-ai.ts",
+      "freezeSha256": "d4ba98def0dc7356dac2dd2346defec3d5eec11bf05d9da95746afb4e4d294d2",
+      "committedSha256": "d4ba98def0dc7356dac2dd2346defec3d5eec11bf05d9da95746afb4e4d294d2",
+      "currentSha256": "d4ba98def0dc7356dac2dd2346defec3d5eec11bf05d9da95746afb4e4d294d2",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-application.ts",
+      "freezeSha256": "59a86e8a3b9869e2bb4caf6c6b3b18ba134307c319ede7eab34e32bee58aaea1",
+      "committedSha256": "59a86e8a3b9869e2bb4caf6c6b3b18ba134307c319ede7eab34e32bee58aaea1",
+      "currentSha256": "59a86e8a3b9869e2bb4caf6c6b3b18ba134307c319ede7eab34e32bee58aaea1",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-audio.ts",
+      "freezeSha256": "57003d950cac26588a5bd8a0a29d01b8a4b7b28fee45012519337a63583db43d",
+      "committedSha256": "57003d950cac26588a5bd8a0a29d01b8a4b7b28fee45012519337a63583db43d",
+      "currentSha256": "57003d950cac26588a5bd8a0a29d01b8a4b7b28fee45012519337a63583db43d",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-catalog.ts",
+      "freezeSha256": "fed7ae6f658d901d46649c1b0660fa595b0ad5466cba580c8cbb715920a35276",
+      "committedSha256": "fed7ae6f658d901d46649c1b0660fa595b0ad5466cba580c8cbb715920a35276",
+      "currentSha256": "fed7ae6f658d901d46649c1b0660fa595b0ad5466cba580c8cbb715920a35276",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-checkpoint.ts",
+      "freezeSha256": "c619232b2919e9b7498e87575631eca7eec3e95d0ef9fd2f3555817b16e509e7",
+      "committedSha256": "c619232b2919e9b7498e87575631eca7eec3e95d0ef9fd2f3555817b16e509e7",
+      "currentSha256": "c619232b2919e9b7498e87575631eca7eec3e95d0ef9fd2f3555817b16e509e7",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-collision.ts",
+      "freezeSha256": "0ad4094f050a1981eedbe088e274ec1339b032b0a0385a820110e265256c3062",
+      "committedSha256": "0ad4094f050a1981eedbe088e274ec1339b032b0a0385a820110e265256c3062",
+      "currentSha256": "0ad4094f050a1981eedbe088e274ec1339b032b0a0385a820110e265256c3062",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-combat.ts",
+      "freezeSha256": "6dd641590635f0f1b0d57da3473ec22009b0d784d2a7e6ab52b6a165a4f3ff77",
+      "committedSha256": "6dd641590635f0f1b0d57da3473ec22009b0d784d2a7e6ab52b6a165a4f3ff77",
+      "currentSha256": "6dd641590635f0f1b0d57da3473ec22009b0d784d2a7e6ab52b6a165a4f3ff77",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-contracts.d.ts",
+      "freezeSha256": "6a8fbc30c9dec66a49dfa583e194bb36d71ea5e3888ddd653b05aa9e32d31a33",
+      "committedSha256": "6a8fbc30c9dec66a49dfa583e194bb36d71ea5e3888ddd653b05aa9e32d31a33",
+      "currentSha256": "6a8fbc30c9dec66a49dfa583e194bb36d71ea5e3888ddd653b05aa9e32d31a33",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-controls.ts",
+      "freezeSha256": "db33b18e023b51e2193b1db7a79e8ac7f5cd8889613b8a150c6b899dc305c213",
+      "committedSha256": "db33b18e023b51e2193b1db7a79e8ac7f5cd8889613b8a150c6b899dc305c213",
+      "currentSha256": "db33b18e023b51e2193b1db7a79e8ac7f5cd8889613b8a150c6b899dc305c213",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-host.ts",
+      "freezeSha256": "0de48213d490210237bdba398e39aed5db8c34557ac9226cb34e735d6a57d82c",
+      "committedSha256": "0de48213d490210237bdba398e39aed5db8c34557ac9226cb34e735d6a57d82c",
+      "currentSha256": "0de48213d490210237bdba398e39aed5db8c34557ac9226cb34e735d6a57d82c",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-logistics.ts",
+      "freezeSha256": "8a43246128e7b75db88ddf74e5b1d2a21f5a93ac87a0749398565f89952b6242",
+      "committedSha256": "8a43246128e7b75db88ddf74e5b1d2a21f5a93ac87a0749398565f89952b6242",
+      "currentSha256": "8a43246128e7b75db88ddf74e5b1d2a21f5a93ac87a0749398565f89952b6242",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-missions.ts",
+      "freezeSha256": "a47d9274f6da21cdcff9c38e1dcbcc13d8e416196bf30a3dbb7a4525c318221a",
+      "committedSha256": "a47d9274f6da21cdcff9c38e1dcbcc13d8e416196bf30a3dbb7a4525c318221a",
+      "currentSha256": "a47d9274f6da21cdcff9c38e1dcbcc13d8e416196bf30a3dbb7a4525c318221a",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-navigation.ts",
+      "freezeSha256": "2777b80adbacd4d3b3325b54847b5282cd9cd9a85028adfe883d6f2911265fb4",
+      "committedSha256": "2777b80adbacd4d3b3325b54847b5282cd9cd9a85028adfe883d6f2911265fb4",
+      "currentSha256": "2777b80adbacd4d3b3325b54847b5282cd9cd9a85028adfe883d6f2911265fb4",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-physics-legacy.ts",
+      "freezeSha256": "3b4613a78af3b35d2f422507d8efc7a1539af52042c782680f24f8d4ce97bfc7",
+      "committedSha256": "3b4613a78af3b35d2f422507d8efc7a1539af52042c782680f24f8d4ce97bfc7",
+      "currentSha256": "3b4613a78af3b35d2f422507d8efc7a1539af52042c782680f24f8d4ce97bfc7",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-physics.ts",
+      "freezeSha256": "420771ad3bf6429fb02bcfafa36fc28ba9b885323c60d984e7093a979faebe0e",
+      "committedSha256": "420771ad3bf6429fb02bcfafa36fc28ba9b885323c60d984e7093a979faebe0e",
+      "currentSha256": "420771ad3bf6429fb02bcfafa36fc28ba9b885323c60d984e7093a979faebe0e",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-presentation-contracts.d.ts",
+      "freezeSha256": "dc824cc7e299108bede7ade1a0c93449b2b72e22d8cee498855c3664c35eee1d",
+      "committedSha256": "dc824cc7e299108bede7ade1a0c93449b2b72e22d8cee498855c3664c35eee1d",
+      "currentSha256": "dc824cc7e299108bede7ade1a0c93449b2b72e22d8cee498855c3664c35eee1d",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-renderer.ts",
+      "freezeSha256": "1c6807f1ab0aa1090b254ccd771daad2fe8e8919d14b42e9fc43698bebaeb1e8",
+      "committedSha256": "1c6807f1ab0aa1090b254ccd771daad2fe8e8919d14b42e9fc43698bebaeb1e8",
+      "currentSha256": "1c6807f1ab0aa1090b254ccd771daad2fe8e8919d14b42e9fc43698bebaeb1e8",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-session.ts",
+      "freezeSha256": "2c892e39bb413243ec2622e0fcd9dd33c09f36b802a9dca5566094b63ac2dafe",
+      "committedSha256": "2c892e39bb413243ec2622e0fcd9dd33c09f36b802a9dca5566094b63ac2dafe",
+      "currentSha256": "2c892e39bb413243ec2622e0fcd9dd33c09f36b802a9dca5566094b63ac2dafe",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-ui.ts",
+      "freezeSha256": "886932790d9cacdf0e242c24322d744263b08edcc11e66d9603d3df96139ad58",
+      "committedSha256": "886932790d9cacdf0e242c24322d744263b08edcc11e66d9603d3df96139ad58",
+      "currentSha256": "886932790d9cacdf0e242c24322d744263b08edcc11e66d9603d3df96139ad58",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-visuals.ts",
+      "freezeSha256": "9a461d92f737211fadf11ee0fb385dc81739e56f8a3bb9848efbddcc597f4fe5",
+      "committedSha256": "9a461d92f737211fadf11ee0fb385dc81739e56f8a3bb9848efbddcc597f4fe5",
+      "currentSha256": "9a461d92f737211fadf11ee0fb385dc81739e56f8a3bb9848efbddcc597f4fe5",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/armored-world.ts",
+      "freezeSha256": "66ba229992531d10277b3db12062857abcb915e6b63c1b785e6f0940376a8a7c",
+      "committedSha256": "66ba229992531d10277b3db12062857abcb915e6b63c1b785e6f0940376a8a7c",
+      "currentSha256": "66ba229992531d10277b3db12062857abcb915e6b63c1b785e6f0940376a8a7c",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/ecs.ts",
+      "freezeSha256": "0736c1aab5b235d608d5c1e3e3a414343596b5dcb3e43068ab3ce3cdf4b34bb3",
+      "committedSha256": "0736c1aab5b235d608d5c1e3e3a414343596b5dcb3e43068ab3ce3cdf4b34bb3",
+      "currentSha256": "0736c1aab5b235d608d5c1e3e3a414343596b5dcb3e43068ab3ce3cdf4b34bb3",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    },
+    {
+      "file": "source/wildlands/source/visual-resources.ts",
+      "freezeSha256": "4b8741e3a59b34e49657773e7bde9e3a2fa9e395e262c1c2821d1e918eda3f8c",
+      "committedSha256": "4b8741e3a59b34e49657773e7bde9e3a2fa9e395e262c1c2821d1e918eda3f8c",
+      "currentSha256": "4b8741e3a59b34e49657773e7bde9e3a2fa9e395e262c1c2821d1e918eda3f8c",
+      "matchesFreeze": true,
+      "workingCopyMatchesCommit": true
+    }
+  ],
+  "untrackedInventoryFilesExcludedFromSourceAssociation": [],
+  "scope": "Separately associates immutable observed artifact and recorded tracked source-file inventory to implementation commit; confirms the original committed freeze and runtime identity without changing raw evidence."
+}

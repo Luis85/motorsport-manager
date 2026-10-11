@@ -1,0 +1,10 @@
+{
+  "implementation": "de06f7c353e0a170f8f9f9681a28f2544c9393c2",
+  "ciCheckout": "319eb893c6d10b3f5eaa387cbb1bdf2300465a75",
+  "tree": "b63851baa951f93b87859c222d706e00cf6bf0f6",
+  "equal": true,
+  "method": "Exact checkout recorded by Source project CI job114518650515; fetched merge has equal tree and empty diff with implementation",
+  "log": "source-job.log.gz",
+  "uncompressedLogSha256": "7cb8259196d63188b3d31b4d10eef50956d8acaee2a914d2f56b3b2866d10a6a",
+  "logStorage": "Exact UTF-8 encoding of connector content, lossless deterministic gzip"
+}

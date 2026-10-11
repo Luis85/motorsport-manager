@@ -82,3 +82,10 @@ completed source-bound browser observation before the performance correction.
 The [finish performance correction](performance-correction/README.md) records
 the isolated timeout diagnosis, pixel-preserving generator optimization and
 unchanged nine-check suite passing within its original 120-second limit.
+
+The [Character Studio focus correction](character-focus/README.md) preserves
+the queued-close failure, deterministic regressions and corrected keyboard journey.
+
+The [final implementation evidence](final/README.md) records all eleven passing
+CI workflows, the complete Wildlands/native gates and the fresh 30-minute
+observation on `de06f7c3`, preserving earlier failures separately.

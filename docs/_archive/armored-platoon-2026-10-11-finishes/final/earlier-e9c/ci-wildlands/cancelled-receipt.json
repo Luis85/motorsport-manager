@@ -1,0 +1,14 @@
+{
+  "status": "CANCELLED",
+  "head": "e9c5571cd116723e285dad5af1bb9adbb8badd3d",
+  "runId": 38154996018,
+  "jobId": 114516092221,
+  "checkoutMerge": "ac15a782eccec6a59a8707660d05cd5be14a5d02",
+  "scope": "Historical superseded run; not full acceptance.",
+  "observedFastSummary": [
+    "partial-passed 1058/1058 (56 suites, 112.93s, jobs 3)"
+  ],
+  "completeSummary": [],
+  "logBytes": 70455,
+  "logSha256": "df77afb3f2b61bd284b8941361e69498df5470a474d41e04d7fe79a2f4de6f7d"
+}
