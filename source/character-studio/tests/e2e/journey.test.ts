@@ -180,6 +180,35 @@ test('real browser creates, edits, imports, guards conflicts and reflows the com
     await page.locator('[data-action="chapter:2"]').focus();
     await page.keyboard.press('Enter');
     assert.match(await page.locator('#editor-panel h2').textContent() || '', /Coat/);
+    await click(page, 'preferences');
+    const lateClose = await page.evaluate(async () => {
+      const dialog = document.querySelector<HTMLDialogElement>('#studio-dialog')!;
+      const next = document.querySelector<HTMLButtonElement>('[data-action="chapter:2"]')!;
+      // Use the real queued native event, deterministically moving focus before it fires.
+      await new Promise<void>(resolve => {
+        dialog.addEventListener('close', () => resolve(), {once:true});
+        dialog.close(); next.focus();
+      });
+      return {open:dialog.open, focused:document.activeElement === next};
+    });
+    assert.deepEqual(lateClose, {open:false, focused:true}, 'late close must preserve deliberate chapter focus');
+    await page.keyboard.press('Enter');
+    assert.match(await page.locator('#editor-panel h2').textContent() || '', /Coat/);
+    await click(page, 'preferences');
+    const reopened = await page.evaluate(async () => {
+      const dialog = document.querySelector<HTMLDialogElement>('#studio-dialog')!;
+      await new Promise<void>(resolve => {
+        dialog.addEventListener('close', () => resolve(), {once:true});
+        dialog.close();
+        document.querySelector<HTMLButtonElement>('[data-action="preferences"]')!.click();
+      });
+      return {open:dialog.open, focused:document.activeElement?.id};
+    });
+    assert.deepEqual(reopened, {open:true, focused:'dialog-title'}, 'old close must not steal reopened dialog focus');
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !(document.querySelector('#studio-dialog') as HTMLDialogElement).open &&
+      (document.activeElement as HTMLElement)?.dataset.action === 'preferences');
+
     assert.deepEqual(errors, []);
   } finally {
     await browser.close(); server.child.kill(); await rm(project,{recursive:true,force:true});
