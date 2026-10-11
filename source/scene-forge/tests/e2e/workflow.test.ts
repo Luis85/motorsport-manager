@@ -9,7 +9,7 @@ import { loadOfflinePage } from './offline-page.js';
 import { chromium } from 'playwright';
 import { validateBytes } from 'gltf-validator';
 import { loadProject } from '../../src/infra/project.js';
-import { exportScene } from '../../src/infra/export.js';
+import { exportScene } from '../../src/kernel.js';
 
 const run = promisify(execFile);
 const cli = async (...args: string[]) => {

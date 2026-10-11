@@ -25,6 +25,7 @@ under `source/`; they are outside the native game's capability inventory.
 
 - [Wildlands CLI (`bin/wildlands`)](wildlands-cli.md)
 - [Scene Forge CLI (`bin/scene-forge`)](scene-forge-cli.md)
+- [Model Forge CLI (`bin/model-forge`)](model-forge-cli.md)
 - [Character Studio CLI (`bin/character-studio`)](character-studio-cli.md)
 - [Process Studio CLI (`bin/process-studio`)](process-studio-cli.md)
 

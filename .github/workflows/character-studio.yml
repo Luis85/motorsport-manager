@@ -5,7 +5,10 @@ on:
       - 'source/character-studio/**'
       - 'source/wildlands/source/**'
       - 'docs/concepts/littlewild/**'
+      - 'source/model-forge/src/kernel/**'
       - 'bin/character-studio'
+      - 'bin/scene-forge'
+      - 'bin/model-forge'
       - '.github/workflows/character-studio.yml'
   workflow_dispatch:
 permissions:

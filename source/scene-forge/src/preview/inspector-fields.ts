@@ -1,7 +1,7 @@
 // Inspector form bindings for the selected node: name, visibility and the
 // position/rotation/scale fields commit through the viewer's transactional `change`
 // port. Filling the form from the selection belongs to the panels module.
-import type { NodeSpec } from '../domain/schema.js';
+import type { NodeSpec } from '../kernel-render.js';
 import { $, field } from './dom.js';
 
 export function bindInspectorFields({

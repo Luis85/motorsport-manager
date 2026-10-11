@@ -2,7 +2,7 @@
 // neither a gizmo drag nor an orbit drag (more than 4 px) ray-casts the visible scene
 // content and resolves the first fully visible hit to its nearest authored node.
 import * as THREE from 'three';
-import type { SceneDocument } from '../domain/schema.js';
+import type { SceneDocument } from '../kernel-render.js';
 
 /** True when the object and every ancestor are visible. */
 export function visibleInScene(object: THREE.Object3D) {

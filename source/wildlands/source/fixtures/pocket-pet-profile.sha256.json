@@ -1,12 +1,12 @@
 {
   "format": "wildlands-profile-digest",
   "schemaVersion": 1,
-  "description": "Canonical (sorted-key JSON) SHA-256 digests of the Pocket Pet content profile the transitional installer (source/content-installers/template-games.cts) produced at 3601c0c (catalog and pet presentation definitions), before the data moved to docs/concepts/pocket-pet, with the game's own storage namespace added. The game-folders suite compares the folder profile against it.",
+  "description": "Canonical (sorted-key JSON) SHA-256 digests of the Pocket Pet content profile the transitional installer (source/content-installers/template-games.cts) produced at 3601c0c (catalog and pet presentation definitions), before the data moved to docs/concepts/pocket-pet, with the game's own storage namespace added. The game-folders suite compares the folder profile against it. The pet.assets section and the whole-profile digest were recaptured once, after the generated definitions in docs/concepts/pocket-pet/assets were re-synchronized from their Scene Forge recipes with `littlewild sync`: 110 baked meshes gained the authored UVs the exporter writes (positions, normals, indices, materials, rig, metadata and the other sections are unchanged).",
   "id": "pocket-pet",
-  "profile": "09569b76081487c2d3d9a8ed43ab1b57d75791862e6c25973ebfed4939e2bd30",
+  "profile": "03d19e504d3bfd54c53c786eefc0938a71736e88b792592a4f735cf76b6ad76f",
   "sections": {
     "storage": "4ab29a83bacd40f142e2021689ead24e739d78c38cdca3d3a372068979d86196",
     "pet.definitions": "54ec5a95e53e4286846e56fadf909478da66417dcd2635dd5942658699abd2a0",
-    "pet.assets": "b209052a13759b41eb25f7a0d960ceffda6d679a2dafe65aa56d1fb88bf0472a"
+    "pet.assets": "7a2a7f563e03ea1115682b1f16d1de7624460533df6199ade3d155bc5ab6abbe"
   }
 }

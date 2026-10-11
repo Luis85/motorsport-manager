@@ -9,13 +9,13 @@ declare global {
       setGrid(visible: boolean): void;
       clearSelection(): void;
       render(): void;
-      getCamera(): import('../domain/schema.js').CameraSnapshot;
+      getCamera(): import('../kernel-render.js').CameraSnapshot;
       configureCapture(
-        request: import('../domain/schema.js').CameraRequest,
+        request: import('../kernel-render.js').CameraRequest,
         wireframe: boolean,
       ): void;
-      stats: import('../application/compiler.js').SceneStats;
-      getSource(): import('../domain/schema.js').SceneDocument;
+      stats: import('../kernel-render.js').SceneStats;
+      getSource(): import('../kernel-render.js').SceneDocument;
       getEdits(): unknown;
       select(id?: string): void;
       addModel(id: string): string;

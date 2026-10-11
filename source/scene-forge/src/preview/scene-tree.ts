@@ -1,7 +1,7 @@
 // Pure scene-hierarchy queries for editor commands: the IDs in a node's subtree, the
 // first unused node ID for a stem, and the ID map for a duplicated subtree. No DOM,
 // WebGL or document mutation; callers apply the results inside an edit transaction.
-import type { NodeSpec } from '../domain/schema.js';
+import type { NodeSpec } from '../kernel-render.js';
 
 /** The node itself and every node whose parent chain reaches it. */
 export function descendantIds(nodes: readonly NodeSpec[], id: string) {

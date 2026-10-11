@@ -6,6 +6,10 @@ The editable recipe is the source of truth. Generated meshes are build outputs. 
 
 This standalone project has its own Node package, schemas, build and verification. Run the commands below from `source/scene-forge/`.
 
+## Model authoring moved to Model Forge
+
+To author or refine a single model on its own, use [Model Forge](../model-forge/README.md) (`bin/model-forge`, see the [Model Forge CLI handbook](../../docs/reference/model-forge-cli.md)): an agent-first, standalone editor for exactly one `<id>.model.json` or `<id>.model-bundle.json`, with revision guards and history. Model Forge also owns the model asset contract and the shared recipe kernel in `../model-forge/src/kernel`. Scene Forge keeps projects, scene composition, the offline composer, scene-wide Littlewild sync and every `model *` command for its project registry. Hand a model over with `model-forge -d <document> export --format model-bundle --out <file>`, then `model import --file <file> --dry-run` and `model import` (with `--replace` and guards to change an existing definition). `catalog` reports this pointer as `modelAuthoring`.
+
 ## Repository executable
 
 The repository root carries a checked-in, self-contained build of this CLI: `bin/scene-forge`. It needs only Node.js 22+ (no `npm ci`) and accepts the same commands as `forge3d`. `screenshot` and `review` additionally need Playwright and Chromium, which are loaded at runtime rather than bundled. The [Scene Forge CLI handbook](../../docs/reference/scene-forge-cli.md) is its complete manual for people and agents.
@@ -73,6 +77,19 @@ forge3d -p my-assets scene pack --out my-assets/exports/scene.recipe.json
 
 The [agent operating guide](./docs/AGENT_WORKFLOW.md) covers the complete loop, procedural expressions, selectors, review plans and portable source bundles. The new `examples/procedural` project shows rack dimensions, shelf counts and nested cargo dimensions derived from parameters.
 
+## Procedural generation
+
+Seeded terrain, scatter and layout compile to ordinary guarded scene edits through the shared kernel's planner, so the same seed always gives the same scene bytes and `stateHash`:
+
+```text
+forge3d -p my-project terrain add ground --preset hills --size 48,48 --seed 7
+forge3d -p my-project scatter --model pine,rock:2 --on ground --spacing 3 --seed 42 --group forest --dry-run
+forge3d -p my-project layout --model post --path "-8,-8;8,-8;8,8" --spacing 2 --on ground --group fence
+forge3d -p my-project terrain sample ground --at "0,0;12,-6"
+```
+
+Each result echoes the normalized `scatter` recipe and its `recipeHash` for replay with `scatter --file` (`schema --kind scatter`), and `catalog` lists presets, limits and examples under `procedural`. See [Procedural generation](../../docs/reference/scene-forge-cli.md#procedural-generation) in the handbook.
+
 ## Littlewild / Wildlands exchange
 
 Scene Forge is the modeling tool for the Wildlands engine in `../wildlands/`. A `littlewild-export` manifest maps models and variants to Littlewild definitions:
@@ -85,7 +102,7 @@ forge3d -p my-project littlewild import --definition ../../docs/concepts/littlew
 
 From the repository root, the checked-in executable runs the same freshness check: `bin/scene-forge -p source/scene-forge/examples/pocket-pet littlewild sync --file source/scene-forge/examples/pocket-pet/littlewild.export.json --check`.
 
-Boxes and unchanged imported engine primitives stay native; other geometry is baked into bounded meshes. Nodes tagged `rig:<role>` become pet animation roles, inline variant materials produce species colors from one recipe, and other definition facets are preserved. `--check` reports stale definitions; `import` turns existing Littlewild assets into editable models. The `examples/pocket-pet` project contains the egg, four life stages, ten props and six socketed accessories of the Pocket Pet demo. See the [workflow guide](../../docs/how-to/scene-forge-littlewild-assets.md).
+Boxes and unchanged imported engine primitives stay native; other geometry is baked into bounded meshes. Nodes tagged `rig:<role>` become pet animation roles, inline variant materials produce species colors from one recipe, and other definition facets are preserved. Export and sync share Model Forge's lossless contract: merging into an existing definition keeps its own representation wherever content is unchanged, so an unedited import exports back byte-identically and both tools write identical bytes. `--check` reports stale definitions; `import` turns existing Littlewild assets into editable models. The `examples/pocket-pet` project contains the egg, four life stages, ten props and six socketed accessories of the Pocket Pet demo. See the [workflow guide](../../docs/how-to/scene-forge-littlewild-assets.md).
 
 ## Authoring and editor improvements in v0.6
 
@@ -409,7 +426,7 @@ npm run verify
 npm run release:examples
 ```
 
-`src/domain/` owns schemas and semantic validation. `src/application/` owns operations and scene compilation. `src/infra/` owns files, exports, HTML generation and screenshots. `src/preview/` owns the browser viewer. `src/commands/` owns the CLI adapters and factory; `src/cli.ts` only starts one invocation. `src/index.ts` exports the programmatic API. The browser consumes serialized compiled geometry, so it does not need the procedural/CSG engine.
+The shared model recipe kernel in `../model-forge/src/kernel` owns schemas and semantic validation, operations, scene compilation, exports, capture and review; Scene Forge reaches it only through `src/kernel.ts` and the browser-safe `src/kernel-render.ts`. `src/domain/` owns Scene Forge project, composition and bundle contracts. `src/infra/` owns project files, HTML generation and screenshots. `src/preview/` owns the browser viewer. `src/commands/` owns the CLI adapters and factory; `src/cli.ts` only starts one invocation. `src/index.ts` exports the programmatic API. The browser consumes serialized compiled geometry, so it does not need the procedural/CSG engine.
 
 The package is private by default. Publishing, licensing, signed releases and cross-platform packaging are decisions for a subsequent release.
 

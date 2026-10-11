@@ -8,10 +8,10 @@ import {
   ReviewPlanSchema,
   QualityPolicySchema,
   type ReviewPlan,
-} from '../domain/schema.js';
-import { inspectNodes } from '../application/inspection.js';
-import { auditScene } from '../application/quality.js';
-import { authoringTarget } from '../application/target.js';
+  inspectNodes,
+  auditScene,
+  authoringTarget,
+} from '../kernel.js';
 import { packScene, unpackScene } from '../infra/bundle.js';
 import { reviewScene } from '../infra/review.js';
 import { commitOperations, writeJson } from '../infra/project.js';

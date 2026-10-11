@@ -131,6 +131,8 @@ class TypeScriptPolicyTests(unittest.TestCase):
             "source/wildlands/source/verification/process-map-label-checks.ts": "tests",
             "source/scene-forge/tests/core.test.ts": "tests",
             "source/scene-forge/tests/e2e/workflow.test.ts": "tests",
+            "source/model-forge/tests/kernel-core.test.ts": "tests",
+            "source/model-forge/tests/e2e/review.test.ts": "tests",
             "source/process-studio/tests/parity.test.cts": "tests",
             "source/process-studio/tests/parity-cases.cts": "tests",
             "tests/test_quality.py": "tests",
@@ -140,6 +142,7 @@ class TypeScriptPolicyTests(unittest.TestCase):
             "source/wildlands/source/tools/test-like-name.cts": "source",
             "source/scene-forge/src/cli.ts": "source",
             "source/scene-forge/scripts/standalone.d.mts": "source",
+            "source/model-forge/src/kernel/domain/schema.ts": "source",
             "source/process-studio/src/kernel.cts": "source",
             "source/process-studio/scripts/bundle.cts": "source",
         }

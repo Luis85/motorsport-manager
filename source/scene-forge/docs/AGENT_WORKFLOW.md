@@ -72,6 +72,8 @@ Put this `pattern` on a mesh or model instance. Grid indices increase X first, t
 
 Use `model import --dry-run` before replacing a model definition. `model capture` extracts an existing assembly. `model export` produces a dependency bundle. `model inspect --parameters`, `preview --model`, `screenshot --model`, `review --model` and `export --model` let you examine a parameter variant without placing it in a scene.
 
+To author or refine one model on its own, use Model Forge (`bin/model-forge`, [handbook](../../../docs/reference/model-forge-cli.md)): it edits exactly one `<id>.model.json` or `<id>.model-bundle.json` with revision guards and history. Hand the result back with `model-forge -d <document> export --format model-bundle --out <file>`, then `model import --file <file> --dry-run` and `model import` here (add `--replace` with `--expected-revision`/`--expected-state` to change an existing definition). The `model *` commands above remain Scene Forge's registry and composition interface.
+
 ```bash
 forge3d -p logistics model inspect rack --parameters '{"width":4,"height":3.5}'
 forge3d -p logistics review --model rack --parameters '{"width":4,"height":3.5}' --out logistics/exports/variant
@@ -286,11 +288,23 @@ actual model IDs, alongside the retained `variants` array. Select
 `variantModels["world-round"]` for a creature world model instead of guessing
 capitalization, separators or truncation. The dry-run mapping matches apply.
 
+`littlewild export` and `littlewild sync` share Model Forge's lossless contract. A
+new definition is written in canonical form. Merging into an existing definition
+keeps its own representation wherever exported content is unchanged (key order,
+explicit zero transforms, empty `children`, string material references,
+`materialProps`, mesh names, unreferenced palette entries and meshes, engine-only
+node fields such as `castShadow`, and the file layout); only edited fields are
+normalized. An unedited import therefore exports back byte-identically, and both
+tools write identical bytes for the same model. `littlewild export` takes
+`--family` from the `<family>` directory of `--out` and keeps an existing
+definition's display name unless `--name` is given.
+
 ### Maintaining shared Littlewild meshes
 
 A material-only refinement preserves the exact authored mesh buffers, including
 positions, normals, UVs and indices. Export reuses equal buffers across retained
-variants and removes unreferenced mesh resources. Equality includes all buffers:
+variants and removes mesh resources that only the replaced variant referenced;
+resources no variant referenced stay. Equality includes all buffers:
 small shape changes or different UV placement remain distinct. Mesh names are
 collision-safe; an existing ID never silently replaces a different retained mesh.
 Keep the original definition wrapper when replacing one variant so gameplay,

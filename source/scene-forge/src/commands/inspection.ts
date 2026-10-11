@@ -1,5 +1,4 @@
-import { fail } from '../domain/errors.js';
-import { compileScene } from '../application/compiler.js';
+import { fail, compileScene } from '../kernel.js';
 import type { CommandContext } from './context.js';
 export function registerInspectionCommands(c: CommandContext) {
   const { program, snapshot, output } = c;

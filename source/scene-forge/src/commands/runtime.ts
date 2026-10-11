@@ -1,11 +1,11 @@
 import { promises as fs } from 'node:fs';
 import type { CommandContext } from './context.js';
-import { ForgeError } from '../domain/errors.js';
 import {
+  ForgeError,
   loadPlaywright,
   playwrightRemedies,
   type PlaywrightLocation,
-} from '../infra/playwright.js';
+} from '../kernel.js';
 async function exists(file: string) {
   try {
     await fs.access(file);

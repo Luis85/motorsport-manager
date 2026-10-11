@@ -7,7 +7,7 @@ import {
   MaterialSchema,
   Id,
   type Operation,
-} from '../domain/schema.js';
+} from '../kernel.js';
 import { commitOperations } from '../infra/project.js';
 import type { CommandContext } from './context.js';
 export function registerEditingCommands(c: CommandContext) {

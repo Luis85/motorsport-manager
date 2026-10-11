@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "three": ["./node_modules/@types/three/index.d.ts"],
+      "three/addons/*": ["./node_modules/@types/three/examples/jsm/*"],
+      "three-bvh-csg/*": ["./node_modules/three-bvh-csg/*"],
+      "zod": ["./node_modules/zod/index.d.cts"],
+      "playwright": ["./node_modules/playwright/index.d.ts"]
+    }
+  }
+}

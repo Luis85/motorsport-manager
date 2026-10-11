@@ -4,7 +4,13 @@
 // shortcuts, status and output hand-offs are separate modules wired together here;
 // `window.forgeViewer` is the automation contract used by capture and review.
 import { createRigOverlay } from './rig-overlay.js';
-import { createRealization } from './realization.js';
+import {
+  createRealization,
+  createViewport,
+  boundsOf as visibleBounds,
+  errorMessage,
+} from '../kernel-render.js';
+import type { CameraRequest, SceneDocument, NodeSpec } from '../kernel-render.js';
 import { mountEditorTools } from './tool-host.js';
 import { editorContext } from './tool-bridge.js';
 import { editorTools } from './tools/index.js';
@@ -14,10 +20,7 @@ import { $, button } from './dom.js';
 import { transformData } from './transforms.js';
 import { createPanels } from './panels.js';
 import * as THREE from 'three';
-import type { CameraRequest } from '../domain/schema.js';
-import { errorMessage } from '../domain/errors.js';
 import { createTemplates } from './templates.js';
-import { createViewport, boundsOf as visibleBounds } from './viewport.js';
 import {
   createEditHistory,
   transactEdit,
@@ -25,7 +28,6 @@ import {
   validTransforms as validNodeTransforms,
   type EditState,
 } from './edit-state.js';
-import type { SceneDocument, NodeSpec } from '../domain/schema.js';
 import { createToast } from './toast.js';
 import { createCameraRig } from './camera-rig.js';
 import { createTransformGizmo } from './transform-gizmo.js';

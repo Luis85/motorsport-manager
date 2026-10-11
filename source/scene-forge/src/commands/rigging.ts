@@ -1,6 +1,5 @@
-import { RigSchema, parse, fail, type Operation } from '../domain/schema.js';
+import { RigSchema, parse, fail, type Operation, compileScene } from '../kernel.js';
 import { commitOperations } from '../infra/project.js';
-import { compileScene } from '../application/compiler.js';
 import { Mesh } from 'three';
 import type { CommandContext } from './context.js';
 export function registerRigCommands(c: CommandContext) {

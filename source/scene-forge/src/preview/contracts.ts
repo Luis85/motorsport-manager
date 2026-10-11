@@ -1,6 +1,5 @@
 import type { Object3D } from 'three';
-import type { SceneStats } from '../application/compiler.js';
-import type { ModelDocument, SceneDocument, ModelLibrary } from '../domain/schema.js';
+import type { SceneStats, ModelDocument, SceneDocument, ModelLibrary } from '../kernel-render.js';
 
 /** The preview transports compiled objects; it never runs the modeling compiler in-browser. */
 export interface LibraryItem {

@@ -1,12 +1,7 @@
-import { stateHash } from './state-hash.js';
-import type { PreviewPayload, LibraryItem, PreviewScene } from '../preview/contracts.js';
-import { VERSION } from '../version.js';
-import { withCaptureSession } from './capture.js';
-import { atomicWrite } from './files.js';
-import { readAsset } from './assets.js';
-import path from 'node:path';
-import { compileScene } from '../application/compiler.js';
 import {
+  stateHash,
+  withCaptureSession,
+  compileScene,
   fail,
   parse,
   SceneSchema,
@@ -14,7 +9,12 @@ import {
   type CameraRequest,
   type SceneDocument,
   type ModelLibrary,
-} from '../domain/schema.js';
+} from '../kernel.js';
+import type { PreviewPayload, LibraryItem, PreviewScene } from '../preview/contracts.js';
+import { VERSION } from '../version.js';
+import { atomicWrite } from './files.js';
+import { readAsset } from './assets.js';
+import path from 'node:path';
 import { previewTemplate } from '../preview/template.js';
 
 export interface PreviewOptions {

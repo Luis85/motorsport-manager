@@ -60,8 +60,9 @@ Tests are recognised by policy, not by hard-coded paths: everything under a
 Wildlands Node checks (`source/wildlands/source/test-*.cts`), their shared
 `test-support/` helpers, the whole `source/wildlands/source/verification/` tree
 (browser suites, companion check modules, fixtures and the gate runner, none of
-which ships) and Scene Forge's `tests/` tree. Every other TypeScript file,
-including the CLI tools and `.d.ts` contracts, uses the source budget.
+which ships) and the `tests/` trees of Scene Forge and Model Forge. Every other
+TypeScript file, including the CLI tools and `.d.ts` contracts, uses the source
+budget.
 
 TypeScript lines longer than the `long_lines` width (160 characters, comments
 included) are reported as advisory `long-line` warnings, because a size budget can

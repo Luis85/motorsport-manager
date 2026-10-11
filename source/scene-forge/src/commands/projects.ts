@@ -6,7 +6,7 @@ import {
   importModel,
   commitOperations,
 } from '../infra/project.js';
-import { parse, NodeSchema } from '../domain/schema.js';
+import { parse, NodeSchema } from '../kernel.js';
 import { integer } from './options.js';
 import { parseJson } from './input.js';
 import type { CommandContext } from './context.js';

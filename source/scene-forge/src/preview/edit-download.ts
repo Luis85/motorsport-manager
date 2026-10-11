@@ -1,7 +1,7 @@
 // Local edit hand-off: Save edits downloads the guarded edit batch for `forge3d apply`,
 // the module remembers which source state was last downloaded (also by the portable
 // recipe download), and leaving the page warns while newer edits are not saved out.
-import type { SceneDocument } from '../domain/schema.js';
+import type { SceneDocument } from '../kernel-render.js';
 import { button } from './dom.js';
 import { download } from './project-controls.js';
 import type { Toast } from './toast.js';

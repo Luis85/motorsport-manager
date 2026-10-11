@@ -1,6 +1,6 @@
 import { promises as fs } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { fail, errorCode } from '../domain/errors.js';
+import { fail, errorCode } from '../kernel.js';
 import { embeddedAssets } from './embedded-assets.js';
 
 /** Packaged runtime assets: the offline viewer and the bundled example catalog. */

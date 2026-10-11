@@ -2,8 +2,8 @@
 // one-frame `review` plan sized like the stage (at most 2048 px per side, at least 64)
 // and offers it as a download or a clipboard copy, falling back to the source panel.
 import type * as THREE from 'three';
-import { cameraData } from '../application/camera.js';
-import type { SceneDocument } from '../domain/schema.js';
+import { cameraData } from '../kernel-render.js';
+import type { SceneDocument } from '../kernel-render.js';
 import { button } from './dom.js';
 import { download } from './project-controls.js';
 import { showSourceText } from './source-panel.js';

@@ -1,7 +1,6 @@
 import * as THREE from 'three';
-import type { SceneDocument, ModelLibrary } from '../domain/schema.js';
+import { type SceneDocument, type ModelLibrary, boundsOf } from '../kernel-render.js';
 import type { EditorContext, EditorInspection } from './tool-host.js';
-import { boundsOf } from './viewport.js';
 
 export function editorContext(options: {
   source: SceneDocument;

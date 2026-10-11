@@ -1,0 +1,1084 @@
+{
+  "schemaVersion": 1,
+  "kind": "model-bundle",
+  "entry": "petAdultBloom",
+  "models": {
+    "petAdultBloom": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "petAdultBloom",
+      "category": "Pocket pet",
+      "description": "Well-cared-for adult with a blossom crown.",
+      "name": "Pet adult (bloom)",
+      "parameters": {},
+      "geometries": {
+        "torso": {
+          "type": "lathe",
+          "points": [
+            [0, 0],
+            [0.0832, 0.005],
+            [0.1399, 0.0198],
+            [0.1848, 0.0438],
+            [0.2198, 0.0762],
+            [0.2452, 0.1156],
+            [0.2613, 0.1605],
+            [0.2684, 0.2093],
+            [0.2668, 0.26],
+            [0.257, 0.3107],
+            [0.2395, 0.3595],
+            [0.2152, 0.4044],
+            [0.1846, 0.4438],
+            [0.1486, 0.4762],
+            [0.1076, 0.5002],
+            [0.0612, 0.515],
+            [0, 0.52]
+          ],
+          "segments": 36
+        },
+        "belly": {
+          "type": "sphere",
+          "radius": 0.18,
+          "segments": 20
+        },
+        "head": {
+          "type": "sphere",
+          "radius": 0.25,
+          "segments": 32
+        },
+        "arm": {
+          "type": "capsule",
+          "radius": 0.055,
+          "length": 0.14,
+          "segments": 10
+        },
+        "foot": {
+          "type": "sphere",
+          "radius": 0.085,
+          "segments": 14
+        },
+        "tail": {
+          "type": "tube",
+          "points": [
+            [0, 0, 0],
+            [0, 0.05, -0.1],
+            [0, 0.16, -0.17],
+            [0, 0.29, -0.15],
+            [0, 0.36, -0.08]
+          ],
+          "radius": 0.032,
+          "tubularSegments": 20,
+          "radialSegments": 8,
+          "closed": false,
+          "capEnds": true
+        },
+        "ear": {
+          "type": "sphere",
+          "radius": 0.1,
+          "segments": 16
+        }
+      },
+      "materials": {
+        "skin": {
+          "color": "#f6b8c8",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "belly": {
+          "color": "#fde6ec",
+          "metalness": 0,
+          "roughness": 0.6,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "foot": {
+          "color": "#ee9fb5",
+          "metalness": 0,
+          "roughness": 0.6,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "ink": {
+          "color": "#2a2433",
+          "metalness": 0,
+          "roughness": 0.25,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "shine": {
+          "color": "#ffffff",
+          "metalness": 0,
+          "roughness": 0.2,
+          "emissive": "#ffffff",
+          "emissiveIntensity": 0.6,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "blush": {
+          "color": "#ff8fa8",
+          "metalness": 0,
+          "roughness": 0.7,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "leaf": {
+          "color": "#7cc47a",
+          "metalness": 0,
+          "roughness": 0.5,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "stem": {
+          "color": "#4f9a5a",
+          "metalness": 0,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "petal": {
+          "color": "#ffd1e0",
+          "metalness": 0,
+          "roughness": 0.5,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "pollen": {
+          "color": "#ffd36b",
+          "metalness": 0,
+          "roughness": 0.45,
+          "emissive": "#ffb703",
+          "emissiveIntensity": 0.25,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "bodyRoot",
+          "visible": true,
+          "tags": ["rig:body"],
+          "type": "group"
+        },
+        {
+          "id": "torso",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [0, 0.05, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "torso",
+          "material": "skin"
+        },
+        {
+          "id": "belly",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [0, 0.25, 0.232],
+            "scale": [1, 1.05, 0.42]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "belly",
+          "material": "belly"
+        },
+        {
+          "id": "armL",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [-0.25, 0.42, 0.02]
+          },
+          "visible": true,
+          "tags": ["rig:arms"],
+          "type": "group"
+        },
+        {
+          "id": "armLLimb",
+          "parent": "armL",
+          "transform": {
+            "position": [-0.04, -0.09, 0],
+            "rotation": [0, 0, -28]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "arm",
+          "material": "skin"
+        },
+        {
+          "id": "armR",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [0.25, 0.42, 0.02]
+          },
+          "visible": true,
+          "tags": ["rig:arms"],
+          "type": "group"
+        },
+        {
+          "id": "armRLimb",
+          "parent": "armR",
+          "transform": {
+            "position": [0.04, -0.09, 0],
+            "rotation": [0, 0, 28]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "arm",
+          "material": "skin"
+        },
+        {
+          "id": "footL",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [-0.13, 0.042, 0.07],
+            "scale": [1, 0.5, 1.3]
+          },
+          "visible": true,
+          "tags": ["rig:feet"],
+          "type": "mesh",
+          "geometry": "foot",
+          "material": "foot"
+        },
+        {
+          "id": "footR",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [0.13, 0.042, 0.07],
+            "scale": [1, 0.5, 1.3]
+          },
+          "visible": true,
+          "tags": ["rig:feet"],
+          "type": "mesh",
+          "geometry": "foot",
+          "material": "foot"
+        },
+        {
+          "id": "tail",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [0, 0.14, -0.25]
+          },
+          "visible": true,
+          "tags": ["rig:tail"],
+          "type": "group"
+        },
+        {
+          "id": "tailStem",
+          "parent": "tail",
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "tail",
+          "material": "skin"
+        },
+        {
+          "id": "head",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [0, 0.76, 0]
+          },
+          "visible": true,
+          "tags": ["rig:head"],
+          "type": "group"
+        },
+        {
+          "id": "headBall",
+          "parent": "head",
+          "transform": {
+            "scale": [1.05, 0.93, 0.98]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "head",
+          "material": "skin"
+        },
+        {
+          "id": "face",
+          "parent": "head",
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "petFace",
+          "parameters": {
+            "spread": 0.095,
+            "depth": 0.228,
+            "eyeSize": 1.12
+          },
+          "materialOverrides": {
+            "ink": "ink",
+            "shine": "shine",
+            "blush": "blush"
+          }
+        },
+        {
+          "id": "socketHat",
+          "name": "Hat accessory socket",
+          "parent": "head",
+          "transform": {
+            "position": [0, 0.225, 0],
+            "scale": [1.2, 1.2, 1.2]
+          },
+          "visible": true,
+          "tags": ["rig:hat"],
+          "type": "group"
+        },
+        {
+          "id": "socketFace",
+          "name": "Face accessory socket",
+          "parent": "head",
+          "transform": {
+            "position": [0, 0.035, 0.232],
+            "scale": [1.18, 1.18, 1.18]
+          },
+          "visible": true,
+          "tags": ["rig:face"],
+          "type": "group"
+        },
+        {
+          "id": "socketNeck",
+          "name": "Neck accessory socket",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [0, 0.56, 0],
+            "scale": [1.3, 1.3, 1.3]
+          },
+          "visible": true,
+          "tags": ["rig:neck"],
+          "type": "group"
+        },
+        {
+          "id": "socketBack",
+          "name": "Back accessory socket",
+          "parent": "bodyRoot",
+          "transform": {
+            "position": [0, 0.38, -0.27],
+            "scale": [1.25, 1.25, 1.25]
+          },
+          "visible": true,
+          "tags": ["rig:back"],
+          "type": "group"
+        },
+        {
+          "id": "earL",
+          "parent": "head",
+          "transform": {
+            "position": [-0.17, 0.19, -0.02],
+            "rotation": [0, 0, 35],
+            "scale": [0.45, 1, 0.25]
+          },
+          "visible": true,
+          "tags": ["rig:ears"],
+          "type": "mesh",
+          "geometry": "ear",
+          "material": "skin"
+        },
+        {
+          "id": "earR",
+          "parent": "head",
+          "transform": {
+            "position": [0.17, 0.19, -0.02],
+            "rotation": [0, 0, -35],
+            "scale": [0.45, 1, 0.25]
+          },
+          "visible": true,
+          "tags": ["rig:ears"],
+          "type": "mesh",
+          "geometry": "ear",
+          "material": "skin"
+        },
+        {
+          "id": "crown",
+          "parent": "head",
+          "transform": {
+            "position": [0, 0.2, 0]
+          },
+          "visible": true,
+          "tags": ["rig:sprout"],
+          "type": "group"
+        },
+        {
+          "id": "crownLeaves",
+          "parent": "crown",
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "radial",
+            "count": 3,
+            "radius": 0,
+            "startAngle": 30,
+            "sweep": 360,
+            "orient": true
+          },
+          "type": "model",
+          "model": "petLeaf",
+          "parameters": {
+            "size": 1.5
+          },
+          "materialOverrides": {
+            "leaf": "leaf"
+          }
+        },
+        {
+          "id": "crownFlower",
+          "parent": "crown",
+          "transform": {
+            "position": [0, 0.05, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "petFlower",
+          "parameters": {
+            "petals": 6,
+            "size": 1.25
+          },
+          "materialOverrides": {
+            "petal": "petal",
+            "pollen": "pollen"
+          }
+        },
+        {
+          "id": "tailFlower",
+          "parent": "tail",
+          "transform": {
+            "position": [0, 0.37, -0.07],
+            "rotation": [-40, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "petFlower",
+          "parameters": {
+            "petals": 5,
+            "size": 0.8
+          },
+          "materialOverrides": {
+            "petal": "petal",
+            "pollen": "pollen"
+          }
+        }
+      ]
+    },
+    "petFace": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "petFace",
+      "category": "Pocket pet parts",
+      "description": "Eyes with highlights, blush and a smile. Rig tags drive blinking and expressions in Littlewild.",
+      "name": "Pet face",
+      "parameters": {
+        "spread": {
+          "default": 0.085,
+          "min": 0.04,
+          "max": 0.2,
+          "description": "Half distance between the eyes"
+        },
+        "depth": {
+          "default": 0.215,
+          "min": 0.1,
+          "max": 0.4,
+          "description": "Forward offset of the face plane"
+        },
+        "eyeSize": {
+          "default": 1,
+          "min": 0.5,
+          "max": 2,
+          "description": "Eye scale"
+        }
+      },
+      "geometries": {
+        "eye": {
+          "type": "sphere",
+          "radius": 0.045,
+          "segments": 16
+        },
+        "shine": {
+          "type": "sphere",
+          "radius": 0.014,
+          "segments": 8
+        },
+        "cheek": {
+          "type": "sphere",
+          "radius": 0.036,
+          "segments": 12
+        },
+        "smile": {
+          "type": "tube",
+          "points": [
+            [-0.034, 0.012, 0],
+            [-0.018, -0.005, 0],
+            [0, -0.011, 0],
+            [0.018, -0.005, 0],
+            [0.034, 0.012, 0]
+          ],
+          "radius": 0.0075,
+          "tubularSegments": 16,
+          "radialSegments": 6,
+          "closed": false,
+          "capEnds": true
+        }
+      },
+      "materials": {
+        "ink": {
+          "color": "#2a2433",
+          "metalness": 0,
+          "roughness": 0.25,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "shine": {
+          "color": "#ffffff",
+          "metalness": 0,
+          "roughness": 0.2,
+          "emissive": "#ffffff",
+          "emissiveIntensity": 0.6,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "blush": {
+          "color": "#ff8fa8",
+          "metalness": 0,
+          "roughness": 0.7,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "eyeL",
+          "name": "Left eye",
+          "transform": {
+            "position": [
+              {
+                "$expr": "neg",
+                "args": [
+                  {
+                    "$param": "spread"
+                  }
+                ]
+              },
+              0.03,
+              {
+                "$param": "depth"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": ["rig:eyes"],
+          "type": "group"
+        },
+        {
+          "id": "eyeLBall",
+          "parent": "eyeL",
+          "transform": {
+            "scale": [
+              {
+                "$param": "eyeSize"
+              },
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "eyeSize"
+                  },
+                  1.25
+                ]
+              },
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "eyeSize"
+                  },
+                  0.6
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "eye",
+          "material": "ink"
+        },
+        {
+          "id": "eyeLShine",
+          "parent": "eyeL",
+          "transform": {
+            "position": [0.014, 0.022, 0.024]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shine",
+          "material": "shine"
+        },
+        {
+          "id": "eyeR",
+          "name": "Right eye",
+          "transform": {
+            "position": [
+              {
+                "$param": "spread"
+              },
+              0.03,
+              {
+                "$param": "depth"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": ["rig:eyes"],
+          "type": "group"
+        },
+        {
+          "id": "eyeRBall",
+          "parent": "eyeR",
+          "transform": {
+            "scale": [
+              {
+                "$param": "eyeSize"
+              },
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "eyeSize"
+                  },
+                  1.25
+                ]
+              },
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "eyeSize"
+                  },
+                  0.6
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "eye",
+          "material": "ink"
+        },
+        {
+          "id": "eyeRShine",
+          "parent": "eyeR",
+          "transform": {
+            "position": [0.014, 0.022, 0.024]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "shine",
+          "material": "shine"
+        },
+        {
+          "id": "cheekL",
+          "transform": {
+            "position": [
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$expr": "neg",
+                    "args": [
+                      {
+                        "$param": "spread"
+                      }
+                    ]
+                  },
+                  0.062
+                ]
+              },
+              -0.035,
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  0.025
+                ]
+              }
+            ],
+            "scale": [1, 0.55, 0.4]
+          },
+          "visible": true,
+          "tags": ["rig:cheeks"],
+          "type": "mesh",
+          "geometry": "cheek",
+          "material": "blush"
+        },
+        {
+          "id": "cheekR",
+          "transform": {
+            "position": [
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$param": "spread"
+                  },
+                  0.062
+                ]
+              },
+              -0.035,
+              {
+                "$expr": "sub",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  0.025
+                ]
+              }
+            ],
+            "scale": [1, 0.55, 0.4]
+          },
+          "visible": true,
+          "tags": ["rig:cheeks"],
+          "type": "mesh",
+          "geometry": "cheek",
+          "material": "blush"
+        },
+        {
+          "id": "mouth",
+          "transform": {
+            "position": [
+              0,
+              -0.045,
+              {
+                "$expr": "add",
+                "args": [
+                  {
+                    "$param": "depth"
+                  },
+                  0.004
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": ["rig:mouth"],
+          "type": "mesh",
+          "geometry": "smile",
+          "material": "ink"
+        }
+      ]
+    },
+    "petLeaf": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "petLeaf",
+      "category": "Pocket pet parts",
+      "name": "Pet leaf",
+      "parameters": {
+        "size": {
+          "default": 1,
+          "min": 0.3,
+          "max": 3,
+          "description": "Leaf scale"
+        }
+      },
+      "geometries": {
+        "leaf": {
+          "type": "sphere",
+          "radius": 0.05,
+          "segments": 12
+        }
+      },
+      "materials": {
+        "leaf": {
+          "color": "#7cc47a",
+          "metalness": 0,
+          "roughness": 0.5,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "blade",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "size"
+                  },
+                  0.045
+                ]
+              },
+              0.012,
+              0
+            ],
+            "rotation": [0, 0, 28],
+            "scale": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "size"
+                  },
+                  1.25
+                ]
+              },
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "size"
+                  },
+                  0.22
+                ]
+              },
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "size"
+                  },
+                  0.62
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "leaf",
+          "material": "leaf"
+        }
+      ]
+    },
+    "petPetal": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "petPetal",
+      "category": "Pocket pet parts",
+      "name": "Pet petal",
+      "parameters": {
+        "size": {
+          "default": 1,
+          "min": 0.3,
+          "max": 3,
+          "description": "Petal scale"
+        }
+      },
+      "geometries": {
+        "petal": {
+          "type": "sphere",
+          "radius": 0.05,
+          "segments": 12
+        }
+      },
+      "materials": {
+        "petal": {
+          "color": "#ffd1e0",
+          "metalness": 0,
+          "roughness": 0.5,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "petal",
+          "transform": {
+            "position": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "size"
+                  },
+                  0.05
+                ]
+              },
+              0,
+              0
+            ],
+            "rotation": [0, 0, 18],
+            "scale": [
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "size"
+                  },
+                  1.1
+                ]
+              },
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "size"
+                  },
+                  0.35
+                ]
+              },
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "size"
+                  },
+                  0.75
+                ]
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "petal",
+          "material": "petal"
+        }
+      ]
+    },
+    "petFlower": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "petFlower",
+      "category": "Pocket pet parts",
+      "name": "Pet flower",
+      "parameters": {
+        "petals": {
+          "default": 6,
+          "min": 3,
+          "max": 12,
+          "description": "Petal count",
+          "integer": true
+        },
+        "size": {
+          "default": 1,
+          "min": 0.3,
+          "max": 3,
+          "description": "Flower scale"
+        }
+      },
+      "geometries": {
+        "core": {
+          "type": "sphere",
+          "radius": 0.035,
+          "segments": 12
+        }
+      },
+      "materials": {
+        "petal": {
+          "color": "#ffd1e0",
+          "metalness": 0,
+          "roughness": 0.5,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "pollen": {
+          "color": "#ffd36b",
+          "metalness": 0,
+          "roughness": 0.45,
+          "emissive": "#ffb703",
+          "emissiveIntensity": 0.25,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "petals",
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "radial",
+            "count": {
+              "$param": "petals"
+            },
+            "radius": 0,
+            "startAngle": 0,
+            "sweep": 360,
+            "orient": true
+          },
+          "type": "model",
+          "model": "petPetal",
+          "parameters": {
+            "size": {
+              "$param": "size"
+            }
+          },
+          "materialOverrides": {
+            "petal": "petal"
+          }
+        },
+        {
+          "id": "core",
+          "transform": {
+            "position": [
+              0,
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "size"
+                  },
+                  0.015
+                ]
+              },
+              0
+            ],
+            "scale": [
+              {
+                "$param": "size"
+              },
+              {
+                "$expr": "mul",
+                "args": [
+                  {
+                    "$param": "size"
+                  },
+                  0.7
+                ]
+              },
+              {
+                "$param": "size"
+              }
+            ]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "core",
+          "material": "pollen"
+        }
+      ]
+    }
+  }
+}

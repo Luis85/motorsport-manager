@@ -1,5 +1,5 @@
 import type { PreviewPayload } from './contracts.js';
-import type { SceneDocument } from '../domain/schema.js';
+import type { SceneDocument } from '../kernel-render.js';
 import { $, button } from './dom.js';
 export function selectPreview(payload: PreviewPayload, id: string | null): PreviewPayload {
   if (!id) return payload;

@@ -3,19 +3,17 @@ import assert from 'node:assert/strict';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { Box3, Vector3 } from 'three';
 import {
   parse,
   SceneSchema,
   ModelSchema,
   BatchSchema,
-  CompositionSchema,
   ForgeError,
   type Operation,
-} from '../src/domain/schema.js';
-import { applyOperations } from '../src/application/operations.js';
-import { captureModel, modelDependencies } from '../src/application/composition.js';
-import { compileScene } from '../src/application/compiler.js';
+  captureModel,
+  modelDependencies,
+} from '../src/kernel.js';
+import { CompositionSchema } from '../src/domain/schema.js';
 import {
   initProject,
   commitOperations,
@@ -59,150 +57,6 @@ const fixture = () =>
 const operations = (items: unknown[]) => parse(BatchSchema, { operations: items }).operations;
 const errorCode = (code: string) => (error: unknown) =>
   error instanceof ForgeError && error.code === code;
-function bounds(scene: ReturnType<typeof fixture>, id: string) {
-  const built = compileScene(scene);
-  try {
-    return new Box3().setFromObject(built.content.getObjectByName(`${scene.id}/${id}`)!);
-  } finally {
-    built.dispose();
-  }
-}
-
-test('capture produces a reusable recipe with local pivot and minimal dependencies', () => {
-  const model = captureModel(fixture(), ['assembly'], 'module', 'Module');
-  assert.deepEqual(Object.keys(model.geometries), ['box']);
-  assert.deepEqual(Object.keys(model.materials), ['m']);
-  assert.deepEqual((model.geometries.box as any).size, [2, 2, 2]);
-  assert.deepEqual(model.nodes[0].transform?.position, [0, 0, 0]);
-  assert.equal(model.nodes[1].parent, 'assembly');
-  const scene = parse(SceneSchema, {
-    schemaVersion: 1,
-    kind: 'scene',
-    id: 'new',
-    name: 'New scene',
-    nodes: [
-      { type: 'model', id: 'a', model: 'module', transform: { position: [10, 0, 0] } },
-      { type: 'model', id: 'b', model: 'module', transform: { position: [-10, 0, 0] } },
-    ],
-  });
-  const built = compileScene(scene, { module: model });
-  assert.equal(built.stats.meshes, 2);
-  assert.deepEqual(built.stats.bounds.size, [22, 2, 2]);
-  built.dispose();
-});
-test('capture keeps root rotation and scale and rejects overlapping or unrelated roots', () => {
-  const s = fixture();
-  s.nodes[0].transform = { position: [8, 0, 0], rotation: [0, 90, 0], scale: [2, 2, 2] };
-  const model = captureModel(s, ['assembly'], 'asset');
-  assert.deepEqual(model.nodes[0].transform, {
-    position: [0, 0, 0],
-    rotation: [0, 90, 0],
-    scale: [2, 2, 2],
-  });
-  assert.throws(() => captureModel(s, ['assembly', 'body'], 'bad'), errorCode('DIFFERENT_PARENTS'));
-});
-test('duplicate copies whole subtrees, rewires children and keeps resources shared', () => {
-  const s = applyOperations(
-    fixture(),
-    operations([{ op: 'duplicateNode', id: 'assembly', newId: 'copy', offset: [3, 0, 0] }]),
-  );
-  assert.equal(s.nodes.length, 5);
-  assert.equal(s.nodes.find((n) => n.id === 'copy--body')?.parent, 'copy');
-  assert.deepEqual(s.nodes.find((n) => n.id === 'copy')?.transform?.position, [7, 0, 0]);
-  assert.equal(Object.keys(s.geometries).length, 2);
-  assert.throws(
-    () => applyOperations(s, operations([{ op: 'duplicateNode', id: 'assembly', newId: 'copy' }])),
-    errorCode('ALREADY_EXISTS'),
-  );
-});
-test('transform patch preserves other components and supports partial parameter overrides', () => {
-  const s = fixture();
-  s.nodes[0].transform = { position: [4, 0, 0], rotation: [0, 40, 0], scale: [2, 2, 2] };
-  const changed = applyOperations(
-    s,
-    operations([
-      {
-        op: 'patchNode',
-        id: 'assembly',
-        patch: { transform: { position: [3, 2, 1] }, visible: false },
-      },
-    ]),
-  );
-  assert.deepEqual(changed.nodes[0].transform?.rotation, [0, 40, 0]);
-  assert.equal(changed.nodes[0].visible, false);
-  assert.deepEqual(s.nodes[0].transform.position, [4, 0, 0]);
-  assert.throws(
-    () =>
-      applyOperations(
-        s,
-        operations([{ op: 'patchNode', id: 'body', patch: { parameters: { width: 2 } } }]),
-      ),
-    errorCode('INVALID_NODE_TYPE'),
-  );
-});
-test('reparent preserves world transforms and rejects cycles and unrepresentable shear', () => {
-  const s = fixture();
-  const before = bounds(s, 'body');
-  const changed = applyOperations(
-    s,
-    operations([{ op: 'reparentNode', id: 'body', parent: null }]),
-  );
-  assert.ok(bounds(changed, 'body').min.distanceTo(before.min) < 1e-8);
-  assert.equal(changed.nodes.find((n) => n.id === 'body')?.parent, undefined);
-  assert.throws(
-    () => applyOperations(s, operations([{ op: 'reparentNode', id: 'assembly', parent: 'body' }])),
-    errorCode('CYCLE'),
-  );
-  s.nodes[0].transform = { scale: [2, 1, 1] };
-  s.nodes[1].transform = { rotation: [0, 0, 45] };
-  assert.throws(
-    () => applyOperations(s, operations([{ op: 'reparentNode', id: 'body', parent: null }])),
-    errorCode('SHEAR_UNSUPPORTED'),
-  );
-});
-test('ground and relative placement operate correctly under rotated parents', () => {
-  const s = fixture();
-  s.nodes[0].transform = { position: [4, 5, 0], rotation: [0, 0, 30] };
-  let changed = applyOperations(s, operations([{ op: 'groundNode', id: 'body', y: 0 }]));
-  assert.ok(Math.abs(bounds(changed, 'body').min.y) < 1e-6);
-  changed = applyOperations(
-    changed,
-    operations([
-      { op: 'placeNode', id: 'assembly', target: 'target', side: 'right', gap: 1, center: true },
-    ]),
-  );
-  assert.ok(
-    Math.abs(bounds(changed, 'assembly').min.x - bounds(changed, 'target').max.x - 1) < 1e-6,
-  );
-  assert.ok(
-    bounds(changed, 'assembly').getCenter(new Vector3()).y -
-      bounds(changed, 'target').getCenter(new Vector3()).y <
-      1e-6,
-  );
-  assert.throws(
-    () =>
-      applyOperations(
-        s,
-        operations([{ op: 'placeNode', id: 'body', target: 'assembly', side: 'right' }]),
-      ),
-    errorCode('DEPENDENT_NODES'),
-  );
-});
-test('grouping preserves sibling placement and rejects mixed parent selections', () => {
-  const s = fixture();
-  const before = bounds(s, 'assembly');
-  const grouped = applyOperations(
-    s,
-    operations([{ op: 'groupNodes', id: 'all', nodes: ['assembly', 'target'] }]),
-  );
-  assert.equal(grouped.nodes.find((n) => n.id === 'assembly')?.parent, 'all');
-  assert.deepEqual(bounds(grouped, 'assembly').min.toArray(), before.min.toArray());
-  assert.throws(
-    () =>
-      applyOperations(s, operations([{ op: 'groupNodes', id: 'bad', nodes: ['body', 'target'] }])),
-    errorCode('DIFFERENT_PARENTS'),
-  );
-});
 test('portable bundles include transitive dependencies and import into a new project', async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'forge-bundle-'));
   try {
@@ -278,5 +132,44 @@ test('capture and composition persist, remain idempotent and clone scene identit
     assert.equal(copy.scene.nodes.length, 4);
   } finally {
     await fs.rm(root, { recursive: true, force: true });
+  }
+});
+test('model import drops the Model Forge editor revision so raw and portable imports agree', async () => {
+  const roots = await Promise.all(
+    [0, 1].map(() => fs.mkdtemp(path.join(os.tmpdir(), 'forge-revision-'))),
+  );
+  try {
+    const portable = captureModel(fixture(), ['assembly'], 'module');
+    const [raw, plain] = roots;
+    for (const root of roots) await initProject(root);
+    type Imported = { warnings?: string[]; model?: { revision?: number } };
+    const imported: Imported = await importModel(raw, { ...portable, revision: 4 });
+    assert.deepEqual(imported.warnings, [
+      'Dropped the editor-only revision 4 of model module; projects store portable recipes.',
+    ]);
+    const exported = await importModel(plain, portable);
+    assert.equal('warnings' in exported, false, 'portable imports report no warning');
+    const [a, b] = await Promise.all(roots.map((root) => loadProject(root)));
+    assert.equal(a.models.module.revision, undefined);
+    assert.equal(a.stateHash, b.stateHash);
+    assert.equal(
+      await fs.readFile(path.join(raw, 'models/module.model.json'), 'utf8'),
+      await fs.readFile(path.join(plain, 'models/module.model.json'), 'utf8'),
+    );
+    const bundle: Imported = await importModel(
+      plain,
+      {
+        schemaVersion: 1,
+        kind: 'model-bundle',
+        entry: 'module',
+        models: { module: { ...portable, revision: 2 } },
+      },
+      false,
+      { dryRun: true },
+    );
+    assert.equal(bundle.model?.revision, undefined);
+    assert.match(String(bundle.warnings), /revision 2 of model module/);
+  } finally {
+    await Promise.all(roots.map((root) => fs.rm(root, { recursive: true, force: true })));
   }
 });

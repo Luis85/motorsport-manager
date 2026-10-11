@@ -6,6 +6,17 @@ recipe and publish it as a validated Littlewild definition. The
 is the working example; the [Pocket Pet reference](../reference/pet-engine.md)
 describes how the game consumes it.
 
+Scene Forge synchronizes every asset of a manifest at once. To refine a single
+model or Littlewild visual on its own, use [Model Forge](../reference/model-forge-cli.md):
+it imports one `definition.json` variant into one guarded model document and
+exports it back with `export --format littlewild` to a
+`<family>/<id>/definition.json` path, replacing only that variant of the
+`visual` facet through the same writer as Scene Forge. Both tools follow one
+lossless contract: merging into an existing definition keeps that definition's
+own representation wherever a field is unchanged, so an unedited import exports
+byte-identically, an edit changes only the edited fields, and Model Forge and
+Scene Forge write identical bytes for the same model.
+
 ## Requirements
 
 - Node.js 22+ and `npm ci` in both `source/scene-forge/` and
@@ -73,11 +84,17 @@ describes how the game consumes it.
    Each result lists the definition path, whether it changed, per-variant
    vertices/triangles and warnings. `--check` fails with `LITTLEWILD_STALE` when a
    committed definition differs from its recipe. One model can also be exported
-   with `littlewild export --model <id> --family <family> --variant <name> --out
-   <target>/<family>/<id>/definition.json`.
+   with `littlewild export --model <id> --variant <name> --out
+   <target>/<family>/<id>/definition.json`; `--family` defaults to the
+   `<family>` directory of `--out`, and an existing definition keeps its display
+   name unless `--name` replaces it.
 
 The exporter replaces only the variants it produces. Other variants, gameplay
-facets, actor behaviors and existing rigs are retained. Lights are skipped.
+facets, actor behaviors and existing rigs are retained. Lights are skipped. A new
+definition is written in canonical form; an existing one keeps its own
+representation (key order, explicit zero transforms, empty `children`, string
+material references, mesh names, unreferenced palette entries, engine-only node
+fields and file layout) wherever the exported content is unchanged.
 
 ## Edit an existing Littlewild asset
 
@@ -85,12 +102,16 @@ facets, actor behaviors and existing rigs are retained. Lights are skipped.
 node dist/cli.js -p my-project littlewild import --definition ../../docs/concepts/littlewild/assets/creatures/sproutling/definition.json
 ```
 
-Each variant becomes a model such as `sproutlingWorld`. Engine primitives are
-imported as `lw-soft`, `lw-cone` and similar geometries using the engine's exact
-shapes, and pet rigs become `rig:<role>` tags. Export the edited models back with
-a manifest that names the same family, ID and variants. Littlewild-only flags
-without a Scene Forge equivalent (`castShadow`, `receiveShadow`, `depthWrite`) are
-not carried through an import/export round trip.
+Each variant becomes a model such as `sproutlingWorld` (`variantModels` in the
+result maps every source variant to its model ID). Engine primitives are imported
+as `lw-soft`, `lw-cone` and similar geometries using the engine's exact shapes,
+and pet rigs become `rig:<role>` tags. Export the edited models back into the
+same definition, with `littlewild export --model <id> --variant <variant> --out
+<definition>` or a manifest that names the same family, ID and variants.
+Littlewild-only node fields without a Scene Forge equivalent (for example
+`castShadow` and `receiveShadow`) are not part of the editable model, but export
+keeps them on every node that still matches the definition. An unedited import
+exports back byte-identically; an edit changes only the edited fields.
 
 ## Confirm success in Littlewild
 

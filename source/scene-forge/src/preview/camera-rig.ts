@@ -4,8 +4,8 @@
 // A new camera is announced through `onCamera` so the transform gizmo can follow it.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { fitCamera, cameraData } from '../application/camera.js';
-import type { CameraRequest, SceneDocument } from '../domain/schema.js';
+import { fitCamera, cameraData } from '../kernel-render.js';
+import type { CameraRequest, SceneDocument } from '../kernel-render.js';
 import { $ } from './dom.js';
 
 export type ViewCamera = THREE.PerspectiveCamera | THREE.OrthographicCamera;

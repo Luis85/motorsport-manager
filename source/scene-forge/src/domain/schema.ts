@@ -1,35 +1,39 @@
-// Public schema boundary. The contracts themselves live in one module per family
-// (values, content, documents, operations, Littlewild and capture); this module
-// re-exports exactly that public surface, owns the guarded `parse` entry point that
-// rejects cyclic or over-deep input before validation, and the named schema registry
-// that drives `schema` discovery and the generated JSON Schema files.
-import { fail } from './errors.js';
-export { ForgeError, fail } from './errors.js';
+// Public schema boundary. The model recipe contracts live in one module per family inside
+// the shared kernel (../model-forge/src/kernel/domain: values, geometry, material, nodes,
+// documents, operations, review, Littlewild and procedural), reached only through the
+// kernel bridge; Scene Forge's own project, composition, scene-bundle and Littlewild export
+// contracts live in schema-project.ts. This module re-exports exactly the public schema
+// surface, including the kernel's guarded `parse` entry point that rejects cyclic or
+// over-deep input before validation, and owns the named schema registry that drives
+// `schema` discovery and the generated JSON Schema files.
 import { z } from 'zod';
-import { Scalar } from './schema-values.js';
 import {
+  fail,
+  Scalar,
   GeometrySchema,
   MaterialSchema,
   PatternSchema,
   RigSchema,
   NodeSchema,
-} from './schema-content.js';
-import {
   SceneSchema,
   ModelSchema,
-  ProjectSchema,
   ModelBundleSchema,
-  SceneBundleSchema,
-} from './schema-documents.js';
-import { SelectorSchema, BatchSchema, CompositionSchema } from './schema-operations.js';
-import { LittlewildExportSchema } from './schema-littlewild.js';
-import {
+  SelectorSchema,
+  BatchSchema,
   CameraSnapshotSchema,
   CameraRequestSchema,
   ReviewPlanSchema,
   QualityPolicySchema,
-} from './schema-capture.js';
+  ScatterRecipeSchema,
+} from '../kernel.js';
+import {
+  ProjectSchema,
+  CompositionSchema,
+  SceneBundleSchema,
+  LittlewildExportSchema,
+} from './schema-project.js';
 
+export { ForgeError, fail, parse } from '../kernel.js';
 export {
   Id,
   NumberValue,
@@ -41,7 +45,7 @@ export {
   type V3,
   type V2,
   type TransformSpec,
-} from './schema-values.js';
+} from '../kernel.js';
 export {
   GeometrySchema,
   MaterialSchema,
@@ -54,38 +58,31 @@ export {
   type RigSpec,
   type NodeSpec,
   type MaterialSpec,
-} from './schema-content.js';
+} from '../kernel.js';
 export {
   CameraSchema,
   EnvironmentSchema,
   SceneSchema,
   ModelSchema,
-  ProjectSchema,
   ModelBundleSchema,
-  SceneBundleSchema,
-  type SceneBundle,
   type SceneDocument,
   type ModelDocument,
-  type ProjectDocument,
   type ModelLibrary,
-} from './schema-documents.js';
+} from '../kernel.js';
 export {
   NodePatchSchema,
   SelectorSchema,
   OperationSchema,
   BatchSchema,
-  CompositionSchema,
   type NodeSelector,
   type Operation,
-} from './schema-operations.js';
+} from '../kernel.js';
 export {
   littlewildFamilies,
   LittlewildId,
   LittlewildAssetSchema,
-  LittlewildExportSchema,
   type LittlewildAsset,
-  type LittlewildExport,
-} from './schema-littlewild.js';
+} from '../kernel.js';
 export {
   viewNames,
   CameraSnapshotSchema,
@@ -96,37 +93,17 @@ export {
   type CameraRequest,
   type ReviewPlan,
   type QualityPolicy,
-} from './schema-capture.js';
+} from '../kernel.js';
+export {
+  ProjectSchema,
+  CompositionSchema,
+  SceneBundleSchema,
+  LittlewildExportSchema,
+  type ProjectDocument,
+  type SceneBundle,
+  type LittlewildExport,
+} from './schema-project.js';
 
-export function parse<T>(schema: z.ZodType<T>, input: unknown): T {
-  const pending: [unknown, number, boolean][] = [[input, 0, false]];
-  const visited = new WeakSet<object>(),
-    active = new WeakSet<object>();
-  while (pending.length) {
-    const [value, depth, leaving] = pending.pop()!;
-    if (value && typeof value === 'object') {
-      if (leaving) {
-        active.delete(value);
-        continue;
-      }
-      if (active.has(value)) fail('CYCLE', 'Input must be acyclic JSON data.');
-      if (depth > 128) fail('DEPTH_LIMIT', 'Input nesting exceeds 128 levels.');
-      if (visited.has(value)) continue;
-      visited.add(value);
-      active.add(value);
-      pending.push([value, depth, true]);
-      for (const child of Object.values(value)) pending.push([child, depth + 1, false]);
-    }
-  }
-  const result = schema.safeParse(input);
-  if (!result.success)
-    fail(
-      'SCHEMA_INVALID',
-      'Input does not match the schema. Use the schema command to inspect the contract.',
-      result.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),
-    );
-  return result.data;
-}
 export const schemas = {
   scene: SceneSchema,
   model: ModelSchema,
@@ -147,6 +124,7 @@ export const schemas = {
   pattern: PatternSchema,
   rig: RigSchema,
   'littlewild-export': LittlewildExportSchema,
+  scatter: ScatterRecipeSchema,
 } satisfies Record<string, z.ZodType>;
 
 export const schemaKinds = Object.keys(schemas) as (keyof typeof schemas)[];

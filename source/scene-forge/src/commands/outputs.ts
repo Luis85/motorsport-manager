@@ -2,11 +2,17 @@ import { loadProjectScenes } from '../infra/project.js';
 import { Option } from 'commander';
 import type { AddressInfo } from 'node:net';
 import { createServer } from 'node:http';
-import { fail, viewNames } from '../domain/schema.js';
-import { errorMessage } from '../domain/errors.js';
-import { authoringTarget } from '../application/target.js';
+import {
+  fail,
+  viewNames,
+  errorMessage,
+  authoringTarget,
+  exportScene,
+  exportFormats,
+  validateExport,
+  type ExportFormat,
+} from '../kernel.js';
 import { atomicWrite } from '../infra/files.js';
-import { exportScene, exportFormats, validateExport, type ExportFormat } from '../infra/export.js';
 import { createPreview, createProjectPreview, screenshot } from '../infra/preview.js';
 import { integer } from './options.js';
 import { parseParameters } from './input.js';

@@ -63,10 +63,14 @@ Shipped editable content lives in [config/](config/README.md). Use
 [bounded toolbox experiments](docs/how-to/toolbox-recipes.md) for safe changes. Existing
 saves freeze their selected rules; external packs cannot inject executable code.
 
-Three separate Node/TypeScript projects, Wildlands, Scene Forge and Process
-Studio, live in `source/` and ship self-contained CLIs in [bin/](bin/README.md)
-that need only Node.js 22+. `bin/process-studio` is the standalone command line
-for Wildlands business processes ([handbook](docs/reference/process-studio-cli.md)). Five Wildlands games built from their data-only
+Five separate Node/TypeScript projects live in `source/` and ship
+self-contained CLIs in [bin/](bin/README.md) that need only Node.js 22+: the
+Wildlands engine (`bin/wildlands`), Scene Forge for projects and scene
+composition (`bin/scene-forge`), Model Forge, the standalone editor for one 3D
+model and owner of the shared model kernel (`bin/model-forge`), Character
+Studio for Littlewild companions (`bin/character-studio`), and Process Studio,
+the standalone command line for Wildlands business processes
+(`bin/process-studio`, [handbook](docs/reference/process-studio-cli.md)). Five Wildlands games built from their data-only
 [game folders](docs/concepts/README.md) are published as ready-to-play HTML files
 in [demos/](demos/README.md). See [standalone CLI projects](docs/README.md#standalone-cli-projects).
 

@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "kind": "model",
+  "id": "petEgg",
+  "category": "Pocket pet",
+  "description": "A spotted egg in a straw nest. The shell group wobbles before hatching.",
+  "name": "Pet egg",
+  "parameters": {},
+  "geometries": {
+    "egg": {
+      "type": "lathe",
+      "points": [
+        [0, 0],
+        [0.0619, 0.0082],
+        [0.1186, 0.0322],
+        [0.1652, 0.0703],
+        [0.1985, 0.12],
+        [0.2164, 0.1779],
+        [0.2184, 0.24],
+        [0.2056, 0.3021],
+        [0.1798, 0.36],
+        [0.1436, 0.4097],
+        [0.0998, 0.4478],
+        [0.0511, 0.4718],
+        [0, 0.48]
+      ],
+      "segments": 32
+    },
+    "spot": {
+      "type": "sphere",
+      "radius": 0.05,
+      "segments": 12
+    },
+    "nest": {
+      "type": "torus",
+      "radius": 0.21,
+      "tube": 0.065,
+      "segments": 28
+    },
+    "nestBed": {
+      "type": "cylinder",
+      "radiusTop": 0.22,
+      "radiusBottom": 0.2,
+      "height": 0.04,
+      "segments": 24
+    },
+    "twig": {
+      "type": "capsule",
+      "radius": 0.012,
+      "length": 0.12,
+      "segments": 6
+    }
+  },
+  "materials": {
+    "shell": {
+      "color": "#fff3d6",
+      "metalness": 0,
+      "roughness": 0.45,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "spot": {
+      "color": "#f6b8c8",
+      "metalness": 0,
+      "roughness": 0.55,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "straw": {
+      "color": "#d9b36c",
+      "metalness": 0,
+      "roughness": 0.85,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    },
+    "strawDark": {
+      "color": "#b8914f",
+      "metalness": 0,
+      "roughness": 0.85,
+      "opacity": 1,
+      "doubleSided": false,
+      "flatShading": false
+    }
+  },
+  "nodes": [
+    {
+      "id": "eggRoot",
+      "name": "Egg root",
+      "visible": true,
+      "tags": ["rig:body"],
+      "type": "group"
+    },
+    {
+      "id": "nestBed",
+      "parent": "eggRoot",
+      "transform": {
+        "position": [0, 0.02, 0]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "nestBed",
+      "material": "strawDark"
+    },
+    {
+      "id": "nest",
+      "parent": "eggRoot",
+      "transform": {
+        "position": [0, 0.05, 0],
+        "rotation": [90, 0, 0],
+        "scale": [1, 1, 0.8]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "nest",
+      "material": "straw"
+    },
+    {
+      "id": "twigA",
+      "parent": "eggRoot",
+      "transform": {
+        "position": [0.2, 0.08, 0.09],
+        "rotation": [10, 30, 70]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "twig",
+      "material": "strawDark"
+    },
+    {
+      "id": "twigB",
+      "parent": "eggRoot",
+      "transform": {
+        "position": [-0.17, 0.08, -0.14],
+        "rotation": [-12, 70, 75]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "twig",
+      "material": "strawDark"
+    },
+    {
+      "id": "shell",
+      "name": "Wobbling shell",
+      "parent": "eggRoot",
+      "transform": {
+        "position": [0, 0.04, 0]
+      },
+      "visible": true,
+      "tags": ["rig:shell"],
+      "type": "group"
+    },
+    {
+      "id": "eggShell",
+      "parent": "shell",
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "egg",
+      "material": "shell"
+    },
+    {
+      "id": "spot0",
+      "parent": "shell",
+      "transform": {
+        "position": [0.0694, 0.3, 0.1907],
+        "rotation": [0, 20, 0],
+        "scale": [1, 1, 0.3]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "spot",
+      "material": "spot"
+    },
+    {
+      "id": "spot1",
+      "parent": "shell",
+      "transform": {
+        "position": [-0.201, 0.2, 0.0731],
+        "rotation": [0, -70, 0],
+        "scale": [0.8, 0.8, 0.3]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "spot",
+      "material": "spot"
+    },
+    {
+      "id": "spot2",
+      "parent": "shell",
+      "transform": {
+        "position": [-0.0651, 0.33, -0.1788],
+        "rotation": [0, -160, 0],
+        "scale": [0.7, 0.7, 0.3]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "spot",
+      "material": "spot"
+    },
+    {
+      "id": "spot3",
+      "parent": "shell",
+      "transform": {
+        "position": [0.1825, 0.17, -0.1054],
+        "rotation": [0, -240, 0],
+        "scale": [1.1, 1.1, 0.3]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "spot",
+      "material": "spot"
+    },
+    {
+      "id": "spot4",
+      "parent": "shell",
+      "transform": {
+        "position": [0.1395, 0.4, 0.0508],
+        "rotation": [0, 70, 0],
+        "scale": [0.55, 0.55, 0.3]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "spot",
+      "material": "spot"
+    },
+    {
+      "id": "spot5",
+      "parent": "shell",
+      "transform": {
+        "position": [-0.1475, 0.38, -0.0688],
+        "rotation": [0, -115, 0],
+        "scale": [0.6, 0.6, 0.3]
+      },
+      "visible": true,
+      "tags": [],
+      "type": "mesh",
+      "geometry": "spot",
+      "material": "spot"
+    }
+  ]
+}

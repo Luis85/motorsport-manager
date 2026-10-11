@@ -7,6 +7,7 @@
     "source/wildlands/source/test-support/**",
     "source/wildlands/source/verification/**",
     "source/scene-forge/tests/**",
+    "source/model-forge/tests/**",
     "source/process-studio/tests/**"
   ],
   "excluded_directories": [".git", ".godot", ".venv", "venv", "__pycache__", "reports", "vendor", "third_party", "node_modules", ".generated", "dist", "bin", "demos"],

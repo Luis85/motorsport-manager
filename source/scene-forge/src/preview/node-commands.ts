@@ -3,7 +3,7 @@
 // viewer's transactional `change` port, so undo history and rollback stay with the
 // viewer's edit state; this module owns only what the commands change.
 import * as THREE from 'three';
-import type { SceneDocument } from '../domain/schema.js';
+import type { SceneDocument } from '../kernel-render.js';
 import type { LibraryItem } from './contracts.js';
 import { clean, transformData } from './transforms.js';
 import { availableNodeId, descendantIds, subtreeCopyIds } from './scene-tree.js';

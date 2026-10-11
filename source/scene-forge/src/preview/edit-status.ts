@@ -3,7 +3,7 @@
 // recipe text, and statistics of the visible scene content (objects, meshes,
 // triangles and overall bounds). Read-only with respect to the scene.
 import * as THREE from 'three';
-import type { SceneDocument } from '../domain/schema.js';
+import type { SceneDocument } from '../kernel-render.js';
 import { $, button } from './dom.js';
 
 /** Meshes and triangles in the visible part of the hierarchy. */

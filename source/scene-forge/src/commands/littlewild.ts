@@ -1,10 +1,15 @@
 import path from 'node:path';
 import { Option } from 'commander';
-import { fail, parse, LittlewildExportSchema, LittlewildAssetSchema } from '../domain/schema.js';
-import { readJson } from '../infra/files.js';
-import { writeLittlewildAsset } from '../infra/littlewild.js';
+import {
+  fail,
+  parse,
+  littlewildExportIdentity,
+  LittlewildAssetSchema,
+  writeLittlewildAsset,
+} from '../kernel.js';
+import { LittlewildExportSchema } from '../domain/schema.js';
 import { importLittlewildDefinition } from '../infra/littlewild-import.js';
-import { parseJson } from './input.js';
+import { parseJson, readInputFile } from './input.js';
 import type { CommandContext } from './context.js';
 
 /** Bridge to the Wildlands/Littlewild engine asset folders. */
@@ -22,7 +27,7 @@ export function registerLittlewildCommands(c: CommandContext) {
     .option('--check', 'Fail when any definition is out of date; never writes')
     .action(async (opts) => {
       const file = resolvePath(opts.file),
-        manifest = parse(LittlewildExportSchema, await readJson(file)),
+        manifest = parse(LittlewildExportSchema, await readInputFile(file, '--file')),
         target = path.resolve(path.dirname(file), manifest.target),
         s = await snapshot();
       const assets = manifest.assets.filter((a) => !opts.asset || a.id === opts.asset);
@@ -52,12 +57,16 @@ export function registerLittlewildCommands(c: CommandContext) {
     .requiredOption('--model <id>', 'Scene Forge model to export')
     .requiredOption('--out <path>', 'Littlewild <family>/<id>/definition.json to create or update')
     .addOption(
-      new Option('--family <family>')
-        .choices(['items', 'buildings', 'creatures', 'pets'])
-        .default('items'),
+      new Option(
+        '--family <family>',
+        'Littlewild family; defaults to the <family> directory of --out, else items',
+      ).choices(['items', 'buildings', 'creatures', 'pets']),
     )
     .option('--variant <name>', 'Littlewild model variant', 'world')
-    .option('--name <name>', 'Display name; defaults to the model name')
+    .option(
+      '--name <name>',
+      "Display name; defaults to an existing definition's name, else the model name",
+    )
     .option('--parameters <json>', 'Model parameter overrides')
     .option('--materials <json>', 'Inline material replacements keyed by model material ID')
     .option('--dry-run', 'Compile and compare without writing')
@@ -66,10 +75,13 @@ export function registerLittlewildCommands(c: CommandContext) {
         out = resolvePath(opts.out),
         model = s.models[opts.model];
       if (!model) fail('NOT_FOUND', `Model ${opts.model} does not exist.`);
-      const asset = parse(LittlewildAssetSchema, {
-        id: path.basename(path.dirname(out)),
+      const identity = await littlewildExportIdentity(out, {
         family: opts.family,
-        name: opts.name ?? model.name,
+        name: opts.name,
+        fallbackName: model.name,
+      });
+      const asset = parse(LittlewildAssetSchema, {
+        ...identity,
         models: {
           [opts.variant]: {
             model: opts.model,
@@ -91,14 +103,20 @@ export function registerLittlewildCommands(c: CommandContext) {
     .option('--prefix <id>', 'Model ID prefix; defaults to the camel-cased asset ID')
     .option('--replace', 'Replace existing models with the same IDs')
     .action(async (opts) => {
+      const definition = resolvePath(opts.definition);
       output(
-        await importLittlewildDefinition(global().project, resolvePath(opts.definition), {
-          prefix: opts.prefix,
-          dryRun: opts.dryRun,
-          replace: opts.replace,
-          expectedRevision: opts.expectedRevision,
-          expectedState: opts.expectedState,
-        }),
+        await importLittlewildDefinition(
+          global().project,
+          definition,
+          await readInputFile(definition, '--definition'),
+          {
+            prefix: opts.prefix,
+            dryRun: opts.dryRun,
+            replace: opts.replace,
+            expectedRevision: opts.expectedRevision,
+            expectedState: opts.expectedState,
+          },
+        ),
       );
     });
 }

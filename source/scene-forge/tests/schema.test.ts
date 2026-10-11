@@ -3,16 +3,32 @@ import assert from 'node:assert/strict';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import * as facade from '../src/domain/schema.js';
-import * as values from '../src/domain/schema-values.js';
-import * as content from '../src/domain/schema-content.js';
-import * as documents from '../src/domain/schema-documents.js';
-import * as operations from '../src/domain/schema-operations.js';
-import * as littlewild from '../src/domain/schema-littlewild.js';
-import * as capture from '../src/domain/schema-capture.js';
+import * as project from '../src/domain/schema-project.js';
+// The model recipe families are owned by the shared kernel (../model-forge/src/kernel).
+import * as values from '../../model-forge/src/kernel/domain/schema-values.js';
+import * as geometry from '../../model-forge/src/kernel/domain/schema-geometry.js';
+import * as material from '../../model-forge/src/kernel/domain/schema-material.js';
+import * as nodes from '../../model-forge/src/kernel/domain/schema-nodes.js';
+import * as documents from '../../model-forge/src/kernel/domain/schema-documents.js';
+import * as operations from '../../model-forge/src/kernel/domain/schema-operations.js';
+import * as review from '../../model-forge/src/kernel/domain/schema-review.js';
+import * as littlewild from '../../model-forge/src/kernel/domain/schema-littlewild.js';
+import * as procedural from '../../model-forge/src/kernel/domain/schema-procedural.js';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
-const families = { values, content, documents, operations, littlewild, capture };
-/** The runtime surface `domain/schema.ts` (and therefore the package index) exposes. */
+const families = {
+  values,
+  geometry,
+  material,
+  nodes,
+  documents,
+  operations,
+  review,
+  littlewild,
+  procedural,
+  project,
+};
+/** The runtime surface `domain/schema.ts` exposes (the package index adds the whole kernel). */
 const publicSchemaExports = [
   'BatchSchema',
   'CameraRequestSchema',
@@ -69,8 +85,8 @@ test('the schema facade keeps its public surface and re-exports family contracts
       if (Object.hasOwn(facade, name))
         assert.equal(facade[name as keyof typeof facade], value, `${family}.${name}`);
     }
-  // Building blocks shared between families stay out of the public package surface.
-  for (const internal of ['Vec2', 'Color', 'nodeBase'])
+  // Building blocks shared between families stay out of the public schema facade.
+  for (const internal of ['Vec2', 'Color', 'nodeBase', 'guards'])
     assert.equal(Object.hasOwn(facade, internal), false, internal);
   // Every registered kind is a contract owned by exactly one family module.
   const owned = new Set(Object.values(families).flatMap((exports) => Object.values(exports)));

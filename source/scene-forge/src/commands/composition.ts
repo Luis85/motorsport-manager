@@ -2,20 +2,20 @@ import { Option } from 'commander';
 import {
   parse,
   fail,
-  CompositionSchema,
   SceneSchema,
   NodePatchSchema,
   type Operation,
   OperationSchema,
   type TransformSpec,
-} from '../domain/schema.js';
-import { compileScene } from '../application/compiler.js';
-import { modelDependencies } from '../application/composition.js';
+  compileScene,
+  modelDependencies,
+  type EditOptions,
+} from '../kernel.js';
+import { CompositionSchema } from '../domain/schema.js';
 import { captureProjectModel, cloneScene, commitOperations, writeJson } from '../infra/project.js';
 
 import type { CommandContext } from './context.js';
 export type { CommandContext } from './context.js';
-import type { EditOptions } from '../application/edit.js';
 export function registerCompositionCommands(c: CommandContext) {
   const { program, scene, model, global, snapshot, output, input, sourceOptions, editOptions, at } =
     c;

@@ -1,16 +1,17 @@
-import { fail } from '../domain/errors.js';
-import { littlewildImportPlan } from '../application/littlewild-import.js';
+import { fail, littlewildImportPlan } from '../kernel.js';
 import { importModel } from './project.js';
 import type { EditOptions } from './project.js';
-import { readJson } from './files.js';
 
-/** Registers each Littlewild variant as a Scene Forge model through the guarded model import. */
+/**
+ * Registers each Littlewild variant as a Scene Forge model through the guarded model import.
+ * `input` is the parsed JSON of `file`, which names the source in messages.
+ */
 export async function importLittlewildDefinition(
   project: string,
   file: string,
+  input: unknown,
   options: EditOptions & { prefix?: string; replace?: boolean },
 ) {
-  const input = await readJson(file);
   const record =
     input && typeof input === 'object' && !Array.isArray(input)
       ? (input as Record<string, unknown>)

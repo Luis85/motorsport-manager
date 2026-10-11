@@ -15,6 +15,7 @@ import { chmod, mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'n
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { kernelDependencies } from './kernel-resolve.mjs';
 
 export const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const checkedIn = path.resolve(root, '../../bin/scene-forge');
@@ -35,6 +36,7 @@ export async function buildViewer() {
     banner: { js: '/*! Bundled Three.js license:\n' + threeLicense + '\n*/' },
     write: false,
     outfile: 'dist/viewer.js',
+    plugins: [kernelDependencies],
   });
   return result.outputFiles[0].text;
 }
@@ -117,7 +119,7 @@ export async function buildStandalone(viewer) {
     write: false,
     outfile: 'bin/scene-forge.js',
     logLevel: 'warning',
-    plugins: [embedAssets(assets)],
+    plugins: [embedAssets(assets), kernelDependencies],
   });
   const header = await licenseHeader(Object.keys(result.metafile.inputs), version);
   return Buffer.from('#!/usr/bin/env node\n' + header + result.outputFiles[0].text);

@@ -6,24 +6,26 @@ import {
   SceneSchema,
   ModelSchema,
   ModelBundleSchema,
-  ProjectSchema,
   Id,
   type SceneDocument,
   type ModelLibrary,
-  type ProjectDocument,
   type Operation,
-} from '../domain/schema.js';
-import { canonical } from '../domain/canonical.js';
-import { errorCode, ForgeError } from '../domain/errors.js';
-import { checkGuards, prepareSceneEdit, type EditOptions } from '../application/edit.js';
-import { stateHash } from './state-hash.js';
+  canonical,
+  errorCode,
+  ForgeError,
+  checkGuards,
+  prepareSceneEdit,
+  type EditOptions,
+  stateHash,
+  compileScene,
+  captureModel,
+  modelDependencies,
+} from '../kernel.js';
+import { ProjectSchema, type ProjectDocument } from '../domain/schema.js';
 import { readJson, writeJson, atomicWrite, inside, findProject, withLock } from './files.js';
 // Compatibility exports for the original library API.
 export { readJson, writeJson, atomicWrite, findProject, withLock } from './files.js';
-export { stateHash } from './state-hash.js';
-export type { EditOptions } from '../application/edit.js';
-import { compileScene } from '../application/compiler.js';
-import { captureModel, modelDependencies } from '../application/composition.js';
+export { stateHash, type EditOptions } from '../kernel.js';
 
 export interface Snapshot {
   root: string;
@@ -160,12 +162,32 @@ export async function commitOperations(
   return withLock(root, async () => {
     const snapshot = await loadUnlocked(root, sceneId);
     const { next, result } = prepareSceneEdit(snapshot, ops, options, stateHash);
-    if (result.changed && !options.dryRun) {
-      const { scene, manifest } = snapshot;
-      await writeJson(await inside(root, `history/${scene.id}/${scene.revision}.json`), scene);
-      await writeJson(await inside(root, manifest.scenes[scene.id]), next);
-    }
+    if (result.changed && !options.dryRun) await persistScene(root, snapshot, next);
     return result;
+  });
+}
+async function persistScene(root: string, { scene, manifest }: Snapshot, next: SceneDocument) {
+  await writeJson(await inside(root, `history/${scene.id}/${scene.revision}.json`), scene);
+  await writeJson(await inside(root, manifest.scenes[scene.id]), next);
+}
+/**
+ * Plan operations from the locked snapshot once its guards pass (procedural commands read
+ * the current scene to place content), then commit them exactly like commitOperations.
+ */
+export async function commitPlanned<T extends object>(
+  start: string,
+  sceneId: string | undefined,
+  plan: (snapshot: Snapshot) => { operations: Operation[]; report: T },
+  options: EditOptions = {},
+) {
+  const root = await findProject(start);
+  return withLock(root, async () => {
+    const snapshot = await loadUnlocked(root, sceneId);
+    checkGuards(snapshot, options);
+    const { operations, report } = plan(snapshot);
+    const { next, result } = prepareSceneEdit(snapshot, operations, options, stateHash);
+    if (result.changed && !options.dryRun) await persistScene(root, snapshot, next);
+    return { ...result, ...report };
   });
 }
 
@@ -184,11 +206,30 @@ export async function importModel(
         })();
   if (!Object.hasOwn(data.models, data.entry))
     fail('REFERENCE_MISSING', 'Bundle entry model is missing.');
+  // `revision` is Model Forge's editor counter, not model content: a project stores portable
+  // recipes, so importing a raw document and its portable export yield the same project.
+  const warnings: string[] = [];
+  for (const [id, model] of Object.entries(data.models))
+    if (model.revision !== undefined) {
+      warnings.push(
+        `Dropped the editor-only revision ${model.revision} of model ${id}; projects store portable recipes.`,
+      );
+      const { revision: _revision, ...portable } = model;
+      data.models[id] = portable;
+    }
   const root = await findProject(start);
   return withLock(root, async () => {
     const snapshot = await loadUnlocked(root);
     checkGuards(snapshot, options);
-    return registerModels(root, data.models, data.entry, replace, snapshot, options.dryRun);
+    const result = await registerModels(
+      root,
+      data.models,
+      data.entry,
+      replace,
+      snapshot,
+      options.dryRun,
+    );
+    return warnings.length ? { ...result, warnings } : result;
   });
 }
 async function registerModels(

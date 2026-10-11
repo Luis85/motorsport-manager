@@ -1,4 +1,4 @@
-import type { NodeSpec, SceneDocument, Operation } from '../domain/schema.js';
+import type { NodeSpec, SceneDocument, Operation } from '../kernel-render.js';
 
 export interface EditState {
   nodes: NodeSpec[];

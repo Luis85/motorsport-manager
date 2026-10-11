@@ -1,0 +1,1305 @@
+{
+  "schemaVersion": 1,
+  "kind": "model-bundle",
+  "entry": "fieldStation",
+  "models": {
+    "fieldStation": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "fieldStation",
+      "name": "Complete field station",
+      "parameters": {},
+      "geometries": {},
+      "materials": {},
+      "nodes": [
+        {
+          "id": "baseCamp",
+          "name": "Base camp",
+          "transform": {
+            "position": [0, 0, -3.2]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "fleet",
+          "name": "Survey fleet",
+          "transform": {
+            "position": [0, 0, 1.4]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "power",
+          "name": "Power systems",
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "supplies",
+          "name": "Field supplies",
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "terrain",
+          "name": "Terrain platform",
+          "transform": {
+            "scale": [1.38, 1, 1.38]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "platform",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "habitatWest",
+          "name": "Habitat · workshop",
+          "parent": "baseCamp",
+          "transform": {
+            "position": [-2.3, 0.014999998658895494, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "habitat",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "habitatEast",
+          "name": "Habitat · storage",
+          "parent": "baseCamp",
+          "transform": {
+            "position": [0.1, 0.014999998658895494, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "habitat",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "habitatComms",
+          "name": "Habitat · communications",
+          "parent": "baseCamp",
+          "transform": {
+            "position": [2.5, 0.014999998658895494, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "habitat",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "padAlpha",
+          "name": "Landing pad · Alpha",
+          "parent": "fleet",
+          "transform": {
+            "position": [-2.25, 0.01449999985098839, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "landingPad",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "padBravo",
+          "name": "Landing pad · Bravo",
+          "parent": "fleet",
+          "transform": {
+            "position": [2.25, 0.01449999985098839, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "landingPad",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "alpha",
+          "name": "Rover · Alpha",
+          "parent": "fleet",
+          "transform": {
+            "position": [-2.25, 0.024999989271164008, 0],
+            "rotation": [0, -18, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "rover",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "bravo",
+          "name": "Rover · Bravo",
+          "parent": "fleet",
+          "transform": {
+            "position": [2.25, 0.024999989271164008, 0],
+            "rotation": [0, 22, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "rover",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "solarWest",
+          "name": "Solar collector · West",
+          "parent": "power",
+          "transform": {
+            "position": [-4.6, 0.035, -2],
+            "rotation": [0, -35, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "solar",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "solarEast",
+          "name": "Solar collector · East",
+          "parent": "power",
+          "transform": {
+            "position": [4.6, 0.035, -2],
+            "rotation": [0, 35, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "solar",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "fuel",
+          "name": "Fuel supplies",
+          "parent": "supplies",
+          "transform": {
+            "position": [5.3, 0.035, 0.1],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 3,
+            "step": [0, 0, 0.88]
+          },
+          "type": "model",
+          "model": "barrel",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "cargoLine",
+          "name": "Cargo crates",
+          "parent": "supplies",
+          "transform": {
+            "position": [-5.3, -0.010000011920928947, 0.1],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 3,
+            "step": [0, 0, 1.05]
+          },
+          "type": "model",
+          "model": "cargo",
+          "parameters": {},
+          "materialOverrides": {}
+        },
+        {
+          "id": "spares",
+          "name": "Spare parts",
+          "parent": "supplies",
+          "transform": {
+            "position": [-3.4, -0.010000011920928947, -1.6],
+            "rotation": [0, 20, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "model",
+          "model": "cargo",
+          "parameters": {},
+          "materialOverrides": {}
+        }
+      ]
+    },
+    "platform": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "platform",
+      "name": "Terrain platform",
+      "parameters": {},
+      "geometries": {
+        "base": {
+          "type": "cylinder",
+          "radiusTop": 5.2,
+          "radiusBottom": 5.2,
+          "height": 0.28,
+          "segments": 64
+        },
+        "soil": {
+          "type": "cylinder",
+          "radiusTop": 5.1,
+          "radiusBottom": 5.1,
+          "height": 0.12,
+          "segments": 64
+        }
+      },
+      "materials": {
+        "edge": {
+          "color": "#403e3b",
+          "metalness": 0.1,
+          "roughness": 0.8,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "sand": {
+          "color": "#ae9680",
+          "metalness": 0,
+          "roughness": 0.95,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "base",
+          "transform": {
+            "position": [0, -0.22, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "base",
+          "material": "edge"
+        },
+        {
+          "id": "terrain",
+          "transform": {
+            "position": [0, -0.03, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "soil",
+          "material": "sand"
+        }
+      ]
+    },
+    "habitat": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "habitat",
+      "name": "Habitat module",
+      "parameters": {},
+      "geometries": {
+        "station": {
+          "type": "box",
+          "size": [1.6, 1.4, 1.3]
+        },
+        "stationTrim": {
+          "type": "box",
+          "size": [1.68, 0.16, 1.38]
+        },
+        "door": {
+          "type": "box",
+          "size": [0.66, 1.1, 0.08]
+        },
+        "step": {
+          "type": "box",
+          "size": [1, 0.12, 0.5]
+        },
+        "antenna": {
+          "type": "cylinder",
+          "radiusTop": 0.024,
+          "radiusBottom": 0.024,
+          "height": 1.35,
+          "segments": 8
+        }
+      },
+      "materials": {
+        "ivory": {
+          "color": "#d8dfd6",
+          "metalness": 0.1,
+          "roughness": 0.65,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "orange": {
+          "color": "#e89550",
+          "metalness": 0.1,
+          "roughness": 0.5,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "dark": {
+          "color": "#354551",
+          "metalness": 0.4,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "station",
+          "transform": {
+            "position": [0, 0.74, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "station",
+          "material": "ivory"
+        },
+        {
+          "id": "stationTop",
+          "transform": {
+            "position": [0, 1.49, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "stationTrim",
+          "material": "orange"
+        },
+        {
+          "id": "stationFoot",
+          "transform": {
+            "position": [0, 0.12, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "stationTrim",
+          "material": "dark"
+        },
+        {
+          "id": "stationDoor",
+          "transform": {
+            "position": [0, 0.64, 0.685],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "door",
+          "material": "dark"
+        },
+        {
+          "id": "entryStep",
+          "transform": {
+            "position": [0, 0.08, 0.9500000000000001],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "step",
+          "material": "ivory"
+        },
+        {
+          "id": "antenna",
+          "transform": {
+            "position": [-0.5, 2.2, -0.09999999999999987],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "antenna",
+          "material": "dark"
+        }
+      ]
+    },
+    "landingPad": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "landingPad",
+      "name": "Landing pad",
+      "parameters": {},
+      "geometries": {
+        "pad": {
+          "type": "cylinder",
+          "radiusTop": 2.2,
+          "radiusBottom": 2.2,
+          "height": 0.055,
+          "segments": 48
+        },
+        "marker": {
+          "type": "box",
+          "size": [0.14, 0.04, 0.45]
+        }
+      },
+      "materials": {
+        "ivory": {
+          "color": "#d8dfd6",
+          "metalness": 0.1,
+          "roughness": 0.65,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "orange": {
+          "color": "#e89550",
+          "metalness": 0.1,
+          "roughness": 0.5,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "servicePad",
+          "transform": {
+            "position": [0, 0.048, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "pad",
+          "material": "ivory"
+        },
+        {
+          "id": "padMarks",
+          "transform": {
+            "position": [0, 0.083, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "radial",
+            "count": 16,
+            "radius": 2.02,
+            "startAngle": 0,
+            "sweep": 360,
+            "orient": true
+          },
+          "type": "mesh",
+          "geometry": "marker",
+          "material": "orange"
+        }
+      ]
+    },
+    "rover": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "rover",
+      "name": "Survey rover",
+      "parameters": {
+        "wheelRadius": {
+          "default": 0.48,
+          "min": 0.25,
+          "max": 0.7,
+          "description": "Wheel radius in meters"
+        },
+        "mastHeight": {
+          "default": 1.3,
+          "min": 0.5,
+          "max": 2.5
+        }
+      },
+      "geometries": {
+        "hull": {
+          "type": "box",
+          "size": [1.8, 0.55, 2.65]
+        },
+        "underbody": {
+          "type": "box",
+          "size": [1.5, 0.35, 2.35]
+        },
+        "cabin": {
+          "type": "extrude",
+          "points": [
+            [-0.75, 0],
+            [0.75, 0],
+            [0.61, 0.82],
+            [-0.42, 1.02],
+            [-0.75, 0.65]
+          ],
+          "depth": 1.1,
+          "bevel": 0.06
+        },
+        "roof": {
+          "type": "box",
+          "size": [1.3, 0.13, 1.4]
+        },
+        "window": {
+          "type": "box",
+          "size": [1.12, 0.43, 0.04]
+        },
+        "wheel": {
+          "type": "cylinder",
+          "radiusTop": {
+            "$param": "wheelRadius"
+          },
+          "radiusBottom": {
+            "$param": "wheelRadius"
+          },
+          "height": 0.38,
+          "segments": 16
+        },
+        "hub": {
+          "type": "cylinder",
+          "radiusTop": 0.23,
+          "radiusBottom": 0.23,
+          "height": 0.41,
+          "segments": 16
+        },
+        "axle": {
+          "type": "cylinder",
+          "radiusTop": 0.1,
+          "radiusBottom": 0.1,
+          "height": 2.3,
+          "segments": 12
+        },
+        "bumper": {
+          "type": "box",
+          "size": [2, 0.14, 0.18]
+        },
+        "lamp": {
+          "type": "box",
+          "size": [0.35, 0.15, 0.055]
+        },
+        "mast": {
+          "type": "cylinder",
+          "radiusTop": 0.045,
+          "radiusBottom": 0.07,
+          "height": {
+            "$param": "mastHeight"
+          },
+          "segments": 12
+        },
+        "camera": {
+          "type": "box",
+          "size": [0.5, 0.24, 0.25]
+        },
+        "lens": {
+          "type": "cylinder",
+          "radiusTop": 0.075,
+          "radiusBottom": 0.075,
+          "height": 0.035,
+          "segments": 16
+        },
+        "crate": {
+          "type": "box",
+          "size": [0.6, 0.43, 0.64]
+        },
+        "strap": {
+          "type": "box",
+          "size": [0.63, 0.07, 0.69]
+        },
+        "vent": {
+          "type": "box",
+          "size": [0.065, 0.025, 0.32]
+        },
+        "panel": {
+          "type": "box",
+          "size": [0.62, 0.06, 0.65]
+        },
+        "fender": {
+          "type": "box",
+          "size": [0.18, 0.14, 2.5]
+        }
+      },
+      "materials": {
+        "body": {
+          "color": "#e99045",
+          "metalness": 0.2,
+          "roughness": 0.45,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "ivory": {
+          "color": "#d8e0dc",
+          "metalness": 0.15,
+          "roughness": 0.5,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "dark": {
+          "color": "#26323b",
+          "metalness": 0.3,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "rubber": {
+          "color": "#10191e",
+          "metalness": 0,
+          "roughness": 0.92,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "glass": {
+          "color": "#4babb4",
+          "metalness": 0.45,
+          "roughness": 0.22,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "light": {
+          "color": "#a2e8de",
+          "metalness": 0,
+          "roughness": 0.65,
+          "emissive": "#57bfb1",
+          "emissiveIntensity": 0.5,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "chassis",
+          "transform": {
+            "position": [0, 0.87, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hull",
+          "material": "body"
+        },
+        {
+          "id": "undercarriage",
+          "transform": {
+            "position": [0, 0.55, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "underbody",
+          "material": "dark"
+        },
+        {
+          "id": "cab",
+          "transform": {
+            "position": [0, 1.15, -0.15],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "cabin",
+          "material": "ivory"
+        },
+        {
+          "id": "canopy",
+          "transform": {
+            "position": [0, 2.18, 0.35],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "roof",
+          "material": "body"
+        },
+        {
+          "id": "windshield",
+          "transform": {
+            "position": [0.04, 1.75, 0.975],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "window",
+          "material": "glass"
+        },
+        {
+          "id": "frontBumper",
+          "transform": {
+            "position": [0, 0.7, 1.48],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "bumper",
+          "material": "dark"
+        },
+        {
+          "id": "rearBumper",
+          "transform": {
+            "position": [0, 0.7, -1.48],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "bumper",
+          "material": "dark"
+        },
+        {
+          "id": "leftFender",
+          "transform": {
+            "position": [-1.02, 1.05, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "fender",
+          "material": "body"
+        },
+        {
+          "id": "rightFender",
+          "transform": {
+            "position": [1.02, 1.05, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "fender",
+          "material": "body"
+        },
+        {
+          "id": "leftLight",
+          "transform": {
+            "position": [-0.58, 1, 1.35],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "lamp",
+          "material": "light"
+        },
+        {
+          "id": "rightLight",
+          "transform": {
+            "position": [0.58, 1, 1.35],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "lamp",
+          "material": "light"
+        },
+        {
+          "id": "mast",
+          "transform": {
+            "position": [0.58, 2.55, -0.65],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "mast",
+          "material": "dark"
+        },
+        {
+          "id": "camera",
+          "transform": {
+            "position": [0.58, 3.2, -0.65],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "camera",
+          "material": "body"
+        },
+        {
+          "id": "lens",
+          "transform": {
+            "position": [0.58, 3.2, -0.505],
+            "rotation": [90, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "lens",
+          "material": "glass"
+        },
+        {
+          "id": "cargo",
+          "transform": {
+            "position": [-0.45, 1.37, -0.94],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "crate",
+          "material": "dark"
+        },
+        {
+          "id": "cargoStrap",
+          "transform": {
+            "position": [-0.45, 1.55, -0.94],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "strap",
+          "material": "ivory"
+        },
+        {
+          "id": "solar",
+          "transform": {
+            "position": [0.45, 1.2, -0.88],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "panel",
+          "material": "glass"
+        },
+        {
+          "id": "vents",
+          "transform": {
+            "position": [-0.36, 2.26, 0.35],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 8,
+            "step": [0.105, 0, 0]
+          },
+          "type": "mesh",
+          "geometry": "vent",
+          "material": "dark"
+        },
+        {
+          "id": "leftRearWheel",
+          "transform": {
+            "position": [-1.06, 0.49, -0.88],
+            "rotation": [0, 0, 90]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "wheel",
+          "material": "rubber"
+        },
+        {
+          "id": "leftRearHub",
+          "transform": {
+            "position": [-1.06, 0.49, -0.88],
+            "rotation": [0, 0, 90]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hub",
+          "material": "ivory"
+        },
+        {
+          "id": "leftFrontWheel",
+          "transform": {
+            "position": [-1.06, 0.49, 0.88],
+            "rotation": [0, 0, 90]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "wheel",
+          "material": "rubber"
+        },
+        {
+          "id": "leftFrontHub",
+          "transform": {
+            "position": [-1.06, 0.49, 0.88],
+            "rotation": [0, 0, 90]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hub",
+          "material": "ivory"
+        },
+        {
+          "id": "rightRearWheel",
+          "transform": {
+            "position": [1.06, 0.49, -0.88],
+            "rotation": [0, 0, 90]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "wheel",
+          "material": "rubber"
+        },
+        {
+          "id": "rightRearHub",
+          "transform": {
+            "position": [1.06, 0.49, -0.88],
+            "rotation": [0, 0, 90]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hub",
+          "material": "ivory"
+        },
+        {
+          "id": "rightFrontWheel",
+          "transform": {
+            "position": [1.06, 0.49, 0.88],
+            "rotation": [0, 0, 90]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "wheel",
+          "material": "rubber"
+        },
+        {
+          "id": "rightFrontHub",
+          "transform": {
+            "position": [1.06, 0.49, 0.88],
+            "rotation": [0, 0, 90]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "hub",
+          "material": "ivory"
+        },
+        {
+          "id": "axleRear",
+          "transform": {
+            "position": [0, 0.49, -0.88],
+            "rotation": [0, 0, 90]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "axle",
+          "material": "dark"
+        },
+        {
+          "id": "axleFront",
+          "transform": {
+            "position": [0, 0.49, 0.88],
+            "rotation": [0, 0, 90]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "axle",
+          "material": "dark"
+        }
+      ]
+    },
+    "solar": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "solar",
+      "name": "Solar collector",
+      "parameters": {},
+      "geometries": {
+        "post": {
+          "type": "cylinder",
+          "radiusTop": 0.09,
+          "radiusBottom": 0.09,
+          "height": 2.5,
+          "segments": 12
+        },
+        "panel": {
+          "type": "box",
+          "size": [2.2, 0.09, 1.4]
+        },
+        "cell": {
+          "type": "box",
+          "size": [0.012, 0.02, 1.3]
+        }
+      },
+      "materials": {
+        "dark": {
+          "color": "#354551",
+          "metalness": 0.4,
+          "roughness": 0.55,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "solar": {
+          "color": "#31556c",
+          "metalness": 0.35,
+          "roughness": 0.35,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "ivory": {
+          "color": "#d8dfd6",
+          "metalness": 0.1,
+          "roughness": 0.65,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "array",
+          "name": "Solar collector",
+          "transform": {
+            "position": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "solarPost",
+          "parent": "array",
+          "transform": {
+            "position": [0, 1.25, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "post",
+          "material": "dark"
+        },
+        {
+          "id": "solarHead",
+          "parent": "array",
+          "transform": {
+            "position": [0, 2.5, 0],
+            "rotation": [20, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "group"
+        },
+        {
+          "id": "solarPanel",
+          "parent": "solarHead",
+          "transform": {
+            "position": [0, 0, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "panel",
+          "material": "solar"
+        },
+        {
+          "id": "solarCells",
+          "parent": "solarHead",
+          "transform": {
+            "position": [-0.94, 0.052, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "pattern": {
+            "type": "linear",
+            "count": 9,
+            "step": [0.235, 0, 0]
+          },
+          "type": "mesh",
+          "geometry": "cell",
+          "material": "ivory"
+        }
+      ]
+    },
+    "barrel": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "barrel",
+      "name": "Supply barrel",
+      "parameters": {},
+      "geometries": {
+        "body": {
+          "type": "lathe",
+          "points": [
+            [0, 0],
+            [0.34, 0],
+            [0.38, 0.1],
+            [0.4, 0.45],
+            [0.38, 0.85],
+            [0.34, 0.95],
+            [0, 0.95]
+          ],
+          "segments": 24
+        },
+        "ring": {
+          "type": "torus",
+          "radius": 0.375,
+          "tube": 0.025,
+          "segments": 24
+        }
+      },
+      "materials": {
+        "shell": {
+          "color": "#587a81",
+          "metalness": 0.35,
+          "roughness": 0.5,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "rim": {
+          "color": "#bac8c4",
+          "metalness": 0.65,
+          "roughness": 0.45,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "body",
+          "transform": {
+            "position": [0, 0, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "body",
+          "material": "shell"
+        },
+        {
+          "id": "ringLow",
+          "transform": {
+            "position": [0, 0.15, 0],
+            "rotation": [90, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "ring",
+          "material": "rim"
+        },
+        {
+          "id": "ringHigh",
+          "transform": {
+            "position": [0, 0.78, 0],
+            "rotation": [90, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "ring",
+          "material": "rim"
+        }
+      ]
+    },
+    "cargo": {
+      "schemaVersion": 1,
+      "kind": "model",
+      "id": "cargo",
+      "name": "Cargo crate",
+      "parameters": {},
+      "geometries": {
+        "crate": {
+          "type": "box",
+          "size": [0.8, 0.65, 0.8]
+        },
+        "stripe": {
+          "type": "box",
+          "size": [0.84, 0.08, 0.84]
+        }
+      },
+      "materials": {
+        "orange": {
+          "color": "#e89550",
+          "metalness": 0.1,
+          "roughness": 0.5,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        },
+        "ivory": {
+          "color": "#d8dfd6",
+          "metalness": 0.1,
+          "roughness": 0.65,
+          "opacity": 1,
+          "doubleSided": false,
+          "flatShading": false
+        }
+      },
+      "nodes": [
+        {
+          "id": "crate1",
+          "transform": {
+            "position": [0, 0.37, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "crate",
+          "material": "orange"
+        },
+        {
+          "id": "crate1Band",
+          "transform": {
+            "position": [0, 0.55, 0],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "stripe",
+          "material": "ivory"
+        }
+      ]
+    }
+  }
+}

@@ -1,11 +1,11 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./tsconfig.check.json",
   "compilerOptions": {
     "noEmit": false,
     "declaration": true,
     "emitDeclarationOnly": true,
     "outDir": "dist/types",
-    "rootDir": "src"
+    "rootDir": ".."
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/cli.ts", "src/standalone.ts", "src/preview/viewer.ts"]

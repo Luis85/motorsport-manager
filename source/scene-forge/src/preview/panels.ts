@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { SceneDocument, NodeSpec } from '../domain/schema.js';
+import type { SceneDocument, NodeSpec } from '../kernel-render.js';
 import type { LibraryItem } from './contracts.js';
 import { $, field } from './dom.js';
 import { clean, transformData } from './transforms.js';

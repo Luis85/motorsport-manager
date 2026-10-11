@@ -70,6 +70,18 @@ to be unique within each mission. Resizing cannot silently discard out-of-bounds
 content. The exported catalog preserves the other content families and missions;
 archetype values and new registered mechanics still use their JSON/code contracts.
 
+[`wildlands generate rts-mission`](wildlands-cli.md#generate) is the agent-first
+counterpart for whole missions. It writes one complete mission record into a game
+folder's catalog from what that catalog already defines: existing terrain,
+faction archetypes, resources and items, deposit amounts taken from existing
+missions and encounter budgets measured in existing unit costs. Its tile field
+is normalised into patches by the same `LWRTSMissionEditorData.paint` projection
+the editor uses, and the staged folder must pass the same catalog admission
+(placement, passability, footprints, entity limits) before the one catalog file
+is replaced under a folder-digest guard. It never changes archetype values or
+other missions (except an explicit `--replace` of the same mission id) and owns
+no session, clock or checkpoint.
+
 Editing, importing into the draft, exporting and returning to the match leave the
 existing match checkpoint unchanged. Explicitly playing the selected draft
 validates and constructs a fresh match before replacing the application session,
