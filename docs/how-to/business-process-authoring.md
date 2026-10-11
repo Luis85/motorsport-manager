@@ -636,7 +636,8 @@ another process keeps the lens for a process of the same kind and otherwise retu
 or 3D choice, and a shown Dashboard stays shown. Selecting a card or stage selects its step;
 **← Whole process** in the stage header, or Escape on the map or the 3D scene, returns to the whole
 process. Journeys also say customers or users instead of cases, show Finished, Goals, Lost and
-Conversion, and up to two tracked averages next to the run numbers. The **Steps** list and **Whole
+Conversion, and up to two tracked averages next to the run numbers, from minute 0 ("—" until a
+customer or user finishes), so the stage does not jump mid-run. The **Steps** list and **Whole
 process** change the view without advancing time, and **Fit to view** frames the whole process
 again. On a phone a business process opens in 2D; choose **3D** for the rooms.
 **Edit process…** in the header opens the **Definition editor** (validation before **Apply draft and reset run**, see below); a chip beside it names an unapplied draft.

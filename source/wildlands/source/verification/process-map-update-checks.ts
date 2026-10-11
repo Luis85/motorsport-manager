@@ -114,9 +114,9 @@ export async function mapUpdateChecks(studio: Studio): Promise<void> {
  // stage heading onto another line until the clock's sentence replaces it after the refresh, so the map is drawn while the svg has a
  // passing size that is never painted. Framing for that size used to leave the map different from a fresh draw (and moved a zoomed
  // camera); the camera now frames for the size the last rendering update reported. A real resize is reported (and redrawn) before the
- // next paint, so each comparison waits for two frames. The stage can also really change size during a run (the KPI strip under the
- // map wraps to a second row when the outcome tiles appear): a kept camera then keeps its scale and the world point at its centre,
- // so only the viewBox edges move with the svg. Where the svg size did not change the viewBox must be exactly the same.
+ // next paint, so each comparison waits for two frames. The stage can also really change size (a window resize; the KPI strip keeps
+ // its rows through a run, see the next check): a kept camera then keeps its scale and the world point at its centre, so only the
+ // viewBox edges move with the svg. Where the svg size did not change the viewBox must be exactly the same.
  await check('2D map framing does not depend on its history in DejaVu Sans: an untouched map matches a fresh draw after every '
   + 'tick and Fit to view, also with numbered cards, and a camera the reader zoomed or panned keeps its view across ticks', async () => {
   for (const index of [0, 4]) {
@@ -162,6 +162,46 @@ export async function mapUpdateChecks(studio: Studio): Promise<void> {
     await page.locator('#frame').click(); await matches(`after ${keys.join(' ')}, ticks, resizes and Fit to view`);
    }
    assert.equal(JSON.stringify((await query(page)).definition), definition, 'framing never changes the definition');
+  }
+ });
+ // The KPI strip's tiles follow the definition, not the run: a journey with goal or lost ends shows Goals, Lost, Conversion and its
+ // tracked averages from minute 0, and each value keeps a minimum width for its kind, so the strip already has the rows it needs
+ // and the map above it is not resized mid-run. The latest-event line under the strip keeps its line while it is empty.
+ await check('The stage keeps its height through a run: the 2D map svg of the user journey is as tall at minute 0 as after its '
+  + 'first outcomes, with the same KPI tiles, also in DejaVu Sans', async () => {
+  for (const dejavu of [false, true]) {
+   await page.setViewportSize({width: 1440, height: 1060}); await freshStudio();
+   if (dejavu) await page.addStyleTag({content: DEJAVU});
+   // Reset run keeps minute 0 and replaces the switch's sentence (navigation feedback that may take the message's second line) with
+   // the run's own one-line status, as each Advance does.
+   await switchTo(4); await page.locator('#mode-2d').click(); await page.locator('#reset').click(); await nextFrames(page, 2);
+   assert.equal(await page.locator('#message').innerText(), 'Run reset. Definition retained.');
+   const font = dejavu ? ' in DejaVu Sans' : '';
+   if (dejavu) {
+    const fonts = await renderedFamilies(page, ['#metrics span', '#metrics strong']);
+    for (const [selector, families] of Object.entries(fonts)) {
+     assert.deepEqual(families, ['DejaVu Sans'], `${selector} renders with ${families.join(', ') || 'no font'}; DejaVu Sans must be installed`);
+    }
+   }
+   const stage = async () => {
+    await nextFrames(page, 2);
+    return page.evaluate(() => ({svg: document.querySelector('#map svg')!.getBoundingClientRect().height,
+     strip: document.getElementById('metrics')!.getBoundingClientRect().height,
+     labels: [...document.querySelectorAll('#metrics > div > span')].map(s => s.textContent)}));
+   };
+   const start = await stage(), q0 = await query(page);
+   assert.deepEqual([q0.snapshot.minute, q0.snapshot.metrics.goals + q0.snapshot.metrics.lost], [0, 0], 'a fresh run without outcomes');
+   assert(start.svg > 0 && start.labels.includes('Goals'), `the map shows and the outcome tiles are reserved${font}: ${JSON.stringify(start)}`);
+   let outcomes = 0;
+   for (let i = 0; i < 40 && !outcomes; i++) {
+    await page.locator('#advance').click();
+    const m = (await query(page)).snapshot.metrics, now = await stage();
+    outcomes = m.goals + m.lost;
+    const at = `minute ${(await query(page)).snapshot.minute}${font}`;
+    assert.deepEqual(now.labels, start.labels, `the KPI tiles stay the same at ${at}`);
+    assert.deepEqual([now.svg, now.strip], [start.svg, start.strip], `the map svg and the KPI strip keep their heights at ${at}`);
+   }
+   assert(outcomes > 0, `the user journey reached its first outcomes${font}`);
   }
  });
  await check('2D map step cards are one roving tab stop: arrow keys move to the nearest card, Home and End reach the ends, '

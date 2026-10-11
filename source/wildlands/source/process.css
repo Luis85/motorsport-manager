@@ -196,8 +196,12 @@
 .process-metrics { display:flex; flex-wrap:wrap; align-items:flex-end; gap:var(--s1) var(--s5); padding:var(--s2) var(--s4); border-top:1px solid var(--line); font-variant-numeric:tabular-nums; }
 .process-metrics span { display:block; font-size:var(--t-xs); color:var(--muted); }
 .process-metrics strong { display:block; font-size:var(--t-lg); font-weight:550; line-height:1.3; }
+/* Values keep a minimum width for their kind (in their own font's digit width, so it follows the text scale): a count, cost or
+   duration that grows during a run stays inside its tile instead of re-wrapping the strip and resizing the stage above it. */
+.process-metrics strong { min-width:6ch; } .process-metrics .kpi-cost strong { min-width:10ch; } .process-metrics .kpi-time strong { min-width:18ch; }
 .process-latest { padding:0 var(--s4) var(--s2); font-size:var(--t-xs); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.process-latest:empty { display:none; }
+/* An empty line keeps its height, so the first event of a run does not resize the stage above it. */
+.process-latest:empty::before { content:"\a0"; }
 /* Inputs & outputs: a collapsible panel under the KPI strip with its own scroll. */
 .process-io { border-top:1px solid var(--line); min-width:0; }
 .process-io>summary { display:flex; align-items:center; gap:var(--s2); min-height:40px; padding:0 var(--s4); cursor:pointer; font-weight:650; list-style:none; }

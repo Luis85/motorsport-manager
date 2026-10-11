@@ -246,7 +246,8 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
   const labelsOf = async () => Object.keys(await kpis());
   // The KPI strip: mean cycle beside the mean age of the cases in progress, then the work cost and the capacity-basis cost.
   const PROCESS_KPIS = ['Completed', 'In progress', 'Mean cycle', 'Mean age in progress', 'Work cost', 'Capacity cost', 'Failed'];
-  const JOURNEY_KPIS = ['Finished', ...PROCESS_KPIS.slice(1)];
+  // A journey with goal or lost ends shows its outcome tiles and its first two tracked measures from minute 0, so the strip keeps its height.
+  const JOURNEY_KPIS = ['Finished', 'Goals', 'Lost', 'Conversion', ...PROCESS_KPIS.slice(1)];
   // A business process keeps its wording and shows no journey numbers, even after it has run. Nothing has finished yet: Mean cycle is '—'.
   const fresh = await kpis(), m0 = (await query(page)).snapshot.metrics;
   const age0 = m0.meanAgeMinutes === null ? '—' : `${m0.meanAgeMinutes} min`;
@@ -274,7 +275,12 @@ runSuite('process lenses browser harness', 'process-lenses-browser-results.json'
    await switchTo(index); await showIo(); const def = (await query(page)).definition;
    assert.equal(await page.locator('#steps-heading').innerText(), 'Touchpoints and steps');
    assert.equal(await page.locator('label[for="process-case"]').innerText(), one[0]!.toUpperCase() + one.slice(1));
-   assert.match(await page.locator('#scene-subtitle').innerText(), new RegExp(`\\d ${one}s? admitted$`)); assert.deepEqual(await labelsOf(), JOURNEY_KPIS);
+   assert.match(await page.locator('#scene-subtitle').innerText(), new RegExp(`\\d ${one}s? admitted$`));
+   const averages = def.track!.slice(0, 2).map(t => (t.label ?? t.field) + ' (avg)');
+   const start = await kpis(), m0 = (await query(page)).snapshot.metrics;
+   assert.deepEqual(Object.keys(start), [...JOURNEY_KPIS, ...averages]); assert.equal(m0.goals + m0.lost, 0, 'no outcome yet');
+   assert.deepEqual([start.Goals, start.Lost, start.Conversion, ...averages.map(a => start[a])],
+    ['0', '0', '—', ...averages.map(() => '—')]);
    assert.match(await page.locator('#inspector').innerText(), new RegExp(`Process type\\s+${label}`));
    assert.doesNotMatch(await page.locator('#inspector [aria-label="Arrival streams"]').innerText(), /\bcases?\b/i);
    for (let i = 0; i < 80; i++) {
