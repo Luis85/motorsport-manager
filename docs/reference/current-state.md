@@ -78,7 +78,7 @@ balance or human validation. See the [canonical RTS contract](rts-engine.md) and
 
 ## Standalone command-line tools
 
-Four separate TypeScript projects ship checked-in, self-contained command-line
+Five separate TypeScript projects ship checked-in, self-contained command-line
 bundles under `bin/`. Each needs only Node.js 22 or newer and runs from a fresh
 clone without `npm ci` or `node_modules`:
 
@@ -122,6 +122,14 @@ clone without `npm ci` or `node_modules`:
 - [`bin/character-studio`](character-studio-cli.md) edits Littlewild companions
   through a local browser editor, JSON CLI and HTTP API from
   `source/character-studio/`.
+- [`bin/process-studio`](process-studio-cli.md) is the standalone command line
+  for Wildlands business-process definitions from `source/process-studio/`: every
+  `bin/wildlands process` subcommand with identical options, results, written
+  files and exit codes (checked byte for byte against `bin/wildlands` by its
+  project tests), plus `version`, `doctor` and `--compact`. It bundles the
+  Wildlands process engine through one bridge module, and its `build` embeds the
+  process slice of the engine kit of the checked-in `bin/wildlands`, so it needs
+  no Wildlands CLI; any Wildlands engine change requires rebuilding it.
 
 The bundles are generated from their source projects and checked by each
 project's `npm run check:cli`. The three procedural generators (Model Forge

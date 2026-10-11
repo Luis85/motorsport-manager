@@ -27,5 +27,6 @@ under `source/`; they are outside the native game's capability inventory.
 - [Scene Forge CLI (`bin/scene-forge`)](scene-forge-cli.md)
 - [Model Forge CLI (`bin/model-forge`)](model-forge-cli.md)
 - [Character Studio CLI (`bin/character-studio`)](character-studio-cli.md)
+- [Process Studio CLI (`bin/process-studio`)](process-studio-cli.md)
 
 - [Business process engine](business-process-engine.md) — definition, ECS scheduling, step scenes and supported semantics.

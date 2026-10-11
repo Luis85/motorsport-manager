@@ -133,6 +133,8 @@ class TypeScriptPolicyTests(unittest.TestCase):
             "source/scene-forge/tests/e2e/workflow.test.ts": "tests",
             "source/model-forge/tests/kernel-core.test.ts": "tests",
             "source/model-forge/tests/e2e/review.test.ts": "tests",
+            "source/process-studio/tests/parity.test.cts": "tests",
+            "source/process-studio/tests/parity-cases.cts": "tests",
             "tests/test_quality.py": "tests",
             "source/wildlands/source/process-ui.ts": "source",
             "source/wildlands/source/process-contracts.d.ts": "source",
@@ -141,6 +143,8 @@ class TypeScriptPolicyTests(unittest.TestCase):
             "source/scene-forge/src/cli.ts": "source",
             "source/scene-forge/scripts/standalone.d.mts": "source",
             "source/model-forge/src/kernel/domain/schema.ts": "source",
+            "source/process-studio/src/kernel.cts": "source",
+            "source/process-studio/scripts/bundle.cts": "source",
         }
         for path, category in expected.items():
             with self.subTest(path=path):

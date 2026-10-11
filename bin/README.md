@@ -11,6 +11,7 @@ a tool; each documents its JSON protocol, exit codes and limits.
 | `bin/wildlands` | The Wildlands engine without game content: validate, inspect and build game folders (`docs/concepts/<id>/`) into self-contained HTML; create, validate, inspect, play, edit and compile portable projects into Godot desktop projects | [Wildlands CLI](../docs/reference/wildlands-cli.md) | [`source/wildlands/`](../source/wildlands/README.md) | `cd source/wildlands && npm ci && npm run build:cli` | `cd source/wildlands && npm run check:cli` |
 | `bin/scene-forge` | Author, validate, export and review declarative 3D projects, model registries and composed scenes | [Scene Forge CLI](../docs/reference/scene-forge-cli.md) | [`source/scene-forge/`](../source/scene-forge/README.md) | `cd source/scene-forge && npm ci && npm run build:cli` | `cd source/scene-forge && npm run check:cli` |
 | `bin/model-forge` | Agent-first editor for exactly one 3D model document; owns the model asset contract and shared recipe kernel and exports model bundles, Littlewild definitions and GLB/glTF | [Model Forge CLI](../docs/reference/model-forge-cli.md) | [`source/model-forge/`](../source/model-forge/README.md) | `cd source/model-forge && npm ci && npm run build:cli` | `cd source/model-forge && npm run check:cli` |
+| `bin/process-studio` | Author, validate, simulate, replicate, compare, explain and BPMN-exchange Wildlands business-process definitions and build each into one offline HTML studio; the standalone equivalent of `bin/wildlands process` | [Process Studio CLI](../docs/reference/process-studio-cli.md) | [`source/process-studio/`](../source/process-studio/README.md) | `cd source/process-studio && npm ci && npm run build:cli` | `cd source/process-studio && npm run check:cli` |
 | `bin/character-studio` | Create and edit Littlewild companions through a local browser editor, JSON CLI and HTTP API | [Character Studio CLI](../docs/reference/character-studio-cli.md) | [`source/character-studio/`](../source/character-studio/README.md) | `cd source/character-studio && npm ci && npm run build:cli` | `cd source/character-studio && npm run check:cli` |
 
 ## Requirements
@@ -20,6 +21,8 @@ a tool; each documents its JSON protocol, exit codes and limits.
 - `bin/scene-forge screenshot` and `review`, `bin/model-forge review` and
   `bin/character-studio capture`/`review` additionally need Playwright and a
   Chromium build; each tool's `doctor` reports their status.
+- `bin/process-studio` needs nothing else either, not even `bin/wildlands`: its
+  `build` embeds the process slice of the Wildlands engine kit.
 - `bin/wildlands` builds and plays only the games you point it at with
   `--game DIR` (for example `docs/concepts/littlewild`); it has no built-in game.
   The HTML files it builds run in a desktop browser from `file://`; the
@@ -37,6 +40,9 @@ bin/wildlands --help
 bin/scene-forge --help
 bin/model-forge --compact discover
 bin/character-studio discover
+bin/process-studio --version
+bin/process-studio validate --input docs/concepts/agency-delivery/content/agency.process.json
+bin/process-studio replicate --input docs/concepts/agency-delivery/content/agency.process.json --minutes 2400 --runs 10 --seed 1 --compact
 node bin/wildlands discover
 bin/wildlands validate-game --game docs/concepts/littlewild
 bin/wildlands build-game --game docs/concepts/littlewild --check demos/littlewild.html
@@ -45,8 +51,10 @@ for folder in docs/concepts/*/; do [ -f "$folder/game.json" ] && bin/wildlands v
 
 `bin/wildlands` and `bin/character-studio` always print one JSON object, except
 `bin/wildlands process slides --format md` without `--output`, which prints the
-Markdown deck itself. `bin/scene-forge` and `bin/model-forge` print JSON for their
-commands; add `--compact` for smaller responses.
+Markdown deck itself. `bin/process-studio` prints one JSON object with the same
+exception as `process slides`, and accepts `--compact` anywhere. `bin/scene-forge`
+and `bin/model-forge` print JSON for their commands; add `--compact` for smaller
+responses.
 
 `bin/model-forge` edits one model document; `bin/scene-forge` composes registered
 models into scenes. Hand a model over with
@@ -57,10 +65,15 @@ models into scenes. Hand a model over with
 
 All executables are generated bundles. Do not edit, format or patch them
 directly. After any change under `source/wildlands/`, `source/scene-forge/`,
-`source/model-forge/` or `source/character-studio/`, rebuild the matching
-executable with its rebuild command and commit it together with the source
-change. `source/model-forge/src/kernel/` is bundled into both `bin/model-forge`
-and `bin/scene-forge`, so a kernel change rebuilds and commits both. Each project's `npm run check:cli` rebuilds the bundle
+`source/model-forge/`, `source/character-studio/` or `source/process-studio/`,
+rebuild the matching executable with its rebuild command and commit it together
+with the source change. `source/model-forge/src/kernel/` is bundled into both
+`bin/model-forge` and `bin/scene-forge`, so a kernel change rebuilds and commits
+both. `bin/process-studio` bundles Wildlands process code through its bridge
+and embeds the process slice of the engine kit in `bin/wildlands`, so a change to
+a bridged Wildlands file or any Wildlands engine change also needs
+`npm run build:cli` in `source/process-studio` after `bin/wildlands` is rebuilt.
+Each project's `npm run check:cli` rebuilds the bundle
 without replacing it and fails when the checked-in file differs or is not
 executable; CI runs it, and also validates every game folder with the
 checked-in `bin/wildlands` alone, before installing any dependency.
