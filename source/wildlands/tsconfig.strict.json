@@ -589,6 +589,8 @@
     "source/verification/process-renderers-browser.ts",
     "source/verification/process-renderers-3d-checks.ts",
     "source/verification/process-lenses-browser.ts",
+    "source/verification/process-lenses-sipoc-checks.ts",
+    "source/verification/process-lenses-journey-checks.ts",
     "source/verification/process-readability-browser.ts",
     "source/verification/process-present-browser.ts",
     "source/verification/process-present-brief-checks.ts",
