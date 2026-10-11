@@ -2052,12 +2052,15 @@ The process checks are registered Wildlands suites (see
   minutes, chains of restores, the file header, the controller commands, refusals, exact percentiles
   across a checkpoint, hostile and malformed files, working-hours runs restored while closed and open,
   and `process run --checkpoint`/`--checkpoint-out`.
-- `business-process-bpmn` (Node): entry `source/test-process-bpmn.cts` (foreign BPMN mapping,
-  BPSim, standard export and the pinned numbers of the example files), after the extension round
-  trips in `test-process-bpmn-extensions.cts` and the conformance checks in
+- `business-process-bpmn` (Node): entry `source/test-process-bpmn.cts`, which loads, in order, the
+  extension round trips in `test-process-bpmn-extensions.cts`, the strict extension and XML text
+  checks in `test-process-bpmn-strict.cts`, the conformance checks in
   `test-process-bpmn-conformance.cts` (every export and example conforms, violation fixtures,
-  uncovered elements, `validate-bpmn` exit codes, a bounded-time large file), with helpers in
-  `test-process-bpmn-helpers.cts`.
+  uncovered elements, `validate-bpmn` exit codes, a bounded-time large file), foreign BPMN mapping
+  and BPSim parameters in `test-process-bpmn-import.cts`, and the standard export round trip with the
+  pinned numbers of the example files in `test-process-bpmn-export.cts`; the entry then checks the
+  XML reader, the BPMN export of every agency demo, BPSim WaitTime and the import bounds.
+  Foreign-document builders and helpers live in `test-process-bpmn-helpers.cts`.
 - Browser suites, sources `source/verification/process-*-browser.ts` with the shared
   `process-browser-fixture.ts` and `process-browser-models.ts` (companion check modules hold the
   checks of suites near the size budget): `business-process-browser` (studio
