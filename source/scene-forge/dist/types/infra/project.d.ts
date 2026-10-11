@@ -18,6 +18,7 @@ export declare const newScene: (id: string, name?: string) => {
         keyPosition: [number, number, number];
         exposure?: number | undefined;
         toneMapping?: "linear" | "filmic" | "neutral" | undefined;
+        presentation?: "inspection" | "portrait" | undefined;
     };
     geometries: Record<string, {
         type: "box";
@@ -26,6 +27,19 @@ export declare const newScene: (id: string, name?: string) => {
         type: "sphere";
         radius: import("../domain/schema.js").ScalarValue;
         segments?: number | undefined;
+    } | {
+        type: "organic";
+        size: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        roundness: import("../domain/schema.js").ScalarValue;
+        taper: import("../domain/schema.js").ScalarValue;
+        bend: import("../domain/schema.js").ScalarValue;
+        segments: number;
+        profile?: {
+            at: import("../domain/schema.js").ScalarValue;
+            width: import("../domain/schema.js").ScalarValue;
+            depth: import("../domain/schema.js").ScalarValue;
+            offset: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        }[] | undefined;
     } | {
         type: "cylinder";
         radiusTop: import("../domain/schema.js").ScalarValue;
@@ -99,8 +113,21 @@ export declare const newScene: (id: string, name?: string) => {
         opacity: number;
         doubleSided: boolean;
         flatShading: boolean;
+        surface?: {
+            kind: "fur" | "cloth" | "leather";
+            seed: number;
+            scale: number;
+            strength: number;
+            version?: 1 | 2 | undefined;
+        } | undefined;
+        sheen?: number | undefined;
+        sheenColor?: string | undefined;
+        sheenRoughness?: number | undefined;
+        clearcoat?: number | undefined;
+        clearcoatRoughness?: number | undefined;
         emissive?: string | undefined;
         emissiveIntensity?: number | undefined;
+        depthWrite?: boolean | undefined;
         shading?: "standard" | "unlit" | undefined;
     }>;
     nodes: ({
@@ -303,6 +330,7 @@ export declare function loadProjectScenes(start: string): Promise<{
             keyPosition: [number, number, number];
             exposure?: number | undefined;
             toneMapping?: "linear" | "filmic" | "neutral" | undefined;
+            presentation?: "inspection" | "portrait" | undefined;
         };
         geometries: Record<string, {
             type: "box";
@@ -311,6 +339,19 @@ export declare function loadProjectScenes(start: string): Promise<{
             type: "sphere";
             radius: import("../domain/schema.js").ScalarValue;
             segments?: number | undefined;
+        } | {
+            type: "organic";
+            size: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            roundness: import("../domain/schema.js").ScalarValue;
+            taper: import("../domain/schema.js").ScalarValue;
+            bend: import("../domain/schema.js").ScalarValue;
+            segments: number;
+            profile?: {
+                at: import("../domain/schema.js").ScalarValue;
+                width: import("../domain/schema.js").ScalarValue;
+                depth: import("../domain/schema.js").ScalarValue;
+                offset: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            }[] | undefined;
         } | {
             type: "cylinder";
             radiusTop: import("../domain/schema.js").ScalarValue;
@@ -384,8 +425,21 @@ export declare function loadProjectScenes(start: string): Promise<{
             opacity: number;
             doubleSided: boolean;
             flatShading: boolean;
+            surface?: {
+                kind: "fur" | "cloth" | "leather";
+                seed: number;
+                scale: number;
+                strength: number;
+                version?: 1 | 2 | undefined;
+            } | undefined;
+            sheen?: number | undefined;
+            sheenColor?: string | undefined;
+            sheenRoughness?: number | undefined;
+            clearcoat?: number | undefined;
+            clearcoatRoughness?: number | undefined;
             emissive?: string | undefined;
             emissiveIntensity?: number | undefined;
+            depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
         }>;
         nodes: ({
@@ -633,6 +687,19 @@ export declare function importModel(start: string, input: unknown, replace?: boo
             radius: import("../domain/schema.js").ScalarValue;
             segments?: number | undefined;
         } | {
+            type: "organic";
+            size: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            roundness: import("../domain/schema.js").ScalarValue;
+            taper: import("../domain/schema.js").ScalarValue;
+            bend: import("../domain/schema.js").ScalarValue;
+            segments: number;
+            profile?: {
+                at: import("../domain/schema.js").ScalarValue;
+                width: import("../domain/schema.js").ScalarValue;
+                depth: import("../domain/schema.js").ScalarValue;
+                offset: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            }[] | undefined;
+        } | {
             type: "cylinder";
             radiusTop: import("../domain/schema.js").ScalarValue;
             radiusBottom: import("../domain/schema.js").ScalarValue;
@@ -705,8 +772,21 @@ export declare function importModel(start: string, input: unknown, replace?: boo
             opacity: number;
             doubleSided: boolean;
             flatShading: boolean;
+            surface?: {
+                kind: "fur" | "cloth" | "leather";
+                seed: number;
+                scale: number;
+                strength: number;
+                version?: 1 | 2 | undefined;
+            } | undefined;
+            sheen?: number | undefined;
+            sheenColor?: string | undefined;
+            sheenRoughness?: number | undefined;
+            clearcoat?: number | undefined;
+            clearcoatRoughness?: number | undefined;
             emissive?: string | undefined;
             emissiveIntensity?: number | undefined;
+            depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
         }>;
         nodes: ({
@@ -921,6 +1001,19 @@ export declare function captureProjectModel(start: string, sceneId: string | und
             radius: import("../domain/schema.js").ScalarValue;
             segments?: number | undefined;
         } | {
+            type: "organic";
+            size: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            roundness: import("../domain/schema.js").ScalarValue;
+            taper: import("../domain/schema.js").ScalarValue;
+            bend: import("../domain/schema.js").ScalarValue;
+            segments: number;
+            profile?: {
+                at: import("../domain/schema.js").ScalarValue;
+                width: import("../domain/schema.js").ScalarValue;
+                depth: import("../domain/schema.js").ScalarValue;
+                offset: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            }[] | undefined;
+        } | {
             type: "cylinder";
             radiusTop: import("../domain/schema.js").ScalarValue;
             radiusBottom: import("../domain/schema.js").ScalarValue;
@@ -993,8 +1086,21 @@ export declare function captureProjectModel(start: string, sceneId: string | und
             opacity: number;
             doubleSided: boolean;
             flatShading: boolean;
+            surface?: {
+                kind: "fur" | "cloth" | "leather";
+                seed: number;
+                scale: number;
+                strength: number;
+                version?: 1 | 2 | undefined;
+            } | undefined;
+            sheen?: number | undefined;
+            sheenColor?: string | undefined;
+            sheenRoughness?: number | undefined;
+            clearcoat?: number | undefined;
+            clearcoatRoughness?: number | undefined;
             emissive?: string | undefined;
             emissiveIntensity?: number | undefined;
+            depthWrite?: boolean | undefined;
             shading?: "standard" | "unlit" | undefined;
         }>;
         nodes: ({

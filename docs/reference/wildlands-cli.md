@@ -62,6 +62,84 @@ The last command writes a complete Godot project: open it with
 `godot --path "$OUT/godot"`, or import `$OUT/godot/project.godot` in the Godot
 editor.
 
+## Character Studio interchange
+
+Character Studio exports version 1 `littlewild-creature-package` documents. Use
+`wildlands creature discover` for the complete CLI contract, then `creature list`
+to find archetypes and companion IDs in a portable project. These commands use the
+same detached `LWCreatureEditor` authority as the browser editor. They do not
+advance simulation time or edit a live save.
+
+| Command | Required options and behavior |
+|---|---|
+| `creature discover` | No inputs; commands, flags, recipe operations and persistence contract |
+| `creature list` | `--project FILE`; archetypes, scenes, companion IDs and project fingerprint |
+| `creature inspect` | `--project FILE --archetype ID`; full package, editable fields and fingerprint. Add `--summary` for compact visual facts without mesh buffers |
+| `creature export` | Inspection selection plus `--output NEW_FILE`; portable creature package |
+| `creature import` | `--project FILE --file PACKAGE --expected-fingerprint HEX`; validated package installation |
+| `creature edit` | `--project FILE --archetype ID --recipe FILE --expected-fingerprint HEX`; native authoring transaction |
+| `creature attach-visual` | `--project FILE --archetype ID --file VISUAL_OR_DEFINITION --expected-fingerprint HEX`; replace appearance and retain gameplay |
+
+Selections accept `--scene ID` (default: project scene), optional `--instance ID`
+for an existing companion, and `--game DIR` only for legacy projects. Import can
+choose an existing seed archetype automatically; it installs the package's own
+archetype ID. Importing an archetype never creates a live companion. An instance
+package requires its matching scene and `--instance` selection.
+
+Mutations require exactly one of `--dry-run` or `--output NEW_PROJECT.json`, plus
+the fingerprint from a fresh list/inspect. Dry-run reports `proposedFingerprint`
+without writing. All creature command outputs are **new-only** and atomically
+published; source projects and input packages stay unchanged. Retain successive
+project files as history and select an earlier version to undo. A stale guard
+requires fresh inspection and reconsideration of the edit. Import requires
+`--replace` when any existing archetype or dependent asset would change; the
+response lists replacements. When reopening a project, the native editor includes its
+item asset catalog as package references; re-export can therefore contain extra
+unchanged dependencies. Imported gameplay, appearance and source dependencies
+remain intact.
+
+Creature package and appearance-file imports accept up to **8 MiB**, including
+pretty-printed mesh arrays. This dedicated bound also applies to the browser
+creature-package picker and native package parser. Generic JSON and edit-recipe
+limits are unchanged; mesh topology, geometry-value, depth and project admission
+limits still apply. Discovery reports `maxPackageBytes` for agents.
+
+```sh
+bin/wildlands creature list --project character-project.json
+bin/wildlands creature import --project character-project.json --file moss.package.json --expected-fingerprint HEX --dry-run
+bin/wildlands creature import --project character-project.json --file moss.package.json --expected-fingerprint HEX --output character-project-v2.json
+bin/wildlands validate --project character-project-v2.json
+```
+
+`creature edit` takes `wildlands-creature-recipe` schemaVersion 1 with 1–256
+operations. `setField` uses an `id` from inspection and a `value`;
+`updateDefinition`, `updateAppearance` and `updateInstance` take a patch `value`;
+`duplicateArchetype` takes a new `id` and `name`. Each operation uses the native
+validator, and the whole transaction publishes only after all operations and the
+complete resulting project validate. Failure identifies the zero-based operation
+index. Example:
+
+```json
+{"format":"wildlands-creature-recipe","schemaVersion":1,"operations":[
+  {"op":"duplicateArchetype","id":"moss","name":"Moss"},
+  {"op":"updateDefinition","value":{"name":"Moss the Gardener"}}
+]}
+```
+
+`attach-visual` accepts a `littlewild-3d-asset` or the visual facet of a version 1
+`littlewild-definition`. The asset ID must match the selected archetype's visual.
+It preserves gameplay and companion state, while validating appearance, behavior
+mappings, rig bindings and the complete scenario together. Export Scene Forge
+changes into the original complete definition first, so unchanged variants and
+rig metadata survive. Advanced visual edits remain editable in Scene Forge;
+Character Studio refuses to silently reduce them to its simpler recipe.
+
+Follow the [complete agent workflow](../how-to/character-agent-workflow.md) for
+creation, visual review, refinement, handoff and maintenance across all three
+executables. The browser's **Import creature JSON** and **Review & apply**, and
+the existing SDK `validateCreaturePackage`/`createCreatureEditor` methods, remain
+available over the same authority.
+
 ## Protocol
 
 Every invocation, including `--help`, prints exactly **one JSON object** to
@@ -96,14 +174,14 @@ and over-budget failures `bytes` and `budgetBytes`:
 ```
 
 Options take exactly one value each (`--flag value`); a value cannot start with
-`--`. `--with-engine-sources` is the one value-less flag. Options may appear in
+`--`. `--with-engine-sources`, creature `--dry-run`, `--summary` and `--replace` are value-less flags. Options may appear in
 any order after the command. Unknown, duplicate and missing required options
 fail with exit 2. Relative paths resolve against the current directory; `output`
 fields in results are absolute paths.
 
 **Writing.** JSON and HTML outputs are written to a uniquely named temporary file
 and then renamed over the destination, so readers never see a partial document.
-An existing output file is replaced, except that an output may never be one of the
+Creature commands refuse existing outputs. Other commands replace an existing output file, except that an output may never be one of the
 command's inputs (same path, hard link or symlink alias): that fails with exit 2
 and leaves the input untouched. Godot outputs are staged in a sibling directory
 and published only when complete.
@@ -176,8 +254,88 @@ Arguments in `[brackets]` are optional.
 | `validate-game --game DIR` | Validate a game folder with the engine's validators. |
 | `inspect-game --game DIR` | Manifest summary, inventory, digest and profile sizes of a game folder. |
 | `build-game --game DIR (--output FILE.html \| --check FILE.html) [--profile play\|studio]` | Build a game's self-contained HTML, or check one for freshness. |
+| `storyboard discover` or `storyboard schema` | Discover the presentation protocol and bounded JSON input schema. |
+| `storyboard build (--input PLAN.json \| --project PROJECT.json) (--output NEW.html \| --dry-run)` | Compose a deterministic, self-contained review page from authored intent, source facts and supplied captures. |
 
 `--game DIR` on project commands is accepted only for schemaVersion 1 projects.
+
+### `storyboard`
+
+Storyboards explain what an agent built, its declared purpose, and the supplied
+visual evidence. They do not run or validate gameplay. `storyboard discover` and
+`storyboard schema` work without installing a game or starting a browser.
+
+```sh
+bin/wildlands storyboard discover
+bin/wildlands storyboard schema
+bin/wildlands storyboard build --input work/delivery/storyboard.json --dry-run
+bin/wildlands storyboard build --input work/delivery/storyboard.json --output work/delivery/storyboard-v1.html
+```
+
+The plan explicitly supplies intent; the builder does not infer purpose from
+names or pretend that a source inventory proves visual correctness. Recognized
+Wildlands projects, Character Studio recipes/packages/reviews and Scene Forge
+models/scenes/reviews contribute structural facts. Other JSON contributes
+generic field summaries. Cards without an image say **No capture supplied**.
+Use the tools' `capture` or `review` commands to supply actual visual evidence.
+
+Paths in this example are relative to `storyboard.json`:
+
+```json
+{
+  "format": "wildlands-storyboard",
+  "schemaVersion": 1,
+  "title": "Moss: character delivery",
+  "intent": "A gentle woodland companion with a readable silhouette.",
+  "layout": "sequence",
+  "sections": [{
+    "id": "delivery",
+    "title": "Author, refine, install",
+    "cards": [
+      {"id": "recipe", "title": "Character recipe", "source": "moss.recipe.json", "intent": "Keep the authored body and coat choices editable."},
+      {"id": "look", "title": "Captured appearance", "source": "review-v1/manifest.json", "caption": "Front, side and back from the retained review plan."},
+      {"id": "engine", "title": "Installed project", "source": "moss-v2.project.json", "intent": "Preserve gameplay while refining the appearance."}
+    ]
+  }]
+}
+```
+
+Layouts are `grid`, `sequence` and `comparison`; the default is `grid`. Input
+section/card order is retained. Each card needs a source, image, declared
+intent or caption. A card can also supply `image: "captures/front.png"`. Recognized review
+manifests automatically contribute their contact sheet and frame images;
+declared image SHA-256 values must match the actual bytes. Claimed recipe or
+source identities remain attributed to the supplied review manifest.
+
+All referenced files must stay beneath the plan directory. Absolute paths,
+parent-directory traversal, URLs and symlinks escaping that directory fail.
+PNG and JPEG captures are embedded; arbitrary HTML, SVG and scripts are not
+accepted as visual inputs. Authored strings and source details are escaped.
+The resulting page has no JavaScript, remote resources or external dependency.
+
+The input limits are 1 MiB per plan, 10 MiB per source JSON, 8 MiB per image,
+24 MiB total input and 48 MiB output HTML, with at most 12 sections, 48 cards
+and 96 embedded images. Each review can contribute at most 36 frame images.
+Read `schema` for text and identity bounds and current required fields.
+
+Successful stdout includes `receipt`: input paths, byte counts and SHA-256
+hashes; derived card facts and image verification; layout; section/card counts;
+and the HTML hash and size. Receipts label validation **presentation-only**.
+Identical inputs produce identical HTML bytes: no timestamp, random layout or
+simulation step enters the page. `--dry-run` returns the proposal without
+publishing. `--output` only accepts a new `.html` destination and publishes the
+complete page atomically; existing outputs and input files are retained.
+
+For a quick structural overview without a plan:
+
+```sh
+bin/wildlands storyboard build --project work/delivery/moss-v2.project.json --output work/delivery/project-overview.html
+```
+
+This derives one overview card, including scene facts, from the project's JSON. It neither invents
+intent nor renders scene screenshots. Add a plan and captured images for a
+visual review. Invalid input returns one structured diagnostic with
+`code: "storyboard-operation-failed"` and exit status 2.
 
 ### `--help` and `--version`
 
@@ -210,6 +368,12 @@ operation with `description`, `arguments` and an `example` argv), `commands`
 recipe operation tables and an example of each). `recipes.toolbox` names the
 typed SDK and JSON-lines runtime of a source build (paths under
 `source/wildlands/.generated/`); those are not part of `bin/wildlands`.
+
+In that persistent runtime, `story.export` returns engine-serialized story JSON
+as a string. Save it verbatim and pass the original text to `session.openStory`.
+Use `story` for object inspection. Native Save story preserves the same text:
+parsing and reserializing in another runtime can alter floating point values
+and invalidate content fingerprints. See the [terminal protocol](../../source/wildlands/WILDLANDS.md#persistent-terminal-protocol).
 
 Discovery is the source of truth for supported commands and operations. Prefer
 it over this page when they differ.
@@ -751,3 +915,69 @@ payloads.
 | | `--dry-run` | no | Write nothing; conflicts with `--output`. |
 
 The `process` template builds data-only definitions into offline 2D/3D simulations; its manifest names either one `content.definition` or an ordered `content.definitions` list of 1-8 files (never both), and `validate-game` admits every entry and reports the failing index. See [Business process authoring](../how-to/business-process-authoring.md).
+
+
+## Portable physical surfaces
+
+`creature inspect --project FILE --archetype ID --summary` reports a canonical
+visual SHA-256, named material properties, effective per-node surface descriptors,
+mesh vertex/triangle counts and authored versus generated UV coverage for every
+variant. It retains the project fingerprint for subsequent guarded edits and
+omits the large package/field payload. Triangle totals cover baked meshes only;
+this factual report is not a visual quality score. Review captures before judging
+expression, silhouette or likeness to a reference.
+
+Materials and node `materialProps` can declare
+`surface: {"kind":"fur","seed":17,"scale":4,"strength":0.45}`. All four fields
+are required: `kind` is `fur`, `cloth` or `leather`; integer `seed` is 0–65535,
+`scale` is 1–16 repeats, and `strength` is 0–1. The deterministic generator
+produces bounded 128×128 color and tangent-space normal maps. These are ordinary
+material textures, so Scene Forge can bake them into GLB and the engine into
+Godot assets. Fur detail is short surface texture; authored geometry still owns
+the silhouette. Strength zero gives neutral detail. Keep seeds fixed when
+comparing shape or lighting edits. An optional `version` selects `1` (default)
+or `2`; omission and explicit version 1 retain the original texture bytes.
+Version 2 uses finer directional fur, interlaced cloth and smoother leather.
+Native bake indexes and browser material metadata record the resolved
+`littlewild-surface-v1` or `littlewild-surface-v2` algorithm. Both versions retain
+the same 128×128 map dimensions and 256 distinct active descriptor limit.
+
+Baked meshes accept optional `uvs`, exactly two finite values per vertex.
+Author seam-aware UVs for detailed coat patterns; existing meshes use a spherical
+fallback. Primitive geometry retains its normal UV mapping. Surface maps modulate
+the named base color, so palette edits preserve the authored texture.
+
+The `littlewild-3d-asset` schema supports optional material properties `sheen`,
+`sheenRoughness`, `clearcoat` and `clearcoatRoughness` (finite numbers from 0 to 1),
+and `sheenColor` (`#RRGGBB`). They apply to named materials and node
+`materialProps`. Schema discovery includes these bounds; runtime admission rejects
+invalid values. Appearance palette overrides retain the authored surface while
+changing its color. Existing assets without physical properties keep their
+original standard material and shading defaults.
+
+Browser WebGL renderers use Three's physical material for authored sheen or
+clearcoat, including the creature editor, detached scene previews, world, pets,
+process scenes and standalone HTML exports. Smooth baked mesh normals remain
+portable through Scene Forge. This is real rendered geometry and lighting, not
+an image substituted for the model. The software compatibility projection retains
+geometry and base color but does not reproduce physical lighting or texture maps.
+Use the WebGL preflight and actual captures when reviewing surface fidelity.
+
+Godot maps clearcoat to `StandardMaterial3D`. Cloth sheen uses an approximate rim;
+its color and roughness remain available in `authored_surface` material metadata
+and are explicitly described as limitations in the exported manifest and README.
+Native and browser surfaces are not pixel-identical. Kit authors may use
+`LWAssetRenderer.createMaterial(THREE, color, properties, defaults)` and must call
+`LWAssetRenderer.disposeKit(kit)` when retiring a view to release owned baked
+geometry without invalidating another renderer's cache.
+
+
+Geometry admission keeps the usual 60,000 general JSON values, depth 24, and each
+operation's byte limit. Numeric `positions`, `normals`, `uvs` and `indices` inside declared
+version-1 `littlewild-3d-asset` meshes have a separate **400,000-value aggregate
+budget per document**, including repeated occurrences. This allows detailed
+imported characters to survive project editing, copies and fingerprints without
+increasing gameplay-data limits. Non-finite numbers, accessors, sparse arrays and
+invalid topology remain rejected. A `MESH_COMPLEXITY_LIMIT` diagnostic means to
+reuse meshes or reduce geometry detail; dividing the same data across assets does
+not evade the aggregate limit.

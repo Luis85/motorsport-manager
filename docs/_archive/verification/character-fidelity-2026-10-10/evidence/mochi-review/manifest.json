@@ -1,0 +1,36 @@
+{
+  "format": "character-studio-review",
+  "schemaVersion": 1,
+  "characterId": "mochi",
+  "recipeHash": "e39e55a20330bea700bbc2b398f97796c81fa84988e22d51f8451436d48e1aad",
+  "visualHash": "d4e7302b5c9f591d8fc6755f899045a8de1d955505c657d7b03aebe059d09081",
+  "compilerRevision": 3,
+  "renderer": "wildlands-three",
+  "paused": true,
+  "time": 0,
+  "plan": "replay-plan.json",
+  "contactSheet": {
+    "file": "contact-sheet.png",
+    "sha256": "caed5c4e59bc74f4c2f2635fd34a9a5b257a30688da94ab49213b9dd768eb109"
+  },
+  "frames": [
+    {
+      "id": "front",
+      "file": "frames/front.png",
+      "sha256": "333c40f9cf227fbcadb725eece796ed7ce10987cf79de18a714743e7f02394c9",
+      "bytes": 270788,
+      "preview": {
+        "mode": "studio",
+        "light": "studio",
+        "pose": "idle",
+        "camera": "front",
+        "width": 768,
+        "height": 768
+      }
+    }
+  ],
+  "limits": [
+    "Presentation stage is not gameplay state.",
+    "Compare using the same replay plan, tool build and browser for reproducible visual review."
+  ]
+}

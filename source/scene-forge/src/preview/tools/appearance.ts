@@ -22,6 +22,57 @@ export const materialTool: EditorTool = {
       max: '1',
       step: '.05',
     });
+    const surface = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    legend.textContent = 'Soft fabric & polished surfaces';
+    surface.append(legend);
+    form.append(surface);
+    note(surface, 'Sheen softens fur and fabric edges. Clearcoat adds a polished outer surface.');
+    const physical = Object.fromEntries(
+      [
+        ['sheen', 'Sheen amount'],
+        ['sheenRoughness', 'Sheen softness'],
+        ['clearcoat', 'Clearcoat amount'],
+        ['clearcoatRoughness', 'Clearcoat roughness'],
+      ].map(([key, label]) => [
+        key,
+        input(surface, label, 'number', '0', { min: '0', max: '1', step: '.05' }),
+      ]),
+    );
+    const detail = select(surface, 'Surface detail', [
+      ['none', 'Smooth'],
+      ['fur', 'Short fur'],
+      ['cloth', 'Woven cloth'],
+      ['leather', 'Soft leather'],
+    ]);
+    const detailVersion = select(surface, 'Detail style', [
+      ['1', 'Original'],
+      ['2', 'Fine detail'],
+    ]);
+    const detailSeed = input(surface, 'Detail seed', 'number', '7', {
+      min: '0',
+      max: '65535',
+      step: '1',
+    });
+    const detailScale = input(surface, 'Detail repeat', 'number', '3', {
+      min: '1',
+      max: '16',
+      step: '.5',
+    });
+    const detailStrength = input(surface, 'Detail strength', 'number', '.4', {
+      min: '0',
+      max: '1',
+      step: '.05',
+    });
+    note(
+      surface,
+      'Deterministic surface detail travels with Littlewild and GLB. It shades the form without changing its silhouette.',
+    );
+    const sheenColor = input(surface, 'Sheen color', 'color', '#ffffff');
+    const updateShading = () => {
+      surface.disabled = shading.value === 'unlit';
+    };
+    shading.addEventListener('change', updateShading, { signal });
     const emissive = input(form, 'Emission color', 'color');
     let definitions: Record<string, MaterialSpec> = {};
     const read = () => {
@@ -32,6 +83,17 @@ export const materialTool: EditorTool = {
       metalness.value = String(material.metalness);
       roughness.value = String(material.roughness);
       emissive.value = material.emissive ?? '#000000';
+      for (const [key, control] of Object.entries(physical))
+        control.value = String(
+          material[key as keyof MaterialSpec] ?? (key === 'sheenRoughness' ? 1 : 0),
+        );
+      detail.value = material.surface?.kind ?? 'none';
+      detailVersion.value = String(material.surface?.version ?? 1);
+      detailSeed.value = String(material.surface?.seed ?? 7);
+      detailScale.value = String(material.surface?.scale ?? 3);
+      detailStrength.value = String(material.surface?.strength ?? 0.4);
+      sheenColor.value = material.sheenColor ?? '#ffffff';
+      updateShading();
     };
     slot.addEventListener('change', read, { signal });
     const paint = action(
@@ -40,21 +102,59 @@ export const materialTool: EditorTool = {
       () => {
         const selected = context.selected();
         if (!selected) return;
+        const { surface: previousSurface, ...baseMaterial } = definitions[slot.value];
+        const hasDetail = detail.value !== 'none' && shading.value === 'standard';
+        if (
+          hasDetail &&
+          (!Number.isInteger(detailSeed.valueAsNumber) ||
+            detailSeed.valueAsNumber < 0 ||
+            detailSeed.valueAsNumber > 65535 ||
+            !Number.isFinite(detailScale.valueAsNumber) ||
+            detailScale.valueAsNumber < 1 ||
+            detailScale.valueAsNumber > 16 ||
+            !Number.isFinite(detailStrength.valueAsNumber) ||
+            detailStrength.valueAsNumber < 0 ||
+            detailStrength.valueAsNumber > 1)
+        ) {
+          context.notify('Detail needs an integer seed 0–65535, repeat 1–16 and strength 0–1.');
+          return;
+        }
         const material = {
-          ...definitions[slot.value],
+          ...baseMaterial,
+          ...(hasDetail
+            ? {
+                surface: {
+                  ...(detailVersion.value === '2'
+                    ? { version: 2 as const }
+                    : previousSurface?.version === 1
+                      ? { version: 1 as const }
+                      : {}),
+                  kind: detail.value as 'fur' | 'cloth' | 'leather',
+                  seed: detailSeed.valueAsNumber,
+                  scale: detailScale.valueAsNumber,
+                  strength: detailStrength.valueAsNumber,
+                },
+              }
+            : {}),
           color: color.value,
           shading: shading.value as 'standard' | 'unlit',
           metalness: metalness.valueAsNumber,
           roughness: roughness.valueAsNumber,
           emissive: emissive.value,
-          emissiveIntensity: 1,
+          emissiveIntensity: definitions[slot.value].emissiveIntensity ?? 1,
+          ...Object.fromEntries(
+            Object.entries(physical).map(([key, control]) => [key, control.valueAsNumber]),
+          ),
+          sheenColor: sheenColor.value,
         };
         if (
-          ![material.metalness, material.roughness].every(
-            (n) => Number.isFinite(n) && n >= 0 && n <= 1,
-          )
+          ![
+            material.metalness,
+            material.roughness,
+            ...Object.values(physical).map((control) => control.valueAsNumber),
+          ].every((n) => Number.isFinite(n) && n >= 0 && n <= 1)
         ) {
-          context.notify('Metalness and roughness must be between 0 and 1.');
+          context.notify('Material amounts and roughness must be between 0 and 1.');
           return;
         }
         context.edit((draft) => {
@@ -112,6 +212,10 @@ export const environmentTool: EditorTool = {
       container,
       'Preview only: these studio lights and display filters stay in the recipe. Add an authored light to include it in GLB.',
     );
+    const presentation = select(container, 'Light rig', [
+      ['inspection', 'Neutral inspection'],
+      ['portrait', 'Warm portrait studio'],
+    ]);
     const background = input(container, 'Background', 'color');
     const ambient = input(container, 'Ambient intensity', 'number', '', {
       min: '0',
@@ -154,6 +258,7 @@ export const environmentTool: EditorTool = {
           draft.environment = {
             ...draft.environment,
             background: background.value,
+            presentation: presentation.value as 'inspection' | 'portrait',
             ambient: ambient.valueAsNumber,
             keyIntensity: key.valueAsNumber,
             exposure: exposure.valueAsNumber,
@@ -164,9 +269,25 @@ export const environmentTool: EditorTool = {
       signal,
     );
     apply.disabled = !context.editable;
+    const portrait = action(
+      container,
+      'Use portrait studio',
+      () => {
+        presentation.value = 'portrait';
+        background.value = '#eee7d8';
+        ambient.value = '1.1';
+        key.value = '3.2';
+        exposure.value = '1';
+        look.value = 'filmic';
+        apply.click();
+      },
+      signal,
+    );
+    portrait.disabled = !context.editable;
     return {
       refresh() {
         const env = context.document().environment;
+        presentation.value = env.presentation ?? 'inspection';
         background.value = env.background;
         ambient.value = String(env.ambient);
         key.value = String(env.keyIntensity);

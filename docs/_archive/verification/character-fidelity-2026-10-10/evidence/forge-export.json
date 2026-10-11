@@ -1,0 +1,249 @@
+{
+  "model": "pipTrailWorldRound",
+  "glb": {
+    "path": "/workspace/work/fidelity-followup-delivery/pip-trail.glb",
+    "format": "glb",
+    "bytes": 348176,
+    "stats": {
+      "nodes": 84,
+      "meshes": 65,
+      "triangles": 38784,
+      "materials": 21,
+      "geometries": 12,
+      "bounds": {
+        "min": [
+          -0.3099400558577058,
+          -0.0010000000000000026,
+          -0.34397475739522865
+        ],
+        "max": [
+          0.3099400558577058,
+          0.9698842874902676,
+          0.286
+        ],
+        "size": [
+          0.6198801117154116,
+          0.9708842874902676,
+          0.6299747573952286
+        ]
+      },
+      "warnings": []
+    },
+    "warnings": [],
+    "validation": {
+      "validator": "Khronos glTF-Validator",
+      "numErrors": 0,
+      "numWarnings": 0,
+      "numInfos": 17,
+      "numHints": 0,
+      "messages": [
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/0/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/7/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/8/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/9/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/9/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/10/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/10/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/11/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/11/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/12/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/15/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/16/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/17/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/17/primitives/0/attributes/TEXCOORD_0"
+        },
+        {
+          "code": "UNUSED_MESH_TANGENT",
+          "message": "Tangents are not used because the material has no normal texture.",
+          "severity": 2,
+          "pointer": "/meshes/26/primitives/0/attributes/TANGENT"
+        },
+        {
+          "code": "UNUSED_OBJECT",
+          "message": "This object may be unused.",
+          "severity": 2,
+          "pointer": "/meshes/26/primitives/0/attributes/TEXCOORD_0"
+        }
+      ],
+      "truncated": false
+    }
+  },
+  "review": {
+    "directory": "/workspace/work/fidelity-followup-delivery/evidence/forge-review",
+    "manifest": "/workspace/work/fidelity-followup-delivery/evidence/forge-review/review.json",
+    "replayPlan": "/workspace/work/fidelity-followup-delivery/evidence/forge-review/replay-plan.json",
+    "contactSheet": "/workspace/work/fidelity-followup-delivery/evidence/forge-review/contact-sheet.png",
+    "frames": [
+      {
+        "id": "front",
+        "file": "front.png",
+        "width": 768,
+        "height": 768,
+        "camera": {
+          "projection": "orthographic",
+          "position": [
+            0,
+            0.484442143745134,
+            3.909746253824234
+          ],
+          "target": [
+            0,
+            0.4844421437451338,
+            -0.028987378697614335
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "near": 0.001312911210840616,
+          "far": 1312.911210840616,
+          "zoom": 1,
+          "left": -0.5436952009945499,
+          "right": 0.5436952009945499,
+          "top": 0.5436952009945499,
+          "bottom": -0.5436952009945499
+        },
+        "sha256": "258a360b217b42ea5a90a3d26b2c40bad8312ddc5f86987f007f4b558cee7455",
+        "bytes": 257296,
+        "path": "/workspace/work/fidelity-followup-delivery/evidence/forge-review/front.png"
+      },
+      {
+        "id": "right",
+        "file": "right.png",
+        "width": 768,
+        "height": 768,
+        "camera": {
+          "projection": "orthographic",
+          "position": [
+            3.9387336325218483,
+            0.484442143745134,
+            -0.02898737869761497
+          ],
+          "target": [
+            0,
+            0.4844421437451338,
+            -0.028987378697614335
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "near": 0.001312911210840616,
+          "far": 1312.911210840616,
+          "zoom": 1,
+          "left": -0.5436952009945499,
+          "right": 0.5436952009945499,
+          "top": 0.5436952009945499,
+          "bottom": -0.5436952009945499
+        },
+        "sha256": "9c5e0d1b8d2b67d4fdf8c54d3483cdc607323dde58b336452adf91d8faa76a37",
+        "bytes": 219642,
+        "path": "/workspace/work/fidelity-followup-delivery/evidence/forge-review/right.png"
+      }
+    ],
+    "stats": {
+      "nodes": 88,
+      "meshes": 68,
+      "triangles": 40256,
+      "materials": 21,
+      "geometries": 12,
+      "bounds": {
+        "min": [
+          -0.3099400558577058,
+          -0.0010000000000000026,
+          -0.34397475739522865
+        ],
+        "max": [
+          0.3099400558577058,
+          0.9698842874902676,
+          0.392
+        ],
+        "size": [
+          0.6198801117154116,
+          0.9708842874902676,
+          0.7359747573952287
+        ]
+      },
+      "warnings": []
+    },
+    "durationMs": 27405,
+    "sourceStateHash": "ac5af1d8b48b7fd7abcee37779fb9e5320faa8176739e61d1a62d5bf8e5f97bf"
+  }
+}

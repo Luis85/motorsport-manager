@@ -1,0 +1,13 @@
+{
+  "format": "character-studio-showcase-build",
+  "schemaVersion": 1,
+  "historicalDate": "2026-10-10",
+  "executable": "bin/wildlands",
+  "executableSha256": "9efade26b1163b9fc425a898db6bace1c5fc7be20fa9efdfa88c923d2601fccc",
+  "nodeVersion": "v24.19.0",
+  "manifest": "storyboard.json",
+  "manifestSha256": "df9589c523b3f2fd3cb1baaa1089436a2e873fb90d3acba14ec727af21e72519",
+  "output": "index.html",
+  "outputSha256": "aee08835bbe118eff8347c3e2449481cb7336ee45fd7f0bfb18c09a4a6ab6280",
+  "validation": "Presentation composition only; supplied review images are hash checked when declared."
+}

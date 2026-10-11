@@ -24,9 +24,9 @@ const operations=[
  ['step',{count:'integer 0..36000 (default 1)'},'fixed'],['advance',{seconds:'multiple of 0.1, 0..3600'},'fixed'],
  ['command',{command:'SDK command envelope; discover.commands describes scope and argument ceiling'},'none'],
  ['query',{name:'discover.queries key',args:'array, positional SDK arguments'},'none'],
- ['save',{},'none'],['story',{},'none'],['session.capture',{},'none'],
+ ['save',{},'none'],['story',{},'none'],['story.export',{},'none'],['session.capture',{},'none'],
  ['session.create',{scenarioId:'built-in ID (default littlewild)',pack:'optional complete scenario pack',sceneId:'optional scene ID'},'none'],
- ['session.openStory',{story:'portable story envelope 10'},'none'],['session.close',{},'none'],
+ ['session.openStory',{story:'original story.export JSON text (preferred) or portable story envelope 10'},'none'],['session.close',{},'none'],
  ['scene.review',{connectionId:'discoverable connection ID'},'none'],['scene.enter',{connectionId:'discoverable connection ID'},'none'],
  ['storytelling.inspect',{},'none'],['storytelling.sample',{id:'cutscene ID',time:'finite clip seconds'},'none'],
  ['tools.call',{facet:'discover.facets key',method:'allowed SDK method',args:'positional arguments'},'none'],
@@ -113,7 +113,7 @@ export class WildlandsRuntime {
  private dispatch(method:string,params:Record<string,unknown>):unknown {
   switch(method){
    case 'discover':return {format:'wildlands-runtime',schemaVersion:1,nodeMajor:22,fixedStep:toolbox.fixedStep,maxSteps:toolbox.maxSteps,maxRequestBytes:MAX_REQUEST_BYTES,maxResponseBytes:MAX_RESPONSE_BYTES,
-    operations:operations.map(([method,parameters,clock])=>({method,parameters,clock})),scenarios:toolbox.scenarios(),commands:toolbox.commands(),failureCodes:toolbox.failureCodes(),queries,facets,authoring:this.editors.discover()};
+    operations:operations.map(([method,parameters,clock])=>({method,parameters,clock,...method==='story.export'?{result:'Engine-serialized JSON string. Save verbatim and pass the original text to session.openStory; parsing and reserializing in another runtime can change numeric fingerprints.'}:{}})),scenarios:toolbox.scenarios(),commands:toolbox.commands(),failureCodes:toolbox.failureCodes(),queries,facets,authoring:this.editors.discover()};
    case 'inspect':return this.view();
    case 'start':this.owned().start();return this.view();
    case 'pause':this.owned().pause();return this.view();
@@ -124,6 +124,7 @@ export class WildlandsRuntime {
    case 'query':return invoke(this.owned(),queries,params.name,params.args);
    case 'save':return this.owned().save();
    case 'story':return this.owned().story();
+   case 'story.export':return JSON.stringify(this.owned().story());
    case 'session.capture':return this.capture();
    case 'session.create':this.create(params);return this.view();
    case 'session.openStory':{

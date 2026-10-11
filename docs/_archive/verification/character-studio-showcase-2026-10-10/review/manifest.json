@@ -1,0 +1,106 @@
+{
+  "format": "character-studio-review",
+  "schemaVersion": 1,
+  "characterId": "pip",
+  "recipeHash": "b7fda6fe6b9ad625da2d19e592328fd9eb8394e74502e94f26cac9282b800090",
+  "visualHash": "26878ce24f61cbf8a381b155f648fd893591525a7cc1e08f8092e48253207280",
+  "compilerRevision": 2,
+  "renderer": "wildlands-three",
+  "paused": true,
+  "time": 0,
+  "plan": "replay-plan.json",
+  "contactSheet": {
+    "file": "contact-sheet.png",
+    "sha256": "326d376077ecb0c390992411a262e551f101d634cc48a3a8598e1b794690670c"
+  },
+  "frames": [
+    {
+      "id": "front",
+      "file": "frames/front.png",
+      "sha256": "38542115a0e766d739e5ebb4cf6f936a19c0f8378737f86b27c30f18e46bff3b",
+      "bytes": 328783,
+      "preview": {
+        "mode": "studio",
+        "light": "studio",
+        "pose": "idle",
+        "camera": "front",
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "side",
+      "file": "frames/side.png",
+      "sha256": "53b35b0db8c5e906da5c64e7f94c9c39fc21f684ac73f6ad267c15db3b971b89",
+      "bytes": 318610,
+      "preview": {
+        "mode": "studio",
+        "light": "studio",
+        "pose": "idle",
+        "camera": "side",
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "back",
+      "file": "frames/back.png",
+      "sha256": "64fb9d888d027bc7bf928a01e1b80eacf4360fece408b8383236340ef453cfaf",
+      "bytes": 337462,
+      "preview": {
+        "mode": "studio",
+        "light": "studio",
+        "pose": "idle",
+        "camera": "back",
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "portrait",
+      "file": "frames/portrait.png",
+      "sha256": "4ad4cd2d48c9776b4b9a511d18a764ab163354af49b7ee5644107fd3e7ff8885",
+      "bytes": 316050,
+      "preview": {
+        "mode": "portrait",
+        "light": "studio",
+        "pose": "idle",
+        "camera": "front",
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "world",
+      "file": "frames/world.png",
+      "sha256": "702c887dbda364bda9e665ac39fbeff532caa64d4a62d225351a93017e49822b",
+      "bytes": 315145,
+      "preview": {
+        "mode": "world",
+        "light": "daylight",
+        "pose": "idle",
+        "camera": "front",
+        "width": 768,
+        "height": 768
+      }
+    },
+    {
+      "id": "night",
+      "file": "frames/night.png",
+      "sha256": "036e3b39e754f3d188f1363ac707525f9a6ba5030f995218fb32b36746973939",
+      "bytes": 279257,
+      "preview": {
+        "mode": "world",
+        "light": "night",
+        "pose": "idle",
+        "camera": "front",
+        "width": 768,
+        "height": 768
+      }
+    }
+  ],
+  "limits": [
+    "Presentation stage is not gameplay state.",
+    "Compare using the same replay plan, tool build and browser for reproducible visual review."
+  ]
+}

@@ -14,6 +14,7 @@
  if(node&&!root.LWSkillTrees)require('./skill-trees.js');
  const F=(node?require('./creature-editor-fields.js'):root.LWCreatureEditorFields) as Root['LWCreatureEditorFields'];
  const C=root.LWContent,copy=C.copy;
+ const MAX_PACKAGE_BYTES=8*1024*1024;
  const record=(value:unknown):Data=>value!==null&&typeof value==='object'&&!Array.isArray(value)?value as Data:{};
  function accepted(input:unknown):LWContentPorts.ScenarioPack {const check=X.validate(input);if(!check.ok)throw Error(check.errors.join('\n'));return check.pack;}
  function references(pack:LWContentPorts.ScenarioPack):unknown[]{return copy(pack.resources?.assets.filter(row=>record(row).category==='item')??[]);}
@@ -23,7 +24,7 @@
   if(!value)throw Error('Choose an existing companion in this scene.');return record(value);
  }
  function readPackage(input:unknown):LWCreatureEditor.Package {
-  const value=record(C.parse(input,2*1024*1024)),keys=['format','schemaVersion','gameplayDefinition','appearanceManifest','assetReferences','selectedInstance'];
+  const value=record(C.parse(input,MAX_PACKAGE_BYTES)),keys=['format','schemaVersion','gameplayDefinition','appearanceManifest','assetReferences','selectedInstance'];
   if(Object.keys(value).some(key=>!keys.includes(key))||value.format!=='littlewild-creature-package'||value.schemaVersion!==1||!Array.isArray(value.assetReferences))throw Error('Use a version 1 Littlewild creature package with gameplay, appearance and asset references.');
   const definition=D.validate(value.gameplayDefinition),appearance=A.validate(value.appearanceManifest);
   if(appearance.category!=='actor'||definition.visualAsset!==appearance.id)throw Error('Creature visualAsset must select its package appearance manifest.');
@@ -91,5 +92,5 @@
    undo:()=>travel(previous,future),redo:()=>travel(future,previous)
   };return session;
  }
- const api:LWCreatureEditor.Api={create,validatePackage};root.LWCreatureEditor=api;if(node)module.exports=api;
+ const api:LWCreatureEditor.Api={MAX_PACKAGE_BYTES,create,validatePackage};root.LWCreatureEditor=api;if(node)module.exports=api;
 })(globalThis);

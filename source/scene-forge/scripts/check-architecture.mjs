@@ -53,6 +53,7 @@ for (const file of files) {
         'src/application/rigging.ts',
         'src/application/gltf-scene.ts',
         'src/application/materials.ts',
+        'src/application/surfaces.ts',
         'src/domain/scalar.ts',
         'src/domain/errors.ts',
         'src/domain/identity.ts',

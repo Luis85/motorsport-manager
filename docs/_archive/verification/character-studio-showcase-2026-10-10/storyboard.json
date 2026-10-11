@@ -1,0 +1,76 @@
+{
+  "format": "wildlands-storyboard",
+  "schemaVersion": 1,
+  "title": "Littlewild Character Studio",
+  "intent": "Make a woodland companion your own, refine the details, and carry one consistent character into Littlewild. A historical snapshot of the editor, visual review tools and agent workflow on 10 October 2026.",
+  "layout": "grid",
+  "sections": [
+    {
+      "id": "editor",
+      "title": "1. Meet your companion",
+      "intent": "Five focused chapters, with your actual character always in view.",
+      "cards": [
+        {
+          "id": "desktop",
+          "title": "A dedicated place to make Pip your own",
+          "source": "pip.recipe.json",
+          "image": "screens/editor-desktop.png",
+          "caption": "Choose a starting look, shape the body and face, then turn the model to inspect your changes. Undo, save and review stay close at hand. The recipe below keeps Pip’s choices portable."
+        },
+        {
+          "id": "mobile",
+          "title": "The same editor on a narrow screen",
+          "image": "screens/editor-mobile.png",
+          "caption": "On a narrow screen, Pip moves above the editing controls. The same five chapters, camera choices and save actions remain available."
+        }
+      ]
+    },
+    {
+      "id": "customize",
+      "title": "2. Shape one coherent character",
+      "intent": "Soft proportions, expressive eyes and a friendly smile, built from real editable geometry.",
+      "cards": [
+        {
+          "id": "appearance",
+          "title": "Appearance that travels with the character",
+          "source": "pip.package.json",
+          "image": "screens/editor-back-view.png",
+          "caption": "Turn Pip around to check the ears, silhouette and tail. Body, head, ears, eyes, coat and outfits share one recipe across the editor and agent tools. The native package keeps gameplay alongside all four visual variants; outfits remain cosmetic."
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "title": "3. Review the result from repeatable views",
+      "intent": "Check the face, silhouette and materials through repeatable views of the compiled character.",
+      "cards": [
+        {
+          "id": "studio-review",
+          "title": "Six fixed views, one authored companion",
+          "source": "review/manifest.json",
+          "caption": "Front, side, back, portrait, daylight and night, gathered into one contact sheet. Fixed cameras and a paused pose make changes easier to compare. The review records recipe, visual and image hashes so agents can track which character they inspected."
+        },
+        {
+          "id": "forge-review",
+          "title": "The visual opened in Scene Forge",
+          "source": "forge-review/review.json",
+          "caption": "Continue refining Pip in Scene Forge with editable geometry and material roles. Front and back captures show the imported visual under Scene Forge’s lighting, alongside source and render hashes and a reusable review plan."
+        }
+      ]
+    },
+    {
+      "id": "agents",
+      "title": "4. Continue through all three tools",
+      "intent": "Discover capabilities, inspect current state, propose guarded edits and review the result before writing a new project version.",
+      "cards": [
+        {
+          "id": "workflow",
+          "title": "Author → refine → install",
+          "source": "workflow.json",
+          "image": "review/frames/portrait.png",
+          "caption": "Character Studio: discover → inspect → guarded apply → export package → review.\nScene Forge: dry-run the import → refine geometry and materials → export and review the visual.\nWildlands: inspect → dry-run creature import or attach-visual with the current fingerprint → write a new portable project.\n\nThe JSON below includes the CLI commands. Inspect again after a stale guard; keep each new result as a separate project version."
+        }
+      ]
+    }
+  ]
+}

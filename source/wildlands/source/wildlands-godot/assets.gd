@@ -1,13 +1,22 @@
 extends RefCounted
 ## Canonical primitive trees retain IDs, parent-local transforms and material roles.
 var definitions: Dictionary = {}
+var installed_records: Array = []
 var meshes: Dictionary = {}
 var materials: Dictionary = {}
+var surface_textures: Dictionary = {}
+var surface_entries: Variant = null
 
 
 func install(records: Array) -> void:
+	# Detached view catalogs are values; unchanged snapshots retain GPU resources.
+	if records == installed_records:
+		return
+	installed_records = records.duplicate(true)
 	definitions.clear()
-	for record in records:
+	meshes.clear()
+	materials.clear()
+	for record in installed_records:
 		definitions[str(record.category) + ":" + str(record.id)] = record
 
 
@@ -73,8 +82,14 @@ func material(
 	asset: Dictionary, record: Dictionary, overrides: Dictionary = {}
 ) -> StandardMaterial3D:
 	var role: String = record.get("material", "")
-	var value: Variant = overrides.get(role, asset.get("materials", {}).get(role, "#9bb98c"))
+	var value: Variant = asset.get("materials", {}).get(role, "#9bb98c")
 	var properties: Dictionary = {"color": value} if value is String else value.duplicate()
+	if overrides.has(role):
+		var replacement: Variant = overrides[role]
+		if replacement is String:
+			properties["color"] = replacement
+		else:
+			properties = replacement.duplicate()
 	properties.merge(record.get("materialProps", {}), true)
 	var key := JSON.stringify(properties)
 	if materials.has(key):
@@ -85,14 +100,68 @@ func material(
 	result.roughness = float(properties.get("roughness", 0.98))
 	result.metallic = float(properties.get("metalness", 0.0))
 	result.cull_mode = BaseMaterial3D.CULL_DISABLED
+	result.clearcoat_enabled = float(properties.get("clearcoat", 0)) > 0
+	result.clearcoat = float(properties.get("clearcoat", 0))
+	result.clearcoat_roughness = float(properties.get("clearcoatRoughness", 0))
+	# Godot has no cloth sheen BRDF. Rim is a documented approximation, not parity.
+	result.rim_enabled = float(properties.get("sheen", 0)) > 0
+	# Rim adds energy instead of redistributing it like cloth sheen. Bound it to 8%.
+	result.rim = float(properties.get("sheen", 0)) * 0.08
+	result.rim_tint = 1.0
+	result.set_meta("authored_surface", properties.duplicate(true))
+	if result.rim_enabled:
+		result.set_meta(
+			"surface_limitation",
+			"Sheen uses bounded albedo-tinted rim; sheenColor/roughness are retained only."
+		)
 	if properties.get("transparent", false) or result.albedo_color.a < 1:
 		result.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	if properties.has("emissive"):
 		result.emission_enabled = true
 		result.emission = Color(str(properties.emissive))
 		result.emission_energy_multiplier = float(properties.get("emissiveIntensity", 1))
+	if properties.has("surface"):
+		_surface(result, properties.surface)
 	materials[key] = result
 	return result
+
+
+## Native textures use the exact pixels baked by the portable engine algorithm.
+func _surface(result: StandardMaterial3D, descriptor: Dictionary) -> void:
+	if surface_entries == null:
+		surface_entries = JSON.parse_string(
+			FileAccess.get_file_as_string("res://surfaces/index.json")
+		)
+	if not surface_entries is Array:
+		push_error("Missing portable surface texture index")
+		return
+	for entry in surface_entries:
+		if (
+			str(entry.surface.kind) != str(descriptor.kind)
+			or int(entry.surface.seed) != int(descriptor.seed)
+			or float(entry.surface.scale) != float(descriptor.scale)
+			or float(entry.surface.strength) != float(descriptor.strength)
+			or int(entry.surface.get("version", 1)) != int(descriptor.get("version", 1))
+		):
+			continue
+		for role in ["color", "normal"]:
+			var path := "res://" + str(entry[role])
+			if not surface_textures.has(path):
+				var image := Image.load_from_file(path)
+				if image == null:
+					push_error("Missing portable surface texture " + path)
+					return
+				image.generate_mipmaps()
+				surface_textures[path] = ImageTexture.create_from_image(image)
+		result.set_meta("surface_algorithm", entry.get("algorithm", "littlewild-surface-v1"))
+		result.albedo_texture = surface_textures["res://" + str(entry.color)]
+		result.normal_enabled = true
+		result.normal_texture = surface_textures["res://" + str(entry.normal)]
+		var repeat := float(descriptor.scale)
+		result.uv1_scale = Vector3(repeat, repeat, 1)
+		result.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+		return
+	push_error("Portable surface was not baked into this Godot project")
 
 
 func colored(color: String) -> StandardMaterial3D:
@@ -149,10 +218,24 @@ func baked(asset: Dictionary, id: String) -> Mesh:
 	var normals: Array = data.get("normals", [])
 	var vertices := PackedVector3Array()
 	var normal_values := PackedVector3Array()
+	var uv_values := PackedVector2Array()
+	var uvs: Array = data.get("uvs", [])
 	for index in range(0, positions.size(), 3):
 		vertices.append(Vector3(positions[index], positions[index + 1], positions[index + 2]))
 		if normals.size() == positions.size():
 			normal_values.append(Vector3(normals[index], normals[index + 1], normals[index + 2]))
+	for index in range(vertices.size()):
+		if uvs.size() == vertices.size() * 2:
+			uv_values.append(Vector2(uvs[index * 2], uvs[index * 2 + 1]))
+		else:
+			var point := vertices[index]
+			var radius := point.length()
+			uv_values.append(
+				Vector2(
+					0.5 + atan2(point.z, point.x) / TAU,
+					acos(clampf(point.y / radius, -1, 1)) / PI if radius > 0 else 0.5
+				)
+			)
 	var source: Array = data.get("indices", range(vertices.size()))
 	var indices := PackedInt32Array()
 	for index in range(0, source.size() - 2, 3):
@@ -161,11 +244,18 @@ func baked(asset: Dictionary, id: String) -> Mesh:
 	arrays.resize(Mesh.ARRAY_MAX)
 	arrays[Mesh.ARRAY_VERTEX] = vertices
 	arrays[Mesh.ARRAY_INDEX] = indices
+	arrays[Mesh.ARRAY_TEX_UV] = uv_values
 	if normal_values.size() == vertices.size():
 		arrays[Mesh.ARRAY_NORMAL] = normal_values
 	var result := ArrayMesh.new()
 	if not vertices.is_empty():
 		result.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		var surface := SurfaceTool.new()
+		surface.create_from(result, 0)
+		if normal_values.size() != vertices.size():
+			surface.generate_normals()
+		surface.generate_tangents()
+		result = surface.commit()
 	meshes[key] = result
 	return result
 

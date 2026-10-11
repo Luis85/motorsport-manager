@@ -21,7 +21,7 @@ declare namespace LWProcess3D {
  'use strict';
  // Vendored Three.js has the same intentionally loose adapter boundary as pet-renderer.ts.
  type O = any;
- const root = inputRoot as {THREE: O; LWAssetRenderer: {createFromDefinition(kit: O, parent: O, input: unknown, model?: string): {root: O}}; LWProcessRooms: LWProcessRooms.Api; LWProcess3D?: LWProcess3D.Api};
+ const root = inputRoot as {THREE: O; LWAssetRenderer: {createMaterial(T:O,color:string,extra:Record<string,unknown>,defaults?:Record<string,unknown>):O;disposeKit(kit:unknown,release?:(geometry:O)=>void):void;createFromDefinition(kit: O, parent: O, input: unknown, model?: string): {root: O}}; LWProcessRooms: LWProcessRooms.Api; LWProcess3D?: LWProcess3D.Api};
  /** While playing, animated frames are drawn at most this often (seconds). */
  const FRAME = 1 / 30;
  const renderers = new Set<O>(), stages = new WeakMap<LWProcess3D.Stage, O>();
@@ -82,7 +82,7 @@ declare namespace LWProcess3D {
   }
   function mat(color: string, extra: Record<string, unknown> = {}): O {
    const key = color + JSON.stringify(extra);
-   if (!materials.has(key)) materials.set(key, new T.MeshStandardMaterial({color, roughness: .8, ...extra}));
+   if (!materials.has(key)) materials.set(key, root.LWAssetRenderer.createMaterial(T,color,extra,{roughness:.8}));
    return materials.get(key);
   }
   const kit: O = {T, mat, group(parent: O) {const g = new T.Group(); parent.add(g); return g;},
@@ -368,6 +368,7 @@ declare namespace LWProcess3D {
    canvas.removeEventListener('pointerdown', pointerDown); canvas.removeEventListener('pointermove', pointerMove); canvas.removeEventListener('pointerup', pointerUp); canvas.removeEventListener('wheel', wheel);
    const allGeometry = new Set<O>(geometries.values()), allMaterials = new Set<O>(materials.values());
    scene.traverse((o: O) => {if (o.geometry) allGeometry.add(o.geometry); if (o.material) for (const m of Array.isArray(o.material) ? o.material : [o.material]) allMaterials.add(m);});
+   root.LWAssetRenderer.disposeKit(kit,geometry=>allGeometry.add(geometry));
    allGeometry.forEach(g => g.dispose()); allMaterials.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); light.dispose(); done();
   }};
  }
