@@ -34,10 +34,19 @@ const MAX_MINUTE = 100000;
 
 interface Args {game: string; process: number; minute: number; out: string; cli: string; definitions: string[]}
 interface Offender {element: string; left: number; right: number; width: number}
-interface Overflow {scrollWidth: number; clientWidth: number; overflowing: boolean; offenders: Offender[]; dialog?: {scrollWidth: number; clientWidth: number; overflowing: boolean}}
-interface Shot {name: string; path: string | null; viewport: string; font: 'default' | 'DejaVu Sans'; available: boolean; overflow: Overflow | null; detail?: Record<string, unknown>; error?: string}
+interface Overflow {
+ scrollWidth: number; clientWidth: number; overflowing: boolean; offenders: Offender[];
+ dialog?: {scrollWidth: number; clientWidth: number; overflowing: boolean};
+}
+interface Shot {
+ name: string; path: string | null; viewport: string; font: 'default' | 'DejaVu Sans'; available: boolean; overflow: Overflow | null;
+ detail?: Record<string, unknown>; error?: string;
+}
 interface Presenting {index: number; count: number; id: string}
-interface StudioView {active: number; playing: boolean; horizon: number | null; mode: string; snapshot: {minute: number; status: string}; definition: {id: string; name: string; start: string; steps: {id: string}[]}; selected: string | null; presenting?: Presenting | null}
+interface StudioView {
+ active: number; playing: boolean; horizon: number | null; mode: string; snapshot: {minute: number; status: string};
+ definition: {id: string; name: string; start: string; steps: {id: string}[]}; selected: string | null; presenting?: Presenting | null;
+}
 
 class UsageError extends Error {}
 
@@ -56,12 +65,18 @@ function parseArgs(argv: string[]): Args {
  const manifestPath = path.join(game, 'game.json');
  if (!fs.existsSync(manifestPath)) throw new UsageError(`--game ${game} has no game.json.`);
  let manifest: {template?: string; content?: {definition?: string; definitions?: string[]}};
- try {manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as typeof manifest;} catch (e) {throw new UsageError(`--game ${manifestPath} is not JSON: ${String(e)}`);}
+ try {
+  manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as typeof manifest;
+ } catch (e) {
+  throw new UsageError(`--game ${manifestPath} is not JSON: ${String(e)}`);
+ }
  if (manifest.template !== 'process') throw new UsageError(`--game ${game} is not a process game (template ${String(manifest.template)}).`);
  const definitions = manifest.content?.definitions ?? (manifest.content?.definition ? [manifest.content.definition] : []);
  const whole = (flag: string, min: number, max: number): number => {
   const text = seen.get(flag)!, n = Number(text);
-  if (!/^\d+$/.test(text) || !Number.isSafeInteger(n) || n < min || n > max) throw new UsageError(`${flag} must be a whole number from ${min} to ${max}, not "${text}".`);
+  if (!/^\d+$/.test(text) || !Number.isSafeInteger(n) || n < min || n > max) {
+   throw new UsageError(`${flag} must be a whole number from ${min} to ${max}, not "${text}".`);
+  }
   return n;
  };
  if (!definitions.length) throw new UsageError(`--game ${game} lists no process definitions.`);
@@ -80,10 +95,17 @@ async function launch(): Promise<{browser: Browser; identity: Record<string, str
  const args = ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader'];
  const browser = await chromium.launch({headless: true, ...(executablePath ? {executablePath} : {channel: 'chromium'}), args});
  const version = (name: string) => (createRequire(__filename)(`${name}/package.json`) as {version: string}).version;
- return {browser, identity: {node: process.version, playwright: version('playwright'), browser: browser.version(), selection: executablePath ? 'PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH' : 'bundled-desktop-chromium'}};
+ return {browser, identity: {
+  node: process.version,
+  playwright: version('playwright'),
+  browser: browser.version(),
+  selection: executablePath ? 'PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH' : 'bundled-desktop-chromium',
+ }};
 }
 
-const query = (page: Page): Promise<StudioView> => page.evaluate(() => (globalThis as unknown as {LWProcessStudio: {query(): StudioView}}).LWProcessStudio.query());
+const query = (page: Page): Promise<StudioView> => page.evaluate(
+ () => (globalThis as unknown as {LWProcessStudio: {query(): StudioView}}).LWProcessStudio.query(),
+);
 
 /**
  * Document overflow plus the widest elements that end past the right edge without a clipping ancestor inside the
@@ -99,7 +121,14 @@ function measureOverflow(page: Page): Promise<Overflow> {
    for (let p = e.parentElement; p && p !== document.body && !clipped; p = p.parentElement) {
     if (/^(hidden|clip|auto|scroll)$/.test(getComputedStyle(p).overflowX) && p.getBoundingClientRect().right <= width + 1) clipped = true;
    }
-   if (!clipped) offenders.push({element: e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + [...e.classList].slice(0, 2).map(c => '.' + c).join(''), left: Math.round(r.left), right: Math.round(r.right), width: Math.round(r.width)});
+   if (!clipped) {
+    offenders.push({
+     element: e.tagName.toLowerCase() + (e.id ? '#' + e.id : '') + [...e.classList].slice(0, 2).map(c => '.' + c).join(''),
+     left: Math.round(r.left),
+     right: Math.round(r.right),
+     width: Math.round(r.width),
+    });
+   }
   }
   offenders.sort((a, b) => b.right - a.right || b.width - a.width).splice(5);
   const result: Overflow = {scrollWidth: root.scrollWidth, clientWidth: width, overflowing: root.scrollWidth > width, offenders};
@@ -124,12 +153,19 @@ async function reachMinute(page: Page, index: number, minute: number): Promise<R
  await page.locator('#horizon').selectOption('custom');
  await page.locator('#horizon-custom').fill(String(minute));
  await page.locator('#horizon-custom').dispatchEvent('change');
- const horizonApplied = await page.waitForFunction(m => (globalThis as unknown as {LWProcessStudio: {query(): StudioView}}).LWProcessStudio.query().horizon === m, minute, {timeout: 5000}).then(() => true, () => false);
+ const horizonApplied = await page.waitForFunction(
+  m => (globalThis as unknown as {LWProcessStudio: {query(): StudioView}}).LWProcessStudio.query().horizon === m,
+  minute,
+  {timeout: 5000},
+ ).then(() => true, () => false);
  await page.locator('#speed').selectOption('30');
  await page.locator('#play').click();
  // A pulse of 30 minutes runs every 0.35 s of animation time; allow three times that plus start-up.
  const timeout = Math.ceil(minute / 30) * 350 * 3 + 30000;
- await page.waitForFunction(m => {const q = (globalThis as unknown as {LWProcessStudio: {query(): StudioView}}).LWProcessStudio.query(); return !q.playing || q.snapshot.minute >= m;}, minute, {timeout, polling: 100});
+ await page.waitForFunction(m => {
+  const q = (globalThis as unknown as {LWProcessStudio: {query(): StudioView}}).LWProcessStudio.query();
+  return !q.playing || q.snapshot.minute >= m;
+ }, minute, {timeout, polling: 100});
  if ((await query(page)).playing) await page.locator('#play').click();
  await page.waitForFunction(() => !(globalThis as unknown as {LWProcessStudio: {query(): StudioView}}).LWProcessStudio.query().playing);
  return {horizonApplied, method: horizonApplied ? 'Run until custom + speed 30 + Run' : 'speed 30 + Run, paused once the clock reached the minute'};
@@ -186,7 +222,10 @@ function runShots(out: string, page: Page, errors: {at: string; kind: string; te
   const d = (await query(page)).definition, ids = new Set(d.steps.filter(s => s.id !== d.start).map(s => 'step-' + s.id));
   for (let p = await presentingOf(); p && !ids.has(p.id) && p.index < p.count - 1; p = await presentingOf()) {
    const before = p.index; await page.locator('#present-next').click();
-   await page.waitForFunction(i => ((globalThis as unknown as {LWProcessStudio: {query(): StudioView}}).LWProcessStudio.query().presenting?.index ?? i) !== i, before);
+   await page.waitForFunction(
+    i => ((globalThis as unknown as {LWProcessStudio: {query(): StudioView}}).LWProcessStudio.query().presenting?.index ?? i) !== i,
+    before,
+   );
   }
   const p = await presentingOf(); return {...await slideDetail(), stepSlide: !!p && ids.has(p.id), selected: (await query(page)).selected};
  };
@@ -195,7 +234,11 @@ function runShots(out: string, page: Page, errors: {at: string; kind: string; te
   await page.setViewportSize(phone ? PHONE : DESKTOP);
   await capture(`${prefix}-present-first${suffix}`, font, () => enterPresent(phone));
   if (await page.locator('dialog#present[open]').count()) await capture(`${prefix}-present-step${suffix}`, font, toStepSlide);
-  else shots.push({name: `${prefix}-present-step${suffix}`, path: null, viewport: viewportName(), font, available: false, overflow: null, error: PRESENT_UNAVAILABLE});
+  else {
+   shots.push({
+    name: `${prefix}-present-step${suffix}`, path: null, viewport: viewportName(), font, available: false, overflow: null, error: PRESENT_UNAVAILABLE,
+   });
+  }
   await exitPresent(); await page.setViewportSize(DESKTOP);
  };
  return {shots, run: async () => {
@@ -219,7 +262,16 @@ async function main(): Promise<number> {
  }
  fs.mkdirSync(args.out, {recursive: true});
  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'process-shots-')), errors: {at: string; kind: string; text: string}[] = [];
- const summary: Record<string, unknown> = {ok: false, game: args.game, process: args.process, definition: args.definitions[args.process - 1], minuteRequested: args.minute, minuteReached: null, files: [], consoleErrors: errors};
+ const summary: Record<string, unknown> = {
+  ok: false,
+  game: args.game,
+  process: args.process,
+  definition: args.definitions[args.process - 1],
+  minuteRequested: args.minute,
+  minuteReached: null,
+  files: [],
+  consoleErrors: errors,
+ };
  let browser: Browser | null = null;
  try {
   const html = path.join(temp, 'game.html');

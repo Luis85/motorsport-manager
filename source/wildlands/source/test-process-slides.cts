@@ -15,7 +15,10 @@ const route = (globalThis as unknown as {LWProcessRoute: LWProcessRoute.Api}).LW
 const sha = (text: string) => createHash('sha256').update(text).digest('hex');
 /** Pinned LWProcessSipoc.model JSON of the seven demos (see the SIPOC check). */
 const SIPOC_LENGTH = 41653, SIPOC_SHA = '956f6461c8b9e44ba7d2f667517f94fb2b9d586588ee14ee1f3bee48f840f9fa';
-const seeded = (d: LWProcess.Definition, minutes: number, seed: number) => { const s = runtime.create(d, {seed}); try { return s.advance(minutes); } finally { s.dispose(); } };
+const seeded = (d: LWProcess.Definition, minutes: number, seed: number) => {
+ const s = runtime.create(d, {seed});
+ try { return s.advance(minutes); } finally { s.dispose(); }
+};
 const deepFreeze = <T,>(v: T): T => { if (v && typeof v === 'object') { for (const x of Object.values(v)) deepFreeze(x); Object.freeze(v); } return v; };
 /** A small claims desk: an interrupting deadline, a decision with a chance route, a parallel fork with a timer branch and three phases. */
 
@@ -32,9 +35,14 @@ test('Slides cover every demo step on exactly one step slide in contiguous, non-
    assert(deck.slides.slice(section.first, section.first + section.count).every(s => s.section === section.id), `${file}: ${section.id} owns its slides`);
   }
   assert.equal(at, deck.slides.length, file + ': sections cover every slide');
-  assert.deepEqual([deck.sections[0]!.id, deck.sections.at(-1)!.id, deck.slides.slice(0, 3).map(s => s.kind), deck.slides.at(-1)!.kind], ['intro', 'summary', ['title', 'overview', 'resources'], 'summary'], file);
+  assert.deepEqual(
+   [deck.sections[0]!.id, deck.sections.at(-1)!.id, deck.slides.slice(0, 3).map(s => s.kind), deck.slides.at(-1)!.kind],
+   ['intro', 'summary', ['title', 'overview', 'resources'], 'summary'],
+   file,
+  );
   assert(deck.slides.every(s => s.blocks.every(b => b.items.length > 0) && s.live === null), file + ': no empty blocks and no live facts without a snapshot');
-  assert.equal(deck.format, 'wildlands-process-slides'); assert.equal(deck.schemaVersion, 1); assert.deepEqual(deck.process, {id: d.id, name: d.name, genre: d.genre ?? 'process', revision: d.revision});
+  assert.equal(deck.format, 'wildlands-process-slides'); assert.equal(deck.schemaVersion, 1);
+  assert.deepEqual(deck.process, {id: d.id, name: d.name, genre: d.genre ?? 'process', revision: d.revision});
  }
 });
 
@@ -49,13 +57,83 @@ test('No bundled agency deck shows the "No description authored." placeholder on
 });
 
 const PINNED: Record<string, [number, string[], string[]]> = {
- 'agency.process.json': [22, ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'variants', 'summary'], ['Agency delivery lab', 'Overview', 'Resources', 'Discover', 'Project intake', 'Discovery', 'Design', 'Plan together', 'Product design', 'Technical design', 'Ready to build', 'Build', 'Implementation', 'Quality review', 'Review', 'Accepted?', 'Handover', 'Client handover', 'Delivered', 'Variants and other paths', 'Resolve findings', 'Summary']],
- 'agile-vendor.process.json': [36, ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'phase-6', 'variants', 'summary'], ['Agile vendor project', 'Overview', 'Resources', 'Initiate', 'Engagement won', 'Contractual kickoff date (not before)', 'Milestone 1 · Kickoff', 'Discovery with the customer', 'Plan', 'Plan together', 'Product design', 'Architecture runway', 'Product backlog ready', 'Milestone 2 · Roadmap agreed', 'Iterate', 'Iteration planning', 'Iteration', 'CI build and tests', 'Customer review window', 'Iteration retrospective', 'More iterations in this release?', 'Accept', 'Automated regression suite', 'Release acceptance testing (UAT)', 'UAT result', 'Release', 'Milestone · Release go-live', 'Automated deployment', 'Hypercare window', 'More releases?', 'Close', 'Final acceptance and handover', 'Project closed', 'Variants and other paths', 'Fix acceptance findings', 'Summary']],
- 'customer-journey-webshop.process.json': [34, ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'variants', 'summary'], ['Customer journey · Online shop', 'Overview', 'Resources', 'Awareness', 'Shopper sees an ad', 'Ad touchpoint', 'Searches and lands on the shop', 'Consideration', 'Browses products', 'Reads product reviews', 'Interested?', 'Purchase', 'Reviews cart and shipping cost', 'Cart abandoned?', 'Fills in the checkout form', 'Pays online', 'Payment failed?', 'Delivery', 'Receives the order confirmation email', 'Waits for the parcel', 'Unboxes the order', 'Problem with the order?', 'After-sales and loyalty', 'Receives the review request email', 'Comes back to buy again?', 'Happy customer', 'Variants and other paths', 'Left without buying', 'Chats with support about the payment', 'Calls support to return or exchange', 'Loyal repeat buyer', 'Payment solved?', 'Gave up on paying', 'Summary']],
- 'delivery-release.process.json': [36, ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'phase-6', 'variants', 'summary'], ['Weekly delivery and release train', 'Overview', 'Resources', 'Inception (0.1.0)', 'Product idea approved', 'Inception: vision, MVP scope and first backlog', 'Build the Hello World skeleton', 'Release 0.1.0: Hello World skeleton', 'Refine and plan', 'Weekly backlog refinement', 'Iteration planning', 'Iterate', 'Iteration runs', 'Implement the committed items', 'CI: build, test and merge', 'Daily stand-up and iteration day', 'Iteration closed', 'Review and retro', 'Weekly review with stakeholders', 'Stakeholder feedback', 'Weekly retrospective', 'Release 0.x.0', 'Release checks needed?', 'UX acceptance on staging', 'Rehearse the data migration', 'Release candidate ready', 'Release pipeline: tag 0.x.0 and deploy', 'MVP scope released?', 'MVP 1.0.0', 'Launch 1.0.0 (MVP)', '1.0.0 MVP live', 'Variants and other paths', 'Raise the impediment and swarm', 'Add the feedback to the MVP backlog', 'Impediment handled', 'Summary']],
- 'loan-application.process.json': [30, ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'variants', 'summary'], ['Loan application (BPMN import)', 'Overview', 'Resources', 'Application', 'Application received', 'Submit application', 'Document check', 'Verify document', 'Archive documents', 'Fraud screening', 'Run fraud rules', 'Match watch lists', 'Credit decision', 'Score credit', 'Risk level?', 'Manual review', 'Review outcome?', 'Send rejection letter', 'Application rejected', 'Variants and other paths', 'Sign contract', 'Additional checks', 'Notify supervisor', 'Disburse funds', 'Verify income', 'Check employer', 'Checks done', 'SLA breach logged', 'Loan paid out', 'Summary']],
- 'order-fulfilment.process.json': [23, ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'variants', 'summary'], ['Order fulfilment line', 'Overview', 'Resources', 'Order', 'Order received', 'Validate order', 'Fraud check', 'Prepare', 'Prepare in parallel', 'Pick items', 'Shipping documents', 'Ready to pack', 'Pack', 'Pack', 'Spot-check', 'Passed?', 'Ship', 'Label parcel', 'Notify customer', 'Delivered', 'Variants and other paths', 'Repack', 'Summary']],
- 'user-journey-app-onboarding.process.json': [43, ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'phase-6', 'variants', 'summary'], ['User journey · App onboarding', 'Overview', 'Resources', 'Discover', 'New user finds the app', 'Installs the app', 'Opens the app for the first time', 'Sign up', 'Sign-up method', 'Fills in the email form', 'Gives up the form?', 'Verify email', 'User clicks the link', 'Link works?', 'Onboard', 'Sees the permissions prompt', 'Reduced experience?', 'Sets up a profile', 'Takes the product tour?', 'Follows the product tour', 'Activate', 'Completes the first task', 'Retain', 'Waits until day 1', 'Receives the day-1 push reminder', 'Returns on day 2?', 'Uses the app in a weekly session', 'Used four times?', 'Monetise', 'Sees the upgrade offer', 'Subscribe?', 'Free active user', 'Variants and other paths', 'Signs up with a social account', 'Abandoned sign-up', 'Asks support chat for a new link', 'Sees the limited-mode notice', 'Churned after day 1', 'Waits until the next week', 'Subscribes on the web checkout', 'Receives the weekly digest', 'Subscriber', 'Summary']],
+ 'agency.process.json': [
+  22,
+  ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'variants', 'summary'],
+  [
+   'Agency delivery lab', 'Overview', 'Resources', 'Discover', 'Project intake', 'Discovery', 'Design', 'Plan together', 'Product design', 'Technical design',
+   'Ready to build', 'Build', 'Implementation', 'Quality review', 'Review', 'Accepted?', 'Handover', 'Client handover', 'Delivered', 'Variants and other paths',
+   'Resolve findings', 'Summary',
+  ],
+ ],
+ 'agile-vendor.process.json': [
+  36,
+  ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'phase-6', 'variants', 'summary'],
+  [
+   'Agile vendor project', 'Overview', 'Resources', 'Initiate', 'Engagement won', 'Contractual kickoff date (not before)', 'Milestone 1 · Kickoff',
+   'Discovery with the customer', 'Plan', 'Plan together', 'Product design', 'Architecture runway', 'Product backlog ready', 'Milestone 2 · Roadmap agreed',
+   'Iterate', 'Iteration planning', 'Iteration', 'CI build and tests', 'Customer review window', 'Iteration retrospective', 'More iterations in this release?',
+   'Accept', 'Automated regression suite', 'Release acceptance testing (UAT)', 'UAT result', 'Release', 'Milestone · Release go-live', 'Automated deployment',
+   'Hypercare window', 'More releases?', 'Close', 'Final acceptance and handover', 'Project closed', 'Variants and other paths', 'Fix acceptance findings',
+   'Summary',
+  ],
+ ],
+ 'customer-journey-webshop.process.json': [
+  34,
+  ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'variants', 'summary'],
+  [
+   'Customer journey · Online shop', 'Overview', 'Resources', 'Awareness', 'Shopper sees an ad', 'Ad touchpoint', 'Searches and lands on the shop',
+   'Consideration', 'Browses products', 'Reads product reviews', 'Interested?', 'Purchase', 'Reviews cart and shipping cost', 'Cart abandoned?',
+   'Fills in the checkout form', 'Pays online', 'Payment failed?', 'Delivery', 'Receives the order confirmation email', 'Waits for the parcel',
+   'Unboxes the order', 'Problem with the order?', 'After-sales and loyalty', 'Receives the review request email', 'Comes back to buy again?', 'Happy customer',
+   'Variants and other paths', 'Left without buying', 'Chats with support about the payment', 'Calls support to return or exchange', 'Loyal repeat buyer',
+   'Payment solved?', 'Gave up on paying', 'Summary',
+  ],
+ ],
+ 'delivery-release.process.json': [
+  36,
+  ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'phase-6', 'variants', 'summary'],
+  [
+   'Weekly delivery and release train', 'Overview', 'Resources', 'Inception (0.1.0)', 'Product idea approved', 'Inception: vision, MVP scope and first backlog',
+   'Build the Hello World skeleton', 'Release 0.1.0: Hello World skeleton', 'Refine and plan', 'Weekly backlog refinement', 'Iteration planning', 'Iterate',
+   'Iteration runs', 'Implement the committed items', 'CI: build, test and merge', 'Daily stand-up and iteration day', 'Iteration closed', 'Review and retro',
+   'Weekly review with stakeholders', 'Stakeholder feedback', 'Weekly retrospective', 'Release 0.x.0', 'Release checks needed?', 'UX acceptance on staging',
+   'Rehearse the data migration', 'Release candidate ready', 'Release pipeline: tag 0.x.0 and deploy', 'MVP scope released?', 'MVP 1.0.0', 'Launch 1.0.0 (MVP)',
+   '1.0.0 MVP live', 'Variants and other paths', 'Raise the impediment and swarm', 'Add the feedback to the MVP backlog', 'Impediment handled', 'Summary',
+  ],
+ ],
+ 'loan-application.process.json': [
+  30,
+  ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'variants', 'summary'],
+  [
+   'Loan application (BPMN import)', 'Overview', 'Resources', 'Application', 'Application received', 'Submit application', 'Document check', 'Verify document',
+   'Archive documents', 'Fraud screening', 'Run fraud rules', 'Match watch lists', 'Credit decision', 'Score credit', 'Risk level?', 'Manual review',
+   'Review outcome?', 'Send rejection letter', 'Application rejected', 'Variants and other paths', 'Sign contract', 'Additional checks', 'Notify supervisor',
+   'Disburse funds', 'Verify income', 'Check employer', 'Checks done', 'SLA breach logged', 'Loan paid out', 'Summary',
+  ],
+ ],
+ 'order-fulfilment.process.json': [
+  23,
+  ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'variants', 'summary'],
+  [
+   'Order fulfilment line', 'Overview', 'Resources', 'Order', 'Order received', 'Validate order', 'Fraud check', 'Prepare', 'Prepare in parallel', 'Pick items',
+   'Shipping documents', 'Ready to pack', 'Pack', 'Pack', 'Spot-check', 'Passed?', 'Ship', 'Label parcel', 'Notify customer', 'Delivered',
+   'Variants and other paths', 'Repack', 'Summary',
+  ],
+ ],
+ 'user-journey-app-onboarding.process.json': [
+  43,
+  ['intro', 'phase-1', 'phase-2', 'phase-3', 'phase-4', 'phase-5', 'phase-6', 'variants', 'summary'],
+  [
+   'User journey · App onboarding', 'Overview', 'Resources', 'Discover', 'New user finds the app', 'Installs the app', 'Opens the app for the first time',
+   'Sign up', 'Sign-up method', 'Fills in the email form', 'Gives up the form?', 'Verify email', 'User clicks the link', 'Link works?', 'Onboard',
+   'Sees the permissions prompt', 'Reduced experience?', 'Sets up a profile', 'Takes the product tour?', 'Follows the product tour', 'Activate',
+   'Completes the first task', 'Retain', 'Waits until day 1', 'Receives the day-1 push reminder', 'Returns on day 2?', 'Uses the app in a weekly session',
+   'Used four times?', 'Monetise', 'Sees the upgrade offer', 'Subscribe?', 'Free active user', 'Variants and other paths', 'Signs up with a social account',
+   'Abandoned sign-up', 'Asks support chat for a new link', 'Sees the limited-mode notice', 'Churned after day 1', 'Waits until the next week',
+   'Subscribes on the web checkout', 'Receives the weekly digest', 'Subscriber', 'Summary',
+  ],
+ ],
 };
 test('Slides pin the deck length, sections and ordered titles of every demo', () => {
  assert.deepEqual(demos.map(([file]) => file), Object.keys(PINNED));
@@ -63,10 +141,17 @@ test('Slides pin the deck length, sections and ordered titles of every demo', ()
   const deck = slides.build(d), [count, sections, titles] = PINNED[file]!;
   assert.deepEqual([deck.slides.length, deck.sections.map(s => s.id), deck.slides.map(s => s.title)], [count, sections, titles], file);
  }
- const train = slides.build(demos.find(([file]) => file === 'delivery-release.process.json')![1]), at = (id: string) => train.slides.find(s => s.id === id)!;
- assert.deepEqual(at('step-build').concepts.map(c => c.id), ['multi-instance-parallel', 'deadline-escalate']); assert.deepEqual(at('step-mvp-check').concepts.map(c => c.id), ['decision', 'counter-loop']);
- assert.deepEqual(at('step-feedback').concepts.map(c => c.id), ['decision', 'chance-route']); assert.deepEqual(at('step-release-prep').concepts.map(c => c.id), ['inclusive-gateway']);
- assert.deepEqual(['step-impediment', 'step-reprioritise', 'step-impediment-handled'].map(id => at(id).subtitle), ['Task · Deadline path from “Implement the committed items”', 'Task · Decision alternative from “Stakeholder feedback”', 'End · Other end from “Raise the impediment and swarm”']);
+ const train = slides.build(demos.find(([file]) => file === 'delivery-release.process.json')![1]);
+ const at = (id: string) => train.slides.find(s => s.id === id)!;
+ assert.deepEqual(at('step-build').concepts.map(c => c.id), ['multi-instance-parallel', 'deadline-escalate']);
+ assert.deepEqual(at('step-mvp-check').concepts.map(c => c.id), ['decision', 'counter-loop']);
+ assert.deepEqual(at('step-feedback').concepts.map(c => c.id), ['decision', 'chance-route']);
+ assert.deepEqual(at('step-release-prep').concepts.map(c => c.id), ['inclusive-gateway']);
+ assert.deepEqual(['step-impediment', 'step-reprioritise', 'step-impediment-handled'].map(id => at(id).subtitle), [
+  'Task · Deadline path from “Implement the committed items”',
+  'Task · Decision alternative from “Stakeholder feedback”',
+  'End · Other end from “Raise the impediment and swarm”',
+ ]);
  assert(at('title').blocks.some(b => b.heading === 'About the values'), 'the description says the values are synthetic');
  // The 259-word description is clamped to whole sentences of at most 60 words on the title slide and follows in full below.
  const description = demos.find(([file]) => file === 'delivery-release.process.json')![1].description!, lead = at('title').lead;
@@ -81,7 +166,8 @@ test('Slides pin the deck length, sections and ordered titles of every demo', ()
  assert.match(at('section-phase-1').lead, /^3 steps on the main route, from .* after the start “Product idea approved”\.$/);
  assert(!slides.build({...copy(demos[0]![1]), description: 'Plain words.'}).slides[0]!.blocks.some(b => b.heading === 'About the values'));
  const shop = slides.build(demos.find(([file]) => file === 'customer-journey-webshop.process.json')![1]);
- assert.equal(shop.slides[1]!.subtitle, 'Journey map: phases and touchpoints'); assert.equal(shop.slides.find(s => s.id === 'step-ad')!.blocks.at(-1)!.heading, 'Customer experience');
+ assert.equal(shop.slides[1]!.subtitle, 'Journey map: phases and touchpoints');
+ assert.equal(shop.slides.find(s => s.id === 'step-ad')!.blocks.at(-1)!.heading, 'Customer experience');
 });
 
 test('Slides explain a small fixture with a chance route, fork, deadline and timer in exact Markdown and JSON', () => {
@@ -89,9 +175,22 @@ test('Slides explain a small fixture with a chance route, fork, deadline and tim
  const deck = slides.build(d), text = slides.markdown(deck), golden = fs.readFileSync(path.join(__dirname, 'fixtures/process-slides-small-claims.md'), 'utf8');
  assert.equal(text, golden); assert(text.endsWith('\n') && !text.endsWith('\n\n'));
  assert.equal(sha(JSON.stringify(deck)), '97f58a20f8158e623e2e3968153fcfb222a3a7463c927811ae873db2ac31ed2c');
- assert.deepEqual(deck.sections.map(s => [s.id, s.kind, s.title, s.first, s.count]), [['intro', 'intro', 'Introduction', 0, 3], ['phase-1', 'phase', 'Intake', 3, 3], ['phase-2', 'phase', 'Decide', 6, 2], ['phase-3', 'phase', 'Payout', 8, 6], ['variants', 'variants', 'Variants and other paths', 14, 3], ['summary', 'summary', 'Summary', 17, 1]]);
- assert.deepEqual(deck.slides.map(s => s.step), [null, null, null, 'start', 'start', 'check', 'decide', 'decide', 'split', 'split', 'pay', 'cooling', 'joined', 'end', null, 'supervisor', 'rejected', null]);
- assert.deepEqual(deck.slides.find(s => s.id === 'step-decide')!.blocks.at(-1), {heading: 'Where it goes next', items: ['20% of cases take this path → “Claim rejected” (“Not covered”)', 'Otherwise (no condition) → “Pay and wait”, main route']});
+ assert.deepEqual(deck.sections.map(s => [s.id, s.kind, s.title, s.first, s.count]), [
+  ['intro', 'intro', 'Introduction', 0, 3],
+  ['phase-1', 'phase', 'Intake', 3, 3],
+  ['phase-2', 'phase', 'Decide', 6, 2],
+  ['phase-3', 'phase', 'Payout', 8, 6],
+  ['variants', 'variants', 'Variants and other paths', 14, 3],
+  ['summary', 'summary', 'Summary', 17, 1],
+ ]);
+ assert.deepEqual(
+  deck.slides.map(s => s.step),
+  [null, null, null, 'start', 'start', 'check', 'decide', 'decide', 'split', 'split', 'pay', 'cooling', 'joined', 'end', null, 'supervisor', 'rejected', null],
+ );
+ assert.deepEqual(deck.slides.find(s => s.id === 'step-decide')!.blocks.at(-1), {
+  heading: 'Where it goes next',
+  items: ['20% of cases take this path → “Claim rejected” (“Not covered”)', 'Otherwise (no condition) → “Pay and wait”, main route'],
+ });
 });
 
 test('Slides are deterministic, detached from frozen inputs and carry live facts only with a snapshot', () => {
@@ -127,10 +226,16 @@ test('Slides are deterministic, detached from frozen inputs and carry live facts
  assert.match(slides.markdown(a), /_Reproduce with the command line: `bin\/wildlands process slides --input FILE --minutes N`[^\n]*_\n$/);
  assert(a.slides.find(s => s.id === 'step-check')!.live!.items.includes('Deadlines fired: 0 interrupted, 0 escalated'));
  // Mutating the deck never reaches the inputs or a later deck, and nothing in the deck is shared with them.
- const seen = new Set<unknown>(); const walk = (v: unknown) => { if (v && typeof v === 'object') { seen.add(v); Object.values(v).forEach(walk); } }; walk(d); walk(q);
- const shared: unknown[] = []; const scan = (v: unknown) => { if (v && typeof v === 'object') { if (seen.has(v)) shared.push(v); Object.values(v).forEach(scan); } }; scan(a); assert.equal(shared.length, 0);
- a.slides[0]!.blocks[0]!.items.push('changed'); a.sections.length = 0; a.process.name = 'changed'; assert.equal(JSON.stringify(slides.build(d, q)), JSON.stringify(b));
- const plain = slides.build(d), live = slides.build(d, q), strip = (deck: LWProcessSlides.Deck) => JSON.stringify({...deck, live: null, slides: deck.slides.map(s => ({...s, live: null}))});
+ const seen = new Set<unknown>();
+ const walk = (v: unknown) => { if (v && typeof v === 'object') { seen.add(v); Object.values(v).forEach(walk); } };
+ walk(d); walk(q);
+ const shared: unknown[] = [];
+ const scan = (v: unknown) => { if (v && typeof v === 'object') { if (seen.has(v)) shared.push(v); Object.values(v).forEach(scan); } };
+ scan(a); assert.equal(shared.length, 0);
+ a.slides[0]!.blocks[0]!.items.push('changed'); a.sections.length = 0; a.process.name = 'changed';
+ assert.equal(JSON.stringify(slides.build(d, q)), JSON.stringify(b));
+ const plain = slides.build(d), live = slides.build(d, q);
+ const strip = (deck: LWProcessSlides.Deck) => JSON.stringify({...deck, live: null, slides: deck.slides.map(s => ({...s, live: null}))});
  assert.equal(plain.live, null); assert.equal(strip(plain), strip(live)); assert.equal(slides.build(d, null).live, null);
 });
 
@@ -141,7 +246,10 @@ test('SIPOC model is pinned for every demo, counts cases per stage and shares th
  // loan demo's applicant steps became touchpoints (stage kinds) and its ends gained outcomes (outputs and a Conversion measure).
  const runs = demos.map(([file, d]) => {
   const s = runtime.create(d, {seed: 7});
-  try { const q0 = s.query(), q1 = s.advance(1440); return [file, d, q1, sipoc.model(d, q0), sipoc.model(d, q1)] as const; } finally { s.dispose(); }
+  try {
+   const q0 = s.query(), q1 = s.advance(1440);
+   return [file, d, q1, sipoc.model(d, q0), sipoc.model(d, q1)] as const;
+  } finally { s.dispose(); }
  });
  const text = JSON.stringify(Object.fromEntries(runs.map(([file, , , m0, m1]) => [file, [m0, m1]])));
  assert.equal(text.length, SIPOC_LENGTH); assert.equal(sha(text), SIPOC_SHA);
@@ -167,7 +275,15 @@ test('SIPOC model is pinned for every demo, counts cases per stage and shares th
  const loan = of('loan-application.process.json'); assert.equal(model('loan-application.process.json').stages.at(-1)!.completed, loan[2].metrics.completed);
  for (const [file, d] of demos) {
   const walk = route.walk(d), deck = slides.build(d);
-  assert.deepEqual(walk.units.flat().map(s => s.id), walk.path.filter(s => s.kind !== 'start' && s.kind !== 'end').map(s => s.id), file + ': units and path agree');
-  assert.deepEqual(deck.slides.filter(s => s.kind === 'step' && s.section !== 'variants').map(s => s.step), walk.path.map(s => s.id), file + ': slides follow the SIPOC main route');
+  assert.deepEqual(
+   walk.units.flat().map(s => s.id),
+   walk.path.filter(s => s.kind !== 'start' && s.kind !== 'end').map(s => s.id),
+   file + ': units and path agree',
+  );
+  assert.deepEqual(
+   deck.slides.filter(s => s.kind === 'step' && s.section !== 'variants').map(s => s.step),
+   walk.path.map(s => s.id),
+   file + ': slides follow the SIPOC main route',
+  );
  }
 });
