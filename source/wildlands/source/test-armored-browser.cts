@@ -215,7 +215,7 @@ async function main():Promise<void>{
     }
     if(kind==='lost-gunner'){
      const damage=save.entities.find((e:any)=>e.id===state.controlled).components['armored-damage'];
-     damage.crew.gunner=0;damage.status='disabled';
+     damage.crew.gunner=0;damage.crew.driver=.25;damage.status='disabled'; // Admitted fractional crew remains alive.
     }
     for(const entity of save.entities){const c=entity.components;if(c['armored-identity']?.faction!==mission.playerFaction&&c['armored-weapon'])for(const ammo of Object.keys(c['armored-weapon'].reserves))c['armored-weapon'].reserves[ammo]=0;}
     (window as any).WildlandsArmored.restore(save);return {controlled:state.controlled,destroyed};
@@ -294,6 +294,9 @@ async function main():Promise<void>{
     await page.waitForFunction(()=>document.querySelector('[data-ap-load-status]')?.textContent==='UNAVAILABLE');
     const actions=await page.evaluate(()=>{const q=(window as any).WildlandsArmored.query();return q.vehicles.find((v:any)=>v.id===q.controlled).actions;});
     assert.equal(actions.aim.available,false);assert.equal(actions.fire.available,false);assert(actions.fire.reason);
+    assert.equal(actions.drive.available,true,'The admitted positive driver health retains authoritative mobility');
+    const driver=await page.locator('[data-ap-components]').evaluate(list=>Array.from(list.children).find(row=>row.children[0]?.textContent==='driver')?.children[1]?.textContent);
+    assert.equal(driver,'Available','Crew liveness must not round positive admitted health down to Lost');
     const status=await page.locator('[data-ap-station-status]').innerText();assert(status.includes(actions.aim.reason));assert(status.includes(actions.fire.reason));
     for(const action of ['repair','resupply']){
      const button=page.locator(`[data-ap-action="${action}"]`);
@@ -305,6 +308,39 @@ async function main():Promise<void>{
      const selected=page.locator('[data-ap-camera][aria-pressed="true"]');assert.equal(await selected.count(),1);assert.equal(await selected.getAttribute('data-ap-camera'),mode);
     }
    }finally{await page.evaluate(save=>(window as any).WildlandsArmored.restore(save),previous);}
+  });
+  await check('Armored pointer lock hands input to orders and preserves pause semantics',async()=>{
+   const previous=await page.evaluate(()=>(window as any).WildlandsArmored.checkpoint());
+   try{
+    await interactionFixture();await page.locator('#armored-canvas').click();
+    await page.waitForFunction(()=>document.pointerLockElement===document.querySelector('#armored-canvas'));
+    await page.keyboard.down('w');await page.keyboard.press('c');await page.keyboard.down('r');
+    await page.waitForFunction(()=>{const q=(window as any).WildlandsArmored.query(),v=q.vehicles.find((v:any)=>v.id===q.controlled);return v.motor.throttle===1&&v.motor.cruise>0;});
+    await page.keyboard.press('Tab');
+    await page.waitForFunction(()=>document.pointerLockElement===null);
+    assert(await page.locator('[data-ap-orders]').isVisible());
+    assert.equal(await page.evaluate(()=>(window as any).WildlandsArmored.status().paused),false);
+    const released=await page.evaluate(()=>{const q=(window as any).WildlandsArmored.query(),v=q.vehicles.find((v:any)=>v.id===q.controlled);return {motor:v.motor,trigger:v.weapon.trigger};});
+    assert.deepEqual(released,{motor:{throttle:0,steer:0,brake:1,cruise:0},trigger:false});
+    await page.keyboard.press('Tab');assert.equal(await page.locator('[data-ap-order=hold]').evaluate(el=>el===document.activeElement),true);
+    await page.locator('[data-ap-order=hold]').click();await page.locator('[data-ap-recipient=all]').click();
+    assert.equal(await page.locator('[data-ap-orders]').isVisible(),false);
+    assert.equal(await page.locator('#armored-canvas').evaluate(el=>el===document.activeElement),true);
+    await page.keyboard.up('w');await page.keyboard.up('r');
+    // A subsequent real capture must not retain the intentional handoff marker.
+    await page.locator('#armored-canvas').click();
+    await page.waitForFunction(()=>document.pointerLockElement===document.querySelector('#armored-canvas'));
+    await page.evaluate(()=>document.exitPointerLock());
+    await page.waitForFunction(()=>(window as any).WildlandsArmored.status().paused);
+    assert(await page.locator('[data-ap-screen=pause]').isVisible());
+    // Repeated keydown is explicit: it must not turn a held Escape into resume.
+    await page.evaluate(()=>document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',repeat:true,bubbles:true})));
+    assert.equal(await page.evaluate(()=>(window as any).WildlandsArmored.status().paused),true);
+   }finally{
+    await page.keyboard.up('w');await page.keyboard.up('r');
+    await page.evaluate(()=>{if(document.pointerLockElement)document.exitPointerLock();});
+    await page.evaluate(save=>(window as any).WildlandsArmored.restore(save),previous);
+   }
   });
   await check('Armored offline play completes without script errors or external requests',async()=>{
    assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.requests,[]);

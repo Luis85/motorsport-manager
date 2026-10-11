@@ -32,6 +32,13 @@ async function main():Promise<void>{
   material.defaultNativeFinish={color:'#ffffff',finish:defaultFinish};
   material.whiteNativeFinish={color:'#eeeeee',finish:{...defaultFinish,palette:['#ffffff']}};
   for(const scene of project.pack.scenes)if(scene.initialState.scenarioResources)scene.initialState.scenarioResources=JSON.parse(JSON.stringify(project.pack.resources));
+  const conflict=structuredClone(project);
+  const badAsset=conflict.pack.resources!.assets[0]! as {materials:Record<string,unknown>;models:Record<string,{nodes:unknown[]}>};
+  badAsset.materials.nativeConflict={color:'#ffffff',finish};
+  Object.values(badAsset.models)[0]!.nodes.push({primitive:'box',id:'native-material-conflict',material:'nativeConflict',materialProps:{surface:descriptor}});
+  let resourceReads=0;
+  await assert.rejects(G.compile(conflict,{get bundle(){resourceReads++;throw Error('Native resources read before admission');}}),/combine surface and finish/);
+  assert.equal(resourceReads,0,'Conflicting authored materials must reject before native resource reads or generation');
   const compiled=await G.compile(project,resources);
   assert.equal(compiled.manifest.runtime,'typescript-node-bridge');
   assert(compiled.manifest.limitations.some(value=>value.includes('Node.js')));
@@ -80,7 +87,7 @@ async function main():Promise<void>{
   fs.copyFileSync(path.join(projectRoot,'source/wildlands-godot/test-native-appearance.gd'),path.join(destination,'test-native-appearance.gd'));
   const godot=process.env.WILDLANDS_GODOT??'godot',run=spawnSync(godot,[...(process.env.WILDLANDS_CAPTURE_NATIVE?[]:['--headless']),'--audio-driver','Dummy','--path',destination,'--script',path.join(destination,'native-test.gd')],{encoding:'utf8',timeout:50000,env:{...process.env,XDG_DATA_HOME:path.join(scratch,'data'),XDG_CONFIG_HOME:path.join(scratch,'config'),XDG_CACHE_HOME:path.join(scratch,'cache')}});
   assert.equal(run.status,0,run.stdout+'\n'+run.stderr);assert.match(run.stdout,/WILDLANDS_NATIVE_PASS/);assert(!/SCRIPT ERROR|ERROR:/.test(run.stdout+run.stderr),run.stdout+'\n'+run.stderr);
-  const evidence={ok:true,exportedFiles:compiled.files.length,archiveBytes:fs.statSync(archive).size,native:run.stdout.trim(),checks:['manifest hashes','canonical authored project','default runtime closure without engine sources','explicit engine-source opt-in exact bytes','binary ZIP CRC and traversal','existing output retained','symlink ancestors rejected','actual Godot shell actors/terrain','180KiB+ threaded transport','explicit fixed-step clock','validated gameplay command','lossless full story restore','timeline restore and stale response rejection','three canonical personality variants','seven equipped socket attachments','physical clearcoat and explicit sheen approximation','exact portable surface PNG bytes and native texture assignment','read-only floor and guide observation','validated floor visit and production queue','correlated floor replies and rejection retry','real departed quest actor suppression','exact portable finish PNG bytes and native PBR channels']};
+  const evidence={ok:true,exportedFiles:compiled.files.length,archiveBytes:fs.statSync(archive).size,native:run.stdout.trim(),checks:['manifest hashes','canonical authored project','default runtime closure without engine sources','explicit engine-source opt-in exact bytes','binary ZIP CRC and traversal','existing output retained','symlink ancestors rejected','actual Godot shell actors/terrain','180KiB+ threaded transport','explicit fixed-step clock','validated gameplay command','lossless full story restore','timeline restore and stale response rejection','three canonical personality variants','seven equipped socket attachments','physical clearcoat and explicit sheen approximation','exact portable surface PNG bytes and native texture assignment','read-only floor and guide observation','validated floor visit and production queue','correlated floor replies and rejection retry','real departed quest actor suppression','exact portable finish PNG bytes and native PBR channels','merged material conflict rejected before native generation']};
   fs.writeFileSync(path.join(__dirname,'wildlands-godot-results.json'),JSON.stringify(evidence,null,2)+'\n');process.stdout.write(JSON.stringify(evidence)+'\n');
  }finally{fs.rmSync(scratch,{recursive:true,force:true});}
 }

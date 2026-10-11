@@ -97,9 +97,9 @@
   options.addEventListener('change',()=>{hooks.mission(options.value);lastSnapshot=hooks.query();briefing();},{signal:lifecycle.signal});
   wrapper.addEventListener('input',event=>{const target=event.target as HTMLInputElement;if(target.dataset.apSetting==='sensitivity')camera.sensitivity=Number(target.value);if(target.dataset.apSetting==='fov')camera.fov=Number(target.value);if(target.dataset.apSetting==='shake')camera.shake=Number(target.value);},{signal:lifecycle.signal});
   document.addEventListener('keydown',event=>{
-   if(event.code==='Escape'){event.preventDefault();if(!el('[data-ap-orders]').hidden){closeOrders();return;}if(currentScreen==='battle')screen('pause');else if(currentScreen==='pause')screen('battle');}
+   if(event.code==='Escape'){event.preventDefault();if(event.repeat)return;if(!el('[data-ap-orders]').hidden){closeOrders();return;}if(currentScreen==='battle')screen('pause');else if(currentScreen==='pause')screen('battle');}
    const canvas=parent.querySelector('#armored-canvas');
-   if(currentScreen!=='battle'||event.repeat||(document.activeElement!==canvas&&document.pointerLockElement!==canvas))return;
+   if(currentScreen!=='battle'||event.repeat||document.activeElement!==canvas)return;
    if(event.code==='Tab'&&!event.shiftKey){event.preventDefault();orders();}
    if(event.code==='KeyX')ammo();
    if(event.code==='KeyT')repair();
@@ -151,7 +151,7 @@
   }
   function componentReadout(vehicle:LWArmoredRuntime.VehicleView,definition:LWArmoredData.Vehicle):void {
    const values=[...Object.entries(vehicle.damage.components).map(([name,value])=>({name,value:Math.round(value/definition.componentHealth*100),crew:false})),
-    ...Object.entries(vehicle.damage.crew).map(([name,value])=>({name,value:Math.round(value),crew:true}))];
+    ...Object.entries(vehicle.damage.crew).map(([name,value])=>({name,value,crew:true}))];
    const list=el('[data-ap-components]');
    if(list.childElementCount!==values.length)list.replaceChildren(...values.map(()=>{const row=document.createElement('div');row.append(document.createElement('span'),document.createElement('strong'));return row;}));
    values.forEach((item,index)=>{

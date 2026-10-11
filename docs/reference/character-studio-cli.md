@@ -242,3 +242,20 @@ original import text from the UI's recovery path, but cannot be committed.
 
 The engine's own creature and visual validators check compiled output. This does
 not establish human usability validation or native Blender/Godot visual parity.
+
+
+## Shared renderer development
+
+Character Studio bundles Wildlands' asset and creature validators plus the asset
+renderer and its surface/finish generators directly from source. Changes to those
+shared modules require `npm run build:cli` and `npm run check:cli` in
+`source/character-studio`, even if Character Studio's own files are unchanged.
+Never hand-edit `bin/character-studio`. Validate the affected boundary with
+`npm run typecheck`, `npm test`, `npm run test:handoff`, the engine integration
+tests after the Wildlands build, and `npm run test:e2e` with Chromium available.
+
+The shared preview renderer supports admitted native finish recipes without
+adding finish controls to the companion editor or allowing arbitrary foreign
+packages through its existing import contract. See the canonical
+[native PBR finish contract](model-forge-cli.md#native-pbr-finish-recipes) for
+texture roles, recipe limits and portable export behavior.

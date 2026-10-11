@@ -13,6 +13,11 @@ interface MaterialOptions {
     finish?: Finish; surface?: Surface;
 }
 interface FixtureNode {primitive: string; material: string; id?: string; mesh?: string; materialProps?: MaterialOptions;}
+interface ActorFixture {
+    materials: Record<string, MaterialOptions>;
+    models: Record<string, {nodes: FixtureNode[]}>;
+    behaviors: {appearances: Record<string, {model: string; materials: Record<string, string>}>};
+}
 interface Definition {
     format: string; schemaVersion: number; category: string; id: string; name: string;
     materials: Record<string, MaterialOptions> & {paint: MaterialOptions & {color: string; finish: Finish & {palette: string[]}}};
@@ -243,6 +248,28 @@ test('Littlewild finish recipes instantiate through the generic renderer with au
         assert.ok(mesh.geometry.getAttribute('tangent'));
         assert.equal(made.asset.materials.paint.color, '#ffffff', 'Appearance did not rewrite the definition.');
     } finally { r.dispose(); }
+});
+
+test('Catalog admission rejects merged material conflicts and preserves valid node and actor palettes', () => {
+    const r = runtime(), surface = {kind: 'cloth', seed: 0, scale: 1, strength: .2};
+    const first = definition(); first.models.world.nodes[0]!.materialProps = {surface};
+    assert.throws(() => r.A.validate(r.authored(first)), /combine surface and finish/);
+    const reverse = definition(); delete (reverse.materials.paint as MaterialOptions).finish;
+    reverse.materials.paint.surface = surface; reverse.models.world.nodes[0]!.materialProps = {finish: recipe()};
+    assert.throws(() => r.A.validate(r.authored(reverse)), /combine surface and finish/);
+    const valid = definition(); valid.models.world.nodes[0]!.materialProps = {finish: recipe(19), color: '#abcdef'};
+    assert.equal(r.A.validate(r.authored(valid)).models.world.nodes[0]!.materialProps!.finish!.seed, 19);
+    const accessor = r.authored(first); let reads = 0;
+    Object.defineProperty(accessor.models.world.nodes[0]!.materialProps!, 'surface', {get() { reads++; return surface; }});
+    assert.throws(() => r.A.validate(accessor)); assert.equal(reads, 0);
+    const actor = (JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../../docs/concepts/littlewild/assets/creatures/sproutling/definition.json'), 'utf8')) as {visual: ActorFixture}).visual;
+    actor.materials.fur = {color: '#ffffff', finish: recipe()};
+    assert.doesNotThrow(() => r.A.validate(r.authored(actor)));
+    const selected = Object.values(actor.behaviors.appearances)[0]!;
+    assert.equal(typeof selected.materials.fur, 'string');
+    actor.models[selected.model]!.nodes.push({primitive: 'box', id: 'merged-conflict', material: 'fur', materialProps: {surface}});
+    assert.throws(() => r.A.validate(r.authored(actor)), /combine surface and finish/);
+    assert.equal(r.allocations(), 0);
 });
 
 test('Material and per-node surface-finish conflicts fail before resource allocation', () => {

@@ -151,6 +151,14 @@ change rebuilds, checks and commits both `bin/model-forge` and `bin/scene-forge`
 Author single models in Model Forge and hand them to Scene Forge through
 `export --format model-bundle` and a guarded `model import`.
 
+Character Studio directly bundles Wildlands asset/creature validators and its
+asset renderer, including the surface and finish generators. Changes to those
+shared Wildlands sources also require rebuilding and checking
+`bin/character-studio`, even without Character Studio-local edits. Validate the
+affected handoff and preview boundaries through Character Studio's unit,
+integration, handoff and browser checks; do not assume each generated CLI depends
+only on files under its own source directory.
+
 Process Studio is the preferred tool for business-process definitions; it keeps
 `wildlands process` parity. Its bridge (`source/process-studio/src/kernel.cts`,
 allowlist `scripts/bridge.cts`) bundles Wildlands process code, and its `build`

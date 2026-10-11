@@ -1,0 +1,41 @@
+{
+  "executionCheckoutHead": "3ce1c8dfde1e479b9927e4447bcbb6e28e898ba9",
+  "note": "Verified frozen corrected working-tree source before its upcoming implementation commit; this is not a claim that clean 3ce1c8df contained these corrections.",
+  "typecheck": "passed",
+  "architecture": {
+    "status": "passed",
+    "files": 28
+  },
+  "build": "passed",
+  "tests": {
+    "passed": 22,
+    "failed": 0,
+    "skipped": 0,
+    "durationMilliseconds": 59967.189324
+  },
+  "freshness": "passed",
+  "binary": {
+    "path": "bin/process-studio",
+    "bytes": 1371186,
+    "sha256": "3f103d5719c997536d309a3455f8744cfdd8410acf65ab93f69b55562c273035",
+    "sourceIdentity": "ac9aa3bcd5f858bafea83c1d26178a57100c315f884aa730718262b6cbe6cc04",
+    "engine": "b27121d71f43fff7f5af3cb5344118eac23781e3426610775f6e22a823268349"
+  },
+  "frozenInputsUnchanged": true,
+  "inputs": [
+    {
+      "path": "bin/wildlands",
+      "bytes": 14731276,
+      "sha256": "33cb51d58339de00e151eeeb29b78989284f519618e9e4c280d8a29effc24c42"
+    },
+    {
+      "path": "demos/manifest.json",
+      "bytes": 4856,
+      "sha256": "4ba281034a9550d467bf1212666c76fe59d2f99b44b4b78ff4c2aab04ac9473e"
+    }
+  ],
+  "warnings": [
+    "Upstream test cleanup helper registered more than ten process exit listeners and emitted MaxListenersExceededWarning; all tests completed successfully."
+  ],
+  "scope": "Generated bin/process-studio only. No authored source edits or git staging."
+}

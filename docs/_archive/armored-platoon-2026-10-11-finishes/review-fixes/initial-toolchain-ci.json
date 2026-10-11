@@ -1,0 +1,37 @@
+{
+  "head": "3ce1c8dfde1e479b9927e4447bcbb6e28e898ba9",
+  "checkout": "dde8ae0180705e8ed2e2483aefa78536f9b36371",
+  "checkoutDescription": "Synthetic PR merge into main 3f56925b3532f015d9a29f19a998a05286b76f13",
+  "workflows": [
+    {
+      "name": "Model Forge",
+      "run": 38150268320,
+      "job": 114502088220,
+      "conclusion": "success",
+      "checks": 182
+    },
+    {
+      "name": "Scene Forge",
+      "run": 38150268300,
+      "job": 114502087977,
+      "conclusion": "success",
+      "checks": 57
+    },
+    {
+      "name": "Process Studio",
+      "run": 38150268303,
+      "job": 114502088121,
+      "conclusion": "success",
+      "checks": 22
+    },
+    {
+      "name": "Character Studio",
+      "run": 38150268310,
+      "job": 114502088157,
+      "conclusion": "failure",
+      "failedStep": "npm run check:cli",
+      "reason": "bin/character-studio stale after shared Wildlands source changes; subsequent type/unit/handoff/browser steps skipped"
+    }
+  ],
+  "browserLimit": "Model/Scene workflows do not run browser tiers. Character browser tier skipped on failure."
+}

@@ -149,7 +149,7 @@
     "asset-finish",
     "armored-browser"
   ],
-  "totalChecks": 2489,
+  "totalChecks": 2491,
   "reviewedAdditions": [
     {
       "suite": "wildlands-cli",
@@ -3934,6 +3934,14 @@
     {
       "suite": "armored-browser",
       "name": "Armored offline play completes without script errors or external requests"
+    },
+    {
+      "suite": "asset-finish",
+      "name": "Catalog admission rejects merged material conflicts and preserves valid node and actor palettes"
+    },
+    {
+      "suite": "armored-browser",
+      "name": "Armored pointer lock hands input to orders and preserves pause semantics"
     }
   ],
   "renames": [
@@ -6715,6 +6723,7 @@
       "A failed material constructor releases its newly acquired finish maps exactly once",
       "Combined finish and surface budgets reject a whole model before root or GPU allocation",
       "Littlewild finish recipes instantiate through the generic renderer with authored UVs and appearance colors",
+      "Catalog admission rejects merged material conflicts and preserves valid node and actor palettes",
       "Material and per-node surface-finish conflicts fail before resource allocation"
     ],
     "armored-browser": [
@@ -6733,6 +6742,7 @@
       "Armored order keyboard journey preserves traversal recipient focus and cancellation",
       "Armored whole platoon orders exclude destroyed recipients and reach surviving allies",
       "Armored HUD presents authoritative action reasons and selected camera state",
+      "Armored pointer lock hands input to orders and preserves pause semantics",
       "Armored offline play completes without script errors or external requests"
     ]
   }

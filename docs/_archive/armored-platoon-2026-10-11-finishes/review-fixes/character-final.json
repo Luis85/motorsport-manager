@@ -1,0 +1,80 @@
+{
+  "context": "Working-tree Character Studio freshness/finish dependency repair following CI failure on3ce1c8df; not a final committed-source CI receipt",
+  "baseHead": "3ce1c8dfde1e479b9927e4447bcbb6e28e898ba9",
+  "checks": {
+    "build": "passed",
+    "bundleFreshness": "passed",
+    "typecheck": "passed",
+    "units": {
+      "passed": 52,
+      "total": 52
+    },
+    "standaloneHandoff": "passed",
+    "engineIntegrationFrozenOutput": {
+      "passed": 2,
+      "total": 2
+    },
+    "browser": {
+      "passed": 3,
+      "total": 3,
+      "durationMs": 41911.414918,
+      "chromium": "151.0.7922.173 Debian13 system browser",
+      "playwright": "1.63.0",
+      "environment": {
+        "CHARACTER_STUDIO_CHROMIUM_PATH": "/usr/bin/chromium"
+      },
+      "cleanup": "browser.close finally blocks complete; Node process exit0; no active Chromium/test-server process detected"
+    },
+    "docs": "passed",
+    "whitespace": "passed"
+  },
+  "retainedIntermediate": "final-integration.log passed2/2 but may have overlapped root build, superseded by frozen-integration.log",
+  "files": [
+    {
+      "path": "bin/character-studio",
+      "bytes": 1650302,
+      "sha256": "30d65cbd6e36a9c745479c0c205a806940885f4aac20a743ce0bbce839d18ba1"
+    },
+    {
+      "path": "bin/scene-forge",
+      "bytes": 2518238,
+      "sha256": "e373b65162978ed79800371489fd62ec2c98a5bb58fcddc63a5664a888a918f0"
+    },
+    {
+      "path": "source/character-studio/src/infra/engine-renderer.cjs",
+      "bytes": 242,
+      "sha256": "a61f4662a2789059454c233a014871e792fbec7682962c9a3482f84a9c5e73f1"
+    },
+    {
+      "path": "source/character-studio/tests/viewport-kit.test.ts",
+      "bytes": 7957,
+      "sha256": "4842d4b030760b450a884fe5c9dad079c66e88dd506a560cf5457e90cae04876"
+    },
+    {
+      "path": "source/wildlands/source/asset-catalog.ts",
+      "bytes": 22319,
+      "sha256": "9375f1a86f25c0a76e885f606f859e6792f93ecefd4602ffdcb5cce0621bf7a6"
+    },
+    {
+      "path": "source/wildlands/source/creature-catalog.ts",
+      "bytes": 20533,
+      "sha256": "fbe677132942af7f873a0536bdc085210ac10ba3773252e5b14faaa5f62fdd64"
+    },
+    {
+      "path": "source/wildlands/source/asset-surface.ts",
+      "bytes": 7604,
+      "sha256": "43a647fc4cfec2c47685f04aec7633dd141239e466ae808c6242dcdc4cf1e350"
+    },
+    {
+      "path": "source/wildlands/source/asset-finish.ts",
+      "bytes": 7031,
+      "sha256": "5f24b7f7528f31098e1789fb7777904b4fce50acb8d7dde00afb64bef84b113a"
+    },
+    {
+      "path": "source/wildlands/source/asset-renderer.ts",
+      "bytes": 11322,
+      "sha256": "600015088021d84a8f86380aab15914f79cd5eaa40fb5afdbf5cbaeab803beed"
+    }
+  ],
+  "limits": "System software-browser and CPU resource contract checks, not hardware performance, full reference parity or bundled CI browser acceptance."
+}

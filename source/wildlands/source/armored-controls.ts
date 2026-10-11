@@ -5,7 +5,7 @@
  const root=inputRoot as {LWArmoredControls?:unknown};
  function create(canvas:HTMLCanvasElement,hooks:LWArmoredPresentation.Hooks,ui:LWArmoredPresentation.UI,catalog:LWArmoredData.Catalog):LWArmoredPresentation.Controls {
   const lifecycle=new AbortController(),keys=new Set<string>(),camera=ui.camera();
-  let controlled='',lastDrive='',lastAim='',lastFire=false,mouseFire=false,rightDrag=false,cruise=0,gamepadFire=false,lastButtons:boolean[]=[];
+  let controlled='',lastDrive='',lastAim='',lastFire=false,mouseFire=false,rightDrag=false,cruise=0,gamepadFire=false,lastButtons:boolean[]=[],focusUnlockPending=false;
   function submit(input:LWArmoredRuntime.Command):void {const result=hooks.command(input);if(!result.ok)ui.notice(result.message,true);}
   function reset():void {keys.clear();mouseFire=false;rightDrag=false;cruise=0;gamepadFire=false;lastDrive='';lastAim='';lastFire=false;}
   function release():void {
@@ -13,7 +13,7 @@
    if(controlled){hooks.command({kind:'drive',entityId:controlled,throttle:0,steer:0,brake:1,cruise:0});hooks.command({kind:'fire',entityId:controlled,pressed:false});}
    lastDrive='';lastFire=false;
   }
-  const active=()=>!hooks.paused()&&(document.activeElement===canvas||document.pointerLockElement===canvas);
+  const active=()=>!hooks.paused()&&document.activeElement===canvas;
   document.addEventListener('keydown',event=>{
    if(!active()||event.target instanceof HTMLInputElement||event.target instanceof HTMLSelectElement)return;
    if(['KeyW','KeyA','KeyS','KeyD','KeyQ','KeyE','ArrowUp','ArrowDown','Space','KeyR'].includes(event.code)){event.preventDefault();keys.add(event.code);}
@@ -32,12 +32,21 @@
   document.addEventListener('pointerup',event=>{if(event.button===0)mouseFire=false;if(event.button===2)rightDrag=false;},{signal:lifecycle.signal});
   canvas.addEventListener('contextmenu',event=>event.preventDefault(),{signal:lifecycle.signal});
   document.addEventListener('pointermove',event=>{
-   if(hooks.paused()||(!rightDrag&&document.pointerLockElement!==canvas))return;
+   if(!active()||(!rightDrag&&document.pointerLockElement!==canvas))return;
    const multiplier=camera.mode==='chase'?1:camera.mode==='gunner'?.5:.3;
    camera.yaw-=event.movementX*.002*camera.sensitivity*multiplier;camera.pitch=Math.max(-.3,Math.min(.45,camera.pitch-event.movementY*.002*camera.sensitivity*multiplier));
   },{signal:lifecycle.signal});
-  document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement!==canvas){release();if(!hooks.paused())ui.screen('pause');}},{signal:lifecycle.signal});
-  canvas.addEventListener('blur',()=>{if(document.pointerLockElement!==canvas)release();},{signal:lifecycle.signal});
+  document.addEventListener('pointerlockchange',()=>{
+   if(document.pointerLockElement===canvas){focusUnlockPending=false;return;}
+   const handedOff=focusUnlockPending;focusUnlockPending=false;release();
+   if(!hooks.paused()&&!handedOff)ui.screen('pause');
+  },{signal:lifecycle.signal});
+  canvas.addEventListener('blur',()=>{
+   release();
+   // A HUD focus handoff releases captured aim without pausing its order flow.
+   // The next loss event consumes this marker; reacquisition clears it as well.
+   if(document.pointerLockElement===canvas){focusUnlockPending=true;document.exitPointerLock();}
+  },{signal:lifecycle.signal});
   canvas.addEventListener('lostpointercapture',()=>{rightDrag=false;mouseFire=false;},{signal:lifecycle.signal});
   window.addEventListener('blur',()=>{release();if(!hooks.paused())ui.screen('pause');},{signal:lifecycle.signal});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){release();if(!hooks.paused())ui.screen('pause');}},{signal:lifecycle.signal});
@@ -66,7 +75,7 @@
    const fire=camera.mode!=='binocular'&&vehicle?.actions?.fire.available!==false&&(mouseFire||keys.has('KeyR')||gamepadFire);
    if(lastFire!==fire){submit({kind:'fire',entityId:controlled,pressed:fire});lastFire=fire;}
   }
-  return {update,release,reset,destroy(){release();lifecycle.abort();}};
+  return {update,release,reset,destroy(){release();focusUnlockPending=false;lifecycle.abort();}};
  }
  root.LWArmoredControls={create};
 })(typeof globalThis!=='undefined'?globalThis:this);

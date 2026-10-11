@@ -70,3 +70,7 @@ All local rendering is software WebGL. Installed-reference timings, production
 assets/content, hardware performance, full device coverage, multiplayer and the
 remaining parity ledger are unaccepted. Procedural finish wear is generic surface
 detail, not authored edge wear or a combat-damage texture system.
+
+The [integration review corrections](review-fixes/README.md) preserve the subsequent
+input/admission defects and stale Character Studio failure with their original
+source identities. Final acceptance is recorded separately.

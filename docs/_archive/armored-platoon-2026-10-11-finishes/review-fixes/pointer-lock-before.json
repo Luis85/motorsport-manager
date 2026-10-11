@@ -1,0 +1,22 @@
+{
+  "artifact": "/workspace/work/armored-platoon/work/armored-v3-integrated-interface/runtime/.generated/artifacts/armored-play.html",
+  "afterOpen": {
+    "locked": true,
+    "paused": false,
+    "ordersVisible": true,
+    "focus": "follow",
+    "motor": {
+      "throttle": 1,
+      "steer": 0,
+      "brake": 0,
+      "cruise": 1
+    },
+    "trigger": false
+  },
+  "afterTraversal": {
+    "locked": true,
+    "ordersVisible": false,
+    "focus": "armored-canvas"
+  },
+  "cleanup": "context and browser closed"
+}

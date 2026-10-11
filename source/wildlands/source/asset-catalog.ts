@@ -117,6 +117,11 @@
    for(const key of ['visible','castShadow','receiveShadow'])if(node[key]!==undefined&&typeof node[key]!=='boolean')fail(path+' invalid '+key);
    if(node.materialProps!==undefined)materialProps(node.materialProps,path+' material properties');
    if(node.primitive!=='group'&&(typeof node.material!=='string'||(!Object.hasOwn(materials,node.material)&&!/^#[0-9a-f]{6}$/i.test(node.material))))fail(path+' invalid material');
+   if(node.primitive!=='group'){
+    const base=materials[String(node.material)],effective={...(plain(base)?base:{}),...(node.materialProps as Plain??{})};
+    // Actor appearance overrides are color strings, so they retain these same descriptors.
+    if(effective.surface!==undefined&&effective.finish!==undefined)fail(path+' cannot combine surface and finish in an effective material');
+   }
    if(node.children!==undefined)nodeIds(node.children,materials,seen,path+'/'+(node.id||node.primitive),meshes);
   }
  }
