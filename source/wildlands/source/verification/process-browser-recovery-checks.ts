@@ -40,8 +40,10 @@ export async function recoveryChecks(studio: Studio): Promise<void> {
   assert.match(value.text, /"name": "Kept draft"/);
   await keep(true); await reload();
   await ask.waitFor(); assert.match(await page.locator('#ask-title').innerText(), /^Recover draft from (\d{4}-\d\d-\d\d )?\d\d:\d\d\?$/);
-  assert.deepEqual(await choices(), ['Not now', 'Discard saved draft', 'Recover draft']); assert.equal(await activeId(), 'ask-cancel', 'Not now is the default');
-  assert.match(await page.locator('#ask-confirm-title').innerText(), new RegExp(`unapplied draft of ${original.definition.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
+  assert.deepEqual(await choices(), ['Not now', 'Discard saved draft', 'Recover draft']);
+  assert.equal(await activeId(), 'ask-cancel', 'Not now is the default');
+  assert.match(await page.locator('#ask-confirm-title').innerText(),
+   new RegExp(`unapplied draft of ${original.definition.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
   await page.keyboard.press('Escape'); await ask.waitFor({state: 'hidden'});
   assert.equal(await message(), 'Saved draft kept. It is offered again when this process opens.');
   assert.deepEqual([await page.locator('#draft-chip').isHidden(), await copies()], [true, [key]], 'nothing recovered, the copy is kept');
@@ -56,36 +58,38 @@ export async function recoveryChecks(studio: Studio): Promise<void> {
   assert.equal(await activeId(), 'process-switch');
   await reload(); await keep(false); await page.evaluate(() => localStorage.clear());
  });
- await check('Recover draft restores the saved draft without applying it; copies for another definition are ignored and blocked or full storage changes nothing else', async () => {
-  await freshStudio(); const original = await query(page);
-  await editDraft('Recovered draft'); await stored(); const [key] = await copies();
-  await keep(true); await reload(); await ask.waitFor(); await page.locator('#ask-recover').click(); await ask.waitFor({state: 'hidden'});
-  assert.match(await message(), /^Draft recovered from (\d{4}-\d\d-\d\d )?\d\d:\d\d\. Nothing is applied; review it in the Definition editor\.$/);
-  assert.match(await page.locator('#draft-chip').innerText(), /^Unapplied draft/);
-  const now = await query(page); assert.deepEqual([now.definition, now.snapshot.minute], [original.definition, 0], 'nothing is applied');
-  await openDef(); assert.match(await page.locator('#draft').inputValue(), /"name": "Recovered draft"/);
-  // Restoring the running definition removes the copy (after the same short pause as a save).
-  await restoreDef(); await closeDef();
-  await page.waitForFunction(k => localStorage.getItem(k) === null, key!);
-  // A copy kept for an earlier revision of the definition (another fingerprint) is ignored.
-  const stale = key!.replace(/:[^:]+$/, ':0000000000000000');
-  await page.evaluate(([k, v]) => localStorage.setItem(k!, v!), [stale, JSON.stringify({text: '{}', savedAt: 1, processName: 'Old'})] as const);
-  await reload(); assert.equal(await ask.count(), 0, 'a copy for another definition is not offered');
-  // A draft over 1 MiB keeps no copy and says so once.
-  await openDef(); await page.locator('#draft').fill(JSON.stringify({huge: 'x'.repeat(1100000)})); await closeDef();
-  await page.waitForFunction(() => document.getElementById('message')!.textContent!.startsWith('This draft is larger than 1 MiB'));
-  assert.deepEqual(await copies(), [stale], 'nothing new is stored');
-  await keep(false); await page.evaluate(() => localStorage.clear()); await freshStudio();
-  // Storage that throws (private mode, blocked site data): no copy, no offer, no error, and the studio works as before.
-  const blocked = await context.newPage();
-  await blocked.addInitScript(() => Object.defineProperty(window, 'localStorage', {get() { throw new DOMException('Blocked', 'SecurityError'); }}));
-  await openArtifact(blocked, file, {url: fixtureUrls[0]!}); await waitForReady(blocked, {host: 'process'});
-  await blocked.locator('#steps [data-step="discovery"]').click(); await blocked.locator('#edit-step').click();
-  await blocked.locator('#se-name').fill('Blocked draft'); await blocked.locator('#se-save').click();
-  await blocked.locator('#process-switch').selectOption('1'); await blocked.waitForFunction(() => (globalThis as any).LWProcessStudio.query().active === 1);
-  assert.equal(await blocked.locator('#message').getAttribute('class'), 'process-message', 'no error is shown');
-  await openArtifact(blocked, file, {url: fixtureUrls[0]!}); await waitForReady(blocked, {host: 'process'});
-  assert.equal(await blocked.locator('dialog.ask-dialog[open]').count(), 0, 'nothing is offered');
-  await blocked.locator('#advance').click(); assert.equal((await query(blocked)).snapshot.minute, 30); await blocked.close();
- });
+ await check('Recover draft restores the saved draft without applying it; '
+   + 'copies for another definition are ignored and blocked or full storage changes nothing else',
+  async () => {
+   await freshStudio(); const original = await query(page);
+   await editDraft('Recovered draft'); await stored(); const [key] = await copies();
+   await keep(true); await reload(); await ask.waitFor(); await page.locator('#ask-recover').click(); await ask.waitFor({state: 'hidden'});
+   assert.match(await message(), /^Draft recovered from (\d{4}-\d\d-\d\d )?\d\d:\d\d\. Nothing is applied; review it in the Definition editor\.$/);
+   assert.match(await page.locator('#draft-chip').innerText(), /^Unapplied draft/);
+   const now = await query(page); assert.deepEqual([now.definition, now.snapshot.minute], [original.definition, 0], 'nothing is applied');
+   await openDef(); assert.match(await page.locator('#draft').inputValue(), /"name": "Recovered draft"/);
+   // Restoring the running definition removes the copy (after the same short pause as a save).
+   await restoreDef(); await closeDef();
+   await page.waitForFunction(k => localStorage.getItem(k) === null, key!);
+   // A copy kept for an earlier revision of the definition (another fingerprint) is ignored.
+   const stale = key!.replace(/:[^:]+$/, ':0000000000000000');
+   await page.evaluate(([k, v]) => localStorage.setItem(k!, v!), [stale, JSON.stringify({text: '{}', savedAt: 1, processName: 'Old'})] as const);
+   await reload(); assert.equal(await ask.count(), 0, 'a copy for another definition is not offered');
+   // A draft over 1 MiB keeps no copy and says so once.
+   await openDef(); await page.locator('#draft').fill(JSON.stringify({huge: 'x'.repeat(1100000)})); await closeDef();
+   await page.waitForFunction(() => document.getElementById('message')!.textContent!.startsWith('This draft is larger than 1 MiB'));
+   assert.deepEqual(await copies(), [stale], 'nothing new is stored');
+   await keep(false); await page.evaluate(() => localStorage.clear()); await freshStudio();
+   // Storage that throws (private mode, blocked site data): no copy, no offer, no error, and the studio works as before.
+   const blocked = await context.newPage();
+   await blocked.addInitScript(() => Object.defineProperty(window, 'localStorage', {get() { throw new DOMException('Blocked', 'SecurityError'); }}));
+   await openArtifact(blocked, file, {url: fixtureUrls[0]!}); await waitForReady(blocked, {host: 'process'});
+   await blocked.locator('#steps [data-step="discovery"]').click(); await blocked.locator('#edit-step').click();
+   await blocked.locator('#se-name').fill('Blocked draft'); await blocked.locator('#se-save').click();
+   await blocked.locator('#process-switch').selectOption('1'); await blocked.waitForFunction(() => (globalThis as any).LWProcessStudio.query().active === 1);
+   assert.equal(await blocked.locator('#message').getAttribute('class'), 'process-message', 'no error is shown');
+   await openArtifact(blocked, file, {url: fixtureUrls[0]!}); await waitForReady(blocked, {host: 'process'});
+   assert.equal(await blocked.locator('dialog.ask-dialog[open]').count(), 0, 'nothing is offered');
+   await blocked.locator('#advance').click(); assert.equal((await query(blocked)).snapshot.minute, 30); await blocked.close();
+  });
 }
