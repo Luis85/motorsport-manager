@@ -24,6 +24,8 @@ export function discover(ctx: Context): void {
   recipe: {expectedRevision: 0, expectedFingerprint: '<inspect.fingerprint>', operations: [{op: 'rename', value: 'My process'}]},
   notes: ['put operations replace full definitions', 'dry runs write nothing',
    'setDescription, setSeed, setSipoc and setTrack remove the field with value null; setGenre with process removes genre',
+   'setWorkingHours ({opensAt, closesAt, daysPerWeek}; null removes it) makes work and arrivals pause outside working hours; '
+    + 'the run clock then counts elapsed minutes and a display calendar is refused beside it',
    'draft graph diagnostics must be resolved before run or build', 'fingerprint is a change guard, not a cryptographic signature'],
   tool: TOOL, toolOperations: TOOL_OPERATIONS, globalOptions: GLOBAL_OPTIONS});
 }

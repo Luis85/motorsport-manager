@@ -71,6 +71,10 @@ test('usage errors exit 2 before any file is read', async () => {
  await usage(['run', '--input', 'missing.json', '--minutes', '10', '--output', 'r.json', '--event-log', 'e', '--format', 'tsv'],
   '--format must be csv or xes on run.');
  await usage(['run', '--input', 'missing.json', '--minutes', '10', '--output', 'r.json', '--event-log', 'missing.json'], /must not be the input or the report/);
+ await usage(['run', '--input', 'missing.json', '--minutes', '10', '--output', 'r.json', '--seed', '3', '--checkpoint', 'missing.checkpoint.json'],
+  '--seed cannot be combined with --checkpoint: the checkpoint carries its run seed.');
+ await usage(['run', '--input', 'missing.json', '--minutes', '10', '--output', 'r.json', '--checkpoint-out', 'missing.json'],
+  /^--checkpoint-out must not be the input, the report, the event log or the --checkpoint file\.$/);
  await usage(['schema', '--kind', 'other'], '--kind must be definition or recipe.');
  await usage(['slides', '--input', 'missing.json', '--format', 'pdf'], '--format must be json or md.');
  await usage(['slides', '--input', 'missing.json', '--seed', '3'], '--seed needs --minutes (live facts come from one bounded run).');

@@ -5,7 +5,8 @@
 .lw-journey * { box-sizing:border-box; }
 .lw-journey .jm-bar { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px 12px; padding:8px 12px; border-bottom:1px solid var(--jm-line); }
 .lw-journey .jm-summary { font-size:var(--t-sm); color:var(--jm-muted); overflow-wrap:anywhere; }
-.lw-journey button.jm-fit { min-height:36px; padding:6px 14px; font-size:var(--t-sm); color:var(--jm-text); background:var(--jm-panel); border:1px solid var(--jm-line); border-radius:var(--r-sm); cursor:pointer; }
+.lw-journey button.jm-fit { min-height:36px; padding:6px 14px; font-size:var(--t-sm); color:var(--jm-text); background:var(--jm-panel);
+ border:1px solid var(--button-border); border-radius:var(--r-sm); cursor:pointer; }
 .lw-journey button.jm-fit[aria-pressed=true] { background:var(--accent-bg); border-color:var(--accent-line); }
 .lw-journey button:focus-visible { outline:2px solid var(--jm-accent); outline-offset:2px; }
 .lw-journey .jm-scroll { overflow-x:auto; overflow-y:hidden; max-width:100%; overscroll-behavior-x:contain; scrollbar-width:thin; }

@@ -32,55 +32,62 @@ const positionIn = (d: LWProcess.Definition, id: string) => d.steps.find(s => s.
 export async function draftChecks(studio: Studio): Promise<void> {
  const {page, check, freshStudio, importFeed, importJson, openDef, closeDef, restoreDef, applyDef, draftText, defOf, activeId, dialogOpen, switchTo} = studio;
  const message = () => page.locator('#message').innerText();
- const undo = async (redo = false) => { await page.locator('#tune-seed').focus(); await page.keyboard.press(redo ? 'ControlOrMeta+Shift+Z' : 'ControlOrMeta+Z'); };
+ const undo = async (redo = false) => {
+  await page.locator('#tune-seed').focus();
+  await page.keyboard.press(redo ? 'ControlOrMeta+Shift+Z' : 'ControlOrMeta+Z');
+ };
  const show2d = async () => { await page.locator('#mode-2d').click(); await page.locator('#map svg g[role=button]').first().waitFor(); };
- await check('Dragging a 2D card writes one undoable draft step without ticking: the status says to apply, undo puts the card back and apply keeps it', async () => {
-  await importFeed(); await show2d(); const before = await query(page);
-  await dragCard(page, 'work', 0, 3);
-  assert.deepEqual(positionIn(await defOf(), 'work'), [14, 3], 'the draft holds the dropped position');
-  assert.equal(await message(), 'Moved =1+1, "x" in the draft. Apply the draft to keep it.');
-  const moved = await query(page);
-  assert.deepEqual([moved.definition, moved.snapshot.minute, moved.selected], [before.definition, 0, null], 'the running definition, clock and selection stay');
-  assert.match(await page.locator('#draft-chip').innerText(), /^Unapplied draft/);
-  assert.deepEqual(await cardAt(page, 'work'), {x: 14, y: 3, moved: null}, 'the card is drawn at its draft position');
-  // Undo in the Definition editor restores the draft and the card's place on the map.
-  await openDef(); await undo(); assert.deepEqual(positionIn(await defOf(), 'work'), [14, 0]);
-  assert.match(await page.locator('#draft-state').innerText(), /matches the running definition/);
-  await closeDef(); assert.deepEqual(await cardAt(page, 'work'), {x: 14, y: 0, moved: null}, 'undo puts the card back');
-  // Redo, then apply: the running definition keeps the position and the run restarts paused at minute 0.
-  await openDef(); await undo(true); assert.deepEqual(positionIn(await defOf(), 'work'), [14, 3]); await applyDef();
-  const applied = await query(page);
-  assert.deepEqual([positionIn(applied.definition, 'work'), applied.snapshot.minute, applied.playing], [[14, 3], 0, false]);
-  assert.deepEqual(await cardAt(page, 'work'), {x: 14, y: 3, moved: null}, 'apply keeps the card where it was moved');
-  // After a process switch the new map still moves cards into that process's draft (Alt+Arrow is the keyboard move).
-  const other = applied.processes.findIndex((p, i) => i > 0 && !/journey/.test(p.id)); await switchTo(other); await show2d();
-  const start = (await query(page)).definition.steps.find(s => s.kind === 'start')!;
-  await page.locator(`#map #process-map-${start.id}`).focus(); await page.keyboard.press('Alt+ArrowRight');
-  assert.deepEqual(positionIn(await defOf(), start.id), [start.scene.position[0]! + 1, start.scene.position[1]]);
-  assert.equal(await message(), `Moved ${start.name} in the draft. Apply the draft to keep it.`);
-  assert.equal((await query(page)).snapshot.minute, 0); await openDef(); await restoreDef(); await closeDef();
- });
- await check('A card move with a draft that is not valid JSON is refused and the card stays; Add step and Tidy layout say why they are unavailable', async () => {
-  await freshStudio(); await show2d(); const before = await query(page), discovery = positionIn(before.definition, 'discovery');
-  await openDef(); await page.locator('#draft').fill('{bad'); await closeDef();
-  const invalid = 'The draft is not valid JSON. Fix it in Edit process… first.';
-  for (const id of ['#add-step', '#tidy-layout']) {
-   assert.deepEqual([await page.locator(id).getAttribute('aria-disabled'), await page.locator(id).getAttribute('title')], ['true', invalid], id);
-  }
-  // aria-disabled keeps both in the keyboard order, so a press repeats the reason instead of acting.
-  await page.locator('#tidy-layout').focus(); await page.keyboard.press('Enter'); assert.equal(await message(), invalid);
-  await page.locator('#add-step').focus(); await page.keyboard.press('Enter');
-  assert.equal(await dialogOpen(), 0, 'no dialog opens'); assert.equal(await message(), invalid);
-  await dragCard(page, 'discovery', 2, 2);
-  assert.equal(await message(), 'The draft is not valid JSON, so Discovery was not moved. Fix it in Edit process… first.');
-  assert.equal(await draftText(), '{bad', 'the draft stays as written');
-  assert.deepEqual(await cardAt(page, 'discovery'), {x: discovery[0], y: discovery[1], moved: null}, 'the card returns to its place');
-  const after = await query(page); assert.deepEqual([after.definition, after.snapshot], [before.definition, before.snapshot]);
-  await openDef(); await restoreDef(); await closeDef();
-  assert.deepEqual([await page.locator('#add-step').getAttribute('aria-disabled'), await page.locator('#add-step').getAttribute('title')],
-   [null, 'Add a step to the draft']);
- });
- await check('Add step adds to the draft through a Cancel-first dialog and can insert into a path; Tidy layout writes one draft step; both sit in the phone menu',
+ await check('Dragging a 2D card writes one undoable draft step without ticking: the status says to apply, undo puts the card back and apply keeps it',
+  async () => {
+   await importFeed(); await show2d(); const before = await query(page);
+   await dragCard(page, 'work', 0, 3);
+   assert.deepEqual(positionIn(await defOf(), 'work'), [14, 3], 'the draft holds the dropped position');
+   assert.equal(await message(), 'Moved =1+1, "x" in the draft. Apply the draft to keep it.');
+   const moved = await query(page);
+   assert.deepEqual([moved.definition, moved.snapshot.minute, moved.selected], [before.definition, 0, null],
+    'the running definition, clock and selection stay');
+   assert.match(await page.locator('#draft-chip').innerText(), /^Unapplied draft/);
+   assert.deepEqual(await cardAt(page, 'work'), {x: 14, y: 3, moved: null}, 'the card is drawn at its draft position');
+   // Undo in the Definition editor restores the draft and the card's place on the map.
+   await openDef(); await undo(); assert.deepEqual(positionIn(await defOf(), 'work'), [14, 0]);
+   assert.match(await page.locator('#draft-state').innerText(), /matches the running definition/);
+   await closeDef(); assert.deepEqual(await cardAt(page, 'work'), {x: 14, y: 0, moved: null}, 'undo puts the card back');
+   // Redo, then apply: the running definition keeps the position and the run restarts paused at minute 0.
+   await openDef(); await undo(true); assert.deepEqual(positionIn(await defOf(), 'work'), [14, 3]); await applyDef();
+   const applied = await query(page);
+   assert.deepEqual([positionIn(applied.definition, 'work'), applied.snapshot.minute, applied.playing], [[14, 3], 0, false]);
+   assert.deepEqual(await cardAt(page, 'work'), {x: 14, y: 3, moved: null}, 'apply keeps the card where it was moved');
+   // After a process switch the new map still moves cards into that process's draft (Alt+Arrow is the keyboard move).
+   const other = applied.processes.findIndex((p, i) => i > 0 && !/journey/.test(p.id)); await switchTo(other); await show2d();
+   const start = (await query(page)).definition.steps.find(s => s.kind === 'start')!;
+   await page.locator(`#map #process-map-${start.id}`).focus(); await page.keyboard.press('Alt+ArrowRight');
+   assert.deepEqual(positionIn(await defOf(), start.id), [start.scene.position[0]! + 1, start.scene.position[1]]);
+   assert.equal(await message(), `Moved ${start.name} in the draft. Apply the draft to keep it.`);
+   assert.equal((await query(page)).snapshot.minute, 0); await openDef(); await restoreDef(); await closeDef();
+  });
+ await check('A card move with a draft that is not valid JSON is refused and the card stays; Add step and Tidy layout say why they are unavailable',
+  async () => {
+   await freshStudio(); await show2d(); const before = await query(page), discovery = positionIn(before.definition, 'discovery');
+   await openDef(); await page.locator('#draft').fill('{bad'); await closeDef();
+   const invalid = 'The draft is not valid JSON. Fix it in Edit process… first.';
+   for (const id of ['#add-step', '#tidy-layout']) {
+    assert.deepEqual([await page.locator(id).getAttribute('aria-disabled'), await page.locator(id).getAttribute('title')], ['true', invalid], id);
+   }
+   // aria-disabled keeps both in the keyboard order, so a press repeats the reason instead of acting.
+   await page.locator('#tidy-layout').focus(); await page.keyboard.press('Enter'); assert.equal(await message(), invalid);
+   await page.locator('#add-step').focus(); await page.keyboard.press('Enter');
+   assert.equal(await dialogOpen(), 0, 'no dialog opens'); assert.equal(await message(), invalid);
+   await dragCard(page, 'discovery', 2, 2);
+   assert.equal(await message(), 'The draft is not valid JSON, so Discovery was not moved. Fix it in Edit process… first.');
+   assert.equal(await draftText(), '{bad', 'the draft stays as written');
+   assert.deepEqual(await cardAt(page, 'discovery'), {x: discovery[0], y: discovery[1], moved: null}, 'the card returns to its place');
+   const after = await query(page); assert.deepEqual([after.definition, after.snapshot], [before.definition, before.snapshot]);
+   await openDef(); await restoreDef(); await closeDef();
+   assert.deepEqual([await page.locator('#add-step').getAttribute('aria-disabled'), await page.locator('#add-step').getAttribute('title')],
+    [null, 'Add a step to the draft']);
+  });
+ await check('Add step adds to the draft through a Cancel-first dialog and can insert into a path; Tidy layout writes one draft step; '
+   + 'both sit in the phone menu',
   async () => {
    await importFeed(); await page.locator('#steps [data-step="work"]').click(); const before = await query(page);
    const opened = page.locator('dialog.pd-dialog[open]:has(#as-kind)'), insert = page.locator('#as-insert');
@@ -154,26 +161,27 @@ export async function draftChecks(studio: Studio): Promise<void> {
    assert.equal(state === 'idle' ? await dot.count() : await dot.getAttribute('data-state'), state === 'idle' ? 0 : state, 'dot of ' + step.id);
   }
  });
- await check('Switching back to a kept run restores its Activity feed silently: the badge keeps its count, nothing is announced and nothing ticks', async () => {
-  const blocked = feedFixture(); (blocked.steps[1] as Record<string, unknown>).backlog = {capacity: 1};
-  await freshStudio(); await importJson('blocked-line.json', blocked);
-  await page.locator('#step').click(); await page.locator('#advance').click();
-  const opener = page.locator('#open-activity'), badge = await opener.innerText(), latest = await page.locator('#latest').innerText();
-  assert.match(badge, /^Activity · \d+$/); const left = await query(page);
-  await switchTo(1); assert.deepEqual([await opener.innerText(), (await query(page)).snapshot.minute], ['Activity', 0], 'the other run has its own feed');
-  await page.evaluate(() => {
-   const w = globalThis as unknown as {spoken: string[]}; w.spoken = [];
-   new MutationObserver(() => { const t = document.getElementById('feed-announcer')!.textContent; if (t) w.spoken.push(t); })
-    .observe(document.getElementById('feed-announcer')!, {childList: true, characterData: true, subtree: true});
+ await check('Switching back to a kept run restores its Activity feed silently: the badge keeps its count, nothing is announced and nothing ticks',
+  async () => {
+   const blocked = feedFixture(); (blocked.steps[1] as Record<string, unknown>).backlog = {capacity: 1};
+   await freshStudio(); await importJson('blocked-line.json', blocked);
+   await page.locator('#step').click(); await page.locator('#advance').click();
+   const opener = page.locator('#open-activity'), badge = await opener.innerText(), latest = await page.locator('#latest').innerText();
+   assert.match(badge, /^Activity · \d+$/); const left = await query(page);
+   await switchTo(1); assert.deepEqual([await opener.innerText(), (await query(page)).snapshot.minute], ['Activity', 0], 'the other run has its own feed');
+   await page.evaluate(() => {
+    const w = globalThis as unknown as {spoken: string[]}; w.spoken = [];
+    new MutationObserver(() => { const t = document.getElementById('feed-announcer')!.textContent; if (t) w.spoken.push(t); })
+     .observe(document.getElementById('feed-announcer')!, {childList: true, characterData: true, subtree: true});
+   });
+   await switchTo(0);
+   const n = Number(badge.split('· ')[1]);
+   assert.deepEqual([await opener.innerText(), await opener.getAttribute('aria-label')], [badge, `Activity, ${n} new problem${n === 1 ? '' : 's'}`]);
+   assert.equal(await page.locator('#latest').innerText(), latest);
+   assert.deepEqual((await query(page)).snapshot, left.snapshot, 'switching never ticks');
+   await opener.click(); await page.locator('dialog.act-dialog[open]').waitFor();
+   assert.equal(await page.locator('#act-rows tr').count(), left.snapshot.events.length, 'the retained events are listed once');
+   await page.keyboard.press('Escape');
+   assert.deepEqual(await page.evaluate(() => (globalThis as unknown as {spoken: string[]}).spoken), [], 'nothing is announced again');
   });
-  await switchTo(0);
-  const n = Number(badge.split('· ')[1]);
-  assert.deepEqual([await opener.innerText(), await opener.getAttribute('aria-label')], [badge, `Activity, ${n} new problem${n === 1 ? '' : 's'}`]);
-  assert.equal(await page.locator('#latest').innerText(), latest);
-  assert.deepEqual((await query(page)).snapshot, left.snapshot, 'switching never ticks');
-  await opener.click(); await page.locator('dialog.act-dialog[open]').waitFor();
-  assert.equal(await page.locator('#act-rows tr').count(), left.snapshot.events.length, 'the retained events are listed once');
-  await page.keyboard.press('Escape');
-  assert.deepEqual(await page.evaluate(() => (globalThis as unknown as {spoken: string[]}).spoken), [], 'nothing is announced again');
- });
 }

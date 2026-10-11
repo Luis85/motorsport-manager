@@ -1,11 +1,12 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-graph-routes.ts" />
+/// <reference path="./process-hours.ts" />
 /**
  * Graph admission and deterministic branching are domain rules, independent of ECS and rendering. This module owns the
  * semantic checks of an admitted shape (identities, conditions, flows, per-step and per-arrival rules, distributions and
- * draws) and the condition evaluation the runtime uses. Route analysis (reachability, fork regions, deadlines) lives in
- * process-graph-routes.ts and the needs analysis in process-needs.ts; `check` calls both in a fixed order, so the
- * diagnostics of a definition always come out in the same order.
+ * draws; working hours through LWProcessHours.check) and the condition evaluation the runtime uses. Route analysis
+ * (reachability, fork regions, deadlines) lives in process-graph-routes.ts and the needs analysis in process-needs.ts; `check`
+ * calls both in a fixed order, so the diagnostics of a definition always come out in the same order.
  */
 (function(inputRoot: unknown) {
  'use strict';
@@ -15,6 +16,7 @@
   LWProcessLimits: LWProcess.Limits;
   LWProcessNeeds: {check(d: LWProcess.Definition, concurrent?: LWProcessNeeds.Concurrency): LWProcess.Diagnostic[]};
   LWProcessGraphRoutes: LWProcessGraphRoutes.Api;
+  LWProcessHours: LWProcessHours.Api;
   LWProcessGraph?: {
    check(d: LWProcess.Definition): LWProcess.Diagnostic[]; matches(data: LWProcess.Fields, c: LWProcess.Condition): boolean;
    evaluate: Evaluate; hasChance(when: LWProcess.When | undefined): boolean;
@@ -370,6 +372,7 @@
   const concurrent = root.LWProcessGraphRoutes.check(d, fail, dangling);
   if (!errors.length) errors.push(...root.LWProcessNeeds.check(d, concurrent));
   checkArrivals(d, g);
+  root.LWProcessHours.check(d, fail);
   return errors;
  }
  root.LWProcessGraph = {check, matches, evaluate, hasChance};

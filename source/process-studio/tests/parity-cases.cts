@@ -11,13 +11,17 @@ import {AGENCY, BPMN_EXAMPLES} from './support.cjs';
 /** One invocation: the subcommand it covers and its arguments (without the `process` prefix). */
 export type Case = readonly [operation: string, args: readonly string[]];
 
-/** Inputs both runs start from: two demo definitions, a starter (also with a BOM and as links), a bad definition, recipes, assets and BPMN files. */
+/**
+ * Inputs both runs start from: two demo definitions, a starter (also with a BOM and as links), a bad definition, recipes, assets,
+ * BPMN files, starters with working hours (beside a display calendar, and closing before they open) and a truncated checkpoint.
+ */
 export function prepare(directory: string): void {
  const write = (name: string, value: unknown) =>
   fs.writeFileSync(path.join(directory, name), typeof value === 'string' ? value : JSON.stringify(value, null, 2) + '\n');
  for (const name of ['agency.process.json', 'loan-application.process.json']) fs.copyFileSync(path.join(AGENCY, name), path.join(directory, name));
  for (const name of ['loan-application.bpmn', 'support-ticket.bpmn']) fs.copyFileSync(path.join(BPMN_EXAMPLES, name), path.join(directory, name));
- const agency = catalog.admit(JSON.parse(fs.readFileSync(path.join(AGENCY, 'agency.process.json'), 'utf8')));
+ const admit = (name: string) => catalog.admit(JSON.parse(fs.readFileSync(path.join(AGENCY, name), 'utf8')));
+ const agency = admit('agency.process.json'), loan = admit('loan-application.process.json');
  const starter = authoring.create('starter', 'Starter'), asset = agency.steps.find(step => step.scene.asset)!.scene.asset;
  write('starter.json', starter);
  write('bad.json', {format: 'wildlands-process', schemaVersion: 1, id: 'bad'});
@@ -39,6 +43,14 @@ export function prepare(directory: string): void {
   + '<process id="p" isExecutable="true"><startEvent id="s"/><task id="t"/><task id="u"/><endEvent id="e"/>'
   + '<sequenceFlow id="f1" sourceRef="s" targetRef="t"/><sequenceFlow id="f2" sourceRef="t" targetRef="e"/>'
   + '<sequenceFlow id="f3" sourceRef="u" targetRef="e"/></process></definitions>');
+ // Working hours: a guarded edit adds them to the loan application; the starter variants carry a /workingHours diagnostic (inspect prints
+ // the values without words).
+ const hours = {opensAt: 540, closesAt: 1020, daysPerWeek: 5};
+ write('hours.recipe.json', {expectedRevision: loan.revision, expectedFingerprint: catalog.fingerprint(loan),
+  operations: [{op: 'setWorkingHours', value: hours}]});
+ write('hours-calendar.json', {...starter, workingHours: hours, calendar: {minutesPerDay: 480, daysPerWeek: 5}});
+ write('hours-reversed.json', {...starter, workingHours: {...hours, opensAt: 1020, closesAt: 540}});
+ write('broken.checkpoint.json', '{"kind": "wildlands-process-checkpoint", "version": 1,');
 }
 
 /**
@@ -46,8 +58,9 @@ export function prepare(directory: string): void {
  * `attach` holds the starter's attach options; index 5 is the expected revision.
  */
 function negativeCases(attach: readonly string[]): Case[] {
- const run = ['run', '--input', 'starter.json', '--minutes', '10'];
+ const run = ['run', '--input', 'starter.json', '--minutes', '10'], resume = ['run', '--input', 'agency.process.json', '--minutes', '10'];
  return [
+  ...checkpointRefusals(run, resume), ['inspect', ['inspect', '--input', 'hours-reversed.json']],
   ['validate', ['validate', '--input', 'starter.json', '--bogus', '1']], ['validate', ['validate', '--input']],
   ['validate', ['validate', '--input', 'bom.json']], ['inspect', ['inspect', '--input', 'bad.json']],
   ['schema', ['schema', '--kind', 'other']], ['create', ['create', '--id', 'x']],
@@ -70,6 +83,27 @@ function negativeCases(attach: readonly string[]): Case[] {
   ['import-bpmn', ['import-bpmn', '--input', 'loan-application.bpmn', '--output', 'x.json', '--lanes', 'sideways']],
   ['import-bpmn', ['import-bpmn', '--input', 'loan-application.bpmn', '--output', 'x.json', '--scenario', 'a', '--no-bpsim']],
   ['import-bpmn', ['import-bpmn', '--input', 'loan-application.bpmn', '--output', 'loan-application.bpmn']]
+ ];
+}
+
+/**
+ * Run checkpoint refusals (`run` is a starter run, `resume` an agency run): usage errors before any file is read, aliased
+ * outputs, and checkpoints of another process, another definition, another format, a truncated or missing file, or one
+ * whose run length the requested minutes would pass. They read agency.checkpoint.json, written by an earlier case.
+ */
+function checkpointRefusals(run: readonly string[], resume: readonly string[]): Case[] {
+ const saved = ['--checkpoint', 'agency.checkpoint.json'];
+ return [
+  ['run', [...resume, '--output', 'r.json', '--seed', '3', ...saved]], ['run', [...resume, '--output', 'r.json', '--checkpoint']],
+  ['run', [...run, '--output', 'r.json', '--checkpoint-out', 'starter.json']], ['run', [...run, '--output', 'r.json', '--checkpoint-out', 'r.json']],
+  ['run', [...run, '--output', 'r.json', '--event-log', 'e.csv', '--checkpoint-out', './e.csv']],
+  ['run', [...resume, '--output', 'r.json', ...saved, '--checkpoint-out', './agency.checkpoint.json']],
+  ['run', [...run, '--output', 'r.json', '--checkpoint-out', 'hard.json']], ['run', [...run, '--output', 'r.json', '--checkpoint-out', 'soft.json']],
+  ['run', [...run, '--output', 'r.json', ...saved]],
+  ['run', ['run', '--input', 'agency-edited.json', '--minutes', '10', '--output', 'r.json', ...saved]],
+  ['run', [...resume, '--output', 'r.json', '--checkpoint', 'bad.json']], ['run', [...resume, '--output', 'r.json', '--checkpoint', 'broken.checkpoint.json']],
+  ['run', [...resume, '--output', 'r.json', '--checkpoint', 'missing.checkpoint.json']],
+  ['run', ['run', '--input', 'agency.process.json', '--minutes', '100000', '--output', 'r.json', ...saved]]
  ];
 }
 
@@ -101,6 +135,14 @@ export function cases(directory: string): Case[] {
   ['run', ['run', '--input', 'agency.process.json', ...run, '--output', 'run-csv.json', '--event-log', 'events.csv']],
   ['run', ['run', '--input', 'agency.process.json', ...run, '--output', 'run-xes.json', '--event-log', 'events.xes', '--format', 'xes']],
   ['run', ['run', '--input', 'loan-application.process.json', '--minutes', '900', '--output', 'loan-run.json']],
+  ['run', ['run', '--input', 'agency.process.json', '--minutes', '100', '--seed', '7', '--output', 'run-a.json', '--checkpoint-out', 'agency.checkpoint.json']],
+  ['run', ['run', '--input', 'agency.process.json', '--minutes', '140', '--output', 'run-b.json', '--checkpoint', 'agency.checkpoint.json']],
+  ['run', ['run', '--input', 'agency.process.json', '--minutes', '60', '--output', 'run-c.json', '--checkpoint', 'agency.checkpoint.json',
+   '--checkpoint-out', 'agency-160.checkpoint.json', '--event-log', 'events-resumed.xes', '--format', 'xes']],
+  ['edit', ['edit', '--input', 'loan-application.process.json', '--recipe', 'hours.recipe.json', '--output', 'hours.json']],
+  ['inspect', ['inspect', '--input', 'hours.json']], ['inspect', ['inspect', '--input', 'hours-calendar.json']],
+  ['run', ['run', '--input', 'hours.json', '--minutes', '600', '--seed', '7', '--output', 'hours-run.json', '--checkpoint-out', 'hours.checkpoint.json']],
+  ['run', ['run', '--input', 'hours.json', '--minutes', '900', '--output', 'hours-run-b.json', '--checkpoint', 'hours.checkpoint.json']],
   ['replicate', ['replicate', '--input', 'agency.process.json', ...run, '--runs', '3']],
   ['replicate', ['replicate', '--input', 'loan-application.process.json', ...run, '--runs', '3', '--warmup', '100', '--output', 'replicate.json']],
   ['compare', ['compare', '--input', 'agency-edited.json', '--against', 'agency.process.json', ...run, '--runs', '3']],

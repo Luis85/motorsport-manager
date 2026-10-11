@@ -7,7 +7,9 @@
  * 4.1 and 4.7); helpers come from LWProcessDashboardModel.util. No DOM, session, clock or storage.
  *
  * Definitions: the run-level cumulative flow diagram plots arrived against finished (completed + failed); per-step bands are not
- * drawn because branches and loops make them invalid. Mean work in progress per interval is the difference of the case-minute area
+ * drawn because branches and loops make them invalid. When the run's minute lies after the last sample (a run that stopped between
+ * grid minutes), the cumulative chart and its table end with one more point at that minute, from the snapshot's exact counts, so
+ * the lines end where the caption's numbers are. Mean work in progress per interval is the difference of the case-minute area
  * divided by the interval length. Little's law over [W, T] is exact (L = A / (T - W), λ = S / (T - W), W̄ = A / S, with A the
  * case-minute area in the window and S the cases in progress at W plus the arrivals after it); the "stable flow" conditions are
  * listed as observations, never scored. Without a series, W is 0 and the snapshot's `wipArea` gives the whole-run identity.
@@ -42,16 +44,37 @@
   const w = root.LWProcessDashboardWindow.of(input), span = w ? upper(root.LWProcessDashboardWindow.label(w)) : '';
   const windowed = w ? ` ${span}, ${U.number(w.arrived)} arrived and ${U.number(w.completed + w.failed)} finished.` : '';
   const drawn = U.memo(input, 'arrivals', () => cumulative(input, s));
-  return {...base, caption: text + drawn.growth + windowed, legend: drawn.legend, chart: drawn.chart, table: drawn.table};
+  return {...base, caption: text + drawn.growth + windowed, legend: drawn.legend, ...toNow(input, s, drawn)};
  }
- /** The series part of the arrivals panel (chart, legend, table and the growth sentence), built once per series. */
- function cumulative(input: Input, s: Series): Pick<Panel, 'legend' | 'chart' | 'table'> & {growth: string} {
+ type Drawn = ReturnType<typeof cumulative>;
+ /** The cumulative chart and table, extended by the snapshot's exact counts at the run's minute when that is after the last sample. */
+ function toNow(input: Input, s: Series, drawn: Drawn): Pick<Panel, 'chart' | 'table'> {
+  const q = input.view.snapshot, m = q.metrics, chart = drawn.chart, table = drawn.table;
+  if (!chart || chart.kind !== 'lines' || !table || q.minute <= (s.minutes.at(-1) ?? 0)) return {chart, table};
+  const finished = m.completed + m.failed;
+  const now: Record<CumulativeKey, number> = {arrived: m.arrived, goals: m.goals, lost: m.lost, finished, dropped: m.dropped};
+  const series = chart.series.map((x, i) => ({...x, values: [...x.values, now[drawn.keys[i]!]]}));
+  return {chart: {...chart, xs: [...chart.xs, q.minute], series},
+   table: {...table, rows: [...table.rows, [q.minute, m.arrived, finished, m.active, m.dropped].map(n => u().number(n))]}};
+ }
+ /** What each cumulative line counts, so the run's current minute can extend it with the snapshot's count. */
+ type CumulativeKey = 'arrived' | 'goals' | 'lost' | 'finished' | 'dropped';
+ /** The series part of the arrivals panel (chart, legend, table, the growth sentence and each line's key), built once per series. */
+ function cumulative(input: Input, s: Series): Pick<Panel, 'legend' | 'chart' | 'table'> & {growth: string; keys: CumulativeKey[]} {
   const d = input.view.definition, t = root.LWProcessTerms.of(d), U = u();
   const fin = s.minutes.map((_, i) => s.run.completed[i]! + s.run.failed[i]!), outcomes = t.journey && d.steps.some(x => x.outcome);
-  const series: LWProcessChart.Series[] = [{label: 'Arrived', values: s.run.arrived, tone: 'wait'}];
-  if (outcomes) series.push({label: 'Goals reached', values: s.run.goals, tone: 'goal'}, {label: 'Lost', values: s.run.lost, tone: 'blocked'});
-  else series.push({label: 'Finished (completed and failed)', values: fin, tone: 'join'});
-  if (!outcomes && s.run.dropped.some(v => v > 0)) series.push({label: 'Dropped arrivals', values: s.run.dropped, tone: 'blocked'});
+  const series: LWProcessChart.Series[] = [{label: 'Arrived', values: s.run.arrived, tone: 'wait'}], keys: CumulativeKey[] = ['arrived'];
+  if (outcomes) {
+   series.push({label: 'Goals reached', values: s.run.goals, tone: 'goal'}, {label: 'Lost', values: s.run.lost, tone: 'blocked'});
+   keys.push('goals', 'lost');
+  } else {
+   series.push({label: 'Finished (completed and failed)', values: fin, tone: 'join'});
+   keys.push('finished');
+  }
+  if (!outcomes && s.run.dropped.some(v => v > 0)) {
+   series.push({label: 'Dropped arrivals', values: s.run.dropped, tone: 'blocked'});
+   keys.push('dropped');
+  }
   // Open work that has grown at every sample for at least three samples names the minute it started growing.
   let k = s.minutes.length - 1;
   while (k > 0 && s.run.wip[k - 1]! < s.run.wip[k]!) k--;
@@ -59,7 +82,7 @@
   const rows = s.minutes.map((x, i) => [x, s.run.arrived[i]!, fin[i]!, s.run.wip[i]!, s.run.dropped[i]!]);
   const title = `Cumulative arrived and finished ${t.many} by business minute`, W = input.window ?? 0;
   const chart: LWProcessDashboardModel.Chart = {kind: 'lines', title, axis: t.many, xs: s.minutes, series, step: true, mark: W || null};
-  return {growth, legend: legendOf(series), chart,
+  return {growth, keys, legend: legendOf(series), chart,
    table: timeTable(`Cumulative ${t.many} at each sample minute`, ['Minute', 'Arrived', 'Finished', 'Open', 'Dropped'], rows)};
  }
  function work(input: Input): Panel {

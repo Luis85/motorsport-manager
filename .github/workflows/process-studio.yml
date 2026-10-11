@@ -15,6 +15,7 @@ on:
       - 'source/wildlands/source/tools/cli-io.cts'
       - 'source/wildlands/source/tools/process-*.cts'
       - 'source/wildlands/source/tools/build-inserts.cts'
+      - 'source/wildlands/source/tools/build-inserts-process.cts'
       - 'source/wildlands/source/tools/artifact-profiles.cts'
       - 'source/wildlands/source/tools/artifact-placement.cts'
       - 'source/wildlands/source/tools/game-manifest.cts'

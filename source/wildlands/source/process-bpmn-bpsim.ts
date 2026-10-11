@@ -1,7 +1,8 @@
 /// <reference path="./process-bpmn.ts" />
 /**
  * BPSim 1.0 scenario reader for the BPMN importer. Times are converted to whole business minutes; a parameter it cannot express
- * is reported and ignored, never guessed.
+ * is reported and ignored, never guessed. Calendars and resource `Availability` are counted (`calendars`), not read: the importer
+ * takes working hours only from the Wildlands extension and reports a BPSim calendar without it.
  */
 declare namespace LWProcessBpmnBpsim {
  type X = LWProcessXml.Node;
@@ -16,6 +17,8 @@ declare namespace LWProcessBpmnBpsim {
   unitCost?: number;
   quantity?: number;
   probability?: number;
+  /** A resource `Availability` parameter was present (it names a calendar; see `Data.calendars`). */
+  availability?: true;
   inter?: Time;
   count?: number;
   props: Prop[];
@@ -27,6 +30,8 @@ declare namespace LWProcessBpmnBpsim {
   horizon: number | null;
   seed: number | null;
   elements: Map<string, Params>;
+  /** Scenario `Calendar` elements plus resource `Availability` parameters: working time the importer reads only from the extension. */
+  calendars: number;
  }
  interface Context {minutesPerDay: number; minutesPerHour: number; scenario?: string | undefined; warn(m: string): void;}
  interface Api {
@@ -224,6 +229,8 @@ declare namespace LWProcessBpmnBpsim {
    } else if (group === 'ControlParameters' && name === 'TriggerCount') {
     const v = num(item, ref, name);
     if (v !== undefined) p.count = Math.round(v);
+   } else if (group === 'ResourceParameters' && name === 'Availability') {
+    p.availability = true;
    } else if (group === 'ResourceParameters' && name === 'Quantity') {
     const v = num(item, ref, name);
     if (v !== undefined) p.quantity = Math.round(v);
@@ -260,7 +267,9 @@ declare namespace LWProcessBpmnBpsim {
    const rep = child(params, 'Replication'), reps = params.attrs.replication ?? (rep && valueOf(rep));
    if (reps !== undefined) c.warn('BPSim replication ' + reps + ' is ignored: Wildlands runs one seeded run per command; vary the seed instead.');
   }
-  return {scenario: label(chosen), scenarios, horizon, seed, elements};
+  const calendars = chosen.children.filter(k => isBpsim(k) && k.local === 'Calendar').length
+   + [...elements.values()].filter(p => p.availability).length;
+  return {scenario: label(chosen), scenarios, horizon, seed, elements, calendars};
  }
  root.LWProcessBpmnBpsim = {read, scenarios: doc => scenarioList(doc).map(label), duration, whole, isoMinutes};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessBpmnBpsim;

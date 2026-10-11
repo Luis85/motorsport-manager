@@ -10,6 +10,9 @@
  * diagnostics appear beside them. The calendar only changes how durations are worded (LWProcessTime.span), never a run.
  * Pure markup (LWProcessHtml `html`, returned as `Safe`) and draft-object edits: no DOM access beyond the element handed in,
  * no draft store, no session.
+ *
+ * With working hours and no calendar the group shows only why it is unavailable (a definition holds at most one of the two:
+ * working hours word times by the clock); a pasted draft with both keeps the controls, so the calendar can be set to None.
  */
 declare namespace LWProcessTuningCalendar {
  /** The tuning form's edit result; a calendar choice never reports a local message. */
@@ -44,6 +47,10 @@ declare namespace LWProcessTuningCalendar {
  }
  function markup(def: LWProcess.Definition): LWProcessHtml.Safe {
   const present = Object.hasOwn(def, 'calendar'), cal = calendarOf(def);
+  if (!present && Object.hasOwn(def, 'workingHours')) {
+   return html`<fieldset class="de-card" id="tune-cal"><legend>Working calendar (display only)</legend><p class="de-help" id="tune-cal-why">
+    Not available with working hours: they word times by the clock. Remove the working hours to use a display calendar.</p></fieldset>`;
+  }
   const choice = F.choice('tune-cal-mode', 'Working calendar', 'calendar', present ? 'set' : 'none', MODES, HELP);
   const fields = present ? html`<div class="de-grid">
     ${F.int('tune-cal-day', 'Minutes per business day', 'calendar.minutesPerDay', cal?.minutesPerDay as number | undefined,

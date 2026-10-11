@@ -23,6 +23,15 @@ Choose **Dashboard** beside the view buttons (on a phone, **⋯** then **Dashboa
 active process; choose another process with the **Process** selector and the Dashboard stays open
 for it, so you can compare processes one after another. **Fit to view** scrolls back to the top.
 
+On a phone the Dashboard scrolls with the page under the run bar, which stays at the top. Every
+section folds under its heading (open by default), and a control you reach with Tab or Shift+Tab, a
+heading you jump to and **Fit to view** stop just below the run bar, so nothing you are reading hides
+behind it. A wide data table scrolls sideways inside its own panel; the page itself does not.
+
+For a light background (a bright room, a printout of a screenshot), choose **Light theme** in the
+**Export ▾** or **⋯** menu. Every chart, table and tooltip follows; the choice ends when you reload the
+page.
+
 ## 1. Read what the numbers are
 
 The strip at the top names the process, revision, seed, minute and run status, and says what the
@@ -35,7 +44,9 @@ reads "—" with its reason, never 0.
 ## 2. Check the key figures
 
 The tiles give **In progress** and **Completed** (each with a sparkline and its trend in words),
-**Lead time** (the median and 85th percentile once 10 cases have finished, else the mean), **Oldest
+**Lead time** (the median and 85th percentile once 10 cases have finished, else the mean; exact
+values such as "median 37 min" while the run has finished at most 50,000 cases, otherwise a range such
+as "median 20–50 min"), **Oldest
 open**, **Busiest pool**, **Cost per completed case**, **Problems** and, when ends declare outcomes,
 **Conversion**. A customer or user journey leads with conversion and says **Time to outcome**
 instead of lead time.
@@ -45,7 +56,8 @@ instead of lead time.
 Under **Flow over time**, compare the two lines of **Arrivals and finishes**: when arrivals keep
 rising faster than finishes, work piles up and lead time grows with it. **Work in progress over
 time** shows whether that pile is stable, growing or oscillating, and **Throughput per interval**
-whether output is steady. **Little's law** checks that work in progress, arrival rate and time in
+whether output is steady (each column is labelled with the minute its interval ends, and a long run
+draws the intervals as a line). **Little's law** checks that work in progress, arrival rate and time in
 the system agree; it is an exact identity over the measured window, and the conditions for a
 stable flow are listed for you to judge.
 
@@ -66,9 +78,13 @@ Under **Where time goes**:
 
 ## 5. Check predictability
 
-Under **Lead time and predictability**, read the distribution's percentile brackets (from 10
-finished cases) rather than the mean alone: a long tail means some cases take far longer than
-typical. Choose a target in the panel's select to see the exact share of finished cases under it;
+Under **Lead time and predictability**, read the distribution's 50th, 85th and 95th percentiles (from
+10 finished cases) rather than the mean alone: a long tail means some cases take far longer than
+typical. The note under the chart says how exact they are. While the run has finished at most 50,000
+cases the percentiles are exact ("Percentiles are exact: nearest rank over all 12 finished cases; …")
+and the caption gives single values ("The median of 12 finished cases is 30 min, …"); after that, and
+for a step's own distributions, they are ranges of histogram bins ("The median … lies in 20–50 min")
+and the note says why. Choose a target in the panel's select to see the exact share of finished cases under it;
 the target is a choice for this view, not part of the process, and is not saved. **Lead time of
 recent finished cases** shows whether recent cases are slower than earlier ones, and **Aging work
 in progress** shows which open cases are already older than finished cases usually were at that
@@ -107,10 +123,13 @@ One seed is one possible run. In **What-if: spread across seeds**:
    (at most 1,000,000); **Run seeds** says why it is disabled when a value is out of range.
 3. Choose **Run seeds**. The replications run in small slices and never touch your run; **Cancel**
    keeps the results so far.
-4. Read each measure's mean, 95% interval and p10 · p50 · p90. A narrow interval means the seeds
-   agree under these assumptions; it says nothing about whether the assumptions are right. With a
-   **Measure from minute** chosen, measures labelled "after minute W" leave out each run's first W
-   minutes.
+4. Read each measure's mean, 95% interval and p10 · p50 · p90. Each row has its own scale. The
+   interval uses the exact Student t quantile for the number of runs, so it is right for 2 runs as
+   for 50. A narrow interval means the seeds agree under these assumptions; it says nothing about
+   whether the assumptions are right. If every seed gives the same values, a random process says that
+   its draws did not change these measures by that minute (try more minutes), and a process without
+   random behaviour says so. With a **Measure from minute** chosen, measures labelled "after minute W"
+   leave out each run's first W minutes.
 
 ## 10. Compare the draft with the applied design
 
@@ -138,8 +157,12 @@ What-if results as `<process-id>-dashboard-minute-<M>.csv`. Every chart also has
   What-if replications are not a forecast.
 - Lead time covers finished cases only; cases still in progress are named and left out. Read
   **Oldest open** and **Aging work in progress** beside it.
-- Percentiles are brackets of histogram bins, and the 95% intervals use a t-table that is slightly
-  narrow between about 31 and 120 runs; treat close calls as close.
+- Lead-time percentiles are exact while the run has finished at most 50,000 cases and bin ranges
+  after that; the note under each chart says which. The 95% intervals use the exact Student t
+  quantile, but an interval over a few runs is still wide: treat close calls as close.
+- With working hours, lead times and their percentiles count every elapsed minute, nights and
+  weekends included, while utilisation counts working minutes only; the notes say so, and the
+  lead-time breakdown shows the average time finished cases spent outside working hours.
 - Repeat visits may be planned iteration, not defects; the simulation cannot tell them apart.
 
 ## Confirm the result

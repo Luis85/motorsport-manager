@@ -10,7 +10,7 @@ opens. It is the preferred tool for process work; the equivalent command family
 `bin/wildlands process` stays available with the same results (see
 [Parity with `wildlands process`](#parity-with-wildlands-process)).
 
-The executable is one checked-in, dependency-free CommonJS file of about 1.2 MB,
+The executable is one checked-in, dependency-free CommonJS file of about 1.4 MB,
 generated from the independent TypeScript project
 [`source/process-studio/`](../../source/process-studio/README.md). It needs only
 Node.js 22 or newer: no `npm ci`, `node_modules`, build step, network access or
@@ -86,7 +86,9 @@ bin/process-studio run --input "$A" --minutes 600 --output "$OUT/agency-run.json
   value, a non-whole or out-of-range number, an unknown `--kind`, `--format` or
   `--lanes`, `--dry-run` with `--output`, `--seed` on `slides` without
   `--minutes`, run and replication bounds, an event log naming the input or the
-  report) exit 2 before any file is read or written.
+  report, `--seed` together with `--checkpoint`, a `--checkpoint-out` naming the
+  input, the report, the event log or the `--checkpoint` file) exit 2 before any
+  file is read or written.
 - Outputs are written to an exclusively created temporary file and renamed into
   place, so a reader never sees a partial file. An existing output is replaced,
   but an output may never be one of the command's inputs, also not through a hard
@@ -128,10 +130,10 @@ document.
 | `schema` | | `--kind definition\|recipe` | The definition (default) or edit recipe JSON Schema. |
 | `create` | `--id`, `--output` | `--name` | A runnable starter definition; prints `output`, `revision`, `fingerprint`. |
 | `validate` | `--input` | `--draft` | `runnable`, `diagnostics`, `advisories`; exit 1 when rejected. `--draft` accepts graph diagnostics. |
-| `inspect` | `--input` | | `id`, `revision`, `fingerprint`, `runnable`, `diagnostics`, `advisories`, `scenes` and the minute-0 `snapshot`; never advances time. |
+| `inspect` | `--input` | | `id`, `revision`, `fingerprint`, `runnable`, `diagnostics`, `advisories`, `scenes` and the minute-0 `snapshot`; with working hours also `workingHours` (the values, the hours in words, the clock's `start` and how the clock counts; only the values when a draft's hours have a diagnostic); never advances time. |
 | `edit` | `--input`, `--recipe`, and `--output` or `--dry-run` | `--draft` | Applies a guarded recipe as one transaction; `--dry-run` writes nothing. |
 | `attach` | `--input`, `--asset`, `--step`, `--expected-revision`, `--expected-fingerprint`, and `--output` or `--dry-run` | | Puts a Scene Forge Wildlands asset (or its `{visual}` wrapper) on one step under the same guards. |
-| `run` | `--input`, `--minutes`, `--output` | `--seed`, `--event-log FILE`, `--format csv\|xes` | One fresh deterministic run; writes the report and prints `requestedMinutes`, `seed`, `advancedMinutes`, `status`, `metrics` (and `eventLog` with `file`, `format`, `events`). `--format` needs `--event-log`; CSV is the default log format. |
+| `run` | `--input`, `--minutes`, `--output` | `--seed` or `--checkpoint FILE`, `--checkpoint-out FILE`, `--event-log FILE`, `--format csv\|xes` | One deterministic run, fresh or continued from `--checkpoint` (see [Run checkpoints](#run-checkpoints)); writes the report and prints `requestedMinutes`, `seed`, `advancedMinutes`, `status`, `metrics` (and `eventLog` with `file`, `format`, `events`; `checkpoint` with `input` and `minute`; `checkpointOut` with `output` and `minute`). `--format` needs `--event-log`; CSV is the default log format. |
 | `replicate` | `--input`, `--minutes`, `--runs` | `--seed`, `--warmup`, `--output` | Runs over consecutive seeds (from `--seed`, else the definition seed, else 1): n, mean, sample sd, t-based 95% interval and p10/p50/p90 per KPI with per-seed rows; `--warmup W` adds KPIs after minute W. |
 | `compare` | `--input`, `--against`, `--minutes`, `--runs` | `--seed`, `--warmup`, `--output` | Both definitions over the same seeds: per KPI the statistics of A and B and the paired difference A - B with its interval, plus the `diff` of the two files. |
 | `diff` | `--input`, `--against` | | What changed from `--against` to `--input`: summary, counts, changed entities and every changed value with its path. Writes nothing. |
@@ -178,6 +180,35 @@ longer match: inspect again and rebase instead of dropping the guards. `diff`
 reports "Changes: 1 resource changed" with the one value `/resources/qa/capacity`
 from 1 to 2.
 
+### Run checkpoints
+
+`run --checkpoint-out FILE` also writes a run checkpoint
+(`kind: wildlands-process-checkpoint`, version 1) where the run ended, and
+`run --checkpoint FILE` continues that run instead of starting at minute 0:
+
+```sh
+bin/process-studio run --input "$A" --minutes 100 --seed 7 --output "$OUT/run-a.json" --checkpoint-out "$OUT/agency.checkpoint.json" --compact > "$OUT/saved.json"
+bin/process-studio run --input "$A" --minutes 60 --output "$OUT/run-b.json" --checkpoint "$OUT/agency.checkpoint.json" --compact > "$OUT/continued.json"
+bin/process-studio run --input "$A" --minutes 160 --seed 7 --output "$OUT/run-160.json" --compact > /dev/null
+node -e '
+const fs = require("fs"), [b, whole] = process.argv.slice(1).map(file => JSON.parse(fs.readFileSync(file, "utf8")).snapshot);
+console.log(JSON.stringify(b) === JSON.stringify(whole) ? "continued run equals one 160-minute run" : "differs");
+' "$OUT/run-b.json" "$OUT/run-160.json"
+bin/process-studio run --input "$OUT/agency-qa2.json" --minutes 10 --output "$OUT/r.json" --checkpoint "$OUT/agency.checkpoint.json" --compact || echo "exit $?"
+```
+
+The continued run prints `checkpoint` (`input`, `minute` 100) and
+`advancedMinutes` 60, counted from the checkpoint; it keeps the checkpoint's seed
+and run length, so `--seed` with `--checkpoint` is a usage error, and `--minutes`
+past the run length is refused with the number of minutes left. The checkpoint
+must name the `--input` definition's id and fingerprint: the edited
+`agency-qa2.json` is refused with exit 2, and the message names both
+fingerprints. `--checkpoint-out` may be combined with `--checkpoint` to save again,
+and `--event-log` then holds only the events after the checkpoint minute. The
+file format, its checks and the studio's **Export run checkpoint…** and
+**Load checkpoint…** are in [Save and resume a process run](../how-to/save-and-resume-a-process-run.md)
+and the [run checkpoints contract](business-process-engine.md#run-checkpoints).
+
 ### `version`, `doctor` and `--compact`
 
 These exist only in Process Studio. `version` (or `--version`) reports the tool
@@ -211,10 +242,10 @@ explicit allowlist of every Wildlands file the bundle may contain is
 bundle fail on a file outside it or on a stale entry.
 
 `build` is embedded rather than delegated. A process play artifact is the
-Wildlands process template, the 137 inserts the `process-play` profile selects
+Wildlands process template, the 151 inserts the `process-play` profile selects
 (engine kernel, asset catalog, the 3D renderer and the process template's
 modules) and the Wildlands engine identity. `npm run build:cli` takes exactly
-that slice, about 2.0 MB of text, from the engine kit embedded in the checked-in
+that slice, about 2.1 MB of text, from the engine kit embedded in the checked-in
 `bin/wildlands`, verifies its payload digest and recomputes the kit identity, and
 stores it as one raw-deflate payload (about 0.5 MB). The HTML is therefore byte
 for byte that of `bin/wildlands process build` for the same definition, and its
@@ -241,7 +272,7 @@ Every `bin/wildlands process` subcommand exists in Process Studio with identical
 options, usage rules, printed results, written files and exit codes. The
 project's parity test runs a corpus covering every subcommand, including usage
 errors, refused outputs through links, a byte order mark, rejected and diagnosed
-BPMN imports and builds, through both executables in the same directory and
+BPMN imports, working hours, run checkpoints (saved, continued and refused) and builds, through both executables in the same directory and
 compares exit codes, results and every written file byte for byte; it also fails
 naming any subcommand `bin/wildlands process discover` lists that Process Studio
 lacks. The documented differences are:
@@ -268,6 +299,7 @@ game folder (`validate-game`, `build-game`) and the screenshot review tool
 | Limit | Value |
 |---|---|
 | Input file (`--input`, `--recipe`, `--against`, `--asset`, BPMN) | 8 MiB |
+| Run checkpoint (`--checkpoint`) | 16 MiB; version 1 of the `--input` definition (same id and fingerprint); `--minutes` up to the rest of its run length |
 | Run length (`--minutes`) | 1 to 100,000 business minutes |
 | `--seed` | 0 to 2,147,483,647 |
 | Replications (`--runs`) | 1 to 200; at most 1,000,000 simulated minutes in total (`runs × minutes`, doubled for `compare`) |
@@ -320,8 +352,9 @@ bytes.
 - [Process Studio project](../../source/process-studio/README.md) and its
   [working rules](../../source/process-studio/AGENTS.md).
 - [Business process engine](business-process-engine.md): the definition contract and semantics.
-- [Business process authoring](../how-to/business-process-authoring.md) and
-  [Present a process to stakeholders](../how-to/present-a-process.md).
+- [Business process authoring](../how-to/business-process-authoring.md),
+  [Present a process to stakeholders](../how-to/present-a-process.md) and
+  [Save and resume a process run](../how-to/save-and-resume-a-process-run.md).
 - [Model your first business process](../tutorials/first-business-process.md).
 - [Wildlands CLI handbook](wildlands-cli.md#business-processes): the equivalent `wildlands process` family.
 - [Checked-in command-line tools](../../bin/README.md).

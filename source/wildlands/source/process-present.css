@@ -1,6 +1,8 @@
 /* Present mode (process-present.css): the full-window slide dialog (LWProcessPresent). Every colour, space and type size is a Process
    Studio token from process.css. Desktop: the slide column and the map side by side, each fitting the window. Narrow or short windows:
-   the dialog scrolls as one page (slide, then the map), and Previous / Next stay reachable in a footer stuck to the bottom. */
+   the dialog scrolls as one page (slide, then the map), and Previous / Next stay reachable in a footer stuck to the bottom.
+   Wide text (LWProcessPresentView, `data-text="wide"`) gives the slide the larger share of a side-by-side window; full screen
+   changes only the window size. */
 .present { width:100%; height:100%; max-width:none; max-height:none; margin:0; padding:0; border:0; background:var(--bg); color:var(--text); font:var(--t-md)/1.5 system-ui,sans-serif; overflow:hidden; }
 .present[open] { display:grid; grid-template-rows:auto minmax(0,1fr) auto; }
 .present::backdrop { background:var(--bg); }
@@ -12,10 +14,17 @@
 .present .present-note,.present .present-run { font-size:var(--t-sm); }
 .present .present-note { color:var(--accent); }
 .present-actions { display:flex; flex-wrap:wrap; gap:var(--s2); }
-.present #present-toc[aria-expanded=true] { background:var(--accent-bg); border-color:var(--accent-line); }
+.present #present-toc[aria-expanded=true],.present :is(#present-wide,#present-fullscreen)[aria-pressed=true] {
+ background:var(--accent-bg); border-color:var(--accent-line); }
+.present #present-fullscreen[aria-disabled=true] { opacity:.55; cursor:not-allowed; }
+/* While presenting, the studio root behind the opaque dialog is not rendered; it keeps its measured size (LWProcessPresent). */
+[data-presenting] { content-visibility:hidden; contain-intrinsic-size:var(--present-behind); }
 .present-main { display:grid; grid-template-columns:minmax(0,clamp(24rem,42%,46rem)) minmax(0,1fr); min-height:0; }
 .present-slide { min-width:0; min-height:0; overflow:auto; overscroll-behavior:contain; padding:var(--s5) clamp(var(--s4),3vw,40px) 40px; overflow-wrap:anywhere; }
 .present-body { max-width:42rem; }
+/* Wide text: about three fifths of the window for the slide, with a longer measure that still stops short of very long lines. */
+.present[data-text=wide] .present-main { grid-template-columns:minmax(0,clamp(24rem,60%,66rem)) minmax(0,1fr); }
+.present[data-text=wide] .present-body { max-width:60rem; }
 .present .present-kicker,.present .present-tag { font-size:var(--t-xs); font-weight:650; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); }
 .present .present-slide h2 { margin:var(--s1) 0 0; font-size:calc(var(--t-xl) * 1.25); line-height:1.2; letter-spacing:-.02em; }
 .present .present-subtitle { margin-top:var(--s1); font-size:var(--t-base); }
@@ -47,7 +56,9 @@
 .present-num { flex:none; min-width:2.5ch; color:var(--order); font-variant-numeric:tabular-nums; }
 .present-foot { display:flex; justify-content:space-between; align-items:center; gap:var(--s3); padding:var(--s3) var(--s5); border-top:1px solid var(--line); background:var(--panel); }
 .present .present-foot button { min-width:8rem; }
+.present .present-keys { flex:1 1 auto; min-width:0; color:var(--muted); font-size:var(--t-sm); text-align:center; overflow-wrap:anywhere; }
 @media(prefers-reduced-motion:no-preference) { .present-body { animation:present-in .16s ease-out; } }
+.present-body.present-quick { animation:none; }
 @keyframes present-in { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
 /* Narrow or short windows: one scrolling page; the map sits under the slide at about a third of the window. */
 @media(max-width:899px),(max-height:560px) {
@@ -59,7 +70,10 @@
  .present-stage { flex:none; height:max(240px,35vh); }
  .present-contents { overflow:visible; }
  .present-foot { position:sticky; bottom:0; z-index:2; }
+ .present #present-wide { display:none; }
 }
+/* Touch screens: the key hint names keys a touch reader does not have. */
+@media(pointer:coarse) { .present .present-keys { display:none; } }
 /* Phone: Present lives in the overflow menu; full-width footer buttons with 44px touch targets (the studio rule). */
 @media(max-width:650px) {
  #mode-present { display:none; }
@@ -68,5 +82,6 @@
  .present-contents { padding:var(--s3) var(--s4) var(--s5); }
  .present-foot { padding:var(--s2) var(--s4); }
  .present .present-foot button { flex:1 1 0; min-width:0; }
+ .present .present-keys { display:none; }
  .present #present-brief { min-height:44px; }
 }

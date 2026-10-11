@@ -15,7 +15,8 @@ export function recipeSchema(): Record<string, unknown> {
     ...['Step', 'Flow', 'Resource'].map((name, i) => operation('put' + name, 'value', properties[['steps', 'flows', 'resources'][i]!]!.items)),
     ...['Step', 'Flow', 'Resource'].map(name => operation('remove' + name, 'id', properties.id)),
     operation('setArrivals', 'value', properties.arrivals), operation('setStart', 'value', properties.start), operation('rename', 'value', properties.name),
-    ...([['setDescription', 'description'], ['setSeed', 'seed'], ['setSipoc', 'sipoc'], ['setTrack', 'track'], ['setCalendar', 'calendar']] as const)
+    ...([['setDescription', 'description'], ['setSeed', 'seed'], ['setSipoc', 'sipoc'], ['setTrack', 'track'], ['setCalendar', 'calendar'],
+     ['setWorkingHours', 'workingHours']] as const)
      .map(([op, key]) => operation(op, 'value', {oneOf: [properties[key], {type: 'null'}]})),
     operation('setGenre', 'value', properties.genre)
    ]}}}};
@@ -46,12 +47,23 @@ export function validate(ctx: Context): void {
  if (!accepted) ctx.exit(1);
 }
 
+/**
+ * `inspect` names a definition's working hours (only when it has them): the hours in words, the clock's starting point and that the
+ * run clock counts elapsed minutes. A draft whose working hours have a diagnostic gets the values without the words.
+ */
+function workingHours(d: LWProcess.Definition, diagnostics: LWProcess.Diagnostic[]): {workingHours?: Record<string, unknown>} {
+ if (!d.workingHours) return {};
+ const time = (globalThis as unknown as {LWProcessTime: LWProcessTime.Api}).LWProcessTime, h = d.workingHours;
+ if (diagnostics.some(e => e.path.startsWith('/workingHours'))) return {workingHours: {...h}};
+ return {workingHours: {...h, hours: time.hours(h), start: time.clock(0, h), clock: 'elapsed minutes; work and arrivals pause outside working hours'}};
+}
+
 export function inspect(ctx: Context): void {
  const checked = catalog.validate(ctx.read(ctx.required('--input')), true);
  if (!checked.acceptable) throw Error(checked.diagnostics.map(e => e.path + ': ' + e.message).join('\n'));
  const d = checked.definition!, runnable = !checked.diagnostics.length, temporary = runnable ? runtime.create(d) : null;
  try {
   ctx.success({id: d.id, revision: d.revision, fingerprint: catalog.fingerprint(d), runnable, diagnostics: checked.diagnostics, advisories: advice.advise(d),
-   scenes: d.steps.map(s => ({id: s.scene.id, stepId: s.id, name: s.name, position: s.scene.position})), snapshot: temporary?.query() ?? null});
+   ...workingHours(d, checked.diagnostics), scenes: d.steps.map(s => ({id: s.scene.id, stepId: s.id, name: s.name, position: s.scene.position})), snapshot: temporary?.query() ?? null});
  } finally { temporary?.dispose(); }
 }

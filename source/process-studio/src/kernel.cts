@@ -2,6 +2,8 @@
 /// <reference path="../../wildlands/source/process-bpmn.ts" />
 /// <reference path="../../wildlands/source/process-bpmn-conformance.ts" />
 /// <reference path="../../wildlands/source/process-time.ts" />
+/// <reference path="../../wildlands/source/process-needs.ts" />
+/// <reference path="../../wildlands/source/process-checkpoint.ts" />
 /**
  * The bridge: the only Process Studio module that imports code from `../wildlands`.
  *
@@ -15,7 +17,11 @@
  * - tools/cli-io.cts: bounded reads and atomic, alias-guarded writes, byte-identical to `wildlands process`.
  * - tools/process-forge.cts, tools/process-cli-analytics.cts (with tools/process-event-log.cts): the
  *   process CLI's own forge, run, replicate, compare and diff modules, shared rather than copied so outputs
- *   stay byte-identical while Wildlands keeps changing them.
+ *   stay byte-identical while Wildlands keeps changing them. `run --checkpoint` and `--checkpoint-out` read and
+ *   write run checkpoints through the engine's LWProcessCheckpoint (process-checkpoint.ts, loaded by process-sdk.cts).
+ * - The /// <reference> directives above bring the global LWProcess* declarations the bridged modules use into this
+ *   strict program: process-needs.ts for the engine kernel, process-time.ts for `inspect`'s working hours and
+ *   process-checkpoint.ts (with process-engine-state.ts, process-checkpoint-check.ts and process-hours.ts) for checkpoints.
  * - tools/build-inserts.cts (with tools/build-inserts-process.cts, the `template-process` inserts it appends),
  *   tools/artifact-profiles.cts (with tools/game-manifest.cts) and tools/artifact-placement.cts: the pure
  *   insert order, profile and placement rules of a process play artifact.

@@ -6,13 +6,20 @@
  * syntax are checked by the dispatcher (process-cli.cts); the numeric bounds here are checked before any file is read or any run
  * starts, so a bad `--minutes`, `--runs`, `--warmup` or replication plan exits 2 with a message that names the flag.
  * `--warmup W` (replicate and compare) adds the windowed KPIs "after minute W" (LWProcessReplicate); without it reports are unchanged.
+ *
+ * Run checkpoints (LWProcessCheckpoint): `run --checkpoint FILE` continues the run saved in FILE instead of starting at minute 0. The
+ * file is read strictly and its fingerprint must equal the `--input` definition's (a mismatch names both); its seed and run length
+ * are used, so `--seed` is refused with it, and `--minutes` more minutes must fit in its run length. The event log then holds the
+ * events after the checkpoint minute. `run --checkpoint-out FILE` writes a checkpoint of the run where it ended (compact JSON),
+ * which a later `--checkpoint` continues exactly as one longer run. Every refusal names its flag.
  */
 import path from 'node:path';
 import {catalog, runtime, replicate, diff} from '../process-sdk.cjs';
-import {writeJsonFile} from './cli-io.cjs';
+import {readJsonFile, writeJsonFile, writeTextFile} from './cli-io.cjs';
 import {openEventLog, type LogFormat} from './process-event-log.cjs';
 type Values = ReadonlyMap<string, string>;
 type Success = (value: Record<string, unknown>) => void;
+const checkpoints = () => (globalThis as unknown as {LWProcessCheckpoint: LWProcessCheckpoint.Api}).LWProcessCheckpoint;
 const MINUTES = '--minutes must be a whole number from 1 to ' + runtime.limits.minutes + '.';
 const RUNS = '--runs must be a whole number from 1 to ' + replicate.LIMITS.runs + '.';
 /** Flag-named bounds of `--minutes` and `--runs` and the total replication work, checked before any file is read. */
@@ -36,26 +43,53 @@ export function checkBounds(command: string, values: Values): void {
   if (log !== undefined && [values.get('--input'), values.get('--output')].some(other => other !== undefined && path.resolve(other) === path.resolve(log))) {
    throw Error('--event-log must not be the input or the report file.');
   }
+  if (values.has('--checkpoint') && values.has('--seed')) throw Error('--seed cannot be combined with --checkpoint: the checkpoint carries its run seed.');
+  const out = values.get('--checkpoint-out'), others = ['--input', '--output', '--event-log', '--checkpoint'].map(key => values.get(key));
+  if (out !== undefined && others.some(other => other !== undefined && path.resolve(other) === path.resolve(out))) {
+   throw Error('--checkpoint-out must not be the input, the report, the event log or the --checkpoint file.');
+  }
  }
 }
 const seedOption = (values: Values) => values.has('--seed') ? {seed: Number(values.get('--seed'))} : {};
 const warmupOption = (values: Values) => values.has('--warmup') ? {warmup: Number(values.get('--warmup'))} : {};
-/** `process run`: one fresh bounded run, its report, and with `--event-log` every engine event streamed to a CSV or XES file. */
+/** The checkpoint in `file`, read strictly and checked against `definition`; every refusal names `--checkpoint`. */
+function readCheckpoint(definition: LWProcess.Definition, file: string): LWProcessCheckpoint.Checkpoint {
+ const api = checkpoints();
+ try {
+  return api.verify(api.parse(readJsonFile(file, api.MAX_BYTES)), definition);
+ } catch (error) {
+  throw Error(`--checkpoint ${file}: ${error instanceof Error ? error.message : String(error)}`);
+ }
+}
+/**
+ * `process run`: one bounded run (fresh, or continued from `--checkpoint`), its report, with `--event-log` every engine event streamed
+ * to a CSV or XES file, and with `--checkpoint-out` a checkpoint of where the run ended.
+ */
 export function runCommand(definition: LWProcess.Definition, file: string, values: Values, success: Success): void {
  const report = values.get('--output')!, logFile = values.get('--event-log'), format = (values.get('--format') ?? 'csv') as LogFormat;
- const seed = values.has('--seed') ? Number(values.get('--seed')) : definition.seed ?? 1;
- const log = logFile === undefined ? null : openEventLog(logFile, format, definition, seed, [file, report]);
+ const from = values.get('--checkpoint'), resumed = from === undefined ? null : readCheckpoint(definition, from);
+ const seed = resumed ? resumed.seed : values.has('--seed') ? Number(values.get('--seed')) : definition.seed ?? 1;
+ const inputs = from === undefined ? [file] : [file, from], out = values.get('--checkpoint-out');
+ const log = logFile === undefined ? null : openEventLog(logFile, format, definition, seed, [...inputs, report]);
  let published: ReturnType<NonNullable<typeof log>['close']> | null = null;
  try {
-  const session = runtime.create(definition, {...seedOption(values), ...log ? {onEvent: (event: LWProcess.Event) => log.write(event)} : {}});
+  const sink = log ? {onEvent: (event: LWProcess.Event) => log.write(event)} : {};
+  const session = runtime.create(definition, resumed ? {horizon: resumed.runLength, restore: resumed.snapshot, ...sink} : {...seedOption(values), ...sink});
   try {
-   const requested = Number(values.get('--minutes'));
+   const requested = Number(values.get('--minutes')), start = session.query().minute, length = session.horizon();
+   if (length !== null && start + requested > length) {
+    throw Error(`--minutes ${requested} goes past the checkpoint's run length: the run is at minute ${start} of ${length}, so at most`
+     + ` ${length - start} more minutes can run.`);
+   }
    const snapshot = session.advance(requested);
+   const saved = out === undefined ? null
+    : writeTextFile(out, JSON.stringify(checkpoints().create(definition, length, session.state())) + '\n', [...inputs, report]);
    if (log) published = log.close();
    const body = {format: 'wildlands-process-report', schemaVersion: 1, fingerprint: catalog.fingerprint(definition), definition, snapshot};
-   const output = writeJsonFile(report, body, logFile === undefined ? [file] : [file, logFile]);
-   success({output, requestedMinutes: requested, seed: snapshot.seed, advancedMinutes: snapshot.minute, status: snapshot.status, metrics: snapshot.metrics,
-    ...published ? {eventLog: published} : {}});
+   const output = writeJsonFile(report, body, logFile === undefined ? inputs : [...inputs, logFile]);
+   success({output, requestedMinutes: requested, seed: snapshot.seed, advancedMinutes: snapshot.minute - start, status: snapshot.status,
+    metrics: snapshot.metrics, ...published ? {eventLog: published} : {}, ...resumed ? {checkpoint: {input: from, minute: start}} : {},
+    ...saved ? {checkpointOut: {output: saved, minute: snapshot.minute}} : {}});
   } finally { session.dispose(); }
  } catch (error) {
   if (log && !published) log.abort();

@@ -1,4 +1,5 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-hours.ts" />
 /**
  * Shared wording of simulated time for Process Studio views, slides and Present (LWProcessTime). The engine counts whole
  * business minutes: the working time a definition models, not wall-clock time. Every view that prints a duration names that
@@ -12,6 +13,12 @@
  * business weeks (weeks = days / daysPerWeek). The gloss is rounded to one decimal and marked '≈' unless it is exact:
  * '2,000 min (≈ 4.2 business days)', '2,400 min (5 business days)', '3,600 min (1.5 business weeks)' for 480 minutes
  * per day and 5 days per week. The calendar never changes a run; it only changes these words.
+ *
+ * Working hours (`workingHours: {opensAt, closesAt, daysPerWeek}`, LWProcessHours) do change a run, and its clock then counts
+ * elapsed minutes from Monday of day 1 at the opening time; durations keep the plain `minutes` wording (a definition cannot hold
+ * both). `hours` names the hours ('09:00–17:00, Monday to Friday'), `clock` the day and time of a run minute ('Day 2 · Tue 09:30')
+ * and `closedUntil` the next opening while closed ('Closed until Mon 09:00 on day 8', '' while open). These read LWProcessHours
+ * when called; they never read a wall clock.
  */
 declare namespace LWProcessTime {
  interface Api {
@@ -27,6 +34,12 @@ declare namespace LWProcessTime {
   maybe(n: number | null | undefined): string;
   /** A duration with a business day or week gloss from a display calendar; exactly `minutes(n)` without one (see the header). */
   span(n: number, calendar?: LWProcess.Calendar | null): string;
+  /** Working hours in words: '09:00–17:00, Monday to Friday'. */
+  hours(h: LWProcess.WorkingHours): string;
+  /** The day and time of run minute `minute` under working hours: 'Day 2 · Tue 09:30'. */
+  clock(minute: number, h: LWProcess.WorkingHours): string;
+  /** 'Closed until Tue 09:00 on day 2' while run minute `minute` is outside working hours; '' while open. */
+  closedUntil(minute: number, h: LWProcess.WorkingHours): string;
  }
 }
 (function(inputRoot: unknown) {
@@ -53,6 +66,21 @@ declare namespace LWProcessTime {
   const unit = (weekly ? 'business week' : 'business day') + (shown === 1 ? '' : 's');
   return `${number(tenth(n))} min (${shown === value ? '' : '≈ '}${number(shown)} ${unit})`;
  }
- root.LWProcessTime = Object.freeze({UNIT, HOURS_FROM, number, minutes, maybe, span});
+ const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+ const pad = (n: number) => String(n).padStart(2, '0');
+ const calc = () => (globalThis as unknown as {LWProcessHours: LWProcessHours.Api}).LWProcessHours;
+ const hours = (h: LWProcess.WorkingHours) => calc().describe(h);
+ const at = (w: LWProcessHours.Where) => `${DAYS[w.weekday]} ${pad(Math.floor(w.minuteOfDay / 60))}:${pad(w.minuteOfDay % 60)}`;
+ const clock = (minute: number, h: LWProcess.WorkingHours) => {
+  const w = calc().where(h, minute);
+  return `Day ${number(w.day)} · ${at(w)}`;
+ };
+ function closedUntil(minute: number, h: LWProcess.WorkingHours): string {
+  const w = calc().where(h, minute);
+  if (w.open) return '';
+  const next = calc().where(h, w.opens);
+  return `Closed until ${at(next)} on day ${number(next.day)}`;
+ }
+ root.LWProcessTime = Object.freeze({UNIT, HOURS_FROM, number, minutes, maybe, span, hours, clock, closedUntil});
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessTime;
 })(globalThis);

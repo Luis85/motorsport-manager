@@ -7,6 +7,7 @@ import {results} from './test-process-helpers.cjs';
 import './process-html.js';
 import './test-process-engine.cjs';
 import './test-process-authoring.cjs';
+import './test-process-demos.cjs';
 import './test-process-steps.cjs';
 import './test-process-random.cjs';
 import './test-process-journeys.cjs';

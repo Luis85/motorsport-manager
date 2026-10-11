@@ -8,7 +8,8 @@
  * and the optional read model; helpers come from LWProcessDashboardModel.util. No DOM, session, clock or storage.
  *
  * Rules: an undefined value reads '—' with its reason (no lead time before the first finish, no utilisation at minute 0); lead time
- * is the median and 85th percentile bracket of the whole-run histogram from 10 finished cases, else the mean; problem tiles carry
+ * is the median and 85th percentile from 10 finished cases, exact ('median 37 min') when the read model kept every lead time and
+ * otherwise the bracket of the whole-run histogram bin ('median 20–50 min'), else the mean; problem tiles carry
  * the word and a glyph, never colour alone; journeys lead with conversion and drop the pool and cost tiles when nothing uses them.
  * With a window (LWProcessDashboardWindow) the lines of in progress, finished, lead time and cost add the window's exact figures
  * with its label, and the busiest pool is the busiest over the window, its value that utilisation.
@@ -77,7 +78,14 @@ declare namespace LWProcessDashboardTiles {
   if (m.completed < 10 || median === null || p85 === null) {
    return tile('lead', name, minutes(m.meanCycleMinutes, d), `mean of ${plural(m.completed, terms.one, terms.many)}${open}`);
   }
-  return tile('lead', name, 'median ' + bin(bins.edges, median), `85th percentile ${bin(bins.edges, p85)} · mean ${minutes(m.meanCycleMinutes, d)}${open}`);
+  // Exact values when the read model's percentiles hold every lead time of these bins (LWProcessLedgerExact), else bin brackets.
+  const set = input.distributions?.cycle.length ? input.distributions.percentiles?.cycle : undefined;
+  const exact = set?.exact && set.n === bins.counts.reduce((a, b) => a + b, 0) ? set.points : [];
+  const at = (q: number, i: number) => {
+   const point = exact.find(p => p.q === q);
+   return point?.exact ? `${time().number(point.value)} min` : bin(bins.edges, i);
+  };
+  return tile('lead', name, 'median ' + at(50, median), `85th percentile ${at(85, p85)} · mean ${minutes(m.meanCycleMinutes, d)}${open}`);
  }
  function oldest({d, q}: Ctx): Tile | null {
   const open = q.cases.filter(c => c.status === 'active');

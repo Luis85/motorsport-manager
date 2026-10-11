@@ -4,7 +4,8 @@
  * Entry of the business-process-readmodel suite: the every-demo sweeps of the dashboard read model, kept apart from the
  * business-process suite for its time budget. Identities (WIP area, lead time, cost, failures, repeats, recent cases), random
  * chunkings, one-minute advances and pruning, series samples equal to a run stopped at their minute, and fine distributions that
- * reproduce the coarse histogram. One result file is written.
+ * reproduce the coarse histogram; then the engine fast-path checks on the generated 128-step process (test-process-scale.cts).
+ * One result file is written.
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -12,6 +13,7 @@ import path from 'node:path';
 import {test, results} from './test-process-helpers.cjs';
 import {demos, reads, chunking, demoRun, SPAN, SHARED, sample, fromSnapshot, withoutPeaks, CUMULATIVE, STEP_CUMULATIVE}
  from './test-process-readmodel-helpers.cjs';
+import {scaleChecks} from './test-process-scale.cjs';
 const ledgerApi = (globalThis as unknown as {LWProcessLedger: LWProcessLedger.Api}).LWProcessLedger;
 const sum = (values: number[]) => values.reduce((n, v) => n + v, 0);
 
@@ -95,6 +97,8 @@ test('Fine distributions use 54 edges whose sums reproduce the coarse histogram,
   }
  }
 });
+
+scaleChecks();
 
 const report = {suite: 'business-process-readmodel', passed: results.filter(r => r.passed).length, total: results.length, results};
 fs.writeFileSync(path.join(__dirname, 'process-readmodel-results.json'), JSON.stringify(report, null, 2) + '\n');

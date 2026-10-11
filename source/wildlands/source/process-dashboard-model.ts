@@ -19,8 +19,9 @@
  * Honesty rules every panel follows: one seeded run is one sample, so the strip always carries the single-run notice (its seed
  * sentence is dropped when the definition has no random behaviour); a value that is undefined (mean lead time before the first
  * finish, utilisation at minute 0) reads '—' with a reason and never 0; lead-time figures name the cases still open (censoring)
- * and retained-case charts name the pruned cases; percentiles are brackets of histogram bins (nearest rank), shown from 10
- * finished cases; nothing is worded as a forecast. Business minutes use LWProcessTime and the definition's display calendar.
+ * and retained-case charts name the pruned cases; percentiles (nearest rank, shown from 10 finished cases) are exact where the
+ * read model kept every value (`distributions.percentiles`) and otherwise brackets of histogram bins, and a note says which;
+ * nothing is worded as a forecast. Business minutes use LWProcessTime and the definition's display calendar.
  *
  * Data that a later read model adds (the shapes of research section 4) is optional input: a panel that needs it shows its
  * `empty` reason ('Needs a sampled run history.') instead of failing.
@@ -32,7 +33,7 @@
  */
 declare namespace LWProcessDashboardData {
  /** Token-minutes or case-minutes by work state (research 4.2, 4.3). */
- interface StateMinutes {working: number; waiting: number; blocked: number; backlog: number; timer: number; joining: number}
+ interface StateMinutes {working: number; waiting: number; blocked: number; backlog: number; timer: number; joining: number; closed?: number}
  /** Sampled time series on a fixed business-minute grid (research 4.7); every array has the length of `minutes`. */
  interface Series {
   base: number; every: number; level: number; minutes: number[];
@@ -48,6 +49,8 @@ declare namespace LWProcessDashboardData {
  interface Distributions {
   edges: number[]; cycle: number[]; byOutcome?: {goal: number[]; lost: number[]; none: number[]}; failed: number[];
   steps: Record<string, {wait: number[]; service: number[]; exitAge: number[]}>;
+  /** Exact or bracketed lead-time percentiles of the read model (LWProcessLedgerExact); absent in older inputs. */
+  percentiles?: LWProcess.Distributions['percentiles'];
  }
  /** One recently finished case (research 4.8). */
  interface FinishedCase {
@@ -109,7 +112,8 @@ declare namespace LWProcessDashboardModel {
  interface Tile {id: string; label: string; value: string; line: string; problem: boolean; spark: number[] | null; trend: string}
  interface Strip {identity: string; notice: string; notes: {id: string; text: string}[]; windows: number[]; window: number}
  interface Model {name: string; journey: boolean; minute: number; focus: string | null; strip: Strip; tiles: Tile[]; sections: Section[]}
- type State = keyof LWProcessDashboardData.StateMinutes;
+ /** The six token states; `closed` (working hours only) is time outside working hours, not a token state. */
+ type State = Exclude<keyof LWProcessDashboardData.StateMinutes, 'closed'>;
  /** Shared helpers of the dashboard model modules. */
  interface Util {
   /** A value with thousands separators: whole numbers exact, others rounded for reading (`round`). */

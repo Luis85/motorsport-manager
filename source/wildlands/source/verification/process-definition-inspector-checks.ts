@@ -13,13 +13,17 @@ const HOSTILE = '"><img src=x onerror=__pwned=1>';
 export async function inspectorChecks(studio: Studio): Promise<void> {
  const {page, check, freshStudio, applyDraft, showIo} = studio;
  const inspector = () => page.locator('#inspector').innerText();
- const select = async (id: string) => { await page.locator(`#steps [data-step="${id}"]`).click(); await page.waitForFunction(s => (globalThis as any).LWProcessStudio.query().selected === s, id); };
+ const select = async (id: string) => {
+  await page.locator(`#steps [data-step="${id}"]`).click();
+  await page.waitForFunction(s => (globalThis as any).LWProcessStudio.query().selected === s, id);
+ };
  const advanceTo = async (minute: number) => {
   while ((await query(page)).snapshot.minute < minute) await page.locator('#advance').click();
   assert.equal((await query(page)).snapshot.minute, minute, 'Advance moves 30 minutes at a time');
  };
  const kpi = (label: string) => page.locator('#metrics > div', {has: page.locator('span', {hasText: new RegExp(`^${label}$`)})}).locator('strong').innerText();
- const span = (n: number, calendar?: LWProcess.Calendar) => page.evaluate(([v, c]) => (globalThis as any).LWProcessTime.span(v, c) as string, [n, calendar] as const);
+ const span = (n: number, calendar?: LWProcess.Calendar) =>
+  page.evaluate(([v, c]) => (globalThis as any).LWProcessTime.span(v, c) as string, [n, calendar] as const);
 
  await check('The inspector shows mean wait, work cost, idle cost and throughput at minute 120 of the agency demo without ticking', async () => {
   await page.setViewportSize({width: 1440, height: 1060}); await freshStudio();
@@ -71,7 +75,8 @@ export async function inspectorChecks(studio: Studio): Promise<void> {
   const age = await kpi('Mean age in progress');
   assert.equal(age, q.metrics.meanAgeMinutes === null ? '—' : await span(q.metrics.meanAgeMinutes, calendar));
   await select('discovery'); const detail = await inspector();
-  assert.match(detail, /Total queue time\s+120 min \(2 business days\)/); assert.match(detail, /Mean wait per start\s+20 min/, 'a wait under one day stays in minutes');
+  assert.match(detail, /Total queue time\s+120 min \(2 business days\)/);
+  assert.match(detail, /Mean wait per start\s+20 min/, 'a wait under one day stays in minutes');
   assert.match(detail, /Duration\s+12 min/);
  });
 

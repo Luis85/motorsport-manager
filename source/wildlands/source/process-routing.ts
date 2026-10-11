@@ -166,15 +166,47 @@ declare namespace LWProcessRouting {
   k.event(s, 'routed', c.id, step.id, flow.id);
   k.enter(s, t, flow.to);
  }
+ /**
+  * The definition's fixed routing structure, derived once per state: every join in step order with the fork that names it, and
+  * every join with a backlog with the step it releases work to. The definition never changes during a run.
+  */
+ interface Plan {joins: {step: Step; fork: Step | undefined}[]; pulls: {step: Step; next: string}[]}
+ const plans = new WeakMap<State, Plan>();
+ function planOf(s: State): Plan {
+  let plan = plans.get(s);
+  if (!plan) {
+   const joins = s.definition.steps.filter(x => x.kind === 'join');
+   plan = {joins: joins.map(step => ({step, fork: s.definition.steps.find(f => f.join === step.id)})),
+    pulls: joins.filter(x => x.backlog).map(step => ({step, next: s.outgoing.get(step.id)![0]!.to}))};
+   plans.set(s, plan);
+  }
+  return plan;
+ }
+ /**
+  * One pass over the tokens groups the joining ones by step, in token order. Joining never creates a joining token, and a token
+  * that a failure destroys meanwhile is skipped by the liveness check below, so this equals filtering the tokens at each join.
+  */
+ function joining(s: State): Map<string, Token[]> {
+  const at = new Map<string, Token[]>();
+  for (const t of k.tokens(s)) {
+   if (t.status !== 'joining') continue;
+   const list = at.get(t.stepId);
+   if (list) list.push(t);
+   else at.set(t.stepId, [t]);
+  }
+  return at;
+ }
  function join(s: State): boolean {
   let changed = false;
-  for (const step of s.definition.steps.filter(x => x.kind === 'join')) {
-   const fork = s.definition.steps.find(f => f.join === step.id)!;
-   const waiting = k.tokens(s).filter(t => t.stepId === step.id && t.status === 'joining');
+  const joins = planOf(s).joins, at = joins.length ? joining(s) : null;
+  if (!at || !at.size) return false;
+  for (const {step, fork} of joins) {
+   const waiting = at.get(step.id);
+   if (!waiting) continue;
    const groups = new Set(waiting.map(t => t.fork));
    for (const group of groups) {
     const batch = waiting.filter(t => t.fork === group && s.world.get(t.id, 'process-token'));
-    const expected = s.outgoing.get(fork.id)!.map(f => f.id);
+    const expected = s.outgoing.get(fork!.id)!.map(f => f.id);
     // An inclusive fork occurrence records how many branches it activated; a parallel one waits for every branch.
     const wanted = batch[0]?.expected;
     if (batch.length !== (wanted ?? expected.length)) continue;
@@ -214,8 +246,7 @@ declare namespace LWProcessRouting {
     changed = true;
    }
   }
-  for (const step of s.definition.steps.filter(x => x.kind === 'join' && x.backlog)) {
-   const next = s.outgoing.get(step.id)![0]!.to;
+  for (const {step, next} of planOf(s).pulls) {
    const load = () => k.tokens(s).filter(t => t.stepId === next && ['routing', 'queued', 'active'].includes(t.status)).length;
    for (const t of k.tokens(s).filter(t => t.stepId === step.id && t.status === 'backlog').sort(k.ranking(s, step))) {
     if (step.backlog!.pull !== undefined && load() >= step.backlog!.pull || !k.accepts(s, next)) break;

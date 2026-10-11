@@ -1,4 +1,5 @@
 /// <reference path="../process-contracts.d.ts" />
+/// <reference path="../process-time.ts" />
 /** Noninteractive process agent tools. All outputs are guarded and atomic via shared CLI I/O. */
 import {createHash} from 'node:crypto';
 import {catalog, runtime, authoring, bpmn, conformance, slides, diff, advice} from '../process-sdk.cjs';
@@ -8,7 +9,8 @@ import {writeForgeProject} from './process-forge.cjs';
 import {checkBounds, runCommand, replicateCommand, compareCommand, definitionDiff} from './process-cli-analytics.cjs';
 const commands: Record<string, readonly string[]> = {
  discover: [], schema: ['--kind'], create: ['--id', '--name', '--output'], validate: ['--input', '--draft'], inspect: ['--input'],
- edit: ['--input', '--recipe', '--output', '--dry-run', '--draft'], run: ['--input', '--minutes', '--output', '--seed', '--event-log', '--format'],
+ edit: ['--input', '--recipe', '--output', '--dry-run', '--draft'], run: ['--input', '--minutes', '--output', '--seed', '--event-log', '--format',
+  '--checkpoint', '--checkpoint-out'],
  build: ['--input', '--output'], forge: ['--input', '--output'], 'export-bpmn': ['--input', '--output', '--bpsim'], 'validate-bpmn': ['--input'],
  'import-bpmn': ['--input', '--output', '--draft', '--default-duration', '--process', '--lanes', '--default-capacity', '--no-auto-system-pool',
   '--system-capacity', '--minutes-per-day', '--minutes-per-hour', '--unsupported', '--no-bpsim', '--scenario', '--report'],
@@ -34,7 +36,9 @@ const descriptions: Record<string, string> = {
  inspect: 'Read identity, scene graph and starting snapshot without advancing time.',
  edit: 'Apply a revision/fingerprint guarded transaction; --draft allows intermediate graph diagnostics.',
  run: 'Run a fresh deterministic session for a bounded number of business minutes; --seed N replaces the definition seed; '
-  + '--event-log FILE streams every engine event to a CSV (default) or XES (--format xes) file while it runs.',
+  + '--event-log FILE streams every engine event to a CSV (default) or XES (--format xes) file while it runs; '
+  + '--checkpoint FILE continues a saved run checkpoint (its fingerprint must match --input; it keeps its seed and run length, '
+  + 'and --minutes more minutes run from its minute); --checkpoint-out FILE writes a run checkpoint where the run ended.',
  build: 'Build one self-contained offline HTML file.',
  'validate-bpmn': 'Check a BPMN 2.0 XML file (and its BPSim 1.0 data) against the built-in conformance rules (no schema files); '
   + 'prints the report (errors with line, path, code and message; elements not covered; unchecked extension content); '
@@ -76,7 +80,8 @@ function recipeSchema(): Record<string, unknown> {
     operation('setArrivals', 'value', properties.arrivals),
     operation('setStart', 'value', properties.start),
     operation('rename', 'value', properties.name),
-    ...([['setDescription', 'description'], ['setSeed', 'seed'], ['setSipoc', 'sipoc'], ['setTrack', 'track'], ['setCalendar', 'calendar']] as const)
+    ...([['setDescription', 'description'], ['setSeed', 'seed'], ['setSipoc', 'sipoc'], ['setTrack', 'track'], ['setCalendar', 'calendar'],
+     ['setWorkingHours', 'workingHours']] as const)
      .map(([op, key]) => operation(op, 'value', {oneOf: [properties[key], {type: 'null'}]})),
     operation('setGenre', 'value', properties.genre)
    ]}}}};
@@ -97,6 +102,16 @@ function build(input: unknown): {html: string; bytes: number; sha256: string} {
   files: [], packages: [], digest, profile: {format: 'wildlands-content-profile' as const, version: 1 as const, id: d.id},
   data: new Map<string, unknown>([['LWProcessDefinition', d], ['LWGameProfile', {storage: {namespace: 'wildlands.' + d.id}}]])};
  return assembleGame(game, 'play');
+}
+/**
+ * `inspect` names a definition's working hours (only when it has them): the hours in words, the clock's starting point and that the
+ * run clock counts elapsed minutes. A draft whose working hours have a diagnostic gets the values without the words.
+ */
+function workingHours(d: LWProcess.Definition, diagnostics: LWProcess.Diagnostic[]): {workingHours?: Record<string, unknown>} {
+ if (!d.workingHours) return {};
+ const time = (globalThis as unknown as {LWProcessTime: LWProcessTime.Api}).LWProcessTime, h = d.workingHours;
+ if (diagnostics.some(e => e.path.startsWith('/workingHours'))) return {workingHours: {...h}};
+ return {workingHours: {...h, hours: time.hours(h), start: time.clock(0, h), clock: 'elapsed minutes; work and arrivals pause outside working hours'}};
 }
 /** The BPMN import options named on the command line (already checked as whole numbers and known names), in option order. */
 function importOptions(values: Map<string, string>): LWProcessBpmn.Options {
@@ -152,6 +167,8 @@ export function run(args: readonly string[]): void {
     recipe: {expectedRevision: 0, expectedFingerprint: '<inspect.fingerprint>', operations: [{op: 'rename', value: 'My process'}]},
     notes: ['put operations replace full definitions', 'dry runs write nothing',
      'setDescription, setSeed, setSipoc and setTrack remove the field with value null; setGenre with process removes genre',
+     'setWorkingHours ({opensAt, closesAt, daysPerWeek}; null removes it) makes work and arrivals pause outside working hours; '
+      + 'the run clock then counts elapsed minutes and a display calendar is refused beside it',
      'draft graph diagnostics must be resolved before run or build', 'fingerprint is a change guard, not a cryptographic signature']});
    return;
   }
@@ -254,8 +271,8 @@ export function run(args: readonly string[]): void {
    const d = checked.definition!, runnable = !checked.diagnostics.length, temporary = runnable ? runtime.create(d) : null;
    try {
     success({id: d.id, revision: d.revision, fingerprint: catalog.fingerprint(d), runnable, diagnostics: checked.diagnostics,
-     advisories: advice.advise(d), scenes: d.steps.map(s => ({id: s.scene.id, stepId: s.id, name: s.name, position: s.scene.position})),
-     snapshot: temporary?.query() ?? null});
+     advisories: advice.advise(d), ...workingHours(d, checked.diagnostics),
+     scenes: d.steps.map(s => ({id: s.scene.id, stepId: s.id, name: s.name, position: s.scene.position})), snapshot: temporary?.query() ?? null});
    } finally {
     temporary?.dispose();
    }

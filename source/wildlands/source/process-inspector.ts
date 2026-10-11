@@ -17,6 +17,10 @@
  * against the capacity cost and the idle cost (capacity cost − work cost); in the overview the throughput per business hour
  * ('—' at minute 0) and, when `LWProcessAdvice.advise` reports any, a short Notes list. A step with random timing adds its
  * whole-minute rounding note (`LWProcessRandomView.roundingNote`) beside Random timing.
+ *
+ * Working hours (`workingHours`, LWProcessHours): the overview adds a Working hours row ('09:00–17:00, Monday to Friday; work
+ * and arrivals pause outside them'), throughput reads per elapsed hour, and each pool meter says its average is over working
+ * hours, as the run's utilisation and capacity cost count only working minutes.
  */
 declare namespace LWProcessInspector {
  interface Api {
@@ -281,7 +285,8 @@ declare namespace LWProcessInspector {
   const text = d.description ?? `${t.Many} move through the process. Run the simulation to see work, queues and resource contention.`;
   // Completed cases per 60 business minutes since minute 0: '1 case finished per business hour', '0.5 cases …', '—' at minute 0.
   const perHour = view.snapshot.metrics.throughputPerHour, rate = perHour === null ? '' : dec(perHour);
-  const throughput = perHour === null ? '—' : `${rate} ${rate === '1' ? t.one : t.many} finished per business hour`;
+  const throughput = perHour === null ? '—' : `${rate} ${rate === '1' ? t.one : t.many} finished per ${d.workingHours ? 'elapsed' : 'business'} hour`;
+  const hours = d.workingHours ? row('Working hours', `${root.LWProcessTime.hours(d.workingHours)}; work and arrivals pause outside them`) : '';
   const seedText = `${seed}${seed !== (d.seed ?? 1) ? ' · set for this run' : ''}`;
   const facts = html`${row('Steps', d.steps.length)}${row('Connections', d.flows.length)}${row('Revision', d.revision)}${row('Seed', seedText)}`;
   const kind = t.journey ? row('Process type', t.label) : '';
@@ -292,7 +297,7 @@ declare namespace LWProcessInspector {
   const more = html`<button ${toggle}>${moreOpen ? 'Less' : 'More'}</button>`;
   const measured = tracked.length ? html`<h3>Tracked measures</h3><dl class="process-tracked">${measures}</dl>` : '';
   return String(html`<p id="process-desc" class="process-desc${moreOpen ? ' open' : ''}">${text}</p>${more}
-   <dl>${facts}${row('Throughput', throughput)}${kind}</dl>${measured}${logicSummary(view)}${notesHtml(d)}
+   <dl>${facts}${hours}${row('Throughput', throughput)}${kind}</dl>${measured}${logicSummary(view)}${notesHtml(d)}
    <h3>Arrivals</h3>${arrivals}`);
  }
  /** One plain sentence under the meters that tells the two KPI costs apart. */
@@ -308,7 +313,7 @@ declare namespace LWProcessInspector {
    const bar = html`<div class="pool-bar" data-level="${level}" ${meter}><i style="width:${Math.min(100, pct)}%"></i></div>`;
    const cost = `Work cost ${num(p.workCost)} of ${num(p.capacityCost)} capacity cost · idle cost ${num(p.capacityCost - p.workCost)}`;
    const head = html`<div class="pool-head"><strong>${name}</strong><span class="pool-pct">${pct}%</span></div>`;
-   const now = html`<small>Average since minute 0 · ${p.busy}/${p.capacity} busy now</small>`;
+   const now = html`<small>Average ${d.workingHours ? 'over working hours ' : ''}since minute 0 · ${p.busy}/${p.capacity} busy now</small>`;
    return html`<div class="process-pool">${head}${bar}${now}<div class="pool-cost"><small>${cost}</small></div></div>`;
   });
   return meters.length ? String(html`${meters}`) + COST_NOTE : '<p>No shared resources defined.</p>';

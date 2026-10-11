@@ -1,9 +1,12 @@
 /* Process Studio extends Scene Forge's neutral stage, amber intent, and 5px control language. Tokens first: every colour, space, radius and
-   type size in process.css (studio shell), process-dialogs.css (dialogs and editors) and process-lenses.css (SIPOC and journey lenses) comes
-   from this set. Type sizes are rem, so the browser's default font size is honoured. The lens roots carry the same tokens so a lens drawn
-   outside the studio looks the same. */
+   type size in process.css (studio shell), process-dialogs.css (dialogs and editors), process-lenses.css (SIPOC and journey lenses),
+   process-present.css and process-dashboard.css comes from this set. Type sizes are rem, so the browser's default font size is honoured.
+   The lens roots carry the same tokens so a lens drawn outside the studio looks the same. This block is the dark theme (the default);
+   the light theme block below redeclares every colour token. LWProcessPalette mirrors the colours that scripts draw with. */
 .process-studio,.lw-journey,.sipoc { --bg:#13181f; --panel:#1d242e; --line:#364150; --text:#edf2f7; --muted:#b1bdcd; --accent:#ffbb73;
  --accent-bg:#3e3329; --accent-line:#ad8059; --danger:#e07a7a; --danger-text:#ffc3bc; --surface-2:#2c3744; --control-border:#7d8da3;
+ /* Button outlines (the --line hairline in this theme). */
+ --button-border:#364150;
  --state-queue:#91b9d5; --state-timer:#d9c58a; --state-backlog:#b79ad6;
  /* 2D map paths and deadline marks (process-renderer-2d.ts and process-map-*.ts draw with these tokens only). */
  --map-edge:#65778b; --map-arrow:#7b8b9f; --map-conditional:#c79871; --deadline-escalate:#e6b04a; --escalated:#ff8a5c;
@@ -13,12 +16,34 @@
  --shadow:rgba(0,0,0,.55); --shadow-lg:rgba(0,0,0,.6); --backdrop:rgba(6,9,13,.8); --tint:rgba(255,255,255,.02); --tint-faint:rgba(255,255,255,.015);
  /* Data-visualisation tokens, used by the journey map only: the measured line, the feeling band, the funnel track and its fill. */
  --viz-measured:#7fd0c4; --viz-feel:#141a21; --viz-track:#10151b; --viz-fill:#ffcf9a;
+ /* Dashboard chart roles (process-dashboard.css): the dark steps of the documented categorical palette, ordered by role. */
+ --viz-work:#d95926; --viz-wait:#3987e5; --viz-blocked:#e66767; --viz-backlog:#9085e9; --viz-timer:#c98500; --viz-join:#199e70; --viz-goal:#008300;
+ /* Journey phase colours, cycling every seven phases (LWProcessPalette.PHASES). */
+ --phase-1:#7fb3e0; --phase-2:#ffbb73; --phase-3:#8fd68a; --phase-4:#e58ac8; --phase-5:#a79bf0; --phase-6:#6fc7e8; --phase-7:#d9c58a;
  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --r-sm:5px; --r-md:6px; --r-lg:10px;
  --t-xs:.75rem; --t-sm:.8125rem; --t-md:.875rem; --t-base:1rem; --t-lg:1.125rem; --t-xl:1.375rem; --control-h:2.25rem; }
+/* Light theme (LWProcessTheme, the Light theme item of the studio menu; for this page only, never stored): every colour token of the
+   block above, stepped for a light surface with the same hue. The light pairs reach WCAG 2.2 AA (4.5:1 text; 3:1 marks, control
+   boundaries and focus); the business-process-analysis suite checks the pairs and both blocks against LWProcessPalette. */
+:root[data-theme=light] :is(.process-studio,.lw-journey,.sipoc) { --bg:#f3f5f8; --panel:#ffffff; --line:#d3d9e1; --text:#17202b;
+ --muted:#4f5b6a; --accent:#8a5000; --accent-bg:#fbeedc; --accent-line:#a8692a; --danger:#c84455; --danger-text:#a3262f; --surface-2:#e6ebf1;
+ --control-border:#6b7889; --button-border:#7b8695; --state-queue:#3584b0; --state-timer:#a48800; --state-backlog:#8046c0;
+ --map-edge:#7a8796; --map-arrow:#66727f; --map-conditional:#a0682f; --deadline-escalate:#946800; --escalated:#cf5a26;
+ --accent-hover:#6f4000; --accent-bg-hover:#f6e2c6; --surface-hover:#edf1f5; --surface-card:#ffffff; --surface-sunk:#fafbfc; --card-line:#808b98;
+ --rule:#e2e6eb; --grid:#e4e8ed; --order:#566271; --axis:#727d8a; --scrollbar:#a7b0bc; --invalid:#c42b2b; --focus-halo:#17202b; --goal:#2f7d32;
+ --goal-bg:#e2f2e2; --goal-text:#1d6224; --lost-bg:#fbe5e6; --heat-warm:#b35f00; --heat-hot:#c8401f;
+ --shadow:rgba(23,32,43,.16); --shadow-lg:rgba(23,32,43,.22); --backdrop:rgba(23,32,43,.45); --tint:rgba(0,0,0,.02); --tint-faint:rgba(0,0,0,.015);
+ --viz-measured:#1f7f73; --viz-feel:#f7f9fb; --viz-track:#e8ecf1; --viz-fill:#b8722b;
+ --viz-work:#d55a2d; --viz-wait:#4676bc; --viz-blocked:#ab3638; --viz-backlog:#553fbf; --viz-timer:#a36f01; --viz-join:#07a176; --viz-goal:#4d9b44;
+ --phase-1:#4088c8; --phase-2:#864c03; --phase-3:#599939; --phase-4:#87366b; --phase-5:#6e53cb; --phase-6:#3a93b8; --phase-7:#967f05; }
+/* Native controls and scrollbars follow the theme, the page's own scrollbar included. */
+:root { color-scheme:dark; }
+:root[data-theme=light],:root[data-theme=light] .process-studio { color-scheme:light; }
 .process-studio { margin:0; background:var(--bg); color:var(--text); font:var(--t-md)/1.5 system-ui,sans-serif; color-scheme:dark; }
 .process-studio * { box-sizing:border-box; scrollbar-color:var(--scrollbar) var(--panel); scrollbar-width:thin; }
 .process-studio ::selection { background:var(--accent); color:var(--bg); }
-.process-studio button,.process-studio select,.process-studio textarea { font:inherit; color:var(--text); border:1px solid var(--line); border-radius:var(--r-sm); background:var(--panel); }
+.process-studio button,.process-studio select,.process-studio textarea { font:inherit; color:var(--text); border:1px solid var(--button-border);
+ border-radius:var(--r-sm); background:var(--panel); }
 .process-studio button { min-height:var(--control-h); padding:7px var(--s3); line-height:1.25rem; cursor:pointer; }
 .process-studio button:hover { background:var(--surface-2); }
 .process-studio button:disabled,.process-studio button:disabled:hover { cursor:not-allowed; opacity:.55; border-color:var(--control-border); background:var(--panel); }
@@ -63,6 +88,10 @@
 .process-studio #export-items button:focus-visible { outline-offset:-2px; }
 /* An unavailable item stays focusable so its reason (title and menu hint) is reachable; it only looks disabled. */
 .process-studio #export-items button[aria-disabled=true] { opacity:.55; cursor:not-allowed; }
+/* The theme item (LWProcessTheme): its name, then its state in words; a rule sets it apart from the file actions above it. */
+.process-studio #export-items #theme-item { display:flex; justify-content:space-between; gap:var(--s3); margin-top:var(--s1);
+ border-top-color:var(--line); border-radius:0 0 var(--r-sm) var(--r-sm); }
+.theme-state { color:var(--muted); font-size:var(--t-xs); }
 /* Add step… and Tidy layout keep focus and their reason (title) while the draft is not valid JSON; they only look disabled. Below
    1,200 px the header row has no room for them (it would wrap), so they move into the Export (or, on a phone, ⋯) menu. */
 .process-studio .draft-action[aria-disabled=true] { opacity:.55; cursor:not-allowed; }
@@ -349,7 +378,7 @@
  .process-nav #overview { width:auto; height:100%; white-space:nowrap; }
  .process-steps { display:flex; flex:none; gap:var(--s2); }
  .process-steps li { flex:none; width:min(170px,44vw); scroll-margin-inline:var(--s4); }
- .process-studio button.process-step { height:100%; border-color:var(--line); }
+ .process-studio button.process-step { height:100%; border-color:var(--button-border); }
  .process-stage { order:0; }
  #viewport { height:45vh; min-height:300px; }
  #viewport:has(> #lens:not([hidden])) { height:auto; min-height:0; }

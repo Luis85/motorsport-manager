@@ -51,7 +51,12 @@ function killGroup(pid: number | undefined): void {
  * bounded wall time and output, retained stdout/stderr, ETIMEDOUT/ENOBUFS errors with SIGKILL,
  * and termination of the whole Unix process group so descendants cannot outlive a failure.
  */
-export function runCommandAsync(command: readonly string[], root: string, timeoutSeconds: number, options: AsyncCommandOptions = {}): Promise<AsyncCommandResult> {
+export function runCommandAsync(
+  command: readonly string[],
+  root: string,
+  timeoutSeconds: number,
+  options: AsyncCommandOptions = {},
+): Promise<AsyncCommandResult> {
   if (!command.length || !Number.isFinite(timeoutSeconds) || timeoutSeconds <= 0) throw new Error("Command and a positive finite timeout are required");
   const maxBuffer = options.maxBuffer ?? 16 * 1024 * 1024;
   return new Promise(resolve => {

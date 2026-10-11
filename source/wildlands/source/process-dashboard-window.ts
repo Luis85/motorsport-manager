@@ -1,5 +1,6 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-dashboard-model.ts" />
+/// <reference path="./process-hours.ts" />
 /**
  * "Measure from minute W" and the Dashboard's series cache (LWProcessDashboardWindow, presentation, pure: no DOM, session, clock or
  * storage). It owns two rules every dashboard module shares:
@@ -22,6 +23,8 @@ declare namespace LWProcessDashboardWindow {
   arrived: number; completed: number; failed: number; dropped: number; goals: number; lost: number; cost: number; wipArea: number; cycleSum: number;
   /** Busy unit-minutes per pool id over the window. */
   busy: Record<string, number>;
+  /** Minutes pools were available in the window: `minutes`, or with working hours only its working minutes (utilisation divides by it). */
+  available?: number;
  }
  /** The cached series and the run it belongs to. */
  interface Cache {run: string; series: LWProcessDashboardData.Series | null}
@@ -45,7 +48,8 @@ declare namespace LWProcessDashboardWindow {
 (function(inputRoot: unknown) {
  'use strict';
  type Series = LWProcessDashboardData.Series;
- const root = inputRoot as {LWProcessDashboardModel: LWProcessDashboardModel.Api; LWProcessDashboardWindow?: LWProcessDashboardWindow.Api};
+ const root = inputRoot as {LWProcessDashboardModel: LWProcessDashboardModel.Api; LWProcessHours: LWProcessHours.Api;
+  LWProcessDashboardWindow?: LWProcessDashboardWindow.Api};
  function choices(series: Series | null | undefined, minute: number): number[] {
   return series && series.minutes.length > 1 ? series.minutes.filter(x => x < minute) : [];
  }
@@ -60,7 +64,8 @@ declare namespace LWProcessDashboardWindow {
   const delta = (column: number[]) => column[e]! - column[i]!;
   const busy: Record<string, number> = {};
   for (const [id, pool] of Object.entries(s.pools)) busy[id] = delta(pool.busyMinutes);
-  return {from, to: s.minutes[e]!, minutes: s.minutes[e]! - from, wipStart: r.wip[i]!, wipEnd: r.wip[e]!,
+  const h = input.view.definition.workingHours, working = (m: number) => h ? root.LWProcessHours.working(h, m) : m;
+  return {from, to: s.minutes[e]!, minutes: s.minutes[e]! - from, available: working(s.minutes[e]!) - working(from), wipStart: r.wip[i]!, wipEnd: r.wip[e]!,
    arrived: delta(r.arrived), completed: delta(r.completed), failed: delta(r.failed), dropped: delta(r.dropped), goals: delta(r.goals),
    lost: delta(r.lost), cost: delta(r.cost), wipArea: delta(r.wipArea), cycleSum: delta(r.cycleSum), busy};
  }
@@ -82,7 +87,8 @@ declare namespace LWProcessDashboardWindow {
  }
  function utilization(w: LWProcessDashboardWindow.Window, pool: string, capacity: number): number | null {
   const busy = w.busy[pool];
-  return busy === undefined || !w.minutes || !capacity ? null : busy / (w.minutes * capacity);
+  const minutes = w.available ?? w.minutes;
+  return busy === undefined || !minutes || !capacity ? null : busy / (minutes * capacity);
  }
  root.LWProcessDashboardWindow = {choices, pick, of, label, run, follow, utilization};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessDashboardWindow;

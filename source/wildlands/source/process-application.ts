@@ -11,6 +11,9 @@
  * bounded chunks until the run stops or reaches its run length, at most `LWProcessRuntime.limits.minutes` minutes per command).
  * Nothing else moves the clock: queries, selection, view modes, switching and adding a process never tick.
  *
+ * Run checkpoints (LWProcessCheckpoint): `checkpoint()` is a query of the active run; `restore()` replaces the active run with a
+ * checked saved run, paused at its minute. Neither ticks.
+ *
  * View modes: '2d' and '3d' (the remembered flat choice), 'lens' (the type's second 2D lens) and 'dashboard' (the per-process
  * Dashboard of metrics and charts, LWProcessDashboard). The dashboard is not a flat choice and is kept across process switches, so
  * dashboards of several processes can be compared; it renders the same detached view and never ticks.
@@ -67,13 +70,26 @@ declare namespace LWProcessApp {
    * the fine distributions and the latest finished cases. Like `query()` they never tick and are allowed while playing.
    */
   series(after?: LWProcess.SeriesCursor): LWProcess.Series | null; distributions(): LWProcess.Distributions; recent(): LWProcess.FinishedCase[];
+  /**
+   * A detached run checkpoint of the active process (LWProcessCheckpoint): its applied definition's fingerprint, the run seed, the
+   * minute, the run length and the complete run state. A query: it never ticks and is allowed while playing.
+   */
+  checkpoint(): LWProcessCheckpoint.Checkpoint;
+  /**
+   * One command that replaces the active process's run with the run saved in `checkpoint` (untrusted; LWProcessCheckpoint.verify
+   * checks that it names the active process and its applied fingerprint, and checks the run state). The restored run is paused at
+   * the checkpoint's minute with its run seed and run length; the definition, the selection and every other slot are unchanged.
+   * It never ticks. A refused checkpoint throws and changes nothing.
+   */
+  restore(checkpoint: unknown): void;
  }
  /** `input` is one definition, or an ordered array of 1-8 definitions. */
  interface Api {create(input: unknown): Controller; readonly MAX_PROCESSES: number;}
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessCatalog: LWProcess.Catalog; LWProcessRuntime: LWProcess.Runtime; LWProcessApplication?: LWProcessApp.Api};
+ const root = inputRoot as {LWProcessCatalog: LWProcess.Catalog; LWProcessRuntime: LWProcess.Runtime; LWProcessApplication?: LWProcessApp.Api;
+  LWProcessCheckpoint: LWProcessCheckpoint.Api};
  const MAX = 8, CHUNK = 1440;
  const lensOf = (d: LWProcess.Definition): LWProcessApp.Lens => d.genre === 'customer-journey' || d.genre === 'user-journey' ? 'journey' : 'sipoc';
  const stopped = (s: LWProcess.Snapshot) => ['completed', 'blocked', 'limit'].includes(s.status);
@@ -172,6 +188,14 @@ declare namespace LWProcessApp {
    series: after => { alive(); return session.series(after); },
    distributions: () => { alive(); return session.distributions(); },
    recent: () => { alive(); return session.recent(); },
+   checkpoint: () => { alive(); return root.LWProcessCheckpoint.create(definition, horizon, session.state()); },
+   restore(value) {
+    alive();
+    const checked = root.LWProcessCheckpoint.verify(value, definition);
+    const next = root.LWProcessRuntime.create(definition, {horizon: checked.runLength, restore: checked.snapshot});
+    session.dispose(); session = next; horizon = checked.runLength; playing = false;
+    seedOverride = checked.seed === (definition.seed ?? 1) ? undefined : checked.seed;
+   },
    dispose() {
     disposed = true; playing = false; session.dispose();
     for (const run of kept.values()) run.session.dispose();

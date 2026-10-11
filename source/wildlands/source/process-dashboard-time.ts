@@ -1,6 +1,7 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-dashboard-model.ts" />
 /// <reference path="./process-dashboard-window.ts" />
+/// <reference path="./process-hours.ts" />
 /**
  * Dashboard section 3 (LWProcessDashboardTime): "Where time goes": the lead-time breakdown by work state with flow efficiency,
  * waiting by step (the bottleneck ranking, each row selecting its step), pool capacity as bullet graphs and queues over time. Pure
@@ -16,7 +17,7 @@
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessDashboardModel: LWProcessDashboardModel.Api; LWProcessTerms: LWProcessTerms.Api;
-  LWProcessSlidesText: LWProcessSlidesText.Api; LWProcessDashboardWindow: LWProcessDashboardWindow.Api;
+  LWProcessSlidesText: LWProcessSlidesText.Api; LWProcessDashboardWindow: LWProcessDashboardWindow.Api; LWProcessHours: LWProcessHours.Api;
   LWProcessDashboardTime?: LWProcessDashboardSections.Builder};
  type Input = LWProcessDashboardData.Input;
  type Panel = LWProcessDashboardModel.Panel;
@@ -54,6 +55,10 @@
    }
   }
   if (open.some(n => n > 0)) bars.push({label: `Open ${t.many} now by current state`, segments: segments(open)});
+  // Working hours: closed minutes are their own state (metrics.leadTime.closed), outside the shares above.
+  const h = d.workingHours, closed = lead?.closed && m.completed ? U.minutes(lead.closed / m.completed, d) : '';
+  const outside = closed ? `: finished ${t.many} spent ${closed} on average outside them.` : '.';
+  if (h) notes.push(`This run uses working hours (${root.LWProcessHours.describe(h)}); minutes outside them count as neither work nor waiting${outside}`);
   if (t.journey) notes.push('Waiting by design (timers) is part of the journey you authored.');
   const name = (i: number) => U.STATES[i]!.label.toLowerCase();
   const ranked = lead && total ? order.map((k, i) => ({i, v: lead[k]})).sort((a, b) => b.v - a.v).slice(0, 3) : [];
@@ -108,7 +113,8 @@
    : `${name} has ${U.number(queued(top.id))} waiting now; no started work has waited yet.`;
   return {...base, notes, caption,
    chart: {kind: 'rows', title: 'Steps ranked by waiting', rows},
-   table: U.table('Waiting by step', ['Step', 'Share of waiting', 'Mean wait per start', 'Waiting now', 'Work starts', 'Busiest pool'], table)};
+   table: U.table('Waiting by step', ['Step', 'Share of waiting', 'Mean wait per start', 'Waiting now', 'Work starts', 'Busiest pool'], table,
+    [false, true, true, true, true, false])};
  }
  function capacity(input: Input): Panel {
   const {definition: d, snapshot: q} = input.view, t = root.LWProcessTerms.of(d), U = u(), T = q.minute;
@@ -127,7 +133,9 @@
   const share = (p: LWProcess.PoolMetric) => Math.round(use(p) * 1000) / 10;
   const spark = (p: LWProcess.PoolMetric) => {
    const c = s?.pools[p.id];
-   return c && s ? diff(c.busyMinutes).map((b, i) => b / Math.max(1, (s.minutes[i + 1]! - s.minutes[i]!) * p.capacity) * 100) : null;
+   // With working hours a pool is available only in working minutes (LWProcessHours), as the snapshot's utilisation counts them.
+   const h = d.workingHours, open = (m: number) => h ? root.LWProcessHours.working(h, m) : m;
+   return c && s ? diff(c.busyMinutes).map((b, i) => b / Math.max(1, (open(s.minutes[i + 1]!) - open(s.minutes[i]!)) * p.capacity) * 100) : null;
   };
   const rows = pools.map(({p, r}) => ({label: r.name, detail: `${kind(r)} · ${U.plural(p.capacity, 'unit')} · used by ${users(p.id)}`,
    value: T ? share(p) : null, compare: p.capacity ? Math.round(p.busy / p.capacity * 1000) / 10 : null, spark: spark(p),
@@ -141,7 +149,7 @@
   return {...base, caption, notes: ['The shaded band from 85% to 100% marks where queues grow quickly near full use; it is a reading aid, not a target.'],
    chart: {kind: 'bullets', title: 'Average utilisation per pool, with busy units now as a tick', rows},
    table: U.table('Pool utilisation', ['Pool', 'Kind', 'Capacity', w ? `Average utilisation ${over}` : 'Average utilisation', 'Busy now',
-    w ? `Busy minutes ${over}` : 'Busy minutes', 'Used by'], table)};
+    w ? `Busy minutes ${over}` : 'Busy minutes', 'Used by'], table, [false, false, true, true, true, true, false])};
  }
  function queues(input: Input): Panel {
   const {definition: d} = input.view, U = u(), s = input.series && input.series.minutes.length > 1 ? input.series : null;

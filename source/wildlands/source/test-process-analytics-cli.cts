@@ -147,7 +147,7 @@ test('Process commands name --minutes, --runs and --format in their errors and r
  assert.equal(fs.readdirSync(dir).sort().join(), before, 'rejected invocations write nothing');
  assert.equal(fs.readFileSync(path.join(dir, 'log.csv'), 'utf8'), 'previous log\n');
  const discovered = call(['discover']).operations.filter((o: Json) => ['run', 'replicate', 'compare'].includes(o.id)).map((o: Json) => [o.id, o.options]);
- assert.deepEqual(discovered, [['run', ['--input', '--minutes', '--output', '--seed', '--event-log', '--format']],
+ assert.deepEqual(discovered, [['run', ['--input', '--minutes', '--output', '--seed', '--event-log', '--format', '--checkpoint', '--checkpoint-out']],
   ['replicate', ['--input', '--minutes', '--runs', '--seed', '--output', '--warmup']],
   ['compare', ['--input', '--against', '--minutes', '--runs', '--seed', '--output', '--warmup']]]);
  assert.equal(catalog.fingerprint(JSON.parse(fs.readFileSync(path.join(dir, 'a.json'), 'utf8'))), catalog.fingerprint(definition()));

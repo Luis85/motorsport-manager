@@ -35,6 +35,63 @@ test('Chart primitives use 1-2-5 ticks from zero, compact labels and only finite
  for (const n of svg.match(/ (?:x|y|width|height|cx|cy)="([^"]+)"/g) ?? []) assert(/="-?\d+(\.5)?"/.test(n), n);
 });
 
+/** The tick labels of an SVG on the row `y` (the x axis), as [x, text]. */
+const labelsAt = (svg: string, y: number) => [...svg.matchAll(/<text class="db-tick-label" x="([^"]+)" y="([^"]+)"[^>]*>([^<]*)<\/text>/g)]
+ .filter(m => Number(m[2]) === y).map(m => [Number(m[1]), m[3]!] as const);
+const leftLabels = (svg: string) => [...svg.matchAll(/<text class="db-tick-label" [^>]*text-anchor="end">([^<]*)<\/text>/g)].map(m => m[1]);
+
+test('Chart axes label round minutes and whole counts, columns label their own intervals, and crowded marks stay readable', () => {
+ assert.deepEqual([C.ticks(1, 5, true), C.ticks(2, 5, true), C.ticks(1)], [[0, 1], [0, 1, 2], [0, 0.5, 1]]);
+ const f = {width: 300, height: 192, title: 'T', id: 'x'}, bottom = Math.round((192 - 16 * .4) * 2) / 2;
+ // Time labels are multiples of a 1-2-5 step, never offsets from the first sample (60, 110, 160); whole counts get whole ticks.
+ const lines = C.lines(f, 16, [60, 120, 180], [{label: 'a', values: [1, 0, 1], tone: 'wait'}], {step: false, axis: 'cases'});
+ assert.deepEqual(labelsAt(lines, bottom).map(l => l[1]), ['100', '150']);
+ assert.deepEqual(leftLabels(lines), ['0', '1']);
+ const long = C.lines(f, 16, [240, 50240, 99840], [{label: 'a', values: [1.5, 2, 3], tone: 'wait'}], {step: false, axis: 'cases'});
+ assert.deepEqual(labelsAt(long, bottom).map(l => l[1]), ['20K', '40K', '60K', '80K']);
+ // Columns: each label names its interval end and sits under that column's centre.
+ const columns = C.columns(f, 16, [60, 120, 180], [{label: 'done', values: [2, 0, 1], tone: 'join'}], null, 'cases');
+ const bars = [...columns.matchAll(/class="db-fill" data-tone="join"[^>]* d="M([\d.]+) /g)].map(m => Number(m[1]) + 12);
+ const under = labelsAt(columns, bottom);
+ assert.deepEqual(under.map(l => l[1]), ['60', '120', '180']);
+ assert.deepEqual([under[0]![0], under[2]![0]].map(Math.round), bars.map(Math.round));
+ // Hundreds of intervals: lines through the interval centres, not a block of 1 px columns.
+ const many = Array.from({length: 400}, (_, i) => (i + 1) * 60), dense = C.columns(f, 16, many, [{label: 'done', values: many.map(() => 3), tone: 'join'}],
+  {label: 'came', values: many.map(() => 4), tone: 'wait'}, 'cases');
+ assert.equal(count(dense, /class="db-fill"/g), 0);
+ assert.equal(count(dense, /class="db-line"/g), 2);
+ // Percentile labels over neighbouring narrow bins are joined instead of touching ("p85p95").
+ const bins = ['1', '2', '3', '4'].map(label => ({label, count: 1, tip: label}));
+ const brackets = (width: number) => [...C.histogram({...f, width}, 16, bins, new Map([[1, ['p50', 'p85']], [2, ['p95']]]), 'join', 'cases')
+  .matchAll(/class="db-bracket-label"[^>]*>([^<]*)</g)].map(m => m[1]);
+ assert.deepEqual([brackets(160), brackets(400)], [['p50 p85 p95'], ['p50 p85', 'p95']]);
+ // Recent points of a long run spread from the first drawn minute, and band labels are drawn after (over) the points.
+ const pts = [990, 995, 1000].map(x => ({x, y: 10, glyph: 'active' as const, tone: 'join' as const}));
+ const recent = C.points(f, 16, pts, {columns: null, xMin: 990, xMax: 1000, yMax: 10, bands: [{from: 0, to: 8, label: 'median'}]});
+ const xs = [...recent.matchAll(/translate\(([\d.]+) /g)].map(m => Number(m[1]));
+ assert(xs[0]! < 60 && xs[2]! > 280, 'points spread over the plot: ' + xs.join(','));
+ assert(recent.lastIndexOf('db-bracket-label') > recent.lastIndexOf('db-glyph'), 'the band label is drawn over the points');
+ const bands = [{from: 5, to: 8, label: 'median'}, {from: 5, to: 8, label: 'p85'}];
+ const shared = C.points(f, 16, pts, {columns: null, xMin: 990, xMax: 1000, yMax: 10, bands});
+ assert.deepEqual([...shared.matchAll(/class="db-bracket-label"[^>]*>([^<]*)</g)].map(m => m[1]), ['median · p85'], 'bands on one edge share a label');
+});
+
+test('Dashboard tables right-align and keep unbroken only number columns, so text columns wrap instead of widening the table', () => {
+ const views = [viewAt(demo('order-fulfilment'), 900), viewAt(demo('customer-journey-webshop'), 300)];
+ const numberish = /^(?:|—|[-−+]?[\d,.]+(?:K|M)?(?:\s?(?:%|min|h|×))?(?: \(.*\))?|[\d,.]+[–-][\d,.]+(?: min)?)$/;
+ for (const view of views) {
+  for (const p of panels(M.build({view}))) {
+   const t = p.table;
+   if (!t) continue;
+   t.head.forEach((h, i) => {
+    if (!t.numeric[i]) return;
+    const text = t.rows.map(r => r[i]!).filter(c => !numberish.test(c));
+    assert.deepEqual(text, [], `${view.definition.id}/${p.id}: column "${h}" is marked numeric`);
+   });
+  }
+ }
+});
+
 test('Chart marks carry escaped accessible names, are reachable by keyboard and sit in a named SVG group', () => {
  const name = 'A <b>"step"</b> & co';
  const svg = C.stack({width: 300, height: 28, title: name, id: 'db-x'}, [{label: name, value: 3, tone: 'work', glyph: 'active'},
@@ -143,7 +200,7 @@ test('What-if results show mean, 95% interval and percentiles per measure with t
  assert.deepEqual([done.n, done.mean, done.ci], [4, M.util.number(stats.mean!), `${M.util.number(stats.ci95![0])} to ${M.util.number(stats.ci95![1])}`]);
  assert.match(r.kpis.find(k => k.id.startsWith('utilization.'))!.mean, /^[\d.]+%$/);
  assert.match(r.honesty, /^Spread under the authored assumptions across 4 seeds \(\d+ to \d+\), measured at minute 300 of runs that start empty, /);
- assert.match(r.honesty, /, so start-up is included\. Intervals use Student t /);
+ assert.match(r.honesty, /, so start-up is included\. Intervals use exact Student t /);
  assert.match(r.honesty, /This is not a forecast\.$/);
  const html = W.markup(r, 480, 16);
  assert.match(html, /<p class="db-notice" role="note">Spread under the authored assumptions/);
@@ -178,4 +235,11 @@ test('What-if over a process without random behaviour says every seed gives the 
  assert.doesNotMatch(html, /db-intervals/);
  const empty = W.result(replicate.replicate(demo('delivery-release'), {minutes: 60, runs: 2}), 2).kpis.find(k => k.id === 'meanCycleMinutes')!;
  assert.equal(empty.sentence, 'Mean cycle (minutes) is undefined in 2 runs where no case finished.');
+});
+
+test('What-if over a random process whose seeds all agree says its draws did not change the measures, never that it has no randomness', () => {
+ const r = W.result(replicate.replicate(demo('agency'), {minutes: 300, runs: 3}), 3, true), html = W.markup(r, 480, 16);
+ assert.deepEqual([r.flat, r.random], [true, true]);
+ assert.match(html, /Every seed gave the same value for every measure by minute 300: the random draws did not change them in this run length/);
+ assert.doesNotMatch(html, /no random behaviour|the dot is the mean/);
 });

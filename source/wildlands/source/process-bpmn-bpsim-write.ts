@@ -4,6 +4,12 @@
  * BPSim scenario writer for the BPMN export: processing and wait times, probabilities, arrival timing, the first arrival rule's constant case
  * data and whole-number draws as start-event properties, the seed, and pool quantities and costs, in minutes. Wildlands extension values stay
  * authoritative on re-import. `notes` names, in plain words, what a tool that drops the extension loses.
+ *
+ * Working hours: BPSim can say when resources are available and when arrivals are timed, but not that running work pauses and
+ * resumes. The scenario gains one `Calendar` (an iCalendar VEVENT from Monday 5 January 1970 at the opening time to the closing
+ * time, repeated weekly on the working days by an RRULE), each pool's `Availability` is `true` valid for that calendar, and the
+ * first arrival's InterTriggerTimer value is valid for it too. The exact hours and their run semantics stay in `<wl:workingHours>`,
+ * and a note names what only the extension carries.
  */
 declare namespace LWProcessBpmnBpsimWrite {
  interface Api {
@@ -14,7 +20,7 @@ declare namespace LWProcessBpmnBpsimWrite {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessXml: LWProcessXml.Api; LWProcessBpmnBpsimWrite?: LWProcessBpmnBpsimWrite.Api};
+ const root = inputRoot as {LWProcessXml: LWProcessXml.Api; LWProcessHours: LWProcessHours.Api; LWProcessBpmnBpsimWrite?: LWProcessBpmnBpsimWrite.Api};
  type Add = (depth: number, line: string) => void;
  const num = (n: number) => String(Number(n.toFixed(6)));
  const constant = (name: string, n: number) => `<bpsim:${name} value="${num(n)}"/>`;
@@ -67,6 +73,24 @@ declare namespace LWProcessBpmnBpsimWrite {
   const subject = one ? `Case field ${fields} of arrival rule 1 is` : `Case fields ${fields} of arrival rule 1 are`;
   if (lost.length) out.push(`${subject} ${ONLY}; BPSim properties carry constants and whole-number ranges.`);
  }
+ const BYDAY = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'];
+ /** iCalendar local date-time of minute `m` after midnight on Monday 5 January 1970 (1440 is the next midnight). */
+ const local = (m: number) => `197001${String(5 + Math.floor(m / 1440)).padStart(2, '0')}T${String(Math.floor(m % 1440 / 60)).padStart(2, '0')}`
+  + `${String(m % 60).padStart(2, '0')}00`;
+ /** The working hours as one weekly VEVENT, lines joined by CRLF character references so the text survives XML line-end handling. */
+ function calendar(d: LWProcess.Definition, h: LWProcess.WorkingHours): string {
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Wildlands//Process Studio//EN', 'BEGIN:VEVENT', `UID:working-hours@${d.id}`,
+   'DTSTAMP:19700105T000000Z', `DTSTART:${local(h.opensAt)}`, `DTEND:${local(h.closesAt)}`,
+   `RRULE:FREQ=WEEKLY;BYDAY=${BYDAY.slice(0, h.daysPerWeek).join(',')}`, 'END:VEVENT', 'END:VCALENDAR'].join('&#13;&#10;');
+ }
+ /** What working hours lose without the extension, with BPSim (a calendar on availability and arrivals) or without it. */
+ function hoursNote(d: LWProcess.Definition, bpsim: boolean): string | null {
+  if (!d.workingHours) return null;
+  const said = `The working hours (${root.LWProcessHours.describe(d.workingHours)})`;
+  if (!bpsim) return `${said} are ${ONLY}; they pause work and arrivals outside them, so a tool without it runs every minute as working time.`;
+  return `${said} travel as a BPSim calendar on pool availability and arrival timing; that running work pauses and resumes, that arrivals `
+   + `count working minutes and that the run starts on Monday at opening are ${ONLY}.`;
+ }
  function notes(d: LWProcess.Definition, bpsim: boolean): string[] {
   const out: string[] = [], steps = (has: (s: LWProcess.Step) => unknown) => list(d.steps.filter(has).map(s => s.name), 'step');
   const add = (names: string, text: (names: string) => string) => { if (names) out.push(text(names)); };
@@ -79,6 +103,8 @@ declare namespace LWProcessBpmnBpsimWrite {
   add(steps(s => s.deadline?.timing), x => `Random deadline timing of ${x} is ${ONLY}; BPMN carries its mean.`);
   add(steps(s => s.backlog), x => `Backlogs of ${x} are ${ONLY}.`);
   add(list(d.resources.filter(r => r.kind && r.kind !== 'people').map(r => r.name), 'pool'), x => `Pool kinds of ${x} are ${ONLY}.`);
+  const hours = hoursNote(d, bpsim);
+  if (hours) out.push(hours);
   return out;
  }
  function write(d: LWProcess.Definition, ids: LWProcessBpmn.Ids, add: Add): void {
@@ -106,12 +132,13 @@ declare namespace LWProcessBpmnBpsimWrite {
    add(depth, `</bpsim:${group}>`);
   };
   const timed = !!first && (!!first.gap || first.interval > 0 || first.count !== undefined), props = first ? properties(first) : [];
+  const hours = d.workingHours, cal = `Calendar_${d.id}`, valid = (value: string) => hours ? value.replace('/>', ` validFor="${cal}"/>`) : value;
   /** Arrival timing as control parameters and the case data as properties, in the order BPSim declares the groups. */
   const arrival = (a: LWProcess.Arrival, depth: number) => {
    if (timed) {
     add(depth, '<bpsim:ControlParameters>');
     const gap = a.gap ? dist(a.gap) : constant('FloatingParameter', a.interval);
-    if (a.gap || a.interval > 0) add(depth + 1, `<bpsim:InterTriggerTimer>${gap}</bpsim:InterTriggerTimer>`);
+    if (a.gap || a.interval > 0) add(depth + 1, `<bpsim:InterTriggerTimer>${valid(gap)}</bpsim:InterTriggerTimer>`);
     if (a.count !== undefined) add(depth + 1, `<bpsim:TriggerCount>${constant('NumericParameter', a.count)}</bpsim:TriggerCount>`);
     add(depth, '</bpsim:ControlParameters>');
    }
@@ -140,10 +167,18 @@ declare namespace LWProcessBpmnBpsimWrite {
   }
   for (const r of d.resources) {
    block(ids.resource(r), depth => {
-    wrap(depth, 'ResourceParameters', 'Quantity', constant('NumericParameter', r.capacity));
+    if (!hours) wrap(depth, 'ResourceParameters', 'Quantity', constant('NumericParameter', r.capacity));
+    else {
+     // BPSim orders Availability before Quantity within ResourceParameters.
+     add(depth, '<bpsim:ResourceParameters>');
+     add(depth + 1, `<bpsim:Availability>${valid('<bpsim:BooleanParameter value="true"/>')}</bpsim:Availability>`);
+     add(depth + 1, `<bpsim:Quantity>${constant('NumericParameter', r.capacity)}</bpsim:Quantity>`);
+     add(depth, '</bpsim:ResourceParameters>');
+    }
     wrap(depth, 'CostParameters', 'UnitCost', constant('FloatingParameter', r.costPerMinute));
    });
   }
+  if (hours) add(2, `<bpsim:Calendar id="${cal}" name="Working hours">${calendar(d, hours)}</bpsim:Calendar>`);
   add(1, '</bpsim:Scenario>'); add(0, '</bpsim:BPSimData>');
  }
  root.LWProcessBpmnBpsimWrite = {write, notes};

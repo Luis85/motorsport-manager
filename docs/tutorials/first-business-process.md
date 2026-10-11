@@ -26,7 +26,7 @@ mkdir -p /tmp/first-process
 bin/process-studio discover
 ```
 
-`discover` prints the 17 process commands, their limits and the 15 guarded
+`discover` prints the 17 process commands, their limits and the 16 guarded
 `editOperations` (for example `putStep`, `putFlow` and `setDescription`).
 
 ## 1. Create a starter process
@@ -228,6 +228,9 @@ BPMN with BPSim**, **Export run report** and **Download HTML**.
   (`demos/agency-delivery.html`).
 - Read every Dashboard panel with
   [Read a process dashboard](../how-to/read-a-process-dashboard.md).
+- Keep a run and continue it later with
+  [Save and resume a process run](../how-to/save-and-resume-a-process-run.md), or let work pause
+  overnight with [working hours](../how-to/business-process-authoring.md#run-on-working-hours).
 - Look up commands and exit codes in the
   [Process Studio CLI handbook](../reference/process-studio-cli.md); `bin/wildlands process`
   takes the same commands ([Wildlands CLI](../reference/wildlands-cli.md#business-processes)).

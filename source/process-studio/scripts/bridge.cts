@@ -12,13 +12,13 @@ export const WILDLANDS_SOURCE = 'source/wildlands/source';
 export const ENGINE_CLOSURE = [
  'process-sdk.cts',
  'ecs.ts', 'asset-catalog.ts',
- 'process-schema.ts', 'process-random.ts', 'process-needs.ts', 'process-graph-routes.ts', 'process-graph.ts', 'process-catalog.ts',
+ 'process-schema.ts', 'process-hours.ts', 'process-random.ts', 'process-needs.ts', 'process-graph-routes.ts', 'process-graph.ts', 'process-catalog.ts',
  'process-xml.ts', 'process-bpmn-expr.ts', 'process-bpmn.ts', 'process-bpmn-bpsim-write.ts', 'process-bpmn-ext.ts', 'process-bpmn-bpsim.ts',
  'process-bpmn-nodes.ts', 'process-bpmn-graph.ts', 'process-bpmn-fold.ts', 'process-bpmn-flow.ts', 'process-bpmn-tail.ts',
  'process-bpmn-pools.ts', 'process-bpmn-layout.ts', 'process-bpmn-steps.ts', 'process-bpmn-assemble.ts', 'process-bpmn-import.ts',
  'process-bpmn-conformance-values.ts', 'process-bpmn-conformance-model.ts', 'process-bpmn-conformance-bpsim.ts', 'process-bpmn-conformance-schema.ts', 'process-bpmn-conformance.ts',
- 'process-ledger-cases.ts', 'process-ledger.ts', 'process-kernel.ts', 'process-routing.ts', 'process-systems.ts', 'process-series.ts',
- 'process-session.ts', 'process-replicate.ts', 'process-authoring.ts', 'process-diff.ts', 'process-route.ts', 'process-work-state.ts',
+ 'process-ledger-cases.ts', 'process-ledger-exact.ts', 'process-ledger.ts', 'process-kernel.ts', 'process-routing.ts', 'process-systems.ts',
+ 'process-series.ts', 'process-engine-state.ts', 'process-checkpoint-check.ts', 'process-checkpoint.ts', 'process-session.ts', 'process-replicate.ts', 'process-authoring.ts', 'process-diff.ts', 'process-route.ts', 'process-work-state.ts',
  'process-sipoc-model.ts', 'process-time.ts', 'process-random-view.ts', 'process-advice.ts', 'process-terms.ts', 'process-slides-text.ts',
  'process-slides.ts'
 ] as const;

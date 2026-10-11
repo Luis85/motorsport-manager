@@ -27,6 +27,11 @@
  * the collapsed sections. There every section (the model sections, What-if, Data and export) is a `details.db-fold` whose summary
  * is the section heading, open by default; the closed ones are remembered for the page session (across process switches) and
  * their panels are not redrawn until opened.
+ *
+ * Sticky run bar: where the dashboard scrolls with the page (narrow windows) the studio's run bar sticks over it. The bar's measured
+ * bottom edge becomes the page's scroll padding while the dashboard is shown (`followStickyBar`, process-dashboard.css), so Tab or
+ * Shift+Tab to a control, a heading scrolled into view and Fit to view stop below the bar, and a mark's tooltip opens below the mark
+ * when above it would be under the bar.
  */
 declare namespace LWProcessDashboard {
  interface Env {
@@ -100,6 +105,38 @@ declare namespace LWProcessDashboard {
   if (head) head.prepend(heading);
   else section.prepend(heading);
  }
+ /**
+  * Narrow windows: the dashboard scrolls with the page while the studio's run bar (`.process-toolbar`) sticks to its top. The bar's
+  * measured bottom edge is published as `--db-sticky-top` on the document element (0px when the bar does not stick: desktop, Run
+  * options open, a short window), and process-dashboard.css makes it the page's `scroll-padding-top` while the dashboard is shown,
+  * so a focused control, a heading scrolled into view and Fit to view all stop below the bar. It follows the bar's size (wrapping,
+  * root font, Run options) and the window size; `offset()` is the last value, and `dispose()` removes the listeners and the value.
+  */
+ function followStickyBar(host: HTMLElement): {offset(): number; dispose(): void} {
+  const bar = host.closest('.process-studio')?.querySelector<HTMLElement>('.process-toolbar') ?? null, doc = document.documentElement;
+  let px = 0, written = false;
+  if (!bar) return {offset: () => 0, dispose() {}};
+  const measure = () => {
+   const style = getComputedStyle(bar);
+   const next = style.position === 'sticky' ? Math.ceil((parseFloat(style.top) || 0) + bar.getBoundingClientRect().height) : 0;
+   if (next === px && written) return;
+   px = next;
+   written = true;
+   doc.style.setProperty('--db-sticky-top', `${px}px`);
+  };
+  const observer = new ResizeObserver(measure);
+  observer.observe(bar);
+  addEventListener('resize', measure);
+  measure();
+  return {
+   offset: () => px,
+   dispose() {
+    observer.disconnect();
+    removeEventListener('resize', measure);
+    doc.style.removeProperty('--db-sticky-top');
+   },
+  };
+ }
  function sectionMarkup(s: LWProcessDashboardModel.Section, lens: boolean): string {
   const back = s.id === 'focus' ? '<button type="button" data-back>Whole process</button>' : '';
   const map = s.id === 'journey' && lens ? '<button type="button" data-lens>Open the Journey map</button>' : '';
@@ -118,6 +155,7 @@ declare namespace LWProcessDashboard {
   const part = (name: string) => region.querySelector<HTMLElement>(`[data-part="${name}"]`)!, tip = region.querySelector<HTMLElement>('.db-tip')!;
   const whatif = root.LWProcessDashboardWhatIfView.create({draft: () => env.draft(), validate: text => env.validate(text)});
   region.insertBefore(whatif.element, region.querySelector('.db-data'));
+  const sticky = followStickyBar(host);
   let last: View | null = null, model: LWProcessDashboardModel.Model | null = null, signature = '', layout = '', windowAt = 0, width = 0, drawnRem = 0;
   let expanded = new Set<string>(), distKey = '', recentKey = '', targetAt: number | null = null, phoneAt: boolean | null = null;
   let data: Pick<Data, 'series' | 'distributions' | 'recent'> = {series: null, distributions: null, recent: null};
@@ -230,7 +268,9 @@ declare namespace LWProcessDashboard {
    tip.hidden = false;
    const left = Math.min(box.left - base.left + box.width / 2 - tip.offsetWidth / 2, region.clientWidth - tip.offsetWidth);
    tip.style.left = `${Math.max(0, left)}px`;
-   tip.style.top = `${Math.max(0, box.top - base.top - tip.offsetHeight - 6)}px`;
+   // Above the mark, unless that would put it under the sticky run bar: then below it.
+   const above = box.top - tip.offsetHeight - 6 >= sticky.offset();
+   tip.style.top = `${above ? Math.max(0, box.top - base.top - tip.offsetHeight - 6) : box.bottom - base.top + 6}px`;
   }
   const hideTip = () => { tip.hidden = true; };
   region.addEventListener('pointerover', e => showTip((e.target as Element).closest('[data-tip]')));
@@ -294,7 +334,7 @@ declare namespace LWProcessDashboard {
    draw,
    frame() {
     host.scrollTop = 0;
-    if (region.getBoundingClientRect().top < 0) region.scrollIntoView({block: 'start'});
+    if (region.getBoundingClientRect().top < sticky.offset()) region.scrollIntoView({block: 'start'});
    },
    focus() { region.focus(); },
    reset() {
@@ -314,6 +354,7 @@ declare namespace LWProcessDashboard {
    },
    dispose() {
     resize.disconnect();
+    sticky.dispose();
     whatif.dispose();
     region.remove();
     last = null;

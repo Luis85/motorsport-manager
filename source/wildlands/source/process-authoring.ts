@@ -12,10 +12,12 @@
  }
  /**
   * Process-setting operations: they write one optional top-level field, and null (or `process` for the genre) removes it.
-  * `setCalendar` writes the display-only working calendar ({minutesPerDay, daysPerWeek}); the catalog judges its values.
+  * `setCalendar` writes the display-only working calendar ({minutesPerDay, daysPerWeek}); `setWorkingHours` writes the run
+  * calendar ({opensAt, closesAt, daysPerWeek}, LWProcessHours), placed after `calendar` in schema order. The catalog judges both,
+  * including that a definition holds at most one of them.
   */
  const SETTINGS = {setDescription: 'description', setSeed: 'seed', setGenre: 'genre', setSipoc: 'sipoc', setTrack: 'track',
-  setCalendar: 'calendar'} as const;
+  setCalendar: 'calendar', setWorkingHours: 'workingHours'} as const;
  /** Writes or removes a top-level field; a new field is placed in schema order among the existing keys, which keep their order. */
  function setting(d: LWProcess.Definition, key: string, value: unknown, remove: boolean): void {
   const record = d as unknown as Record<string, unknown>;

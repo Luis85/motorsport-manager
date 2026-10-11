@@ -8,8 +8,10 @@
  *
  * The Export/⋯ menu holds, in order: Import JSON or BPMN…, Present slides and Dashboard (phone only), Add step… and Tidy
  * layout (below 1,200 px wide, where the header has no room for them), Export JSON, Export draft JSON (while a draft exists),
- * Export BPMN, Export BPMN with BPSim, Show export notes… (after a BPMN export with notes), Export run report, Download HTML,
- * New process… and Import as a new process….
+ * Export BPMN, Export BPMN with BPSim, Show export notes… (after a BPMN export with notes), Export run report, Export run
+ * checkpoint…, Load checkpoint… (LWProcessIO; its own file chooser `#checkpoint-file`), Download HTML, New process…, Import as a
+ * new process… and, last, the Light theme toggle (`#theme-item`, a `menuitemcheckbox` with its state in words in `#theme-state`;
+ * LWProcessTheme owns its behaviour).
  */
 declare namespace LWProcessShellMarkup {
  interface Parts {
@@ -34,8 +36,13 @@ declare namespace LWProcessShellMarkup {
    item('add-step-item', 'Add step…', ' class="menu-draft" aria-haspopup="dialog"'), item('tidy-item', 'Tidy layout', ' class="menu-draft"'),
    item('json', 'Export JSON'), item('draft-json', 'Export draft JSON', ' hidden'), item('bpmn', 'Export BPMN'),
    item('bpmn-bpsim', 'Export BPMN with BPSim'), item('export-notes', 'Show export notes…', ' aria-haspopup="dialog" hidden'),
-   item('report', 'Export run report'), item('html', 'Download HTML'),
+   item('report', 'Export run report'), item('checkpoint-export', 'Export run checkpoint…'),
+   item('checkpoint-load', 'Load checkpoint…', ' aria-haspopup="dialog"'), item('html', 'Download HTML'),
    item('new-process', 'New process…', ' aria-haspopup="dialog"'), item('import-new', 'Import as a new process…'),
+   // The theme toggle (LWProcessTheme): checked means Light; the state also reads in words.
+   '<button id="theme-item" role="menuitemcheckbox" tabindex="-1" aria-checked="false" aria-label="Light theme" '
+    + 'title="Switch between the dark and light colour themes. The choice lasts until the page is reloaded.">'
+    + 'Light theme <span id="theme-state" class="theme-state">Off</span></button>',
   ].join('\n     ');
   return `
  <header class="process-header"><div class="process-titles"><h1 id="process-title"></h1><p id="process-subtitle">Wildlands · Process Studio</p></div>
@@ -50,9 +57,10 @@ declare namespace LWProcessShellMarkup {
    <button id="export-menu" class="menu-long" aria-haspopup="menu" aria-expanded="false" aria-controls="export-items">Export ${caret}</button>
    <button id="more-menu" class="menu-short" aria-haspopup="menu" aria-expanded="false" aria-controls="export-items" aria-label="More actions">⋯</button>
    <div id="export-popup" class="process-menu-popup" hidden><p id="export-hint" class="menu-hint"></p>
-    <div id="export-items" role="menu" aria-label="Import, present, edit, export and add processes">
+    <div id="export-items" role="menu" aria-label="Import, present, edit, export and add processes, and choose the theme">
      ${items}</div></div></div>
-  <input type="file" id="file" accept=".json,.bpmn,.xml,application/json,application/xml,text/xml" hidden></div></header>`;
+  <input type="file" id="file" accept=".json,.bpmn,.xml,application/json,application/xml,text/xml" hidden>
+  <input type="file" id="checkpoint-file" accept=".json,application/json" hidden></div></header>`;
  }
  function workspace(legend: string): string {
   return `

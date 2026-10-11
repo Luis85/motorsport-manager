@@ -70,7 +70,7 @@ bin/process-studio build --input /tmp/intake.json --output /tmp/intake.html
 | `inspect` | `--input` | |
 | `edit` | `--input`, `--recipe`, `--output` or `--dry-run` | `--draft` |
 | `attach` | `--input`, `--asset`, `--step`, `--expected-revision`, `--expected-fingerprint`, `--output` or `--dry-run` | |
-| `run` | `--input`, `--minutes`, `--output` | `--seed`, `--event-log FILE`, `--format csv\|xes` |
+| `run` | `--input`, `--minutes`, `--output` | `--seed` or `--checkpoint FILE`, `--checkpoint-out FILE`, `--event-log FILE`, `--format csv\|xes` |
 | `replicate` | `--input`, `--minutes`, `--runs` | `--seed`, `--warmup`, `--output` |
 | `compare` | `--input`, `--against`, `--minutes`, `--runs` | `--seed`, `--warmup`, `--output` |
 | `diff` | `--input`, `--against` | |
@@ -108,13 +108,13 @@ its README, byte-identical to Wildlands.
 ## Self-contained `build`
 
 `build` is embedded, not delegated: bin/process-studio needs no Wildlands CLI.
-A process play artifact consists of the process template, the 137 inserts the
+A process play artifact consists of the process template, the 151 inserts the
 `process-play` profile selects (engine kernel, asset catalog, the 3D renderer and
-the process template's modules, about 2.0 MB of the 9.1 MB engine kit) and the
+the process template's modules, about 2.1 MB of the 9.6 MB engine kit) and the
 Wildlands engine identity. `npm run build:cli` takes exactly that slice from the
 engine kit embedded in the checked-in `bin/wildlands`, verifies the payload
-digest and recomputes the kit identity, and embeds it compressed (2.0 MB of
-text as 0.5 MB of raw deflate, 0.7 MB in base64; the whole executable is 1.2 MB).
+digest and recomputes the kit identity, and embeds it compressed (2.1 MB of
+text as 0.5 MB of raw deflate, 0.7 MB in base64; the whole executable is 1.4 MB).
 The profile and placement rules are bridged Wildlands code, so the HTML is byte
 for byte that of `bin/wildlands process build` (`tests/build.test.cts`).
 
