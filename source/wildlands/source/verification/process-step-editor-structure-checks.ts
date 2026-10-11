@@ -293,7 +293,8 @@ export async function structureChecks(studio: Studio): Promise<void> {
   });
   // Hosted CI has no Inter and renders in the wider DejaVu Sans, so the same limits are checked in both fonts.
   for (const fallback of [false, true]) {
-   if (fallback) await page.addStyleTag({content: '*{font-family:"DejaVu Sans" !important}'}).then(h => h.evaluate(n => {(n as HTMLElement).id = 'dejavu-probe';}));
+   if (fallback) await page.addStyleTag({content: '*{font-family:"DejaVu Sans" !important}'})
+    .then(h => h.evaluate(n => {(n as HTMLElement).id = 'dejavu-probe';}));
    await open('discovery');
    const step = await measure();
    assert.ok(step.chrome <= step.vh * 0.3, JSON.stringify(step));
