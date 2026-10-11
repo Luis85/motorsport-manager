@@ -89,12 +89,17 @@ declare namespace LWProcessJsonPath {
   return {line, column: at - (before.lastIndexOf('\n') + 1) + 1};
  }
  function syntaxProblem(text: string): LWProcessJsonPath.SyntaxProblem | null {
-  try { JSON.parse(text); return null; } catch (e) {
+  try {
+   JSON.parse(text);
+   return null;
+  } catch (e) {
    const found = scan(text);
    if (!found.ok) return {offset: found.offset, message: found.message, ...position(text, found.offset)};
    // The scanner and the engine disagree (should not happen): fall back to the engine message and any position it carries.
-   const raw = String((e as Error).message), at = /position (\d+)/.exec(raw), lc = /line (\d+) column (\d+)/.exec(raw), offset = at ? Number(at[1]) : 0;
-   return {offset, message: raw.replace(/\s*in JSON at position \d+.*$/, '').replace(/\s*\(line \d+ column \d+\)/, ''), ...(lc ? {line: Number(lc[1]), column: Number(lc[2])} : position(text, offset))};
+   const raw = String((e as Error).message), at = /position (\d+)/.exec(raw), lc = /line (\d+) column (\d+)/.exec(raw);
+   const offset = at ? Number(at[1]) : 0;
+   const message = raw.replace(/\s*in JSON at position \d+.*$/, '').replace(/\s*\(line \d+ column \d+\)/, '');
+   return {offset, message, ...(lc ? {line: Number(lc[1]), column: Number(lc[2])} : position(text, offset))};
   }
  }
  function locate(text: string, path: string, scanned?: LWProcessJsonPath.Scan): LWProcessJsonPath.Range | null {
@@ -108,12 +113,19 @@ declare namespace LWProcessJsonPath {
   }
   return null;
  }
- /** Plain names for the journey fields, used in diagnostic labels such as "Checkout › feeling" or "Process › process type". */
- const NAMES: Record<string, string> = {genre: 'process type', track: 'tracked measures', phase: 'phase', emotion: 'feeling', pain: 'pain point', opportunity: 'opportunity', channel: 'channel', outcome: 'outcome'};
+ /**
+  * Plain names for the journey fields and working hours, used in diagnostic labels such as "Checkout › feeling", "Process › process
+  * type" or "Process › working hours › closesAt".
+  */
+ const NAMES: Record<string, string> = {
+  genre: 'process type', track: 'tracked measures', phase: 'phase', emotion: 'feeling', pain: 'pain point', opportunity: 'opportunity',
+  channel: 'channel', outcome: 'outcome', workingHours: 'working hours',
+ };
  function label(definition: unknown, path: string): string {
   const parts = path.split('/').filter(Boolean), d = (definition && typeof definition === 'object' ? definition : {}) as Record<string, unknown>;
   const list = (key: string) => (Array.isArray(d[key]) ? d[key] : []) as Record<string, unknown>[];
-  const rest = (from: number) => parts.slice(from).map((p, at) => at === 0 ? NAMES[p] ?? p : p).join(' › '), join = (head: string, tail: string) => tail ? head + ' › ' + tail : head;
+  const rest = (from: number) => parts.slice(from).map((p, at) => at === 0 ? NAMES[p] ?? p : p).join(' › ');
+  const join = (head: string, tail: string) => tail ? head + ' › ' + tail : head;
   const [section, raw] = parts, index = Number(raw);
   if (!section) return 'Process';
   if (section === 'sipoc') {

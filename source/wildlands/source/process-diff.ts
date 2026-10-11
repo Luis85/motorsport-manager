@@ -52,7 +52,11 @@ declare namespace LWProcessDiff {
   for (const id of a.keys()) if (!b.has(id)) n++;
   return n;
  }
- const rest = (d: LWProcess.Definition) => { const {steps: _s, flows: _f, resources: _r, arrivals: _a, revision: _v, ...others} = d; return others as Record<string, unknown>; };
+ /** The process settings of a definition: every top-level field except the lists and the revision. */
+ function rest(d: LWProcess.Definition): Record<string, unknown> {
+  const {steps: _s, flows: _f, resources: _r, arrivals: _a, revision: _v, ...others} = d;
+  return others as Record<string, unknown>;
+ }
  function settings(active: LWProcess.Definition, draft: LWProcess.Definition): string[] {
   const left = rest(active), right = rest(draft);
   return [...new Set([...Object.keys(left), ...Object.keys(right)])].filter(k => !same(left[k], right[k])).sort();
@@ -74,7 +78,11 @@ declare namespace LWProcessDiff {
   return out;
  }
  const scalar = (v: unknown): v is LWProcess.Scalar => v === null || typeof v !== 'object';
- /** Every scalar difference below `path`; a whole object added or removed is reported by its entity, not value by value. */
+ /**
+  * Every scalar difference below `path`; a whole object added or removed is reported by its entity, not value by value.
+  * A top-level setting that is a flat record of scalars (the display calendar) has no entity, so `detail` compares an added
+  * or removed one against an empty record and reports each value (`/calendar/minutesPerDay`).
+  */
  function walk(path: string, a: unknown, b: unknown, out: LWProcessDiff.Field[]): void {
   if (same(a, b)) return;
   if ((a === undefined || scalar(a)) && (b === undefined || scalar(b))) {
@@ -101,7 +109,9 @@ declare namespace LWProcessDiff {
    if (!same(a, b)) changedArrivals.push({index: i, name: 'Arrival rule ' + (i + 1), change: !a ? 'added' : !b ? 'removed' : 'changed'});
   }
   const left = rest(before), right = rest(after);
-  for (const k of settings(before, after)) walk('/' + k, left[k], right[k], fields);
+  const flat = (v: unknown) => !!v && typeof v === 'object' && !Array.isArray(v) && Object.values(v).every(scalar);
+  const side = (v: unknown, other: unknown) => v === undefined && flat(other) ? {} : v;
+  for (const k of settings(before, after)) walk('/' + k, side(left[k], right[k]), side(right[k], left[k]), fields);
   for (const list of ['steps', 'resources', 'flows'] as const) {
    const a = byId<{id: string}>(before[list]), b = byId<{id: string}>(after[list]);
    for (const [id, item] of b) walk('/' + list + '/' + id, a.get(id), item, fields);
@@ -112,7 +122,13 @@ declare namespace LWProcessDiff {
  }
  function describe(c: LWProcessDiff.Changes, prefix = 'Unapplied draft'): string {
   if (c.invalid) return `${prefix}: not valid process JSON yet`;
-  const parts = [c.steps && plural(c.steps, 'step'), c.flows && plural(c.flows, 'flow'), c.resources && plural(c.resources, 'resource'), c.arrivals && plural(c.arrivals, 'arrival rule'), c.meta && plural(c.meta, 'process setting')].filter(Boolean);
+  const parts = [
+   c.steps && plural(c.steps, 'step'),
+   c.flows && plural(c.flows, 'flow'),
+   c.resources && plural(c.resources, 'resource'),
+   c.arrivals && plural(c.arrivals, 'arrival rule'),
+   c.meta && plural(c.meta, 'process setting'),
+  ].filter(Boolean);
   return parts.length ? `${prefix}: ${parts.join(', ')} changed` : `${prefix}: formatting only`;
  }
  root.LWProcessDiff = {compare, settings, empty, detail, describe};

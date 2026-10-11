@@ -5,10 +5,13 @@
  * order (source/index.html), so every artifact profile that filters it keeps the same
  * relative order. Each insert names exactly one bundle; profiles select bundles, never
  * individual files. tools/artifact-profiles.cts owns the profiles and their order checks.
+ * The Process Studio's `template-process` inserts live in build-inserts-process.cts and close the list.
  * A module is tagged with the lowest bundle that needs it: the defensive developer JSON/command
  * boundary (DEVELOPER_DATA, DEVELOPER_COMMANDS) is required by the renderer host's plugin
  * contexts, and the storytelling preview renderer is used only by the storytelling editor.
  */
+import {PROCESS_INSERTS} from './build-inserts-process.cjs';
+
 export type InsertKind = "style" | "script";
 /** Canonical bundle order; a profile lists its bundles as a subsequence of this list. */
 export const BUNDLES = [
@@ -284,78 +287,5 @@ export const INSERTS: readonly Insert[] = [
   ["UI", "ui.js", "script", "colony-shell"],
   ["PLAY_CSS", "play.css", "style", "play-boot"],
   ["PLAY_BOOT", "play-boot.js", "script", "play-boot"],
-  ["PROCESS_SCHEMA", "process-schema.js", "script", "template-process"],
-  ["PROCESS_RANDOM", "process-random.js", "script", "template-process"],
-  ["PROCESS_NEEDS", "process-needs.js", "script", "template-process"],
-  ["PROCESS_GRAPH", "process-graph.js", "script", "template-process"],
-  ["PROCESS_CATALOG", "process-catalog.js", "script", "template-process"],
-  ["PROCESS_XML", "process-xml.js", "script", "template-process"],
-  ["PROCESS_BPMN_EXPR", "process-bpmn-expr.js", "script", "template-process"],
-  ["PROCESS_BPMN", "process-bpmn.js", "script", "template-process"],
-  ["PROCESS_BPMN_BPSIM_WRITE", "process-bpmn-bpsim-write.js", "script", "template-process"],
-  ["PROCESS_BPMN_EXT", "process-bpmn-ext.js", "script", "template-process"],
-  ["PROCESS_BPMN_BPSIM", "process-bpmn-bpsim.js", "script", "template-process"],
-  ["PROCESS_BPMN_GRAPH", "process-bpmn-graph.js", "script", "template-process"],
-  ["PROCESS_BPMN_FLOW", "process-bpmn-flow.js", "script", "template-process"],
-  ["PROCESS_BPMN_TAIL", "process-bpmn-tail.js", "script", "template-process"],
-  ["PROCESS_BPMN_ASSEMBLE", "process-bpmn-assemble.js", "script", "template-process"],
-  ["PROCESS_BPMN_IMPORT", "process-bpmn-import.js", "script", "template-process"],
-  ["PROCESS_BPMN_CONFORMANCE_VALUES", "process-bpmn-conformance-values.js", "script", "template-process"],
-  ["PROCESS_BPMN_CONFORMANCE_MODEL", "process-bpmn-conformance-model.js", "script", "template-process"],
-  ["PROCESS_BPMN_CONFORMANCE_BPSIM", "process-bpmn-conformance-bpsim.js", "script", "template-process"],
-  ["PROCESS_BPMN_CONFORMANCE", "process-bpmn-conformance.js", "script", "template-process"],
-  ["PROCESS_SYSTEMS", "process-systems.js", "script", "template-process"],
-  ["PROCESS_SESSION", "process-session.js", "script", "template-process"],
-  ["PROCESS_AUTHORING", "process-authoring.js", "script", "template-process"],
-  ["PROCESS_APPLICATION", "process-application.js", "script", "template-process"],
-  ["PROCESS_ROOMS", "process-rooms.js", "script", "template-process"],
-  ["PROCESS_ROOMS_TOUCHPOINT", "process-rooms-touchpoint.js", "script", "template-process"],
-  ["PROCESS_MAP_MARKS", "process-map-marks.js", "script", "template-process"],
-  ["PROCESS_MAP_CARD", "process-map-card.js", "script", "template-process"],
-  ["PROCESS_RENDERER_2D", "process-renderer-2d.js", "script", "template-process"],
-  ["PROCESS_RENDERER_3D", "process-renderer-3d.js", "script", "template-process"],
-  ["PROCESS_ROUTE", "process-route.js", "script", "template-process"],
-  ["PROCESS_SIPOC_MODEL", "process-sipoc-model.js", "script", "template-process"],
-  ["PROCESS_RENDERER_SIPOC", "process-renderer-sipoc.js", "script", "template-process"],
-  ["PROCESS_RENDERER_JOURNEY", "process-renderer-journey.js", "script", "template-process"],
-  ["PROCESS_LENS", "process-lens.js", "script", "template-process"],
-  ["PROCESS_TIME", "process-time.js", "script", "template-process"],
-  ["PROCESS_RANDOM_VIEW", "process-random-view.js", "script", "template-process"],
-  ["PROCESS_TERMS", "process-terms.js", "script", "template-process"],
-  ["PROCESS_SLIDES_TEXT", "process-slides-text.js", "script", "template-process"],
-  ["PROCESS_SLIDES", "process-slides.js", "script", "template-process"],
-  ["PROCESS_DATA_VIEW", "process-data-view.js", "script", "template-process"],
-  ["PROCESS_JSON_PATH", "process-json-path.js", "script", "template-process"],
-  ["PROCESS_TUNING_FIELDS", "process-tuning-fields.js", "script", "template-process"],
-  ["PROCESS_TUNING_ARRIVALS", "process-tuning-arrivals.js", "script", "template-process"],
-  ["PROCESS_TUNING_TRACK", "process-tuning-track.js", "script", "template-process"],
-  ["PROCESS_TUNING_SIPOC", "process-tuning-sipoc.js", "script", "template-process"],
-  ["PROCESS_TUNING", "process-tuning.js", "script", "template-process"],
-  ["PROCESS_DIFF", "process-diff.js", "script", "template-process"],
-  ["PROCESS_DRAFT", "process-draft.js", "script", "template-process"],
-  ["PROCESS_DIALOG", "process-dialog.js", "script", "template-process"],
-  ["PROCESS_MENU", "process-menu.js", "script", "template-process"],
-  ["PROCESS_INSPECTOR", "process-inspector.js", "script", "template-process"],
-  ["PROCESS_ACTIVITY", "process-activity.js", "script", "template-process"],
-  ["PROCESS_STEP_LOGIC", "process-step-logic.js", "script", "template-process"],
-  ["PROCESS_STEP_MODEL", "process-step-model.js", "script", "template-process"],
-  ["PROCESS_STEP_LOGIC_SECTIONS", "process-step-logic-sections.js", "script", "template-process"],
-  ["PROCESS_STEP_FLOWS", "process-step-flows.js", "script", "template-process"],
-  ["PROCESS_STEP_SECTIONS", "process-step-sections.js", "script", "template-process"],
-  ["PROCESS_STEP_EDITOR", "process-step-editor.js", "script", "template-process"],
-  ["PROCESS_DEFINITION_JSON", "process-definition-json.js", "script", "template-process"],
-  ["PROCESS_DEFINITION_EDITOR", "process-definition-editor.js", "script", "template-process"],
-  ["PROCESS_BPMN_PREVIEW", "process-bpmn-preview.js", "script", "template-process"],
-  ["PROCESS_BPMN_DIALOG", "process-bpmn-dialog.js", "script", "template-process"],
-  ["PROCESS_PRESENT", "process-present.js", "script", "template-process"],
-  ["PROCESS_RUN_BAR", "process-run-bar.js", "script", "template-process"],
-  ["PROCESS_STEP_LIST", "process-step-list.js", "script", "template-process"],
-  ["PROCESS_GUARD", "process-guard.js", "script", "template-process"],
-  ["PROCESS_IO", "process-io.js", "script", "template-process"],
-  ["PROCESS_UI", "process-ui.js", "script", "template-process"],
-  ["PROCESS_CSS", "process.css", "style", "template-process"],
-  ["PROCESS_DIALOGS_CSS", "process-dialogs.css", "style", "template-process"],
-  ["PROCESS_LENSES_CSS", "process-lenses.css", "style", "template-process"],
-  ["PROCESS_BPMN_DIALOG_CSS", "process-bpmn-dialog.css", "style", "template-process"],
-  ["PROCESS_PRESENT_CSS", "process-present.css", "style", "template-process"]
+  ...PROCESS_INSERTS
 ];

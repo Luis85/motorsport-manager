@@ -1,13 +1,16 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-dialog.ts" />
 /**
- * Work protection for Process Studio: the one "are you sure?" question asked outside an editor (switching process or importing
- * JSON over a run in progress or an unapplied draft), the reload/close guard for unapplied drafts, and the page lifecycle.
+ * Work protection for Process Studio: the questions asked outside an editor (importing JSON over a run in progress or an unapplied
+ * draft, offering a saved recovery draft), the reload/close guard for unapplied drafts, and the page lifecycle.
  *
- *  - `ask()` opens a small modal built on the shared LWProcessDialog (id 'ask'). It starts on Cancel, Escape, Close and a backdrop
- *    click all choose Cancel, and focus returns to the invoker (or `focusFallback`) when it closes. It resolves true only for the
- *    confirming choice. It never pauses, ticks or changes anything itself; the caller acts on the answer.
- *  - While `unsaved()` is true, `beforeunload` asks the browser to confirm leaving. Nothing is written to storage.
+ *  - `ask()` and `choose()` open a small modal built on the shared LWProcessDialog (id 'ask'). It starts on the first, safe choice
+ *    (Cancel, or the caller's first choice such as Not now); Escape, Close and a backdrop click all choose it, and focus returns to the
+ *    invoker (or `focusFallback`) when it closes. Choice buttons have the ids `ask-<choice id>`. `ask()` resolves true only for the
+ *    confirming choice (`ask-go`); `choose()` resolves the chosen id. Neither pauses, ticks or changes anything itself; the caller
+ *    acts on the answer.
+ *  - While `unsaved()` is true, `beforeunload` asks the browser to confirm leaving. This module writes nothing to storage; the
+ *    automatic recovery copy of a draft is LWProcessRecovery's storage policy (`process-recovery.ts`).
  *  - `pagehide` with `persisted` (the page enters the back/forward cache) only suspends the animation loop and `pageshow` resumes it;
  *    a page that is really unloaded is disposed for good.
  */
@@ -22,6 +25,10 @@ declare namespace LWProcessGuard {
   invoker: HTMLElement | null;
   /** Used when the invoker is gone or hidden at close time. */
   focusFallback?: () => HTMLElement | null;
+ }
+ interface ChooseOptions extends Omit<AskOptions, 'confirm'> {
+  /** The choices in order; the first is the safe default (focused, and chosen by Escape, Close or a backdrop click). */
+  choices: {id: string; label: string}[];
  }
  interface Env {
   /** The studio root, made inert while a question shows. */
@@ -38,6 +45,8 @@ declare namespace LWProcessGuard {
  interface Surface {
   /** Resolves true for the confirming choice, false for Cancel or when another dialog is already open. */
   ask(options: AskOptions): Promise<boolean>;
+  /** Resolves the chosen id; the first choice when the question is dismissed or another dialog is already open. */
+  choose(options: ChooseOptions): Promise<string>;
   dispose(): void;
  }
  interface Api {create(env: Env): Surface;}
@@ -55,15 +64,19 @@ declare namespace LWProcessGuard {
    dialog.el.classList.add('ask-dialog');
    return dialog;
   };
-  async function ask(o: LWProcessGuard.AskOptions): Promise<boolean> {
-   const d = question();
+  async function choose(o: LWProcessGuard.ChooseOptions): Promise<string> {
+   const d = question(), safe = o.choices[0]!.id;
    const opened = d.open({title: o.title, subtitle: '', invoker: o.invoker, ...o.focusFallback ? {focusFallback: o.focusFallback} : {}});
-   if (!opened) return false;
-   const choices = [{id: 'cancel', label: 'Cancel', default: true}, {id: 'go', label: o.confirm}];
-   const choice = await d.confirm(o.message, choices, {escape: 'cancel'});
-   if (d.isOpen()) d.close(choice === 'go' ? 'action' : 'cancel');
-   return choice === 'go';
+   if (!opened) return safe;
+   const choices = o.choices.map((c, i) => ({id: c.id, label: c.label, default: i === 0}));
+   const choice = await d.confirm(o.message, choices, {escape: safe});
+   if (d.isOpen()) d.close(choice === safe ? 'cancel' : 'action');
+   return choice;
   }
+  const ask = async (o: LWProcessGuard.AskOptions): Promise<boolean> => {
+   const {confirm, ...rest} = o;
+   return await choose({...rest, choices: [{id: 'cancel', label: 'Cancel'}, {id: 'go', label: confirm}]}) === 'go';
+  };
   const beforeUnload = (e: BeforeUnloadEvent) => {
    if (!env.unsaved()) return;
    // Both forms: preventDefault for current browsers, returnValue for older ones. The browser writes its own wording.
@@ -80,7 +93,7 @@ declare namespace LWProcessGuard {
    dialog?.dispose(); dialog = null;
   }
   window.addEventListener('beforeunload', beforeUnload); window.addEventListener('pagehide', pageHide); window.addEventListener('pageshow', pageShow);
-  return {ask, dispose};
+  return {ask, choose, dispose};
  }
  root.LWProcessGuard = {create};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessGuard;
