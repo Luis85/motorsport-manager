@@ -1,0 +1,1166 @@
+[
+  {
+    "ok": true,
+    "changed": [],
+    "engine_executed": true,
+    "check_only": true
+  },
+  {
+    "passed": true,
+    "scripts_scanned": 453,
+    "violations": [],
+    "scope": "Static architectural fitness rules; not a GDScript typechecker or proof against arbitrary reflection"
+  },
+  {
+    "source": "b38c140c75a5a7a5a0151097f71465bfead9eb945eaacbcaec3344b9db30f84f",
+    "index": 0,
+    "count": 1,
+    "mode": "focused",
+    "passed": true,
+    "suites": [
+      {
+        "id": "mechanics_tests",
+        "passed": true,
+        "checks": 117,
+        "seconds": 3.372
+      },
+      {
+        "id": "car_record_tests",
+        "passed": true,
+        "checks": 297,
+        "seconds": 9.034
+      },
+      {
+        "id": "content_tests",
+        "passed": true,
+        "checks": 61,
+        "seconds": 7.18
+      },
+      {
+        "id": "content_pack_tests",
+        "passed": true,
+        "checks": 41,
+        "seconds": 10.437
+      },
+      {
+        "id": "content_tyre_tests",
+        "passed": true,
+        "checks": 57,
+        "seconds": 75.873
+      },
+      {
+        "id": "content_tuning_tests",
+        "passed": true,
+        "checks": 124,
+        "seconds": 16.105
+      },
+      {
+        "id": "content_environment_tests",
+        "passed": true,
+        "checks": 483,
+        "seconds": 11.793
+      },
+      {
+        "id": "content_operations_tests",
+        "passed": true,
+        "checks": 273,
+        "seconds": 11.642
+      },
+      {
+        "id": "content_competition_tests",
+        "passed": true,
+        "checks": 295,
+        "seconds": 48.817
+      },
+      {
+        "id": "content_persistence_tests",
+        "passed": true,
+        "checks": 614,
+        "seconds": 12.446
+      },
+      {
+        "id": "content_catalog_tests",
+        "passed": true,
+        "checks": 87,
+        "seconds": 17.762
+      },
+      {
+        "id": "content_mechanic_profile_tests",
+        "passed": true,
+        "checks": 106,
+        "seconds": 13.497
+      },
+      {
+        "id": "content_wheel_operating_tests",
+        "passed": true,
+        "checks": 49,
+        "seconds": 3.924
+      },
+      {
+        "id": "scenario_catalog_tests",
+        "passed": true,
+        "checks": 117,
+        "seconds": 2.521
+      },
+      {
+        "id": "content_editor_profile_tests",
+        "passed": true,
+        "checks": 19,
+        "seconds": 3.073
+      }
+    ],
+    "script_loads": 453
+  },
+  {
+    "passed": true,
+    "source": "b38c140c75a5a7a5a0151097f71465bfead9eb945eaacbcaec3344b9db30f84f",
+    "engine": "4.7.2.stable.official.ed1daf0bf",
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "engine_sha256": "8d106cbe6144c2dc7e881d61d2429c1a8a76e6b22ef48bd5e48dcf934953f71e",
+    "exports": [
+      {
+        "mode": "debug",
+        "passed": true,
+        "executable_sha256": "4e9756aa0c1442d34602201fcd31ad6063c9d94dde52edb1975bb8156ca08dbb",
+        "source_directory_present_in_cwd": false,
+        "installation_writable": false,
+        "runtime_uid": 1001,
+        "unicode_and_space_path": true,
+        "first": {
+          "allocation_id": "local.club.tyre_allocation.endurance",
+          "checkpoint_hash": "87b81abf678ab7a0fc41e2eb18a92ffe3d60cda0d4f87a352f5d18b154313e23",
+          "cloud_response_per_second": 0.005,
+          "competition_hash": "593757b437af290bda11d764578eca55bde84a80cecf8167169c4716bae35629",
+          "compound_count": 6,
+          "compound_wear": 2.7,
+          "control_ending_seconds": 8.0,
+          "definition_hash": "e8c39b20c57be1747b6c0afdb5c012563fdd1d1cb413649edb90534d7543e184",
+          "environment_hash": "c041aac7cada745623bbda96149b32ffe5d1e5ab204a1deb8712b78883a10a1e",
+          "fault_threshold": 33.4564561781008,
+          "fault_threshold_base": 25.0,
+          "field_size": 14,
+          "laps": 8,
+          "ok": true,
+          "operations_hash": "c41d13c5c44d73821fb829c2fa4d2e85f406abdcce03b059ac1af149b5b103f7",
+          "phase": "practice",
+          "player_ids": [
+            12,
+            13
+          ],
+          "race_fuel": 12.6,
+          "repair_seconds_per_damage": 0.14,
+          "review_seconds": 12.0,
+          "rival_label": "Club endurance planner",
+          "rival_style": "local.club.rival.patient",
+          "roster_id": "local.club.roster.expanded",
+          "scenario_context": {},
+          "service_base_seconds": 6.0,
+          "sets_per_driver": 10,
+          "setup_content_hash": "ce9141cbd45e04d74e7dff928e305cd9b123a72df16a5a83ba9e489e808bde08",
+          "setup_id": "local.club.setup.club",
+          "starting_compound": "local.club.tyre.endurance",
+          "surface_hash": "83cc7daaaf81fee76dc0ea716a0594da28b9fa7b53cce21a71547807227a9397",
+          "surface_water": 0.0,
+          "time": 10.0,
+          "top_speed_mps": 55.0,
+          "track_hash": "46194b2e6ca4286221cc25d7b5fd502b61fa9e8ac854d1ecd8454d340f487a08",
+          "track_id": "hillside",
+          "track_name": "Pinecrest Motor Park",
+          "track_visual": {
+            "environment": "meadow",
+            "season": "summer",
+            "seed": 335987
+          },
+          "tuning_hash": "aebcce3205cccd31ba0f4f935ffcb3bcf8bd409714ce579a23fd13dee7f42fc8",
+          "tuning_id": "local.club.race_tuning.sprint",
+          "tyre_content_hash": "be5879d356df0f5db11228e2d3b96ad8c1e1c7193b53bf07e999f8eeab9daa6c",
+          "vehicle_id": "local.club.vehicle.sport",
+          "virtual_pace_factor": 0.6,
+          "water_drainage": 0.0015,
+          "weather_mode": "scripted_training",
+          "weekend_id": "local.club.weekend.strategy_sprint",
+          "wing": 3
+        },
+        "edited": {
+          "allocation_id": "local.club.tyre_allocation.endurance",
+          "checkpoint_hash": "4d276fa1667430cb1b8bc543fe729c9907c8215f788e29a82fda490fe625decb",
+          "cloud_response_per_second": 0.01,
+          "competition_hash": "ad61b13b85c4d5cce3b40d952b4edc5de22b5f189878bf1c0d553d8de865d25b",
+          "compound_count": 6,
+          "compound_wear": 2.8,
+          "control_ending_seconds": 11.0,
+          "definition_hash": "9b137871f82ab8bf2cc5dbbb960ceb9a642f3ccdd5659e826afbfaeec268a787",
+          "environment_hash": "a06a313a384c59f8ff44bdce30c6777044b23d75a08b2b21b1b38edf0ce799a0",
+          "fault_threshold": 200.0,
+          "fault_threshold_base": 200.0,
+          "field_size": 14,
+          "laps": 9,
+          "ok": true,
+          "operations_hash": "16fbeb8fbf62f0ae87cfd8918bcd0fd2caa1b5ebb1803361b4c067bd35e8008d",
+          "phase": "practice",
+          "player_ids": [
+            12,
+            13
+          ],
+          "race_fuel": 14.8,
+          "repair_seconds_per_damage": 0.05,
+          "review_seconds": 22.0,
+          "rival_label": "Edited endurance planner",
+          "rival_style": "local.club.rival.patient",
+          "roster_id": "local.club.roster.expanded",
+          "scenario_context": {},
+          "service_base_seconds": 7.0,
+          "sets_per_driver": 10,
+          "setup_content_hash": "ecab6fe13d9d70803026409936b30eaffea8dc50070f799c87dab5b82ce72161",
+          "setup_id": "local.club.setup.club",
+          "starting_compound": "local.club.tyre.endurance",
+          "surface_hash": "3e48005f3d68bef2657de2924778b22a29bf7e7e79b823ac06ecb5ecc8338932",
+          "surface_water": 0.181211736249307,
+          "time": 10.0,
+          "top_speed_mps": 56.0,
+          "track_hash": "46194b2e6ca4286221cc25d7b5fd502b61fa9e8ac854d1ecd8454d340f487a08",
+          "track_id": "hillside",
+          "track_name": "Pinecrest Motor Park",
+          "track_visual": {
+            "environment": "meadow",
+            "season": "summer",
+            "seed": 335987
+          },
+          "tuning_hash": "169cb69f74d26388affa05241af1ee4e4559de8a56c2fdc58004343a838478a6",
+          "tuning_id": "local.club.race_tuning.sprint",
+          "tyre_content_hash": "6690fae471f7c49a0cc89b9f29b4f070486aabcf94fbb25af868e672befe9962",
+          "vehicle_id": "local.club.vehicle.sport",
+          "virtual_pace_factor": 0.45,
+          "water_drainage": 0.002,
+          "weather_mode": "seeded",
+          "weekend_id": "local.club.weekend.strategy_sprint",
+          "wing": 4
+        },
+        "restored_without_pack": {
+          "allocation_id": "local.club.tyre_allocation.endurance",
+          "checkpoint_hash": "4d276fa1667430cb1b8bc543fe729c9907c8215f788e29a82fda490fe625decb",
+          "cloud_response_per_second": 0.01,
+          "competition_hash": "ad61b13b85c4d5cce3b40d952b4edc5de22b5f189878bf1c0d553d8de865d25b",
+          "compound_count": 6,
+          "compound_wear": 2.8,
+          "control_ending_seconds": 11.0,
+          "definition_hash": "9b137871f82ab8bf2cc5dbbb960ceb9a642f3ccdd5659e826afbfaeec268a787",
+          "environment_hash": "a06a313a384c59f8ff44bdce30c6777044b23d75a08b2b21b1b38edf0ce799a0",
+          "fault_threshold": 200.0,
+          "fault_threshold_base": 200.0,
+          "field_size": 14,
+          "laps": 9,
+          "ok": true,
+          "operations_hash": "16fbeb8fbf62f0ae87cfd8918bcd0fd2caa1b5ebb1803361b4c067bd35e8008d",
+          "phase": "practice",
+          "player_ids": [
+            12,
+            13
+          ],
+          "race_fuel": 14.8,
+          "repair_seconds_per_damage": 0.05,
+          "review_seconds": 22.0,
+          "rival_label": "Edited endurance planner",
+          "rival_style": "local.club.rival.patient",
+          "roster_id": "local.club.roster.expanded",
+          "scenario_context": {},
+          "service_base_seconds": 7.0,
+          "sets_per_driver": 10,
+          "setup_content_hash": "ecab6fe13d9d70803026409936b30eaffea8dc50070f799c87dab5b82ce72161",
+          "setup_id": "local.club.setup.club",
+          "starting_compound": "local.club.tyre.endurance",
+          "surface_hash": "3e48005f3d68bef2657de2924778b22a29bf7e7e79b823ac06ecb5ecc8338932",
+          "surface_water": 0.181211736249307,
+          "time": 10.0,
+          "top_speed_mps": 56.0,
+          "track_hash": "46194b2e6ca4286221cc25d7b5fd502b61fa9e8ac854d1ecd8454d340f487a08",
+          "track_id": "hillside",
+          "track_name": "Pinecrest Motor Park",
+          "track_visual": {
+            "environment": "meadow",
+            "season": "summer",
+            "seed": 335987
+          },
+          "tuning_hash": "169cb69f74d26388affa05241af1ee4e4559de8a56c2fdc58004343a838478a6",
+          "tuning_id": "local.club.race_tuning.sprint",
+          "tyre_content_hash": "6690fae471f7c49a0cc89b9f29b4f070486aabcf94fbb25af868e672befe9962",
+          "vehicle_id": "local.club.vehicle.sport",
+          "virtual_pace_factor": 0.45,
+          "water_drainage": 0.002,
+          "weather_mode": "seeded",
+          "weekend_id": "local.club.weekend.strategy_sprint",
+          "wing": 4
+        },
+        "rejection": {
+          "diagnostics": [
+            {
+              "code": "CONTENT_RANGE",
+              "field": "/top_speed_mps",
+              "file": "vehicles/sport.json",
+              "message": "Number is outside the supported range.",
+              "root": "/tmp/mm-export-acceptance-23xyj_f_/M\u00fcnchen club content",
+              "severity": "error"
+            }
+          ],
+          "ok": false
+        },
+        "environment_rejection": {
+          "diagnostics": [
+            {
+              "code": "CONTENT_ENVIRONMENT",
+              "entity": "local.club.race_tuning.sprint",
+              "field": "/environment/weather/target_wet_span",
+              "file": "race_tuning/sprint.json",
+              "message": "Base plus span cannot exceed one.",
+              "pack": "local.club",
+              "root": "/tmp/mm-export-acceptance-23xyj_f_/M\u00fcnchen club content",
+              "severity": "error"
+            }
+          ],
+          "ok": false
+        },
+        "operations_rejection": {
+          "diagnostics": [
+            {
+              "code": "CONTENT_OPERATIONS",
+              "entity": "local.club.race_tuning.sprint",
+              "field": "/operations/reliability/damage_degraded",
+              "file": "race_tuning/sprint.json",
+              "message": "Must not be below damage_warning.",
+              "pack": "local.club",
+              "root": "/tmp/mm-export-acceptance-23xyj_f_/M\u00fcnchen club content",
+              "severity": "error"
+            }
+          ],
+          "ok": false
+        },
+        "competition_rejection": {
+          "diagnostics": [
+            {
+              "code": "CONTENT_COMPETITION",
+              "entity": "local.club.race_tuning.sprint",
+              "field": "/competition/profiles/1/id",
+              "file": "race_tuning/sprint.json",
+              "message": "Choose a unique profile ID; legacy is reserved for compatibility.",
+              "pack": "local.club",
+              "root": "/tmp/mm-export-acceptance-23xyj_f_/M\u00fcnchen club content",
+              "severity": "error"
+            }
+          ],
+          "ok": false
+        },
+        "authored_scenario": {
+          "passed": true,
+          "first": {
+            "allocation_id": "local.club.tyre_allocation.endurance",
+            "checkpoint_hash": "a9394091add406cbbf1916840d6787360eed517f29e0ab010ac8fa31be9ffa81",
+            "cloud_response_per_second": 0.005,
+            "competition_hash": "593757b437af290bda11d764578eca55bde84a80cecf8167169c4716bae35629",
+            "compound_count": 6,
+            "compound_wear": 2.7,
+            "control_ending_seconds": 8.0,
+            "definition_hash": "e8c39b20c57be1747b6c0afdb5c012563fdd1d1cb413649edb90534d7543e184",
+            "environment_hash": "c041aac7cada745623bbda96149b32ffe5d1e5ab204a1deb8712b78883a10a1e",
+            "fault_threshold": 33.4564561781008,
+            "fault_threshold_base": 25.0,
+            "field_size": 14,
+            "laps": 8,
+            "ok": true,
+            "operations_hash": "c41d13c5c44d73821fb829c2fa4d2e85f406abdcce03b059ac1af149b5b103f7",
+            "phase": "practice",
+            "player_ids": [
+              12,
+              13
+            ],
+            "race_fuel": 12.6,
+            "repair_seconds_per_damage": 0.14,
+            "review_seconds": 12.0,
+            "rival_label": "Classic rival",
+            "rival_style": "legacy",
+            "roster_id": "local.club.roster.expanded",
+            "scenario_context": {
+              "content_scenario": {
+                "definition": {
+                  "brief": {
+                    "approaches": [
+                      "Preserve a set and stay out longer",
+                      "Spend a set to create a tyre offset"
+                    ],
+                    "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+                    "goal": "finish_both",
+                    "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+                    "title": "Your first club weekend",
+                    "version": 1.0
+                  },
+                  "circuit_id": "local.club.circuit.training",
+                  "description": "Compare deliberate approaches without a scripted outcome.",
+                  "id": "local.club.scenario.first-weekend",
+                  "kind": "scenario",
+                  "name": "Your first club weekend",
+                  "schema_version": 1.0,
+                  "weekend_id": "local.club.weekend.sprint"
+                },
+                "track_id": "local.club.training"
+              },
+              "scenario": {
+                "approaches": [
+                  "Preserve a set and stay out longer",
+                  "Spend a set to create a tyre offset"
+                ],
+                "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+                "goal": "finish_both",
+                "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+                "title": "Your first club weekend",
+                "version": 1.0
+              }
+            },
+            "service_base_seconds": 6.0,
+            "sets_per_driver": 10,
+            "setup_content_hash": "ce9141cbd45e04d74e7dff928e305cd9b123a72df16a5a83ba9e489e808bde08",
+            "setup_id": "local.club.setup.club",
+            "starting_compound": "local.club.tyre.endurance",
+            "surface_hash": "469e7ae8a5cd4aa0d7a995ca248a75bf00eaf81fbc5b0b4530bf29e2d531863f",
+            "surface_water": 0.0,
+            "time": 79.9999999999976,
+            "top_speed_mps": 55.0,
+            "track_hash": "6a0b888e39067311685e81387e6bae8e00172a1e763e70d6c671bbad0c92e14c",
+            "track_id": "local.club.training",
+            "track_name": "Club Training Circuit",
+            "track_visual": {
+              "environment": "woodland",
+              "season": "autumn",
+              "seed": 1975.0
+            },
+            "tuning_hash": "aebcce3205cccd31ba0f4f935ffcb3bcf8bd409714ce579a23fd13dee7f42fc8",
+            "tuning_id": "local.club.race_tuning.sprint",
+            "tyre_content_hash": "be5879d356df0f5db11228e2d3b96ad8c1e1c7193b53bf07e999f8eeab9daa6c",
+            "vehicle_id": "local.club.vehicle.sport",
+            "virtual_pace_factor": 0.6,
+            "water_drainage": 0.0015,
+            "weather_mode": "scripted_training",
+            "weekend_id": "local.club.weekend.sprint",
+            "wing": 3
+          },
+          "edited": {
+            "allocation_id": "local.club.tyre_allocation.endurance",
+            "checkpoint_hash": "1b24b51dd0a30af70fe0049cf4efaf80accfd9ed43091d6e8bd990351baa591d",
+            "cloud_response_per_second": 0.005,
+            "competition_hash": "593757b437af290bda11d764578eca55bde84a80cecf8167169c4716bae35629",
+            "compound_count": 6,
+            "compound_wear": 2.7,
+            "control_ending_seconds": 8.0,
+            "definition_hash": "e8c39b20c57be1747b6c0afdb5c012563fdd1d1cb413649edb90534d7543e184",
+            "environment_hash": "c041aac7cada745623bbda96149b32ffe5d1e5ab204a1deb8712b78883a10a1e",
+            "fault_threshold": 33.4564561781008,
+            "fault_threshold_base": 25.0,
+            "field_size": 14,
+            "laps": 8,
+            "ok": true,
+            "operations_hash": "c41d13c5c44d73821fb829c2fa4d2e85f406abdcce03b059ac1af149b5b103f7",
+            "phase": "practice",
+            "player_ids": [
+              12,
+              13
+            ],
+            "race_fuel": 12.6,
+            "repair_seconds_per_damage": 0.14,
+            "review_seconds": 12.0,
+            "rival_label": "Classic rival",
+            "rival_style": "legacy",
+            "roster_id": "local.club.roster.expanded",
+            "scenario_context": {
+              "content_scenario": {
+                "definition": {
+                  "brief": {
+                    "approaches": [
+                      "Preserve a set and stay out longer",
+                      "Spend a set to create a tyre offset"
+                    ],
+                    "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+                    "goal": "finish_both",
+                    "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+                    "title": "The edited club brief",
+                    "version": 1.0
+                  },
+                  "circuit_id": "local.club.circuit.training",
+                  "description": "Compare deliberate approaches without a scripted outcome.",
+                  "id": "local.club.scenario.first-weekend",
+                  "kind": "scenario",
+                  "name": "Your first club weekend",
+                  "schema_version": 1.0,
+                  "weekend_id": "local.club.weekend.sprint"
+                },
+                "track_id": "local.club.training"
+              },
+              "scenario": {
+                "approaches": [
+                  "Preserve a set and stay out longer",
+                  "Spend a set to create a tyre offset"
+                ],
+                "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+                "goal": "finish_both",
+                "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+                "title": "The edited club brief",
+                "version": 1.0
+              }
+            },
+            "service_base_seconds": 6.0,
+            "sets_per_driver": 10,
+            "setup_content_hash": "ce9141cbd45e04d74e7dff928e305cd9b123a72df16a5a83ba9e489e808bde08",
+            "setup_id": "local.club.setup.club",
+            "starting_compound": "local.club.tyre.endurance",
+            "surface_hash": "469e7ae8a5cd4aa0d7a995ca248a75bf00eaf81fbc5b0b4530bf29e2d531863f",
+            "surface_water": 0.0,
+            "time": 79.9999999999976,
+            "top_speed_mps": 55.0,
+            "track_hash": "ead9c91a721ac036e4ed40c33e5982423e86d24a068179225211282e78b81dfd",
+            "track_id": "local.club.training",
+            "track_name": "Edited Club Circuit",
+            "track_visual": {
+              "environment": "coastal",
+              "season": "summer",
+              "seed": 1975.0
+            },
+            "tuning_hash": "aebcce3205cccd31ba0f4f935ffcb3bcf8bd409714ce579a23fd13dee7f42fc8",
+            "tuning_id": "local.club.race_tuning.sprint",
+            "tyre_content_hash": "be5879d356df0f5db11228e2d3b96ad8c1e1c7193b53bf07e999f8eeab9daa6c",
+            "vehicle_id": "local.club.vehicle.sport",
+            "virtual_pace_factor": 0.6,
+            "water_drainage": 0.0015,
+            "weather_mode": "scripted_training",
+            "weekend_id": "local.club.weekend.sprint",
+            "wing": 3
+          },
+          "capacity_rejection": {
+            "diagnostics": [
+              {
+                "code": "CONTENT_SCENARIO_CAPACITY",
+                "entity": "local.club.scenario.first-weekend",
+                "field": "/circuit_id",
+                "file": "scenarios/first-weekend.json",
+                "message": "The scenario circuit must accommodate its preset's grid and pit boxes.",
+                "pack": "local.club",
+                "root": "/tmp/mm-export-acceptance-23xyj_f_/M\u00fcnchen club content",
+                "severity": "error"
+              }
+            ],
+            "ok": false
+          },
+          "restored_without_pack": {
+            "allocation_id": "local.club.tyre_allocation.endurance",
+            "checkpoint_hash": "1b24b51dd0a30af70fe0049cf4efaf80accfd9ed43091d6e8bd990351baa591d",
+            "cloud_response_per_second": 0.005,
+            "competition_hash": "593757b437af290bda11d764578eca55bde84a80cecf8167169c4716bae35629",
+            "compound_count": 6,
+            "compound_wear": 2.7,
+            "control_ending_seconds": 8.0,
+            "definition_hash": "e8c39b20c57be1747b6c0afdb5c012563fdd1d1cb413649edb90534d7543e184",
+            "environment_hash": "c041aac7cada745623bbda96149b32ffe5d1e5ab204a1deb8712b78883a10a1e",
+            "fault_threshold": 33.4564561781008,
+            "fault_threshold_base": 25.0,
+            "field_size": 14,
+            "laps": 8,
+            "ok": true,
+            "operations_hash": "c41d13c5c44d73821fb829c2fa4d2e85f406abdcce03b059ac1af149b5b103f7",
+            "phase": "practice",
+            "player_ids": [
+              12,
+              13
+            ],
+            "race_fuel": 12.6,
+            "repair_seconds_per_damage": 0.14,
+            "review_seconds": 12.0,
+            "rival_label": "Classic rival",
+            "rival_style": "legacy",
+            "roster_id": "local.club.roster.expanded",
+            "scenario_context": {
+              "content_scenario": {
+                "definition": {
+                  "brief": {
+                    "approaches": [
+                      "Preserve a set and stay out longer",
+                      "Spend a set to create a tyre offset"
+                    ],
+                    "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+                    "goal": "finish_both",
+                    "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+                    "title": "The edited club brief",
+                    "version": 1.0
+                  },
+                  "circuit_id": "local.club.circuit.training",
+                  "description": "Compare deliberate approaches without a scripted outcome.",
+                  "id": "local.club.scenario.first-weekend",
+                  "kind": "scenario",
+                  "name": "Your first club weekend",
+                  "schema_version": 1.0,
+                  "weekend_id": "local.club.weekend.sprint"
+                },
+                "track_id": "local.club.training"
+              },
+              "scenario": {
+                "approaches": [
+                  "Preserve a set and stay out longer",
+                  "Spend a set to create a tyre offset"
+                ],
+                "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+                "goal": "finish_both",
+                "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+                "title": "The edited club brief",
+                "version": 1.0
+              }
+            },
+            "service_base_seconds": 6.0,
+            "sets_per_driver": 10,
+            "setup_content_hash": "ce9141cbd45e04d74e7dff928e305cd9b123a72df16a5a83ba9e489e808bde08",
+            "setup_id": "local.club.setup.club",
+            "starting_compound": "local.club.tyre.endurance",
+            "surface_hash": "469e7ae8a5cd4aa0d7a995ca248a75bf00eaf81fbc5b0b4530bf29e2d531863f",
+            "surface_water": 0.0,
+            "time": 79.9999999999976,
+            "top_speed_mps": 55.0,
+            "track_hash": "ead9c91a721ac036e4ed40c33e5982423e86d24a068179225211282e78b81dfd",
+            "track_id": "local.club.training",
+            "track_name": "Edited Club Circuit",
+            "track_visual": {
+              "environment": "coastal",
+              "season": "summer",
+              "seed": 1975.0
+            },
+            "tuning_hash": "aebcce3205cccd31ba0f4f935ffcb3bcf8bd409714ce579a23fd13dee7f42fc8",
+            "tuning_id": "local.club.race_tuning.sprint",
+            "tyre_content_hash": "be5879d356df0f5db11228e2d3b96ad8c1e1c7193b53bf07e999f8eeab9daa6c",
+            "vehicle_id": "local.club.vehicle.sport",
+            "virtual_pace_factor": 0.6,
+            "water_drainage": 0.0015,
+            "weather_mode": "scripted_training",
+            "weekend_id": "local.club.weekend.sprint",
+            "wing": 3
+          }
+        },
+        "seconds": 53.361
+      },
+      {
+        "mode": "release",
+        "passed": true,
+        "executable_sha256": "7a51c36cf8310bd12beea346386b08ee4e17be5ea1744a35f47e52b42637db86",
+        "source_directory_present_in_cwd": false,
+        "installation_writable": false,
+        "runtime_uid": 1001,
+        "unicode_and_space_path": true,
+        "first": {
+          "allocation_id": "local.club.tyre_allocation.endurance",
+          "checkpoint_hash": "87b81abf678ab7a0fc41e2eb18a92ffe3d60cda0d4f87a352f5d18b154313e23",
+          "cloud_response_per_second": 0.005,
+          "competition_hash": "593757b437af290bda11d764578eca55bde84a80cecf8167169c4716bae35629",
+          "compound_count": 6,
+          "compound_wear": 2.7,
+          "control_ending_seconds": 8.0,
+          "definition_hash": "e8c39b20c57be1747b6c0afdb5c012563fdd1d1cb413649edb90534d7543e184",
+          "environment_hash": "c041aac7cada745623bbda96149b32ffe5d1e5ab204a1deb8712b78883a10a1e",
+          "fault_threshold": 33.4564561781008,
+          "fault_threshold_base": 25.0,
+          "field_size": 14,
+          "laps": 8,
+          "ok": true,
+          "operations_hash": "c41d13c5c44d73821fb829c2fa4d2e85f406abdcce03b059ac1af149b5b103f7",
+          "phase": "practice",
+          "player_ids": [
+            12,
+            13
+          ],
+          "race_fuel": 12.6,
+          "repair_seconds_per_damage": 0.14,
+          "review_seconds": 12.0,
+          "rival_label": "Club endurance planner",
+          "rival_style": "local.club.rival.patient",
+          "roster_id": "local.club.roster.expanded",
+          "scenario_context": {},
+          "service_base_seconds": 6.0,
+          "sets_per_driver": 10,
+          "setup_content_hash": "ce9141cbd45e04d74e7dff928e305cd9b123a72df16a5a83ba9e489e808bde08",
+          "setup_id": "local.club.setup.club",
+          "starting_compound": "local.club.tyre.endurance",
+          "surface_hash": "83cc7daaaf81fee76dc0ea716a0594da28b9fa7b53cce21a71547807227a9397",
+          "surface_water": 0.0,
+          "time": 10.0,
+          "top_speed_mps": 55.0,
+          "track_hash": "46194b2e6ca4286221cc25d7b5fd502b61fa9e8ac854d1ecd8454d340f487a08",
+          "track_id": "hillside",
+          "track_name": "Pinecrest Motor Park",
+          "track_visual": {
+            "environment": "meadow",
+            "season": "summer",
+            "seed": 335987
+          },
+          "tuning_hash": "aebcce3205cccd31ba0f4f935ffcb3bcf8bd409714ce579a23fd13dee7f42fc8",
+          "tuning_id": "local.club.race_tuning.sprint",
+          "tyre_content_hash": "be5879d356df0f5db11228e2d3b96ad8c1e1c7193b53bf07e999f8eeab9daa6c",
+          "vehicle_id": "local.club.vehicle.sport",
+          "virtual_pace_factor": 0.6,
+          "water_drainage": 0.0015,
+          "weather_mode": "scripted_training",
+          "weekend_id": "local.club.weekend.strategy_sprint",
+          "wing": 3
+        },
+        "edited": {
+          "allocation_id": "local.club.tyre_allocation.endurance",
+          "checkpoint_hash": "4d276fa1667430cb1b8bc543fe729c9907c8215f788e29a82fda490fe625decb",
+          "cloud_response_per_second": 0.01,
+          "competition_hash": "ad61b13b85c4d5cce3b40d952b4edc5de22b5f189878bf1c0d553d8de865d25b",
+          "compound_count": 6,
+          "compound_wear": 2.8,
+          "control_ending_seconds": 11.0,
+          "definition_hash": "9b137871f82ab8bf2cc5dbbb960ceb9a642f3ccdd5659e826afbfaeec268a787",
+          "environment_hash": "a06a313a384c59f8ff44bdce30c6777044b23d75a08b2b21b1b38edf0ce799a0",
+          "fault_threshold": 200.0,
+          "fault_threshold_base": 200.0,
+          "field_size": 14,
+          "laps": 9,
+          "ok": true,
+          "operations_hash": "16fbeb8fbf62f0ae87cfd8918bcd0fd2caa1b5ebb1803361b4c067bd35e8008d",
+          "phase": "practice",
+          "player_ids": [
+            12,
+            13
+          ],
+          "race_fuel": 14.8,
+          "repair_seconds_per_damage": 0.05,
+          "review_seconds": 22.0,
+          "rival_label": "Edited endurance planner",
+          "rival_style": "local.club.rival.patient",
+          "roster_id": "local.club.roster.expanded",
+          "scenario_context": {},
+          "service_base_seconds": 7.0,
+          "sets_per_driver": 10,
+          "setup_content_hash": "ecab6fe13d9d70803026409936b30eaffea8dc50070f799c87dab5b82ce72161",
+          "setup_id": "local.club.setup.club",
+          "starting_compound": "local.club.tyre.endurance",
+          "surface_hash": "3e48005f3d68bef2657de2924778b22a29bf7e7e79b823ac06ecb5ecc8338932",
+          "surface_water": 0.181211736249307,
+          "time": 10.0,
+          "top_speed_mps": 56.0,
+          "track_hash": "46194b2e6ca4286221cc25d7b5fd502b61fa9e8ac854d1ecd8454d340f487a08",
+          "track_id": "hillside",
+          "track_name": "Pinecrest Motor Park",
+          "track_visual": {
+            "environment": "meadow",
+            "season": "summer",
+            "seed": 335987
+          },
+          "tuning_hash": "169cb69f74d26388affa05241af1ee4e4559de8a56c2fdc58004343a838478a6",
+          "tuning_id": "local.club.race_tuning.sprint",
+          "tyre_content_hash": "6690fae471f7c49a0cc89b9f29b4f070486aabcf94fbb25af868e672befe9962",
+          "vehicle_id": "local.club.vehicle.sport",
+          "virtual_pace_factor": 0.45,
+          "water_drainage": 0.002,
+          "weather_mode": "seeded",
+          "weekend_id": "local.club.weekend.strategy_sprint",
+          "wing": 4
+        },
+        "restored_without_pack": {
+          "allocation_id": "local.club.tyre_allocation.endurance",
+          "checkpoint_hash": "4d276fa1667430cb1b8bc543fe729c9907c8215f788e29a82fda490fe625decb",
+          "cloud_response_per_second": 0.01,
+          "competition_hash": "ad61b13b85c4d5cce3b40d952b4edc5de22b5f189878bf1c0d553d8de865d25b",
+          "compound_count": 6,
+          "compound_wear": 2.8,
+          "control_ending_seconds": 11.0,
+          "definition_hash": "9b137871f82ab8bf2cc5dbbb960ceb9a642f3ccdd5659e826afbfaeec268a787",
+          "environment_hash": "a06a313a384c59f8ff44bdce30c6777044b23d75a08b2b21b1b38edf0ce799a0",
+          "fault_threshold": 200.0,
+          "fault_threshold_base": 200.0,
+          "field_size": 14,
+          "laps": 9,
+          "ok": true,
+          "operations_hash": "16fbeb8fbf62f0ae87cfd8918bcd0fd2caa1b5ebb1803361b4c067bd35e8008d",
+          "phase": "practice",
+          "player_ids": [
+            12,
+            13
+          ],
+          "race_fuel": 14.8,
+          "repair_seconds_per_damage": 0.05,
+          "review_seconds": 22.0,
+          "rival_label": "Edited endurance planner",
+          "rival_style": "local.club.rival.patient",
+          "roster_id": "local.club.roster.expanded",
+          "scenario_context": {},
+          "service_base_seconds": 7.0,
+          "sets_per_driver": 10,
+          "setup_content_hash": "ecab6fe13d9d70803026409936b30eaffea8dc50070f799c87dab5b82ce72161",
+          "setup_id": "local.club.setup.club",
+          "starting_compound": "local.club.tyre.endurance",
+          "surface_hash": "3e48005f3d68bef2657de2924778b22a29bf7e7e79b823ac06ecb5ecc8338932",
+          "surface_water": 0.181211736249307,
+          "time": 10.0,
+          "top_speed_mps": 56.0,
+          "track_hash": "46194b2e6ca4286221cc25d7b5fd502b61fa9e8ac854d1ecd8454d340f487a08",
+          "track_id": "hillside",
+          "track_name": "Pinecrest Motor Park",
+          "track_visual": {
+            "environment": "meadow",
+            "season": "summer",
+            "seed": 335987
+          },
+          "tuning_hash": "169cb69f74d26388affa05241af1ee4e4559de8a56c2fdc58004343a838478a6",
+          "tuning_id": "local.club.race_tuning.sprint",
+          "tyre_content_hash": "6690fae471f7c49a0cc89b9f29b4f070486aabcf94fbb25af868e672befe9962",
+          "vehicle_id": "local.club.vehicle.sport",
+          "virtual_pace_factor": 0.45,
+          "water_drainage": 0.002,
+          "weather_mode": "seeded",
+          "weekend_id": "local.club.weekend.strategy_sprint",
+          "wing": 4
+        },
+        "rejection": {
+          "diagnostics": [
+            {
+              "code": "CONTENT_RANGE",
+              "field": "/top_speed_mps",
+              "file": "vehicles/sport.json",
+              "message": "Number is outside the supported range.",
+              "root": "/tmp/mm-export-acceptance-cmq_2zwc/M\u00fcnchen club content",
+              "severity": "error"
+            }
+          ],
+          "ok": false
+        },
+        "environment_rejection": {
+          "diagnostics": [
+            {
+              "code": "CONTENT_ENVIRONMENT",
+              "entity": "local.club.race_tuning.sprint",
+              "field": "/environment/weather/target_wet_span",
+              "file": "race_tuning/sprint.json",
+              "message": "Base plus span cannot exceed one.",
+              "pack": "local.club",
+              "root": "/tmp/mm-export-acceptance-cmq_2zwc/M\u00fcnchen club content",
+              "severity": "error"
+            }
+          ],
+          "ok": false
+        },
+        "operations_rejection": {
+          "diagnostics": [
+            {
+              "code": "CONTENT_OPERATIONS",
+              "entity": "local.club.race_tuning.sprint",
+              "field": "/operations/reliability/damage_degraded",
+              "file": "race_tuning/sprint.json",
+              "message": "Must not be below damage_warning.",
+              "pack": "local.club",
+              "root": "/tmp/mm-export-acceptance-cmq_2zwc/M\u00fcnchen club content",
+              "severity": "error"
+            }
+          ],
+          "ok": false
+        },
+        "competition_rejection": {
+          "diagnostics": [
+            {
+              "code": "CONTENT_COMPETITION",
+              "entity": "local.club.race_tuning.sprint",
+              "field": "/competition/profiles/1/id",
+              "file": "race_tuning/sprint.json",
+              "message": "Choose a unique profile ID; legacy is reserved for compatibility.",
+              "pack": "local.club",
+              "root": "/tmp/mm-export-acceptance-cmq_2zwc/M\u00fcnchen club content",
+              "severity": "error"
+            }
+          ],
+          "ok": false
+        },
+        "authored_scenario": {
+          "passed": true,
+          "first": {
+            "allocation_id": "local.club.tyre_allocation.endurance",
+            "checkpoint_hash": "a9394091add406cbbf1916840d6787360eed517f29e0ab010ac8fa31be9ffa81",
+            "cloud_response_per_second": 0.005,
+            "competition_hash": "593757b437af290bda11d764578eca55bde84a80cecf8167169c4716bae35629",
+            "compound_count": 6,
+            "compound_wear": 2.7,
+            "control_ending_seconds": 8.0,
+            "definition_hash": "e8c39b20c57be1747b6c0afdb5c012563fdd1d1cb413649edb90534d7543e184",
+            "environment_hash": "c041aac7cada745623bbda96149b32ffe5d1e5ab204a1deb8712b78883a10a1e",
+            "fault_threshold": 33.4564561781008,
+            "fault_threshold_base": 25.0,
+            "field_size": 14,
+            "laps": 8,
+            "ok": true,
+            "operations_hash": "c41d13c5c44d73821fb829c2fa4d2e85f406abdcce03b059ac1af149b5b103f7",
+            "phase": "practice",
+            "player_ids": [
+              12,
+              13
+            ],
+            "race_fuel": 12.6,
+            "repair_seconds_per_damage": 0.14,
+            "review_seconds": 12.0,
+            "rival_label": "Classic rival",
+            "rival_style": "legacy",
+            "roster_id": "local.club.roster.expanded",
+            "scenario_context": {
+              "content_scenario": {
+                "definition": {
+                  "brief": {
+                    "approaches": [
+                      "Preserve a set and stay out longer",
+                      "Spend a set to create a tyre offset"
+                    ],
+                    "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+                    "goal": "finish_both",
+                    "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+                    "title": "Your first club weekend",
+                    "version": 1.0
+                  },
+                  "circuit_id": "local.club.circuit.training",
+                  "description": "Compare deliberate approaches without a scripted outcome.",
+                  "id": "local.club.scenario.first-weekend",
+                  "kind": "scenario",
+                  "name": "Your first club weekend",
+                  "schema_version": 1.0,
+                  "weekend_id": "local.club.weekend.sprint"
+                },
+                "track_id": "local.club.training"
+              },
+              "scenario": {
+                "approaches": [
+                  "Preserve a set and stay out longer",
+                  "Spend a set to create a tyre offset"
+                ],
+                "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+                "goal": "finish_both",
+                "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+                "title": "Your first club weekend",
+                "version": 1.0
+              }
+            },
+            "service_base_seconds": 6.0,
+            "sets_per_driver": 10,
+            "setup_content_hash": "ce9141cbd45e04d74e7dff928e305cd9b123a72df16a5a83ba9e489e808bde08",
+            "setup_id": "local.club.setup.club",
+            "starting_compound": "local.club.tyre.endurance",
+            "surface_hash": "469e7ae8a5cd4aa0d7a995ca248a75bf00eaf81fbc5b0b4530bf29e2d531863f",
+            "surface_water": 0.0,
+            "time": 79.9999999999976,
+            "top_speed_mps": 55.0,
+            "track_hash": "6a0b888e39067311685e81387e6bae8e00172a1e763e70d6c671bbad0c92e14c",
+            "track_id": "local.club.training",
+            "track_name": "Club Training Circuit",
+            "track_visual": {
+              "environment": "woodland",
+              "season": "autumn",
+              "seed": 1975.0
+            },
+            "tuning_hash": "aebcce3205cccd31ba0f4f935ffcb3bcf8bd409714ce579a23fd13dee7f42fc8",
+            "tuning_id": "local.club.race_tuning.sprint",
+            "tyre_content_hash": "be5879d356df0f5db11228e2d3b96ad8c1e1c7193b53bf07e999f8eeab9daa6c",
+            "vehicle_id": "local.club.vehicle.sport",
+            "virtual_pace_factor": 0.6,
+            "water_drainage": 0.0015,
+            "weather_mode": "scripted_training",
+            "weekend_id": "local.club.weekend.sprint",
+            "wing": 3
+          },
+          "edited": {
+            "allocation_id": "local.club.tyre_allocation.endurance",
+            "checkpoint_hash": "1b24b51dd0a30af70fe0049cf4efaf80accfd9ed43091d6e8bd990351baa591d",
+            "cloud_response_per_second": 0.005,
+            "competition_hash": "593757b437af290bda11d764578eca55bde84a80cecf8167169c4716bae35629",
+            "compound_count": 6,
+            "compound_wear": 2.7,
+            "control_ending_seconds": 8.0,
+            "definition_hash": "e8c39b20c57be1747b6c0afdb5c012563fdd1d1cb413649edb90534d7543e184",
+            "environment_hash": "c041aac7cada745623bbda96149b32ffe5d1e5ab204a1deb8712b78883a10a1e",
+            "fault_threshold": 33.4564561781008,
+            "fault_threshold_base": 25.0,
+            "field_size": 14,
+            "laps": 8,
+            "ok": true,
+            "operations_hash": "c41d13c5c44d73821fb829c2fa4d2e85f406abdcce03b059ac1af149b5b103f7",
+            "phase": "practice",
+            "player_ids": [
+              12,
+              13
+            ],
+            "race_fuel": 12.6,
+            "repair_seconds_per_damage": 0.14,
+            "review_seconds": 12.0,
+            "rival_label": "Classic rival",
+            "rival_style": "legacy",
+            "roster_id": "local.club.roster.expanded",
+            "scenario_context": {
+              "content_scenario": {
+                "definition": {
+                  "brief": {
+                    "approaches": [
+                      "Preserve a set and stay out longer",
+                      "Spend a set to create a tyre offset"
+                    ],
+                    "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+                    "goal": "finish_both",
+                    "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+                    "title": "The edited club brief",
+                    "version": 1.0
+                  },
+                  "circuit_id": "local.club.circuit.training",
+                  "description": "Compare deliberate approaches without a scripted outcome.",
+                  "id": "local.club.scenario.first-weekend",
+                  "kind": "scenario",
+                  "name": "Your first club weekend",
+                  "schema_version": 1.0,
+                  "weekend_id": "local.club.weekend.sprint"
+                },
+                "track_id": "local.club.training"
+              },
+              "scenario": {
+                "approaches": [
+                  "Preserve a set and stay out longer",
+                  "Spend a set to create a tyre offset"
+                ],
+                "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+                "goal": "finish_both",
+                "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+                "title": "The edited club brief",
+                "version": 1.0
+              }
+            },
+            "service_base_seconds": 6.0,
+            "sets_per_driver": 10,
+            "setup_content_hash": "ce9141cbd45e04d74e7dff928e305cd9b123a72df16a5a83ba9e489e808bde08",
+            "setup_id": "local.club.setup.club",
+            "starting_compound": "local.club.tyre.endurance",
+            "surface_hash": "469e7ae8a5cd4aa0d7a995ca248a75bf00eaf81fbc5b0b4530bf29e2d531863f",
+            "surface_water": 0.0,
+            "time": 79.9999999999976,
+            "top_speed_mps": 55.0,
+            "track_hash": "ead9c91a721ac036e4ed40c33e5982423e86d24a068179225211282e78b81dfd",
+            "track_id": "local.club.training",
+            "track_name": "Edited Club Circuit",
+            "track_visual": {
+              "environment": "coastal",
+              "season": "summer",
+              "seed": 1975.0
+            },
+            "tuning_hash": "aebcce3205cccd31ba0f4f935ffcb3bcf8bd409714ce579a23fd13dee7f42fc8",
+            "tuning_id": "local.club.race_tuning.sprint",
+            "tyre_content_hash": "be5879d356df0f5db11228e2d3b96ad8c1e1c7193b53bf07e999f8eeab9daa6c",
+            "vehicle_id": "local.club.vehicle.sport",
+            "virtual_pace_factor": 0.6,
+            "water_drainage": 0.0015,
+            "weather_mode": "scripted_training",
+            "weekend_id": "local.club.weekend.sprint",
+            "wing": 3
+          },
+          "capacity_rejection": {
+            "diagnostics": [
+              {
+                "code": "CONTENT_SCENARIO_CAPACITY",
+                "entity": "local.club.scenario.first-weekend",
+                "field": "/circuit_id",
+                "file": "scenarios/first-weekend.json",
+                "message": "The scenario circuit must accommodate its preset's grid and pit boxes.",
+                "pack": "local.club",
+                "root": "/tmp/mm-export-acceptance-cmq_2zwc/M\u00fcnchen club content",
+                "severity": "error"
+              }
+            ],
+            "ok": false
+          },
+          "restored_without_pack": {
+            "allocation_id": "local.club.tyre_allocation.endurance",
+            "checkpoint_hash": "1b24b51dd0a30af70fe0049cf4efaf80accfd9ed43091d6e8bd990351baa591d",
+            "cloud_response_per_second": 0.005,
+            "competition_hash": "593757b437af290bda11d764578eca55bde84a80cecf8167169c4716bae35629",
+            "compound_count": 6,
+            "compound_wear": 2.7,
+            "control_ending_seconds": 8.0,
+            "definition_hash": "e8c39b20c57be1747b6c0afdb5c012563fdd1d1cb413649edb90534d7543e184",
+            "environment_hash": "c041aac7cada745623bbda96149b32ffe5d1e5ab204a1deb8712b78883a10a1e",
+            "fault_threshold": 33.4564561781008,
+            "fault_threshold_base": 25.0,
+            "field_size": 14,
+            "laps": 8,
+            "ok": true,
+            "operations_hash": "c41d13c5c44d73821fb829c2fa4d2e85f406abdcce03b059ac1af149b5b103f7",
+            "phase": "practice",
+            "player_ids": [
+              12,
+              13
+            ],
+            "race_fuel": 12.6,
+            "repair_seconds_per_damage": 0.14,
+            "review_seconds": 12.0,
+            "rival_label": "Classic rival",
+            "rival_style": "legacy",
+            "roster_id": "local.club.roster.expanded",
+            "scenario_context": {
+              "content_scenario": {
+                "definition": {
+                  "brief": {
+                    "approaches": [
+                      "Preserve a set and stay out longer",
+                      "Spend a set to create a tyre offset"
+                    ],
+                    "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+                    "goal": "finish_both",
+                    "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+                    "title": "The edited club brief",
+                    "version": 1.0
+                  },
+                  "circuit_id": "local.club.circuit.training",
+                  "description": "Compare deliberate approaches without a scripted outcome.",
+                  "id": "local.club.scenario.first-weekend",
+                  "kind": "scenario",
+                  "name": "Your first club weekend",
+                  "schema_version": 1.0,
+                  "weekend_id": "local.club.weekend.sprint"
+                },
+                "track_id": "local.club.training"
+              },
+              "scenario": {
+                "approaches": [
+                  "Preserve a set and stay out longer",
+                  "Spend a set to create a tyre offset"
+                ],
+                "briefing": "Learn the circuit, then compare spending a fresh set with protecting track position.",
+                "goal": "finish_both",
+                "hint": "Use the pit-rejoin forecast. The simulated race decides whether a change pays back.",
+                "title": "The edited club brief",
+                "version": 1.0
+              }
+            },
+            "service_base_seconds": 6.0,
+            "sets_per_driver": 10,
+            "setup_content_hash": "ce9141cbd45e04d74e7dff928e305cd9b123a72df16a5a83ba9e489e808bde08",
+            "setup_id": "local.club.setup.club",
+            "starting_compound": "local.club.tyre.endurance",
+            "surface_hash": "469e7ae8a5cd4aa0d7a995ca248a75bf00eaf81fbc5b0b4530bf29e2d531863f",
+            "surface_water": 0.0,
+            "time": 79.9999999999976,
+            "top_speed_mps": 55.0,
+            "track_hash": "ead9c91a721ac036e4ed40c33e5982423e86d24a068179225211282e78b81dfd",
+            "track_id": "local.club.training",
+            "track_name": "Edited Club Circuit",
+            "track_visual": {
+              "environment": "coastal",
+              "season": "summer",
+              "seed": 1975.0
+            },
+            "tuning_hash": "aebcce3205cccd31ba0f4f935ffcb3bcf8bd409714ce579a23fd13dee7f42fc8",
+            "tuning_id": "local.club.race_tuning.sprint",
+            "tyre_content_hash": "be5879d356df0f5db11228e2d3b96ad8c1e1c7193b53bf07e999f8eeab9daa6c",
+            "vehicle_id": "local.club.vehicle.sport",
+            "virtual_pace_factor": 0.6,
+            "water_drainage": 0.0015,
+            "weather_mode": "scripted_training",
+            "weekend_id": "local.club.weekend.sprint",
+            "wing": 3
+          }
+        },
+        "seconds": 47.117
+      }
+    ],
+    "scope": "Linux native headless execution; not Windows execution or human visual acceptance."
+  }
+]

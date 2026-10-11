@@ -1,0 +1,74 @@
+{
+  "elapsedWallSeconds": 1790.882,
+  "samples": 120,
+  "transitions": 14,
+  "failures": 0,
+  "errors": 0,
+  "latest": {
+    "at": "2026-10-11T07:48:54.628Z",
+    "elapsedWallSeconds": 1790.877,
+    "label": "periodic-119",
+    "tick": 3279,
+    "simulationSeconds": 54.65,
+    "missionId": "pine-ridge",
+    "missionStatus": "running",
+    "application": {
+      "active": true,
+      "paused": false,
+      "mission": "pine-ridge"
+    },
+    "projectedCounts": {
+      "vehicles": 6,
+      "projectiles": 0,
+      "obstacles": 49,
+      "smoke": 0,
+      "events": 38
+    },
+    "controlled": "able-1",
+    "controlledVehicle": {
+      "position": {
+        "x": 254.16909676811554,
+        "y": 3.303465203037344,
+        "z": 154.98361085615713
+      },
+      "yaw": -3.1066339350194925,
+      "velocity": {
+        "x": -0.34015520990472065,
+        "y": 0,
+        "z": -9.557427398181261
+      },
+      "damageStatus": "operational",
+      "motor": {
+        "throttle": 0.5,
+        "steer": -0.04973669469134295,
+        "brake": 0,
+        "cruise": 0
+      },
+      "ammo": "ap75",
+      "reserves": {
+        "ap75": 11,
+        "he75": 15,
+        "smoke75": 15
+      },
+      "reload": 0
+    },
+    "objectives": {
+      "hold-ridge": 54.65,
+      "rally-platoon": 0
+    },
+    "visibleScreens": [],
+    "feedback": "",
+    "pauseFeedback": "Aiming requires an available gunner outside repair.",
+    "canvasCount": 1,
+    "domElementCount": 190,
+    "cdp": {
+      "jsHeapUsedBytes": 37808484,
+      "jsHeapTotalBytes": 96235520,
+      "documents": 1,
+      "nodes": 461,
+      "jsEventListeners": 48,
+      "layoutCount": 4404,
+      "recalcStyleCount": 9185
+    }
+  }
+}

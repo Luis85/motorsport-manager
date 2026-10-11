@@ -112,12 +112,21 @@ old saves predating depot/terrain changes need the matching old HTML build.
 Retain that artifact when changing a pack; solver compatibility does not bypass
 the browser content-match restriction.
 Do not hand-edit saves to migrate them or claim earlier v1 test evidence covers
-new supplies. Final v2 source passed 68/68 Armored Node checks (including 13
+new supplies. V2 implementation `bbf8475e` passed 68/68 Armored Node checks (including 13
 logistics checks) within the 902/902-check fast tier. The final rebuilt artifact
 passed 12/12 browser checks, CLI current-output and all seven demo freshness
-checks. Earlier intermediate results retain separate artifact identities. Public-command routes reached all three depots: Pine/Iron each
+checks. Earlier intermediate results retain separate artifact identities.
+Public-command routes reached all three depots: Pine/Iron each
 received one ammunition round; fire cancelled Crossroads service without stock consumption.
-These focused checks do not complete the pending 123-suite/2,192-check gate. The
+All ten CI workflows passed on the identical implementation/CI merge tree.
+Native passed 103 suites / 21,346 checks across six shards and aggregation;
+Wildlands passed 2,192/2,192 checks across 123 suites in 2,076.55 seconds,
+with separate guarded Storytelling 24 and Godot export 21 checks passed. A bounded `bbf8475e`
+30-minute software observation completed seven exact checkpoint restores and
+seven mission switches with 338/338 scripted workload commands, no errors or
+warnings. This does not establish full Q03, performance or leak freedom. These
+results establish the registered implementation checks, not full reference
+parity or production-hardware acceptance. The
 [11 October evidence archive](../_archive/armored-platoon-2026-10-11-evidence/README.md)
 records final artifact identities and preserves earlier results separately.
 

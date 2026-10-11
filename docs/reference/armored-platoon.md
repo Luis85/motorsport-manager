@@ -5,11 +5,18 @@ It is an early integrated browser implementation, not a completed recreation or
 an M1 fidelity acceptance. The [parity ledger](armored-platoon-parity.md) retains
 the full requested scope and remaining gaps. The [dated integration record](../_archive/armored-platoon-2026-10-10-integration.md)
 records the earlier `187dd821` implementation and verification limits. The
-final v2 source passed the fast tier: **902/902 checks in 51 suites**, including
+v2 implementation `bbf8475e80d59754bef4df4448492979f492624c` passed the fast
+tier: **902/902 checks in 51 suites**, including
 **68/68 Armored Node checks**. Corrected visual captures reported zero errors
 and warnings; final browser **12/12**, CLI current-output and all seven demo
-freshness checks passed. The complete **123-suite / 2,192-check** gate remains
-pending CI. The [11 October evidence archive](../_archive/armored-platoon-2026-10-11-evidence/README.md)
+freshness checks passed. Full CI passed **2,192/2,192 checks across 123 suites**
+in 2,076.55 seconds; separate guarded Storytelling 24 and Godot export 21 checks
+also passed. Native CI passed all six shards and aggregation: 103 suites /
+21,346 checks. All ten implementation workflows are terminal successes. A
+bounded 30-minute software observation
+of `bbf8475e` completed 338/338 scripted workload commands without errors or
+warnings; it does not establish hardware performance or leak freedom. The
+[11 October evidence archive](../_archive/armored-platoon-2026-10-11-evidence/README.md)
 separates intermediate passes from the final source and artifacts. Earlier green
 gates do not verify these changes.
 
@@ -142,7 +149,7 @@ regression evidence; the ledger defines the unfulfilled acceptance scenarios.
 Online multiplayer, the verified full vehicle/mission roster, campaigns,
 Field HQ progression, infantry, machine guns, advanced logistics, production
 streaming/asset caches, reference-calibrated handling and audiovisual fidelity
-remain incomplete. An earlier bounded 30-minute software observation is
-archived; it does not verify v2 or establish full Q03 acceptance. Real GPU
+remain incomplete. The bounded v2 30-minute software observation and the
+separate earlier observation do not establish full Q03 acceptance. Real GPU
 performance, Safari/device coverage, production stress/context-loss recovery
 and shipping-host configuration remain unaccepted.

@@ -1,0 +1,207 @@
+[
+  {
+    "file": "browser-harness-used.js",
+    "bytes": 10022,
+    "sha256": "a464f9b13b46be5a626c628a805960170bbfca74c65fee26d2ea7a4926843bad"
+  },
+  {
+    "file": "captures.jsonl",
+    "bytes": 2549,
+    "sha256": "1cc824fbb4b9a9e9857bb5a99ed7ece93d85d5103b060def5f61be2958823a03"
+  },
+  {
+    "file": "checkpoint-1.json",
+    "bytes": 111167,
+    "sha256": "e4b03d8aec95a86825c584753450cc7b362cc08b8fed402cf234fdc95ff2bdc2"
+  },
+  {
+    "file": "checkpoint-11.json",
+    "bytes": 96823,
+    "sha256": "a2c6357da3f58a59911fa9c9ae3ce94fc3d129d018b512e347fe7b7b28122c5c"
+  },
+  {
+    "file": "checkpoint-13.json",
+    "bytes": 112638,
+    "sha256": "ad28526b380c9cef0365ee1e2ecb34b5eafa4b9055595bdfba2d002b31350624"
+  },
+  {
+    "file": "checkpoint-3.json",
+    "bytes": 107760,
+    "sha256": "d6599125ec1afa4d4e63421cbde5577a11be01836bf005b1e9f5079e75f2ec30"
+  },
+  {
+    "file": "checkpoint-5.json",
+    "bytes": 98127,
+    "sha256": "29cf79dcdf58755f4323e13a4b6397dd9a9dc191b8afe6b1e65ada680934e8c4"
+  },
+  {
+    "file": "checkpoint-7.json",
+    "bytes": 113603,
+    "sha256": "4244c0458486c9a1097c80f521bd3c42bc9463be652b109721fdbddc8e36ea14"
+  },
+  {
+    "file": "checkpoint-9.json",
+    "bytes": 109634,
+    "sha256": "818eae52016818aabba7c5178160f2e5375ab420d32b87d90d9dad01453b25ca"
+  },
+  {
+    "file": "commands.jsonl",
+    "bytes": 71818,
+    "sha256": "2e94b8ff2e6edf48ab637c1331f264b05d333e6bff66a99c137bf2c716cea516"
+  },
+  {
+    "file": "compact-report.json",
+    "bytes": 21866,
+    "sha256": "e6b1190461b628fae831ae38c49ef55b026fd4cba52acc9cafd5aac0e4db6ee8"
+  },
+  {
+    "file": "compact-report.md",
+    "bytes": 4041,
+    "sha256": "f1353456bb611de2ed0de4ed3f780958c9a3e09f08b6f3cb2b751f5ea3d5058e"
+  },
+  {
+    "file": "final.png",
+    "bytes": 370637,
+    "sha256": "986f42e6b811a17e731bf5da915fa31fd21423e84b99096b4bec23f59b3f857c"
+  },
+  {
+    "file": "identity.json",
+    "bytes": 1753,
+    "sha256": "54ddd28b7fc0a208d4ff348016bf21e22edc6e9b057bce270f6b8a98094e3279"
+  },
+  {
+    "file": "observations.json",
+    "bytes": 330538,
+    "sha256": "7da728ce16cfadb2e885cbff8b898a5d051069dfdf0d4d3fcf85523c7d048436"
+  },
+  {
+    "file": "observe.cjs",
+    "bytes": 17555,
+    "sha256": "ec104340772027a739fc2205b00911634c8d5a74a0492f902aa021de0971c33b"
+  },
+  {
+    "file": "progress.json",
+    "bytes": 1686,
+    "sha256": "125cb73ff93a035f02a0ac026eb792fbaf17b85e406e7f1a393d53140b955a4c"
+  },
+  {
+    "file": "report.md",
+    "bytes": 1491,
+    "sha256": "3139e8957afbbb22c8257c3be1160fa912d16f40aac112d381fa5bfc49793c9c"
+  },
+  {
+    "file": "requests.jsonl",
+    "bytes": 139,
+    "sha256": "1c758d548a49c40e5a5467a9c10170a86fa47b7733ca23f7a0472f29de09ee12"
+  },
+  {
+    "file": "run.log",
+    "bytes": 25683,
+    "sha256": "3265bd7809ada59a30b2de5caa8994bceb3cacd0142a687c6109efee203b7ee3"
+  },
+  {
+    "file": "samples.jsonl",
+    "bytes": 125898,
+    "sha256": "a755cf4a00c09651b360f32dbfcd3ef0161f1c6d20d9edc2e2617c346c9a8654"
+  },
+  {
+    "file": "served-demo.html",
+    "bytes": 1843079,
+    "sha256": "d6371d5507f2d1d7ea442ca906b4ca4a499db216ee255f99356745ec28b80419"
+  },
+  {
+    "file": "start.png",
+    "bytes": 288694,
+    "sha256": "f9ff620ef76663599838e3d465acf28a01f1fafe7a2dc00c8ea2395ffa4b9022"
+  },
+  {
+    "file": "started.json",
+    "bytes": 1841,
+    "sha256": "02e7d603a0e052f9531379e01d7c88824d1244c92eeafc757b0da2e574c88a5c"
+  },
+  {
+    "file": "summarize.cjs",
+    "bytes": 10190,
+    "sha256": "ffc45f70a072bae153dd28ea434ce849a174b28d3cd1b454950dfc34e07ce070"
+  },
+  {
+    "file": "summary.json",
+    "bytes": 21866,
+    "sha256": "e6b1190461b628fae831ae38c49ef55b026fd4cba52acc9cafd5aac0e4db6ee8"
+  },
+  {
+    "file": "transition-01-checkpoint.png",
+    "bytes": 366332,
+    "sha256": "f60becc92afe205ab524511a511b7b7d711e01e44aa56ab7b623b9534a8c8d45"
+  },
+  {
+    "file": "transition-02-mission.png",
+    "bytes": 283356,
+    "sha256": "09d3f7b180433ffcaaa444b9b0efa204f1420ffb1d90c9ebc9ff77ea9c7a440e"
+  },
+  {
+    "file": "transition-03-checkpoint.png",
+    "bytes": 373481,
+    "sha256": "98eb16dbb0060148cbfc440470aa49017c29bf759c252c658f1933287895b7af"
+  },
+  {
+    "file": "transition-04-mission.png",
+    "bytes": 283588,
+    "sha256": "95f76f938bad13980a344df4f40dd3a1865b32a9b877a288b4a13472b7ef9356"
+  },
+  {
+    "file": "transition-05-checkpoint.png",
+    "bytes": 365165,
+    "sha256": "73e5c543c3f3139cf9949601265362b5f9791d73597667d8fc108c00c3999cf7"
+  },
+  {
+    "file": "transition-06-mission.png",
+    "bytes": 288694,
+    "sha256": "f9ff620ef76663599838e3d465acf28a01f1fafe7a2dc00c8ea2395ffa4b9022"
+  },
+  {
+    "file": "transition-07-checkpoint.png",
+    "bytes": 387266,
+    "sha256": "ef8e00a8e8d799699fd1c50ecb2e0de5de9a3124fd21f21de3394aef4682c218"
+  },
+  {
+    "file": "transition-08-mission.png",
+    "bytes": 283356,
+    "sha256": "09d3f7b180433ffcaaa444b9b0efa204f1420ffb1d90c9ebc9ff77ea9c7a440e"
+  },
+  {
+    "file": "transition-09-checkpoint.png",
+    "bytes": 363876,
+    "sha256": "7573e05b5d607bbd998eb17cfc98260e9ba6781813e3bb74934a13a458f02640"
+  },
+  {
+    "file": "transition-10-mission.png",
+    "bytes": 283588,
+    "sha256": "95f76f938bad13980a344df4f40dd3a1865b32a9b877a288b4a13472b7ef9356"
+  },
+  {
+    "file": "transition-11-checkpoint.png",
+    "bytes": 393457,
+    "sha256": "97235f1f39c4ac6799edb59bd26501286c5086ae6c59f8f271d3971a59f9c16a"
+  },
+  {
+    "file": "transition-12-mission.png",
+    "bytes": 288694,
+    "sha256": "f9ff620ef76663599838e3d465acf28a01f1fafe7a2dc00c8ea2395ffa4b9022"
+  },
+  {
+    "file": "transition-13-checkpoint.png",
+    "bytes": 380054,
+    "sha256": "8f827fb9b73aa53ce181891b6bc72d9db8e6434ce4d29924c0e1110512e489ff"
+  },
+  {
+    "file": "transition-14-mission.png",
+    "bytes": 283356,
+    "sha256": "09d3f7b180433ffcaaa444b9b0efa204f1420ffb1d90c9ebc9ff77ea9c7a440e"
+  },
+  {
+    "file": "transitions.jsonl",
+    "bytes": 3628,
+    "sha256": "e38ddc6c946909d243903a681d6947e0a43c837a2925703f5ca224377dfd98dd"
+  }
+]

@@ -1,0 +1,805 @@
+{
+  "schemaVersion": 1,
+  "evidenceKind": "Derived from decoded GitHub job logs and terminal job summaries; not downloaded gate-results.json",
+  "recordedAt": "2026-10-11T07:59:45.150704+00:00",
+  "repository": "Luis85/motorsport-manager",
+  "workflow": "Littlewild ECS verification",
+  "runId": 38120778477,
+  "runUrl": "https://github.com/Luis85/motorsport-manager/actions/runs/38120778477",
+  "status": "success",
+  "implementationCommit": "bbf8475e80d59754bef4df4448492979f492624c",
+  "testedMergeCommit": "9357f10ee7c4fb0b1b1b11735c715149ac9e2d1a",
+  "testedTree": "d8993c022778faa911647e77bbc4a26cf8f16a40",
+  "checkoutIdentityEvidence": "../checkout-identity.json",
+  "completeGate": {
+    "status": "passed",
+    "passed": 2192,
+    "total": 2192,
+    "suiteCount": 123,
+    "wallSeconds": 2076.55,
+    "jobs": 3,
+    "browserJobs": 2,
+    "log": "complete-gate.log",
+    "suiteCounts": [
+      {
+        "name": "skill-trees",
+        "passed": 15,
+        "total": 15
+      },
+      {
+        "name": "rts-mission-editor",
+        "passed": 19,
+        "total": 19
+      },
+      {
+        "name": "rts-catalog",
+        "passed": 7,
+        "total": 7
+      },
+      {
+        "name": "rts-economy",
+        "passed": 4,
+        "total": 4
+      },
+      {
+        "name": "rts-production",
+        "passed": 4,
+        "total": 4
+      },
+      {
+        "name": "rts-runtime",
+        "passed": 16,
+        "total": 16
+      },
+      {
+        "name": "rts-tools",
+        "passed": 10,
+        "total": 10
+      },
+      {
+        "name": "rts-application",
+        "passed": 6,
+        "total": 6
+      },
+      {
+        "name": "pet-catalog",
+        "passed": 4,
+        "total": 4
+      },
+      {
+        "name": "pet-runtime",
+        "passed": 11,
+        "total": 11
+      },
+      {
+        "name": "pet-application",
+        "passed": 4,
+        "total": 4
+      },
+      {
+        "name": "pet-wardrobe",
+        "passed": 7,
+        "total": 7
+      },
+      {
+        "name": "wildlands-runtime",
+        "passed": 20,
+        "total": 20
+      },
+      {
+        "name": "wildlands-project",
+        "passed": 17,
+        "total": 17
+      },
+      {
+        "name": "wildlands-cli",
+        "passed": 26,
+        "total": 26
+      },
+      {
+        "name": "wildlands-acceptance",
+        "passed": 7,
+        "total": 7
+      },
+      {
+        "name": "engine-export-cli",
+        "passed": 5,
+        "total": 5
+      },
+      {
+        "name": "engine-export",
+        "passed": 17,
+        "total": 17
+      },
+      {
+        "name": "animations",
+        "passed": 6,
+        "total": 6
+      },
+      {
+        "name": "balancing-cli",
+        "passed": 5,
+        "total": 5
+      },
+      {
+        "name": "cold-balancing",
+        "passed": 23,
+        "total": 23
+      },
+      {
+        "name": "balancing",
+        "passed": 14,
+        "total": 14
+      },
+      {
+        "name": "storytelling",
+        "passed": 24,
+        "total": 24
+      },
+      {
+        "name": "external-editor-cli",
+        "passed": 9,
+        "total": 9
+      },
+      {
+        "name": "external-canvas",
+        "passed": 21,
+        "total": 21
+      },
+      {
+        "name": "creature-editor",
+        "passed": 18,
+        "total": 18
+      },
+      {
+        "name": "external-editors",
+        "passed": 24,
+        "total": 24
+      },
+      {
+        "name": "renderer-scene-2d",
+        "passed": 10,
+        "total": 10
+      },
+      {
+        "name": "scene-editor",
+        "passed": 15,
+        "total": 15
+      },
+      {
+        "name": "scene-navigation",
+        "passed": 12,
+        "total": 12
+      },
+      {
+        "name": "scene-journeys",
+        "passed": 5,
+        "total": 5
+      },
+      {
+        "name": "architecture-extensions",
+        "passed": 10,
+        "total": 10
+      },
+      {
+        "name": "building-interiors",
+        "passed": 15,
+        "total": 15
+      },
+      {
+        "name": "construction",
+        "passed": 12,
+        "total": 12
+      },
+      {
+        "name": "terraform",
+        "passed": 13,
+        "total": 13
+      },
+      {
+        "name": "renderers",
+        "passed": 16,
+        "total": 16
+      },
+      {
+        "name": "canvas-renderer",
+        "passed": 29,
+        "total": 29
+      },
+      {
+        "name": "architecture-policy",
+        "passed": 53,
+        "total": 53
+      },
+      {
+        "name": "storage-clock",
+        "passed": 15,
+        "total": 15
+      },
+      {
+        "name": "gate-integrity",
+        "passed": 31,
+        "total": 31
+      },
+      {
+        "name": "cli-contracts",
+        "passed": 26,
+        "total": 26
+      },
+      {
+        "name": "typescript-architecture",
+        "passed": 21,
+        "total": 21
+      },
+      {
+        "name": "behavior-tree",
+        "passed": 7,
+        "total": 7
+      },
+      {
+        "name": "content-boundary",
+        "passed": 23,
+        "total": 23
+      },
+      {
+        "name": "definition-source",
+        "passed": 12,
+        "total": 12
+      },
+      {
+        "name": "assets",
+        "passed": 25,
+        "total": 25
+      },
+      {
+        "name": "creatures",
+        "passed": 24,
+        "total": 24
+      },
+      {
+        "name": "ecs-core",
+        "passed": 19,
+        "total": 19
+      },
+      {
+        "name": "simulation-profile",
+        "passed": 19,
+        "total": 19
+      },
+      {
+        "name": "simulation-profile-integration",
+        "passed": 17,
+        "total": 17
+      },
+      {
+        "name": "scene-environment",
+        "passed": 6,
+        "total": 6
+      },
+      {
+        "name": "office-scenario",
+        "passed": 11,
+        "total": 11
+      },
+      {
+        "name": "game-settings",
+        "passed": 13,
+        "total": 13
+      },
+      {
+        "name": "game-settings-ui",
+        "passed": 12,
+        "total": 12
+      },
+      {
+        "name": "creature-interactions",
+        "passed": 27,
+        "total": 27
+      },
+      {
+        "name": "interaction-ui",
+        "passed": 12,
+        "total": 12
+      },
+      {
+        "name": "developer-toolbox",
+        "passed": 32,
+        "total": 32
+      },
+      {
+        "name": "engine-composition",
+        "passed": 30,
+        "total": 30
+      },
+      {
+        "name": "ecs-activity",
+        "passed": 9,
+        "total": 9
+      },
+      {
+        "name": "ecs-world",
+        "passed": 24,
+        "total": 24
+      },
+      {
+        "name": "ecs-economy",
+        "passed": 15,
+        "total": 15
+      },
+      {
+        "name": "ecs-integration",
+        "passed": 7,
+        "total": 7
+      },
+      {
+        "name": "ecs-world-integration",
+        "passed": 6,
+        "total": 6
+      },
+      {
+        "name": "ecs-economy-integration",
+        "passed": 9,
+        "total": 9
+      },
+      {
+        "name": "scenario-domain",
+        "passed": 83,
+        "total": 83
+      },
+      {
+        "name": "presentation",
+        "passed": 49,
+        "total": 49
+      },
+      {
+        "name": "pause-policy",
+        "passed": 53,
+        "total": 53
+      },
+      {
+        "name": "cartography",
+        "passed": 71,
+        "total": 71
+      },
+      {
+        "name": "domain",
+        "passed": 86,
+        "total": 86
+      },
+      {
+        "name": "growth-stress",
+        "passed": 3,
+        "total": 3
+      },
+      {
+        "name": "earned-progression",
+        "passed": 8,
+        "total": 8
+      },
+      {
+        "name": "scenario-schema-cli",
+        "passed": 61,
+        "total": 61
+      },
+      {
+        "name": "release",
+        "passed": 28,
+        "total": 28
+      },
+      {
+        "name": "skill-tree-browser",
+        "passed": 13,
+        "total": 13
+      },
+      {
+        "name": "rts-mission-editor-browser",
+        "passed": 11,
+        "total": 11
+      },
+      {
+        "name": "rts-browser",
+        "passed": 8,
+        "total": 8
+      },
+      {
+        "name": "pet-browser",
+        "passed": 10,
+        "total": 10
+      },
+      {
+        "name": "wildlands-browser",
+        "passed": 17,
+        "total": 17
+      },
+      {
+        "name": "external-editors-browser",
+        "passed": 11,
+        "total": 11
+      },
+      {
+        "name": "external-canvas-browser",
+        "passed": 7,
+        "total": 7
+      },
+      {
+        "name": "creature-editor-browser",
+        "passed": 20,
+        "total": 20
+      },
+      {
+        "name": "balancing-defaults-browser",
+        "passed": 4,
+        "total": 4
+      },
+      {
+        "name": "balancing-browser",
+        "passed": 9,
+        "total": 9
+      },
+      {
+        "name": "storytelling-browser",
+        "passed": 24,
+        "total": 24
+      },
+      {
+        "name": "engine-export-browser",
+        "passed": 12,
+        "total": 12
+      },
+      {
+        "name": "renderer-storytelling",
+        "passed": 17,
+        "total": 17
+      },
+      {
+        "name": "storytelling-player-browser",
+        "passed": 8,
+        "total": 8
+      },
+      {
+        "name": "renderer-libraries",
+        "passed": 14,
+        "total": 14
+      },
+      {
+        "name": "scene-editor-browser",
+        "passed": 33,
+        "total": 33
+      },
+      {
+        "name": "building-interiors-browser",
+        "passed": 9,
+        "total": 9
+      },
+      {
+        "name": "construction-editor-browser",
+        "passed": 13,
+        "total": 13
+      },
+      {
+        "name": "terraform-browser",
+        "passed": 9,
+        "total": 9
+      },
+      {
+        "name": "renderers-browser",
+        "passed": 14,
+        "total": 14
+      },
+      {
+        "name": "office-browser",
+        "passed": 9,
+        "total": 9
+      },
+      {
+        "name": "game-settings-browser",
+        "passed": 11,
+        "total": 11
+      },
+      {
+        "name": "browser",
+        "passed": 90,
+        "total": 90
+      },
+      {
+        "name": "interactions-browser",
+        "passed": 8,
+        "total": 8
+      },
+      {
+        "name": "browser-contracts",
+        "passed": 24,
+        "total": 24
+      },
+      {
+        "name": "runtime-optionality",
+        "passed": 13,
+        "total": 13
+      },
+      {
+        "name": "content-provider",
+        "passed": 7,
+        "total": 7
+      },
+      {
+        "name": "game-folders",
+        "passed": 16,
+        "total": 16
+      },
+      {
+        "name": "runtime-optionality-browser",
+        "passed": 10,
+        "total": 10
+      },
+      {
+        "name": "artifact-play-browser",
+        "passed": 4,
+        "total": 4
+      },
+      {
+        "name": "game-demos-browser",
+        "passed": 11,
+        "total": 11
+      },
+      {
+        "name": "business-process",
+        "passed": 79,
+        "total": 79
+      },
+      {
+        "name": "business-process-bpmn",
+        "passed": 28,
+        "total": 28
+      },
+      {
+        "name": "business-process-browser",
+        "passed": 19,
+        "total": 19
+      },
+      {
+        "name": "process-layout-browser",
+        "passed": 8,
+        "total": 8
+      },
+      {
+        "name": "process-step-editor-browser",
+        "passed": 12,
+        "total": 12
+      },
+      {
+        "name": "process-definition-browser",
+        "passed": 11,
+        "total": 11
+      },
+      {
+        "name": "process-renderers-browser",
+        "passed": 13,
+        "total": 13
+      },
+      {
+        "name": "process-lenses-browser",
+        "passed": 8,
+        "total": 8
+      },
+      {
+        "name": "process-bpmn-import-browser",
+        "passed": 9,
+        "total": 9
+      },
+      {
+        "name": "process-readability-browser",
+        "passed": 9,
+        "total": 9
+      },
+      {
+        "name": "process-present-browser",
+        "passed": 10,
+        "total": 10
+      },
+      {
+        "name": "generate",
+        "passed": 13,
+        "total": 13
+      },
+      {
+        "name": "armored-admission",
+        "passed": 5,
+        "total": 5
+      },
+      {
+        "name": "armored-runtime",
+        "passed": 11,
+        "total": 11
+      },
+      {
+        "name": "armored-combat",
+        "passed": 17,
+        "total": 17
+      },
+      {
+        "name": "armored-physics",
+        "passed": 10,
+        "total": 10
+      },
+      {
+        "name": "armored-combat-v2",
+        "passed": 12,
+        "total": 12
+      },
+      {
+        "name": "armored-logistics",
+        "passed": 13,
+        "total": 13
+      },
+      {
+        "name": "armored-browser",
+        "passed": 12,
+        "total": 12
+      }
+    ],
+    "namedInventory": "source/wildlands/source/verification/gate-expectations.json at implementation commit",
+    "inventoryCheckedAgainstLogCounts": true
+  },
+  "fastTier": {
+    "passed": 902,
+    "total": 902,
+    "suites": 51,
+    "scope": "partial fast tier, separately reported"
+  },
+  "additionalStorytelling": {
+    "status": "success",
+    "checks": 24,
+    "evidence": "Successful guarded workflow step; guard checks all24 named checks, exact original gate source/HTML identity and unchanged original suite reports before and after; raw additional-storytelling-results.json not downloaded."
+  },
+  "godotExport": {
+    "status": "success",
+    "checks": 21,
+    "checkNames": [
+      "manifest hashes",
+      "canonical authored project",
+      "default runtime closure without engine sources",
+      "explicit engine-source opt-in exact bytes",
+      "binary ZIP CRC and traversal",
+      "existing output retained",
+      "symlink ancestors rejected",
+      "actual Godot shell actors/terrain",
+      "180KiB+ threaded transport",
+      "explicit fixed-step clock",
+      "validated gameplay command",
+      "lossless full story restore",
+      "timeline restore and stale response rejection",
+      "three canonical personality variants",
+      "seven equipped socket attachments",
+      "physical clearcoat and explicit sheen approximation",
+      "exact portable surface PNG bytes and native texture assignment",
+      "read-only floor and guide observation",
+      "validated floor visit and production queue",
+      "correlated floor replies and rejection retry",
+      "real departed quest actor suppression"
+    ],
+    "exportedFiles": 148,
+    "log": "godot-export-job.log",
+    "scope": "Separate Wildlands native export conformance; not Armored native fidelity"
+  },
+  "sourceIdentity": {
+    "localEquivalentTreeSourceSha256": "8b0c2b056e3bd005cc44ac5374709ec6cdc49e20fbc46c147a79b5f9ef74e7d1",
+    "rawCiSourceSha256": null,
+    "qualification": "Exact CI source digest is not printed in the decoded log. Separate Storytelling step verifies sourceIdentity(root) equals gate.sourceSha256 and remains unchanged. Local hash is independently calculated from equivalent implementation tree, not extracted from a downloaded CI report."
+  },
+  "artifacts": [
+    {
+      "id": 11696560704,
+      "name": "littlewild-ecs-core-evidence",
+      "size_in_bytes": 9023203,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11696560704",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11696560704/zip",
+      "expired": false,
+      "created_at": "2026-10-11T07:57:28Z",
+      "expires_at": "2026-10-25T07:57:26Z",
+      "updated_at": "2026-10-11T07:57:28Z",
+      "digest": "sha256:a3e6f329fd120aefeb34cfc184bc7978eba374db189154c6b445cb8d98a86db1",
+      "workflow_run": {
+        "id": 38120778477,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "bbf8475e80d59754bef4df4448492979f492624c"
+      }
+    },
+    {
+      "id": 11696171282,
+      "name": "littlewild-ecs-verification",
+      "size_in_bytes": 59725571,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11696171282",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11696171282/zip",
+      "expired": false,
+      "created_at": "2026-10-11T07:57:36Z",
+      "expires_at": "2026-10-25T07:57:30Z",
+      "updated_at": "2026-10-11T07:57:36Z",
+      "digest": "sha256:e4011387ca49fe126fc4d13cd4b38799533d9b671d57222182b5fb692a3925a8",
+      "workflow_run": {
+        "id": 38120778477,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "bbf8475e80d59754bef4df4448492979f492624c"
+      }
+    },
+    {
+      "id": 11696146399,
+      "name": "littlewild-ecs-diagnostics",
+      "size_in_bytes": 200295,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11696146399",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11696146399/zip",
+      "expired": false,
+      "created_at": "2026-10-11T07:57:29Z",
+      "expires_at": "2026-10-25T07:57:28Z",
+      "updated_at": "2026-10-11T07:57:29Z",
+      "digest": "sha256:d9433c5783def4209ae83b79c2a3133104feea3e9c06b3d06de8763283a2ff89",
+      "workflow_run": {
+        "id": 38120778477,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "bbf8475e80d59754bef4df4448492979f492624c"
+      }
+    },
+    {
+      "id": 11695236946,
+      "name": "wildlands-godot-export",
+      "size_in_bytes": 193576,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11695236946",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11695236946/zip",
+      "expired": false,
+      "created_at": "2026-10-11T07:17:28Z",
+      "expires_at": "2026-10-25T07:17:28Z",
+      "updated_at": "2026-10-11T07:17:28Z",
+      "digest": "sha256:d6f74e346b56a2440cd558fa518ee9060f233ea25046b526ffce21a393ec2fd9",
+      "workflow_run": {
+        "id": 38120778477,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "bbf8475e80d59754bef4df4448492979f492624c"
+      }
+    }
+  ],
+  "artifactDownload": {
+    "diagnosticsArtifactId": 11696146399,
+    "connectorReturnedFileReference": true,
+    "localDownloadStatus": "HTTP403 from returned signed file URL; no workaround attempted",
+    "rawReportsDownloaded": false
+  },
+  "files": [
+    {
+      "path": "verify-job.log",
+      "bytes": 96110,
+      "sha256": "351fe7d0dee278067ded651ab167f48c033ccbba8b7cfae2f56de0c252e0b1e2"
+    },
+    {
+      "path": "complete-gate.log",
+      "bytes": 13847,
+      "sha256": "ffb82655650216d15c99621fce2bd47d67135966af03c09ba8bee615f6475baf"
+    },
+    {
+      "path": "godot-export-job.log",
+      "bytes": 33198,
+      "sha256": "7781572547b1667e552ec2b707fa55bb9a2e76189e967c837d4842d4397e90d2"
+    },
+    {
+      "path": "final-jobs.json",
+      "bytes": 6299,
+      "sha256": "645f41de025ff66a60f3aa56bfc5eeafc06776930cb52549279073edd931d7f6"
+    },
+    {
+      "path": "final-artifacts.json",
+      "bytes": 3354,
+      "sha256": "b772731bb7f6a1a8890dd40a3ece57ef8480ce4a11d3049b5e85d186bb96c5c6"
+    },
+    {
+      "path": "commit-workflows.json",
+      "bytes": 4094,
+      "sha256": "986e482233ef2cdc554c549f3b74dec1b5d83b668375b43a99a2fb40afeecb93"
+    }
+  ]
+}

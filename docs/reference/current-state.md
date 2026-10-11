@@ -328,11 +328,21 @@ useful AP/HE selection and finite timed depot service. New sessions use
 `tracked-force-v2`; runtime v1 restore preserves its old arithmetic and topology.
 Browser restore retains its installed-catalog match restriction: old saves
 predating depot/terrain changes require their matching old HTML build.
-Final v2 source passed the fast tier **902/902 in 51 suites**, including **68/68
+V2 implementation `bbf8475e` passed the fast tier **902/902 in 51 suites**, including **68/68
 Armored Node checks**. Corrected captures report zero errors/warnings after all
 133 obstacle bases and Forge center alignment were corrected. Final browser
 **12/12**, CLI current-output and all seven demo freshness checks passed; the
-complete **123-suite/2,192-check** gate remains pending CI. Public-command depot routes reached
+complete Wildlands gate passed **2,192/2,192 checks across 123 suites in
+2,076.55 seconds**, plus separate guarded Storytelling 24 and Godot export 21
+checks. All ten implementation workflows passed; native
+passed all six shards and aggregation, **103 suites / 21,346 checks**.
+The new bounded `bbf8475e` software observation completed 1,800.000 wall
+seconds: seven exact restores, seven mission switches and 338/338 scripted
+workload commands, with no errors or warnings. Counts exclude automatic shell
+aim; three handovers after combat disability succeeded. Q03 remains partial,
+with no hardware-performance or leak-freedom claim. CI merge `9357f10` and
+implementation `bbf8475e` have the same tree `d8993c02`, while retaining distinct
+commit identities. Public-command depot routes reached
 all three locations: Pine/Iron received one round each, while enemy fire
 cancelled Crossroads service without consuming stock. The
 [11 October evidence](../_archive/armored-platoon-2026-10-11-evidence/README.md)

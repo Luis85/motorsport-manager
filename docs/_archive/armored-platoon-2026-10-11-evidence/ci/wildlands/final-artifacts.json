@@ -1,0 +1,80 @@
+{
+  "artifacts": [
+    {
+      "id": 11696560704,
+      "name": "littlewild-ecs-core-evidence",
+      "size_in_bytes": 9023203,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11696560704",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11696560704/zip",
+      "expired": false,
+      "created_at": "2026-10-11T07:57:28Z",
+      "expires_at": "2026-10-25T07:57:26Z",
+      "updated_at": "2026-10-11T07:57:28Z",
+      "digest": "sha256:a3e6f329fd120aefeb34cfc184bc7978eba374db189154c6b445cb8d98a86db1",
+      "workflow_run": {
+        "id": 38120778477,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "bbf8475e80d59754bef4df4448492979f492624c"
+      }
+    },
+    {
+      "id": 11696171282,
+      "name": "littlewild-ecs-verification",
+      "size_in_bytes": 59725571,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11696171282",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11696171282/zip",
+      "expired": false,
+      "created_at": "2026-10-11T07:57:36Z",
+      "expires_at": "2026-10-25T07:57:30Z",
+      "updated_at": "2026-10-11T07:57:36Z",
+      "digest": "sha256:e4011387ca49fe126fc4d13cd4b38799533d9b671d57222182b5fb692a3925a8",
+      "workflow_run": {
+        "id": 38120778477,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "bbf8475e80d59754bef4df4448492979f492624c"
+      }
+    },
+    {
+      "id": 11696146399,
+      "name": "littlewild-ecs-diagnostics",
+      "size_in_bytes": 200295,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11696146399",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11696146399/zip",
+      "expired": false,
+      "created_at": "2026-10-11T07:57:29Z",
+      "expires_at": "2026-10-25T07:57:28Z",
+      "updated_at": "2026-10-11T07:57:29Z",
+      "digest": "sha256:d9433c5783def4209ae83b79c2a3133104feea3e9c06b3d06de8763283a2ff89",
+      "workflow_run": {
+        "id": 38120778477,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "bbf8475e80d59754bef4df4448492979f492624c"
+      }
+    },
+    {
+      "id": 11695236946,
+      "name": "wildlands-godot-export",
+      "size_in_bytes": 193576,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11695236946",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11695236946/zip",
+      "expired": false,
+      "created_at": "2026-10-11T07:17:28Z",
+      "expires_at": "2026-10-25T07:17:28Z",
+      "updated_at": "2026-10-11T07:17:28Z",
+      "digest": "sha256:d6f74e346b56a2440cd558fa518ee9060f233ea25046b526ffce21a393ec2fd9",
+      "workflow_run": {
+        "id": 38120778477,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "bbf8475e80d59754bef4df4448492979f492624c"
+      }
+    }
+  ]
+}

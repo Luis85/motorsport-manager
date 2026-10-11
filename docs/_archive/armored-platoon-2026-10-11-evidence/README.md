@@ -6,6 +6,10 @@ and [parity ledger](../../reference/armored-platoon-parity.md) retain the broade
 The implementation continues the isolated `codex/armored-platoon` branch from
 `0e7fede91f7de162accab4eeb36467a83a671f26`
 on selected Model Forge base `749a9f6296f3beb665eedf1eda57ae8cbfd00b39`.
+The tested implementation is `bbf8475e80d59754bef4df4448492979f492624c`.
+GitHub's PR checkout is `9357f10ee7c4fb0b1b1b11735c715149ac9e2d1a`;
+both have tree `d8993c022778faa911647e77bbc4a26cf8f16a40`, verified by
+an empty tree diff in [checkout identity](ci/checkout-identity.json).
 
 No integration-base change, shared-branch force push, merge or site deployment occurred.
 
@@ -42,8 +46,8 @@ hits on components whose health is already zero.
 - Final integrated browser suite: **12/12**, including CSS isolation, WebGL,
   driving/fire, pause/save/load and two timed depot UI fixtures.
 - Final CLI and all seven demos match their fresh generator output.
-- Registered full inventory: **123 suites / 2,192 checks**. Complete CI results
-  will be recorded separately after the implementation commit is tested.
+- Registered full inventory: **123 suites / 2,192 checks**. The committed-build
+  CI results below are separate from this partial local run.
 - Strict TypeScript and TypeScript architecture **21/21** passed in the preflight.
   Native static architecture scanned **453 scripts** without violations.
 - Scene Forge CLI rebuilt and checked current; its generated binary is unchanged.
@@ -62,6 +66,67 @@ Final Wildlands source identity:
 Artifact byte counts and SHA-256 values are in [artifact-identities.json](artifact-identities.json).
 All archived files except this README and the manifest itself are indexed by
 `manifest.json`; raw logs are losslessly gzip-compressed where applicable.
+
+## Committed-build CI and software observation
+
+All [ten implementation workflows](ci/all-workflows-terminal.json) passed.
+Eight supporting workflows' exact counts, run/job identities and
+scope are retained in [supporting workflow summary](ci/other/summary.json),
+terminal receipts and complete compressed job logs.
+
+- [Wildlands run 38120778477](https://github.com/Luis85/motorsport-manager/actions/runs/38120778477):
+  **2,192/2,192 checks across 123 suites**, 2,076.55 seconds, three jobs.
+  The separate Storytelling diagnostics-off **24-check** step and Godot export
+  **21 checks** also passed. Verify job: `114414874915`; export job: `114414874751`.
+  The [Wildlands receipt](ci/wildlands/receipt.json) matches every logged suite
+  count to the committed named inventory. Its raw CI source digest was not
+  printed; the local equivalent-tree digest above is labeled separately from
+  CI's successful source/HTML identity guard.
+- [Native run 38120778592](https://github.com/Luis85/motorsport-manager/actions/runs/38120778592):
+  **103 suites / 21,346 checks**, all six shards and exact-coverage aggregate
+  `114421396940` passed. The [native receipt](ci/native/receipt.json) retains
+  source digest `1fe7299f19d496c089017167270df438b17908bab515a857881c42f4c578e2bc`,
+  Godot `4.7.2.stable.official.ed1daf0bf`, Ubuntu 24.04.5 LTS and runner 2.337.0.
+
+CI evidence is derived from terminal workflow metadata and complete decoded job
+logs; it is not a claim that raw artifact ZIP contents were retrieved. Uploaded
+artifact identifiers/digests remain in the receipts and logs. No failed-job
+rerun was required for this implementation. Earlier failures remain preserved
+with their original source identities. The returned diagnostics artifact's
+signed download URL returned HTTP 403, so raw CI JSON reports were not retrieved.
+Archived logs use `.gz`; receipts retain their original names and uncompressed
+byte counts/hashes for verification after decompression.
+
+The [software observation summary](stability/summary.json) records exactly
+**1,800.000 wall seconds**, from 07:19:03.751 to 07:49:03.751 UTC on 11 October,
+with **121 samples**, **seven exact paused checkpoint restores**, **seven menu
+mission switches**, and **338/338 accepted scripted workload commands**. Three
+control handovers followed combat disabling. It recorded zero page errors,
+console errors/warnings, command rejections or observation failures. Published
+demo bytes stayed unchanged; CDP, context and browser all closed successfully.
+
+This used Chromium 151 / Playwright 1.63 / SwiftShader at 960×600 and native RAF,
+without private ticks, fabricated checkpoint state or forced garbage collection.
+The harness excluded destroyed allies and the current leader from follow/hold
+recipients. Command totals cover explicit workload calls, not the shell's
+automatic aiming. The final capture retains normal unavailable-gunner feedback;
+it is not counted as a browser error. Repair/resupply coverage comes from the
+separate focused tests, not this workload.
+
+Canvas count stayed one and DOM element count 190. CDP DOM nodes ranged
+418–826 (first 418, final 496). JS heap used was **19,741,072 first /
+25,771,736 final bytes**, range **19,018,692–59,236,312**, without forced GC.
+These measurements do not establish leak freedom, GPU resource disposal,
+hardware performance or full Q03 acceptance. Separate mission tick intervals
+must not be summed across resets; no FPS claim is derived from them.
+
+`stability/` retains raw observations, JSONL logs (compressed), untouched
+checkpoints, identities and exact scripts, plus start/final and the first/last
+two transition captures. The local manifest also lists the unselected captures
+and duplicate served HTML, retained locally in `work/armored-v2-stability/`.
+The served HTML exactly matches the committed demo; it is not duplicated here.
+To reproduce, copy `observe.cjs` and `summarize.cjs` into that work directory in
+a built checkout at the tested implementation, then run them with Node.
 
 ## Findings preserved during implementation
 

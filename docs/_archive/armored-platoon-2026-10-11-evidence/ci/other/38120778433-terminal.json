@@ -1,0 +1,72 @@
+{
+  "commit": "bbf8475e80d59754bef4df4448492979f492624c",
+  "run": {
+    "id": 38120778433,
+    "name": "Source project",
+    "status": "completed",
+    "conclusion": "success",
+    "run_number": 1125,
+    "jobs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38120778433/jobs",
+    "logs_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/runs/38120778433/logs",
+    "workflow_id": 365410735
+  },
+  "receipt": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "jobs": [
+        {
+          "id": 114414874505,
+          "name": "package",
+          "status": "completed",
+          "conclusion": "success",
+          "run_id": 38120778433,
+          "logs_url": null,
+          "steps": [
+            {
+              "name": "Set up job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 1
+            },
+            {
+              "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 2
+            },
+            {
+              "name": "Archive tracked source",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 3
+            },
+            {
+              "name": "Upload source snapshot",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 4
+            },
+            {
+              "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 8
+            },
+            {
+              "name": "Complete job",
+              "status": "completed",
+              "conclusion": "success",
+              "number": 9
+            }
+          ]
+        }
+      ]
+    },
+    "isError": false
+  }
+}
