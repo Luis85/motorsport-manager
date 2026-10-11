@@ -1,7 +1,6 @@
 /** Scene Forge exports are input, semantic bindings and embedded runtime payload are output. */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { ObjectLoader } from 'three';
 import { formatAuthoredJson } from './format-authored-json.mjs';
 import {
   semanticBindings,
@@ -29,7 +28,6 @@ await formatAuthoredJson(project);
 const assets: Record<string, unknown> = {};
 for (const id of ['m4-sherman', 'panzer-iv']) {
   const object = JSON.parse(readFileSync(resolve(project, `exports/${id}.three.json`), 'utf8'));
-  const scene = new ObjectLoader().parse(object);
   const model = parse(
     ModelSchema,
     JSON.parse(readFileSync(resolve(project, `models/${id}.model.json`), 'utf8')),
@@ -50,38 +48,52 @@ for (const id of ['m4-sherman', 'panzer-iv']) {
     throw new Error(
       `Stale Scene Forge export for ${id}; re-export its imported model before packaging.`,
     );
+  // Preserve native Three exports as arrays; use lossless compact transport only in the pack.
+  // Admission checks canonical base64 and decoded budgets before Three receives typed pixels.
+  for (const image of object.images ?? []) {
+    const pixels = image.url;
+    if (
+      pixels.type !== 'Uint8Array' ||
+      pixels.width !== 128 ||
+      pixels.height !== 128 ||
+      !Array.isArray(pixels.data) ||
+      pixels.data.length !== 65536 ||
+      pixels.data.some(
+        (value: unknown) =>
+          !Number.isInteger(value) || (value as number) < 0 || (value as number) > 255,
+      )
+    )
+      throw new Error(`Unexpected native image payload for ${id}.`);
+    pixels.data = Buffer.from(pixels.data).toString('base64');
+    pixels.encoding = 'base64';
+  }
   const compiled = compileScene(target, library);
-  const semantics = semanticBindings(compiled.scene, [
-    'articulation:hull',
-    'articulation:turret',
-    'articulation:gun',
-    'articulation:recoil',
-    'socket:muzzle',
-    'socket:commander',
-    'socket:optic',
-    'socket:exhaust',
-    'volume:engine',
-    'volume:ammunition',
-  ]);
-  compiled.dispose();
+  let semantics;
+  try {
+    semantics = semanticBindings(compiled.scene, [
+      'articulation:hull',
+      'articulation:turret',
+      'articulation:gun',
+      'articulation:recoil',
+      'socket:muzzle',
+      'socket:commander',
+      'socket:optic',
+      'socket:exhaust',
+      'volume:engine',
+      'volume:ammunition',
+    ]);
+  } finally {
+    // The compiler owns geometries, materials and shared native finish textures.
+    compiled.dispose();
+  }
   assets[id] = { object, semantics };
-  scene.traverse((node) => {
-    const mesh = node as import('three').Mesh;
-    mesh.geometry?.dispose();
-    const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-    for (const material of materials) material?.dispose();
-  });
 }
 writeFileSync(
   output,
-  JSON.stringify(
-    {
-      format: 'wildlands-armored-visuals',
-      version: 1,
-      assets,
-    },
-    null,
-    2,
-  ) + '\n',
+  JSON.stringify({
+    format: 'wildlands-armored-visuals',
+    version: 2,
+    assets,
+  }) + '\n',
 );
 console.log('Exported authored assets with required semantic bindings.');

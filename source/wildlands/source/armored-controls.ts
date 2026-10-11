@@ -37,12 +37,14 @@
    camera.yaw-=event.movementX*.002*camera.sensitivity*multiplier;camera.pitch=Math.max(-.3,Math.min(.45,camera.pitch-event.movementY*.002*camera.sensitivity*multiplier));
   },{signal:lifecycle.signal});
   document.addEventListener('pointerlockchange',()=>{if(document.pointerLockElement!==canvas){release();if(!hooks.paused())ui.screen('pause');}},{signal:lifecycle.signal});
+  canvas.addEventListener('blur',()=>{if(document.pointerLockElement!==canvas)release();},{signal:lifecycle.signal});
+  canvas.addEventListener('lostpointercapture',()=>{rightDrag=false;mouseFire=false;},{signal:lifecycle.signal});
   window.addEventListener('blur',()=>{release();if(!hooks.paused())ui.screen('pause');},{signal:lifecycle.signal});
   document.addEventListener('visibilitychange',()=>{if(document.hidden){release();if(!hooks.paused())ui.screen('pause');}},{signal:lifecycle.signal});
   const deadzone=(value:number)=>Math.abs(value)<.15?0:Math.sign(value)*Math.pow((Math.abs(value)-.15)/.85,1.5);
   function update(snapshot:LWArmoredRuntime.Snapshot,seconds:number):void {
    if(controlled!==snapshot.controlled){reset();controlled=snapshot.controlled;lastDrive='';lastAim='';const tank=snapshot.vehicles.find(v=>v.id===controlled);if(tank){camera.yaw=tank.weapon.turretYaw;camera.pitch=tank.weapon.elevation;}}
-   if(hooks.paused()){if(keys.size||mouseFire||lastFire||cruise)release();return;}
+   if(hooks.paused()||!active()){if(keys.size||mouseFire||lastFire||cruise||gamepadFire)release();return;}
    let throttle=(keys.has('KeyW')?1:0)-(keys.has('KeyS')?1:0),steer=(keys.has('KeyA')?1:0)-(keys.has('KeyD')?1:0),brake=keys.has('Space')?1:0;
    camera.yaw+=((keys.has('KeyQ')?1:0)-(keys.has('KeyE')?1:0))*seconds*.65*camera.sensitivity;
    camera.pitch+=((keys.has('ArrowUp')?1:0)-(keys.has('ArrowDown')?1:0))*seconds*.2*camera.sensitivity;
@@ -60,8 +62,8 @@
    const driveKey=JSON.stringify(drive);if(lastDrive!==driveKey){submit(drive);lastDrive=driveKey;}
    const vehicle=snapshot.vehicles.find(v=>v.id===controlled),definition=catalog.vehicles.find(v=>v.id===vehicle?.definition);
    const aim={kind:'aim',entityId:controlled,yaw:Math.atan2(Math.sin(camera.yaw),Math.cos(camera.yaw)),elevation:Math.max(definition?.minElevation??-.1,Math.min(definition?.maxElevation??.3,camera.pitch))};
-   const aimKey=JSON.stringify(aim);if(lastAim!==aimKey){submit(aim);lastAim=aimKey;}
-   const fire=camera.mode!=='binocular'&&(mouseFire||keys.has('KeyR')||gamepadFire);
+   const aimKey=JSON.stringify(aim);if(vehicle?.actions?.aim.available===false)lastAim='';else if(lastAim!==aimKey){submit(aim);lastAim=aimKey;}
+   const fire=camera.mode!=='binocular'&&vehicle?.actions?.fire.available!==false&&(mouseFire||keys.has('KeyR')||gamepadFire);
    if(lastFire!==fire){submit({kind:'fire',entityId:controlled,pressed:fire});lastFire=fire;}
   }
   return {update,release,reset,destroy(){release();lifecycle.abort();}};

@@ -63,6 +63,7 @@ export function admitColony(game: CompiledGame, profile: Profile, audit: Balanci
 export function admitTemplate(template: 'rts' | 'pet' | 'armored', profile: Profile): void {
  if (template === 'armored') {
   const catalog = (require('../armored-catalog.js') as LWArmoredData.CatalogApi).validate(profile.armored);
+  require('../image-data.js');
   const visuals = (require('../armored-visuals.js') as {validate(input: unknown): {assets: Record<string, unknown>}}).validate(profile.armoredVisuals);
   for (const vehicle of catalog.vehicles) if (!Object.hasOwn(visuals.assets, vehicle.asset)) throw Error('Armored vehicle has no admitted visual: ' + vehicle.asset);
  }

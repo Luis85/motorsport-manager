@@ -72,12 +72,37 @@ the depot/terrain catalog changes requires its matching old HTML build; runtime
 solver compatibility does not make every old browser save loadable in this demo.
 
 The checkpoint captures frozen catalog, solver version, exact step, ECS records,
-RNG, accepted-command sequence, shell state and obstacle/topology state. Restore
+navigation policy, RNG, accepted-command sequence, shell state and obstacle/topology state. Restore
 stages admission before replacing the authority. Deterministic continuation is
 tested within each solver/runtime; cross-browser lockstep is not established.
 V2 additionally preserves vehicle supply transactions and finite depot stocks;
 admission checks their identities, bounds and consistency before replacement,
 including funded repair duration and mutual exclusion of repair/supply commitments.
+
+## Navigation and action feedback
+
+Fresh sessions select `navigation: "hull-route-v1"` independently of the physics
+solver. Checkpoints without this field retain the original grid navigation,
+including older v2 saves, and preserve the omitted field on export. Explicit
+`legacy-grid-v1` is also supported; hull routing requires `tracked-force-v2`.
+No restored session silently adopts a newer navigation algorithm.
+
+Hull routing sweeps the oriented footprint between waypoints, reserves turning
+clearance, smooths bounded A* routes and admits straight narrow passages. Known
+stationary allies, wrecks and remembered enemy contacts can block a route; hidden
+live enemy positions cannot inform it. A blocked pivot can brake, reverse for a
+bounded interval after a rear-clearance check, and replan. Impossible routes
+report “No safe route.” This is not traffic negotiation, advanced flanking or a
+guarantee of escape from every layout.
+
+Owned vehicle queries expose detached `actions` availability for driving,
+aiming, immediate firing, repair and resupply. These use the authoritative
+station and service rules; they do not advance time or expose opponents' private
+capabilities. The HUD shows these reasons and keeps unavailable service controls
+focusable. Fire readiness describes an immediate shot; holding the trigger can
+still queue firing through reload. Tab opens orders from the canvas and traverses
+controls within the HUD; Escape cancels the order flow and restores canvas focus.
+Moving focus into controls releases held driving and firing intentions.
 
 ## Combat eligibility and supplies
 
@@ -125,9 +150,16 @@ closed UTF-8 game-folder inventory. No global inventory limit was raised.
 [armored-visuals](../../source/wildlands/source/armored-visuals.ts).
 Catalogs reject unknown fields, dangling gameplay references and unbounded data.
 
-The current offline visual package contains scalar PBR materials, indexed
-geometry and stable articulation/socket/volume semantics. It explicitly rejects
-external URLs, unsupported resource sections, skins and animation imports.
+The offline visual package version 2 contains indexed geometry, native procedural
+PBR finishes and stable articulation/socket/volume semantics. Version 1 retains
+its scalar-only contract. Version 2 admits only embedded 128×128 RGBA8 images:
+sRGB color, linear tangent normals and shared roughness/metalness maps. Pixel
+data can use numeric arrays or canonical base64; transport encoding does not
+change decoded pixels or resource accounting. It caps
+images at 32 per asset and decoded image bytes at 2 MiB per pack, within the
+unchanged game-folder limits. External URLs, unsupported resource sections,
+skins and animation imports remain rejected. Renderer ownership includes shared
+textures and template geometry; retiring a view releases each owned resource once.
 Texture streaming, GLB/KTX2 production ingest and distribution are remaining
 requirements, not implied by a successful Three JSON load.
 

@@ -9,12 +9,12 @@
   const supplyEvents=new Set<string>();
   const wrapper=document.createElement('div');
   wrapper.innerHTML=`<div class="ap-hud" hidden>
-   <div class="ap-top"><div class="ap-operation"><h2 data-ap-title></h2><div data-ap-objectives></div></div><div class="ap-toolbar"><button data-ap-camera="chase">Chase · V</button><button data-ap-camera="gunner">Gunner · V</button><button data-ap-camera="binocular">Binoculars · B</button><button data-ap-action="pause" aria-label="Pause game">Pause · Esc</button></div></div>
+   <div class="ap-top"><div class="ap-operation"><h2 data-ap-title></h2><div data-ap-objectives></div></div><div class="ap-toolbar" role="group" aria-label="View and pause controls"><button data-ap-camera="chase">Chase · V</button><button data-ap-camera="gunner">Gunner · V</button><button data-ap-camera="binocular">Binoculars · B</button><button data-ap-action="pause" aria-label="Pause game">Pause · Esc</button></div></div>
    <div class="ap-compass"><strong data-ap-heading>000°</strong><span>W ─── N ─── E</span></div><div class="ap-optics"></div><div class="ap-sight"><b></b></div><div class="ap-sight-label" data-ap-sight>MAIN GUN</div>
-   <div class="ap-bottom"><div><section class="ap-vehicle" aria-label="Vehicle status"><h3 data-ap-vehicle-name></h3><div class="ap-readouts"><strong class="ap-speed" data-ap-speed>0</strong><span class="ap-unit">KM/H</span><span class="ap-condition" data-ap-condition></span></div><div class="ap-ammo"><button data-ap-action="ammo" data-ap-ammo>AP</button><span data-ap-load-status>READY</span><strong data-ap-reserves>0</strong></div><div class="ap-reload" role="progressbar" aria-label="Main gun reload" aria-valuemin="0" aria-valuemax="100" data-ap-reload><i></i></div><div class="ap-components" data-ap-components></div><button class="ap-repair" data-ap-action="repair" data-ap-repair>Repair · T</button></section><div class="ap-platoon" data-ap-platoon></div></div>
+   <div class="ap-bottom"><div><section class="ap-vehicle" aria-label="Vehicle status"><h3 data-ap-vehicle-name></h3><div class="ap-readouts"><strong class="ap-speed" data-ap-speed>0</strong><span class="ap-unit">KM/H</span><span class="ap-condition" data-ap-condition></span></div><div class="ap-ammo"><button data-ap-action="ammo" data-ap-ammo>AP</button><span data-ap-load-status>READY</span><strong data-ap-reserves>0</strong></div><div class="ap-reload" role="progressbar" aria-label="Main gun reload" aria-valuemin="0" aria-valuemax="100" data-ap-reload><i></i></div><p class="ap-station-status" data-ap-station-status hidden></p><details class="ap-systems"><summary data-ap-systems-summary>Systems &amp; crew</summary><div class="ap-components" data-ap-components></div></details><button class="ap-repair" data-ap-action="repair" data-ap-repair aria-describedby="ap-repair-reason">Repair · T</button><p class="ap-action-reason" id="ap-repair-reason" data-ap-repair-reason hidden></p></section><div class="ap-platoon" data-ap-platoon></div></div>
    <div class="ap-center-bottom"><div class="ap-controls-hint"><kbd>W A S D</kbd> Drive &nbsp; <kbd>Space</kbd> Brake &nbsp; <kbd>Click</kbd> Fire<br><kbd>Q E</kbd> Traverse &nbsp; <kbd>↑ ↓</kbd> Elevation &nbsp; <kbd>Tab</kbd> Platoon orders</div></div>
-   <section class="ap-map-wrap" aria-label="Tactical map"><div class="ap-map-title"><span>PLATOON NET</span><span>N ↑</span></div><canvas data-ap-map width="376" height="304" aria-label="Known vehicle positions"></canvas><div class="ap-orders-label" data-ap-active-order></div><button data-ap-action="orders">Platoon orders · Tab</button><section class="ap-service" data-ap-service aria-label="Friendly supply depot" hidden><h3 data-ap-depot-name></h3><p data-ap-supply-status></p><p class="ap-supply-stocks" data-ap-supply-stocks></p><div class="ap-supply-progress" data-ap-supply-progress role="progressbar" aria-label="Supply transfer" aria-valuemin="0" aria-valuemax="100" hidden><i></i></div><button data-ap-action="resupply" data-ap-resupply>Resupply · U</button></section></section></div>
-   <div class="ap-feedback" role="status" aria-live="polite" data-ap-feedback></div><section class="ap-orders" hidden data-ap-orders aria-label="Platoon order"><h3 data-ap-order-title>Choose an order</h3><div data-ap-order-options></div><p class="ap-order-help" data-ap-order-help></p></section>
+   <section class="ap-map-wrap" aria-label="Tactical map"><div class="ap-map-title"><span>PLATOON NET</span><span>N ↑</span></div><canvas data-ap-map width="376" height="304" aria-label="Known vehicle positions"></canvas><div class="ap-orders-label" data-ap-active-order></div><button data-ap-action="orders" aria-expanded="false" aria-controls="ap-orders">Platoon orders · Tab</button><section class="ap-service" data-ap-service aria-label="Friendly supply depot" hidden><h3 data-ap-depot-name></h3><p id="ap-supply-status" data-ap-supply-status></p><p class="ap-supply-stocks" data-ap-supply-stocks></p><div class="ap-supply-progress" data-ap-supply-progress role="progressbar" aria-label="Supply transfer" aria-valuemin="0" aria-valuemax="100" hidden><i></i></div><button data-ap-action="resupply" data-ap-resupply aria-describedby="ap-supply-status">Resupply · U</button></section></section></div>
+   <div class="ap-feedback" role="status" aria-live="polite" data-ap-feedback></div><section class="ap-orders" id="ap-orders" hidden data-ap-orders aria-label="Platoon order"><h3 data-ap-order-title>Choose an order</h3><div data-ap-order-options></div><p class="ap-order-help" data-ap-order-help></p><button data-ap-action="cancel-orders">Cancel orders · Esc</button></section>
   </div>
   <section class="ap-panel" data-ap-screen="menu"><div class="ap-panel-content"><h1>Armored<br>Platoon</h1><div class="ap-rule"></div><p>Take the commander's seat. Lead your platoon through the fields, find your firing line, and bring the armor home.</p><div class="ap-menu-actions"><button class="primary" data-ap-action="briefing">Enter the battlefield</button><button data-ap-action="load">Load checkpoint</button></div><div class="ap-help"><details><summary>Controls & settings</summary><dl><dt>W A S D / Space</dt><dd>Drive / brake</dd><dt>Mouse / Q E / ↑ ↓</dt><dd>Aim / turret / gun elevation</dd><dt>Click / R</dt><dd>Fire main gun</dd><dt>V / B / X</dt><dd>Camera / binoculars / ammunition</dd><dt>Tab / 1–4</dt><dd>Orders / command tank</dd><dt>C / T / U</dt><dd>Cruise / repair / resupply</dd><dt>Escape</dt><dd>Pause / release mouse</dd></dl><div class="ap-settings"><label>Look sensitivity<input data-ap-setting="sensitivity" type="range" min="0.2" max="2" step="0.1" value="1"></label><label>Chase field of view<input data-ap-setting="fov" type="range" min="45" max="85" step="1" value="58"></label><label>Camera shake<input data-ap-setting="shake" type="range" min="0" max="1" step="0.1" value="0.5"></label></div></details></div><div class="ap-version">INTEGRATED DEVELOPMENT BUILD<br>Original assets · Two opposing vehicles · Single-player missions<br>Full campaign, multiplayer and reference fidelity remain in development.</div></div></section>
   <section class="ap-panel" data-ap-screen="briefing" hidden><div class="ap-panel-content"><h2>Mission briefing</h2><label for="ap-mission">Choose a mission</label><select class="ap-mission-select" id="ap-mission" data-ap-mission></select><p data-ap-description></p><div class="ap-briefing-meta"><div><span>Command</span><b data-ap-force></b></div><div><span>Deployment</span>Armored platoon</div><div><span>Conditions</span>Daylight · Clear</div></div><ul class="ap-briefing-objectives" data-ap-briefing-objectives></ul><div class="ap-menu-actions"><button class="primary" data-ap-action="deploy">Deploy platoon</button><button data-ap-action="menu">Back</button></div><div class="ap-help">Drive with W A S D. Click the battlefield to capture your mouse; move it to aim. Escape releases the mouse and pauses. Use Q / E and arrow keys for keyboard aiming.</div></div></section>
@@ -29,7 +29,7 @@
   function notice(message:string,error=false):void {feedback.textContent=message;feedback.classList.toggle('error',error);set('[data-ap-pause-feedback]',message);noticeUntil=performance.now()+5000;}
   function screen(name:'menu'|'briefing'|'battle'|'pause'|'debrief'):void {
    currentScreen=name;wrapper.querySelectorAll<HTMLElement>('[data-ap-screen]').forEach(panel=>panel.hidden=panel.dataset.apScreen!==name);hud.hidden=name!=='battle';
-   if(name!=='battle'){hooks.control('pause');if(document.pointerLockElement)document.exitPointerLock();pendingOrder=null;el('[data-ap-orders]').hidden=true;el(`[data-ap-screen="${name}"]`).querySelector<HTMLElement>('button,select')?.focus();}
+   if(name!=='battle'){hooks.control('pause');if(document.pointerLockElement)document.exitPointerLock();pendingOrder=null;el('[data-ap-orders]').hidden=true;el('[data-ap-action="orders"]').setAttribute('aria-expanded','false');el(`[data-ap-screen="${name}"]`).querySelector<HTMLElement>('button,select')?.focus();}
    if(name==='briefing')briefing();
    if(name==='battle'){hooks.control('resume');parent.querySelector<HTMLCanvasElement>('#armored-canvas')?.focus();}
   }
@@ -44,24 +44,33 @@
    set('[data-ap-sight]',mode==='binocular'?'COMMANDER OPTICS · 4×':mode==='gunner'?'GUNNER OPTICS · 2.3×':'MAIN GUN');
   }
   function issue(command:LWArmoredRuntime.Command):void {const result=hooks.command(command);if(!result.ok)notice(result.message,true);}
+  function closeOrders():void {
+   pendingOrder=null;el('[data-ap-orders]').hidden=true;
+   el('[data-ap-action="orders"]').setAttribute('aria-expanded','false');
+   parent.querySelector<HTMLCanvasElement>('#armored-canvas')?.focus();
+  }
+  const recipientsAvailable=()=>lastSnapshot.vehicles.filter(v=>v.faction===lastSnapshot.playerFaction&&v.id!==lastSnapshot.controlled&&v.damage.status!=='destroyed');
   function orders():void {
    if(currentScreen!=='battle')return;const panel=el('[data-ap-orders]');pendingOrder=null;panel.hidden=!panel.hidden;
-   if(panel.hidden)return;
+   el('[data-ap-action="orders"]').setAttribute('aria-expanded',String(!panel.hidden));
+   if(panel.hidden){closeOrders();return;}
    set('[data-ap-order-title]','Choose an order');set('[data-ap-order-help]','Choose the order, then its recipient. Hold and Follow use the current commander; Charge and Secure use the point ahead of your sight.');
    el('[data-ap-order-options]').replaceChildren(...['follow','hold','charge','secure'].map(order=>{const button=document.createElement('button');button.dataset.apOrder=order;button.textContent=order[0]!.toUpperCase()+order.slice(1);return button;}));
    el('[data-ap-order-options]').querySelector<HTMLElement>('button')?.focus();
   }
   function recipients(order:string):void {
    pendingOrder=order;set('[data-ap-order-title]',order+' · choose recipient');set('[data-ap-order-help]','Select one vehicle or the whole platoon to confirm. Escape cancels.');
-   const friendly=lastSnapshot.vehicles.filter(v=>v.faction===lastSnapshot.playerFaction&&v.id!==lastSnapshot.controlled);
+   const friendly=recipientsAvailable();
+   if(!friendly.length){set('[data-ap-order-help]','No surviving platoon vehicles are available for orders.');el('[data-ap-order-options]').replaceChildren();el('[data-ap-action="cancel-orders"]').focus();return;}
    el('[data-ap-order-options]').replaceChildren(...[{id:'all',name:'Whole platoon'},...friendly.map(v=>({id:v.id,name:v.id}))].map(item=>{const button=document.createElement('button');button.dataset.apRecipient=item.id;button.textContent=item.name;return button;}));
+   el('[data-ap-order-options]').querySelector<HTMLElement>('button')?.focus();
   }
   function confirmOrder(recipient:string):void {
    const vehicle=lastSnapshot.vehicles.find(v=>v.id===lastSnapshot.controlled);if(!vehicle||!pendingOrder)return;
    const position={x:vehicle.transform.position.x+Math.sin(camera.yaw)*65,y:vehicle.transform.position.y,z:vehicle.transform.position.z+Math.cos(camera.yaw)*65};
-   const ids=recipient==='all'?lastSnapshot.vehicles.filter(v=>v.faction===lastSnapshot.playerFaction&&v.id!==vehicle.id).map(v=>v.id):[recipient];
+   const ids=recipient==='all'?recipientsAvailable().map(v=>v.id):[recipient];
    const result=hooks.command({kind:'order',entityIds:ids,order:pendingOrder,targetId:vehicle.id,position});notice(result.ok?`${pendingOrder.toUpperCase()} sent to ${recipient==='all'?'the platoon':recipient}.`:result.message,!result.ok);
-   pendingOrder=null;el('[data-ap-orders]').hidden=true;parent.querySelector<HTMLCanvasElement>('#armored-canvas')?.focus();
+   closeOrders();
   }
   function repair():void {const result=hooks.command({kind:'repair',entityId:lastSnapshot.controlled});notice(result.message,!result.ok);}
   function resupply():void {const result=hooks.command({kind:'resupply',entityId:lastSnapshot.controlled});notice(result.message,!result.ok);}
@@ -72,6 +81,7 @@
   }
   wrapper.addEventListener('click',event=>{
    const target=event.target instanceof Element?event.target.closest<HTMLElement>('button'):null;if(!target)return;
+   if(target.getAttribute('aria-disabled')==='true'){notice(target.title||'This action is currently unavailable.',true);return;}
    if(target.dataset.apCamera){setCamera(target.dataset.apCamera as LWArmoredPresentation.CameraMode);return;}
    if(target.dataset.apVehicle){issue({kind:'control',entityId:target.dataset.apVehicle});return;}
    if(target.dataset.apOrder){recipients(target.dataset.apOrder);return;}
@@ -81,15 +91,16 @@
     case 'deploy':case 'resume':screen('battle');break;
     case 'pause':screen('pause');break;case 'save':hooks.save();break;case 'load':hooks.load();break;
     case 'restart':hooks.control('restart');lastSnapshot=hooks.query();screen('battle');break;
-    case 'orders':orders();break;case 'ammo':ammo();break;case 'repair':repair();break;case 'resupply':resupply();break;
+    case 'orders':orders();break;case 'cancel-orders':closeOrders();break;case 'ammo':ammo();break;case 'repair':repair();break;case 'resupply':resupply();break;
    }
   },{signal:lifecycle.signal});
   options.addEventListener('change',()=>{hooks.mission(options.value);lastSnapshot=hooks.query();briefing();},{signal:lifecycle.signal});
   wrapper.addEventListener('input',event=>{const target=event.target as HTMLInputElement;if(target.dataset.apSetting==='sensitivity')camera.sensitivity=Number(target.value);if(target.dataset.apSetting==='fov')camera.fov=Number(target.value);if(target.dataset.apSetting==='shake')camera.shake=Number(target.value);},{signal:lifecycle.signal});
   document.addEventListener('keydown',event=>{
-   if(event.code==='Escape'){event.preventDefault();if(!el('[data-ap-orders]').hidden){pendingOrder=null;el('[data-ap-orders]').hidden=true;return;}if(currentScreen==='battle')screen('pause');else if(currentScreen==='pause')screen('battle');}
-   if(currentScreen!=='battle'||event.repeat)return;
-   if(event.code==='Tab'){event.preventDefault();orders();}
+   if(event.code==='Escape'){event.preventDefault();if(!el('[data-ap-orders]').hidden){closeOrders();return;}if(currentScreen==='battle')screen('pause');else if(currentScreen==='pause')screen('battle');}
+   const canvas=parent.querySelector('#armored-canvas');
+   if(currentScreen!=='battle'||event.repeat||(document.activeElement!==canvas&&document.pointerLockElement!==canvas))return;
+   if(event.code==='Tab'&&!event.shiftKey){event.preventDefault();orders();}
    if(event.code==='KeyX')ammo();
    if(event.code==='KeyT')repair();
    if(event.code==='KeyU')resupply();
@@ -119,7 +130,10 @@
    const stock=Object.entries(depot.ammunition).map(([id,count])=>(catalog.ammunition.find(a=>a.id===id)?.kind??id)+' '+count);
    set('[data-ap-supply-stocks]',stock.join(' / ')+' · Kits '+depot.repairKits);
    set('[data-ap-resupply]',active?'Cancel transfer · U':'Resupply · U');
-   el('[data-ap-resupply]').title='Stop inside the friendly service pad. Movement, fire or damage interrupts transfer. Stocks are shared and finite.';
+   const availability=vehicle.actions?.resupply,button=el('[data-ap-resupply]');
+   button.setAttribute('aria-disabled',String(availability?.available===false));
+   button.title=availability?.reason||'Stop inside the friendly service pad. Movement, fire or damage interrupts transfer. Stocks are shared and finite.';
+   if(!active&&availability?.available===false&&distance(depot)<=depot.radius)set('[data-ap-supply-status]',availability.reason);
    const progress=el('[data-ap-supply-progress]'),percent=Math.round(Math.max(0,Math.min(1,1-remaining/depot.transferSeconds))*100);
    progress.hidden=!active;progress.setAttribute('aria-valuenow',String(percent));el('[data-ap-supply-progress] i').style.width=percent+'%';
   }
@@ -134,6 +148,21 @@
     if(event.entityId===snapshot.controlled&&typeof event.message==='string')notice(event.message,event.kind==='resupply-cancelled');
    }
    for(const key of supplyEvents)if(!retained.has(key))supplyEvents.delete(key);
+  }
+  function componentReadout(vehicle:LWArmoredRuntime.VehicleView,definition:LWArmoredData.Vehicle):void {
+   const values=[...Object.entries(vehicle.damage.components).map(([name,value])=>({name,value:Math.round(value/definition.componentHealth*100),crew:false})),
+    ...Object.entries(vehicle.damage.crew).map(([name,value])=>({name,value:Math.round(value),crew:true}))];
+   const list=el('[data-ap-components]');
+   if(list.childElementCount!==values.length)list.replaceChildren(...values.map(()=>{const row=document.createElement('div');row.append(document.createElement('span'),document.createElement('strong'));return row;}));
+   values.forEach((item,index)=>{
+    const row=list.children[index] as HTMLElement,name=item.name.replace(/([a-z])([A-Z])/g,'$1 $2');
+    const label=item.crew?(item.value>0?'Available':'Lost'):item.value+'%';
+    if(row.children[0]!.textContent!==name)row.children[0]!.textContent=name;
+    if(row.children[1]!.textContent!==label)row.children[1]!.textContent=label;
+    row.classList.toggle('damaged',item.crew?item.value<=0:item.value<100);
+   });
+   const damaged=values.filter(item=>item.crew?item.value<=0:item.value<100).length;
+   set('[data-ap-systems-summary]',damaged?'Systems & crew · '+damaged+' affected':'Systems & crew · all available');
   }
   function render(snapshot:LWArmoredRuntime.Snapshot,_seconds:number):void {
    lastSnapshot=snapshot;supplyFeedback(snapshot);
@@ -151,19 +180,26 @@
    set('[data-ap-speed]',Math.round(Math.hypot(vehicle.body.velocity.x,vehicle.body.velocity.z)*3.6).toString());
    set('[data-ap-heading]',((Math.round(camera.yaw*180/Math.PI)%360+360)%360).toString().padStart(3,'0')+'°');
    set('[data-ap-repair]',vehicle.damage.repair>0?'REPAIRING · '+vehicle.damage.repair.toFixed(1)+'s':'Repair · T · '+Number(vehicle.damage.repairKits??0)+' kits');
-   el('[data-ap-repair]').title='Stop the vehicle, then begin repairs. Moving or taking damage interrupts repairs.';
+   const repair=vehicle.actions?.repair,repairButton=el('[data-ap-repair]');
+   repairButton.setAttribute('aria-disabled',String(repair?.available===false));
+   repairButton.title=repair?.reason||'Stop the vehicle, then begin repairs. Moving or taking damage interrupts repairs.';
+   el('[data-ap-repair-reason]').hidden=repair?.available!==false||vehicle.damage.repair>0;
+   set('[data-ap-repair-reason]',repair?.reason??'');
    supplyReadout(snapshot,vehicle);
-   set('[data-ap-condition]',vehicle.damage.status);set('[data-ap-ammo]',vehicle.weapon.ammo.toUpperCase()+' · X');
-   set('[data-ap-reserves]',String(vehicle.weapon.reserves[vehicle.weapon.ammo]??0));set('[data-ap-load-status]',vehicle.weapon.reload>0?vehicle.weapon.reload.toFixed(1)+'s':'READY');
+   set('[data-ap-condition]',vehicle.damage.status);el('[data-ap-condition]').dataset.condition=vehicle.damage.status;set('[data-ap-ammo]',vehicle.weapon.ammo.toUpperCase()+' · X');
+   set('[data-ap-reserves]',String(vehicle.weapon.reserves[vehicle.weapon.ammo]??0));set('[data-ap-load-status]',vehicle.weapon.reload>0?'RELOAD '+vehicle.weapon.reload.toFixed(1)+'s':(vehicle.weapon.reserves[vehicle.weapon.ammo]??0)>0?'READY':'EMPTY');
    const progress=Math.round((1-Math.min(1,vehicle.weapon.reload/definition.reloadSeconds))*100);el('[data-ap-reload]').setAttribute('aria-valuenow',String(progress));el('[data-ap-reload] i').style.width=progress+'%';
-   set('[data-ap-components]',Object.entries(vehicle.damage.components).map(([name,value])=>`${name.toUpperCase()} ${Math.round(value/definition.componentHealth*100)}%`).join(' · '));
+   componentReadout(vehicle,definition);
+   const stationReasons=[vehicle.actions?.drive,vehicle.actions?.aim,...(vehicle.weapon.reload<=0?[vehicle.actions?.fire]:[])].filter(action=>action?.available===false).map(action=>action!.reason);
+   set('[data-ap-station-status]',[...new Set(stationReasons)].join(' '));el('[data-ap-station-status]').hidden=!stationReasons.length;
+   if(vehicle.weapon.reload<=0&&vehicle.actions?.fire.available===false)set('[data-ap-load-status]',(vehicle.weapon.reserves[vehicle.weapon.ammo]??0)>0?'UNAVAILABLE':'EMPTY');
    set('[data-ap-active-order]',snapshot.vehicles.filter(v=>v.faction===snapshot.playerFaction&&v.id!==snapshot.controlled).map(v=>v.id+' / '+v.order.kind.toUpperCase()).join(' · '));
    const objectives=el('[data-ap-objectives]');
    if(!objectives.childElementCount||objectives.dataset.mission!==mission.id){objectives.dataset.mission=mission.id;objectives.replaceChildren(...mission.objectives.map(o=>{const line=document.createElement('div');line.className='ap-objective';line.dataset.objective=o.id;line.textContent=o.name;return line;}));}
    for(const objective of mission.objectives)objectives.querySelector<HTMLElement>(`[data-objective="${objective.id}"]`)?.classList.toggle('done',(snapshot.objectives[objective.id]??0)>=objective.required);
    const friends=snapshot.vehicles.filter(v=>v.faction===snapshot.playerFaction),platoon=el('[data-ap-platoon]');
    if(platoon.childElementCount!==friends.length)platoon.replaceChildren(...friends.map((friend,i)=>{const button=document.createElement('button');button.dataset.apVehicle=friend.id;button.textContent=(i+1)+' · '+friend.id;button.title='Take control of '+friend.id;return button;}));
-   for(const friend of friends){const button=platoon.querySelector<HTMLElement>(`[data-ap-vehicle="${friend.id}"]`);button?.classList.toggle('active',friend.id===snapshot.controlled);button?.setAttribute('aria-pressed',String(friend.id===snapshot.controlled));}
+   for(const friend of friends){const button=platoon.querySelector<HTMLElement>(`[data-ap-vehicle="${friend.id}"]`);button?.classList.toggle('active',friend.id===snapshot.controlled);button?.setAttribute('aria-pressed',String(friend.id===snapshot.controlled));if(button instanceof HTMLButtonElement){button.disabled=friend.damage.status==='destroyed';button.title=button.disabled?friend.id+' is destroyed':'Take control of '+friend.id;}}
    paintMap(snapshot);
   }
   const first=lastSnapshot.vehicles.find(v=>v.id===lastSnapshot.controlled);camera.yaw=first?.transform.yaw??0;

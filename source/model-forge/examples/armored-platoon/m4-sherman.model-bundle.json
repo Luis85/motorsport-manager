@@ -163,29 +163,128 @@
         "turretShell": {
           "type": "sphere",
           "radius": 1,
-          "segments": 20
+          "segments": 32
         },
         "bogie": {
           "type": "box",
           "size": [0.14, 0.48, 0.8]
+        },
+        "detailTransmissionCover": {
+          "type": "organic",
+          "size": [2.12, 0.72, 0.66],
+          "roundness": 1,
+          "taper": 0,
+          "bend": 0,
+          "segments": 24
+        },
+        "detailDriverHatch": {
+          "type": "box",
+          "size": [0.56, 0.09, 0.6]
+        },
+        "detailPeriscope": {
+          "type": "box",
+          "size": [0.26, 0.13, 0.12]
+        },
+        "detailWeldLong": {
+          "type": "box",
+          "size": [0.028, 0.025, 3.65]
+        },
+        "detailWeldCross": {
+          "type": "box",
+          "size": [2.4, 0.025, 0.028]
+        },
+        "detailFenderBrace": {
+          "type": "box",
+          "size": [0.045, 0.25, 0.045]
+        },
+        "detailHinge": {
+          "type": "box",
+          "size": [0.2, 0.08, 0.1]
+        },
+        "detailVentFrame": {
+          "type": "box",
+          "size": [1.82, 0.055, 0.05]
+        },
+        "detailToolClamp": {
+          "type": "box",
+          "size": [0.17, 0.045, 0.06]
+        },
+        "detailLampGuard": {
+          "type": "box",
+          "size": [0.035, 0.23, 0.22]
+        },
+        "detailHandle": {
+          "type": "tube",
+          "points": [
+            [-0.1, 0, 0],
+            [-0.1, 0.075, 0],
+            [0.1, 0.075, 0],
+            [0.1, 0, 0]
+          ],
+          "radius": 0.018,
+          "tubularSegments": 8,
+          "radialSegments": 5,
+          "closed": false,
+          "capEnds": true
+        },
+        "detailTowRing": {
+          "type": "torus",
+          "radius": 0.09,
+          "tube": 0.025,
+          "segments": 10
+        },
+        "detailLamp": {
+          "type": "cylinder",
+          "radiusTop": 0.075,
+          "radiusBottom": 0.075,
+          "height": 0.1,
+          "segments": 12
+        },
+        "detailExhaust": {
+          "type": "cylinder",
+          "radiusTop": 0.1,
+          "radiusBottom": 0.1,
+          "height": 0.42,
+          "segments": 12
+        },
+        "detailExhaustBore": {
+          "type": "cylinder",
+          "radiusTop": 0.07,
+          "radiusBottom": 0.07,
+          "height": 0.006,
+          "segments": 12
         }
       },
       "materials": {
         "armor": {
-          "color": "#62714b",
-          "metalness": 0.2,
-          "roughness": 0.84,
+          "color": "#697b53",
+          "metalness": 0.82,
+          "roughness": 0.83,
+          "finish": {
+            "version": 1,
+            "kind": "painted-metal",
+            "seed": 1945,
+            "scale": 1,
+            "wear": 0.055
+          },
           "opacity": 1,
           "doubleSided": false,
-          "flatShading": true
+          "flatShading": false
         },
         "raised": {
-          "color": "#78855b",
-          "metalness": 0.2,
-          "roughness": 0.84,
+          "color": "#84916b",
+          "metalness": 0.82,
+          "roughness": 0.8,
+          "finish": {
+            "version": 1,
+            "kind": "painted-metal",
+            "seed": 1945,
+            "scale": 1,
+            "wear": 0.055
+          },
           "opacity": 1,
           "doubleSided": false,
-          "flatShading": true
+          "flatShading": false
         },
         "dark": {
           "color": "#323b32",
@@ -196,28 +295,49 @@
           "flatShading": true
         },
         "track": {
-          "color": "#292c29",
-          "metalness": 0.65,
-          "roughness": 0.84,
+          "color": "#505044",
+          "metalness": 0.6,
+          "roughness": 0.88,
+          "finish": {
+            "version": 1,
+            "kind": "bare-metal",
+            "seed": 110,
+            "scale": 5,
+            "wear": 0.55
+          },
           "opacity": 1,
           "doubleSided": false,
-          "flatShading": true
+          "flatShading": false
         },
         "steel": {
-          "color": "#77786d",
-          "metalness": 0.7,
-          "roughness": 0.84,
+          "color": "#777b70",
+          "metalness": 0.8,
+          "roughness": 0.57,
+          "finish": {
+            "version": 1,
+            "kind": "bare-metal",
+            "seed": 111,
+            "scale": 4,
+            "wear": 0.28
+          },
           "opacity": 1,
           "doubleSided": false,
-          "flatShading": true
+          "flatShading": false
         },
         "rubber": {
-          "color": "#202521",
+          "color": "#34372e",
           "metalness": 0,
-          "roughness": 0.84,
+          "roughness": 0.98,
+          "finish": {
+            "version": 1,
+            "kind": "rubber",
+            "seed": 112,
+            "scale": 3,
+            "wear": 0.32
+          },
           "opacity": 1,
           "doubleSided": false,
-          "flatShading": true
+          "flatShading": false
         },
         "markings": {
           "color": "#e3dfc9",
@@ -2580,6 +2700,565 @@
           "visible": true,
           "tags": ["socket:exhaust"],
           "type": "group"
+        },
+        {
+          "id": "frontTransmissionCover",
+          "parent": "chassis",
+          "transform": {
+            "position": [0, 0.8, 2.03],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailTransmissionCover",
+          "material": "armor"
+        },
+        {
+          "id": "leftDriverHatch",
+          "parent": "chassis",
+          "transform": {
+            "position": [-0.61, 1.56, 1.19],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailDriverHatch",
+          "material": "raised"
+        },
+        {
+          "id": "leftDriverPeriscope",
+          "parent": "chassis",
+          "transform": {
+            "position": [-0.61, 1.65, 1.36],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailPeriscope",
+          "material": "dark"
+        },
+        {
+          "id": "leftDriverHatchHandle",
+          "parent": "chassis",
+          "transform": {
+            "position": [-0.61, 1.615, 1.05],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailHandle",
+          "material": "steel"
+        },
+        {
+          "id": "leftDriverHinge",
+          "parent": "chassis",
+          "transform": {
+            "position": [-0.61, 1.61, 0.91],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailHinge",
+          "material": "steel"
+        },
+        {
+          "id": "leftDeckWeld",
+          "parent": "chassis",
+          "transform": {
+            "position": [-1.24, 1.525, -0.07],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailWeldLong",
+          "material": "raised"
+        },
+        {
+          "id": "leftHeadlamp",
+          "parent": "chassis",
+          "transform": {
+            "position": [-1.05, 1.58, 2.23],
+            "rotation": [90, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailLamp",
+          "material": "glass"
+        },
+        {
+          "id": "leftHeadlampGuard",
+          "parent": "chassis",
+          "transform": {
+            "position": [-1.17, 1.59, 2.18],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailLampGuard",
+          "material": "armor"
+        },
+        {
+          "id": "leftFrontTowRing",
+          "parent": "chassis",
+          "transform": {
+            "position": [-0.86, 0.85, 2.3],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailTowRing",
+          "material": "steel"
+        },
+        {
+          "id": "leftRearTowRing",
+          "parent": "chassis",
+          "transform": {
+            "position": [-0.86, 0.81, -2.5],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailTowRing",
+          "material": "steel"
+        },
+        {
+          "id": "leftExhaustPipe",
+          "parent": "chassis",
+          "transform": {
+            "position": [-0.75, 1.01, -2.44],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailExhaust",
+          "material": "steel"
+        },
+        {
+          "id": "leftExhaustBore",
+          "parent": "chassis",
+          "transform": {
+            "position": [-0.75, 1.223, -2.44],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailExhaustBore",
+          "material": "dark"
+        },
+        {
+          "id": "leftTurretLift",
+          "parent": "turretPivot",
+          "transform": {
+            "position": [-0.69, 0.73, -0.21],
+            "rotation": [0, 90, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailTowRing",
+          "material": "raised"
+        },
+        {
+          "id": "leftFenderBrace0",
+          "parent": "chassis",
+          "transform": {
+            "position": [-1.48, 1.16, -1.9],
+            "rotation": [0, 0, -28]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailFenderBrace",
+          "material": "dark"
+        },
+        {
+          "id": "leftFenderBrace1",
+          "parent": "chassis",
+          "transform": {
+            "position": [-1.48, 1.16, -0.65],
+            "rotation": [0, 0, -28]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailFenderBrace",
+          "material": "dark"
+        },
+        {
+          "id": "leftFenderBrace2",
+          "parent": "chassis",
+          "transform": {
+            "position": [-1.48, 1.16, 0.65],
+            "rotation": [0, 0, -28]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailFenderBrace",
+          "material": "dark"
+        },
+        {
+          "id": "leftFenderBrace3",
+          "parent": "chassis",
+          "transform": {
+            "position": [-1.48, 1.16, 1.9],
+            "rotation": [0, 0, -28]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailFenderBrace",
+          "material": "dark"
+        },
+        {
+          "id": "leftToolClamp0",
+          "parent": "chassis",
+          "transform": {
+            "position": [-1, 1.59, -1.75],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailToolClamp",
+          "material": "armor"
+        },
+        {
+          "id": "leftToolClamp1",
+          "parent": "chassis",
+          "transform": {
+            "position": [-1, 1.59, -0.67],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailToolClamp",
+          "material": "armor"
+        },
+        {
+          "id": "rightDriverHatch",
+          "parent": "chassis",
+          "transform": {
+            "position": [0.61, 1.56, 1.19],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailDriverHatch",
+          "material": "raised"
+        },
+        {
+          "id": "rightDriverPeriscope",
+          "parent": "chassis",
+          "transform": {
+            "position": [0.61, 1.65, 1.36],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailPeriscope",
+          "material": "dark"
+        },
+        {
+          "id": "rightDriverHatchHandle",
+          "parent": "chassis",
+          "transform": {
+            "position": [0.61, 1.615, 1.05],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailHandle",
+          "material": "steel"
+        },
+        {
+          "id": "rightDriverHinge",
+          "parent": "chassis",
+          "transform": {
+            "position": [0.61, 1.61, 0.91],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailHinge",
+          "material": "steel"
+        },
+        {
+          "id": "rightDeckWeld",
+          "parent": "chassis",
+          "transform": {
+            "position": [1.24, 1.525, -0.07],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailWeldLong",
+          "material": "raised"
+        },
+        {
+          "id": "rightHeadlamp",
+          "parent": "chassis",
+          "transform": {
+            "position": [1.05, 1.58, 2.23],
+            "rotation": [90, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailLamp",
+          "material": "glass"
+        },
+        {
+          "id": "rightHeadlampGuard",
+          "parent": "chassis",
+          "transform": {
+            "position": [1.17, 1.59, 2.18],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailLampGuard",
+          "material": "armor"
+        },
+        {
+          "id": "rightFrontTowRing",
+          "parent": "chassis",
+          "transform": {
+            "position": [0.86, 0.85, 2.3],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailTowRing",
+          "material": "steel"
+        },
+        {
+          "id": "rightRearTowRing",
+          "parent": "chassis",
+          "transform": {
+            "position": [0.86, 0.81, -2.5],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailTowRing",
+          "material": "steel"
+        },
+        {
+          "id": "rightExhaustPipe",
+          "parent": "chassis",
+          "transform": {
+            "position": [0.75, 1.01, -2.44],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailExhaust",
+          "material": "steel"
+        },
+        {
+          "id": "rightExhaustBore",
+          "parent": "chassis",
+          "transform": {
+            "position": [0.75, 1.223, -2.44],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailExhaustBore",
+          "material": "dark"
+        },
+        {
+          "id": "rightTurretLift",
+          "parent": "turretPivot",
+          "transform": {
+            "position": [0.69, 0.73, -0.21],
+            "rotation": [0, 90, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailTowRing",
+          "material": "raised"
+        },
+        {
+          "id": "rightFenderBrace0",
+          "parent": "chassis",
+          "transform": {
+            "position": [1.48, 1.16, -1.9],
+            "rotation": [0, 0, 28]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailFenderBrace",
+          "material": "dark"
+        },
+        {
+          "id": "rightFenderBrace1",
+          "parent": "chassis",
+          "transform": {
+            "position": [1.48, 1.16, -0.65],
+            "rotation": [0, 0, 28]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailFenderBrace",
+          "material": "dark"
+        },
+        {
+          "id": "rightFenderBrace2",
+          "parent": "chassis",
+          "transform": {
+            "position": [1.48, 1.16, 0.65],
+            "rotation": [0, 0, 28]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailFenderBrace",
+          "material": "dark"
+        },
+        {
+          "id": "rightFenderBrace3",
+          "parent": "chassis",
+          "transform": {
+            "position": [1.48, 1.16, 1.9],
+            "rotation": [0, 0, 28]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailFenderBrace",
+          "material": "dark"
+        },
+        {
+          "id": "rightToolClamp0",
+          "parent": "chassis",
+          "transform": {
+            "position": [1, 1.59, -1.75],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailToolClamp",
+          "material": "armor"
+        },
+        {
+          "id": "rightToolClamp1",
+          "parent": "chassis",
+          "transform": {
+            "position": [1, 1.59, -0.67],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailToolClamp",
+          "material": "armor"
+        },
+        {
+          "id": "frontDeckWeld",
+          "parent": "chassis",
+          "transform": {
+            "position": [0, 1.525, 1.88],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailWeldCross",
+          "material": "raised"
+        },
+        {
+          "id": "rearDeckWeld",
+          "parent": "chassis",
+          "transform": {
+            "position": [0, 1.525, -2.22],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailWeldCross",
+          "material": "raised"
+        },
+        {
+          "id": "frontVentFrame",
+          "parent": "chassis",
+          "transform": {
+            "position": [0, 1.57, -0.97],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailVentFrame",
+          "material": "raised"
+        },
+        {
+          "id": "rearVentFrame",
+          "parent": "chassis",
+          "transform": {
+            "position": [0, 1.57, -2.14],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailVentFrame",
+          "material": "raised"
+        },
+        {
+          "id": "commanderHatchHandle",
+          "parent": "turretPivot",
+          "transform": {
+            "position": [-0.34, 1.025, -0.42],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailHandle",
+          "material": "steel"
+        },
+        {
+          "id": "loaderHatchHandle",
+          "parent": "turretPivot",
+          "transform": {
+            "position": [0.4, 0.845, 0.25],
+            "rotation": [0, 0, 0]
+          },
+          "visible": true,
+          "tags": [],
+          "type": "mesh",
+          "geometry": "detailHandle",
+          "material": "steel"
         }
       ]
     }

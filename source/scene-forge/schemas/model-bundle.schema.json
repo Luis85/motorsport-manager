@@ -1006,6 +1006,55 @@
                   ],
                   "additionalProperties": false
                 },
+                "finish": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "number",
+                      "const": 1
+                    },
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "painted-metal",
+                        "bare-metal",
+                        "rubber"
+                      ]
+                    },
+                    "seed": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 65535
+                    },
+                    "scale": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 16
+                    },
+                    "wear": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "palette": {
+                      "minItems": 1,
+                      "maxItems": 4,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "pattern": "^#[0-9a-fA-F]{6}$"
+                      }
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "kind",
+                    "seed",
+                    "scale",
+                    "wear"
+                  ],
+                  "additionalProperties": false
+                },
                 "sheen": {
                   "type": "number",
                   "minimum": 0,

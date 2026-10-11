@@ -184,6 +184,26 @@
   shot.position=next;
   if(shot.age>30||magnitude(shot.velocity)<1)ctx.world.defer('destroy',id);
  }
+ function repairReason(ctx:C,id:string):string{
+  const d=ctx.world.get<D>(id,'armored-damage')!;
+  if(d.status==='destroyed')return 'Vehicle unavailable.';
+  const v=definition(ctx,id),body=ctx.world.get<LWArmoredRuntime.Body>(id,'armored-body')!;
+  if(modern(ctx)&&Number(ctx.world.get(id,'armored-supply')?.remaining)>0)return 'Finish or cancel resupply before repairing.';
+  if(modern(ctx)&&(!serviceStationary(ctx,id)||!Object.values(d.crew).some(value=>value>0)))return 'Repair needs a living crew, neutral drive controls and no hull motion.';
+  if(d.repair>0||Number(d.repairKits)<=0||magnitude(body.velocity)>.3)return 'Repair needs a stationary vehicle and an available kit.';
+  if(d.fire===0&&!Object.values(d.components).some(n=>n<v.componentHealth))return 'No repairable damage.';
+  return '';
+ }
+ /** Read-only readiness uses the same station and service rules as execution. */
+ function availability(ctx:C,id:string):Pick<LWArmoredRuntime.VehicleActions,'aim'|'fire'|'repair'>{
+  const d=ctx.world.get<D>(id,'armored-damage')!,w=ctx.world.get<W>(id,'armored-weapon')!;
+  const action=(reason:string)=>({available:reason==='',reason});
+  const aim=d.status==='destroyed'?'Vehicle unavailable.':modern(ctx)&&!canAim(d)?'Aiming requires an available gunner outside repair.':'';
+  const fire=aim||d.status==='disabled'||d.components.gun!<=0||d.crew.gunner!<=0||d.repair>0||modern(ctx)&&!canFire(d)
+   ?aim||'Gun or crew unavailable while repairing or combat-disabled.'
+   :w.reload>1e-9?'Reloading.':w.reserves[w.ammo]!<=0?'Selected ammunition exhausted.':ctx.world.query(['armored-projectile']).length+ctx.world.pendingStructural>=1024?'Projectile capacity reached.':'';
+  return {aim:action(aim),fire:action(fire),repair:action(repairReason(ctx,id))};
+ }
  function command(ctx:C,input:LWArmoredRuntime.Command):LWArmoredRuntime.Result|null{
   if(!['aim','ammo','fire','repair'].includes(input.kind))return null;
   const id=input.entityId||ctx.state.controlled,w=ctx.world.get<W>(id,'armored-weapon'),d=ctx.world.get<D>(id,'armored-damage');
@@ -204,11 +224,7 @@
    if(modern(ctx)&&input.pressed&&!canFire(d))return {ok:false,message:'Gun or crew unavailable while repairing or combat-disabled.'};
    w.trigger=input.pressed;return {ok:true,message:'Trigger updated.'};
   }
-  const v=definition(ctx,id),body=ctx.world.get<LWArmoredRuntime.Body>(id,'armored-body')!;
-  if(modern(ctx)&&Number(ctx.world.get(id,'armored-supply')?.remaining)>0)return {ok:false,message:'Finish or cancel resupply before repairing.'};
-  if(modern(ctx)&&(!serviceStationary(ctx,id)||!Object.values(d.crew).some(value=>value>0)))return {ok:false,message:'Repair needs a living crew, neutral drive controls and no hull motion.'};
-  if(d.repair>0||Number(d.repairKits)<=0||magnitude(body.velocity)>.3)return {ok:false,message:'Repair needs a stationary vehicle and an available kit.'};
-  if(d.fire===0&&!Object.values(d.components).some(n=>n<v.componentHealth))return {ok:false,message:'No repairable damage.'};
+  const v=definition(ctx,id),reason=repairReason(ctx,id);if(reason)return {ok:false,message:reason};
   d.repair=v.repairSeconds;w.trigger=false;ctx.emit({kind:'repair-started',entityId:id,seconds:d.repair});return {ok:true,message:'Repair started; moving or taking damage interrupts it.'};
  }
  function service(ctx:C,id:string,dt:number):void{
@@ -230,6 +246,6 @@
   scheduler.register({id:'armored.repairs',phase:'post',order:20,query:['armored-damage'],update(_world,id,dt){service(ctx,id,dt);}});
   scheduler.register({id:'armored.smoke',phase:'post',order:30,query:['armored-smoke'],update(world,id,dt){const smoke=world.get(id,'armored-smoke')!;smoke.remaining=Number(smoke.remaining)-dt;if(Number(smoke.remaining)<=0)world.defer('destroy',id);}});
  }
- root.LWArmoredCombat=Object.freeze({register,command,initialDamage,initialWeapon,trace,box,refresh,canMove,canAim,canFire});
+ root.LWArmoredCombat=Object.freeze({register,command,initialDamage,initialWeapon,trace,box,refresh,canMove,canAim,canFire,availability});
  if(typeof module!=='undefined'&&module.exports)module.exports=root.LWArmoredCombat;
 })(globalThis);

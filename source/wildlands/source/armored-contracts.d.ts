@@ -49,13 +49,16 @@ declare namespace LWArmoredRuntime {
  interface Command extends Data {kind:string;sequence?:number;entityId?:string;entityIds?:string[];faction?:string;throttle?:number;steer?:number;brake?:number;cruise?:number;yaw?:number;elevation?:number;pressed?:boolean;ammo?:string;order?:string;targetId?:string;position?:Vec3;}
  interface Result {ok:boolean;message:string;sequence?:number;}
  type Solver='tracked-force-v1'|'tracked-force-v2';
+ type Navigation='legacy-grid-v1'|'hull-route-v1';
  interface Supply extends Data {depotId:string;remaining:number;condition:string;}
  interface Depot extends Data {ammunition:Record<string,number>;repairKits:number;}
- interface Context {solver?:Solver;world:World;catalog:LWArmoredData.Catalog;mission:LWArmoredData.Mission;state:State;emit(event:Event):void;random():number;}
- interface VehicleView {supply?:Supply;id:string;definition:string;faction:string;transform:Transform;previous:Transform;body:Body;motor:Motor;weapon:Weapon;damage:Damage;order:Order;}
+ interface Context {solver?:Solver;navigation?:Navigation;world:World;catalog:LWArmoredData.Catalog;mission:LWArmoredData.Mission;state:State;emit(event:Event):void;random():number;}
+ interface ActionAvailability {available:boolean;reason:string;}
+ interface VehicleActions {drive:ActionAvailability;aim:ActionAvailability;fire:ActionAvailability;repair:ActionAvailability;resupply:ActionAvailability;}
+ interface VehicleView {actions?:VehicleActions;supply?:Supply;id:string;definition:string;faction:string;transform:Transform;previous:Transform;body:Body;motor:Motor;weapon:Weapon;damage:Damage;order:Order;}
  interface ObstacleView extends LWArmoredData.Obstacle {destroyed:boolean;}
  interface Snapshot {depots?:LWArmoredData.SupplyDepot[];obstacles:ObstacleView[];smoke:{id:string;position:Vec3;radius:number;remaining:number}[];format:'wildlands-armored-snapshot';version:1;tick:number;seconds:number;status:string;controlled:string;missionId:string;playerFaction:string;vehicles:VehicleView[];projectiles:(Projectile&{id:string})[];events:Event[];objectives:Record<string,number>;terrainRevision:number;}
- interface Checkpoint {format:'wildlands-armored-checkpoint';version:1;solver:Solver;fixedStep:number;catalog:LWArmoredData.Catalog;missionId:string;entities:{id:string;components:Data}[];events:Event[];}
+ interface Checkpoint {format:'wildlands-armored-checkpoint';version:1;solver:Solver;navigation?:Navigation;fixedStep:number;catalog:LWArmoredData.Catalog;missionId:string;entities:{id:string;components:Data}[];events:Event[];}
  interface Session {command(input:Command):Result;query(faction?:string):Snapshot;step(ticks?:number):void;checkpoint():Checkpoint;}
  interface SessionApi {create(catalog:LWArmoredData.Catalog,missionId?:string,checkpoint?:Checkpoint):Session;restore(value:unknown):Session;}
  interface Extension {register(scheduler:Scheduler,context:Context):void;command?(context:Context,input:Command):Result|null;}

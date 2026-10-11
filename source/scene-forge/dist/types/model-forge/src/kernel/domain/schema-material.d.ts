@@ -11,6 +11,20 @@ export declare const SurfaceSchema: z.ZodObject<{
     strength: z.ZodNumber;
 }, z.core.$strict>;
 export type SurfaceSpec = z.infer<typeof SurfaceSchema>;
+/** Offline PBR detail on existing UVs; no paths, image URLs or executable shaders. */
+export declare const FinishSchema: z.ZodObject<{
+    version: z.ZodLiteral<1>;
+    kind: z.ZodEnum<{
+        "painted-metal": "painted-metal";
+        "bare-metal": "bare-metal";
+        rubber: "rubber";
+    }>;
+    seed: z.ZodNumber;
+    scale: z.ZodNumber;
+    wear: z.ZodNumber;
+    palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
+}, z.core.$strict>;
+export type FinishSpec = z.infer<typeof FinishSchema>;
 export declare const MaterialSchema: z.ZodObject<{
     color: z.ZodString;
     metalness: z.ZodDefault<z.ZodNumber>;
@@ -25,6 +39,18 @@ export declare const MaterialSchema: z.ZodObject<{
         seed: z.ZodNumber;
         scale: z.ZodNumber;
         strength: z.ZodNumber;
+    }, z.core.$strict>>;
+    finish: z.ZodOptional<z.ZodObject<{
+        version: z.ZodLiteral<1>;
+        kind: z.ZodEnum<{
+            "painted-metal": "painted-metal";
+            "bare-metal": "bare-metal";
+            rubber: "rubber";
+        }>;
+        seed: z.ZodNumber;
+        scale: z.ZodNumber;
+        wear: z.ZodNumber;
+        palette: z.ZodOptional<z.ZodArray<z.ZodString>>;
     }, z.core.$strict>>;
     sheen: z.ZodOptional<z.ZodNumber>;
     sheenColor: z.ZodOptional<z.ZodString>;

@@ -19,3 +19,86 @@ html[data-wildlands-app="armored"] .ap-supply-progress{height:3px;background:#ff
 html[data-wildlands-app="armored"] .ap-supply-progress i{height:100%;display:block;background:var(--ap-green);width:0}
 @media(max-width:600px){html[data-wildlands-app="armored"] .ap-service h3{font-size:11px}html[data-wildlands-app="armored"] .ap-service button{font-size:10px;padding:8px 4px}html[data-wildlands-app="armored"] .ap-service{margin-top:8px;padding-top:8px}html[data-wildlands-app="armored"] .ap-feedback{bottom:auto;top:205px}}
 @media(max-height:620px){html[data-wildlands-app="armored"] .ap-map-wrap canvas{height:74px}html[data-wildlands-app="armored"] .ap-service{margin-top:6px;padding-top:6px}html[data-wildlands-app="armored"] .ap-service p{margin:3px 0}}
+
+/* Combat chrome keeps the terrain visible; detail expands only on request. */
+html[data-wildlands-app="armored"]{--ap-warning:#f1cb83;scrollbar-color:#7e8874 #171e1b}
+html[data-wildlands-app="armored"] input{caret-color:var(--ap-accent)}
+html[data-wildlands-app="armored"] summary{cursor:pointer;text-underline-offset:.2em}
+html[data-wildlands-app="armored"] summary:focus-visible{outline:2px solid var(--ap-accent);outline-offset:4px}
+html[data-wildlands-app="armored"] .ap-hud{letter-spacing:.015em}
+html[data-wildlands-app="armored"] .ap-hud button{min-height:36px}
+html[data-wildlands-app="armored"] .ap-toolbar button[aria-pressed="true"]{background:#3b4533;border-color:var(--ap-accent);color:var(--ap-accent)}
+html[data-wildlands-app="armored"] .ap-operation{padding:10px 12px;background:var(--ap-panel);text-shadow:none}
+html[data-wildlands-app="armored"] .ap-operation h2{font-size:14px;letter-spacing:.09em}
+html[data-wildlands-app="armored"] .ap-objective{font-size:12px}
+html[data-wildlands-app="armored"] .ap-objective.done{color:var(--ap-green)}
+html[data-wildlands-app="armored"] .ap-vehicle{width:300px;padding:16px}
+html[data-wildlands-app="armored"] .ap-vehicle h3{font-size:13px;line-height:1.5;margin-bottom:8px;letter-spacing:.08em}
+html[data-wildlands-app="armored"] .ap-condition[data-condition="impaired"]{color:var(--ap-warning)}
+html[data-wildlands-app="armored"] .ap-condition[data-condition="disabled"],
+html[data-wildlands-app="armored"] .ap-condition[data-condition="immobilized"],
+html[data-wildlands-app="armored"] .ap-condition[data-condition="destroyed"]{color:var(--ap-red)}
+html[data-wildlands-app="armored"] .ap-ammo{font-variant-numeric:tabular-nums;font-size:11px;letter-spacing:0}
+html[data-wildlands-app="armored"] .ap-ammo strong{font-size:24px}
+html[data-wildlands-app="armored"] .ap-station-status{margin:10px 0 0;font-size:12px;line-height:1.5;color:var(--ap-warning)}
+html[data-wildlands-app="armored"] .ap-systems{margin-top:12px;pointer-events:auto}
+html[data-wildlands-app="armored"] .ap-systems summary{font-size:11px;color:var(--ap-muted);padding:5px 0;line-height:1.5}
+html[data-wildlands-app="armored"] .ap-components{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;max-height:180px;overflow:auto;font-size:11px;letter-spacing:0;margin-top:8px}
+html[data-wildlands-app="armored"] .ap-components>div{display:flex;justify-content:space-between;gap:8px;line-height:1.4;text-transform:capitalize}
+html[data-wildlands-app="armored"] .ap-components strong{font-weight:normal;font-variant-numeric:tabular-nums;color:var(--ap-green)}
+html[data-wildlands-app="armored"] .ap-components .damaged strong{color:var(--ap-warning)}
+html[data-wildlands-app="armored"] .ap-hud .ap-repair{font-size:11px;margin-top:8px;padding:8px 10px}
+html[data-wildlands-app="armored"] .ap-map-wrap{width:224px;padding:12px}
+html[data-wildlands-app="armored"] .ap-map-wrap canvas{width:200px;height:150px}
+html[data-wildlands-app="armored"] .ap-map-wrap>button{width:100%;margin-top:8px;text-align:left}
+html[data-wildlands-app="armored"] .ap-service button[aria-disabled="true"]{color:var(--ap-muted)}
+html[data-wildlands-app="armored"] .ap-service p{font-size:12px}
+html[data-wildlands-app="armored"] .ap-service .ap-supply-stocks{font-size:11px}
+html[data-wildlands-app="armored"] .ap-orders{max-width:calc(100vw - 30px);max-height:calc(100vh - 160px);overflow:auto;bottom:150px;box-shadow:0 12px 30px #0005}
+html[data-wildlands-app="armored"] .ap-orders [data-ap-action="cancel-orders"]{margin-top:16px;color:var(--ap-muted)}
+html[data-wildlands-app="armored"] .ap-feedback{bottom:138px;max-width:min(560px,calc(100vw - 36px));line-height:1.5}
+html[data-wildlands-app="armored"] .ap-platoon button{font-size:11px;letter-spacing:0}
+@media(max-width:1050px){
+ html[data-wildlands-app="armored"] .ap-compass{top:120px}
+ html[data-wildlands-app="armored"] .ap-center-bottom{display:none}
+ html[data-wildlands-app="armored"] .ap-vehicle{width:258px;padding:12px}
+ html[data-wildlands-app="armored"] .ap-map-wrap{width:194px;padding:10px}
+ html[data-wildlands-app="armored"] .ap-map-wrap canvas{width:174px;height:125px}
+}
+@media(max-width:600px){
+ html[data-wildlands-app="armored"] .ap-top{padding:12px;gap:10px}
+ html[data-wildlands-app="armored"] .ap-operation{max-width:calc(100% - 105px);padding:8px 10px}
+ html[data-wildlands-app="armored"] .ap-operation h2{font-size:12px;line-height:1.5}
+ html[data-wildlands-app="armored"] .ap-objective{font-size:11px}
+ html[data-wildlands-app="armored"] .ap-toolbar{gap:4px}
+ html[data-wildlands-app="armored"] .ap-toolbar button{font-size:11px;padding:8px}
+ html[data-wildlands-app="armored"] .ap-compass{top:190px;width:180px}
+ html[data-wildlands-app="armored"] .ap-bottom{left:12px;right:12px;bottom:12px;gap:8px;align-items:end}
+ html[data-wildlands-app="armored"] .ap-bottom>div:first-child{width:calc(100% - 150px)}
+ html[data-wildlands-app="armored"] .ap-vehicle{width:100%;padding:10px}
+ html[data-wildlands-app="armored"] .ap-vehicle h3{font-size:11px;letter-spacing:.03em}
+ html[data-wildlands-app="armored"] .ap-readouts{flex-wrap:wrap;gap:4px}
+ html[data-wildlands-app="armored"] .ap-condition{margin-left:6px;font-size:10px}
+ html[data-wildlands-app="armored"] .ap-ammo{flex-wrap:wrap;gap:6px}
+ html[data-wildlands-app="armored"] .ap-ammo strong{font-size:21px}
+ html[data-wildlands-app="armored"] .ap-components{grid-template-columns:1fr;max-height:120px}
+ html[data-wildlands-app="armored"] .ap-systems summary{font-size:11px}
+ html[data-wildlands-app="armored"] .ap-map-wrap{width:142px;padding:10px}
+ html[data-wildlands-app="armored"] .ap-map-wrap canvas{width:122px;height:100px}
+ html[data-wildlands-app="armored"] .ap-orders-label{font-size:10px}
+ html[data-wildlands-app="armored"] .ap-map-wrap>button,html[data-wildlands-app="armored"] .ap-service button{font-size:11px;line-height:1.4;padding:8px 5px}
+ html[data-wildlands-app="armored"] .ap-service p{font-size:11px}
+ html[data-wildlands-app="armored"] .ap-platoon{flex-wrap:wrap}
+ html[data-wildlands-app="armored"] .ap-platoon button{flex-basis:30%;font-size:10px;padding:8px 4px}
+ html[data-wildlands-app="armored"] .ap-feedback{top:250px;bottom:auto}
+ html[data-wildlands-app="armored"] .ap-orders{bottom:25px;max-height:calc(100vh - 70px)}
+}
+@media(max-height:620px){
+ html[data-wildlands-app="armored"] .ap-map-wrap canvas{height:74px}
+ html[data-wildlands-app="armored"] .ap-operation{max-width:280px;padding:6px 10px}
+ html[data-wildlands-app="armored"] .ap-systems{margin-top:4px}
+ html[data-wildlands-app="armored"] .ap-components{max-height:80px}
+ html[data-wildlands-app="armored"] .ap-vehicle{padding:10px}
+}
+html[data-wildlands-app="armored"] .ap-action-reason{font-size:11px;line-height:1.5;margin:6px 0 0;color:var(--ap-muted)}
+html[data-wildlands-app="armored"] .ap-hud button[aria-disabled="true"]{color:var(--ap-muted);background:#202922;cursor:not-allowed}

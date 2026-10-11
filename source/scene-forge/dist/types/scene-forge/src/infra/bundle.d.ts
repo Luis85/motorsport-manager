@@ -132,6 +132,14 @@ export declare function packScene(scene: SceneDocument, library: ModelLibrary): 
                 strength: number;
                 version?: 1 | 2 | undefined;
             } | undefined;
+            finish?: {
+                version: 1;
+                kind: "painted-metal" | "bare-metal" | "rubber";
+                seed: number;
+                scale: number;
+                wear: number;
+                palette?: string[] | undefined;
+            } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;
             sheenRoughness?: number | undefined;
@@ -442,6 +450,14 @@ export declare function packScene(scene: SceneDocument, library: ModelLibrary): 
                 scale: number;
                 strength: number;
                 version?: 1 | 2 | undefined;
+            } | undefined;
+            finish?: {
+                version: 1;
+                kind: "painted-metal" | "bare-metal" | "rubber";
+                seed: number;
+                scale: number;
+                wear: number;
+                palette?: string[] | undefined;
             } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;

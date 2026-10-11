@@ -138,6 +138,14 @@ export declare function exampleBundle(id: string): Promise<{
                 strength: number;
                 version?: 1 | 2 | undefined;
             } | undefined;
+            finish?: {
+                version: 1;
+                kind: "painted-metal" | "bare-metal" | "rubber";
+                seed: number;
+                scale: number;
+                wear: number;
+                palette?: string[] | undefined;
+            } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;
             sheenRoughness?: number | undefined;
@@ -448,6 +456,14 @@ export declare function exampleBundle(id: string): Promise<{
                 scale: number;
                 strength: number;
                 version?: 1 | 2 | undefined;
+            } | undefined;
+            finish?: {
+                version: 1;
+                kind: "painted-metal" | "bare-metal" | "rubber";
+                seed: number;
+                scale: number;
+                wear: number;
+                palette?: string[] | undefined;
             } | undefined;
             sheen?: number | undefined;
             sheenColor?: string | undefined;

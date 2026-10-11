@@ -18,6 +18,8 @@
   const save=JSON.parse(JSON.stringify(value)) as CP;
   if(save.format!=='wildlands-armored-checkpoint'||save.version!==1||!['tracked-force-v1','tracked-force-v2'].includes(save.solver)||save.fixedStep!==1/60)fail('unsupported format or solver');
   const modern=save.solver==='tracked-force-v2';
+  if(save.navigation!==undefined&&save.navigation!=='legacy-grid-v1'&&save.navigation!=='hull-route-v1')fail('unsupported navigation');
+  if(!modern&&save.navigation==='hull-route-v1')fail('navigation requires tracked-force-v2');
   save.catalog=root.LWArmoredCatalog.validate(save.catalog);
   const mission=save.catalog.missions.find(m=>m.id===save.missionId);if(!mission)fail('unknown mission');
   const entities=list(save.entities,2048) as CP['entities'],ids=new Set<string>();

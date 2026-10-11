@@ -173,11 +173,20 @@ var SurfaceSchema = z3.strictObject({
   scale: z3.number().min(1).max(16),
   strength: z3.number().min(0).max(1)
 });
+var FinishSchema = z3.strictObject({
+  version: z3.literal(1),
+  kind: z3.enum(["painted-metal", "bare-metal", "rubber"]),
+  seed: z3.number().int().min(0).max(65535),
+  scale: z3.number().min(1).max(16),
+  wear: z3.number().min(0).max(1),
+  palette: z3.array(Color).min(1).max(4).optional()
+});
 var MaterialSchema = z3.object({
   color: Color,
   metalness: z3.number().min(0).max(1).default(0),
   roughness: z3.number().min(0).max(1).default(0.65),
   surface: SurfaceSchema.optional(),
+  finish: FinishSchema.optional(),
   sheen: z3.number().min(0).max(1).optional(),
   sheenColor: Color.optional(),
   sheenRoughness: z3.number().min(0).max(1).optional(),
@@ -919,13 +928,13 @@ function validateDocument(document2, models = {}, stack = []) {
     for (const k of ["radius", "height", "tube", "depth"])
       if (k in g) positive2(g[k], k);
     if (g.type === "organic") {
-      for (const [field, min, max] of [
+      for (const [field2, min, max] of [
         ["roundness", 0.65, 1.5],
         ["taper", -0.65, 0.65],
         ["bend", -0.75, 0.75]
       ])
-        if (g[field] < min || g[field] > max)
-          fail("INVALID_GEOMETRY", `${id}.${field} must be between ${min} and ${max}.`);
+        if (g[field2] < min || g[field2] > max)
+          fail("INVALID_GEOMETRY", `${id}.${field2} must be between ${min} and ${max}.`);
       if (g.profile) {
         if (g.profile[0].at !== -1 || g.profile.at(-1).at !== 1)
           fail("INVALID_GEOMETRY", `${id}.profile must start at -1 and end at 1.`);
@@ -1266,10 +1275,87 @@ function sphereUVs(positions) {
   return out;
 }
 
+// ../model-forge/src/kernel/application/finish-pattern.ts
+var finishAlgorithm = "forge-finish-v1";
+var SIZE2 = 128;
+function noise2(x, y, seed) {
+  let n = Math.imul(x ^ seed, 374761393) ^ Math.imul(y + seed, 668265263);
+  n = Math.imul(n ^ n >>> 13, 1274126177);
+  return ((n ^ n >>> 16) >>> 0) / 4294967295;
+}
+function field(x, y, cells, seed) {
+  const px = x / SIZE2 * cells, py = y / SIZE2 * cells;
+  const ix = Math.floor(px), iy = Math.floor(py);
+  const tx = px - ix, ty = py - iy;
+  const sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
+  const sample = (dx, dy) => noise2((ix + dx) % cells, (iy + dy) % cells, seed);
+  return (sample(0, 0) * (1 - sx) + sample(1, 0) * sx) * (1 - sy) + (sample(0, 1) * (1 - sx) + sample(1, 1) * sx) * sy;
+}
+function generateFinish(finish) {
+  if (finish.version !== 1 || !["painted-metal", "bare-metal", "rubber"].includes(finish.kind) || !Number.isInteger(finish.seed) || finish.seed < 0 || finish.seed > 65535 || !Number.isFinite(finish.scale) || finish.scale < 1 || finish.scale > 16 || !Number.isFinite(finish.wear) || finish.wear < 0 || finish.wear > 1 || finish.palette !== void 0 && (!Array.isArray(finish.palette) || finish.palette.length < 1 || finish.palette.length > 4 || finish.palette.some((color2) => !/^#[0-9a-fA-F]{6}$/.test(color2))))
+    throw Error("Invalid bounded material finish");
+  const color = new Uint8Array(SIZE2 * SIZE2 * 4), normal = new Uint8Array(color.length);
+  const orm = new Uint8Array(color.length), heights = new Float64Array(SIZE2 * SIZE2);
+  const palette = (finish.palette ?? ["#ffffff"]).map(
+    (color2) => [1, 3, 5].map((i) => parseInt(color2.slice(i, i + 2), 16))
+  );
+  for (let y = 0; y < SIZE2; y++)
+    for (let x = 0; x < SIZE2; x++) {
+      const grain = noise2(x, y, finish.seed), index = y * SIZE2 + x, offset = index * 4;
+      const patches = field(x, y, 4, finish.seed + 11) * 0.7 + field(x, y, 8, finish.seed + 17) * 0.3;
+      const chips = field(x, y, 16, finish.seed + 31);
+      const worn = finish.wear * (chips > 0.69 ? (chips - 0.69) / 0.31 : 0);
+      const scratch = noise2(x, Math.floor(y / 8), finish.seed + 47) > 0.987 ? finish.wear * (0.35 + 0.65 * grain) : 0;
+      const exposed = Math.min(1, worn * 5 + scratch);
+      const swatch = palette[Math.min(palette.length - 1, Math.floor(patches * palette.length))];
+      const metal = finish.kind === "bare-metal" ? 1 : finish.kind === "painted-metal" ? exposed : 0;
+      const shade = finish.kind === "rubber" ? 0.91 + 0.07 * grain : 0.94 + 0.06 * grain;
+      const roughness = finish.kind === "rubber" ? 0.88 + 0.12 * grain : finish.kind === "bare-metal" ? 0.42 + 0.22 * grain + 0.18 * finish.wear : 0.78 + 0.16 * grain - 0.35 * exposed;
+      for (let channel = 0; channel < 3; channel++) {
+        const painted = swatch[channel] * shade;
+        color[offset + channel] = Math.round(
+          finish.kind === "painted-metal" ? painted * (1 - exposed) + (112 + 30 * grain) * exposed : painted
+        );
+      }
+      color[offset + 3] = 255;
+      orm.set([255, Math.round(roughness * 255), Math.round(metal * 255), 255], offset);
+      heights[index] = (grain - 0.5) * (finish.kind === "rubber" ? 0.1 : 0.04) - exposed * 0.15;
+    }
+  const height2 = (x, y) => heights[(y + SIZE2) % SIZE2 * SIZE2 + (x + SIZE2) % SIZE2];
+  for (let y = 0; y < SIZE2; y++)
+    for (let x = 0; x < SIZE2; x++) {
+      const dx = height2(x - 1, y) - height2(x + 1, y), dy = height2(x, y - 1) - height2(x, y + 1);
+      const length = Math.hypot(dx, dy, 1);
+      normal.set(
+        [
+          Math.round((dx / length * 0.5 + 0.5) * 255),
+          Math.round((dy / length * 0.5 + 0.5) * 255),
+          Math.round((1 / length * 0.5 + 0.5) * 255),
+          255
+        ],
+        (y * SIZE2 + x) * 4
+      );
+    }
+  return { width: SIZE2, height: SIZE2, color, normal, orm };
+}
+
 // ../model-forge/src/kernel/application/surfaces.ts
 var maxSurfaceRecipes = 256;
 function createSurfacePool() {
   const recipes = /* @__PURE__ */ new Map();
+  function texture(data, name, scale) {
+    const map = new THREE.DataTexture(data, 128, 128, THREE.RGBAFormat);
+    map.name = name;
+    map.uuid = uuid(name);
+    Object.defineProperty(map.source, "uuid", { value: uuid(`${name}/source`) });
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
+    map.repeat.set(scale, scale);
+    map.magFilter = THREE.LinearFilter;
+    map.minFilter = THREE.LinearMipmapLinearFilter;
+    map.generateMipmaps = true;
+    map.needsUpdate = true;
+    return map;
+  }
   function apply(material2, surface) {
     const { version, ...legacy } = surface;
     const surfaceAlgorithm = resolveSurfaceAlgorithm(surface);
@@ -1282,20 +1368,10 @@ function createSurfacePool() {
           `Scene exceeds ${maxSurfaceRecipes} distinct surface recipes. Reuse kind/seed/scale/strength across material colors.`
         );
       const pixels = generateSurface(surface);
-      const texture = (data, name) => {
-        const map = new THREE.DataTexture(data, pixels.width, pixels.height, THREE.RGBAFormat);
-        map.name = `${key}/${name}`;
-        map.uuid = uuid(map.name);
-        Object.defineProperty(map.source, "uuid", { value: uuid(`${map.name}/source`) });
-        map.wrapS = map.wrapT = THREE.RepeatWrapping;
-        map.repeat.set(surface.scale, surface.scale);
-        map.magFilter = THREE.LinearFilter;
-        map.minFilter = THREE.LinearMipmapLinearFilter;
-        map.generateMipmaps = true;
-        map.needsUpdate = true;
-        return map;
+      maps = {
+        color: texture(pixels.color, `${key}/color`, surface.scale),
+        normal: texture(pixels.normal, `${key}/normal`, surface.scale)
       };
-      maps = { color: texture(pixels.color, "color"), normal: texture(pixels.normal, "normal") };
       maps.color.colorSpace = THREE.SRGBColorSpace;
       recipes.set(key, maps);
     }
@@ -1307,18 +1383,47 @@ function createSurfacePool() {
       surfaceAlgorithm
     };
   }
+  function applyFinish2(material2, finish) {
+    const key = `${finishAlgorithm}/${canonical(finish)}`;
+    let maps = recipes.get(key);
+    if (!maps) {
+      if (recipes.size >= maxSurfaceRecipes)
+        fail(
+          "SCENE_BUDGET",
+          `Scene exceeds ${maxSurfaceRecipes} distinct surface recipes. Reuse surface and finish recipes across material colors.`
+        );
+      const pixels = generateFinish(finish);
+      maps = {
+        color: texture(pixels.color, `${key}/color`, finish.scale),
+        normal: texture(pixels.normal, `${key}/normal`, finish.scale),
+        orm: texture(pixels.orm, `${key}/orm`, finish.scale)
+      };
+      maps.color.colorSpace = THREE.SRGBColorSpace;
+      recipes.set(key, maps);
+    }
+    material2.map = maps.color;
+    material2.normalMap = maps.normal;
+    material2.roughnessMap = material2.metalnessMap = maps.orm;
+    material2.userData = { ...material2.userData, finish: structuredClone(finish), finishAlgorithm };
+  }
   function dispose() {
     for (const maps of recipes.values()) {
       maps.color.dispose();
       maps.normal.dispose();
+      maps.orm?.dispose();
     }
     recipes.clear();
   }
-  return { apply, dispose };
+  return { apply, applyFinish: applyFinish2, dispose };
 }
 function applySurface(material2, surface, owner) {
   const pool = owner ?? createSurfacePool();
   pool.apply(material2, surface);
+  if (!owner) material2.addEventListener("dispose", pool.dispose);
+}
+function applyFinish(material2, finish, owner) {
+  const pool = owner ?? createSurfacePool();
+  pool.applyFinish(material2, finish);
   if (!owner) material2.addEventListener("dispose", pool.dispose);
 }
 function ensureSurfaceTangents(geometry) {
@@ -1562,10 +1667,12 @@ function createMaterial(m, surfaces) {
     // Only set when requested, so materials without the field build exactly as before.
     ...m.vertexColors ? { vertexColors: true } : {}
   };
-  if (m.shading === "unlit" && m.surface)
+  if (m.surface && m.finish)
+    fail("INVALID_MATERIAL", "Choose surface or finish detail for one material, not both.");
+  if (m.shading === "unlit" && (m.surface || m.finish))
     fail(
       "INVALID_MATERIAL",
-      "Surface detail requires standard PBR shading; remove surface or use standard shading."
+      "Surface detail requires standard PBR shading; remove surface/finish or use standard shading."
     );
   if (m.shading === "unlit") return new THREE5.MeshBasicMaterial(common2);
   const standard = {
@@ -1582,6 +1689,7 @@ function createMaterial(m, surfaces) {
   const result = Object.keys(physical2).length ? new THREE5.MeshPhysicalMaterial({ ...standard, ...physical2 }) : new THREE5.MeshStandardMaterial(standard);
   try {
     if (m.surface) applySurface(result, m.surface, surfaces);
+    if (m.finish) applyFinish(result, m.finish, surfaces);
   } catch (error) {
     result.dispose();
     throw error;
@@ -2975,13 +3083,13 @@ function unchangedNative(kind, geometry, create) {
     }
   }
   const source = natives.get(kind), actual = buffers(geometry);
-  for (const [field, tolerance] of [
+  for (const [field2, tolerance] of [
     ["position", 11e-6],
     ["normal", 2e-4],
     ["uv", 1e-6],
     ["index", 0]
   ]) {
-    if (source[field].length !== actual[field].length || source[field].some((value, i) => Math.abs(value - actual[field][i]) > tolerance))
+    if (source[field2].length !== actual[field2].length || source[field2].some((value, i) => Math.abs(value - actual[field2][i]) > tolerance))
       return false;
   }
   return true;
@@ -3087,6 +3195,7 @@ function materialData(material2) {
     metalness: round(m.metalness ?? 0, 1e-3),
     flatShading: !!m.flatShading
   };
+  if (material2.userData.finish) result.finish = structuredClone(material2.userData.finish);
   if (material2.userData.surface) result.surface = structuredClone(material2.userData.surface);
   if (material2 instanceof THREE12.MeshPhysicalMaterial) {
     result.sheen = round(material2.sheen, 1e-3);
@@ -3276,6 +3385,7 @@ var fields = /* @__PURE__ */ new Set([
   "emissive",
   "emissiveIntensity",
   "surface",
+  "finish",
   "sheen",
   "sheenColor",
   "sheenRoughness",
@@ -3292,13 +3402,13 @@ function importedMaterials(materials, used) {
       ...typeof base === "string" ? { color: base } : plain(base) ? base : {},
       ...plain(props) ? props : {}
     };
-    const unsupported = (field, reason) => fail(
+    const unsupported = (field2, reason) => fail(
       "LITTLEWILD_MATERIAL_UNSUPPORTED",
-      `Node ${nodeId} material ${role}: ${field} ${reason}`,
-      { node: nodeId, material: role, field, value: data[field] }
+      `Node ${nodeId} material ${role}: ${field2} ${reason}`,
+      { node: nodeId, material: role, field: field2, value: data[field2] }
     );
-    for (const field of Object.keys(data))
-      if (!fields.has(field)) unsupported(field, "is not supported by Scene Forge.");
+    for (const field2 of Object.keys(data))
+      if (!fields.has(field2)) unsupported(field2, "is not supported by Scene Forge.");
     const opacity = data.opacity ?? 1;
     const transparent = data.transparent ?? false;
     if (data.depthWrite !== void 0 && typeof data.depthWrite !== "boolean")
@@ -4485,11 +4595,11 @@ function resolvedMaterial(table, key, props, mesh) {
     delete data.emissive;
     delete data.emissiveIntensity;
   }
-  if (Object.keys(physical).some((field) => data[field] !== void 0))
-    for (const [field, value] of Object.entries(physical)) data[field] ??= value;
-  for (const [field, value] of Object.entries(data))
-    if (typeof value === "number") data[field] = round2(value, 1e-3);
-    else if (typeof value === "string" && value.startsWith("#")) data[field] = value.toLowerCase();
+  if (Object.keys(physical).some((field2) => data[field2] !== void 0))
+    for (const [field2, value] of Object.entries(physical)) data[field2] ??= value;
+  for (const [field2, value] of Object.entries(data))
+    if (typeof value === "number") data[field2] = round2(value, 1e-3);
+    else if (typeof value === "string" && value.startsWith("#")) data[field2] = value.toLowerCase();
   return canonical(data);
 }
 function derivedBuffers(positions, indices) {
@@ -4545,18 +4655,18 @@ function preserveVariantNodes(exported, source, tables, kept) {
   };
   const mergeNode = (node, source2) => {
     const result = {};
-    const take = (field, fromSource) => {
-      const value = fromSource ? source2[field] : node[field];
-      if (value !== void 0) result[field] = value;
+    const take = (field2, fromSource) => {
+      const value = fromSource ? source2[field2] : node[field2];
+      if (value !== void 0) result[field2] = value;
     };
     take("primitive", false);
     take("id", !Object.hasOwn(source2, "id") ? true : source2.id === node.id);
-    for (const [field, fallback] of [
+    for (const [field2, fallback] of [
       ["position", 0],
       ["rotation", 0],
       ["scale", 1]
     ])
-      take(field, sameVector(source2[field], node[field], fallback));
+      take(field2, sameVector(source2[field2], node[field2], fallback));
     take("visible", source2.visible === false === (node.visible === false));
     let exportedMaterial = false;
     if (node.primitive !== "group") {
@@ -4585,12 +4695,12 @@ function preserveVariantNodes(exported, source, tables, kept) {
       Array.isArray(source2.children) ? source2.children : []
     );
     if (children.length || Array.isArray(source2.children)) result.children = children;
-    for (const [field, value] of Object.entries(source2))
-      if (!owned.has(field)) result[field] = value;
+    for (const [field2, value] of Object.entries(source2))
+      if (!owned.has(field2)) result[field2] = value;
     const ordered = {};
-    for (const field of [...Object.keys(source2), ...Object.keys(result)])
-      if (Object.hasOwn(result, field) && !Object.hasOwn(ordered, field))
-        ordered[field] = result[field];
+    for (const field2 of [...Object.keys(source2), ...Object.keys(result)])
+      if (Object.hasOwn(result, field2) && !Object.hasOwn(ordered, field2))
+        ordered[field2] = result[field2];
     if (exportedMaterial) kept.exportedMaterialNodes.push(ordered);
     return ordered;
   };
@@ -4655,8 +4765,8 @@ function preserveExported(previous, exported, materials, meshes) {
 }
 function preserveTables(visual, previous) {
   const used = referencedResources(previous.models);
-  const extras = (field, references) => {
-    const source = plain4(previous[field]) ? previous[field] : {}, current = plain4(visual[field]) ? { ...visual[field] } : {};
+  const extras = (field2, references) => {
+    const source = plain4(previous[field2]) ? previous[field2] : {}, current = plain4(visual[field2]) ? { ...visual[field2] } : {};
     for (const [key, value] of Object.entries(source))
       if (!references.has(key) && !Object.hasOwn(current, key)) current[key] = value;
     return Object.keys(current).length ? inSourceOrder(current, source) : void 0;
@@ -4682,10 +4792,10 @@ var asciiText = (value) => plainText(value).replace(
   (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`
 );
 var sourceLayouts = [definitionText, plainText, asciiText];
-function renameMaterials(nodes2, names, field = "material") {
+function renameMaterials(nodes2, names, field2 = "material") {
   for (const node of nodes2) {
-    if (node[field] && names.has(node[field])) node[field] = names.get(node[field]);
-    if (node.children) renameMaterials(node.children, names, field);
+    if (node[field2] && names.has(node[field2])) node[field2] = names.get(node[field2]);
+    if (node.children) renameMaterials(node.children, names, field2);
   }
 }
 function collect(nodes2, key, into) {

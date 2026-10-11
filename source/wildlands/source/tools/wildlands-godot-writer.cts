@@ -25,6 +25,7 @@ export async function writeGodotProject(project:unknown,output:string,options:Go
  // Installs the WildlandsProject validator that compile() admits the project with.
  require('../wildlands-project.js');
  require('../asset-surface.js');
+ require('../asset-finish.js');
  const G=require('../wildlands-godot.js') as {compile(project:unknown,resources:Resources,options:GodotWriteOptions):Promise<Result>};
  const compiled=await G.compile(project,godotResources(options),options),temporary=path.join(parent,'.'+path.basename(destination)+'.wildlands-'+randomUUID());
  // Exclusive directory claim closes the normal concurrent-publisher collision window.

@@ -1081,6 +1081,31 @@ invalid topology remain rejected. A `MESH_COMPLEXITY_LIMIT` diagnostic means to
 reuse meshes or reduce geometry detail; dividing the same data across assets does
 not evade the aggregate limit.
 
+## Portable material finishes
+
+Materials and node `materialProps` may use `finish` in place of `surface`:
+
+```json
+{"finish":{"version":1,"kind":"painted-metal","seed":17,"scale":1,"wear":0.055,"palette":["#647052"]}}
+```
+
+The closed descriptor requires version 1, `kind` (`painted-metal`, `bare-metal`
+or `rubber`), integer seed 0–65535, scale 1–16 and wear 0–1. Optional palette has
+one to four `#RRGGBB` colors. Model Forge, its Scene Forge bridge and Wildlands
+share the versioned `forge-finish-v1` pixel contract: 128×128 sRGB color, linear
+tangent normals and packed roughness (green)/metalness (blue). Scalar base color,
+roughness and metalness multiply the maps; white base color preserves the recipe
+palette. Scale controls texture repetition. Finish and organic surface descriptors
+are mutually exclusive, including merged per-node overrides.
+
+Browser renderers cache bounded descriptors with owner references and release
+textures when the last owner retires. Finishes and organic surfaces share the
+256-descriptor budget. Godot compilation bakes the same pixels to offline PNGs
+and records the exact recipe and algorithm in `finishes/index.json`; native
+materials use its albedo, normal and roughness/metalness maps. This guarantees
+pixel data, not identical browser/native lighting. Existing surface algorithms
+and assets without finishes retain their previous behavior.
+
 ## Armored combat template
 
 `template: "armored"` is an additive, independently versioned combat runtime;

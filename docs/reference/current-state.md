@@ -21,6 +21,9 @@ fitted garments while preserving exact revision 1–3 Studio export imports. Det
 authored mesh UVs travel through browser rendering, Scene Forge GLB and native
 engine export. Scene Forge adds bounded organic profile stations for authored silhouettes, and
 engine creature inspection can return compact material/geometry facts for agents.
+Native finish recipes add deterministic painted-metal, bare-metal and rubber
+color, normal and roughness/metalness maps across the Forge kernel and Wildlands;
+Godot exports bake the same pixel data for its native material consumer.
 Versioned surface recipes retain earlier texture bytes; explicit version 2 adds
 finer directional coat detail. Agent captures expose repeatable three-quarter
 views, orbit, zoom and animation phase.
@@ -322,7 +325,16 @@ campaign/content/mode coverage and online multiplayer remain incomplete. See the
 [parity ledger](armored-platoon-parity.md) for explicit gaps and the
 [dated evidence](../_archive/armored-platoon-2026-10-10-integration.md) for actual checks.
 
-The current v2 slice adds yaw-oriented continuous planar hull collisions,
+The current work adds native painted-metal, bare-metal and rubber finish recipes
+across Model Forge, Scene Forge, browser assets and Godot export; the Armored
+visual package embeds bounded offline maps and refined original fittings.
+Hull-aware navigation and bounded reverse recovery are separately versioned so
+older v2 saves retain grid behavior. The HUD consumes authoritative action
+availability, improves order keyboard focus and makes detailed damage optional.
+These changes remain an intermediate checkpoint; their verification must use the
+new source identity rather than the earlier results below.
+
+The preceding v2 slice added yaw-oriented continuous planar hull collisions,
 station-specific mobility/fire eligibility, bounded occluded HE track damage,
 useful AP/HE selection and finite timed depot service. New sessions use
 `tracked-force-v2`; runtime v1 restore preserves its old arithmetic and topology.

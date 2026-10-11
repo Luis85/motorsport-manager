@@ -4,9 +4,9 @@
  type R=LWArmoredRuntime.Result;type C=LWArmoredRuntime.Command;type D=LWArmoredRuntime.Data;type CP=LWArmoredRuntime.Checkpoint;
  const root=input as {
   LWECS:LWArmoredRuntime.Ecs;LWArmoredCatalog:LWArmoredData.CatalogApi;LWArmoredPhysics:LWArmoredRuntime.Physics;
-  LWArmoredCombat:LWArmoredRuntime.Extension&{initialDamage(v:LWArmoredData.Vehicle):LWArmoredRuntime.Damage;initialWeapon(v:LWArmoredData.Vehicle,c:LWArmoredData.Catalog):LWArmoredRuntime.Weapon};
+  LWArmoredCombat:LWArmoredRuntime.Extension&{initialDamage(v:LWArmoredData.Vehicle):LWArmoredRuntime.Damage;initialWeapon(v:LWArmoredData.Vehicle,c:LWArmoredData.Catalog):LWArmoredRuntime.Weapon;canMove(d:LWArmoredRuntime.Damage):boolean;availability(ctx:LWArmoredRuntime.Context,id:string):Pick<LWArmoredRuntime.VehicleActions,'aim'|'fire'|'repair'>};
   LWArmoredAI:LWArmoredRuntime.Extension&{visible(ctx:LWArmoredRuntime.Context,observer:string,target:string):boolean};LWArmoredMission:LWArmoredRuntime.Extension;
-  LWArmoredLogistics:LWArmoredRuntime.Extension;
+  LWArmoredLogistics:LWArmoredRuntime.Extension&{availability(ctx:LWArmoredRuntime.Context,id:string):LWArmoredRuntime.ActionAvailability};
   LWArmoredCheckpoint:{validate(input:unknown):CP};LWArmored?:LWArmoredRuntime.SessionApi;
  };
  const copy=<T>(value:T):T=>JSON.parse(JSON.stringify(value)) as T;
@@ -16,6 +16,9 @@
   const mission=catalog.missions.find(m=>m.id===(saved?.missionId??missionId??catalog.missions[0]?.id));
   if(!mission)throw Error('Unknown armored mission.');
   const solver=saved?.solver??'tracked-force-v2';
+  // Missing navigation identifies checkpoints written before hull-route-v1. Preserve that omission.
+  const navigation=saved?(saved.navigation??'legacy-grid-v1'):'hull-route-v1';
+  const retainedNavigation=saved?saved.navigation:navigation;
   const world=new root.LWECS.World(),scheduler=new root.LWECS.Scheduler();
   let events:LWArmoredRuntime.Event[]=saved?copy(saved.events):[];
   if(saved){for(const entity of saved.entities){world.create(entity.id);for(const [kind,value]of Object.entries(entity.components))world.set(entity.id,kind,value as D);}}
@@ -39,7 +42,7 @@
    for(const obstacle of mission.obstacles){const id='obstacle:'+obstacle.id;world.create(id);world.set(id,'armored-obstacle',{definition:obstacle.id,health:obstacle.health,destroyed:false});}
   }
   const state=world.get<LWArmoredRuntime.State>('armored-state','armored-state')!;
-  const ctx:LWArmoredRuntime.Context={solver,world,catalog,mission,state,emit(event){events.push({...copy(event),tick:state.tick,sequence:state.sequence});if(events.length>128)events.shift();},random(){state.rng=(Math.imul(state.rng,1664525)+1013904223)>>>0;return state.rng/4294967296;}};
+  const ctx:LWArmoredRuntime.Context={solver,navigation,world,catalog,mission,state,emit(event){events.push({...copy(event),tick:state.tick,sequence:state.sequence});if(events.length>128)events.shift();},random(){state.rng=(Math.imul(state.rng,1664525)+1013904223)>>>0;return state.rng/4294967296;}};
   root.LWArmoredAI.register(scheduler,ctx);root.LWArmoredPhysics.register(scheduler,ctx);
   root.LWArmoredCombat.register(scheduler,ctx);root.LWArmoredLogistics.register(scheduler,ctx);root.LWArmoredMission.register(scheduler,ctx);
   const reject=(message:string):R=>({ok:false,message});
@@ -77,10 +80,18 @@
    if(result.ok){state.sequence++;result.sequence=state.sequence;}
    return result;
   }
+  function actions(id:string):LWArmoredRuntime.VehicleActions{
+   const damage=world.get<LWArmoredRuntime.Damage>(id,'armored-damage')!;
+   const mobile=solver==='tracked-force-v2'?root.LWArmoredCombat.canMove(damage):!['destroyed','disabled','immobilized'].includes(damage.status)&&damage.components.engine!>0;
+   const ended=state.status!=='running';
+   const result={drive:{available:mobile,reason:mobile?'':'Driver, engine, transmission or tracks unavailable.'},...root.LWArmoredCombat.availability(ctx,id),resupply:root.LWArmoredLogistics.availability(ctx,id)};
+   if(ended)for(const key of Object.keys(result) as (keyof LWArmoredRuntime.VehicleActions)[])result[key]={available:false,reason:'Mission has ended.'};
+   return result;
+  }
   function query(faction=mission!.playerFaction):LWArmoredRuntime.Snapshot{
    const ids=world.query(['armored-identity','armored-transform']);const visible=new Set<string>();
    for(const id of ids){const owner=world.get<LWArmoredRuntime.Identity>(id,'armored-identity')!;if(!faction||owner.faction===faction){visible.add(id);for(const contact of world.get<LWArmoredRuntime.Perception>(id,'armored-perception')!.contacts)if(state.tick-contact.tick<6&&world.get<LWArmoredRuntime.Damage>(id,'armored-damage')!.status!=='destroyed'&&root.LWArmoredAI.visible(ctx,id,contact.id))visible.add(contact.id);}}
-   const vehicles=ids.filter(id=>visible.has(id)).map(id=>({id,...(solver==='tracked-force-v2'&&(!faction||world.get<LWArmoredRuntime.Identity>(id,'armored-identity')!.faction===faction)?{supply:world.get<LWArmoredRuntime.Supply>(id,'armored-supply')!}:{}),...world.get<LWArmoredRuntime.Identity>(id,'armored-identity')!,transform:world.get<LWArmoredRuntime.Transform>(id,'armored-transform')!,previous:world.get<LWArmoredRuntime.Transform>(id,'armored-previous')!,body:world.get<LWArmoredRuntime.Body>(id,'armored-body')!,motor:world.get<LWArmoredRuntime.Motor>(id,'armored-motor')!,weapon:world.get<LWArmoredRuntime.Weapon>(id,'armored-weapon')!,damage:world.get<LWArmoredRuntime.Damage>(id,'armored-damage')!,order:world.get<LWArmoredRuntime.Order>(id,'armored-order')!}));
+   const vehicles=ids.filter(id=>visible.has(id)).map(id=>({id,...(!faction||world.get<LWArmoredRuntime.Identity>(id,'armored-identity')!.faction===faction?{actions:actions(id)}:{}),...(solver==='tracked-force-v2'&&(!faction||world.get<LWArmoredRuntime.Identity>(id,'armored-identity')!.faction===faction)?{supply:world.get<LWArmoredRuntime.Supply>(id,'armored-supply')!}:{}),...world.get<LWArmoredRuntime.Identity>(id,'armored-identity')!,transform:world.get<LWArmoredRuntime.Transform>(id,'armored-transform')!,previous:world.get<LWArmoredRuntime.Transform>(id,'armored-previous')!,body:world.get<LWArmoredRuntime.Body>(id,'armored-body')!,motor:world.get<LWArmoredRuntime.Motor>(id,'armored-motor')!,weapon:world.get<LWArmoredRuntime.Weapon>(id,'armored-weapon')!,damage:world.get<LWArmoredRuntime.Damage>(id,'armored-damage')!,order:world.get<LWArmoredRuntime.Order>(id,'armored-order')!}));
    const projectiles=world.query(['armored-projectile']).map(id=>({id,...world.get<LWArmoredRuntime.Projectile>(id,'armored-projectile')!})).filter(p=>!faction||p.faction===faction||visible.has(p.source));
    const environment=new Set(['terrain',...mission!.obstacles.map(o=>'obstacle:'+o.id)]);
    function exposed(event:LWArmoredRuntime.Event,key:string):boolean{
@@ -97,7 +108,7 @@
   function checkpoint():CP{
    const stores=(world as unknown as {stores:ReadonlyMap<string,ReadonlyMap<string,D>>}).stores;
    const entities=[...world.entities].sort().map(id=>({id,components:Object.fromEntries([...stores].filter(([,store])=>store.has(id)).map(([kind,store])=>[kind,store.get(id)!]))}));
-   return copy({format:'wildlands-armored-checkpoint',version:1,solver,fixedStep:1/60,catalog,missionId:mission!.id,entities,events});
+   return copy({format:'wildlands-armored-checkpoint',version:1,solver,...(retainedNavigation?{navigation:retainedNavigation}:{}),fixedStep:1/60,catalog,missionId:mission!.id,entities,events});
   }
   return Object.freeze({command,query,step,checkpoint});
  }

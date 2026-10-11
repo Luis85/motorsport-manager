@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "kind": "quality-policy",
+  "maxTriangles": 12000,
+  "maxMeshes": 256,
+  "maxMaterials": 12,
+  "maxGeometries": 64,
+  "maxExtent": 8,
+  "allowTransparency": false,
+  "allowDoubleSided": false,
+  "requireUVs": true
+}

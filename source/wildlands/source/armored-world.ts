@@ -1,12 +1,13 @@
 /// <reference path="./armored-presentation-contracts.d.ts" />
+/// <reference path="./visual-resources.ts" />
 /** Stable battlefield render graph. Authored models are admitted by the content boundary. */
 (function(inputRoot:unknown){
  'use strict';
- const root=inputRoot as {THREE:any;LWArmoredWorld?:unknown};
+ const root=inputRoot as {THREE:any;LWVisualResources:LWVisualResourceContract.Api;LWArmoredWorld?:unknown};
  const T=root.THREE;
  function create(scene:any,mission:LWArmoredData.Mission,models:LWArmoredPresentation.Models){
   const geometry=new Map<string,any>(),materials=new Map<string,any>(),vehicles=new Map<string,any>(),obstacles=new Map<string,any>();
-  const effects:any[]=[],seenEvents=new Set<string>();let eventTick=-1;
+  const effects:any[]=[],seenEvents=new Set<string>(),templateResources:LWVisualResourceContract.Disposable[]=[];let eventTick=-1,disposed=false;
   const templates=new Map<string,any>(),projectiles=new Map<string,any>(),smoke=new Map<string,any>(),depots=new Map<string,any>(),world=new T.Group();
   scene.add(world);
   const mat=(color:string)=>{if(!materials.has(color))materials.set(color,new T.MeshStandardMaterial({color,roughness:.95}));return materials.get(color);};
@@ -101,11 +102,12 @@
    if(!templates.has(asset)){
     const source=models[asset];if(!source)throw Error(`Vehicle model “${asset}” is missing. Rebuild the game asset pack.`);
     const json=(source as {object?:unknown}).object??source;
-    const parsed=new T.ObjectLoader().parse(json);templates.set(asset,parsed);
+    const parsed=root.LWVisualResources.parseObject(T,json);templateResources.push(...parsed.resources);templates.set(asset,parsed.object);
    }
    return templates.get(asset);
   }
   function update(snapshot:LWArmoredRuntime.Snapshot,catalog:LWArmoredData.Catalog,alpha:number,seconds:number){
+   if(disposed)return;
    const visibleDepots=new Set<string>();
    for(const depot of snapshot.depots??[]){if(depot.faction!==snapshot.playerFaction)continue;visibleDepots.add(depot.id);if(!depots.has(depot.id))depots.set(depot.id,servicePad(depot));}
    depots.forEach((pad,id)=>{pad.visible=visibleDepots.has(id);});
@@ -116,7 +118,16 @@
      const definition=catalog.vehicles.find(v=>v.id===vehicle.definition)!;const model=template(definition.asset).clone(true);
      const outer=new T.Group();outer.add(model);world.add(outer);const wheels:any[]=[],tones:any[]=[];const bindings=(models[definition.asset] as any).semantics?.bindings??[];
      const bound=(role:string)=>{const binding=bindings.find((b:any)=>b.role===role);return binding?model.getObjectByName(binding.path):null;};
-     model.traverse((part:any)=>{if(part.isMesh){part.castShadow=true;part.receiveShadow=true;if(part.material&&!Array.isArray(part.material)){part.material=part.material.clone();if(part.material.color)tones.push({material:part.material,color:part.material.color.clone()});}}});
+     const materialCopies=new Map<any,any>();
+     const clone=(material:any)=>{
+      if(materialCopies.has(material))return materialCopies.get(material);
+      const copy=material.clone();materialCopies.set(material,copy);
+      if(copy.color)tones.push({material:copy,color:copy.color.clone()});return copy;
+     };
+     model.traverse((part:any)=>{
+      if(!part.isMesh)return;part.castShadow=true;part.receiveShadow=true;
+      if(part.material)part.material=Array.isArray(part.material)?part.material.map(clone):clone(part.material);
+     });
      for(const binding of bindings){if(/^(left|right)Wheel/.test(binding.role)){const wheel=model.getObjectByName(binding.path);if(wheel)wheels.push(wheel);}}
      const gun=bound('gun'),recoil=bound('recoil');
      entry={outer,model,turret:bound('turret'),gun,recoil,recoilRest:recoil?.position.clone(),wheels,tones,damageStatus:'',wheelAngle:0};vehicles.set(vehicle.id,entry);
@@ -157,8 +168,9 @@
    smoke.forEach((obj,id)=>{if(!clouds.has(id)){world.remove(obj);obj.material.dispose();smoke.delete(id);}});
   }
   return {update,height,vehicles,obstacles,dispose(){
-   world.traverse((obj:any)=>{if(obj.isMesh){obj.geometry?.dispose();if(Array.isArray(obj.material))obj.material.forEach((m:any)=>m.dispose());else obj.material?.dispose();}});
-   texture.dispose();detail.dispose();scene.remove(world);templates.clear();vehicles.clear();obstacles.clear();depots.clear();geometry.clear();materials.clear();
+   if(disposed)return;disposed=true;
+   try{root.LWVisualResources.disposeTrees([world,...templates.values()],[...templateResources,...geometry.values(),...materials.values(),texture,detail]);}
+   finally{scene.remove(world);world.clear();templates.clear();templateResources.length=0;vehicles.clear();obstacles.clear();depots.clear();geometry.clear();materials.clear();projectiles.clear();smoke.clear();effects.length=0;seenEvents.clear();}
   }};
  }
  root.LWArmoredWorld={create};

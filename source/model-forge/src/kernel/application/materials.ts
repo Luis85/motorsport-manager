@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { MaterialSpec } from '../domain/schema.js';
-import { applySurface, type createSurfacePool } from './surfaces.js';
+import { applyFinish, applySurface, type createSurfacePool } from './surfaces.js';
 import { fail } from '../domain/errors.js';
 /** Both supported shading modes have a glTF representation; no executable shader code is accepted. */
 export function createMaterial(
@@ -21,10 +21,12 @@ export function createMaterial(
     // Only set when requested, so materials without the field build exactly as before.
     ...(m.vertexColors ? { vertexColors: true } : {}),
   };
-  if (m.shading === 'unlit' && m.surface)
+  if (m.surface && m.finish)
+    fail('INVALID_MATERIAL', 'Choose surface or finish detail for one material, not both.');
+  if (m.shading === 'unlit' && (m.surface || m.finish))
     fail(
       'INVALID_MATERIAL',
-      'Surface detail requires standard PBR shading; remove surface or use standard shading.',
+      'Surface detail requires standard PBR shading; remove surface/finish or use standard shading.',
     );
   if (m.shading === 'unlit') return new THREE.MeshBasicMaterial(common);
   const standard = {
@@ -45,6 +47,7 @@ export function createMaterial(
     : new THREE.MeshStandardMaterial(standard);
   try {
     if (m.surface) applySurface(result, m.surface, surfaces);
+    if (m.finish) applyFinish(result, m.finish, surfaces);
   } catch (error) {
     result.dispose();
     throw error;

@@ -3,6 +3,7 @@ import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { formatAuthoredJson } from './format-authored-json.mjs';
+import { armoredDetailOperations } from './armored-platoon-details.mjs';
 const root = resolve(import.meta.dirname, '../../..');
 const args = process.argv.slice(2);
 const option = (name, fallback) => {
@@ -231,7 +232,7 @@ function recipe(german) {
   mesh('muzzleBore', 'blackMuzzle', 'rubber', 'recoilSlide', [0, 0, barrel + 0.2]);
   group('muzzleSocket', 'recoilSlide', [0, 0, barrel + 0.22], ['socket:muzzle']);
   group('exhaustSocket', 'chassis', [0.75, 1, -2.54], ['socket:exhaust']);
-  return { operations };
+  return { operations: [...operations, ...armoredDetailOperations(german)] };
 }
 for (const directory of [models, output]) mkdirSync(resolve(root, directory), { recursive: true });
 if (existsSync(resolve(root, project, 'forge.project.json')))
@@ -257,7 +258,14 @@ for (const [id, name, german] of [
   cli('model-forge', ['-d', doc, 'apply', '--file', batch, ...guard]);
   cli('model-forge', ['-d', doc, 'validate']);
   cli('model-forge', ['-d', doc, 'node', 'list', '--details', '--limit', '1000']);
-  cli('model-forge', ['-d', doc, 'audit', '--strict']);
+  cli('model-forge', [
+    '-d',
+    doc,
+    'audit',
+    '--file',
+    'source/model-forge/examples/armored-platoon/quality-policy.json',
+    '--strict',
+  ]);
   cli('model-forge', ['-d', doc, 'export', '--format', 'model-bundle', '--out', bundle]);
   const scene = cli('scene-forge', ['-p', project, 'inspect', '--source']);
   const sceneGuard = [

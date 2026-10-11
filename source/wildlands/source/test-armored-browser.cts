@@ -198,6 +198,114 @@ async function main():Promise<void>{
     assert.match(await page.locator('[data-ap-action=resupply]').innerText(),/Resupply/i);
    }finally{await page.keyboard.up('Space');await page.evaluate(save=>(window as any).WildlandsArmored.restore(save),previous);}
   });
+  // Interaction fixtures retain the installed catalog and normal application clock.
+  // Only damage and enemy ammunition are staged; no input outcome is injected.
+  async function interactionFixture(kind:'intact'|'destroyed-ally'|'lost-gunner'='intact'):Promise<{controlled:string;destroyed:string}> {
+   await page.setViewportSize({width:1440,height:900});
+   const fixture=await page.evaluate(({original,kind})=>{
+    const save=structuredClone(original),state=save.entities.find((e:any)=>e.id==='armored-state').components['armored-state'];
+    const mission=save.catalog.missions.find((m:any)=>m.id===save.missionId);
+    const allies=save.entities.filter((e:any)=>e.components['armored-identity']?.faction===mission.playerFaction&&e.id!==state.controlled);
+    let destroyed='';
+    if(kind==='destroyed-ally'){
+     const ally=allies[0];if(!ally)throw Error('Fixture requires an allied recipient');destroyed=ally.id;
+     const damage=ally.components['armored-damage'];damage.status='destroyed';
+     for(const key of Object.keys(damage.components))damage.components[key]=0;
+     for(const key of Object.keys(damage.crew))damage.crew[key]=0;
+    }
+    if(kind==='lost-gunner'){
+     const damage=save.entities.find((e:any)=>e.id===state.controlled).components['armored-damage'];
+     damage.crew.gunner=0;damage.status='disabled';
+    }
+    for(const entity of save.entities){const c=entity.components;if(c['armored-identity']?.faction!==mission.playerFaction&&c['armored-weapon'])for(const ammo of Object.keys(c['armored-weapon'].reserves))c['armored-weapon'].reserves[ammo]=0;}
+    (window as any).WildlandsArmored.restore(save);return {controlled:state.controlled,destroyed};
+   },{original:initialMission,kind});
+   await page.locator('[data-ap-action=resume]').click();
+   await page.waitForFunction(()=>(window as any).WildlandsArmored.query().tick>0);
+   return fixture;
+  }
+  await check('Armored HUD focus releases held motor and fire intentions',async()=>{
+   const previous=await page.evaluate(()=>(window as any).WildlandsArmored.checkpoint());
+   try{
+    await interactionFixture();await page.locator('#armored-canvas').focus();
+    await page.keyboard.down('w');await page.keyboard.down('a');await page.keyboard.press('c');
+    await page.waitForFunction(()=>{const q=(window as any).WildlandsArmored.query(),v=q.vehicles.find((v:any)=>v.id===q.controlled);return v.motor.throttle===1&&v.motor.steer===1&&v.motor.cruise>0;});
+    // Stage the held trigger through the public command, then move actual DOM focus
+    // synchronously so no intervening simulation tick can consume the trigger.
+    const release=await page.evaluate(()=>{
+     const app=(window as any).WildlandsArmored,q=app.query();
+     const accepted=app.command({kind:'fire',entityId:q.controlled,pressed:true});
+     const before=app.query().vehicles.find((v:any)=>v.id===q.controlled);
+     (document.querySelector('[data-ap-camera="gunner"]') as HTMLButtonElement).focus();
+     const after=app.query().vehicles.find((v:any)=>v.id===q.controlled);
+     return {accepted,before:{motor:before.motor,trigger:before.weapon.trigger},after:{motor:after.motor,trigger:after.weapon.trigger}};
+    });
+    assert.equal(release.accepted.ok,true);assert.equal(release.before.trigger,true);
+    assert.equal(release.before.motor.throttle,1);assert.equal(release.before.motor.steer,1);assert(release.before.motor.cruise>0);
+    assert.deepEqual(release.after,{motor:{throttle:0,steer:0,brake:1,cruise:0},trigger:false});
+    await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    const held=await page.evaluate(()=>{const q=(window as any).WildlandsArmored.query();return q.vehicles.find((v:any)=>v.id===q.controlled);});
+    assert.equal(held.motor.throttle,0);assert.equal(held.motor.steer,0);assert.equal(held.motor.cruise,0);assert.equal(held.weapon.trigger,false);
+   }finally{await page.keyboard.up('w');await page.keyboard.up('a');await page.evaluate(save=>(window as any).WildlandsArmored.restore(save),previous);}
+  });
+  await check('Armored order keyboard journey preserves traversal recipient focus and cancellation',async()=>{
+   const previous=await page.evaluate(()=>(window as any).WildlandsArmored.checkpoint());
+   try{
+    await interactionFixture();await page.locator('#armored-canvas').focus();await page.keyboard.press('Tab');
+    assert(await page.locator('[data-ap-orders]').isVisible());
+    assert.equal(await page.locator('[data-ap-action=orders]').getAttribute('aria-expanded'),'true');
+    assert.equal(await page.locator('[data-ap-order=follow]').evaluate(el=>el===document.activeElement),true);
+    await page.keyboard.press('Tab');
+    assert(await page.locator('[data-ap-orders]').isVisible());
+    assert.equal(await page.locator('[data-ap-order=hold]').evaluate(el=>el===document.activeElement),true);
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('[data-ap-recipient=all]').evaluate(el=>el===document.activeElement),true);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('[data-ap-orders]').isVisible(),false);
+    assert.equal(await page.locator('[data-ap-action=orders]').getAttribute('aria-expanded'),'false');
+    assert.equal(await page.locator('#armored-canvas').evaluate(el=>el===document.activeElement),true);
+    assert.equal(await page.evaluate(()=>(window as any).WildlandsArmored.status().paused),false);
+    await page.locator('[data-ap-camera=chase]').focus();await page.keyboard.press('Tab');
+    assert.equal(await page.locator('[data-ap-camera=gunner]').evaluate(el=>el===document.activeElement),true);
+    assert.equal(await page.locator('[data-ap-orders]').isVisible(),false);
+   }finally{await page.evaluate(save=>(window as any).WildlandsArmored.restore(save),previous);}
+  });
+  await check('Armored whole platoon orders exclude destroyed recipients and reach surviving allies',async()=>{
+   const previous=await page.evaluate(()=>(window as any).WildlandsArmored.checkpoint());
+   try{
+    const fixture=await interactionFixture('destroyed-ally');
+    await page.waitForFunction(id=>(document.querySelector(`[data-ap-vehicle="${id}"]`) as HTMLButtonElement)?.disabled,fixture.destroyed);
+    const before=await page.evaluate(()=>(window as any).WildlandsArmored.query());
+    const survivors=before.vehicles.filter((v:any)=>v.faction===before.playerFaction&&v.id!==before.controlled&&v.damage.status!=='destroyed');
+    assert(survivors.length>0,'Fixture needs a surviving allied recipient');
+    await page.locator('[data-ap-action=orders]').click();await page.locator('[data-ap-order=follow]').click();
+    assert.equal(await page.locator(`[data-ap-recipient="${fixture.destroyed}"]`).count(),0);
+    await page.locator('[data-ap-recipient=all]').click();
+    const after=await page.evaluate(()=>(window as any).WildlandsArmored.query());
+    for(const survivor of survivors)assert.equal(after.vehicles.find((v:any)=>v.id===survivor.id).order.kind,'follow');
+    assert.deepEqual(after.vehicles.find((v:any)=>v.id===fixture.destroyed).order,before.vehicles.find((v:any)=>v.id===fixture.destroyed).order);
+    assert.match(await page.locator('[data-ap-feedback]').innerText(),/FOLLOW sent to the platoon/);
+   }finally{await page.evaluate(save=>(window as any).WildlandsArmored.restore(save),previous);}
+  });
+  await check('Armored HUD presents authoritative action reasons and selected camera state',async()=>{
+   const previous=await page.evaluate(()=>(window as any).WildlandsArmored.checkpoint());
+   try{
+    await interactionFixture('lost-gunner');
+    await page.waitForFunction(()=>document.querySelector('[data-ap-load-status]')?.textContent==='UNAVAILABLE');
+    const actions=await page.evaluate(()=>{const q=(window as any).WildlandsArmored.query();return q.vehicles.find((v:any)=>v.id===q.controlled).actions;});
+    assert.equal(actions.aim.available,false);assert.equal(actions.fire.available,false);assert(actions.fire.reason);
+    const status=await page.locator('[data-ap-station-status]').innerText();assert(status.includes(actions.aim.reason));assert(status.includes(actions.fire.reason));
+    for(const action of ['repair','resupply']){
+     const button=page.locator(`[data-ap-action="${action}"]`);
+     assert.equal(await button.getAttribute('aria-disabled'),String(!actions[action].available));
+     if(!actions[action].available){assert.equal(await button.getAttribute('title'),actions[action].reason);await button.focus();await page.keyboard.press('Enter');assert.equal(await page.locator('[data-ap-feedback]').innerText(),actions[action].reason);}
+    }
+    for(const mode of ['gunner','binocular','chase']){
+     await page.locator(`[data-ap-camera="${mode}"]`).click();
+     const selected=page.locator('[data-ap-camera][aria-pressed="true"]');assert.equal(await selected.count(),1);assert.equal(await selected.getAttribute('data-ap-camera'),mode);
+    }
+   }finally{await page.evaluate(save=>(window as any).WildlandsArmored.restore(save),previous);}
+  });
   await check('Armored offline play completes without script errors or external requests',async()=>{
    assert.deepEqual(diagnostics.errors,[]);assert.deepEqual(diagnostics.requests,[]);
   });

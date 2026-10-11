@@ -1,7 +1,7 @@
 import { authoredMeshBuffers } from './mesh-source.js';
 import * as THREE from 'three';
 import { unchangedNative } from './littlewild-native.js';
-import type { SurfaceSpec } from '../domain/schema.js';
+import type { SurfaceSpec, FinishSpec } from '../domain/schema.js';
 import { fail } from '../domain/errors.js';
 
 /**
@@ -15,6 +15,7 @@ export interface LittlewildMaterial {
   metalness: number;
   flatShading: boolean;
   surface?: SurfaceSpec;
+  finish?: FinishSpec;
   sheen?: number;
   sheenColor?: string;
   sheenRoughness?: number;
@@ -162,6 +163,7 @@ function materialData(material: THREE.Material): LittlewildMaterial {
     metalness: round(m.metalness ?? 0, 1e-3),
     flatShading: !!m.flatShading,
   };
+  if (material.userData.finish) result.finish = structuredClone(material.userData.finish);
   if (material.userData.surface) result.surface = structuredClone(material.userData.surface);
   if (material instanceof THREE.MeshPhysicalMaterial) {
     result.sheen = round(material.sheen, 1e-3);

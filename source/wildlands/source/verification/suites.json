@@ -124,6 +124,10 @@
     {"name": "armored-physics", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-physics.cjs", "result": ".generated/armored-physics-results.json", "timeout": 120, "cost": 1.0},
     {"name": "armored-combat-v2", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-combat-v2.cjs", "result": ".generated/armored-combat-v2-results.json", "timeout": 120, "cost": 1.0},
     {"name": "armored-logistics", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-logistics.cjs", "result": ".generated/armored-logistics-results.json", "timeout": 120, "cost": 1.0},
+    {"name": "armored-navigation", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-navigation.cjs", "result": ".generated/armored-navigation-results.json", "timeout": 120, "cost": 1.0},
+    {"name": "armored-actions", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-actions.cjs", "result": ".generated/armored-actions-results.json", "timeout": 120, "cost": 1.0},
+    {"name": "armored-visual-resources", "kind": "node", "tier": "fast", "entry": ".generated/test-armored-visual-resources.cjs", "result": ".generated/armored-visual-resources-results.json", "timeout": 120, "cost": 1.0},
+    {"name": "asset-finish", "kind": "node", "tier": "fast", "entry": ".generated/test-asset-finish.cjs", "result": ".generated/asset-finish-results.json", "timeout": 120, "cost": 1.0},
     {"name": "armored-browser", "kind": "browser", "tier": "full", "entry": ".generated/test-armored-browser.cjs", "result": "verification/v15/armored-browser-results.json", "timeout": 300, "cost": 30.0}
   ]
 }

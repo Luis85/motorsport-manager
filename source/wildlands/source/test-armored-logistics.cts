@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-for(const file of ['ecs','armored-catalog','armored-physics-legacy','armored-collision','armored-physics','armored-combat','armored-logistics','armored-ai','armored-missions','armored-checkpoint','armored-session'])require('./'+file+'.js');
+for(const file of ['ecs','armored-catalog','armored-physics-legacy','armored-collision','armored-physics','armored-combat','armored-logistics','armored-navigation','armored-ai','armored-missions','armored-checkpoint','armored-session'])require('./'+file+'.js');
 const root=globalThis as any;
 const results:{name:string;passed:boolean}[]=[];
 function test(name:string,run:()=>void):void{run();results.push({name,passed:true});console.log('PASS '+name);}
@@ -101,7 +101,7 @@ test('V2 checkpoint rejects unfunded repair commitments and overlapping depot se
  assert.throws(()=>root.LWArmored.restore(active));
 });
 test('Legacy checkpoints remain on their original solver without logistics topology migration',()=>{
- const save=root.LWArmored.create(fixture()).checkpoint();save.solver='tracked-force-v1';for(const e of save.entities)delete e.components['armored-supply'];
+ const save=root.LWArmored.create(fixture()).checkpoint();save.solver='tracked-force-v1';delete save.navigation;for(const e of save.entities)delete e.components['armored-supply'];
  const a=root.LWArmored.restore(save),b=root.LWArmored.restore(save);assert.deepEqual(a.checkpoint(),save);
  assert.equal(a.command({kind:'resupply'}).ok,false);assert.equal(a.query().depots,undefined);
  a.command({kind:'drive',throttle:.5});b.command({kind:'drive',throttle:.5});a.step(100);b.step(100);assert.deepEqual(a.checkpoint(),b.checkpoint());assert.equal(a.checkpoint().solver,'tracked-force-v1');

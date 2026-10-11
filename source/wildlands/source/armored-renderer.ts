@@ -1,8 +1,9 @@
 /// <reference path="./armored-presentation-contracts.d.ts" />
+/// <reference path="./visual-resources.ts" />
 /** Perspective battle presentation; no game rules, authoritative clocks, or live ECS references. */
 (function(inputRoot:unknown){
  'use strict';
- const root=inputRoot as {THREE:any;LWArmoredWorld:any;LWArmoredRenderer?:unknown};
+ const root=inputRoot as {THREE:any;LWArmoredWorld:any;LWVisualResources:LWVisualResourceContract.Api;LWArmoredRenderer?:unknown};
  function create(canvas:HTMLCanvasElement,catalog:LWArmoredData.Catalog,mission:LWArmoredData.Mission,models:LWArmoredPresentation.Models,settings:LWArmoredPresentation.Camera,onLost:()=>void):LWArmoredPresentation.Surface {
   const T=root.THREE,renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
   renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFShadowMap;
@@ -23,14 +24,14 @@
   sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-90;sun.shadow.camera.right=90;sun.shadow.camera.top=90;sun.shadow.camera.bottom=-90;sun.shadow.camera.near=1;sun.shadow.camera.far=350;sun.shadow.bias=-.0005;
   scene.add(sun);scene.add(sun.target);
   const world=root.LWArmoredWorld.create(scene,mission,models),ray=new T.Raycaster(),from=new T.Vector3(),wanted=new T.Vector3(),target=new T.Vector3();
-  let lastTick=-1,debt=0,initialized=false,destroyed=false,lastMode=settings.mode;
+  let lastTick=-1,debt=0,initialized=false,destroyed=false,contextLost=false,lastMode=settings.mode;
   const lifecycle=new AbortController();
-  canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();onLost();},{signal:lifecycle.signal});
-  canvas.addEventListener('webglcontextrestored',()=>{onLost();},{signal:lifecycle.signal});
+  canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();contextLost=true;onLost();},{signal:lifecycle.signal});
+  canvas.addEventListener('webglcontextrestored',()=>{contextLost=false;onLost();},{signal:lifecycle.signal});
   const resize=()=>{const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;renderer.setSize(rect.width,rect.height,false);camera.aspect=rect.width/rect.height;camera.updateProjectionMatrix();};
   const observer=new ResizeObserver(resize);observer.observe(canvas);resize();
   return {render(snapshot,seconds){
-   if(destroyed)return;
+   if(destroyed||contextLost)return;
    if(snapshot.tick!==lastTick){lastTick=snapshot.tick;debt=0;}else debt+=seconds;
    world.update(snapshot,catalog,Math.min(1,.5+debt*60),seconds);
    const vehicle=snapshot.vehicles.find(v=>v.id===snapshot.controlled)??snapshot.vehicles[0];if(!vehicle)return;
@@ -56,9 +57,9 @@
    camera.lookAt(target);sun.position.set(position.x-70,120,position.z-45);sun.target.position.set(position.x,0,position.z);
    sky.position.copy(camera.position);renderer.render(scene,camera);
   },destroy(){
-   destroyed=true;lifecycle.abort();observer.disconnect();world.dispose();skyGeometry.dispose();skyMaterial.dispose();
-   // The next renderer reuses this canvas/context. Restore pixel-store state before its default 3D textures are created.
-   renderer.resetState();renderer.dispose();
+   if(destroyed)return;destroyed=true;lifecycle.abort();observer.disconnect();
+   // Drain every owner even if one resource listener throws. Reset before the canvas is reused.
+   root.LWVisualResources.disposeTrees([],[{dispose:()=>world.dispose()},skyGeometry,skyMaterial,sun.shadow,{dispose:()=>renderer.resetState()},renderer]);
   }};
  }
  root.LWArmoredRenderer={create};

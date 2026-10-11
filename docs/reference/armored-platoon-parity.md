@@ -7,7 +7,9 @@ Earlier verification records implementation checkpoint `187dd821316cb334f1394778
 The regenerated v2 collision/combat/logistics build passed focused integrated
 Node/browser checks at `bbf8475e80d59754bef4df4448492979f492624c`; its
 complete Wildlands gate passed **2,192/2,192 checks across 123 suites**.
-Earlier evidence does not verify v2.
+That complete-gate evidence belongs to the collision/combat/logistics implementation;
+it does not verify the later native material and geometry refinement. The latter
+has separate authoring, replay and source-admission evidence described below.
 Integrated changes require source-bound evidence before rows can close. See [current status](current-state.md)
 and the [dated reference register, situations and budget proposals](../_archive/armored-platoon-2026-10-10-reference.md).
 
@@ -144,7 +146,7 @@ must pass in the same shipping gameplay route used for performance measurement.
 
 | ID | Category | Expected behavior | Dependency | Implementing module/data | Acceptance scenario | Remaining gap | Current |
 |---|---|---|---|---|---|---|---|
-| P01 | Vehicle fidelity | Accurate proportions, tracks, bevels, attachments/weathering | Production models/PBR | Tools/World | R01–R08 close and moving views | Detailed assets and comparative review | partial |
+| P01 | Vehicle fidelity | Accurate proportions, tracks, bevels, attachments/weathering | Production models/PBR | Tools/World | R01–R08 close and moving views | Revision-3 original fittings and native finishes are present; exact variants, production UV/detail/rigs and matched motion review remain | partial |
 | P02 | World fidelity | Terrain roads/ruts/ditches/water, dense varied vegetation/villages | Streamed terrain/instances | World/Content | R05/R10/R11 same combat route | Representative content density | partial |
 | P03 | Lighting | Calibrated sun/sky/IBL, shadows/contact shading | Renderer feature matrix | World | All R cases in declared daylight/night settings | Material/color/shadow calibration | partial |
 | P04 | Effects | Depth-aware smoke/fire/dust/impacts/tracks with bounded lifetime | Event-driven effects | World | Six plumes plus active firing/destruction | Moving depth/stability and accumulation | partial |
@@ -159,9 +161,9 @@ must pass in the same shipping gameplay route used for performance measurement.
 | P13 | Device/cache recovery | Reconstruct GPU resources; reject incomplete/mixed update sets | Manifest/resource lifecycle | World/Shell | Context loss, stale cache, interrupted download and reload | Fault injection and recovery evidence | open |
 | P14 | Browser matrix | Chromium/Firefox/WebKit plus separate real Safari record | Available runners/hardware | Verification | Shipping route on actual reported adapters | Safari/macOS/iOS and hardware unavailable | partial |
 | P15 | Production hosting | HTTPS/MIME/CORS/CORP/CSP/compression/cache compatibility | Deployment config | Build/hosting | Serve built worker/WASM/assets from production config | Development server is insufficient | open |
-| T01 | Model materials | Semantic texture channels, color spaces, sampler/UV transforms | Shared model kernel | Tools | Texture/UV round-trip plus legacy scalar fixture | Production textures and loss checks | open |
+| T01 | Model materials | Semantic texture channels, color spaces, sampler/UV transforms | Shared model kernel | Tools | Texture/UV round-trip plus legacy scalar fixture | Native seeded PBR finish maps and bounded inline export are present; arbitrary production texture ingest, atlas authoring and loss checks remain | partial |
 | T02 | Model ingest | Preserve supported hierarchy/pivots/textures/skins/animation | Dedicated production codec | Tools | Import/export real rigged asset; reject required loss | Static proxy path insufficient | open |
-| T03 | Vehicle authoring | Stable rig/socket/anchor/collision/damage volume IDs | Guarded model workflow | Tools/Content | Model Forge → Scene Forge → runtime fixture | Required semantics must survive | partial |
+| T03 | Vehicle authoring | Stable rig/socket/anchor/collision/damage volume IDs | Guarded model workflow | Tools/Content | Model Forge → Scene Forge → runtime fixture | Revision-3 replay preserves all tagged nodes; production rigs, animated tracks and authoritative damage-volume integration remain | partial |
 | T04 | Battlefield authoring | Terrain/road/scatter/destruction/objective editing with undo | Scene tooling/compiler | Tools/Content | Different topology/objective flow through documented commands | Reusable workflow and diagnostics | partial |
 | T05 | Asset packs | Immutable hashes, provenance, bounded self-hosted formats/decoders | Explicit admission contract | Tools/Build | Corrupt/traversal/missing/oversize rejection | Binary distribution and license inventory | partial |
 | T06 | LOD/streaming | Preserve simulation relevance and semantic anchors across LOD | Resource registry | World/Tools | Stream while switching direct control and firing | Measured working set and identity | open |
@@ -189,7 +191,7 @@ for the initial slice. This is a capability boundary, not M1/M2 completion.
 | G22 | [logistics](../../source/wildlands/source/armored-logistics.ts) | V2 finite friendly depots, stationary timed service, selected-ammo priority, cancellation without partial consumption, deterministic shared stock and checkpointed transactions. No stock transport/replenishment, campaign economics or full reference logistics. |
 | G25–G32 | [AI](../../source/wildlands/source/armored-ai.ts) | Orders, contact memory, 10 Hz acquisition and fresh line-of-sight checks before aiming. V2 selects useful finite AP/HE shots from sampled geometry and holds ineffective fire; bounded grid paths feed motors. No complete traffic/cover tactics, swept footprint navigation or formation-through-choke guarantee. |
 | G35–G39 | [mission rules](../../source/wildlands/source/armored-missions.ts) | Eliminate/reach/survive and time-limit outcomes only; cumulative crew damage and disabled-vehicle neutralization correction is present; Pine and corrected Crossroads command-only completion are demonstrated; Pine also reaches a visible browser debrief through public commands with an accelerated supplied clock. No complete trigger graph, campaign, Field HQ/advanced logistics or reward progression. |
-| T01–T06 | [catalog admission](../../source/wildlands/source/armored-catalog.ts), [visual admission](../../source/wildlands/source/armored-visuals.ts) | Bounded v1 data and static scalar-PBR Forge visuals/semantic bindings; production texture/skin/animation ingest and binary streaming remain open. |
+| T01–T06 | [catalog admission](../../source/wildlands/source/armored-catalog.ts), [visual admission](../../source/wildlands/source/armored-visuals.ts), [finish generator](../../source/model-forge/src/kernel/application/finish-pattern.ts) | Catalog v1 remains separate from visual envelope v2. Native seeded painted-metal/bare-metal/rubber recipes export bounded inline color, normal and packed roughness/metalness maps with retained semantic bindings; scalar visual v1 remains admitted. Arbitrary production texture/skin/animation ingest, LODs and binary streaming remain open. |
 | P01–P10 | [renderer](../../source/wildlands/source/armored-renderer.ts), [world](../../source/wildlands/source/armored-world.ts), [audio](../../source/wildlands/source/armored-audio.ts) | Developing direct-control browser presentation with original assembled vehicle assets; no reference-matched motion/fidelity or baseline hardware claim. |
 
 A read-only independent review used isolated in-memory TypeScript transpilation
@@ -202,9 +204,53 @@ rejection. These ad hoc boundary checks are not the complete registered gate;
 consult the integration record for final source identity and executed suites.
 All complete-scope gates remain open until their own acceptance evidence exists.
 
-## Current v2 slice — focused integrated verification
+## Native asset refinement — bounded authoring evidence
 
-Current tested implementation is `bbf8475e80d59754bef4df4448492979f492624c`.
+The current original tank studies are Model Forge document revision 3. Sherman
+has 7,508 triangles and 213 visible meshes; Panzer has 6,572 and 224. Native
+primitives add hatches, periscopes, handles, tow/lifting rings, weld seams, lamp
+guards, braces, tool clamps and exhausts; the Sherman also gains a smoother turret
+and rounded transmission cover. Native `forge-finish-v1` materials generate
+seeded painted-metal, bare-metal and rubber maps. No reference geometry, imagery
+or paint samples were imported. These additions advance P01/T01/T03 without
+closing their reference-fidelity or production-quality acceptance.
+
+Guarded Model Forge edits, bundle exports and Scene Forge replacement/export
+transactions produced the final assets. Both native audits passed with zero
+warnings/errors against explicit caps of 12,000 triangles, 256 meshes,
+12 materials, 64 geometries and 8 metres per model, requiring UVs and rejecting
+transparent/double-sided materials. All 24 Sherman and 28 Panzer tagged
+articulation/socket/volume nodes were unchanged. Source recipes, bundle entries
+and imported recipes matched after excluding only the source document revision.
+An isolated fresh creation replay produced byte-identical normalized Three
+exports for both tanks.
+
+Fixed-camera software reviews compared baseline, initial refinement and final
+assets. The initial dense repeating paint/wear was reduced to paint scale 1 and
+wear 0.055; the earlier state remains in model history. These asset captures
+establish a reviewed authoring change, not matched gameplay motion, baseline-GPU
+performance or AAA quality. Bespoke UV-atlas painting, uniform texture density,
+interiors, crew, LODs, continuous tracks and exact variant fidelity remain absent.
+
+The compiler's visual envelope v2 is distinct from `tracked-force-v2`. Its final
+compact pack is **3,133,629 bytes**, SHA-256
+`8e406de65dd806954ce24a691da434fdfbdeac93e0f4901cb800445348be19c5`.
+Canonical base64 transport preserves the native exported RGBA8 pixels exactly:
+decoded pack objects matched both original Three exports, with semantic bindings
+unchanged. There are 96,685 aggregate values under the existing 3,000,000 limit,
+and the same 1,572,864 decoded image bytes under the 2 MiB limit; each tank has
+12 images/textures. The earlier 7,176,881-byte numeric-array pack fit the 8 MiB
+game-file limit but made the complete HTML exceed its separate play budget.
+Lossless transport reduces that overhead without reducing assets or raising
+either budget. This isolated evidence is separate from the historical complete gates
+below; a later integrated artifact needs its own source-bound verification.
+The base64 pack passed the actual source admission and game-folder inventory checks.
+Reproduction and remaining toolchain limits are in the
+[authoring guide](../how-to/armored-platoon-authoring.md).
+
+## Previously verified physics-v2 slice — focused integrated verification
+
+The implementation tested in this section is `bbf8475e80d59754bef4df4448492979f492624c`.
 GitHub CI checks out merge commit `9357f10ee7c4fb0b1b1b11735c715149ac9e2d1a`;
 both have the exact tree `d8993c022778faa911647e77bbc4a26cf8f16a40`, with empty
 tree diff. Commit identities remain distinct. The [checkout identity receipt](../_archive/armored-platoon-2026-10-11-evidence/ci/checkout-identity.json)
@@ -352,7 +398,7 @@ rebuilding. Native records under local `022da2a4` describe the same tree as publ
 | Scene Forge and generated-output checks | Existing inline-HTML e2e mode passed 15/15 after file-URL policy blocked the initial run; all four CLI and all seven demo checks passed at the earlier checkpoint, including both Forge check:cli | `FORGE_TEST_INLINE_HTML=1` disclosed; Character final handoff passed eight variants with all four CLI hashes unchanged. Complete Wildlands/native gate success is not inferred. |
 | Native baseline | VIEWS failed at untouched `749a9f6296f3beb665eedf1eda57ae8cbfd00b39` with Godot 4.6.3; the same targeted test passed on CI-SHA-verified Godot 4.7.2: 1 test, 73.962 seconds | Targeted environment mismatch resolved; local full run on public-equivalent tree `3e2bca33faef0d74aa3e400321b7e610a8365c3b` was interrupted to free CPU; separate remote native gate passed 103 suites / 21,346 checks at `f6d7c48d`. |
 | Wildlands complete gate | Earlier `187dd821` CI attempt 2 succeeded: 120 suites / 2,154 checks in 1,870.39 seconds; additional Storytelling 24/24 and Godot export passed. Original local run remains failed: 115/120 suites in 2,545.07 seconds | Engine-source SHA-256 `6f000038fcbdf3b3702cdb15af81c117c479492c25089dc049964e66ad10b541`. Local 2,084/2,084 excludes 70 expected checks from failing suites; successful CI has its own complete 2,154/2,154 evidence. Earlier interrupted/failed runs remain separate. |
-| Forge authoring | Two distinct original studies and guarded Model Forge → Scene Forge → runtime handoff are present | Scalar-PBR development geometry with semantic pivots/volumes; not production-textured M1 assets. Damage still uses its approximation rather than authored semantic-volume collision. |
+| Forge authoring | At this historical checkpoint, two distinct original studies and guarded Model Forge → Scene Forge → runtime handoff were present | Then-scalar PBR geometry with semantic pivots/volumes; this historical evidence does not verify the later native finish refinement. Damage uses its approximation rather than authored semantic-volume collision. |
 
 Earlier published head `f6d7c48d03f5bf85da5af63ee008933f45b831e6` has passing Model
 Forge, Scene Forge, Character Studio, source, advisory, standalone and

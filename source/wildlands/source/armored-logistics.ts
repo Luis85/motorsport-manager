@@ -32,16 +32,26 @@
  }
  function clear(s:S):void{s.depotId='';s.remaining=0;s.condition='';}
  function cancel(ctx:C,id:string,s:S,message:string):void{clear(s);ctx.emit({kind:'resupply-cancelled',entityId:id,message});}
- function command(ctx:C,input:LWArmoredRuntime.Command):LWArmoredRuntime.Result|null{
-  if(input.kind!=='resupply')return null;
-  if(ctx.solver!=='tracked-force-v2')return {ok:false,message:'This saved solver does not support depot resupply.'};
-  const id=input.entityId!,s=ctx.world.get<S>(id,'armored-supply')!;
-  if(s.remaining>0){cancel(ctx,id,s,'Resupply cancelled.');return {ok:true,message:'Resupply cancelled.'};}
+ function selectedDepot(ctx:C,id:string):LWArmoredData.SupplyDepot|undefined{
   const p=ctx.world.get<LWArmoredRuntime.Transform>(id,'armored-transform')!.position;
   const faction=ctx.world.get<LWArmoredRuntime.Identity>(id,'armored-identity')!.faction;
   const candidates=(ctx.mission.supplies??[]).filter(d=>d.faction===faction&&Math.hypot(p.x-d.position.x,p.z-d.position.z)<=d.radius)
    .sort((a,b)=>Math.hypot(p.x-a.position.x,p.z-a.position.z)-Math.hypot(p.x-b.position.x,p.z-b.position.z)||a.id.localeCompare(b.id));
-  const depot=candidates.find(d=>transfer(ctx,id,d,false)>0)??candidates[0],message=reason(ctx,id,depot);
+  return candidates.find(d=>transfer(ctx,id,d,false)>0)??candidates[0];
+ }
+ function availability(ctx:C,id:string):LWArmoredRuntime.ActionAvailability{
+  if(ctx.solver!=='tracked-force-v2')return {available:false,reason:'This saved solver does not support depot resupply.'};
+  if(ctx.world.get<LWArmoredRuntime.Damage>(id,'armored-damage')!.status==='destroyed')return {available:false,reason:'Vehicle unavailable.'};
+  if(ctx.world.get<S>(id,'armored-supply')!.remaining>0)return {available:true,reason:''};
+  const depot=selectedDepot(ctx,id),message=reason(ctx,id,depot)||(!transfer(ctx,id,depot!,false)?'No compatible supplies needed or depot stocks exhausted.':'');
+  return {available:message==='',reason:message};
+ }
+ function command(ctx:C,input:LWArmoredRuntime.Command):LWArmoredRuntime.Result|null{
+  if(input.kind!=='resupply')return null;
+  const id=input.entityId!,ready=availability(ctx,id);if(!ready.available)return {ok:false,message:ready.reason};
+  const s=ctx.world.get<S>(id,'armored-supply')!;
+  if(s.remaining>0){cancel(ctx,id,s,'Resupply cancelled.');return {ok:true,message:'Resupply cancelled.'};}
+  const depot=selectedDepot(ctx,id),message=reason(ctx,id,depot);
   if(message)return {ok:false,message};
   if(!transfer(ctx,id,depot!,false))return {ok:false,message:'No compatible supplies needed or depot stocks exhausted.'};
   s.depotId=depot!.id;s.remaining=depot!.transferSeconds;s.condition=condition(ctx.world.get<LWArmoredRuntime.Damage>(id,'armored-damage')!);
@@ -60,6 +70,6 @@
     ctx.emit({kind:amount?'resupply-completed':'resupply-cancelled',entityId:id,depotId,amount,message:amount?'Supplies transferred.':'Depot stocks were exhausted before service completed.'});}
   }});
  }
- root.LWArmoredLogistics=Object.freeze({register,command});
+ root.LWArmoredLogistics=Object.freeze({register,command,availability});
  if(typeof module!=='undefined'&&module.exports)module.exports=root.LWArmoredLogistics;
 })(globalThis);

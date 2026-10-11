@@ -3,12 +3,13 @@
  'use strict';
  type C=LWArmoredRuntime.Context;type V=LWArmoredRuntime.Vec3;type T=LWArmoredRuntime.Transform;
  type Perception=LWArmoredRuntime.Perception;type Order=LWArmoredRuntime.Order;
- const root=input as {LWArmoredAI?:unknown;LWArmoredPhysics:LWArmoredRuntime.Physics;LWArmoredCombat:{trace(ctx:C,from:V,to:V,ignoreId?:string,vehicles?:boolean):{id:string;fraction:number;normal:V;local:V}|null;canMove(d:LWArmoredRuntime.Damage):boolean;canFire(d:LWArmoredRuntime.Damage):boolean}};
+ const root=input as {LWArmoredAI?:unknown;LWArmoredNavigation:LWArmoredNavigationTypes.Api;LWArmoredPhysics:LWArmoredRuntime.Physics;LWArmoredCombat:{trace(ctx:C,from:V,to:V,ignoreId?:string,vehicles?:boolean):{id:string;fraction:number;normal:V;local:V}|null;canMove(d:LWArmoredRuntime.Damage):boolean;canFire(d:LWArmoredRuntime.Damage):boolean}};
  const distance=(a:V,b:V)=>Math.hypot(a.x-b.x,a.z-b.z);
  const wrap=(value:number)=>Math.atan2(Math.sin(value),Math.cos(value));
  const clamp=(value:number,min:number,max:number)=>Math.max(min,Math.min(max,value));
  const vehicle=(ctx:C,id:string)=>ctx.catalog.vehicles.find(v=>v.id===ctx.world.get<LWArmoredRuntime.Identity>(id,'armored-identity')!.definition)!;
  const modern=(ctx:C)=>ctx.solver==='tracked-force-v2';
+ const hullRoutes=(ctx:C)=>modern(ctx)&&ctx.navigation==='hull-route-v1';
  interface ShotChoice {ammo:LWArmoredData.Ammunition;point:V;score:number;}
  /** Catalog armor and observed aspect guide expenditure; no hidden transform or random probing.
   * A bounded drag estimate guides selection; the projectile still resolves actual armor. */
@@ -99,6 +100,7 @@
  }
  /** A* is bounded and conservative about hull width; motor integration still owns all transforms. */
  function path(ctx:C,id:string,goal:V):V[]{
+  if(hullRoutes(ctx))return root.LWArmoredNavigation.path(ctx,id,goal);
   const v=vehicle(ctx,id),start=ctx.world.get<T>(id,'armored-transform')!.position,cell=Math.max(3,v.width*1.3),radius=v.width*.55;
   const key=(x:number,z:number)=>x+','+z,sx=Math.round(start.x/cell),sz=Math.round(start.z/cell),gx=Math.round(goal.x/cell),gz=Math.round(goal.z/cell);
   const first=key(sx,sz),last=key(gx,gz),open=[first],cost=new Map([[first,0]]),parent=new Map<string,string>(),closed=new Set<string>();
@@ -123,7 +125,8 @@
   while(end!==first){const [x,z]=coords(end);result.push({x:x*cell,y:root.LWArmoredPhysics.height(ctx.mission.terrain,x*cell,z*cell),z:z*cell});end=parent.get(end)!;}
   result.reverse();if(!blocked(ctx,goal.x,goal.z,radius,id))result.push({...goal});return result;
  }
- function move(ctx:C,id:string,goal:V,pace:number,stopDistance:number):void{
+ function move(ctx:C,id:string,goal:V,pace:number,stopDistance:number,dt:number):void{
+  if(hullRoutes(ctx)){root.LWArmoredNavigation.move(ctx,id,goal,pace,stopDistance,dt);return;}
   const order=ctx.world.get<Order>(id,'armored-order')!,motor=ctx.world.get<LWArmoredRuntime.Motor>(id,'armored-motor')!,t=ctx.world.get<T>(id,'armored-transform')!;
   motor.cruise=0;
   if(distance(t.position,goal)<stopDistance){motor.throttle=0;motor.steer=0;motor.brake=1;order.stuck=0;order.reason='On station';return;}
@@ -143,7 +146,7 @@
   if(Number(order.stuck)>2){motor.throttle=-.45;motor.steer=error>=0?-1:1;order.reason='Reverse escape';if(Number(order.stuck)>3.5){order.stuck=0;order.pathRevision=-1;}}
   else order.reason='Advancing';
  }
- function drive(ctx:C,id:string):void{
+ function drive(ctx:C,id:string,dt:number):void{
   if(id===ctx.state.controlled)return;
   const damage=ctx.world.get<LWArmoredRuntime.Damage>(id,'armored-damage')!,motor=ctx.world.get<LWArmoredRuntime.Motor>(id,'armored-motor')!,w=ctx.world.get<LWArmoredRuntime.Weapon>(id,'armored-weapon')!;
   const order=ctx.world.get<Order>(id,'armored-order')!,p=ctx.world.get<Perception>(id,'armored-perception')!,t=ctx.world.get<T>(id,'armored-transform')!,v=vehicle(ctx,id);
@@ -174,10 +177,10 @@
    const followers=ctx.world.query(['armored-order','armored-identity']).filter(actor=>{const other=ctx.world.get<Order>(actor,'armored-order')!;return actor!==ctx.state.controlled&&ctx.world.get<LWArmoredRuntime.Identity>(actor,'armored-identity')!.faction===own&&other.kind==='follow'&&other.targetId===order.targetId;});
    const slot=followers.indexOf(id),back=12+Math.floor(slot/2)*10,side=(slot%2?1:-1)*7;
    const goal={x:leader.position.x-Math.sin(leader.yaw)*back+Math.cos(leader.yaw)*side,y:leader.position.y,z:leader.position.z-Math.cos(leader.yaw)*back-Math.sin(leader.yaw)*side};
-   move(ctx,id,goal,.7,5);return;
+   move(ctx,id,goal,.7,5,dt);return;
   }
   if(order.kind==='secure'&&enemy){order.reason='Clearing observed contact';return;}
-  move(ctx,id,order.position,order.kind==='charge'?.9:.42,6);
+  move(ctx,id,order.position,order.kind==='charge'?.9:.42,6,dt);
  }
  function command(ctx:C,input:LWArmoredRuntime.Command):LWArmoredRuntime.Result|null{
   if(input.kind!=='order')return null;
@@ -203,7 +206,7 @@
  }
  function register(scheduler:LWArmoredRuntime.Scheduler,ctx:C):void{
   scheduler.register({id:'armored.perception',phase:'pre',order:5,query:['armored-perception','armored-identity','armored-transform'],update(world,id,dt){if(world.get<LWArmoredRuntime.Damage>(id,'armored-damage')?.status!=='destroyed')perception(ctx,id,dt);}});
-  scheduler.register({id:'armored.ai',phase:'pre',order:10,query:['armored-perception','armored-order','armored-motor'],update(_world,id){drive(ctx,id);}});
+  scheduler.register({id:'armored.ai',phase:'pre',order:10,query:['armored-perception','armored-order','armored-motor'],update(_world,id,dt){drive(ctx,id,dt);}});
  }
  root.LWArmoredAI=Object.freeze({register,command,visible,smokeObscures,path});
  if(typeof module!=='undefined'&&module.exports)module.exports=root.LWArmoredAI;
