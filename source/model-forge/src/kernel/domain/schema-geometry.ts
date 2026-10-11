@@ -1,3 +1,6 @@
+// Geometry contracts: primitives, organic profiles, tubes, lathes, extrusions, raw meshes,
+// boolean (CSG) combinations and heightfields that mesh nodes reference by id. Scenes and
+// models share these.
 import { z } from 'zod';
 import { Id, Scalar, Vec2, Vec3, Transform, Color } from './schema-values.js';
 

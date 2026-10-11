@@ -233,6 +233,10 @@
     {
       "path": "process-slides-contracts.d.ts",
       "owner": "process-presentation"
+    },
+    {
+      "path": "process-three.d.ts",
+      "owner": "process-presentation"
     }
   ]
 }

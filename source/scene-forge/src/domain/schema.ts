@@ -1,81 +1,108 @@
+// Public schema boundary. The model recipe contracts live in one module per family inside
+// the shared kernel (../model-forge/src/kernel/domain: values, geometry, material, nodes,
+// documents, operations, review, Littlewild and procedural), reached only through the
+// kernel bridge; Scene Forge's own project, composition, scene-bundle and Littlewild export
+// contracts live in schema-project.ts. This module re-exports exactly the public schema
+// surface, including the kernel's guarded `parse` entry point that rejects cyclic or
+// over-deep input before validation, and owns the named schema registry that drives
+// `schema` discovery and the generated JSON Schema files.
 import { z } from 'zod';
 import {
   fail,
-  Id,
   Scalar,
-  nodeBase,
-  guards,
-  SceneSchema,
-  ModelSchema,
-  BatchSchema,
-  NodeSchema,
   GeometrySchema,
   MaterialSchema,
-  ModelBundleSchema,
-  SelectorSchema,
-  ReviewPlanSchema,
-  CameraRequestSchema,
-  CameraSnapshotSchema,
-  QualityPolicySchema,
   PatternSchema,
   RigSchema,
-  LittlewildAssetSchema,
+  NodeSchema,
+  SceneSchema,
+  ModelSchema,
+  ModelBundleSchema,
+  SelectorSchema,
+  BatchSchema,
+  CameraSnapshotSchema,
+  CameraRequestSchema,
+  ReviewPlanSchema,
+  QualityPolicySchema,
   ScatterRecipeSchema,
 } from '../kernel.js';
+import {
+  ProjectSchema,
+  CompositionSchema,
+  SceneBundleSchema,
+  LittlewildExportSchema,
+} from './schema-project.js';
 
-/** Scene Forge project, composition and bundle contracts built on the model recipe kernel. */
-export const ProjectSchema = z
-  .object({
-    schemaVersion: z.literal(1),
-    name: z.string().min(1).max(120),
-    activeScene: Id,
-    scenes: z.record(Id, z.string()),
-    models: z.record(Id, z.string()),
-  })
-  .strict();
-export const CompositionSchema = z
-  .object({
-    schemaVersion: z.literal(1),
-    kind: z.literal('composition'),
-    ...guards,
-    groups: z
-      .array(z.object({ ...nodeBase, type: z.literal('group').default('group') }).strict())
-      .default([]),
-    instances: z
-      .array(
-        z
-          .object({
-            ...nodeBase,
-            type: z.literal('model').default('model'),
-            model: Id,
-            parameters: z.record(Id, Scalar).default({}),
-            materialOverrides: z.record(Id, Id).default({}),
-          })
-          .strict(),
-      )
-      .min(1)
-      .max(10000),
-  })
-  .strict();
-export const SceneBundleSchema = z
-  .object({
-    schemaVersion: z.literal(1),
-    kind: z.literal('scene-bundle'),
-    scene: SceneSchema,
-    models: z.record(Id, ModelSchema),
-  })
-  .strict();
-export const LittlewildExportSchema = z
-  .object({
-    schemaVersion: z.literal(1),
-    kind: z.literal('littlewild-export'),
-    target: z.string().min(1).max(512),
-    assets: z.array(LittlewildAssetSchema).min(1).max(128),
-  })
-  .strict();
-export type LittlewildExport = z.infer<typeof LittlewildExportSchema>;
-export type SceneBundle = z.infer<typeof SceneBundleSchema>;
-export type ProjectDocument = z.infer<typeof ProjectSchema>;
+export { ForgeError, fail, parse } from '../kernel.js';
+export {
+  Id,
+  NumberValue,
+  expressionOperators,
+  Scalar,
+  Vec3,
+  Transform,
+  type ScalarValue,
+  type V3,
+  type V2,
+  type TransformSpec,
+} from '../kernel.js';
+export {
+  GeometrySchema,
+  MaterialSchema,
+  SurfaceSchema,
+  PatternSchema,
+  RigSchema,
+  NodeSchema,
+  type Geometry,
+  type SurfaceSpec,
+  type RigSpec,
+  type NodeSpec,
+  type MaterialSpec,
+} from '../kernel.js';
+export {
+  CameraSchema,
+  EnvironmentSchema,
+  SceneSchema,
+  ModelSchema,
+  ModelBundleSchema,
+  type SceneDocument,
+  type ModelDocument,
+  type ModelLibrary,
+} from '../kernel.js';
+export {
+  NodePatchSchema,
+  SelectorSchema,
+  OperationSchema,
+  BatchSchema,
+  type NodeSelector,
+  type Operation,
+} from '../kernel.js';
+export {
+  littlewildFamilies,
+  LittlewildId,
+  LittlewildAssetSchema,
+  type LittlewildAsset,
+} from '../kernel.js';
+export {
+  viewNames,
+  CameraSnapshotSchema,
+  CameraRequestSchema,
+  ReviewPlanSchema,
+  QualityPolicySchema,
+  type CameraSnapshot,
+  type CameraRequest,
+  type ReviewPlan,
+  type QualityPolicy,
+} from '../kernel.js';
+export {
+  ProjectSchema,
+  CompositionSchema,
+  SceneBundleSchema,
+  LittlewildExportSchema,
+  type ProjectDocument,
+  type SceneBundle,
+  type LittlewildExport,
+} from './schema-project.js';
 
 export const schemas = {
   scene: SceneSchema,

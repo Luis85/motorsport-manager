@@ -1,3 +1,5 @@
+// Littlewild asset contracts: engine families, asset identifiers and the model variants
+// each asset projects into the Wildlands engine.
 import { z } from 'zod';
 import { Id, NumberValue } from './schema-values.js';
 import { MaterialSchema } from './schema-material.js';

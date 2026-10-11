@@ -1,7 +1,7 @@
 {
   "format": "wildlands-process",
   "schemaVersion": 1,
-  "revision": 0,
+  "revision": 1,
   "id": "user-journey-app-onboarding",
   "name": "User journey · App onboarding",
   "description": "Synthetic user journey of a mobile app, from the first install to a subscription or a free active user. New users arrive as a steady open stream with a random gap (uniform 2 to 8 minutes) for as long as the run lasts, so the example is meant to run unlimited. Each user draws a source (50% store, 30% ad, 20% friend) and a device, and starts with sentiment 0 and no sessions. The journey combines touchpoints, a system step (the verification service) and timers: a wait for the email link, a day-1 wait and weekly waits. One day is compressed to about 20 minutes. Sessions are a counter that bounds the weekly loop at four. Chance routes model 15% giving up the email form, 10% expired links that go to support chat, 22% denying permissions (a reduced experience), 40% skipping the tour, 55% not returning after day 1 and 12% subscribing. Support chat agents, a notification service and a verification service work backstage. Every random value derives from the definition seed 20261002 and the case and step, so the same seed always gives the same run and another seed (process run --seed N) gives another one. All numbers are synthetic illustrative assumptions, not research data, a measured app or a forecast.",
@@ -103,7 +103,8 @@
       "add": {
         "sentiment": 1
       },
-      "pain": "The download is large on a slow connection."
+      "pain": "The download is large on a slow connection.",
+      "description": "The user downloads and installs the app from the store, which takes one to four minutes. A smooth install lifts sentiment by one point."
     },
     {
       "id": "first-open",
@@ -128,7 +129,8 @@
       },
       "add": {
         "sentiment": 1
-      }
+      },
+      "description": "The user opens the app for the first time and sees the welcome screen. A good first impression lifts sentiment by one point."
     },
     {
       "id": "method",
@@ -142,7 +144,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Sign up"
+      "phase": "Sign up",
+      "description": "40% of users sign up with a social account. Everyone else fills in the email form."
     },
     {
       "id": "social-signup",
@@ -163,7 +166,8 @@
       "add": {
         "sentiment": 1
       },
-      "opportunity": "Offer the social button first."
+      "opportunity": "Offer the social button first.",
+      "description": "The user signs up in one tap with an existing social account. The quick route lifts sentiment by one point and goes straight to the permissions prompt."
     },
     {
       "id": "email-form",
@@ -190,7 +194,8 @@
         "sentiment": -1
       },
       "pain": "A long form with password rules.",
-      "opportunity": "Offer a passwordless magic link."
+      "opportunity": "Offer a passwordless magic link.",
+      "description": "The user types an email address and a password that meets the rules. The form takes two to five minutes and lowers sentiment by one point."
     },
     {
       "id": "form-gives-up",
@@ -204,7 +209,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Sign up"
+      "phase": "Sign up",
+      "description": "15% of users give up on the email form and abandon the sign-up. The others go on to email verification."
     },
     {
       "id": "verify-email",
@@ -254,7 +260,8 @@
         "mean": 8,
         "max": 60
       },
-      "pain": "The user has to leave the app to open the mail."
+      "pain": "The user has to leave the app to open the mail.",
+      "description": "The user leaves the app, opens the verification email and clicks the link. The wait is random: about eight minutes on average and at most an hour."
     },
     {
       "id": "link-works",
@@ -268,7 +275,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Sign up"
+      "phase": "Sign up",
+      "description": "10% of links have expired by the time the user clicks them, and the user asks support chat for a new one. Working links verify the account and lead to the permissions prompt."
     },
     {
       "id": "support-chat",
@@ -298,7 +306,8 @@
       "add": {
         "sentiment": -1
       },
-      "pain": "Support is reached only after the link failed."
+      "pain": "Support is reached only after the link failed.",
+      "description": "The user asks a support chat agent for a new verification link. The chat takes three to fifteen minutes, holds one agent and lowers sentiment by one point; the verification service then sends a fresh link."
     },
     {
       "id": "permissions",
@@ -329,7 +338,8 @@
         "sentiment": -1
       },
       "pain": "Permission wall.",
-      "opportunity": "Ask for each permission when it is first needed."
+      "opportunity": "Ask for each permission when it is first needed.",
+      "description": "The app asks for its permissions in one prompt before the user can continue. 22% of users deny them and get a reduced experience; the prompt lowers sentiment by one point for everyone."
     },
     {
       "id": "limited",
@@ -343,7 +353,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Onboard"
+      "phase": "Onboard",
+      "description": "Users who denied the permissions see the limited-mode notice first. Everyone else goes straight to setting up a profile."
     },
     {
       "id": "limited-notice",
@@ -364,7 +375,8 @@
       "add": {
         "sentiment": -1
       },
-      "pain": "Features are visibly greyed out."
+      "pain": "Features are visibly greyed out.",
+      "description": "The app explains which features are unavailable without the permissions. Seeing features greyed out lowers sentiment by one point."
     },
     {
       "id": "profile",
@@ -390,7 +402,8 @@
       },
       "add": {
         "sentiment": 1
-      }
+      },
+      "description": "The user sets up a profile, which takes two to eight minutes. Personalising the app lifts sentiment by one point."
     },
     {
       "id": "tour-skip",
@@ -404,7 +417,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Onboard"
+      "phase": "Onboard",
+      "description": "40% of users skip the product tour and go straight to their first task. The others follow the tour first."
     },
     {
       "id": "tour",
@@ -425,7 +439,8 @@
       "add": {
         "sentiment": 1
       },
-      "opportunity": "Shorten the tour to three screens."
+      "opportunity": "Shorten the tour to three screens.",
+      "description": "A short guided tour shows the main features of the app. Following it lifts sentiment by one point before the first task."
     },
     {
       "id": "first-task",
@@ -452,7 +467,8 @@
         "sentiment": 3,
         "sessions": 1
       },
-      "opportunity": "Make the first task reachable in one tap."
+      "opportunity": "Make the first task reachable in one tap.",
+      "description": "The user completes a first meaningful task in the app, which takes two to six minutes. This activation moment lifts sentiment by three points and counts as the first session."
     },
     {
       "id": "day-one-wait",
@@ -497,7 +513,8 @@
       "add": {
         "sentiment": 1
       },
-      "opportunity": "Personalise the reminder with the first task result."
+      "opportunity": "Personalise the reminder with the first task result.",
+      "description": "The notification service sends a reminder on day 1, holding one notification slot for a minute. The reminder lifts sentiment by one point."
     },
     {
       "id": "returns",
@@ -511,7 +528,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Retain"
+      "phase": "Retain",
+      "description": "55% of users do not come back after the reminder and churn. The others return and start using the app every week."
     },
     {
       "id": "weekly",
@@ -537,7 +555,8 @@
       "add": {
         "sessions": 1,
         "sentiment": 1
-      }
+      },
+      "description": "The user opens the app for a weekly session, which takes two to six minutes. Each session adds one to the sessions counter and lifts sentiment by one point."
     },
     {
       "id": "more-weeks",
@@ -551,7 +570,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Retain"
+      "phase": "Retain",
+      "description": "Users with fewer than four sessions wait for the next week. After the fourth session the user counts as active and sees the upgrade offer."
     },
     {
       "id": "week-wait",
@@ -566,7 +586,8 @@
         "color": "#91b9d5"
       },
       "phase": "Retain",
-      "duration": 140
+      "duration": 140,
+      "description": "The user is away until the next week; one week is compressed to 140 minutes in this example. No resource is held while the user waits."
     },
     {
       "id": "digest",
@@ -587,7 +608,8 @@
       "resources": {
         "notifications": 1
       },
-      "opportunity": "Send the digest only when there is news."
+      "opportunity": "Send the digest only when there is news.",
+      "description": "The notification service emails a weekly digest that brings the user back, holding one notification slot for a minute. It does not change sentiment."
     },
     {
       "id": "offer",
@@ -609,7 +631,8 @@
         "sentiment": -1
       },
       "pain": "The paywall interrupts the flow.",
-      "opportunity": "Show the offer after a success moment."
+      "opportunity": "Show the offer after a success moment.",
+      "description": "An active user sees the upgrade offer for the paid plan. The paywall interrupts the flow and lowers sentiment by one point."
     },
     {
       "id": "subscribe",
@@ -623,7 +646,8 @@
         ],
         "color": "#ffffff"
       },
-      "phase": "Monetise"
+      "phase": "Monetise",
+      "description": "12% of active users subscribe. Everyone else stays on the free plan as an active user."
     },
     {
       "id": "pays",
@@ -648,7 +672,8 @@
       },
       "add": {
         "sentiment": 2
-      }
+      },
+      "description": "The user subscribes on the web checkout, which takes two to five minutes. Completing the purchase lifts sentiment by two points."
     },
     {
       "id": "subscriber",
@@ -663,7 +688,8 @@
         "color": "#77b5a0"
       },
       "phase": "Monetise",
-      "outcome": "goal"
+      "outcome": "goal",
+      "description": "The journey ends with a paying subscriber. This is a goal outcome and counts towards conversion."
     },
     {
       "id": "free-user",
@@ -678,7 +704,8 @@
         "color": "#77b5a0"
       },
       "phase": "Monetise",
-      "outcome": "goal"
+      "outcome": "goal",
+      "description": "The journey ends with a user who stays on the free plan but uses the app every week. This is a goal outcome and counts towards conversion."
     },
     {
       "id": "gave-up",
@@ -693,7 +720,8 @@
         "color": "#d9777f"
       },
       "phase": "Sign up",
-      "outcome": "lost"
+      "outcome": "lost",
+      "description": "The user abandoned the sign-up in the email form. This is a lost outcome."
     },
     {
       "id": "churned",
@@ -708,7 +736,8 @@
         "color": "#d9777f"
       },
       "phase": "Retain",
-      "outcome": "lost"
+      "outcome": "lost",
+      "description": "The user did not return after day 1. This is a lost outcome."
     }
   ],
   "flows": [

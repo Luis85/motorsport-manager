@@ -1,3 +1,6 @@
+// Node contracts: repetition patterns, model rigs and the node union (light, group, mesh
+// and model instance), plus the node patches and selectors edit operations target.
+// `nodeBase` is also reused by Scene Forge composition entries.
 import { z } from 'zod';
 import { Id, NumberValue, Scalar, Vec3, Color, Transform } from './schema-values.js';
 

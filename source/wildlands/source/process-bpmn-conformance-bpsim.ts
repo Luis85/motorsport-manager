@@ -10,12 +10,16 @@
  'use strict';
  const root = inputRoot as {LWProcessBpmnRulesBpsim?: LWProcessBpmnRules.Api};
  /** Constant values and distributions share the parameter value base (`validFor`, `instance`, `result`); units travel on numbers and distributions. */
- const UNITS = 'timeUnit:TimeUnit currencyUnit:string', P = '=Parameter?';
+ const UNITS = 'timeUnit:TimeUnit currencyUnit:string';
+ const P = '=Parameter?';
+ /** A long content or attribute list written over several lines: the parts join with single spaces into one rule string. */
+ const words = (...parts: string[]) => parts.join(' ');
  const bpsim: LWProcessBpmnRules.Table = {ns: 'http://www.bpsim.org/schemas/1.0', prefix: 'bpsim', typePrefix: '',
   // Only these are top-level; Scenario and the parameter groups exist only inside their parents.
   elements: [
    'BPSimData=_Data ParameterValue UserDistributionDataPoint=_DataPoint EnumParameter<ParameterValue=_Enum ExpressionParameter<ParameterValue=_Expression',
-   'StringParameter<ParameterValue=_String NumericParameter<ParameterValue=_Numeric FloatingParameter<ParameterValue=_Floating BooleanParameter<ParameterValue=_Boolean',
+   'StringParameter<ParameterValue=_String NumericParameter<ParameterValue=_Numeric FloatingParameter<ParameterValue=_Floating',
+   'BooleanParameter<ParameterValue=_Boolean',
    'DurationParameter<ParameterValue=_Duration DateTimeParameter<ParameterValue=_DateTime UserDistribution<ParameterValue=_User',
    'LogNormalDistribution<ParameterValue=_MeanSd NormalDistribution<ParameterValue=_MeanSd TruncatedNormalDistribution<ParameterValue=_Truncated',
    'PoissonDistribution<ParameterValue=_Mean NegativeExponentialDistribution<ParameterValue=_Mean ErlangDistribution<ParameterValue=_Erlang',
@@ -27,9 +31,15 @@
    _Data: ['', '(Scenario=Scenario)+', ''],
    Scenario: ['', '(ScenarioParameters=ScenarioParameters? ElementParameters=ElementParameters* Calendar=Calendar* VendorExtension=VendorExtension*)?',
     'id:id! name:string description:string author:string vendor:string version:string inherits:idref result:idref created:dateTime modified:dateTime'],
-   ScenarioParameters: ['', `(Start${P} Duration${P} PropertyParameters=PropertyParameters?)?`, 'replication:int seed:long baseTimeUnit:TimeUnit baseCurrencyUnit:string'],
+   ScenarioParameters: ['',
+    `(Start${P} Duration${P} PropertyParameters=PropertyParameters?)?`,
+    'replication:int seed:long baseTimeUnit:TimeUnit baseCurrencyUnit:string'],
    VendorExtension: ['', '(%other.strict)?', 'name:string!', 'open-strict'],
-   ElementParameters: ['', '(TimeParameters=TimeParameters? ControlParameters=ControlParameters? ResourceParameters=ResourceParameters? PriorityParameters=PriorityParameters? CostParameters=CostParameters? PropertyParameters=PropertyParameters? VendorExtension=VendorExtension*)?', 'id:id elementRef:ref'],
+   ElementParameters: ['', words(
+    '(TimeParameters=TimeParameters? ControlParameters=ControlParameters? ResourceParameters=ResourceParameters?',
+    'PriorityParameters=PriorityParameters? CostParameters=CostParameters? PropertyParameters=PropertyParameters?',
+    'VendorExtension=VendorExtension*)?',
+   ), 'id:id elementRef:ref'],
    TimeParameters: ['', `(TransferTime${P} QueueTime${P} WaitTime${P} SetUpTime${P} ProcessingTime${P} ValidationTime${P} ReworkTime${P})?`, ''],
    ControlParameters: ['', `(Probability${P} Condition${P} InterTriggerTimer${P} TriggerCount${P})?`, ''],
    CostParameters: ['', `(FixedCost${P} UnitCost${P})?`, ''],

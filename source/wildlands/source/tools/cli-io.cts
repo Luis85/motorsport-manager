@@ -30,9 +30,8 @@ export function writeJsonFile(file: string, value: unknown, inputs: readonly str
   return writeTextFile(file, JSON.stringify(value, null, 2) + "\n", inputs);
 }
 
-/** Atomic text publication with the same input-alias protection as JSON outputs. */
-export function writeTextFile(file: string, text: string, inputs: readonly string[] = []): string {
-  if (!file) throw new Error("Provide an output path.");
+/** Resolves an output path and refuses one that is, or aliases (hard or symbolic link), any of `inputs`. */
+export function guardOutput(file: string, inputs: readonly string[] = []): string {
   const destination = path.resolve(file);
   for (const input of inputs) {
     if (destination === path.resolve(input)) throw new Error("Output must not overwrite an input file.");
@@ -41,6 +40,13 @@ export function writeTextFile(file: string, text: string, inputs: readonly strin
       if (target.dev === source.dev && target.ino === source.ino) throw new Error("Output must not overwrite an input file through an alias.");
     }
   }
+  return destination;
+}
+
+/** Atomic text publication with the same input-alias protection as JSON outputs. */
+export function writeTextFile(file: string, text: string, inputs: readonly string[] = []): string {
+  if (!file) throw new Error("Provide an output path.");
+  const destination = guardOutput(file, inputs);
   const temporary = destination + "." + randomUUID() + ".tmp";
   let owned = false;
   try {
