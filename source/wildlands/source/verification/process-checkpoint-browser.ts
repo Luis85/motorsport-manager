@@ -121,7 +121,8 @@ runSuite('process checkpoint browser harness', 'process-checkpoint-browser-resul
    + ' then load the checkpoint again.');
   assert.deepEqual([await ask.count(), await live()], [0, run], 'refused before any question; the run is unchanged');
   await load({name: 'broken.checkpoint.json', text: '{"kind": "wildlands-process-checkpoint",'});
-  await settled('Load checkpoint refused');
+  // The previous refusal already starts with 'Load checkpoint refused'; wait for this file's own refusal (read asynchronously).
+  await settled('Load checkpoint refused: This file is not a run checkpoint');
   assert.equal(await message(), 'Load checkpoint refused: This file is not a run checkpoint: it is not valid JSON.');
   await freshStudio();
   const owner = (await query(page)).definition.name;
