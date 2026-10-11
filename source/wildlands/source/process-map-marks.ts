@@ -1,15 +1,18 @@
 /// <reference path="./process-contracts.d.ts" />
+/// <reference path="./process-palette.ts" />
+/// <reference path="./process-work-state.ts" />
 /**
  * Drawing vocabulary of the 2D process map (LWProcessMapMarks): the SVG element helper, room glyphs, pills, the work-state markers
  * and the label wrapping rule. Presentation only; nothing here reads or changes a session.
  *  - Colours are process.css tokens. State colours come from `data-status` rules shared by map markers, card borders and the
- *    legend samples (`legend()`), so the key and the picture cannot drift apart; other colours are `var(--token)` styles. Only the
- *    room theme accent (data of LWProcessRooms) is passed in as a value.
+ *    legend samples (`legend()`), so the key and the picture cannot drift apart; other colours are `var(--token)` styles of the
+ *    studio palette (LWProcessPalette.css). Only the room theme accent (LWProcessRooms) is passed in as a value.
+ *  - A work item's state is LWProcessWorkState.statusOf, the studio's one work-state derivation.
  *  - Each work state has its own marker shape as well as its colour: Working disc, Waiting ring, Timer hourglass, Backlog square,
  *    Blocked cross.
  */
 declare namespace LWProcessMapMarks {
- type Status = 'active' | 'queued' | 'timer' | 'backlog' | 'held';
+ type Status = LWProcessWorkState.Status;
  type Attrs = Record<string, string | number>;
  /** A pill above a card: its top-right corner at `right`,`top`, enlarged by `k`; `tone` is a CSS colour (a token or the room accent). */
  interface Pill {cls: string; right: number; top: number; k: number; text: string; tip: string; tone: string; full: boolean; clock: boolean}
@@ -21,7 +24,6 @@ declare namespace LWProcessMapMarks {
   pill(parent: SVGElement, p: Pill): void;
   /** A work-state marker centred at x,y and `size` world units wide. */
   mark(status: Status, x: number, y: number, size: number, attrs?: Attrs): SVGPathElement;
-  statusOf(token: LWProcess.Token): Status;
   /** Work states in legend order with their legend labels. */
   readonly STATES: readonly {status: Status; label: string}[];
   /** Legend entries (HTML): one marker sample per work state, then the conditional and deadline path samples. */
@@ -30,6 +32,11 @@ declare namespace LWProcessMapMarks {
   wrap(text: string, per: number, lines: number): string[];
   /** Whether `text` fits `lines` lines of `per` characters without an ellipsis. */
   fits(text: string, per: number, lines: number): boolean;
+  /**
+   * The length of the longest word that `wrap(text, per, lines)` shows broken by an added hyphen (0 when every shown word is whole
+   * or breaks only at a hyphen of its own). The map's label rules use it to refuse layouts that would cut short words.
+   */
+  cutOf(text: string, per: number, lines: number): number;
   trunc(text: string, max: number): string;
   /** Deadline path tones: red when the work is interrupted, amber when it escalates beside the work. */
   readonly TONE: {interrupt: string; escalate: string};
@@ -37,7 +44,7 @@ declare namespace LWProcessMapMarks {
 }
 (function(inputRoot: unknown) {
  'use strict';
- const root = inputRoot as {LWProcessMapMarks?: LWProcessMapMarks.Api; LWProcessRooms: LWProcessRooms.Api};
+ const root = inputRoot as {LWProcessMapMarks?: LWProcessMapMarks.Api; LWProcessRooms: LWProcessRooms.Api; LWProcessPalette: LWProcessPalette.Api};
  const NS = 'http://www.w3.org/2000/svg';
  function el<K extends keyof SVGElementTagNameMap>(name: K, attrs: LWProcessMapMarks.Attrs = {}, text?: string): SVGElementTagNameMap[K] {
   const n = document.createElementNS(NS, name);
@@ -109,9 +116,6 @@ declare namespace LWProcessMapMarks {
   const cls = 'pm-mark' + (attrs.class ? ' ' + attrs.class : '');
   return el('path', {...attrs, class: cls, 'data-status': status, d: SHAPES[status], transform: `translate(${x} ${y}) scale(${size})`});
  }
- function statusOf(t: LWProcess.Token): LWProcessMapMarks.Status {
-  return t.status === 'active' || t.status === 'timer' || t.status === 'backlog' || t.status === 'held' ? t.status : 'queued';
- }
  function legend(): string {
   const sample = (inner: string, wide: boolean) => `<svg class="pm-key" width="${wide ? 24 : 12}" height="12" `
    + `viewBox="${wide ? '0 0 24 12' : '-.6 -.6 1.2 1.2'}" aria-hidden="true" focusable="false">${inner}</svg>`;
@@ -123,41 +127,58 @@ declare namespace LWProcessMapMarks {
  }
  const trunc = (s: string, max: number) => s.length > max ? s.slice(0, Math.max(1, max - 1)).trimEnd() + '…' : s;
  /**
-  * Greedy lines of at most `per` characters. A word longer than a line is hyphen-broken, keeping at least 3 characters on each
-  * side. A closing ellipsis may use the line's side padding, so it does not count.
+  * Greedy lines of at most `per` characters. A word longer than a line breaks after a hyphen of its own when one fits (keeping at
+  * least 2 characters on each side), else it is hyphen-broken keeping at least 3 characters on each side. `cut` is the length of the
+  * longest word broken by an added hyphen (0 when none). A closing ellipsis may use the line's side padding, so it does not count.
   */
- function lay(text: string, per: number): string[] {
-  const out: string[] = [], size = (s: string) => s.length - (s.endsWith('…') ? 1 : 0); let line = '';
+ function lay(text: string, per: number): {lines: string[]; cut: number} {
+  const out: string[] = [], size = (s: string) => s.length - (s.endsWith('…') ? 1 : 0);
+  let line = '', cut = 0;
   for (let word of text.split(' ')) {
+   const whole = size(word);
    for (;;) {
     const lead = line ? line + ' ' : '';
     if (lead.length + size(word) <= per) { line = lead + word; break; }
-    const take = Math.min(per - lead.length - 1, size(word) - 3);
-    if (size(word) > per && take >= 3) { out.push(lead + word.slice(0, take) + '-'); line = ''; word = word.slice(take); continue; }
+    const room = per - lead.length, own = word.lastIndexOf('-', room - 1);
+    if (size(word) > per && own >= 2 && size(word) - own - 1 >= 2) {
+     out.push(lead + word.slice(0, own + 1));
+     line = ''; word = word.slice(own + 1);
+     continue;
+    }
+    const take = Math.min(room - 1, size(word) - 3);
+    if (size(word) > per && take >= 3) {
+     out.push(lead + word.slice(0, take) + '-');
+     cut = Math.max(cut, whole); line = ''; word = word.slice(take);
+     continue;
+    }
     if (line) { out.push(line); line = ''; continue; }
-    out.push(word.slice(0, Math.max(1, per - 1)) + '-'); word = word.slice(Math.max(1, per - 1));
+    out.push(word.slice(0, Math.max(1, per - 1)) + '-');
+    cut = Math.max(cut, whole); word = word.slice(Math.max(1, per - 1));
    }
   }
   if (line) out.push(line);
-  return out;
+  return {lines: out, cut};
  }
  const words = (text: string) => text.trim().split(/\s+/);
- const fits = (text: string, per: number, lines: number) => lay(words(text).join(' '), per).length <= lines;
+ const fits = (text: string, per: number, lines: number) => lay(words(text).join(' '), per).lines.length <= lines;
  /**
   * At most `lines` lines of about `per` characters. Text that does not fit keeps as many whole words as fit and ends in an ellipsis,
   * so a name is never cut inside a word while a line has room; only a first word longer than every line together is cut. The full name
   * stays in the card's title, accessible name and the map caption.
   */
- function wrap(text: string, per: number, lines: number): string[] {
+ function laid(text: string, per: number, lines: number): {lines: string[]; cut: number} {
   const all = words(text);
   for (let n = all.length; n > 0; n--) {
    const out = lay(all.slice(0, n).join(' ') + (n < all.length ? '…' : ''), per);
-   if (out.length <= lines) return out;
+   if (out.lines.length <= lines) return out;
   }
-  const cut = lay(all[0]!, per).slice(0, lines);
+  const cut = lay(all[0]!, per).lines.slice(0, lines);
   cut[cut.length - 1] = trunc(cut[cut.length - 1]!.replace(/-$/, '') + '…', per);
-  return cut;
+  return {lines: cut, cut: all[0]!.length};
  }
- const TONE = {interrupt: 'var(--danger)', escalate: 'var(--deadline-escalate)'};
- root.LWProcessMapMarks = {el, small, glyph, pill, mark, statusOf, STATES, legend, wrap, fits, trunc, TONE};
+ const wrap = (text: string, per: number, lines: number) => laid(text, per, lines).lines;
+ const cutOf = (text: string, per: number, lines: number) => laid(text, per, lines).cut;
+ const palette = root.LWProcessPalette;
+ const TONE = {interrupt: palette.css('deadline-interrupt'), escalate: palette.css('deadline-escalate')};
+ root.LWProcessMapMarks = {el, small, glyph, pill, mark, STATES, legend, wrap, fits, cutOf, trunc, TONE};
 })(globalThis);

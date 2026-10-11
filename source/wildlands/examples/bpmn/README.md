@@ -28,7 +28,7 @@ Both files import with no rejections in the default mode; the printed `warnings`
 assumptions made. With seed 7 the loan run ends at minute 984 with 32 cases completed (cost
 2414 simulated units; 3 reviews, 1 SLA escalation) and the ticket run at minute 1094 with 20
 completed (cost 2671; 4 interrupted investigations). Other seeds give other draws; the checks in
-`source/test-process-bpmn.cts` pin these numbers.
+`source/test-process-bpmn-export.cts` pin these numbers.
 
 In a process studio, **Import…** opens the **Import BPMN** dialog with the same options (except minutes per hour, which stays 60) and a
 live preview of warnings, rejections and the mapping. The

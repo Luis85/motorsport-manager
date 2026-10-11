@@ -23,28 +23,51 @@ simulated run; neither is a forecast. The deck model and its limits are in the
 ## Present in the studio
 
 1. **Choose the process.** In a game with several processes, pick it with the **Process**
-   selector. Switching starts it paused at minute 0; if the current run is past minute 0, the
-   studio asks first and **Cancel** keeps it.
+   selector. Each process keeps its own paused run, so switching back and forth loses nothing; a
+   process you open for the first time starts paused at minute 0.
 2. **Choose a minute for live facts (optional).** At minute 0 the deck explains only the
    definition. To add facts from a run, choose **Run simulation** (and **Pause**), or
    **Advance 30 min**, until the clock shows the minute you want; **Run until** sets where
-   a run stops (for a week-scale process choose **Speed** 2 h or 24 h and a **Run until** of
-   168 h or 720 h). Times are simulated business minutes and costs are simulated units.
+   a run stops, and **Run to end** runs there in one step without animation (for a week-scale
+   process choose a **Run until** of 168 h or 720 h, or **Speed** 2 h or 24 h to watch it). Times are simulated business minutes and costs are simulated units.
 3. **Select a starting step (optional).** If a step is selected when you start, the deck
    opens on that step's slide; otherwise it opens on slide 1.
 4. **Open Present.** Choose **Present** beside the view buttons. On a phone (650 px wide or
    less) choose **⋯**, then **Present slides**. A playing run pauses ("The run is paused
    while you present.") and never advances while you present.
-5. **Move through the slides.** Use **Next** and **Previous**, the Right and Left arrow
+5. **Fill the screen (optional).** Choose **Full screen** in the Present header, or press F. The
+   presentation covers the whole screen and the slide stays where it was. Press F again, or Escape,
+   to leave full screen: while full screen, the first Escape only leaves full screen and does not
+   close Present. If full screen cannot be used (a browser without it, or a page embedded without
+   permission), the button stays in place, and its title and a spoken message say why. F does nothing
+   while you type in a field or while the map has focus, where F fits the map.
+6. **Widen the text (optional).** On a desktop window where the slide and the map sit side by side,
+   choose **Wide text**: the slide takes about three fifths of the width and the map the rest. The
+   choice lasts until you reload the page, also when you present again. In a window narrower than
+   900 px or shorter than 560 px the slide and the map are stacked and the control is hidden.
+7. **Move through the slides.** Use **Next** and **Previous**, the Right and Left arrow
    keys, Page Down and Page Up (most presentation clickers send these), `n` and `p`, or Home
    and End. With the slide focused, Space or Down moves on (Shift+Space or Up goes back) once
    the slide has scrolled to its end, so a long slide is read first. Arrow keys inside the map
-   pan the map instead.
-6. **Jump.** **Contents** lists every slide by section and marks the current one; choose a
+   pan the map instead. The line between **Previous** and **Next** repeats the keys ("Arrow keys or
+   Page Up and Page Down change slides · F full screen · Escape exits"); it is hidden on touch
+   screens and phones.
+8. **Jump.** **Contents** lists every slide by section and marks the current one; choose a
    slide to go there, or press Escape to close the list. Selecting a step on the map moves
    the deck to that step's slide.
-7. **Exit.** Choose **Exit** or press Escape. The studio returns to the view and selection
-   you had, and the run stays paused until you choose **Run simulation**.
+9. **Shorten the deck for an executive audience (optional).** In **Contents**, press **Section
+   slides only**. The deck becomes the brief deck: the title with its key results, the overview,
+   the resources, one slide per section that lists its steps and the paths leaving the main route,
+   and the summary. The counter then reads "Slide n of N · section slides only". A step slide you
+   were on becomes its section's slide, and pressing the switch again straight away returns to
+   that step. Presenting again starts with the full deck.
+10. **Exit.** Choose **Exit** or press Escape (twice when full screen). The studio returns to the
+    view and selection you had, leaves a full screen that Present entered, and the run stays paused
+    until you choose **Run simulation**.
+
+Present follows the studio's colour theme: choose **Light theme** in the **Export ▾** or **⋯** menu
+before presenting to show the slides on a light background, for example on a projector in a bright
+room. The choice lasts until you reload the page.
 
 The deck has an introduction (title, overview, resources), one section per main-route
 phase, a section for every other path and a summary. A step slide frames its step together
@@ -60,8 +83,12 @@ time limit). The title slide then shows **Key results** (run status, arrivals an
 mean cycle time, work cost and the most utilised pool), the resources slide shows each pool's
 average utilisation since minute 0 and how many units are busy now, step slides add the step's
 counts, and the summary adds mean cycle time ("none yet" until a case finishes), the mean age of
-the cases in progress, work cost, capacity cost and the most utilised pool. Long times also show
-hours, for example "19,007 min (≈ 316.8 h)".
+the cases in progress, work cost, capacity cost and the most utilised pool. Work at the steps is
+worded as on the studio's map: "Now: 2 working, 3 waiting, 1 blocked" ("running" for machines and
+systems), where blocked work has finished and waits for room in the next backlog. Long times also
+show hours, for example "19,007 min (≈ 316.8 h)", or business days and weeks when the process has a
+working calendar ("2,400 min (5 business days)"). A process with working hours says so on the title
+slide: its times count every elapsed minute, and work and arrivals pause outside the hours.
 
 ## Export the deck from the command line
 
@@ -71,13 +98,15 @@ the file beside a change for review:
 ```sh
 bin/wildlands process slides --input docs/concepts/agency-delivery/content/agency.process.json --format md --output /tmp/agency-slides.md
 bin/wildlands process slides --input docs/concepts/agency-delivery/content/agency.process.json --format md --minutes 240 --seed 7
+bin/wildlands process slides --input docs/concepts/agency-delivery/content/agency.process.json --format md --brief --output /tmp/agency-brief.md
 ```
 
 `--format md` without `--output` prints the Markdown itself; with `--output` the command
 prints one JSON object naming the file, the slide and section counts and the `live` run
 (minute, seed, status). The Markdown ends with a short tip on reproducing the deck with
 `bin/wildlands process slides` and `process run`; the deck in Present has no command-line tip. `--minutes N [--seed S]` runs the same bounded run as
-`process run`; `--seed` needs `--minutes`. See the
+`process run`; `--seed` needs `--minutes`. `--brief` writes the brief deck (for the agency process 10
+slides instead of 22) and reports `brief: true`. See the
 [CLI handbook](../reference/wildlands-cli.md#business-processes) for every option.
 
 Read the Markdown as a learner: every step should say what happens, who or what does it,
@@ -87,6 +116,8 @@ how long it takes, what it needs and delivers and where the work goes next.
 
 - In the studio, the header reads "Slide n of N", and **Contents** lists every section.
 - On a step slide the map frames that step; after **Exit** the run minute is unchanged.
+- **Full screen** reads as pressed while the presentation fills the screen, and the key line says
+  "F or Escape leaves full screen".
 - From the command line, the printed `slides` count matches the deck you reviewed.
 
 For screenshots of the studio and Present mode at a chosen minute (desktop, phone and the

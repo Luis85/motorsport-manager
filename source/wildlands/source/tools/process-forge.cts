@@ -8,7 +8,8 @@ import {catalog} from '../process-sdk.cjs';
 /** Starter scene furnishings; Scene Forge remains the geometry authoring/compilation authority. */
 export function model(step: LWProcess.Step): Record<string, unknown> {
  const nodes: Record<string, unknown>[] = [];
- const box = (id: string, position: number[], scale: number[], material: string) => nodes.push({id, name: id, type: 'mesh', geometry: 'box', material, transform: {position, scale}});
+ const box = (id: string, position: number[], scale: number[], material: string) =>
+  nodes.push({id, name: id, type: 'mesh', geometry: 'box', material, transform: {position, scale}});
  if (step.kind === 'task') {
   box('desk', [0, 1.05, -.6], [3.4, .18, 1.4], 'wood');
   box('left-leg', [-1.4, .5, -.6], [.15, 1, 1], 'frame'); box('right-leg', [1.4, .5, -.6], [.15, 1, 1], 'frame');
@@ -21,12 +22,16 @@ export function model(step: LWProcess.Step): Record<string, unknown> {
   box('marker', [0, 1.05, 0], [.7, .6, .7], 'accent');
  }
  return {schemaVersion: 1, kind: 'model', id: step.scene.id, name: step.name, category: 'Business process scenes', parameters: {},
-  geometries: {box: {type: 'box', size: [1, 1, 1]}}, materials: {wood: {color: '#8c725d', roughness: .8}, frame: {color: '#536379'}, screen: {color: '#91b9d5'}, accent: {color: step.scene.color}}, nodes};
+  geometries: {box: {type: 'box', size: [1, 1, 1]}},
+  materials: {wood: {color: '#8c725d', roughness: .8}, frame: {color: '#536379'}, screen: {color: '#91b9d5'}, accent: {color: step.scene.color}},
+  nodes};
 }
 export function writeForgeProject(input: unknown, output: string): {output: string; scenes: number; assets: number; note: string} {
  const d = catalog.admit(input), target = path.resolve(output);
  if (fs.existsSync(target)) throw Error('Choose a new Scene Forge directory.');
- if (!fs.existsSync(path.dirname(target)) || !fs.statSync(path.dirname(target)).isDirectory()) throw Error('Parent directory does not exist: ' + path.dirname(target));
+ if (!fs.existsSync(path.dirname(target)) || !fs.statSync(path.dirname(target)).isDirectory()) {
+  throw Error('Parent directory does not exist: ' + path.dirname(target));
+ }
  const stage = target + '.' + randomUUID() + '.tmp';
  try {
   fs.mkdirSync(stage); fs.mkdirSync(path.join(stage, 'models')); fs.mkdirSync(path.join(stage, 'scenes')); fs.mkdirSync(path.join(stage, 'existing-assets'));
@@ -46,8 +51,18 @@ export function writeForgeProject(input: unknown, output: string): {output: stri
   write('process-scene-map.json', {format: 'wildlands-process-scenes', schemaVersion: 1, processId: d.id, fingerprint: catalog.fingerprint(d),
    scenes: d.steps.map(s => ({step: s.id, scene: s.scene.id, definition: 'exports/items/' + s.scene.id + '/definition.json'}))});
   const project = JSON.stringify(target);
-  fs.writeFileSync(path.join(stage, 'README.md'), '# Process scene project\n\nEach process step has one Scene Forge scene and editable starter model.\nExisting attached assets are retained in existing-assets; import them with\n`scene-forge -p ' + project + ' littlewild import --definition FILE` to edit the exact geometry.\nThe starter models are not an automatic conversion of those attachments.\n\nRun `scene-forge -p ' + project + ' validate`, then\n`scene-forge -p ' + project + ' littlewild sync --file ' + JSON.stringify(path.join(target, 'littlewild.export.json')) + '`.\nAttach each exported definition with `wildlands process attach` using fresh revision/fingerprint guards.\n');
+  const exported = JSON.stringify(path.join(target, 'littlewild.export.json'));
+  const readme = '# Process scene project\n\n'
+   + 'Each process step has one Scene Forge scene and editable starter model.\n'
+   + 'Existing attached assets are retained in existing-assets; import them with\n'
+   + '`scene-forge -p ' + project + ' littlewild import --definition FILE` to edit the exact geometry.\n'
+   + 'The starter models are not an automatic conversion of those attachments.\n\n'
+   + 'Run `scene-forge -p ' + project + ' validate`, then\n'
+   + '`scene-forge -p ' + project + ' littlewild sync --file ' + exported + '`.\n'
+   + 'Attach each exported definition with `wildlands process attach` using fresh revision/fingerprint guards.\n';
+  fs.writeFileSync(path.join(stage, 'README.md'), readme);
   fs.renameSync(stage, target);
  } finally {if (fs.existsSync(stage)) fs.rmSync(stage, {recursive: true, force: true});}
- return {output: target, scenes: d.steps.length, assets: d.steps.filter(s => s.scene.asset).length, note: 'Editable scene scaffolds created; existing attachments retained verbatim for littlewild import.'};
+ const note = 'Editable scene scaffolds created; existing attachments retained verbatim for littlewild import.';
+ return {output: target, scenes: d.steps.length, assets: d.steps.filter(s => s.scene.asset).length, note};
 }

@@ -1,5 +1,11 @@
 # Process Studio review and improvement pass
 
+> **Historical record.** This page records the review at `01bc133` and the pass that followed it.
+> Every item it left deferred, open or partial was later resolved or re-scoped by the
+> [Process Studio follow-up pass](PROCESS-STUDIO-FOLLOWUPS.md) (10 October 2026), which also added the
+> per-process Dashboard; read the statuses below as they stood at the end of this pass. The current
+> contract is the [business process reference](../../docs/reference/business-process-engine.md).
+
 ## Review scope
 
 This pass reviewed the Wildlands **Process Studio** (the business-process editor and simulator in
@@ -248,6 +254,9 @@ Navigation, dialogs, lenses and Present still never tick the clock, and every ne
 commands through the application controller.
 
 ## Deferred follow-ups
+
+Resolved since: see [Resolutions](PROCESS-STUDIO-FOLLOWUPS.md#resolutions) in the follow-up record,
+and [What remains deferred](PROCESS-STUDIO-FOLLOWUPS.md#what-remains-deferred) for the rest.
 
 - **AUTH-2 structural step editing and New process.** Needs an editor surface over the existing
   `LWProcessAuthoring` `putStep`/`removeStep`/`putFlow` operations and an `add` command for a new

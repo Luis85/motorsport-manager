@@ -1,6 +1,7 @@
 /// <reference path="./process-contracts.d.ts" />
 /// <reference path="./process-step-model.ts" />
 /// <reference path="./process-step-logic.ts" />
+/// <reference path="./process-step-kit.ts" />
 /// <reference path="./process-step-logic-sections.ts" />
 /// <reference path="./process-step-sections.ts" />
 /**
@@ -34,9 +35,9 @@ declare namespace LWProcessStepFlows {
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessStepLogic: LWProcessStepLogic.Api; LWProcessStepLogicSections: LWProcessStepLogicSections.Api;
-  LWProcessStepSections: LWProcessStepSections.Api; LWProcessStepFlows?: LWProcessStepFlows.Api};
+  LWProcessStepKit: LWProcessStepKit.Api; LWProcessStepFlows?: LWProcessStepFlows.Api};
  type M = LWProcessStepModel.Model;
- const kit = () => root.LWProcessStepSections.kit, L = () => root.LWProcessStepLogic;
+ const kit = () => root.LWProcessStepKit, L = () => root.LWProcessStepLogic;
  const A_KIND: Partial<Record<LWProcess.Kind, string>> = {start: 'The start step', task: 'A task', touchpoint: 'A touchpoint', machine: 'A machine step',
   system: 'A system step', timer: 'A timer', decision: 'A decision', fork: 'A fork', join: 'A join'};
  /** The fewest normal (non-deadline) paths a kind needs. An end step has none and offers no paths at all. */

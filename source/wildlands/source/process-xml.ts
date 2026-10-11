@@ -1,28 +1,48 @@
 /// <reference path="./process-contracts.d.ts" />
-/** Minimal namespace-aware XML reader and writer helpers for BPMN interchange. DOCTYPE/entities, characters XML 1.0 forbids, deep and oversized documents are rejected; reading is linear in the document size. */
+/**
+ * Minimal namespace-aware XML reader and writer helpers for BPMN interchange. DOCTYPE/entities, characters XML 1.0 forbids,
+ * deep and oversized documents are rejected; reading is linear in the document size.
+ */
 declare namespace LWProcessXml {
  interface Node {ns: string; local: string; attrs: Record<string, string>; children: Node[]; text: string;}
- /** A node read with `{positions: true}`: also its 1-based start line, its qualified name as written and its in-scope namespace bindings (prefix to URI, '' for the default namespace; inherited bindings come through the prototype chain). */
+ /**
+  * A node read with `{positions: true}`: also its 1-based start line, its qualified name as written and its in-scope namespace
+  * bindings (prefix to URI, '' for the default namespace; inherited bindings come through the prototype chain).
+  */
  interface Located extends Node {line: number; name: string; scope: Readonly<Record<string, string>>; children: Located[];}
  interface Api {
   /** Without options the nodes carry exactly the five fields of `Node`; `{positions: true}` adds `line`, `name` and `scope` (still one linear pass). */
   parse(source: string): Node;
   parse(source: string, options: {positions: true}): Located;
-  /** Attribute value: markup characters, quotes, tabs and line breaks become references (so no reader normalizes them); throws on a character XML 1.0 cannot represent. */
+  /**
+   * Attribute value: markup characters, quotes, tabs and line breaks become references (so no reader normalizes them); throws on
+   * a character XML 1.0 cannot represent.
+   */
   escape(value: unknown): string;
-  /** Element text: markup characters (and quotes unless `quotes` is false) and carriage returns become references; newlines and tabs stay readable. Throws like `escape`. */
+  /**
+   * Element text: markup characters (and quotes unless `quotes` is false) and carriage returns become references; newlines and
+   * tabs stay readable. Throws like `escape`.
+   */
   text(value: unknown, quotes?: boolean): string;
  }
 }
 (function(inputRoot: unknown) {
  'use strict';
  const root = inputRoot as {LWProcessXml?: LWProcessXml.Api};
- const MAX_CHARS = 8 * 1024 * 1024, MAX_NODES = 200000, MAX_DEPTH = 64, ENTITY = /&(#x[0-9a-fA-F]+|#[0-9]+|lt|gt|amp|quot|apos);/g;
+ const MAX_CHARS = 8 * 1024 * 1024;
+ const MAX_NODES = 200000;
+ const MAX_DEPTH = 64;
+ const ENTITY = /&(#x[0-9a-fA-F]+|#[0-9]+|lt|gt|amp|quot|apos);/g;
  const DECLARATION = /^(DOCTYPE|ENTITY|ELEMENT|ATTLIST|NOTATION)/i;
  const NAMED: Record<string, string> = {lt: '<', gt: '>', amp: '&', quot: '"', apos: "'"};
  /** Characters outside the XML 1.0 `Char` production: C0 controls other than tab, line feed and carriage return, U+FFFE, U+FFFF and unpaired surrogates. */
  const ILLEGAL = /[\x00-\x08\x0B\x0C\x0E-\x1F￾￿]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
- const forbidden = (code: number) => code < 0x9 || code === 0xb || code === 0xc || code > 0xd && code < 0x20 || code === 0xfffe || code === 0xffff || code >= 0xd800 && code < 0xe000 || code > 0x10ffff;
+ /** True for a code point outside the XML 1.0 `Char` production, which a character reference may not name. */
+ function forbidden(code: number): boolean {
+  if (code < 0x9 || code === 0xb || code === 0xc || code > 0xd && code < 0x20) return true;
+  if (code === 0xfffe || code === 0xffff) return true;
+  return code >= 0xd800 && code < 0xe000 || code > 0x10ffff;
+ }
  const hex = (c: string) => 'U+' + c.charCodeAt(0).toString(16).toUpperCase().padStart(4, '0');
  function decode(value: string): string {
   if (value.replace(ENTITY, '').includes('&')) throw Error('Only the predefined XML entities and numeric character references are supported.');
@@ -36,7 +56,10 @@ declare namespace LWProcessXml {
  const REFS: Record<string, string> = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;', '\t': '&#9;', '\n': '&#10;', '\r': '&#13;'};
  function legal(value: unknown): string {
   const s = String(value), bad = ILLEGAL.exec(s);
-  if (bad) throw Error('The text "' + s.slice(0, 40).replace(ILLEGAL, '?') + (s.length > 40 ? '...' : '') + '" contains the character ' + hex(bad[0]) + ', which XML 1.0 cannot represent; remove it before exporting.');
+  if (bad) {
+   const shown = s.slice(0, 40).replace(ILLEGAL, '?') + (s.length > 40 ? '...' : '');
+   throw Error('The text "' + shown + '" contains the character ' + hex(bad[0]) + ', which XML 1.0 cannot represent; remove it before exporting.');
+  }
   return s;
  }
  const escape = (value: unknown) => legal(value).replace(/[&<>"'\t\n\r]/g, c => REFS[c]!);
@@ -82,12 +105,22 @@ declare namespace LWProcessXml {
     if (parent) parent.node.text += decode(chunk); else if (chunk.trim()) throw Error('Text outside the root element.');
     i = next < 0 ? source.length : next; continue;
    }
-   if (source.startsWith('<!--', i)) { const j = source.indexOf('-->', i + 4); if (j < 0) throw Error('Unterminated comment.'); i = j + 3; continue; }
+   if (source.startsWith('<!--', i)) {
+    const j = source.indexOf('-->', i + 4);
+    if (j < 0) throw Error('Unterminated comment.');
+    i = j + 3;
+    continue;
+   }
    if (source.startsWith('<![CDATA[', i)) {
     const j = source.indexOf(']]>', i + 9), parent = stack.at(-1); if (j < 0 || !parent) throw Error('Invalid CDATA section.');
     parent.node.text += source.slice(i + 9, j); i = j + 3; continue;
    }
-   if (source.startsWith('<?', i)) { const j = source.indexOf('?>', i + 2); if (j < 0) throw Error('Unterminated processing instruction.'); i = j + 2; continue; }
+   if (source.startsWith('<?', i)) {
+    const j = source.indexOf('?>', i + 2);
+    if (j < 0) throw Error('Unterminated processing instruction.');
+    i = j + 2;
+    continue;
+   }
    // Any other markup declaration is refused as a token, so a comment or CDATA section that only mentions <!DOCTYPE is still read.
    if (source.startsWith('<!', i)) {
     throw Error(DECLARATION.test(source.slice(i + 2, i + 10)) ? 'DOCTYPE and entity declarations are not allowed.' : 'Invalid markup declaration.');

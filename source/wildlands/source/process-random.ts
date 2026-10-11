@@ -73,7 +73,8 @@
    const mode = dist.mode ?? min, span = max - min, c = span ? (mode - min) / span : 0;
    value = span === 0 ? min : Math.round(u < c ? min + Math.sqrt(u * span * (mode - min)) : max - Math.sqrt((1 - u) * span * (max - mode)));
   } else value = Math.round(-(dist.mean ?? 1) * ln(1 - u));
-  return clamp(value, Math.max(1, dist.dist === 'exponential' ? 1 : min), Math.min(limits.minutes, dist.dist === 'exponential' ? dist.max ?? limits.minutes : max));
+  const exponential = dist.dist === 'exponential';
+  return clamp(value, Math.max(1, exponential ? 1 : min), Math.min(limits.minutes, exponential ? dist.max ?? limits.minutes : max));
  }
  root.LWProcessRandom = {unit, int, chance, weighted, sample};
  if (typeof module !== 'undefined' && module.exports) module.exports = root.LWProcessRandom;

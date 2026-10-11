@@ -3,6 +3,9 @@
  * Detached slide deck that explains one process definition step by step (LWProcessSlides, process-slides.ts). Every string is
  * plain text, never HTML. The deck is derived from the definition only; live facts appear only when a snapshot is passed and
  * describe that one simulated run. The deck never shares object references with its inputs.
+ * A brief deck (`build(definition, snapshot, {brief: true})`) is the executive cut: the title (lead and Key results), the overview,
+ * the resources slide, one section slide per section (its step list and the paths leaving the main route) and the summary, without
+ * the individual step slides; every step is still named on exactly one section slide.
  */
 declare namespace LWProcessSlides {
  type Kind = 'title' | 'overview' | 'resources' | 'section' | 'step' | 'summary';
@@ -36,12 +39,18 @@ declare namespace LWProcessSlides {
  interface Deck {
   format: 'wildlands-process-slides'; schemaVersion: 1;
   process: {id: string; name: string; genre: string; revision: number};
+  /** Present (true) only on a brief deck; a full deck has no `brief` key, so its JSON is unchanged. */
+  brief?: true;
   live: {minute: number; seed: number; status: string} | null;
   sections: Section[]; slides: Slide[];
  }
+ interface BuildOptions {
+  /** The brief deck: section slides only, no step slides (see the header). */
+  brief?: boolean;
+ }
  interface Api {
   /** Builds the deck; never mutates its inputs and returns fresh values only. */
-  build(definition: LWProcess.Definition, snapshot?: LWProcess.Snapshot | null): Deck;
+  build(definition: LWProcess.Definition, snapshot?: LWProcess.Snapshot | null, options?: BuildOptions): Deck;
   /** Readable Markdown of a deck for agents and documents; deterministic, ends with a newline. */
   markdown(deck: Deck): string;
  }

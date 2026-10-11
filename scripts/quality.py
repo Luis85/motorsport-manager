@@ -130,6 +130,31 @@ def tool_findings(tool: dict, text: str, root: Path, complexity: int) -> list[di
     return records
 
 
+def measurement_findings(item: dict, policy: dict) -> list[dict]:
+    records = []
+    if item["over_limit"]:
+        records.append(
+            finding(
+                "code-lines",
+                f"{item['code_lines']} code lines; "
+                f"{item['category']} limit is {item['limit']}. Split by responsibility, not arbitrary line count.",
+                item["path"],
+                item["line"],
+            )
+        )
+    for line, width in item["long_lines"]:
+        records.append(
+            finding(
+                "long-line",
+                f"{width} characters; advisory width is {policy['long_lines']['limit']}. "
+                "Wrap or extract by structure; do not pack statements onto one line.",
+                item["path"],
+                line,
+            )
+        )
+    return records
+
+
 def provenance() -> dict:
     analyzer = hashlib.sha256()
     for name in ("quality.py", "quality_loc.py", "quality_report.py"):
@@ -168,16 +193,7 @@ def collect(root: Path, output: Path, run_tools: bool = True) -> dict:
             digest.update(path.as_posix().encode() + b"\0" + data + b"\0")
             item = measure(path, data.decode("utf-8-sig"), policy)
             report["files"].append(item)
-            if item["over_limit"]:
-                report["findings"].append(
-                    finding(
-                        "code-lines",
-                        f"{item['code_lines']} code lines; "
-                        f"{item['category']} limit is {item['limit']}. Split by responsibility, not arbitrary line count.",
-                        item["path"],
-                        item["line"],
-                    )
-                )
+            report["findings"] += measurement_findings(item, policy)
         except (OSError, ValueError, SyntaxError) as error:
             report["analysis_complete"] = False
             report["findings"].append(

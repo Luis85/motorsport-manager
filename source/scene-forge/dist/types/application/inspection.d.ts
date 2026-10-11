@@ -15,29 +15,29 @@ export declare function selectNodes(scene: SceneDocument, selector: NodeSelector
     name?: string | undefined;
     parent?: string | undefined;
     transform?: {
-        position?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-        rotation?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-        scale?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
+        position?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+        rotation?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+        scale?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
     } | undefined;
     pattern?: {
         type: "path";
-        points: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue][];
+        points: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue][];
         orient: "none" | "yaw";
     } | {
         type: "linear";
-        count: import("../domain/schema.js").ScalarValue;
-        step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        count: import("../domain/schema-values.js").ScalarValue;
+        step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
     } | {
         type: "radial";
-        count: import("../domain/schema.js").ScalarValue;
-        radius: import("../domain/schema.js").ScalarValue;
-        startAngle: import("../domain/schema.js").ScalarValue;
-        sweep: import("../domain/schema.js").ScalarValue;
+        count: import("../domain/schema-values.js").ScalarValue;
+        radius: import("../domain/schema-values.js").ScalarValue;
+        startAngle: import("../domain/schema-values.js").ScalarValue;
+        sweep: import("../domain/schema-values.js").ScalarValue;
         orient: boolean;
     } | {
         type: "grid";
-        counts: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
-        step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        counts: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
+        step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
         centered: boolean;
     } | undefined;
 } | {
@@ -48,29 +48,29 @@ export declare function selectNodes(scene: SceneDocument, selector: NodeSelector
     name?: string | undefined;
     parent?: string | undefined;
     transform?: {
-        position?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-        rotation?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-        scale?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
+        position?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+        rotation?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+        scale?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
     } | undefined;
     pattern?: {
         type: "path";
-        points: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue][];
+        points: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue][];
         orient: "none" | "yaw";
     } | {
         type: "linear";
-        count: import("../domain/schema.js").ScalarValue;
-        step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        count: import("../domain/schema-values.js").ScalarValue;
+        step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
     } | {
         type: "radial";
-        count: import("../domain/schema.js").ScalarValue;
-        radius: import("../domain/schema.js").ScalarValue;
-        startAngle: import("../domain/schema.js").ScalarValue;
-        sweep: import("../domain/schema.js").ScalarValue;
+        count: import("../domain/schema-values.js").ScalarValue;
+        radius: import("../domain/schema-values.js").ScalarValue;
+        startAngle: import("../domain/schema-values.js").ScalarValue;
+        sweep: import("../domain/schema-values.js").ScalarValue;
         orient: boolean;
     } | {
         type: "grid";
-        counts: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
-        step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        counts: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
+        step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
         centered: boolean;
     } | undefined;
 } | {
@@ -83,35 +83,35 @@ export declare function selectNodes(scene: SceneDocument, selector: NodeSelector
     name?: string | undefined;
     parent?: string | undefined;
     transform?: {
-        position?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-        rotation?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-        scale?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
+        position?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+        rotation?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+        scale?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
     } | undefined;
     pattern?: {
         type: "path";
-        points: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue][];
+        points: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue][];
         orient: "none" | "yaw";
     } | {
         type: "linear";
-        count: import("../domain/schema.js").ScalarValue;
-        step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        count: import("../domain/schema-values.js").ScalarValue;
+        step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
     } | {
         type: "radial";
-        count: import("../domain/schema.js").ScalarValue;
-        radius: import("../domain/schema.js").ScalarValue;
-        startAngle: import("../domain/schema.js").ScalarValue;
-        sweep: import("../domain/schema.js").ScalarValue;
+        count: import("../domain/schema-values.js").ScalarValue;
+        radius: import("../domain/schema-values.js").ScalarValue;
+        startAngle: import("../domain/schema-values.js").ScalarValue;
+        sweep: import("../domain/schema-values.js").ScalarValue;
         orient: boolean;
     } | {
         type: "grid";
-        counts: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
-        step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        counts: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
+        step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
         centered: boolean;
     } | undefined;
 } | {
     type: "model";
     model: string;
-    parameters: Record<string, import("../domain/schema.js").ScalarValue>;
+    parameters: Record<string, import("../domain/schema-values.js").ScalarValue>;
     materialOverrides: Record<string, string>;
     id: string;
     visible: boolean;
@@ -141,37 +141,37 @@ export declare function selectNodes(scene: SceneDocument, selector: NodeSelector
     name?: string | undefined;
     parent?: string | undefined;
     transform?: {
-        position?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-        rotation?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-        scale?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
+        position?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+        rotation?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+        scale?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
     } | undefined;
     pattern?: {
         type: "path";
-        points: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue][];
+        points: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue][];
         orient: "none" | "yaw";
     } | {
         type: "linear";
-        count: import("../domain/schema.js").ScalarValue;
-        step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        count: import("../domain/schema-values.js").ScalarValue;
+        step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
     } | {
         type: "radial";
-        count: import("../domain/schema.js").ScalarValue;
-        radius: import("../domain/schema.js").ScalarValue;
-        startAngle: import("../domain/schema.js").ScalarValue;
-        sweep: import("../domain/schema.js").ScalarValue;
+        count: import("../domain/schema-values.js").ScalarValue;
+        radius: import("../domain/schema-values.js").ScalarValue;
+        startAngle: import("../domain/schema-values.js").ScalarValue;
+        sweep: import("../domain/schema-values.js").ScalarValue;
         orient: boolean;
     } | {
         type: "grid";
-        counts: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
-        step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+        counts: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
+        step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
         centered: boolean;
     } | undefined;
 })[];
 export declare function inspectNodes(scene: SceneDocument, models: ModelLibrary, selector?: NodeSelector, detailed?: boolean): {
     transform: {
-        position?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-        rotation?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-        scale?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
+        position?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+        rotation?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+        scale?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
     } | undefined;
     model?: string | undefined;
     id: string;
@@ -196,29 +196,29 @@ export declare function inspectNodes(scene: SceneDocument, models: ModelLibrary,
         name?: string | undefined;
         parent?: string | undefined;
         transform?: {
-            position?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-            rotation?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-            scale?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
+            position?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+            rotation?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+            scale?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
         } | undefined;
         pattern?: {
             type: "path";
-            points: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue][];
+            points: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue][];
             orient: "none" | "yaw";
         } | {
             type: "linear";
-            count: import("../domain/schema.js").ScalarValue;
-            step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            count: import("../domain/schema-values.js").ScalarValue;
+            step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
         } | {
             type: "radial";
-            count: import("../domain/schema.js").ScalarValue;
-            radius: import("../domain/schema.js").ScalarValue;
-            startAngle: import("../domain/schema.js").ScalarValue;
-            sweep: import("../domain/schema.js").ScalarValue;
+            count: import("../domain/schema-values.js").ScalarValue;
+            radius: import("../domain/schema-values.js").ScalarValue;
+            startAngle: import("../domain/schema-values.js").ScalarValue;
+            sweep: import("../domain/schema-values.js").ScalarValue;
             orient: boolean;
         } | {
             type: "grid";
-            counts: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
-            step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            counts: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
+            step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
             centered: boolean;
         } | undefined;
     } | {
@@ -229,29 +229,29 @@ export declare function inspectNodes(scene: SceneDocument, models: ModelLibrary,
         name?: string | undefined;
         parent?: string | undefined;
         transform?: {
-            position?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-            rotation?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-            scale?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
+            position?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+            rotation?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+            scale?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
         } | undefined;
         pattern?: {
             type: "path";
-            points: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue][];
+            points: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue][];
             orient: "none" | "yaw";
         } | {
             type: "linear";
-            count: import("../domain/schema.js").ScalarValue;
-            step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            count: import("../domain/schema-values.js").ScalarValue;
+            step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
         } | {
             type: "radial";
-            count: import("../domain/schema.js").ScalarValue;
-            radius: import("../domain/schema.js").ScalarValue;
-            startAngle: import("../domain/schema.js").ScalarValue;
-            sweep: import("../domain/schema.js").ScalarValue;
+            count: import("../domain/schema-values.js").ScalarValue;
+            radius: import("../domain/schema-values.js").ScalarValue;
+            startAngle: import("../domain/schema-values.js").ScalarValue;
+            sweep: import("../domain/schema-values.js").ScalarValue;
             orient: boolean;
         } | {
             type: "grid";
-            counts: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
-            step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            counts: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
+            step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
             centered: boolean;
         } | undefined;
     } | {
@@ -264,35 +264,35 @@ export declare function inspectNodes(scene: SceneDocument, models: ModelLibrary,
         name?: string | undefined;
         parent?: string | undefined;
         transform?: {
-            position?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-            rotation?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-            scale?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
+            position?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+            rotation?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+            scale?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
         } | undefined;
         pattern?: {
             type: "path";
-            points: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue][];
+            points: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue][];
             orient: "none" | "yaw";
         } | {
             type: "linear";
-            count: import("../domain/schema.js").ScalarValue;
-            step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            count: import("../domain/schema-values.js").ScalarValue;
+            step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
         } | {
             type: "radial";
-            count: import("../domain/schema.js").ScalarValue;
-            radius: import("../domain/schema.js").ScalarValue;
-            startAngle: import("../domain/schema.js").ScalarValue;
-            sweep: import("../domain/schema.js").ScalarValue;
+            count: import("../domain/schema-values.js").ScalarValue;
+            radius: import("../domain/schema-values.js").ScalarValue;
+            startAngle: import("../domain/schema-values.js").ScalarValue;
+            sweep: import("../domain/schema-values.js").ScalarValue;
             orient: boolean;
         } | {
             type: "grid";
-            counts: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
-            step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            counts: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
+            step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
             centered: boolean;
         } | undefined;
     } | {
         type: "model";
         model: string;
-        parameters: Record<string, import("../domain/schema.js").ScalarValue>;
+        parameters: Record<string, import("../domain/schema-values.js").ScalarValue>;
         materialOverrides: Record<string, string>;
         id: string;
         visible: boolean;
@@ -322,29 +322,29 @@ export declare function inspectNodes(scene: SceneDocument, models: ModelLibrary,
         name?: string | undefined;
         parent?: string | undefined;
         transform?: {
-            position?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-            rotation?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
-            scale?: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue] | undefined;
+            position?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+            rotation?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
+            scale?: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue] | undefined;
         } | undefined;
         pattern?: {
             type: "path";
-            points: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue][];
+            points: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue][];
             orient: "none" | "yaw";
         } | {
             type: "linear";
-            count: import("../domain/schema.js").ScalarValue;
-            step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            count: import("../domain/schema-values.js").ScalarValue;
+            step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
         } | {
             type: "radial";
-            count: import("../domain/schema.js").ScalarValue;
-            radius: import("../domain/schema.js").ScalarValue;
-            startAngle: import("../domain/schema.js").ScalarValue;
-            sweep: import("../domain/schema.js").ScalarValue;
+            count: import("../domain/schema-values.js").ScalarValue;
+            radius: import("../domain/schema-values.js").ScalarValue;
+            startAngle: import("../domain/schema-values.js").ScalarValue;
+            sweep: import("../domain/schema-values.js").ScalarValue;
             orient: boolean;
         } | {
             type: "grid";
-            counts: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
-            step: [import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue, import("../domain/schema.js").ScalarValue];
+            counts: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
+            step: [import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue, import("../domain/schema-values.js").ScalarValue];
             centered: boolean;
         } | undefined;
     };

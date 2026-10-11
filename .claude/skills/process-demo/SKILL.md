@@ -9,7 +9,8 @@ Model change: PR #42 (`1336f48`, "Wildlands process: weekly delivery and release
 `docs/concepts/agency-delivery/content/delivery-release.process.json`. Follow the same shape. Read
 first: `AGENTS.md` ("Standalone CLI projects", "Documentation housekeeping"),
 `docs/how-to/business-process-authoring.md`, `docs/reference/wildlands-cli.md#business-processes`,
-`docs/reference/business-process-engine.md` ("Presentation limits", "Verification suites").
+`docs/reference/business-process-engine.md` ("Presentation limits", "Dashboard", "Verification suites")
+and `source/wildlands/PROCESS-STUDIO-FOLLOWUPS.md` (what the studio, the read model and the suites do now).
 
 Run everything from the repository root with the checked-in `bin/wildlands` (Node 22+). When the
 branch changes engine or CLI source and `bin/` is not rebuilt yet, run the same commands with
@@ -59,9 +60,23 @@ is written. This one validates strictly (no `--draft` needed).
   `removeResource` (`{"op": ..., "id": ...}`), `setArrivals`, `setStart`, `rename`.
 - Process settings PR #42 had to write into the JSON by hand now have guarded operations:
   `setDescription {value: string|null}`, `setSeed {value: int|null}`, `setSipoc {value|null}`,
-  `setTrack {value|null}` (`null` removes the field) and `setGenre {value}` with `process`,
-  `customer-journey` or `user-journey` (`process` removes the field; `null` is rejected).
-  `process discover` lists all 14 in `editOperations`. Do not hand-edit the definition JSON.
+  `setTrack {value|null}`, `setCalendar {value: {minutesPerDay, daysPerWeek}|null}` (`null` removes
+  the field), `setWorkingHours {value: {opensAt, closesAt, daysPerWeek}|null}` and `setGenre {value}`
+  with `process`, `customer-journey` or `user-journey` (`process` removes the field; `null` is
+  rejected). `process discover` lists all 16 in `editOperations`. Do not hand-edit the definition JSON.
+- A display calendar (`setCalendar`, for example 480 minutes per day and 5 days per week) only
+  changes how long durations are worded; it changes the fingerprint but never a run. Add one only
+  when the process is measured in working days, and say so in the README.
+- Working hours (`setWorkingHours`, for example `{opensAt: 540, closesAt: 1020, daysPerWeek: 5}`)
+  **change the run**: work and arrivals pause outside them, the clock counts elapsed minutes from
+  Monday at the opening, and costs and utilisation count working minutes only. A definition cannot
+  hold both a display calendar and working hours. No bundled demo uses them; adding them to a demo
+  changes its fingerprint, its run numbers and its deck (the title slide names the hours), so every
+  pin and hash below that covers it. Say so in the README, and give the `export-bpmn --bpsim`
+  fidelity note about the BPSim calendar in its BPMN results.
+- `process validate` and `inspect` print `advisories` (whole-minute rounding bias of a short random
+  timing or gap). Treat each as a modelling note: raise the mean, or keep it and mention it in the
+  README.
 - Every edit: `inspect` for fresh guards, `--dry-run` first, then `--output` to a new file. On a stale
   guard, re-inspect and reconcile; never guess a revision. Keep the final file's revision small and
   explain it in the README provenance (PR #42 ended at revision 2).
@@ -92,9 +107,13 @@ is written. This one validates strictly (no `--draft` needed).
 4. Process counts in prose are manual: `docs/reference/current-state.md` (agency lab paragraph),
    `docs/concepts/README.md` (agency bullet), `source/wildlands/README.md` ("Business process scenes").
    The browser suites derive the count from `game.json` (`process-browser-fixture.ts` `COUNT`), and the
-   BPMN conformance check exports every `content/*.process.json` automatically. Two checks pin each
-   deck instead, so a new process, or an edit that adds, removes, renames or re-phases steps, must
-   update them (take the numbers from `bin/wildlands process slides --input F`, which prints `slides`):
+   BPMN conformance check exports every `content/*.process.json` automatically. Several Node suites
+   iterate every `content/*.process.json` by themselves (the read-model sweeps of
+   `business-process-readmodel`, the calendar wording, work-state and dashboard checks of
+   `business-process-analysis`), so a new demo must pass them without a pin. These checks pin each
+   deck or route instead, so a new process, or an edit that adds, removes, renames or re-phases steps
+   or changes descriptions, must update them (take the numbers from
+   `bin/wildlands process slides --input F`, which prints `slides`, and `--brief`):
    - `PINNED` in `source/wildlands/source/verification/process-present-browser.ts`: one slide count
      per process in `content.definitions` order (append the new deck's count);
      `process-present-browser` asserts `COUNT === PINNED.length` and every deck's length.
@@ -106,12 +125,30 @@ is written. This one validates strictly (no `--draft` needed).
      minute 0 and after 1,440 minutes with seed 7 (`SIPOC_LENGTH`, `SIPOC_SHA`): a new demo, or a
      change to phases, the main route, the SIPOC, arrival data or anything that changes those runs,
      changes that hash. Re-pin it and say why in the handoff.
+   - `DECKS_LENGTH` and `DECKS_SHA` in `source/wildlands/source/test-process-route.cts`
+     (`business-process-analysis`): the JSON of every demo's full deck and Markdown without a
+     snapshot, so any change to a step's name, description, kind, pools, phase or path text, or a new
+     demo, changes it; `JOURNEY_ROUTES` in the same file pins each demo's journey-map main route by
+     file name (append the new demo's route; the check asserts the file list).
+   - `BRIEF` in `source/wildlands/source/test-process-slides-brief.cts` (`business-process-analysis`):
+     per file name the brief deck's slide count and ordered titles (`process slides --brief`).
+   - `process-present-brief-browser` (`process-present-brief-checks.ts`) expects the first process's
+     brief deck to have 10 slides; it changes only when the agency pipeline's sections change.
+   - `process-shell-browser` ("New process and Import as a new process add a slot …") asserts that the
+     agency game holds seven processes, so that New process fills the eighth and last slot. An eighth
+     demo leaves no free slot: that check (and the studio's New process and Import as a new process
+     in the published demo) then needs a deliberate change, reported in the handoff.
+   - `business-process-checkpoint` ("Checkpoint restore equals an uninterrupted run on every demo …",
+     `source/wildlands/source/test-process-checkpoint.cts`) restores every `content/*.process.json`
+     at several seeds and minutes and asserts that there are seven demo files: a new demo must
+     restore exactly, and an eighth file changes that count deliberately (report it).
 5. `bin/wildlands validate-game --game docs/concepts/agency-delivery` (exit 0, `errors: []`).
 
 ## 3. Pin a Node check
 
-Append a `test(...)` to `source/wildlands/source/test-process-steps.cts`, modelled on "Loan
-application demo ..." and "Weekly delivery and release train ..." (~:230 and ~:254):
+Append a `test(...)` to `source/wildlands/source/test-process-demos.cts` (the pinned demo evidence of
+the `business-process` suite), modelled on "Loan application demo ..." and "Weekly delivery and
+release train ...":
 
 - `catalog.validate(d)` ok with `diagnostics: []`; `catalog.fingerprint(d)` equals the pinned value
   (`process inspect` prints it); id, seed, genre, every step `scene` without `asset` and a `phase`.
@@ -131,7 +168,9 @@ text edits** (never reformat or re-serialize the file): append the exact name to
 `reviewedAdditions`, and raise `totalChecks` by one
 (`totalChecks = historicalBaseline.checks + reviewedAdditions.length - retirements.length`).
 A renamed or removed check needs a `renames`/`retirements` entry. Never weaken an assertion.
-Quick partial run: `cd source/wildlands && npm run verify -- --only business-process,business-process-bpmn`.
+Quick partial run: `cd source/wildlands && npm run verify -- --only business-process,business-process-analysis,business-process-bpmn,business-process-checkpoint`.
+A partial `--only` run does not compare the check inventory with `gate-expectations.json`; run
+`npm test` (the fast tier, which includes `gate-integrity`) before pushing a registration change.
 
 ## 4. Review the content
 
@@ -147,6 +186,9 @@ bin/wildlands process inspect --input $W/re1.json   # fingerprint == the definit
 bin/wildlands process diff --input $W/p1.json --against $W/p0.json   # changes from p0 to p1, per edit
 bin/wildlands process slides --input $F --format md --output $W/slides.md
 bin/wildlands process slides --input $F --format md --minutes 2400 --seed 7 --output $W/slides-live.md
+bin/wildlands process slides --input $F --format md --brief --output $W/slides-brief.md
+bin/wildlands process validate --input $F                      # advisories: [] or reviewed
+bin/wildlands process replicate --input $F --minutes 2400 --runs 20 --output $W/spread.json
 ```
 
 - `diff --input NEW --against OLD` reports what changed from OLD to NEW (`summary`, `changes`,
@@ -161,7 +203,11 @@ bin/wildlands process slides --input $F --format md --minutes 2400 --seed 7 --ou
   main-route order, variants, summary. Every step has exactly one `step-<id>` slide; no step may read
   "No description authored."; phases appear in the intended order (an unphased step joins the phase
   before it); concept explainers match what the step really does. The live version (`--minutes`) must
-  agree with the README numbers for that seed and minute.
+  agree with the README numbers for that seed and minute. The brief deck names every step once on its
+  section slide.
+- `replicate` shows how much the README's seeded numbers vary across seeds; for a random process,
+  give the README the range (for example p10 to p90 of the mean cycle) or say that other seeds
+  differ, and never present one seed as the expected result.
 
 Screenshots (Playwright Chromium; never `waitForTimeout`):
 
@@ -188,7 +234,21 @@ title slide's lead is short and **Key results** follow it; the resources slide l
 utilisation; the step slide shows that step framed on the map with its direct neighbours;
 slide text is not cut off and Previous/Next stay visible (on a phone the map follows the slide, below
 it); the DejaVu variants do not overflow; Contents lists every section; Exit returns to the previous
-view with the run still paused.
+view with the run still paused. By hand, also try **Full screen** (F, then Escape leaves full screen
+without closing Present) and **Wide text** on a desktop window, and the deck under **Light theme**
+(Export menu; `process:shots` captures the dark default only).
+
+Dashboard review (by hand in the built HTML; `process:shots` does not capture it): choose
+**Dashboard** at the review minute. The strip names the seed and minute; **Waiting by step** and
+**Capacity: pool utilisation** should point at the bottleneck the README describes; journeys and
+processes with outcomes show **Journey outcomes**; **What-if** with 20 runs finishes without
+touching the run's minute. Nothing may read "NaN" or show a chart without its data table. The
+lead-time note says whether percentiles are exact (they are, below 50,000 finished cases). At phone
+width no focused control or heading may hide under the sticky run bar.
+
+Checkpoint review (optional, for a demo whose README quotes a run): `bin/wildlands process run --input
+$F --minutes M1 --output $W/a.json --checkpoint-out $W/c.json`, then `--minutes M2 --checkpoint $W/c.json
+--output $W/b.json`; `b.json`'s `snapshot` must equal one `--minutes M1+M2` run with the same seed.
 
 ## 5. Rebuild and gate
 
@@ -215,7 +275,8 @@ make `check:cli` report a stale `bin/wildlands` even on an unchanged tree.
 - Gates with results: `check:cli`, `check:demos`, `validate-game`, strict `tsc`, `architecture`,
   full `npm run verify` (suites/checks passed, `totalChecks`), `check_docs.py`, Python unittest,
   `validate-bpmn` x2 and the re-import fingerprints, `process diff` of each edit, `process slides`
-  reviewed (slide count, sections).
+  reviewed (slide count, sections, brief slide count), `advisories`, and every re-pinned value
+  (`PINNED`, `SIPOC_SHA`, `DECKS_SHA`, `JOURNEY_ROUTES`, `BRIEF`) with the reason.
 - Pinned numbers: fingerprint, seed, minute, status, cost, key counts, second-seed numbers.
 - Skipped or unavailable checks and why (a `--only` or `--no-browser` run is partial evidence).
 - Screenshots/`shots.json` path. Screenshots of a synthetic run are review material, not human

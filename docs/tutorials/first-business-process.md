@@ -1,12 +1,14 @@
 # Model your first business process
 
 This tutorial builds a small expense approval process from nothing, runs it, opens it
-in the Process Studio, tunes one step, presents it and exports the result. It takes
-about 30 minutes. Every value is a synthetic example.
+in the Process Studio, reads its Dashboard, tunes one step, presents it and exports the result.
+It takes about 30 minutes. Every value is a synthetic example.
 
-You use the checked-in `bin/wildlands` command-line tool to create the process, because
-the studio tunes an existing process but cannot create one or add steps from a form (see
-[What the studio can and cannot edit](../how-to/business-process-authoring.md#what-the-studio-can-and-cannot-edit)).
+You create the process with the checked-in `bin/wildlands` command-line tool, so that the whole
+structure is one guarded, reviewable change. The studio can build a process too (**New
+process…**, **Add step…** and the step editor's **Step structure**; see
+[What the studio can and cannot edit](../how-to/business-process-authoring.md#what-the-studio-can-and-cannot-edit)),
+and you use it below to tune and compare.
 The [process contract](../reference/business-process-engine.md) defines every field used
 here; the [authoring guide](../how-to/business-process-authoring.md) covers the tasks this
 tutorial only touches.
@@ -24,7 +26,7 @@ mkdir -p /tmp/first-process
 bin/wildlands process discover
 ```
 
-`discover` prints the `process` commands, their limits and the 14 guarded
+`discover` prints the 17 `process` commands, their limits and the 15 guarded
 `editOperations` (for example `putStep`, `putFlow` and `setDescription`).
 
 ## 1. Create a starter process
@@ -142,30 +144,45 @@ bin/wildlands process build --input /tmp/first-process/expense.json --output /tm
 ```
 
 Open `/tmp/first-process/expense.html` in the browser. The studio opens paused at minute
-0 in the **3D** view (on a phone, in **2D**), with the six steps in the step list and **2D**, **3D**, **SIPOC**
-and **Present** above the stage.
+0 in the **3D** view (on a phone, in **2D**), with the six steps in the **Steps** list and **2D**,
+**3D**, **SIPOC**, **Dashboard** and **Present** above the stage.
 
 1. Choose **Run simulation**. The clock runs to minute 190 and stops, and **Reset run**
    becomes the highlighted button; the metrics read Completed 12, Mean cycle 52.5 min, Work
    cost 555 and Capacity cost 760, the same as the command line.
 2. Choose **2D** to see the map, then **SIPOC** to see the suppliers, inputs, phases,
    outputs and customers. Changing the view never advances the clock.
+3. Choose **Dashboard**. The **Busiest pool** tile reads 95% for the Finance clerk, and under
+   **Where time goes** the **Waiting by step** panel says "Pay the claim holds 100% of the
+   waiting.": every minute a claim waited, it waited for the single clerk. The strip at the top
+   reminds you that this is one simulated run of seed 7, not a forecast.
 
 ## 6. Tune a step in the step editor
 
-1. Select **Pay the claim** in the step list. The inspector shows its description,
-   **Duration** 15 min and its total queue time.
-2. Choose **Edit step…** beside **Frame view**. The step editor opens with the step's
+1. Select **Pay the claim** in the **Steps** list. The inspector shows its description,
+   **Duration** 15 min, its total queue time (255 min) and a **Mean wait per start** of 21.3 min.
+2. Choose **Edit step…** beside **Fit to view**. The step editor opens with the step's
    fields, its pools (**Approvers**, **Finance clerk**) and its outgoing path.
 3. Set **Task duration (minutes, at least 1)** to `10` and choose **Save to draft**. The
    status line reads "Saved to the draft. Apply the draft to start a fresh run." and a chip
    in the header reads "Unapplied draft · 1 step changed".
-4. Choose **Edit step…** again and **Apply and reset run**. Because the run is past minute
-   0, the footer first asks you to confirm and starts on **Back**; choose **Apply and
-   reset**. The studio starts a fresh paused run at minute 0, the chip disappears and **Pay the
+4. Before applying, compare the draft with the applied design over several seeds. The
+   Dashboard is still shown, now with the step focus of **Pay the claim**; go to **What-if: spread
+   across seeds**, choose
+   **Applied design versus draft** and **Run seeds**. With the defaults (20 runs of 190 minutes from
+   seed 7) it ends with "Comparison complete." and the mean cycle line reads "Mean cycle (minutes)
+   per run is 25.9 lower with the draft than with the applied design", with its 95% interval.
+   Your live run stays at minute 190.
+5. Choose **Edit step…** again and **Apply and reset run**. Because the run is past minute
+   0, the footer first asks you to confirm and starts on **Back** (**Export report first** would
+   save the run report before you continue); choose **Apply and reset**. The studio starts a fresh paused run at minute 0, the chip disappears and **Pay the
    claim** stays selected.
-5. Choose **Run simulation** again. This time the run completes at minute 165 with a mean
+6. Choose **Run simulation** again. This time the run completes at minute 165 with a mean
    cycle of 27.1 min, a work cost of 435 and a capacity cost of 660.
+
+To add a step in the studio instead of a recipe, you would select a step and use **Step
+structure** in the step editor, or **Add step…** in the header; the new step goes into the same
+draft and is applied the same way.
 
 ## 7. Present it
 
@@ -181,7 +198,7 @@ and **Present** above the stage.
    stays paused.
 
 [Present a process to stakeholders](../how-to/present-a-process.md) covers choosing a
-minute, the phone menu and the Markdown export.
+minute, the phone menu, the shorter **Section slides only** deck and the Markdown export.
 
 ## 8. Export the result
 
@@ -209,6 +226,11 @@ BPMN with BPSim**, **Export run report** and **Download HTML**.
 - Explore seven larger synthetic processes in the
   [agency delivery lab](../concepts/agency-delivery/README.md)
   (`demos/agency-delivery.html`).
+- Read every Dashboard panel with
+  [Read a process dashboard](../how-to/read-a-process-dashboard.md).
+- Keep a run and continue it later with
+  [Save and resume a process run](../how-to/save-and-resume-a-process-run.md), or let work pause
+  overnight with [working hours](../how-to/business-process-authoring.md#run-on-working-hours).
 - Look up commands and exit codes in the
   [CLI handbook](../reference/wildlands-cli.md#business-processes).
 
