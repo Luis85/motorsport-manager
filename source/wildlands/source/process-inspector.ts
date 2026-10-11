@@ -38,7 +38,8 @@ declare namespace LWProcessInspector {
   step(view: LWProcessApp.View, step: LWProcess.Step): string;
   /**
    * The KPI strip cells under the stage: counts, mean cycle ('—' until a case finishes), mean age in progress, work cost and capacity cost,
-   * plus goals, lost, conversion and up to two tracked measures for journeys. HTML without the seed note. Times use the display calendar.
+   * plus goals, lost and conversion for a definition with goal or lost ends and its first two tracked measures. The tiles depend on the
+   * definition only (values read '—' until known), so the strip keeps its height during a run. Times use the display calendar.
    */
   kpis(view: LWProcessApp.View): string;
   /**
@@ -73,17 +74,27 @@ declare namespace LWProcessInspector {
  }
  const dec = (n: number) => Number(n.toFixed(2)).toLocaleString();
  function kpis(view: LWProcessApp.View): string {
-  const m = view.snapshot.metrics, d = view.definition, t = root.LWProcessTerms.of(d), cells: [string, string][] = [[t.finished, num(m.completed)]];
-  const conversion = (m.conversion! / 10).toFixed(1) + '%';
-  const outcomes: [string, string][] = m.goals + m.lost > 0 ? [['Goals', num(m.goals)], ['Lost', num(m.lost)], ['Conversion', conversion]] : [];
+  type Cell = [label: string, value: string, kind?: 'time' | 'cost'];
+  const m = view.snapshot.metrics, d = view.definition, t = root.LWProcessTerms.of(d), cells: Cell[] = [[t.finished, num(m.completed)]];
+  // The tile set follows the definition, not the run, so the strip (and the stage above it) keeps its height when the first case
+  // finishes: outcome tiles show from minute 0 for a definition with goal or lost ends, and the first two tracked measures read '—'
+  // until a case has finished with them. The kind reserves a value width in process.css, so growing numbers do not re-wrap the strip.
+  const conversion = m.conversion === null ? '—' : (m.conversion / 10).toFixed(1) + '%';
+  const declared = d.steps.some(s => s.kind === 'end' && s.outcome) || m.goals + m.lost > 0;
+  const outcomes: Cell[] = declared ? [['Goals', num(m.goals)], ['Lost', num(m.lost)], ['Conversion', conversion]] : [];
   // Mean cycle covers finished cases only: '—' until one finishes, with the mean age of the cases still in progress beside it.
   const age = m.meanAgeMinutes === null ? '—' : span(d, m.meanAgeMinutes);
   const cycle = m.completed ? span(d, m.meanCycleMinutes) : '—';
-  cells.push(...outcomes, ['In progress', num(m.active)], ['Mean cycle', cycle], ['Mean age in progress', age]);
-  cells.push(['Work cost', num(m.cost)], ['Capacity cost', num(m.capacityCost)], ['Failed', num(m.failed)]);
+  cells.push(...outcomes, ['In progress', num(m.active)], ['Mean cycle', cycle, 'time'], ['Mean age in progress', age, 'time']);
+  cells.push(['Work cost', num(m.cost), 'cost'], ['Capacity cost', num(m.capacityCost), 'cost'], ['Failed', num(m.failed)]);
   if (m.dropped > 0) cells.push(['Dropped', num(m.dropped)]);
-  cells.push(...trackedFinish(view).slice(0, 2).map((x): [string, string] => [x.label + ' (avg)', dec(x.mean)]));
-  return String(html`${cells.map(([label, value]) => html`<div><span>${label}</span><strong>${value}</strong></div>`)}`);
+  cells.push(...(d.track ?? []).slice(0, 2).map((x): Cell => {
+   const f = m.tracked[x.field];
+   return [(x.label ?? x.field) + ' (avg)', f && f.n > 0 && f.mean !== null ? dec(f.mean) : '—'];
+  }));
+  const tile = ([label, value, kind]: Cell) => kind ? html`<div class="kpi-${kind}"><span>${label}</span><strong>${value}</strong></div>`
+   : html`<div><span>${label}</span><strong>${value}</strong></div>`;
+  return String(html`${cells.map(tile)}`);
  }
  function needsHtml(view: LWProcessApp.View, step: LWProcess.Step): Safe {
   const delivered = [...Object.entries(step.set ?? {}).map(([k, v]) => html`<li>${k} = ${JSON.stringify(v)}</li>`),

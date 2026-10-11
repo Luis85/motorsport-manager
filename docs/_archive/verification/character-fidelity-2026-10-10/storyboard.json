@@ -1,0 +1,111 @@
+{
+  "format": "wildlands-storyboard",
+  "schemaVersion": 1,
+  "title": "Littlewild · From concept to companion",
+  "intent": "A historical visual comparison of the 10 October 2026 fidelity follow-up. Bring the friendly woodland concept into a real editable character, then preserve its geometry and materials through agent-driven tools. Screenshots show actual renders; they do not establish an exact illustration match.",
+  "layout": "comparison",
+  "sections": [
+    {
+      "id": "direction",
+      "title": "1. The direction and the change",
+      "intent": "Warm woodland proportions, a compact friendly face, tactile materials and wearable adventure gear.",
+      "cards": [
+        {
+          "id": "concept",
+          "title": "Supplied design concept",
+          "image": "evidence/supplied-concept.png",
+          "caption": "Page 1 of the supplied high-fidelity mockups. This is the design target, not a screenshot of implemented software."
+        },
+        {
+          "id": "before",
+          "title": "Previous implementation",
+          "image": "evidence/before-editor.png",
+          "caption": "Earlier captured editor from the first showcase. Larger dark eyes and simple surfaces made the character feel far from the concept. Different camera and outfit settings mean this is a product comparison, not a pixel-difference test."
+        },
+        {
+          "id": "after",
+          "title": "The implemented follow-up",
+          "image": "evidence/after-editor-desktop.png",
+          "source": "evidence/pip-trail.recipe.json",
+          "caption": "Smaller warm irises, cream sclera, a shallow muzzle, cupped ears, a softer body and fitted gear. Deterministic surface maps add short coat detail. The editor shows the actual compiled model."
+        },
+        {
+          "id": "mobile",
+          "title": "The same workflow on mobile",
+          "image": "evidence/after-editor-mobile.png",
+          "source": "ui-evidence.json",
+          "caption": "The preview and editing chapters reflow at 390 px. Captured browser evidence reports no page errors and no horizontal overflow."
+        }
+      ]
+    },
+    {
+      "id": "presets",
+      "title": "2. A coherent family",
+      "intent": "Keep the bear, rabbit and cat recognizably different while sharing friendly facial proportions and the same editable contract.",
+      "cards": [
+        {
+          "id": "pip",
+          "title": "Pip · round ears",
+          "source": "evidence/pip-review/manifest.json",
+          "caption": "Actual fixed front capture of the revised default preset."
+        },
+        {
+          "id": "fern",
+          "title": "Fern · tall ears",
+          "source": "evidence/fern-review/manifest.json",
+          "caption": "The rabbit preset retains its taller silhouette and green coat."
+        },
+        {
+          "id": "mochi",
+          "title": "Mochi · pointed ears",
+          "source": "evidence/mochi-review/manifest.json",
+          "caption": "The cat preset retains its pointed ears and soft cream palette."
+        }
+      ]
+    },
+    {
+      "id": "portable",
+      "title": "3. Inspect the same authored companion across tools",
+      "intent": "Inspect silhouette, expression and surface placement from repeatable views; preserve authored UVs, material roles and the native rig.",
+      "cards": [
+        {
+          "id": "studio",
+          "title": "Character Studio · six fixed views",
+          "source": "evidence/trail-review/manifest.json",
+          "caption": "Front, side, back, portrait, daylight and night for the outfitted companion. The review retains recipe, visual and image hashes plus a replay plan."
+        },
+        {
+          "id": "forge",
+          "title": "Scene Forge · portable textured geometry",
+          "source": "evidence/forge-review/review.json",
+          "caption": "The exported native package opened in Forge with its authored UVs and fur, cloth and leather maps. The companion GLB passed Khronos validation with zero errors and zero warnings. Renderer lighting remains visibly different."
+        },
+        {
+          "id": "native",
+          "title": "Godot · actual native renderer",
+          "source": "evidence/pip-trail-godot.receipt.json",
+          "image": "evidence/pip-trail-godot.png",
+          "caption": "The same visual rendered through the native asset factory, with baked color and normal maps. The receipt records renderer, source hash, camera and lighting. Native sheen is an approximation; this capture does not claim pixel parity or a completed gameplay journey."
+        }
+      ]
+    },
+    {
+      "id": "agents",
+      "title": "4. The agent authoring loop",
+      "intent": "Discover → inspect → guarded edit → export → capture → compare → maintain.",
+      "cards": [
+        {
+          "id": "tools",
+          "title": "Capabilities agents can discover and use",
+          "source": "workflow.json",
+          "caption": "Forge exposes rounded organic forms with taper and bend, bounded deterministic surface recipes and explicit imported variant IDs. Wildlands exposes compact visual facts without dumping mesh buffers. All three tools retain guards, dry runs, portable exchange and replayable visual review."
+        },
+        {
+          "id": "limits",
+          "title": "What remains different from the concept",
+          "caption": "The result remains a stylized low-polygon plush interpretation. Texture maps provide short surface detail, not strand fur or the illustration’s fine sculpting. Lighting differs across Studio, Forge and Godot. The CPU fallback does not implement physical surface shading. Use actual captures to assess likeness; schema and export validation cannot judge appeal."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "expectedRevision": 0,
+  "expectedState": "bdcf1ce3a710d52cb37010113647a4e60f36b3b165abbe6a08cd1e2d80ac7db1",
+  "operations": [
+    {
+      "op": "putGeometry",
+      "id": "body",
+      "geometry": {
+        "type": "organic",
+        "size": [
+          0.9,
+          1.1,
+          0.72
+        ],
+        "roundness": 0.9,
+        "taper": 0.22,
+        "bend": 0,
+        "segments": 32
+      }
+    },
+    {
+      "op": "putMaterial",
+      "id": "coat",
+      "material": {
+        "color": "#78885f",
+        "roughness": 0.9,
+        "surface": {
+          "version": 2,
+          "kind": "cloth",
+          "seed": 9,
+          "scale": 3,
+          "strength": 0.4
+        }
+      }
+    },
+    {
+      "op": "putNode",
+      "node": {
+        "id": "torso",
+        "type": "mesh",
+        "geometry": "body",
+        "material": "coat",
+        "tags": [
+          "rig:body"
+        ]
+      }
+    }
+  ]
+}

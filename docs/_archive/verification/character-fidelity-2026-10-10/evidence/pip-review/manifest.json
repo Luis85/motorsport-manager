@@ -1,0 +1,36 @@
+{
+  "format": "character-studio-review",
+  "schemaVersion": 1,
+  "characterId": "pip",
+  "recipeHash": "fa111333ab73e41fb0728f2789b5075b7bb9c553c59a8e0ae74c755fbd3bb9b5",
+  "visualHash": "5aeddebf91758ce2ef9e3adb717e77a4f55971c3d432a3d9e39bc0c0c0cd942e",
+  "compilerRevision": 3,
+  "renderer": "wildlands-three",
+  "paused": true,
+  "time": 0,
+  "plan": "replay-plan.json",
+  "contactSheet": {
+    "file": "contact-sheet.png",
+    "sha256": "58943d46d2e02b26cb6ea8b32755e92f1d598102dca917eaf5738852605cbf23"
+  },
+  "frames": [
+    {
+      "id": "front",
+      "file": "frames/front.png",
+      "sha256": "3f55a0c16f7c300a9417152dccb8847727e44af9a517e2f124c51a36127b3f6b",
+      "bytes": 263108,
+      "preview": {
+        "mode": "studio",
+        "light": "studio",
+        "pose": "idle",
+        "camera": "front",
+        "width": 768,
+        "height": 768
+      }
+    }
+  ],
+  "limits": [
+    "Presentation stage is not gameplay state.",
+    "Compare using the same replay plan, tool build and browser for reproducible visual review."
+  ]
+}

@@ -39,6 +39,12 @@ declare namespace LWProcess3DKit {
  'use strict';
  const root = inputRoot as {
   LWProcess3DBake: LWProcess3DBake.Api; LWProcessRooms: LWProcessRooms.Api; LWProcessPalette: LWProcessPalette.Api;
+  LWAssetRenderer: {
+   /** The shared material factory: authored physical, surface and depth options draw the same as in every other renderer. */
+   createMaterial(T: LWThree.Module, color: string, extra: LWThree.MaterialOptions, defaults?: LWThree.MaterialOptions): LWThree.Material;
+   /** Releases the baked mesh geometries cached for a kit that custom step assets were drawn with. */
+   disposeKit(kit: unknown, release?: (geometry: LWThree.BufferGeometry) => void): void;
+  };
   LWProcess3DKit?: LWProcess3DKit.Api;
  };
  type Piece = LWProcess3DBake.Piece;
@@ -64,7 +70,7 @@ declare namespace LWProcess3DKit {
    const key = color + JSON.stringify(extra);
    let m = materials.get(key);
    if (!m) {
-    m = new T.MeshStandardMaterial({color, roughness: .8, ...extra});
+    m = root.LWAssetRenderer.createMaterial(T, color, extra, {roughness: .8});
     materials.set(key, m);
    }
    return m;
@@ -259,6 +265,8 @@ declare namespace LWProcess3DKit {
     if (mesh.geometry) geometries.add(mesh.geometry);
     if (mesh.material) all.add(mesh.material);
    });
+   // Baked mesh geometry of custom step assets is cached per kit; gather it so it is freed once with the rest.
+   root.LWAssetRenderer.disposeKit(kit, g => geometries.add(g));
    geometries.forEach(g => g.dispose());
    all.forEach(m => m.dispose());
    textures.forEach(t => t.dispose());
@@ -270,7 +278,8 @@ declare namespace LWProcess3DKit {
    textures.length = 0;
    canvases.length = 0;
   }
-  return {T, colours, mat, group, piece, fixed, sign, mood, station, shape, seal, show, moods, dispose};
+  const kit: LWProcess3DKit.Kit = {T, colours, mat, group, piece, fixed, sign, mood, station, shape, seal, show, moods, dispose};
+  return kit;
  }
  root.LWProcess3DKit = Object.freeze({create});
 })(globalThis);

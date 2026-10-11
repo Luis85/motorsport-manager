@@ -14,6 +14,6 @@
    importPackage:(value:unknown)=>owned.importPackage(value),duplicateArchetype:(id:string,name:string)=>owned.duplicateArchetype(id,name),undo:()=>owned.undo(),redo:()=>owned.redo()
   });
  }
- const api:LWCreatureEditor.Api={create,validatePackage:(input,context)=>copy(root.LWCreatureEditor.validatePackage(input,context===undefined?undefined:copy(context)))};
+ const api:LWCreatureEditor.Api={MAX_PACKAGE_BYTES:root.LWCreatureEditor.MAX_PACKAGE_BYTES,create,validatePackage:(input,context)=>copy(root.LWCreatureEditor.validatePackage(input,context===undefined?undefined:copy(context)))};
  root.LWDeveloperCreatures=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(globalThis);

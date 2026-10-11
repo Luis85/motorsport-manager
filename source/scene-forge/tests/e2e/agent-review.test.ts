@@ -5,7 +5,7 @@ import { promisify } from 'node:util';
 import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { loadOfflinePage } from './offline-page.js';
 import { chromium } from 'playwright';
 import { validateBytes } from 'gltf-validator';
 
@@ -96,7 +96,7 @@ test('agent discovers, imports procedural recipes, edits a selection and transfe
     await fs.rm(root, { recursive: true, force: true });
   }
 });
-test('one review yields labeled views, exact frame sizes, camera metadata and an immutable source', async () => {
+test('inline HTML review yields labeled views, exact frame sizes, camera metadata and an immutable source', async () => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'forge-review-test-'));
   try {
     const project = path.join(root, 'project');
@@ -133,6 +133,7 @@ test('one review yields labeled views, exact frame sizes, camera metadata and an
     }
     const manifest = JSON.parse(await fs.readFile(result.manifest, 'utf8'));
     assert.equal(manifest.sourceStateHash, before.stateHash);
+    assert.equal(manifest.provenance.documentTransport, 'inline-html');
     assert.equal(manifest.target.model, 'rack');
     assert.equal(manifest.frames[1].camera.projection, 'orthographic');
     const sheet = await fs.readFile(result.contactSheet);
@@ -254,7 +255,7 @@ test('procedural transforms survive a browser edit and model import dry-run leav
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
-    await page.goto(pathToFileURL(html).href);
+    await loadOfflinePage(page, html);
     await page.waitForFunction(() => window.forgeReady || window.forgeError);
     assert.equal(await page.evaluate(() => window.forgeError), undefined);
     await page.evaluate(() => window.forgeViewer.select('body'));

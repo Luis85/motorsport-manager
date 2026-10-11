@@ -42,6 +42,7 @@ const publicSchemaExports = [
   'SceneBundleSchema',
   'SceneSchema',
   'SelectorSchema',
+  'SurfaceSchema',
   'Transform',
   'Vec3',
   'expressionOperators',

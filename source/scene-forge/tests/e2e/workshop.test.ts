@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
-import { pathToFileURL } from 'node:url';
+import { loadOfflinePage } from './offline-page.js';
 import { chromium, type Page } from 'playwright';
 import { createCli } from '../../src/commands/create-cli.js';
 import { Readable } from 'node:stream';
@@ -51,7 +51,7 @@ test(
       page.on('request', (request) => {
         if (/^https?:/.test(request.url())) network.push(request.url());
       });
-      await page.goto(pathToFileURL(html).href);
+      await loadOfflinePage(page, html);
       await page.waitForFunction(() => window.forgeReady || window.forgeError);
       assert.equal(await page.evaluate(() => window.forgeError), undefined);
       await page.getByRole('tab', { name: /Models/ }).click();
@@ -190,8 +190,16 @@ test(
       );
       const page = await browser.newPage();
       const errors: string[] = [];
+      const externalRequests: string[] = [];
+      page.on('request', (request) => {
+        const offlineNavigation =
+          request.isNavigationRequest() &&
+          request.url().startsWith('http://forge-preview.invalid/');
+        if (/^https?:/.test(request.url()) && !offlineNavigation)
+          externalRequests.push(request.url());
+      });
       page.on('pageerror', (e) => errors.push(e.message));
-      await page.goto(pathToFileURL(html).href);
+      await loadOfflinePage(page, html, { navigable: true });
       await page.waitForFunction(() => window.forgeReady || window.forgeError);
       assert.equal(await page.evaluate(() => window.forgeError), undefined);
       assert.equal(await page.getByLabel('Example scene').locator('option').count(), 8);
@@ -211,6 +219,7 @@ test(
       await page.getByRole('button', { name: 'Apply joint & bind' }).click();
       await page.getByRole('button', { name: 'Preview at time' }).click();
       assert.deepEqual(errors, []);
+      assert.deepEqual(externalRequests, []);
     } finally {
       await browser.close();
       await rm(root, { recursive: true, force: true });

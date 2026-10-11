@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "kind": "review",
+  "width": 768,
+  "height": 768,
+  "grid": false,
+  "wireframe": false,
+  "contactSheet": true,
+  "background": "#eee7d8",
+  "frames": [
+    {
+      "id": "front",
+      "camera": {
+        "view": "iso",
+        "projection": "auto",
+        "azimuth": 45,
+        "elevation": 30,
+        "padding": 1.12,
+        "fov": 40,
+        "fixed": {
+          "projection": "orthographic",
+          "position": [
+            0,
+            0.484442143745134,
+            3.909746253824234
+          ],
+          "target": [
+            0,
+            0.4844421437451338,
+            -0.028987378697614335
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "near": 0.001312911210840616,
+          "far": 1312.911210840616,
+          "zoom": 1,
+          "left": -0.5436952009945499,
+          "right": 0.5436952009945499,
+          "top": 0.5436952009945499,
+          "bottom": -0.5436952009945499
+        }
+      }
+    },
+    {
+      "id": "right",
+      "camera": {
+        "view": "iso",
+        "projection": "auto",
+        "azimuth": 45,
+        "elevation": 30,
+        "padding": 1.12,
+        "fov": 40,
+        "fixed": {
+          "projection": "orthographic",
+          "position": [
+            3.9387336325218483,
+            0.484442143745134,
+            -0.02898737869761497
+          ],
+          "target": [
+            0,
+            0.4844421437451338,
+            -0.028987378697614335
+          ],
+          "up": [
+            0,
+            1,
+            0
+          ],
+          "near": 0.001312911210840616,
+          "far": 1312.911210840616,
+          "zoom": 1,
+          "left": -0.5436952009945499,
+          "right": 0.5436952009945499,
+          "top": 0.5436952009945499,
+          "bottom": -0.5436952009945499
+        }
+      }
+    }
+  ]
+}

@@ -54,6 +54,30 @@ test('Descriptor traversal retains exact occurrence, depth, Unicode and UTF-8 ad
  assert.deepEqual(C.parse(input,bytes),input);assert.deepEqual(C.parse(JSON.stringify(input),bytes),input);
  assert.throws(()=>C.parse(input,bytes-1),/file size limit/);assert.throws(()=>C.parse(JSON.stringify(input),bytes-1),/file size limit/);
 });
+function meshAsset(){
+ const mesh={positions:Array(18000).fill(0),normals:Array(18000).fill(1),indices:Array.from({length:6000},(_,i)=>i)};
+ return {format:'littlewild-3d-asset',schemaVersion:1,category:'item',id:'bounded-surface',name:'Bounded surface',materials:{skin:'#998877'},metadata:{},meshes:{a:mesh,b:mesh},models:{world:{nodes:[{primitive:'mesh',mesh:'a',material:'skin'},{primitive:'mesh',mesh:'b',material:'skin'}]}}};
+}
+test('Bounded baked meshes survive copy parse and fingerprints without spending gameplay budgets',()=>{
+ const asset=meshAsset(),input={resources:{assets:[asset]},state:{tick:0}},bytes=Buffer.byteLength(JSON.stringify(input));
+ assert.doesNotThrow(()=>require('./asset-catalog.js').validate(asset));
+ const copied=C.copy(input);assert.deepEqual(copied,input);assert.notStrictEqual(copied.resources.assets[0].meshes.a,asset.meshes.a);assert.notStrictEqual(copied.resources.assets[0].meshes.a,copied.resources.assets[0].meshes.b);
+ assert.deepEqual(C.parse(input,bytes),input);assert.deepEqual(C.parse(JSON.stringify(input),bytes),input);
+ const fingerprint=C.fingerprint({components:input});copied.resources.assets[0].meshes.a.positions[0]=.5;assert.notEqual(C.fingerprint({components:copied}),fingerprint);
+ assert.throws(()=>C.parse(input,bytes-1),/file size limit/);
+});
+test('Baked mesh allowance remains aggregate and rejects unsafe or unrelated values',()=>{
+ const asset=meshAsset();assert.doesNotThrow(()=>C.copy({assets:Array(4).fill(asset)}));
+ assert.throws(()=>C.copy({assets:Array(5).fill(asset)}),/400,000 numeric values/);
+ for(const edit of [a=>a.format='unrelated',a=>a.schemaVersion=2,a=>{a.meshes.a={other:Array(84000).fill(0)};}]){const invalid=meshAsset();edit(invalid);assert.throws(()=>C.copy(invalid),/too many values/);}
+ const invalid=meshAsset();invalid.meshes.a.positions[0]=Infinity;assert.throws(()=>C.copy(invalid),/finite/);
+ let reads=0;for(const key of ['format','schemaVersion']){const unsafe=meshAsset();Object.defineProperty(unsafe,key,{enumerable:true,get(){reads++;return key==='format'?'littlewild-3d-asset':1;}});assert.throws(()=>C.copy(unsafe),/Accessors/);}
+ const getter=meshAsset();Object.defineProperty(getter.meshes.a.positions,'0',{enumerable:true,get(){reads++;return 0;}});assert.throws(()=>C.copy(getter),/Accessors/);assert.equal(reads,0);
+ const sparse=meshAsset();delete sparse.meshes.a.positions[0];assert.throws(()=>C.copy(sparse),/dense JSON lists/);
+ assert.throws(()=>C.copy({...meshAsset(),gameplay:Array(60000).fill(0)}),/too many values/);
+ assert.throws(()=>require('./asset-catalog.js').validate({...meshAsset(),meshes:{a:{positions:[0,0,0,1,0,0,0,1,0],indices:[0,1,1.5]}}}),/invalid indices/);
+});
+
 test('Public fingerprints reject behavior-shaped objects without invoking accessors',()=>{
  let touched=0;const doc={schemaVersion:1,library:{id:'x',version:1},components:{}};
  Object.defineProperty(doc.components,'bad',{enumerable:true,get(){touched++;return 1;}});

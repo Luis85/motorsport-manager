@@ -1,0 +1,22 @@
+{
+  "expectedRevision": 1,
+  "expectedState": "c06931bff9213d69a9c873bb44380a117ba4d1295129ecb40710d04000c7dd18",
+  "operations": [
+    {
+      "op": "setEnvironment",
+      "environment": {
+        "background": "#f4f0e5",
+        "ambient": 1.8,
+        "keyIntensity": 3.5,
+        "keyPosition": [
+          -3,
+          5,
+          4
+        ],
+        "presentation": "portrait",
+        "exposure": 1,
+        "toneMapping": "neutral"
+      }
+    }
+  ]
+}

@@ -45,10 +45,12 @@ export {
 export {
   GeometrySchema,
   MaterialSchema,
+  SurfaceSchema,
   PatternSchema,
   RigSchema,
   NodeSchema,
   type Geometry,
+  type SurfaceSpec,
   type RigSpec,
   type NodeSpec,
   type MaterialSpec,

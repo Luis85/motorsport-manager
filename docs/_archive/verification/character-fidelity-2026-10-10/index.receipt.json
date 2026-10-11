@@ -1,0 +1,662 @@
+{
+  "format": "wildlands-storyboard-receipt",
+  "schemaVersion": 1,
+  "title": "Littlewild · From concept to companion",
+  "layout": "comparison",
+  "sectionCount": 4,
+  "cardCount": 12,
+  "cards": [
+    {
+      "id": "concept",
+      "sourceKind": null,
+      "facts": [],
+      "images": [
+        {
+          "path": "evidence/supplied-concept.png",
+          "sha256": "ae8c65d2bd8309dd0868feb62e83a94bfdf9f47e000e28089d0480f3ae71c913",
+          "hashVerified": false,
+          "width": 1800,
+          "height": 1273
+        }
+      ]
+    },
+    {
+      "id": "before",
+      "sourceKind": null,
+      "facts": [],
+      "images": [
+        {
+          "path": "evidence/before-editor.png",
+          "sha256": "ee81371a852554665decc469268857c48cc6026011e0350fb66898c6976f2a9b",
+          "hashVerified": false,
+          "width": 1440,
+          "height": 1059
+        }
+      ]
+    },
+    {
+      "id": "after",
+      "sourceKind": "littlewild-character",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "littlewild-character"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "ID",
+          "value": "pip-trail"
+        },
+        {
+          "label": "Name",
+          "value": "Pip"
+        },
+        {
+          "label": "Personality",
+          "value": "curious"
+        },
+        {
+          "label": "Preset",
+          "value": "pip"
+        },
+        {
+          "label": "Body",
+          "value": "balanced"
+        },
+        {
+          "label": "Coat",
+          "value": "#caa273"
+        },
+        {
+          "label": "Status",
+          "value": "draft"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/after-editor-desktop.png",
+          "sha256": "e4bf9c476978432db6a134e132fd369d2db5f385bb38b178d1b159ea806a128d",
+          "hashVerified": false,
+          "width": 1440,
+          "height": 1059
+        }
+      ]
+    },
+    {
+      "id": "mobile",
+      "sourceKind": "generic-json",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "generic-json"
+        },
+        {
+          "label": "Root type",
+          "value": "object"
+        },
+        {
+          "label": "Fields",
+          "value": "desktop, mobile, errors"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/after-editor-mobile.png",
+          "sha256": "677cf612db30369104f0c62cd14bde301d0362964512993d9407894bd227fec2",
+          "hashVerified": false,
+          "width": 390,
+          "height": 2232
+        }
+      ]
+    },
+    {
+      "id": "pip",
+      "sourceKind": "character-studio-review",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "character-studio-review"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Character",
+          "value": "pip"
+        },
+        {
+          "label": "Recipe hash (reported)",
+          "value": "fa111333ab73e41fb0728f2789b5075b7bb9c553c59a8e0ae74c755fbd3bb9b5"
+        },
+        {
+          "label": "Visual hash (reported)",
+          "value": "5aeddebf91758ce2ef9e3adb717e77a4f55971c3d432a3d9e39bc0c0c0cd942e"
+        },
+        {
+          "label": "Compiler revision",
+          "value": "3"
+        },
+        {
+          "label": "Frames",
+          "value": "1"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/pip-review/contact-sheet.png",
+          "sha256": "58943d46d2e02b26cb6ea8b32755e92f1d598102dca917eaf5738852605cbf23",
+          "hashVerified": true,
+          "width": 384,
+          "height": 432
+        },
+        {
+          "path": "evidence/pip-review/frames/front.png",
+          "sha256": "3f55a0c16f7c300a9417152dccb8847727e44af9a517e2f124c51a36127b3f6b",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "fern",
+      "sourceKind": "character-studio-review",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "character-studio-review"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Character",
+          "value": "fern"
+        },
+        {
+          "label": "Recipe hash (reported)",
+          "value": "32641804c44e1ca4c925ae738bcadacfa8d992e920ae5e3c514b50d59adf20b3"
+        },
+        {
+          "label": "Visual hash (reported)",
+          "value": "16808c7b432568cd7e28b98b52472be8c7be22210e879e568cb1b6d4d72dd4d8"
+        },
+        {
+          "label": "Compiler revision",
+          "value": "3"
+        },
+        {
+          "label": "Frames",
+          "value": "1"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/fern-review/contact-sheet.png",
+          "sha256": "1fb6b89a04e45f88c1320373507aa9fa3a8c29f5a0cfa1278eaae3303d2c93b0",
+          "hashVerified": true,
+          "width": 384,
+          "height": 432
+        },
+        {
+          "path": "evidence/fern-review/frames/front.png",
+          "sha256": "4c8411c2fc062c646e90daec7f1d555cc8c758f8eece1fc3b1e9ffea8b2fe758",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "mochi",
+      "sourceKind": "character-studio-review",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "character-studio-review"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Character",
+          "value": "mochi"
+        },
+        {
+          "label": "Recipe hash (reported)",
+          "value": "e39e55a20330bea700bbc2b398f97796c81fa84988e22d51f8451436d48e1aad"
+        },
+        {
+          "label": "Visual hash (reported)",
+          "value": "d4e7302b5c9f591d8fc6755f899045a8de1d955505c657d7b03aebe059d09081"
+        },
+        {
+          "label": "Compiler revision",
+          "value": "3"
+        },
+        {
+          "label": "Frames",
+          "value": "1"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/mochi-review/contact-sheet.png",
+          "sha256": "caed5c4e59bc74f4c2f2635fd34a9a5b257a30688da94ab49213b9dd768eb109",
+          "hashVerified": true,
+          "width": 384,
+          "height": 432
+        },
+        {
+          "path": "evidence/mochi-review/frames/front.png",
+          "sha256": "333c40f9cf227fbcadb725eece796ed7ce10987cf79de18a714743e7f02394c9",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "studio",
+      "sourceKind": "character-studio-review",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "character-studio-review"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Character",
+          "value": "pip-trail"
+        },
+        {
+          "label": "Recipe hash (reported)",
+          "value": "0adfd8a8d1207da25b7d4cef28ca9ef98384ebce75b7a54fab1fcf6682134953"
+        },
+        {
+          "label": "Visual hash (reported)",
+          "value": "6428be9141316ffc0c5697a4841529642f201481d85b24da06b4d9e5d052eb1a"
+        },
+        {
+          "label": "Compiler revision",
+          "value": "3"
+        },
+        {
+          "label": "Frames",
+          "value": "6"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/trail-review/contact-sheet.png",
+          "sha256": "cfc2924382270b677947445702635951ef770d6093c5f7876cddb232adaaf94e",
+          "hashVerified": true,
+          "width": 1152,
+          "height": 864
+        },
+        {
+          "path": "evidence/trail-review/frames/front.png",
+          "sha256": "9a73caa5c8ca615926c5a564c4c238e6bbd08de6d96304b681efb44a589dd5bc",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/trail-review/frames/side.png",
+          "sha256": "af8d910a086a3ac523249124ed87370f888ff3a300a9567d00a4fb67038caf33",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/trail-review/frames/back.png",
+          "sha256": "2f2b87734e2730ccef083f9c83dc56e550089032caa29d76be36ee2240a8b11a",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/trail-review/frames/portrait.png",
+          "sha256": "be7ef90136bcbaecc4db698a848fd2222850e517c413614ffc6e04d538f34de0",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/trail-review/frames/world.png",
+          "sha256": "67e5aebe2e2d0cda277cee93e29b6f8b8614fd48c320e9120e02ac24cddfc3ce",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/trail-review/frames/night.png",
+          "sha256": "475248c2fac3ac02ac8a2ec0bbd9ad2dfdb13f4a57ecfc51d5402726e63f8024",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "forge",
+      "sourceKind": "review-result",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "review-result"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Scene",
+          "value": "model"
+        },
+        {
+          "label": "Source state (reported)",
+          "value": "ac5af1d8b48b7fd7abcee37779fb9e5320faa8176739e61d1a62d5bf8e5f97bf"
+        },
+        {
+          "label": "Render state (reported)",
+          "value": "b88a8fb069b51cd39bb498a3fe175097e74ad11344a68c9c1829b1b80aff904f"
+        },
+        {
+          "label": "Frames",
+          "value": "2"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/forge-review/contact-sheet.png",
+          "sha256": "04ba942211fd1932e60d1cd41acaeb54c920eaf315bd02bbf9235f29b4c4cc79",
+          "hashVerified": false,
+          "width": 960,
+          "height": 512
+        },
+        {
+          "path": "evidence/forge-review/front.png",
+          "sha256": "258a360b217b42ea5a90a3d26b2c40bad8312ddc5f86987f007f4b558cee7455",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        },
+        {
+          "path": "evidence/forge-review/right.png",
+          "sha256": "9c5e0d1b8d2b67d4fdf8c54d3483cdc607323dde58b336452adf91d8faa76a37",
+          "hashVerified": true,
+          "width": 768,
+          "height": 768
+        }
+      ]
+    },
+    {
+      "id": "native",
+      "sourceKind": "littlewild-native-visual-evidence",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "littlewild-native-visual-evidence"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Root type",
+          "value": "object"
+        },
+        {
+          "label": "Fields",
+          "value": "format, schemaVersion, asset, capture, renderer, nativeAssetFactorySha256, captureScriptSha256, model, camera, lighting, limitations, captureScript"
+        }
+      ],
+      "images": [
+        {
+          "path": "evidence/pip-trail-godot.png",
+          "sha256": "d770cfca668ffd117b00978d5c8467fb14d728cf793241c2827028f35e2e6857",
+          "hashVerified": false,
+          "width": 960,
+          "height": 1100
+        }
+      ]
+    },
+    {
+      "id": "tools",
+      "sourceKind": "character-fidelity-capability-notes",
+      "facts": [
+        {
+          "label": "Format",
+          "value": "character-fidelity-capability-notes"
+        },
+        {
+          "label": "Schema version",
+          "value": "1"
+        },
+        {
+          "label": "Root type",
+          "value": "object"
+        },
+        {
+          "label": "Fields",
+          "value": "format, schemaVersion, kind, capabilities, commands, surface, surfaceBounds, limitations"
+        }
+      ],
+      "images": []
+    },
+    {
+      "id": "limits",
+      "sourceKind": null,
+      "facts": [],
+      "images": []
+    }
+  ],
+  "inputs": [
+    {
+      "path": "storyboard.json",
+      "kind": "manifest",
+      "sha256": "48ef2edfa2e41809c882745e5b91680d56418e52eff4d8c7af9538f096c4f924",
+      "bytes": 5774
+    },
+    {
+      "path": "evidence/supplied-concept.png",
+      "kind": "image",
+      "sha256": "ae8c65d2bd8309dd0868feb62e83a94bfdf9f47e000e28089d0480f3ae71c913",
+      "bytes": 1047509
+    },
+    {
+      "path": "evidence/before-editor.png",
+      "kind": "image",
+      "sha256": "ee81371a852554665decc469268857c48cc6026011e0350fb66898c6976f2a9b",
+      "bytes": 375174
+    },
+    {
+      "path": "evidence/pip-trail.recipe.json",
+      "kind": "json",
+      "sha256": "17e509897466faf762a0a5849c1e3e1891802fad8bc06e3ef613437a7fe31a9c",
+      "bytes": 699
+    },
+    {
+      "path": "evidence/after-editor-desktop.png",
+      "kind": "image",
+      "sha256": "e4bf9c476978432db6a134e132fd369d2db5f385bb38b178d1b159ea806a128d",
+      "bytes": 321257
+    },
+    {
+      "path": "ui-evidence.json",
+      "kind": "json",
+      "sha256": "152c6d2656485fe40b6802f78da7b7efe01e3e45f1b41edc3214fd1ca50912b0",
+      "bytes": 934
+    },
+    {
+      "path": "evidence/after-editor-mobile.png",
+      "kind": "image",
+      "sha256": "677cf612db30369104f0c62cd14bde301d0362964512993d9407894bd227fec2",
+      "bytes": 175667
+    },
+    {
+      "path": "evidence/pip-review/manifest.json",
+      "kind": "json",
+      "sha256": "25ecb3e7e1a128c3882b3d0706db03ec3890cd12573be08895407bf90a788d42",
+      "bytes": 1047
+    },
+    {
+      "path": "evidence/pip-review/contact-sheet.png",
+      "kind": "image",
+      "sha256": "58943d46d2e02b26cb6ea8b32755e92f1d598102dca917eaf5738852605cbf23",
+      "bytes": 81790
+    },
+    {
+      "path": "evidence/pip-review/frames/front.png",
+      "kind": "image",
+      "sha256": "3f55a0c16f7c300a9417152dccb8847727e44af9a517e2f124c51a36127b3f6b",
+      "bytes": 263108
+    },
+    {
+      "path": "evidence/fern-review/manifest.json",
+      "kind": "json",
+      "sha256": "b8340b1c6a9ea3cd18b0433aee99a7e18decb6f9d2c545f2279c4f3738c4ca8b",
+      "bytes": 1048
+    },
+    {
+      "path": "evidence/fern-review/contact-sheet.png",
+      "kind": "image",
+      "sha256": "1fb6b89a04e45f88c1320373507aa9fa3a8c29f5a0cfa1278eaae3303d2c93b0",
+      "bytes": 66914
+    },
+    {
+      "path": "evidence/fern-review/frames/front.png",
+      "kind": "image",
+      "sha256": "4c8411c2fc062c646e90daec7f1d555cc8c758f8eece1fc3b1e9ffea8b2fe758",
+      "bytes": 203228
+    },
+    {
+      "path": "evidence/mochi-review/manifest.json",
+      "kind": "json",
+      "sha256": "50144552fe1182e6d42a99c4e3d536a6abd6e25f5ac661faff6986c370229db5",
+      "bytes": 1049
+    },
+    {
+      "path": "evidence/mochi-review/contact-sheet.png",
+      "kind": "image",
+      "sha256": "caed5c4e59bc74f4c2f2635fd34a9a5b257a30688da94ab49213b9dd768eb109",
+      "bytes": 84037
+    },
+    {
+      "path": "evidence/mochi-review/frames/front.png",
+      "kind": "image",
+      "sha256": "333c40f9cf227fbcadb725eece796ed7ce10987cf79de18a714743e7f02394c9",
+      "bytes": 270788
+    },
+    {
+      "path": "evidence/trail-review/manifest.json",
+      "kind": "json",
+      "sha256": "45643d084e2a8e37103416312e3dfa61b9fe84692367f9889d2d88f6b8daa01a",
+      "bytes": 2804
+    },
+    {
+      "path": "evidence/trail-review/contact-sheet.png",
+      "kind": "image",
+      "sha256": "cfc2924382270b677947445702635951ef770d6093c5f7876cddb232adaaf94e",
+      "bytes": 528492
+    },
+    {
+      "path": "evidence/trail-review/frames/front.png",
+      "kind": "image",
+      "sha256": "9a73caa5c8ca615926c5a564c4c238e6bbd08de6d96304b681efb44a589dd5bc",
+      "bytes": 277829
+    },
+    {
+      "path": "evidence/trail-review/frames/side.png",
+      "kind": "image",
+      "sha256": "af8d910a086a3ac523249124ed87370f888ff3a300a9567d00a4fb67038caf33",
+      "bytes": 211418
+    },
+    {
+      "path": "evidence/trail-review/frames/back.png",
+      "kind": "image",
+      "sha256": "2f2b87734e2730ccef083f9c83dc56e550089032caa29d76be36ee2240a8b11a",
+      "bytes": 237663
+    },
+    {
+      "path": "evidence/trail-review/frames/portrait.png",
+      "kind": "image",
+      "sha256": "be7ef90136bcbaecc4db698a848fd2222850e517c413614ffc6e04d538f34de0",
+      "bytes": 383351
+    },
+    {
+      "path": "evidence/trail-review/frames/world.png",
+      "kind": "image",
+      "sha256": "67e5aebe2e2d0cda277cee93e29b6f8b8614fd48c320e9120e02ac24cddfc3ce",
+      "bytes": 270685
+    },
+    {
+      "path": "evidence/trail-review/frames/night.png",
+      "kind": "image",
+      "sha256": "475248c2fac3ac02ac8a2ec0bbd9ad2dfdb13f4a57ecfc51d5402726e63f8024",
+      "bytes": 248507
+    },
+    {
+      "path": "evidence/forge-review/review.json",
+      "kind": "json",
+      "sha256": "95e67e9a3d836bb7776c4c45b2fe497cdbb8e658ce702d0f824ebba91c516b2d",
+      "bytes": 3507
+    },
+    {
+      "path": "evidence/forge-review/contact-sheet.png",
+      "kind": "image",
+      "sha256": "04ba942211fd1932e60d1cd41acaeb54c920eaf315bd02bbf9235f29b4c4cc79",
+      "bytes": 337272
+    },
+    {
+      "path": "evidence/forge-review/front.png",
+      "kind": "image",
+      "sha256": "258a360b217b42ea5a90a3d26b2c40bad8312ddc5f86987f007f4b558cee7455",
+      "bytes": 257296
+    },
+    {
+      "path": "evidence/forge-review/right.png",
+      "kind": "image",
+      "sha256": "9c5e0d1b8d2b67d4fdf8c54d3483cdc607323dde58b336452adf91d8faa76a37",
+      "bytes": 219642
+    },
+    {
+      "path": "evidence/pip-trail-godot.receipt.json",
+      "kind": "json",
+      "sha256": "c09a2b492ae796112b68f2ebadfdf2261cccda323e14c221625e830fd2f6c67f",
+      "bytes": 1293
+    },
+    {
+      "path": "evidence/pip-trail-godot.png",
+      "kind": "image",
+      "sha256": "d770cfca668ffd117b00978d5c8467fb14d728cf793241c2827028f35e2e6857",
+      "bytes": 382458
+    },
+    {
+      "path": "workflow.json",
+      "kind": "json",
+      "sha256": "f6145c0217f8245a01b29b08c04445a4b5002ce6bc86a54ffe7d8530899f428e",
+      "bytes": 1694
+    }
+  ],
+  "html": {
+    "sha256": "55333fdd085bd3fd57c3521af90542ced7ffebd303daacc3a99a410fe06f0638",
+    "bytes": 8363121
+  },
+  "validation": "presentation-only",
+  "warnings": [
+    "Some review images have no declared SHA-256. Their observed hashes are recorded, but the review did not bind them.",
+    "No capture supplied for tools. Add image or a Character Studio/Scene Forge review manifest as source to show the actual appearance.",
+    "No capture supplied for limits. Add image or a Character Studio/Scene Forge review manifest as source to show the actual appearance."
+  ]
+}

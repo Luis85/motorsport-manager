@@ -11,6 +11,7 @@ a tool; each documents its JSON protocol, exit codes and limits.
 | `bin/wildlands` | The Wildlands engine without game content: validate, inspect and build game folders (`docs/concepts/<id>/`) into self-contained HTML; create, validate, inspect, play, edit and compile portable projects into Godot desktop projects | [Wildlands CLI](../docs/reference/wildlands-cli.md) | [`source/wildlands/`](../source/wildlands/README.md) | `cd source/wildlands && npm ci && npm run build:cli` | `cd source/wildlands && npm run check:cli` |
 | `bin/scene-forge` | Author, validate, export and review declarative 3D projects, models and scenes | [Scene Forge CLI](../docs/reference/scene-forge-cli.md) | [`source/scene-forge/`](../source/scene-forge/README.md) | `cd source/scene-forge && npm ci && npm run build:cli` | `cd source/scene-forge && npm run check:cli` |
 | `bin/process-studio` | Author, validate, simulate, replicate, compare, explain and BPMN-exchange Wildlands business-process definitions and build each into one offline HTML studio; the standalone equivalent of `bin/wildlands process` | [Process Studio CLI](../docs/reference/process-studio-cli.md) | [`source/process-studio/`](../source/process-studio/README.md) | `cd source/process-studio && npm ci && npm run build:cli` | `cd source/process-studio && npm run check:cli` |
+| `bin/character-studio` | Create and edit Littlewild companions through a local browser editor, JSON CLI and HTTP API | [Character Studio CLI](../docs/reference/character-studio-cli.md) | [`source/character-studio/`](../source/character-studio/README.md) | `cd source/character-studio && npm ci && npm run build:cli` | `cd source/character-studio && npm run check:cli` |
 
 ## Requirements
 
@@ -52,14 +53,15 @@ prints one JSON object with the same exception as `process slides`, and accepts
 
 ## Generated files: never edit by hand
 
-All three executables are generated bundles. Do not edit, format or patch them
-directly. After any change under `source/wildlands/`, `source/scene-forge/` or
-`source/process-studio/`, rebuild the matching executable with its rebuild
-command and commit it together with the source change. `bin/process-studio`
-bundles Wildlands process code through its bridge and embeds the process slice of
-the engine kit in `bin/wildlands`, so a change to a bridged Wildlands file or any
-Wildlands engine change also needs `npm run build:cli` in `source/process-studio`
-after `bin/wildlands` is rebuilt. Each project's `npm run check:cli` rebuilds the bundle
+All executables are generated bundles. Do not edit, format or patch them
+directly. After any change under `source/wildlands/`, `source/scene-forge/`,
+`source/character-studio/` or `source/process-studio/`, rebuild the matching
+executable with its rebuild command and commit it together with the source
+change. `bin/process-studio` bundles Wildlands process code through its bridge
+and embeds the process slice of the engine kit in `bin/wildlands`, so a change to
+a bridged Wildlands file or any Wildlands engine change also needs
+`npm run build:cli` in `source/process-studio` after `bin/wildlands` is rebuilt.
+Each project's `npm run check:cli` rebuilds the bundle
 without replacing it and fails when the checked-in file differs or is not
 executable; CI runs it, and also validates every game folder with the
 checked-in `bin/wildlands` alone, before installing any dependency.

@@ -1,0 +1,13 @@
+{
+  "format": "character-fidelity-showcase-build",
+  "schemaVersion": 1,
+  "historicalDate": "2026-10-10",
+  "executable": "bin/wildlands",
+  "executableSha256": "490272e7280d53a97d33f3b82b5dbb7aa17f5369a2e91591971d82a5b99e4ab1",
+  "nodeVersion": "v24.19.0",
+  "manifest": "storyboard.json",
+  "manifestSha256": "48ef2edfa2e41809c882745e5b91680d56418e52eff4d8c7af9538f096c4f924",
+  "output": "index.html",
+  "outputSha256": "55333fdd085bd3fd57c3521af90542ced7ffebd303daacc3a99a410fe06f0638",
+  "validation": "Presentation composition only; supplied review images are hash checked when declared."
+}

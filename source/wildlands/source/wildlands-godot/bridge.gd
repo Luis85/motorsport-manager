@@ -48,7 +48,7 @@ func request(method: String, params: Dictionary = {}) -> int:
 		rejected.emit("The gameplay request queue is full. Wait for the current operation.")
 		return -1
 	sequence += 1
-	# Godot's default JSON formatting rounds doubles; retained checkpoints need all bits.
+	# Avoid further rounding of command numbers. Persisted stories travel as opaque text.
 	var message := JSON.stringify(
 		{"id": sequence, "method": method, "params": params}, "", true, true
 	)

@@ -5,4 +5,11 @@
  */
 type Plain = Record<string, unknown>;
 export declare function littlewildModels(asset: Plain, prefix?: string): Record<string, Plain>;
+/** The variant-to-model mapping is produced by the same pass that allocates IDs. */
+export declare function littlewildImportPlan(asset: Plain, prefix?: string): {
+    models: Record<string, Plain>;
+    variantModels: {
+        [k: string]: string;
+    };
+};
 export {};

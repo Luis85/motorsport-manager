@@ -1327,7 +1327,10 @@ replications of authored assumptions from runs that start empty, not forecasts.
 
 The KPI strip under the stage shows the finished count, the journey outcomes, **In progress**,
 **Mean cycle**, **Mean age in progress** (both worded with the display calendar), **Work cost**,
-**Capacity cost**, **Failed**, **Dropped** (when any) and up to two tracked averages; a sentence under
+**Capacity cost**, **Failed**, **Dropped** (when any) and up to two tracked averages. The outcome
+tiles (for a definition with goal or lost ends) and the first two declared tracked measures show from
+minute 0, with **Conversion** and the averages reading "—" until a case finishes, so the strip and the
+stage above it keep their height when the first outcomes arrive. A sentence under
 the pool meters tells the costs apart ("Idle cost is capacity cost minus work cost."). The inspector
 shows the read model where it answers a question: per work step **Mean wait per start** ("—" before
 the first start) and **Work cost** split into fixed cost and pool minutes ("120 = 40 fixed + 80 for

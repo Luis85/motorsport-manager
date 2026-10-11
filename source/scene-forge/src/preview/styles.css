@@ -352,6 +352,12 @@ canvas {
   height: 100%;
   touch-action: none;
 }
+.stage-label,
+.stage-help {
+  background: var(--panel);
+  padding: 5px 8px;
+  border-radius: 4px;
+}
 .stage-label {
   position: absolute;
   top: 16px;

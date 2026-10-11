@@ -1,0 +1,123 @@
+{
+  "format": "character-studio-review-plan",
+  "schemaVersion": 1,
+  "views": [
+    {
+      "id": "front",
+      "mode": "studio",
+      "light": "studio",
+      "pose": "idle",
+      "camera": "front",
+      "yaw": 0,
+      "elevation": 0.08,
+      "zoom": 1,
+      "time": 0,
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "three-quarter",
+      "mode": "studio",
+      "light": "studio",
+      "pose": "idle",
+      "camera": "three-quarter",
+      "yaw": 0.4,
+      "elevation": 0.08,
+      "zoom": 1,
+      "time": 0,
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "side",
+      "mode": "studio",
+      "light": "studio",
+      "pose": "idle",
+      "camera": "side",
+      "yaw": 1.5707963267948966,
+      "elevation": 0.08,
+      "zoom": 1,
+      "time": 0,
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "back",
+      "mode": "studio",
+      "light": "studio",
+      "pose": "idle",
+      "camera": "back",
+      "yaw": 3.141592653589793,
+      "elevation": 0.08,
+      "zoom": 1,
+      "time": 0,
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "portrait",
+      "mode": "portrait",
+      "light": "studio",
+      "pose": "idle",
+      "camera": "three-quarter",
+      "yaw": 0.4,
+      "elevation": 0.08,
+      "zoom": 1,
+      "time": 0,
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "world",
+      "mode": "world",
+      "light": "daylight",
+      "pose": "idle",
+      "camera": "three-quarter",
+      "yaw": 0.4,
+      "elevation": 0.08,
+      "zoom": 1,
+      "time": 0,
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "night",
+      "mode": "world",
+      "light": "night",
+      "pose": "idle",
+      "camera": "three-quarter",
+      "yaw": 0.4,
+      "elevation": 0.08,
+      "zoom": 1,
+      "time": 0,
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "walk",
+      "mode": "studio",
+      "light": "studio",
+      "pose": "walk",
+      "camera": "three-quarter",
+      "yaw": 0.4,
+      "elevation": 0.08,
+      "zoom": 1,
+      "time": 0.35,
+      "width": 768,
+      "height": 768
+    },
+    {
+      "id": "work",
+      "mode": "studio",
+      "light": "studio",
+      "pose": "work",
+      "camera": "side",
+      "yaw": 1.5707963267948966,
+      "elevation": 0.08,
+      "zoom": 1,
+      "time": 0.35,
+      "width": 768,
+      "height": 768
+    }
+  ]
+}
