@@ -534,7 +534,7 @@ var PROCEDURAL_MAX_PLACEMENTS = 2e3;
 var PROCEDURAL_MAX_CANDIDATES = 2e4;
 var Point = z9.tuple([NumberValue, NumberValue]);
 var positive = z9.number().finite().positive().max(1e6);
-var range = (min, max) => z9.tuple([z9.number().min(min).max(max), z9.number().min(min).max(max)]).refine(([low, high]) => low <= high, "Range minimum must not exceed its maximum.");
+var range = (min2, max) => z9.tuple([z9.number().min(min2).max(max), z9.number().min(min2).max(max)]).refine(([low, high]) => low <= high, "Range minimum must not exceed its maximum.");
 var AreaSchema = z9.discriminatedUnion("type", [
   z9.strictObject({ type: z9.literal("rect"), min: Point, max: Point }).refine(
     (area) => area.min[0] < area.max[0] && area.min[1] < area.max[1],
@@ -928,13 +928,13 @@ function validateDocument(document2, models = {}, stack = []) {
     for (const k of ["radius", "height", "tube", "depth"])
       if (k in g) positive2(g[k], k);
     if (g.type === "organic") {
-      for (const [field2, min, max] of [
+      for (const [field2, min2, max] of [
         ["roundness", 0.65, 1.5],
         ["taper", -0.65, 0.65],
         ["bend", -0.75, 0.75]
       ])
-        if (g[field2] < min || g[field2] > max)
-          fail("INVALID_GEOMETRY", `${id}.${field2} must be between ${min} and ${max}.`);
+        if (g[field2] < min2 || g[field2] > max)
+          fail("INVALID_GEOMETRY", `${id}.${field2} must be between ${min2} and ${max}.`);
       if (g.profile) {
         if (g.profile[0].at !== -1 || g.profile.at(-1).at !== 1)
           fail("INVALID_GEOMETRY", `${id}.profile must start at -1 and end at 1.`);
@@ -1028,7 +1028,7 @@ function checkSeed(seed) {
 function createRandom(seed = DEFAULT_SEED, stream = "default") {
   checkSeed(seed);
   let [a, b, c, d] = cyrb128(seed + "|" + stream);
-  const round3 = () => {
+  const round5 = () => {
     const t = (a + b | 0) + d | 0;
     d = d + 1 | 0;
     a = b ^ b >>> 9;
@@ -1037,14 +1037,14 @@ function createRandom(seed = DEFAULT_SEED, stream = "default") {
     c = c + t | 0;
     return t >>> 0;
   };
-  for (let warm = 0; warm < 12; warm++) round3();
-  const next = () => round3() / 4294967296;
+  for (let warm = 0; warm < 12; warm++) round5();
+  const next = () => round5() / 4294967296;
   const random = {
     seed,
     stream,
     next,
-    range: (min, max) => min + next() * (max - min),
-    int: (min, max) => min + Math.floor(next() * (max - min + 1)),
+    range: (min2, max) => min2 + next() * (max - min2),
+    int: (min2, max) => min2 + Math.floor(next() * (max - min2 + 1)),
     pick: (items, weights) => {
       if (!items.length) fail("INVALID_OPTION", "Cannot pick from an empty list.");
       if (!weights) return items[Math.floor(next() * items.length)];
@@ -1278,18 +1278,32 @@ function sphereUVs(positions) {
 // ../model-forge/src/kernel/application/finish-pattern.ts
 var finishAlgorithm = "forge-finish-v1";
 var SIZE2 = 128;
+var { imul, floor, min, round, hypot } = Math;
 function noise2(x, y, seed) {
-  let n = Math.imul(x ^ seed, 374761393) ^ Math.imul(y + seed, 668265263);
-  n = Math.imul(n ^ n >>> 13, 1274126177);
+  let n = imul(x ^ seed, 374761393) ^ imul(y + seed, 668265263);
+  n = imul(n ^ n >>> 13, 1274126177);
   return ((n ^ n >>> 16) >>> 0) / 4294967295;
 }
-function field(x, y, cells, seed) {
-  const px = x / SIZE2 * cells, py = y / SIZE2 * cells;
-  const ix = Math.floor(px), iy = Math.floor(py);
-  const tx = px - ix, ty = py - iy;
-  const sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
-  const sample = (dx, dy) => noise2((ix + dx) % cells, (iy + dy) % cells, seed);
-  return (sample(0, 0) * (1 - sx) + sample(1, 0) * sx) * (1 - sy) + (sample(0, 1) * (1 - sx) + sample(1, 1) * sx) * sy;
+function field(cells, seed) {
+  const lattice2 = new Float64Array(cells * cells);
+  for (let y = 0; y < cells; y++)
+    for (let x = 0; x < cells; x++) lattice2[y * cells + x] = noise2(x, y, seed);
+  const indices = new Uint8Array(SIZE2), smooth2 = new Float64Array(SIZE2);
+  for (let position = 0; position < SIZE2; position++) {
+    const point2 = position / SIZE2 * cells, index = floor(point2), t = point2 - index;
+    indices[position] = index;
+    smooth2[position] = t * t * (3 - 2 * t);
+  }
+  const values = new Float64Array(SIZE2 * SIZE2);
+  for (let y = 0; y < SIZE2; y++) {
+    const iy = indices[y], sy = smooth2[y];
+    const row = iy * cells, nextRow = (iy + 1) % cells * cells;
+    for (let x = 0; x < SIZE2; x++) {
+      const ix = indices[x], sx = smooth2[x], nextX = (ix + 1) % cells;
+      values[y * SIZE2 + x] = (lattice2[row + ix] * (1 - sx) + lattice2[row + nextX] * sx) * (1 - sy) + (lattice2[nextRow + ix] * (1 - sx) + lattice2[nextRow + nextX] * sx) * sy;
+    }
+  }
+  return values;
 }
 function generateFinish(finish) {
   if (finish.version !== 1 || !["painted-metal", "bare-metal", "rubber"].includes(finish.kind) || !Number.isInteger(finish.seed) || finish.seed < 0 || finish.seed > 65535 || !Number.isFinite(finish.scale) || finish.scale < 1 || finish.scale > 16 || !Number.isFinite(finish.wear) || finish.wear < 0 || finish.wear > 1 || finish.palette !== void 0 && (!Array.isArray(finish.palette) || finish.palette.length < 1 || finish.palette.length > 4 || finish.palette.some((color2) => !/^#[0-9a-fA-F]{6}$/.test(color2))))
@@ -1299,42 +1313,43 @@ function generateFinish(finish) {
   const palette = (finish.palette ?? ["#ffffff"]).map(
     (color2) => [1, 3, 5].map((i) => parseInt(color2.slice(i, i + 2), 16))
   );
+  const broad = field(4, finish.seed + 11), fine = field(8, finish.seed + 17);
+  const chipsField = field(16, finish.seed + 31);
   for (let y = 0; y < SIZE2; y++)
     for (let x = 0; x < SIZE2; x++) {
       const grain = noise2(x, y, finish.seed), index = y * SIZE2 + x, offset = index * 4;
-      const patches = field(x, y, 4, finish.seed + 11) * 0.7 + field(x, y, 8, finish.seed + 17) * 0.3;
-      const chips = field(x, y, 16, finish.seed + 31);
+      const patches = broad[index] * 0.7 + fine[index] * 0.3;
+      const chips = chipsField[index];
       const worn = finish.wear * (chips > 0.69 ? (chips - 0.69) / 0.31 : 0);
-      const scratch = noise2(x, Math.floor(y / 8), finish.seed + 47) > 0.987 ? finish.wear * (0.35 + 0.65 * grain) : 0;
-      const exposed = Math.min(1, worn * 5 + scratch);
-      const swatch = palette[Math.min(palette.length - 1, Math.floor(patches * palette.length))];
+      const scratch = noise2(x, floor(y / 8), finish.seed + 47) > 0.987 ? finish.wear * (0.35 + 0.65 * grain) : 0;
+      const exposed = min(1, worn * 5 + scratch);
+      const swatch = palette[min(palette.length - 1, floor(patches * palette.length))];
       const metal = finish.kind === "bare-metal" ? 1 : finish.kind === "painted-metal" ? exposed : 0;
       const shade = finish.kind === "rubber" ? 0.91 + 0.07 * grain : 0.94 + 0.06 * grain;
       const roughness = finish.kind === "rubber" ? 0.88 + 0.12 * grain : finish.kind === "bare-metal" ? 0.42 + 0.22 * grain + 0.18 * finish.wear : 0.78 + 0.16 * grain - 0.35 * exposed;
       for (let channel = 0; channel < 3; channel++) {
         const painted = swatch[channel] * shade;
-        color[offset + channel] = Math.round(
+        color[offset + channel] = round(
           finish.kind === "painted-metal" ? painted * (1 - exposed) + (112 + 30 * grain) * exposed : painted
         );
       }
       color[offset + 3] = 255;
-      orm.set([255, Math.round(roughness * 255), Math.round(metal * 255), 255], offset);
+      orm[offset] = 255;
+      orm[offset + 1] = round(roughness * 255);
+      orm[offset + 2] = round(metal * 255);
+      orm[offset + 3] = 255;
       heights[index] = (grain - 0.5) * (finish.kind === "rubber" ? 0.1 : 0.04) - exposed * 0.15;
     }
   const height2 = (x, y) => heights[(y + SIZE2) % SIZE2 * SIZE2 + (x + SIZE2) % SIZE2];
   for (let y = 0; y < SIZE2; y++)
     for (let x = 0; x < SIZE2; x++) {
       const dx = height2(x - 1, y) - height2(x + 1, y), dy = height2(x, y - 1) - height2(x, y + 1);
-      const length = Math.hypot(dx, dy, 1);
-      normal.set(
-        [
-          Math.round((dx / length * 0.5 + 0.5) * 255),
-          Math.round((dy / length * 0.5 + 0.5) * 255),
-          Math.round((1 / length * 0.5 + 0.5) * 255),
-          255
-        ],
-        (y * SIZE2 + x) * 4
-      );
+      const length = hypot(dx, dy, 1);
+      const offset = (y * SIZE2 + x) * 4;
+      normal[offset] = round((dx / length * 0.5 + 0.5) * 255);
+      normal[offset + 1] = round((dy / length * 0.5 + 0.5) * 255);
+      normal[offset + 2] = round((1 / length * 0.5 + 0.5) * 255);
+      normal[offset + 3] = 255;
     }
   return { width: SIZE2, height: SIZE2, color, normal, orm };
 }
@@ -3172,11 +3187,11 @@ function nativePrimitive(object) {
   return unchangedNative(kind, object.geometry, () => primitiveGeometry(kind)) ? kind : null;
 }
 var pairedRoles = /* @__PURE__ */ new Set(["eyes", "ears", "cheeks", "arms", "feet"]);
-var round = (value, step) => {
+var round2 = (value, step) => {
   const result = Math.round(value / step) * step;
   return Number((Object.is(result, -0) ? 0 : result).toFixed(Math.max(0, -Math.log10(step))));
 };
-var vector = (values, step = 1e-5) => values.map((v) => round(v, step));
+var vector = (values, step = 1e-5) => values.map((v) => round2(v, step));
 var same = (values, value) => values.every((v) => Math.abs(v - value) < 1e-9);
 function hash(text) {
   let h = 2166136261;
@@ -3191,27 +3206,27 @@ function materialData(material2) {
   const m = material2;
   const result = {
     color: `#${m.color.getHexString()}`,
-    roughness: round(m.roughness ?? 1, 1e-3),
-    metalness: round(m.metalness ?? 0, 1e-3),
+    roughness: round2(m.roughness ?? 1, 1e-3),
+    metalness: round2(m.metalness ?? 0, 1e-3),
     flatShading: !!m.flatShading
   };
   if (material2.userData.finish) result.finish = structuredClone(material2.userData.finish);
   if (material2.userData.surface) result.surface = structuredClone(material2.userData.surface);
   if (material2 instanceof THREE12.MeshPhysicalMaterial) {
-    result.sheen = round(material2.sheen, 1e-3);
+    result.sheen = round2(material2.sheen, 1e-3);
     result.sheenColor = `#${material2.sheenColor.getHexString()}`;
-    result.sheenRoughness = round(material2.sheenRoughness, 1e-3);
-    result.clearcoat = round(material2.clearcoat, 1e-3);
-    result.clearcoatRoughness = round(material2.clearcoatRoughness, 1e-3);
+    result.sheenRoughness = round2(material2.sheenRoughness, 1e-3);
+    result.clearcoat = round2(material2.clearcoat, 1e-3);
+    result.clearcoatRoughness = round2(material2.clearcoatRoughness, 1e-3);
   }
   if (m.emissive && m.emissive.getHex() !== 0) {
     result.emissive = `#${m.emissive.getHexString()}`;
-    result.emissiveIntensity = round(m.emissiveIntensity ?? 1, 1e-3);
+    result.emissiveIntensity = round2(m.emissiveIntensity ?? 1, 1e-3);
   }
   if (material2.side === THREE12.DoubleSide) result.doubleSided = true;
   if (!material2.depthWrite) result.depthWrite = false;
   if (material2.opacity < 1) {
-    result.opacity = round(material2.opacity, 1e-3);
+    result.opacity = round2(material2.opacity, 1e-3);
     result.transparent = true;
   }
   return result;
@@ -4063,20 +4078,20 @@ function scatterSources(scene, models, recipe) {
         fail("UNKNOWN_PARAMETER", `Model ${target.id} has no parameter ${name}.`, {
           item: index
         });
-      let [min, max] = item.vary[name];
-      if (declared.min !== void 0 && min < declared.min || declared.max !== void 0 && max > declared.max)
+      let [min2, max] = item.vary[name];
+      if (declared.min !== void 0 && min2 < declared.min || declared.max !== void 0 && max > declared.max)
         fail("PARAMETER_RANGE", `vary.${name} must stay inside ${target.id}.${name}'s range.`, {
           item: index,
-          vary: [min, max],
+          vary: [min2, max],
           min: declared.min,
           max: declared.max
         });
       if (declared.integer) {
-        [min, max] = [Math.ceil(min), Math.floor(max)];
-        if (min > max)
+        [min2, max] = [Math.ceil(min2), Math.floor(max)];
+        if (min2 > max)
           fail("PARAMETER_RANGE", `vary.${name} contains no whole number.`, { item: index });
       }
-      return [name, min, max, declared.integer === true];
+      return [name, min2, max, declared.integer === true];
     });
     return { weight: item.weight, model: item.model, template, vary };
   });
@@ -4092,8 +4107,8 @@ function transformOf(draw, baseScale) {
 }
 function instanceNode(scene, source, id, group, tag, draw, random) {
   const parameters = Object.fromEntries(
-    source.vary.map(([name, min, max, integer2]) => {
-      const value = random.range(min, max);
+    source.vary.map(([name, min2, max, integer2]) => {
+      const value = random.range(min2, max);
       return [name, integer2 ? Math.min(max, Math.round(value)) : round4(value)];
     })
   );
@@ -4567,12 +4582,12 @@ var physical = {
   clearcoat: 0,
   clearcoatRoughness: 0
 };
-var round2 = (value, step) => {
+var round3 = (value, step) => {
   const result = Math.round(value / step) * step;
   return Number((Object.is(result, -0) ? 0 : result).toFixed(Math.max(0, -Math.log10(step))));
 };
 function sameVector(previous, next, fallback) {
-  const values = (value) => Array.isArray(value) && value.length === 3 && value.every((v) => typeof v === "number") ? value.map((v) => round2(v, 1e-5)) : value === void 0 ? [fallback, fallback, fallback] : null;
+  const values = (value) => Array.isArray(value) && value.length === 3 && value.every((v) => typeof v === "number") ? value.map((v) => round3(v, 1e-5)) : value === void 0 ? [fallback, fallback, fallback] : null;
   const a = values(previous), b = values(next);
   return !!a && !!b && a.every((v, i) => v === b[i]);
 }
@@ -4598,7 +4613,7 @@ function resolvedMaterial(table, key, props, mesh) {
   if (Object.keys(physical).some((field2) => data[field2] !== void 0))
     for (const [field2, value] of Object.entries(physical)) data[field2] ??= value;
   for (const [field2, value] of Object.entries(data))
-    if (typeof value === "number") data[field2] = round2(value, 1e-3);
+    if (typeof value === "number") data[field2] = round3(value, 1e-3);
     else if (typeof value === "string" && value.startsWith("#")) data[field2] = value.toLowerCase();
   return canonical(data);
 }
@@ -4611,7 +4626,7 @@ function derivedBuffers(positions, indices) {
     geometry.computeVertexNormals();
     const normal = geometry.getAttribute("normal");
     return {
-      normals: Array.from(normal.array, (v) => round2(v, 1e-3)),
+      normals: Array.from(normal.array, (v) => round3(v, 1e-3)),
       uvs: new THREE14.Float32BufferAttribute(sphereUVs(Array.from(position.array)), 2).array
     };
   } finally {
@@ -4623,7 +4638,7 @@ function sameMesh(source, exported) {
   const positions = source.positions;
   const indices = Array.isArray(source.indices) ? source.indices : Array.from({ length: positions.length / 3 }, (_, i) => i);
   const derived = source.normals === void 0 || source.uvs === void 0 ? derivedBuffers(positions, indices) : void 0;
-  const uvs = source.uvs === void 0 ? Array.from(derived.uvs, (v) => round2(v, 1e-5)) : source.uvs;
+  const uvs = source.uvs === void 0 ? Array.from(derived.uvs, (v) => round3(v, 1e-5)) : source.uvs;
   const expected = {
     ...source,
     indices,

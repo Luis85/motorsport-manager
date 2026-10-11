@@ -1,0 +1,10 @@
+{
+  "artifactId": 11708400107,
+  "artifactName": "littlewild-ecs-diagnostics",
+  "connectorReturnedFileReference": true,
+  "workspaceDownloadSucceeded": false,
+  "error": "curl56 CONNECT tunnel failed, response403 from configured proxy",
+  "responseHeaders": "artifact-download.headers",
+  "retriedOrBypassed": false,
+  "signedUrlRetained": false
+}

@@ -1,0 +1,15 @@
+{
+  "implementationCommit": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "ciCheckoutCommit": "ec88210c205a674cdb77f85cc2cc59d9feb3874c",
+  "implementationTree": "7eb1dc63ee7709b75c0a835dcb14cbb3d509cf99",
+  "ciCheckoutTree": "7eb1dc63ee7709b75c0a835dcb14cbb3d509cf99",
+  "treesEqual": true,
+  "treeDiffStat": "",
+  "ciParents": [
+    "3f56925b3532f015d9a29f19a998a05286b76f13",
+    "09ed672642aedee855d2d45f0e8c4a611127ca7b"
+  ],
+  "ciSubject": "Merge 09ed672642aedee855d2d45f0e8c4a611127ca7b into 3f56925b3532f015d9a29f19a998a05286b76f13",
+  "nativeSourceDigestObservedInCompletedShards": "63527e9bac2f56c0e8ab60c99a729e8c52732f3015f49e9f27ce21eb346381b7",
+  "note": "Checkout/source identity observed in all six passing shard logs and final passing aggregate; actual merge checkout and implementation trees are identical."
+}

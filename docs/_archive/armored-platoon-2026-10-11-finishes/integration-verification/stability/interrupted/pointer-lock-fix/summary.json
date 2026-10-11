@@ -1,0 +1,572 @@
+{
+  "format": "armored-software-stability-observation",
+  "version": 1,
+  "source": "cbde2c23bf8468a192ddd163a01b8c1a3ec8a925",
+  "identity": {
+    "gitHead": "cbde2c23bf8468a192ddd163a01b8c1a3ec8a925",
+    "freeze": {
+      "frozenAt": "2026-10-11T15:08:41.314504+00:00",
+      "gitHead": "cbde2c23bf8468a192ddd163a01b8c1a3ec8a925",
+      "workingTreeStatus": "M  .claude/skills/process-demo/SKILL.md\nA  .github/workflows/process-studio.yml\nM  AGENTS.md\nM  README.md\nM  bin/README.md\nAM bin/process-studio\nUU bin/scene-forge\nUU bin/wildlands\nUU demos/README.md\nUU demos/agency-delivery.html\n M demos/armored-platoon.html\nUU demos/emberworks.html\nUU demos/littlewild.html\nUU demos/manifest.json\nUU demos/office.html\nUU demos/pocket-pet.html\nUU demos/rts-frontier.html\nM  docs/README.md\n M docs/_archive/README.md\nUU docs/concepts/README.md\nM  docs/concepts/agency-delivery/README.md\nM  docs/concepts/agency-delivery/content/customer-journey-webshop.process.json\nM  docs/concepts/agency-delivery/content/loan-application.process.json\nM  docs/concepts/agency-delivery/content/user-journey-app-onboarding.process.json\nUU docs/how-to/README.md\nM  docs/how-to/business-process-authoring.md\nM  docs/how-to/code-quality.md\nA  docs/how-to/present-a-process.md\nA  docs/how-to/read-a-process-dashboard.md\nA  docs/how-to/save-and-resume-a-process-run.md\nM  docs/reference/README.md\n M docs/reference/armored-platoon.md\nM  docs/reference/business-process-engine.md\nMM docs/reference/current-state.md\nA  docs/reference/process-studio-cli.md\nM  docs/reference/wildlands-cli.md\nM  docs/tutorials/README.md\nA  docs/tutorials/first-business-process.md\nM  quality-policy.json\nM  scripts/quality.py\nM  scripts/quality_loc.py\nM  scripts/quality_report.py\nM  source/model-forge/src/kernel/domain/schema-documents.ts\nM  source/model-forge/src/kernel/domain/schema-geometry.ts\nM  source/model-forge/src/kernel/domain/schema-littlewild.ts\nM  source/model-forge/src/kernel/domain/schema-material.ts\nM  source/model-forge/src/kernel/domain/schema-nodes.ts\nM  source/model-forge/src/kernel/domain/schema-operations.ts\nM  source/model-forge/src/kernel/domain/schema-review.ts\nM  source/model-forge/src/kernel/domain/schema-values.ts\nA  source/process-studio/.gitignore\nA  source/process-studio/AGENTS.md\nA  source/process-studio/README.md\nA  source/process-studio/package-lock.json\nA  source/process-studio/package.json\nA  source/process-studio/scripts/architecture.cts\nA  source/process-studio/scripts/bridge.cts\nA  source/process-studio/scripts/bundle.cts\nA  source/process-studio/scripts/smoke.cts\nA  source/process-studio/scripts/source-scan.cts\nA  source/process-studio/src/assemble.cts\nA  source/process-studio/src/cli.cts\nA  source/process-studio/src/commands/analysis.cts\nA  source/process-studio/src/commands/artifacts.cts\nA  source/process-studio/src/commands/bpmn.cts\nA  source/process-studio/src/commands/definition.cts\nA  source/process-studio/src/commands/edit.cts\nA  source/process-studio/src/discover.cts\nA  source/process-studio/src/doctor.cts\nA  source/process-studio/src/io.cts\nA  source/process-studio/src/kernel.cts\nA  source/process-studio/src/kit-source.cts\nA  source/process-studio/src/kit.cts\nA  source/process-studio/src/options.cts\nA  source/process-studio/src/payload.cts\nA  source/process-studio/src/version.cts\nA  source/process-studio/tests/architecture.test.cts\nA  source/process-studio/tests/build.test.cts\nA  source/process-studio/tests/bundle.test.cts\nA  source/process-studio/tests/contract.test.cts\nA  source/process-studio/tests/fixtures/architecture.json\nA  source/process-studio/tests/parity-cases.cts\nA  source/process-studio/tests/parity.test.cts\nA  source/process-studio/tests/support.cts\nA  source/process-studio/tsconfig.json\nM  source/scene-forge/dist/cli.js\nUU source/scene-forge/dist/cli.js.map\nM  source/scene-forge/dist/index.js\nUU source/scene-forge/dist/index.js.map\nAM source/scene-forge/dist/types/scene-forge/src/domain/schema-project.d.ts\nUU source/scene-forge/dist/types/scene-forge/src/domain/schema.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/camera-rig.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/display-options.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/edit-download.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/edit-status.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/inspector-fields.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/node-commands.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/panel-tabs.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/picking.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/review-plan.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/scene-tree.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/shortcuts.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/source-panel.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/toast.d.ts\nA  source/scene-forge/dist/types/scene-forge/src/preview/transform-gizmo.d.ts\nUU source/scene-forge/dist/viewer.js\nM  source/scene-forge/docs/CODE_QUALITY.md\nM  source/scene-forge/docs/EDITOR_EXTENSIONS.md\nA  source/scene-forge/src/domain/schema-project.ts\nMM source/scene-forge/src/domain/schema.ts\nA  source/scene-forge/src/preview/camera-rig.ts\nA  source/scene-forge/src/preview/display-options.ts\nA  source/scene-forge/src/preview/edit-download.ts\nA  source/scene-forge/src/preview/edit-status.ts\nA  source/scene-forge/src/preview/inspector-fields.ts\nA  source/scene-forge/src/preview/node-commands.ts\nA  source/scene-forge/src/preview/panel-tabs.ts\nA  source/scene-forge/src/preview/picking.ts\nA  source/scene-forge/src/preview/review-plan.ts\nA  source/scene-forge/src/preview/scene-tree.ts\nA  source/scene-forge/src/preview/shortcuts.ts\nA  source/scene-forge/src/preview/source-panel.ts\nA  source/scene-forge/src/preview/toast.ts\nA  source/scene-forge/src/preview/transform-gizmo.ts\nM  source/scene-forge/src/preview/viewer.ts\nA  source/scene-forge/tests/preview.test.ts\nAM source/scene-forge/tests/schema.test.ts\nM  source/wildlands/DOCUMENTATION.md\nA  source/wildlands/PROCESS-STUDIO-FOLLOWUPS.md\nA  source/wildlands/PROCESS-STUDIO-REVIEW.md\nM  source/wildlands/README.md\nM  source/wildlands/examples/bpmn/README.md\nUU source/wildlands/source/architecture/contract-ownership.json\nM  source/wildlands/source/architecture/domain-map.json\nM  source/wildlands/source/ecs.ts\nM  source/wildlands/source/fixtures/process-slides-small-claims.md\nUU source/wildlands/source/index.html\nA  source/wildlands/source/process-3d-bake.ts\nA  source/wildlands/source/process-3d-camera.ts\nA  source/wildlands/source/process-3d-captions.ts\nA  source/wildlands/source/process-3d-kit.ts\nA  source/wildlands/source/process-3d-markers.ts\nA  source/wildlands/source/process-3d-stations.ts\nM  source/wildlands/source/process-activity.ts\nA  source/wildlands/source/process-advice.ts\nM  source/wildlands/source/process-application.ts\nM  source/wildlands/source/process-authoring.ts\nM  source/wildlands/source/process-bpmn-assemble.ts\nM  source/wildlands/source/process-bpmn-bpsim-write.ts\nM  source/wildlands/source/process-bpmn-bpsim.ts\nM  source/wildlands/source/process-bpmn-conformance-bpsim.ts\nM  source/wildlands/source/process-bpmn-conformance-model.ts\nA  source/wildlands/source/process-bpmn-conformance-schema.ts\nM  source/wildlands/source/process-bpmn-conformance-values.ts\nM  source/wildlands/source/process-bpmn-conformance.ts\nM  source/wildlands/source/process-bpmn-dialog.css\nM  source/wildlands/source/process-bpmn-dialog.ts\nM  source/wildlands/source/process-bpmn-expr.ts\nM  source/wildlands/source/process-bpmn-ext.ts\nM  source/wildlands/source/process-bpmn-flow.ts\nA  source/wildlands/source/process-bpmn-fold.ts\nM  source/wildlands/source/process-bpmn-graph.ts\nM  source/wildlands/source/process-bpmn-import.ts\nA  source/wildlands/source/process-bpmn-layout.ts\nA  source/wildlands/source/process-bpmn-nodes.ts\nA  source/wildlands/source/process-bpmn-pools.ts\nM  source/wildlands/source/process-bpmn-preview.ts\nA  source/wildlands/source/process-bpmn-steps.ts\nM  source/wildlands/source/process-bpmn-tail.ts\nM  source/wildlands/source/process-bpmn.ts\nM  source/wildlands/source/process-catalog.ts\nA  source/wildlands/source/process-chart.ts\nA  source/wildlands/source/process-checkpoint-check.ts\nA  source/wildlands/source/process-checkpoint.ts\nM  source/wildlands/source/process-contracts.d.ts\nA  source/wildlands/source/process-dashboard-flow.ts\nA  source/wildlands/source/process-dashboard-focus.ts\nA  source/wildlands/source/process-dashboard-html.ts\nA  source/wildlands/source/process-dashboard-journey.ts\nA  source/wildlands/source/process-dashboard-model.ts\nA  source/wildlands/source/process-dashboard-panels.ts\nA  source/wildlands/source/process-dashboard-quality.ts\nA  source/wildlands/source/process-dashboard-tiles.ts\nA  source/wildlands/source/process-dashboard-time.ts\nA  source/wildlands/source/process-dashboard-whatif-view.ts\nA  source/wildlands/source/process-dashboard-whatif.ts\nA  source/wildlands/source/process-dashboard-window.ts\nA  source/wildlands/source/process-dashboard.css\nA  source/wildlands/source/process-dashboard.ts\nM  source/wildlands/source/process-data-view.ts\nM  source/wildlands/source/process-definition-editor.ts\nM  source/wildlands/source/process-definition-json.ts\nA  source/wildlands/source/process-definition-structure.ts\nM  source/wildlands/source/process-dialog.ts\nM  source/wildlands/source/process-dialogs.css\nM  source/wildlands/source/process-diff.ts\nA  source/wildlands/source/process-dom.ts\nA  source/wildlands/source/process-draft-actions.ts\nM  source/wildlands/source/process-draft.ts\nA  source/wildlands/source/process-engine-state.ts\nA  source/wildlands/source/process-graph-routes.ts\nM  source/wildlands/source/process-graph.ts\nA  source/wildlands/source/process-guard.ts\nA  source/wildlands/source/process-hours.ts\nA  source/wildlands/source/process-html.ts\nM  source/wildlands/source/process-inspector.ts\nA  source/wildlands/source/process-io.ts\nA  source/wildlands/source/process-journey-model.ts\nM  source/wildlands/source/process-json-path.ts\nA  source/wildlands/source/process-kernel.ts\nA  source/wildlands/source/process-layout.ts\nA  source/wildlands/source/process-ledger-cases.ts\nA  source/wildlands/source/process-ledger-exact.ts\nA  source/wildlands/source/process-ledger.ts\nM  source/wildlands/source/process-lens.ts\nM  source/wildlands/source/process-lenses.css\nA  source/wildlands/source/process-map-camera.ts\nA  source/wildlands/source/process-map-card.ts\nA  source/wildlands/source/process-map-drag.ts\nA  source/wildlands/source/process-map-fit.ts\nA  source/wildlands/source/process-map-focus.ts\nA  source/wildlands/source/process-map-legend.ts\nA  source/wildlands/source/process-map-marks.ts\nA  source/wildlands/source/process-map-patch.ts\nM  source/wildlands/source/process-menu.ts\nM  source/wildlands/source/process-needs.ts\nA  source/wildlands/source/process-palette.ts\nA  source/wildlands/source/process-present-view.ts\nM  source/wildlands/source/process-present.css\nM  source/wildlands/source/process-present.ts\nM  source/wildlands/source/process-random-view.ts\nM  source/wildlands/source/process-random.ts\nA  source/wildlands/source/process-recovery.ts\nM  source/wildlands/source/process-renderer-2d.ts\nM  source/wildlands/source/process-renderer-3d.ts\nM  source/wildlands/source/process-renderer-journey.ts\nM  source/wildlands/source/process-renderer-sipoc.ts\nA  source/wildlands/source/process-replicate.ts\nA  source/wildlands/source/process-rooms-automation.ts\nA  source/wildlands/source/process-rooms-channels.ts\nM  source/wildlands/source/process-rooms-touchpoint.ts\nA  source/wildlands/source/process-rooms-work.ts\nM  source/wildlands/source/process-rooms.ts\nM  source/wildlands/source/process-route.ts\nA  source/wildlands/source/process-routing.ts\nA  source/wildlands/source/process-run-bar.ts\nM  source/wildlands/source/process-schema.ts\nM  source/wildlands/source/process-sdk.cts\nA  source/wildlands/source/process-series.ts\nM  source/wildlands/source/process-session.ts\nA  source/wildlands/source/process-shell-markup.ts\nM  source/wildlands/source/process-sipoc-model.ts\nM  source/wildlands/source/process-slides-contracts.d.ts\nM  source/wildlands/source/process-slides-text.ts\nM  source/wildlands/source/process-slides.ts\nA  source/wildlands/source/process-slots.ts\nA  source/wildlands/source/process-step-checks.ts\nM  source/wildlands/source/process-step-editor.ts\nA  source/wildlands/source/process-step-flows.ts\nA  source/wildlands/source/process-step-history.ts\nA  source/wildlands/source/process-step-kit.ts\nA  source/wildlands/source/process-step-list.ts\nM  source/wildlands/source/process-step-logic-sections.ts\nM  source/wildlands/source/process-step-logic.ts\nM  source/wildlands/source/process-step-model.ts\nA  source/wildlands/source/process-step-problems.ts\nA  source/wildlands/source/process-step-rows.ts\nM  source/wildlands/source/process-step-sections.ts\nA  source/wildlands/source/process-step-structure.ts\nA  source/wildlands/source/process-structure.ts\nM  source/wildlands/source/process-systems.ts\nM  source/wildlands/source/process-terms.ts\nA  source/wildlands/source/process-theme.ts\nA  source/wildlands/source/process-three.d.ts\nA  source/wildlands/source/process-time.ts\nM  source/wildlands/source/process-tuning-arrivals.ts\nA  source/wildlands/source/process-tuning-calendar.ts\nM  source/wildlands/source/process-tuning-fields.ts\nA  source/wildlands/source/process-tuning-hours.ts\nM  source/wildlands/source/process-tuning-sipoc.ts\nM  source/wildlands/source/process-tuning-track.ts\nM  source/wildlands/source/process-tuning.ts\nM  source/wildlands/source/process-ui.ts\nA  source/wildlands/source/process-work-state.ts\nM  source/wildlands/source/process-xml.ts\nM  source/wildlands/source/process.css\nM  source/wildlands/source/test-architecture-policy.cts\nA  source/wildlands/source/test-process-advice.cts\nA  source/wildlands/source/test-process-analysis.cts\nA  source/wildlands/source/test-process-analytics-cli.cts\nA  source/wildlands/source/test-process-analytics.cts\nA  source/wildlands/source/test-process-application.cts\nM  source/wildlands/source/test-process-authoring.cts\nM  source/wildlands/source/test-process-bpmn-conformance.cts\nA  source/wildlands/source/test-process-bpmn-export.cts\nM  source/wildlands/source/test-process-bpmn-extensions.cts\nM  source/wildlands/source/test-process-bpmn-helpers.cts\nA  source/wildlands/source/test-process-bpmn-import.cts\nA  source/wildlands/source/test-process-bpmn-schema.cts\nA  source/wildlands/source/test-process-bpmn-strict.cts\nM  source/wildlands/source/test-process-bpmn.cts\nA  source/wildlands/source/test-process-calendar.cts\nA  source/wildlands/source/test-process-checkpoint-cli.cts\nA  source/wildlands/source/test-process-checkpoint-helpers.cts\nA  source/wildlands/source/test-process-checkpoint-hostile.cts\nA  source/wildlands/source/test-process-checkpoint-hours.cts\nA  source/wildlands/source/test-process-checkpoint.cts\nA  source/wildlands/source/test-process-dashboard-render.cts\nA  source/wildlands/source/test-process-dashboard-wire.cts\nA  source/wildlands/source/test-process-dashboard.cts\nA  source/wildlands/source/test-process-demos.cts\nM  source/wildlands/source/test-process-engine.cts\nM  source/wildlands/source/test-process-helpers.cts\nA  source/wildlands/source/test-process-hours-io.cts\nA  source/wildlands/source/test-process-hours-views.cts\nA  source/wildlands/source/test-process-hours.cts\nA  source/wildlands/source/test-process-html.cts\nM  source/wildlands/source/test-process-journeys.cts\nA  source/wildlands/source/test-process-palette.cts\nA  source/wildlands/source/test-process-random-calendar.cts\nM  source/wildlands/source/test-process-random.cts\nA  source/wildlands/source/test-process-readmodel-helpers.cts\nA  source/wildlands/source/test-process-readmodel.cts\nA  source/wildlands/source/test-process-route.cts\nA  source/wildlands/source/test-process-scale.cts\nA  source/wildlands/source/test-process-semantics-fixtures.cts\nM  source/wildlands/source/test-process-semantics.cts\nA  source/wildlands/source/test-process-series.cts\nA  source/wildlands/source/test-process-slices.cts\nA  source/wildlands/source/test-process-slides-brief.cts\nM  source/wildlands/source/test-process-slides-cli.cts\nA  source/wildlands/source/test-process-slides-fixtures.cts\nM  source/wildlands/source/test-process-slides.cts\nA  source/wildlands/source/test-process-statistics.cts\nM  source/wildlands/source/test-process-steps.cts\nA  source/wildlands/source/test-process-structure.cts\nA  source/wildlands/source/test-process-sweeps.cts\nA  source/wildlands/source/test-process-theme.cts\nA  source/wildlands/source/test-process-work-derivation.cts\nA  source/wildlands/source/test-process-work-state.cts\nM  source/wildlands/source/test-process.cts\nA  source/wildlands/source/tools/build-inserts-process.cts\nUU source/wildlands/source/tools/build-inserts.cts\nM  source/wildlands/source/tools/cli-io.cts\nA  source/wildlands/source/tools/process-cli-analytics.cts\nM  source/wildlands/source/tools/process-cli.cts\nA  source/wildlands/source/tools/process-event-log.cts\nM  source/wildlands/source/tools/process-forge.cts\nM  source/wildlands/source/tools/wildlands-cli.cts\nUU source/wildlands/source/verification/gate-expectations.json\nM  source/wildlands/source/verification/process-bpmn-import-browser.ts\nA  source/wildlands/source/verification/process-browser-draft-checks.ts\nM  source/wildlands/source/verification/process-browser-fixture.ts\nA  source/wildlands/source/verification/process-browser-io-checks.ts\nM  source/wildlands/source/verification/process-browser-models.ts\nA  source/wildlands/source/verification/process-browser-recovery-checks.ts\nA  source/wildlands/source/verification/process-browser-shell-checks.ts\nM  source/wildlands/source/verification/process-browser.ts\nA  source/wildlands/source/verification/process-checkpoint-browser.ts\nA  source/wildlands/source/verification/process-dashboard-browser.ts\nA  source/wildlands/source/verification/process-dashboard-layout-checks.ts\nA  source/wildlands/source/verification/process-dashboard-phone-checks.ts\nA  source/wildlands/source/verification/process-dashboard-wire-checks.ts\nA  source/wildlands/source/verification/process-definition-arrival-checks.ts\nM  source/wildlands/source/verification/process-definition-browser.ts\nA  source/wildlands/source/verification/process-definition-calendar-checks.ts\nA  source/wildlands/source/verification/process-definition-inspector-checks.ts\nA  source/wildlands/source/verification/process-definition-journey-checks.ts\nA  source/wildlands/source/verification/process-definition-json-checks.ts\nA  source/wildlands/source/verification/process-draft-browser.ts\nA  source/wildlands/source/verification/process-hostile-browser.ts\nA  source/wildlands/source/verification/process-hostile-checkpoint-checks.ts\nA  source/wildlands/source/verification/process-hostile-dialog-checks.ts\nA  source/wildlands/source/verification/process-hostile-editor-checks.ts\nA  source/wildlands/source/verification/process-hostile-editors-browser.ts\nA  source/wildlands/source/verification/process-hostile-io-checks.ts\nA  source/wildlands/source/verification/process-hostile-kit.ts\nA  source/wildlands/source/verification/process-hostile-models.ts\nA  source/wildlands/source/verification/process-hostile-probe.ts\nA  source/wildlands/source/verification/process-hostile-views-checks.ts\nA  source/wildlands/source/verification/process-hours-browser.ts\nA  source/wildlands/source/verification/process-hours-checks.ts\nA  source/wildlands/source/verification/process-layout-activity-checks.ts\nM  source/wildlands/source/verification/process-layout-browser.ts\nM  source/wildlands/source/verification/process-lenses-browser.ts\nA  source/wildlands/source/verification/process-lenses-journey-checks.ts\nA  source/wildlands/source/verification/process-lenses-sipoc-checks.ts\nA  source/wildlands/source/verification/process-map-label-checks.ts\nA  source/wildlands/source/verification/process-map-probe.ts\nA  source/wildlands/source/verification/process-map-update-checks.ts\nA  source/wildlands/source/verification/process-present-brief-browser.ts\nA  source/wildlands/source/verification/process-present-brief-checks.ts\nM  source/wildlands/source/verification/process-present-browser.ts\nA  source/wildlands/source/verification/process-present-screen-browser.ts\nA  source/wildlands/source/verification/process-present-screen-checks.ts\nA  source/wildlands/source/verification/process-present-wide-checks.ts\nM  source/wildlands/source/verification/process-readability-browser.ts\nA  source/wildlands/source/verification/process-renderers-3d-checks.ts\nM  source/wildlands/source/verification/process-renderers-browser.ts\nA  source/wildlands/source/verification/process-renderers-features-checks.ts\nA  source/wildlands/source/verification/process-renderers-rooms-checks.ts\nM  source/wildlands/source/verification/process-runner.ts\nA  source/wildlands/source/verification/process-scale-browser.ts\nA  source/wildlands/source/verification/process-scale-models.ts\nA  source/wildlands/source/verification/process-scale-probe.ts\nA  source/wildlands/source/verification/process-shell-browser.ts\nM  source/wildlands/source/verification/process-shots.ts\nA  source/wildlands/source/verification/process-step-editor-branching-checks.ts\nM  source/wildlands/source/verification/process-step-editor-browser.ts\nA  source/wildlands/source/verification/process-step-editor-guard-checks.ts\nA  source/wildlands/source/verification/process-step-editor-kit.ts\nA  source/wildlands/source/verification/process-step-editor-random-checks.ts\nA  source/wildlands/source/verification/process-step-editor-structure-checks.ts\nA  source/wildlands/source/verification/process-theme-browser.ts\nA  source/wildlands/source/verification/process-theme-view-checks.ts\nUU source/wildlands/source/verification/suites.json\nM  source/wildlands/tsconfig.strict.json\nA  tests/test_quality_typescript.py\n?? docs/_archive/armored-platoon-2026-10-11-finishes/\n?? work/\n",
+      "artifact": {
+        "origin": "demos/armored-platoon.html",
+        "bytes": 4438473,
+        "sha256": "a1fa1e295bd41fd5030142c4b0e0b6a10a01a98215b6826fda377b78e2e10f4e"
+      },
+      "browserTestArtifact": {
+        "bytes": 4438163,
+        "sha256": "a82ba1f73d4d62118d093b784840306d475c2497aba35691f675efa074f54032"
+      },
+      "sourceFiles": [
+        {
+          "file": "source/wildlands/source/armored-admission-results.json",
+          "bytes": 887,
+          "sha256": "89bf4d4e1a541ebf371a56e7035ca233b6bc97a4284851b3c14c769905e451ed"
+        },
+        {
+          "file": "source/wildlands/source/armored-ai.ts",
+          "bytes": 16742,
+          "sha256": "d4ba98def0dc7356dac2dd2346defec3d5eec11bf05d9da95746afb4e4d294d2"
+        },
+        {
+          "file": "source/wildlands/source/armored-application.ts",
+          "bytes": 1752,
+          "sha256": "59a86e8a3b9869e2bb4caf6c6b3b18ba134307c319ede7eab34e32bee58aaea1"
+        },
+        {
+          "file": "source/wildlands/source/armored-audio.ts",
+          "bytes": 2665,
+          "sha256": "57003d950cac26588a5bd8a0a29d01b8a4b7b28fee45012519337a63583db43d"
+        },
+        {
+          "file": "source/wildlands/source/armored-catalog.ts",
+          "bytes": 14021,
+          "sha256": "fed7ae6f658d901d46649c1b0660fa595b0ad5466cba580c8cbb715920a35276"
+        },
+        {
+          "file": "source/wildlands/source/armored-checkpoint.ts",
+          "bytes": 12181,
+          "sha256": "c619232b2919e9b7498e87575631eca7eec3e95d0ef9fd2f3555817b16e509e7"
+        },
+        {
+          "file": "source/wildlands/source/armored-collision.ts",
+          "bytes": 7698,
+          "sha256": "0ad4094f050a1981eedbe088e274ec1339b032b0a0385a820110e265256c3062"
+        },
+        {
+          "file": "source/wildlands/source/armored-combat-results.json",
+          "bytes": 2277,
+          "sha256": "6ae6681369337f0a58dc64437f7dbe9d48aa3c90d437a88634370b03889e3578"
+        },
+        {
+          "file": "source/wildlands/source/armored-combat-v2-results.json",
+          "bytes": 1703,
+          "sha256": "1b357cce37584ca2ed55cbe0e4da5aef8735245217a5fb465be29cefc0aae882"
+        },
+        {
+          "file": "source/wildlands/source/armored-combat.ts",
+          "bytes": 20943,
+          "sha256": "6dd641590635f0f1b0d57da3473ec22009b0d784d2a7e6ab52b6a165a4f3ff77"
+        },
+        {
+          "file": "source/wildlands/source/armored-contracts.d.ts",
+          "bytes": 7568,
+          "sha256": "6a8fbc30c9dec66a49dfa583e194bb36d71ea5e3888ddd653b05aa9e32d31a33"
+        },
+        {
+          "file": "source/wildlands/source/armored-controls.ts",
+          "bytes": 6789,
+          "sha256": "3f5ca80c076eba50dc0d616c1d897d479075d94fe70d45272dbe919a29d944b4"
+        },
+        {
+          "file": "source/wildlands/source/armored-host.ts",
+          "bytes": 6844,
+          "sha256": "0de48213d490210237bdba398e39aed5db8c34557ac9226cb34e735d6a57d82c"
+        },
+        {
+          "file": "source/wildlands/source/armored-logistics.ts",
+          "bytes": 6129,
+          "sha256": "8a43246128e7b75db88ddf74e5b1d2a21f5a93ac87a0749398565f89952b6242"
+        },
+        {
+          "file": "source/wildlands/source/armored-missions.ts",
+          "bytes": 2528,
+          "sha256": "a47d9274f6da21cdcff9c38e1dcbcc13d8e416196bf30a3dbb7a4525c318221a"
+        },
+        {
+          "file": "source/wildlands/source/armored-navigation.ts",
+          "bytes": 10305,
+          "sha256": "2777b80adbacd4d3b3325b54847b5282cd9cd9a85028adfe883d6f2911265fb4"
+        },
+        {
+          "file": "source/wildlands/source/armored-physics-legacy.ts",
+          "bytes": 6967,
+          "sha256": "3b4613a78af3b35d2f422507d8efc7a1539af52042c782680f24f8d4ce97bfc7"
+        },
+        {
+          "file": "source/wildlands/source/armored-physics.ts",
+          "bytes": 5363,
+          "sha256": "420771ad3bf6429fb02bcfafa36fc28ba9b885323c60d984e7093a979faebe0e"
+        },
+        {
+          "file": "source/wildlands/source/armored-presentation-contracts.d.ts",
+          "bytes": 1262,
+          "sha256": "dc824cc7e299108bede7ade1a0c93449b2b72e22d8cee498855c3664c35eee1d"
+        },
+        {
+          "file": "source/wildlands/source/armored-renderer.ts",
+          "bytes": 5857,
+          "sha256": "1c6807f1ab0aa1090b254ccd771daad2fe8e8919d14b42e9fc43698bebaeb1e8"
+        },
+        {
+          "file": "source/wildlands/source/armored-runtime-results.json",
+          "bytes": 1465,
+          "sha256": "7236ac6d9ba29bec50b30b78c7cfcdffc4fe0d0942ac943c0ae9329ddc5d76e6"
+        },
+        {
+          "file": "source/wildlands/source/armored-session.ts",
+          "bytes": 13381,
+          "sha256": "2c892e39bb413243ec2622e0fcd9dd33c09f36b802a9dca5566094b63ac2dafe"
+        },
+        {
+          "file": "source/wildlands/source/armored-ui.ts",
+          "bytes": 27144,
+          "sha256": "6f166a652ab3e62c0a57bbaf88d882e7718e1b05d6807f9f4f311a0a70f293b0"
+        },
+        {
+          "file": "source/wildlands/source/armored-visual-resources-results.json",
+          "bytes": 1538,
+          "sha256": "1bc939049f575b79a547beadfad024cf2fc3f6421e2561232791cc56cb33c474"
+        },
+        {
+          "file": "source/wildlands/source/armored-visuals.ts",
+          "bytes": 16447,
+          "sha256": "9a461d92f737211fadf11ee0fb385dc81739e56f8a3bb9848efbddcc597f4fe5"
+        },
+        {
+          "file": "source/wildlands/source/armored-world.ts",
+          "bytes": 15157,
+          "sha256": "66ba229992531d10277b3db12062857abcb915e6b63c1b785e6f0940376a8a7c"
+        },
+        {
+          "file": "source/wildlands/source/visual-resources.ts",
+          "bytes": 3446,
+          "sha256": "4b8741e3a59b34e49657773e7bde9e3a2fa9e395e262c1c2821d1e918eda3f8c"
+        },
+        {
+          "file": "source/wildlands/source/ecs.ts",
+          "bytes": 13667,
+          "sha256": "0736c1aab5b235d608d5c1e3e3a414343596b5dcb3e43068ab3ce3cdf4b34bb3"
+        },
+        {
+          "file": "docs/concepts/armored-platoon/content/catalog.json",
+          "bytes": 190203,
+          "sha256": "0bc1e6626c153fcacbfc424534fad02cf9f38128952862715532d9cd6b249afc"
+        },
+        {
+          "file": "docs/concepts/armored-platoon/content/visuals.json",
+          "bytes": 3133629,
+          "sha256": "8e406de65dd806954ce24a691da434fdfbdeac93e0f4901cb800445348be19c5"
+        },
+        {
+          "file": "source/model-forge/src/kernel/application/finish-pattern.ts",
+          "bytes": 4617,
+          "sha256": "fd88b0ec05939bb439b6f3b7d1b76c2464c4c837027b59966bbd2cbe4d3a13fe"
+        }
+      ]
+    },
+    "harnessAdaptations": [
+      "Frozen generated artifact and browser harness copied before observation; exact bytes and SHA checked at launch and completion.",
+      "Root may commit/build in parallel; source checkout HEAD is recorded but does not replace the frozen artifact identity.",
+      "Prior thirty-minute workload retained, including legitimate command-rejection reporting; no altered game data, private ticks, accelerated RAF or forced GC.",
+      "Read-only action readiness and issued platoon-order reasons added to sampled projections; no command behavior changed.",
+      "Requested interruption uses STOP.json polling so normal final capture and CDP/context/browser cleanup remain available.",
+      "Raw retention: work/armored-v3-integrated-stability."
+    ],
+    "artifact": {
+      "path": "work/armored-v3-integrated-stability/served-demo.html",
+      "origin": "demos/armored-platoon.html",
+      "bytes": 4438473,
+      "sha256": "a1fa1e295bd41fd5030142c4b0e0b6a10a01a98215b6826fda377b78e2e10f4e",
+      "matchesFrozenIdentity": true
+    },
+    "scriptSha256": "5cab8727f3942c80d8daa9305913ed322c7aadea76d06250de0227ba936503cb",
+    "harnessSha256": "a464f9b13b46be5a626c628a805960170bbfca74c65fee26d2ea7a4926843bad",
+    "node": "v24.19.0",
+    "playwright": "1.63.0",
+    "os": {
+      "platform": "linux",
+      "release": "6.18.44",
+      "architecture": "x64",
+      "logicalCpus": 5,
+      "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+      "totalMemoryBytes": 18882699264
+    },
+    "viewport": {
+      "width": 960,
+      "height": 600
+    },
+    "deviceScaleFactor": 1,
+    "executablePath": "/usr/bin/chromium",
+    "args": [
+      "--no-sandbox",
+      "--enable-unsafe-swiftshader",
+      "--use-angle=swiftshader"
+    ],
+    "browser": "151.0.7922.173",
+    "webgl": {
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "drawingBuffer": {
+        "width": 960,
+        "height": 600
+      }
+    }
+  },
+  "wall": {
+    "startedAt": "2026-10-11T15:08:46.466Z",
+    "endedAt": "2026-10-11T15:13:28.206Z",
+    "observedSeconds": 281.74,
+    "plannedSeconds": 1800,
+    "completed": false
+  },
+  "method": "30 wall minutes; frozen generated HTML bytes; native requestAnimationFrame; Playwright UI actions and public command/query/checkpoint/restore ports; no injected gameplay state or private ticks",
+  "workload": {
+    "route": "Scripted bounded driving near deployment",
+    "actions": [
+      "drive",
+      "aim",
+      "main-gun fire",
+      "platoon follow/hold",
+      "untouched checkpoint roundtrip",
+      "menu/briefing/mission selection/deployment"
+    ],
+    "notCovered": [
+      "multiplayer",
+      "hardware GPU performance",
+      "GPU memory/resource residency",
+      "device/context loss",
+      "full campaign completion",
+      "worst-case crowded scenes"
+    ]
+  },
+  "missionIntervals": [
+    {
+      "missionId": "crossroads",
+      "firstAt": "2026-10-11T15:08:48.124Z",
+      "lastAt": "2026-10-11T15:12:33.968Z",
+      "firstWallSecond": 1.658,
+      "lastWallSecond": 227.502,
+      "firstTick": 18,
+      "lastTick": 4972,
+      "firstSimulationSecond": 0.3,
+      "lastSimulationSecond": 82.86666666666666,
+      "samples": 16,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 4,
+          "maximum": 6
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 1
+        },
+        "obstacles": {
+          "minimum": 42,
+          "maximum": 42
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 57
+        }
+      }
+    },
+    {
+      "missionId": "pine-ridge",
+      "firstAt": "2026-10-11T15:12:52.135Z",
+      "lastAt": "2026-10-11T15:13:28.218Z",
+      "firstWallSecond": 245.669,
+      "lastWallSecond": 281.752,
+      "firstTick": 24,
+      "lastTick": 619,
+      "firstSimulationSecond": 0.4,
+      "lastSimulationSecond": 10.316666666666666,
+      "samples": 4,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 3,
+          "maximum": 3
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "obstacles": {
+          "minimum": 49,
+          "maximum": 49
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 4
+        }
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 1,
+      "began": "2026-10-11T15:10:46.469Z",
+      "finishedAt": "2026-10-11T15:10:46.869Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 109598,
+      "checkpointSha256": "56a89d71acbd619ed659802897187b8b1ba766c97b133f22ba76d695564922d3",
+      "restoredSha256": "56a89d71acbd619ed659802897187b8b1ba766c97b133f22ba76d695564922d3"
+    },
+    {
+      "kind": "menu-mission-deployment",
+      "index": 2,
+      "began": "2026-10-11T15:12:46.467Z",
+      "finishedAt": "2026-10-11T15:12:50.564Z",
+      "from": "crossroads",
+      "to": "pine-ridge",
+      "observed": "pine-ridge"
+    }
+  ],
+  "commands": {
+    "count": 60,
+    "rejected": [],
+    "scope": "Scripted workload calls only. Automatic shell control/aim command responses were not instrumented or included in these totals."
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "failures": [
+    {
+      "time": "2026-10-11T15:13:28.205Z",
+      "message": "Intentional requested stop: {\n  \"at\": \"2026-10-11T15:13:27.467701+00:00\",\n  \"classification\": \"interrupted-for-pointer-lock-input-fix\",\n  \"requestedBy\": \"root\",\n  \"reason\": \"Interface review identified a concrete pointer-lock focus/held-drive bug requiring source change and exclusive browser reproduction. Root requested stopping the superseded observation.\",\n  \"acceptance\": \"Partial observation only, not a thirty-minute pass.\"\n}\n"
+    }
+  ],
+  "resources": {
+    "jsHeapUsedBytes": {
+      "first": 15920404,
+      "last": 28717140,
+      "minimum": 14631808,
+      "maximum": 34281300
+    },
+    "jsHeapTotalBytes": {
+      "first": 33153024,
+      "last": 91250688,
+      "minimum": 33153024,
+      "maximum": 91250688
+    },
+    "domNodes": {
+      "first": 505,
+      "last": 670,
+      "minimum": 501,
+      "maximum": 670
+    },
+    "documents": {
+      "first": 1,
+      "last": 1,
+      "minimum": 1,
+      "maximum": 1
+    },
+    "jsEventListeners": {
+      "first": 48,
+      "last": 49,
+      "minimum": 48,
+      "maximum": 58
+    },
+    "forcedGarbageCollection": false,
+    "gpuMemory": "unavailable",
+    "gpuResourceResidency": "unavailable",
+    "rendererGeometryAndTextureCounts": "unavailable"
+  },
+  "requests": [
+    {
+      "at": "2026-10-11T15:08:41.958Z",
+      "url": "https://armored-stability.localhost/frozen-demo.html",
+      "resourceType": "document",
+      "fixture": true
+    }
+  ],
+  "artifactBytesUnchanged": true,
+  "cleanup": [
+    {
+      "name": "cdp",
+      "closed": true,
+      "at": "2026-10-11T15:13:29.860Z"
+    },
+    {
+      "name": "context",
+      "closed": true,
+      "at": "2026-10-11T15:13:29.917Z"
+    },
+    {
+      "name": "browser",
+      "closed": true,
+      "at": "2026-10-11T15:13:30.534Z"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "start.png",
+      "bytes": 287708,
+      "sha256": "2612f0ec801cc73f6313deb3cd9bb3e8cf3fbfa2341a5ac9c8caf2837c88ec08",
+      "at": "2026-10-11T15:08:48.117Z"
+    },
+    {
+      "file": "transition-01-checkpoint.png",
+      "bytes": 402083,
+      "sha256": "5d7c945dd94b1ded23db2b9140f05cd4bfdf5c4a17638432665aac7a97702e1e",
+      "at": "2026-10-11T15:10:48.053Z"
+    },
+    {
+      "file": "transition-02-mission.png",
+      "bytes": 285402,
+      "sha256": "ab8c3194752a8624db6857228ab57bcfdd13a4d6ecc95328da55da4e9498db55",
+      "at": "2026-10-11T15:12:52.131Z"
+    },
+    {
+      "file": "final.png",
+      "bytes": 373350,
+      "sha256": "3bdc0224c0af5ae8f14bc62a0012530ccde641ac8c60b10405855ecd035b6630",
+      "at": "2026-10-11T15:13:29.848Z"
+    }
+  ],
+  "limitations": [
+    "Software SwiftShader at 960x600; no hardware performance conclusion.",
+    "Entity counts are detached visible projection counts, not total live ECS or GPU allocations.",
+    "JS heap is CDP heap usage without forced garbage collection; fluctuations do not establish leak freedom.",
+    "GPU memory, resource residency, renderer geometry/texture counters, hardware VRAM and thermal/power data are unavailable.",
+    "Native RAF elapsed times are retained; no private ticks, RAF replacement, altered content, or fabricated checkpoint state.",
+    "This bounded observation is not full Q03 acceptance or reference-fidelity evidence.",
+    "Scripted workload calls only. Automatic shell control/aim command responses were not instrumented or included in these totals.",
+    "Repair and resupply actions were not part of this thirty-minute workload; their separate integrated browser checks are distinct evidence."
+  ],
+  "retention": {
+    "fullLocalRaw": "All raw observations, JSONL logs, untouched checkpoints, the exact served demo, exact harnesses, run log and PNG captures remain in work/armored-v3-integrated-stability.",
+    "archiveSelection": "Root chooses compact evidence and selected captures; that archive is not a copy of every local artifact."
+  },
+  "finalCheckoutHead": "3ce1c8dfde1e479b9927e4447bcbb6e28e898ba9",
+  "observedNavigation": {
+    "sampledOrderReasons": {
+      "No order reason": 20,
+      "Holding": 18,
+      "Advancing": 15,
+      "Aligning hull": 7
+    },
+    "sampledOrderKinds": {
+      "hold": 38,
+      "follow": 22
+    },
+    "checkpointPolicies": [
+      {
+        "index": 1,
+        "navigation": "hull-route-v1"
+      }
+    ],
+    "scope": "Detached public projection samples and unchanged checkpoint envelopes only; not exhaustive pathfinding coverage or a tactical acceptance test."
+  },
+  "observedActionReadiness": {
+    "drive": {
+      "availableSamples": 20,
+      "unavailableSamples": 0,
+      "reasons": {}
+    },
+    "aim": {
+      "availableSamples": 20,
+      "unavailableSamples": 0,
+      "reasons": {}
+    },
+    "fire": {
+      "availableSamples": 15,
+      "unavailableSamples": 5,
+      "reasons": {
+        "Reloading.": 5
+      }
+    },
+    "repair": {
+      "availableSamples": 0,
+      "unavailableSamples": 20,
+      "reasons": {
+        "No repairable damage.": 2,
+        "Repair needs a living crew, neutral drive controls and no hull motion.": 18
+      }
+    },
+    "resupply": {
+      "availableSamples": 0,
+      "unavailableSamples": 20,
+      "reasons": {
+        "No friendly depot in range.": 17,
+        "Stop the vehicle to receive supplies.": 3
+      }
+    }
+  },
+  "observedGameplay": {
+    "commandKinds": {
+      "drive": 19,
+      "aim": 19,
+      "fire": 19,
+      "order": 3
+    },
+    "controlledDamageStatusSamples": {
+      "operational": 7,
+      "impaired": 13
+    },
+    "sampledMissionStatuses": [
+      "running"
+    ],
+    "finalSampleFeedback": {
+      "feedback": "",
+      "pauseFeedback": ""
+    },
+    "note": "Gameplay availability feedback, including unavailable gunner aiming after combat damage, remains in unmodified raw snapshots and captures. It is not a browser exception. These scripted command totals do not measure automatic shell rejections."
+  },
+  "counts": {
+    "samples": 20,
+    "checkpointRoundtrips": 1,
+    "exactCheckpointRoundtrips": 1,
+    "missionSwitches": 1,
+    "commands": 60,
+    "commandRejections": 0,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "consoleWarnings": 0,
+    "observationFailures": 1
+  },
+  "warningTypes": [],
+  "domCanvasBounds": {
+    "canvasCount": {
+      "minimum": 1,
+      "maximum": 1
+    },
+    "domElementCount": {
+      "minimum": 235,
+      "maximum": 235
+    },
+    "cdpDomNodes": {
+      "first": 505,
+      "last": 670,
+      "minimum": 501,
+      "maximum": 670
+    }
+  }
+}

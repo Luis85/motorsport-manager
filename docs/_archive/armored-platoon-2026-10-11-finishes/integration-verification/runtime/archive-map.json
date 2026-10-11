@@ -1,0 +1,27 @@
+{
+  "format": "runtime-evidence-archive-map",
+  "version": 1,
+  "receipt": "receipt.json",
+  "policy": "Original receipt bytes are preserved. Archive paths below resolve relative to this map; original references describe the execution-time directory layout and uncompressed log bytes.",
+  "references": [
+    {
+      "receiptField": "quality.receipt",
+      "original": "quality/receipt.json",
+      "archived": "../quality/receipt.json"
+    },
+    {
+      "receiptField": "logs.runtime-linux-job.log",
+      "original": "runtime-linux-job.log",
+      "archived": "runtime-linux-job.log.gz",
+      "encoding": "gzip",
+      "validation": "Decompress before comparing receipt log bytes and SHA-256."
+    },
+    {
+      "receiptField": "logs.runtime-windows-job.log",
+      "original": "runtime-windows-job.log",
+      "archived": "runtime-windows-job.log.gz",
+      "encoding": "gzip",
+      "validation": "Decompress before comparing receipt log bytes and SHA-256."
+    }
+  ]
+}

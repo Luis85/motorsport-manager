@@ -1,0 +1,11 @@
+const fs=require('node:fs'),vm=require('node:vm'),crypto=require('node:crypto');
+const ts=require('../../source/model-forge/node_modules/typescript');
+const file=process.argv[2],code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
+const realm={exports:{}}; vm.runInNewContext(code,realm);
+const start=performance.now(),hash=crypto.createHash('sha256'),rows=[];
+for(const kind of ['painted-metal','bare-metal','rubber'])for(const seed of [0,7,65535])for(const wear of [0,.35,1])for(const palette of [undefined,['#ffffff'],['#000000','#ffffff','#485239','#AbCdEf']]){
+ const finish={version:1,kind,seed,scale:seed===7?16:1,wear,...(palette?{palette}:{})},p=realm.exports.generateFinish(finish),h=crypto.createHash('sha256');
+ for(const role of ['color','normal','orm']){hash.update(p[role]);h.update(p[role]);}
+ rows.push({finish,sha256:h.digest('hex')});
+}
+console.log(JSON.stringify({source:file,elapsedMs:performance.now()-start,count:rows.length,sha256:hash.digest('hex'),rows},null,2));

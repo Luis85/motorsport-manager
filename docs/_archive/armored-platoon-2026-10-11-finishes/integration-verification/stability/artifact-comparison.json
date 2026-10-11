@@ -1,0 +1,362 @@
+{
+  "demo": "demos/armored-platoon.html",
+  "browserTestArtifact": "source/wildlands/.generated/artifacts/armored-play.html",
+  "blocks": [
+    {
+      "index": 0,
+      "tag": "style",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 24108,
+      "testBytes": 24108,
+      "demoSha256": "7d4d0f904397101c799568a1b1c2c5486fd619f2e5224c2d6ec9a4aed25730a7",
+      "testSha256": "7d4d0f904397101c799568a1b1c2c5486fd619f2e5224c2d6ec9a4aed25730a7"
+    },
+    {
+      "index": 1,
+      "tag": "script",
+      "attributes": [],
+      "same": false,
+      "demoBytes": 3212683,
+      "testBytes": 3212605,
+      "demoSha256": "0344d0ee191496bda987332b7f617a02e3ef69f174661b58d1ee9636391461eb",
+      "testSha256": "a772dc665f6abd15a14845f471820163a6bec970f0227aadf3a4e07e79fe8e32"
+    },
+    {
+      "index": 2,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 5681,
+      "testBytes": 5681,
+      "demoSha256": "48f1ab9605dfee3c24342df5f88634e377e2d494347903651b46fd4d126263e2",
+      "testSha256": "48f1ab9605dfee3c24342df5f88634e377e2d494347903651b46fd4d126263e2"
+    },
+    {
+      "index": 3,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 7345,
+      "testBytes": 7345,
+      "demoSha256": "a109856b7e85160f2e8db0d0148f0bcbb9ceb200e46364c76e9b349b98372c80",
+      "testSha256": "a109856b7e85160f2e8db0d0148f0bcbb9ceb200e46364c76e9b349b98372c80"
+    },
+    {
+      "index": 4,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 960,
+      "testBytes": 960,
+      "demoSha256": "31f3dd62f582ab4cf5b3cad783ffb602c3fc8cf61130781f7654c4da170fa48c",
+      "testSha256": "31f3dd62f582ab4cf5b3cad783ffb602c3fc8cf61130781f7654c4da170fa48c"
+    },
+    {
+      "index": 5,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 1001009,
+      "testBytes": 1001009,
+      "demoSha256": "2c7859f3b6be472f5300cb61f950226ef6b3bff5ebbb729c023271114078980d",
+      "testSha256": "2c7859f3b6be472f5300cb61f950226ef6b3bff5ebbb729c023271114078980d"
+    },
+    {
+      "index": 6,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 1822,
+      "testBytes": 1822,
+      "demoSha256": "50b18698ef97f79d5548e82c6b4307802dd50526da6dbc00b4a98a371521f9db",
+      "testSha256": "50b18698ef97f79d5548e82c6b4307802dd50526da6dbc00b4a98a371521f9db"
+    },
+    {
+      "index": 7,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 4285,
+      "testBytes": 4285,
+      "demoSha256": "82bbb9641b3b9799e731a60fb3c83550d640bbcd60e90f8e34a09e5e1289dd3f",
+      "testSha256": "82bbb9641b3b9799e731a60fb3c83550d640bbcd60e90f8e34a09e5e1289dd3f"
+    },
+    {
+      "index": 8,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 5688,
+      "testBytes": 5688,
+      "demoSha256": "b7b321ff5c3de832b82a1cd648c5646cfc73a25fe50d846726ac963d532b7470",
+      "testSha256": "b7b321ff5c3de832b82a1cd648c5646cfc73a25fe50d846726ac963d532b7470"
+    },
+    {
+      "index": 9,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 9923,
+      "testBytes": 9923,
+      "demoSha256": "732112d780900158e07dd37fcaaeed3c6826d13cf4b9bd3eadf36c3d1c60bdb7",
+      "testSha256": "732112d780900158e07dd37fcaaeed3c6826d13cf4b9bd3eadf36c3d1c60bdb7"
+    },
+    {
+      "index": 10,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 10339,
+      "testBytes": 10339,
+      "demoSha256": "e8ec991d484ddcfc5144b5c96ac534b5e575b9ad506983b97d15cd560d4863d6",
+      "testSha256": "e8ec991d484ddcfc5144b5c96ac534b5e575b9ad506983b97d15cd560d4863d6"
+    },
+    {
+      "index": 11,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 11566,
+      "testBytes": 11566,
+      "demoSha256": "53309b1bf93b1305a9c836858c16a13475621d4f7a564ae111c15909a0a10ee8",
+      "testSha256": "53309b1bf93b1305a9c836858c16a13475621d4f7a564ae111c15909a0a10ee8"
+    },
+    {
+      "index": 12,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 5662,
+      "testBytes": 5662,
+      "demoSha256": "ce93c680647d67138a33e620b85b7bad7b8c43d421f84187f036b97721984f30",
+      "testSha256": "ce93c680647d67138a33e620b85b7bad7b8c43d421f84187f036b97721984f30"
+    },
+    {
+      "index": 13,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 5610,
+      "testBytes": 5610,
+      "demoSha256": "c96c001abe9779cb388952bbd5b0118a0f6265d6737b39e458d2a89f28b4308d",
+      "testSha256": "c96c001abe9779cb388952bbd5b0118a0f6265d6737b39e458d2a89f28b4308d"
+    },
+    {
+      "index": 14,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 4127,
+      "testBytes": 4127,
+      "demoSha256": "9174b494decd9e527378bdd07cfb9a9fef389ba50a3b98be51938954b34f4d76",
+      "testSha256": "9174b494decd9e527378bdd07cfb9a9fef389ba50a3b98be51938954b34f4d76"
+    },
+    {
+      "index": 15,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 17632,
+      "testBytes": 17632,
+      "demoSha256": "88ccd50ee1673c71df8966a2890e78c399cd5c195bd3524c7a5d91dacb8d5a50",
+      "testSha256": "88ccd50ee1673c71df8966a2890e78c399cd5c195bd3524c7a5d91dacb8d5a50"
+    },
+    {
+      "index": 16,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 4701,
+      "testBytes": 4701,
+      "demoSha256": "20946bc574568862e2a623206aa3a2f422a2db01012dba733c000b0dad258378",
+      "testSha256": "20946bc574568862e2a623206aa3a2f422a2db01012dba733c000b0dad258378"
+    },
+    {
+      "index": 17,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 7724,
+      "testBytes": 7724,
+      "demoSha256": "569027d832196491f249184dc2dc6146fb0299a7c1435113d19f9a67f3ed1c5d",
+      "testSha256": "569027d832196491f249184dc2dc6146fb0299a7c1435113d19f9a67f3ed1c5d"
+    },
+    {
+      "index": 18,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 13499,
+      "testBytes": 13499,
+      "demoSha256": "86f1203cecd640431619b9e543d397156c6d33339b35f58fb1883a661ec92d89",
+      "testSha256": "86f1203cecd640431619b9e543d397156c6d33339b35f58fb1883a661ec92d89"
+    },
+    {
+      "index": 19,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 1988,
+      "testBytes": 1988,
+      "demoSha256": "7ceb4e72e42321b1af3709b4e4b8459c80d4ad56348ea1a66e96207fd2c1977e",
+      "testSha256": "7ceb4e72e42321b1af3709b4e4b8459c80d4ad56348ea1a66e96207fd2c1977e"
+    },
+    {
+      "index": 20,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 10779,
+      "testBytes": 10779,
+      "demoSha256": "eb8173507c90a611afd75e2fbd4e252e6caef811d55cb1b2a1d52f332c65fb78",
+      "testSha256": "eb8173507c90a611afd75e2fbd4e252e6caef811d55cb1b2a1d52f332c65fb78"
+    },
+    {
+      "index": 21,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 10281,
+      "testBytes": 10281,
+      "demoSha256": "ff70b267393f0872436a74a6ceb7855aafd0bb27489ecd55342a4a6529bde050",
+      "testSha256": "ff70b267393f0872436a74a6ceb7855aafd0bb27489ecd55342a4a6529bde050"
+    },
+    {
+      "index": 22,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 1250,
+      "testBytes": 1250,
+      "demoSha256": "3cf5a593ad44eaa798ea0fc3fddeee445a94e689a61ef02164e609b1dc12e423",
+      "testSha256": "3cf5a593ad44eaa798ea0fc3fddeee445a94e689a61ef02164e609b1dc12e423"
+    },
+    {
+      "index": 23,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 2020,
+      "testBytes": 2020,
+      "demoSha256": "60309c74cae28c4b894fddcee0825a7f3f435d88157888acc5e6a7746de7714b",
+      "testSha256": "60309c74cae28c4b894fddcee0825a7f3f435d88157888acc5e6a7746de7714b"
+    },
+    {
+      "index": 24,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 12981,
+      "testBytes": 12981,
+      "demoSha256": "c87bd686e4dc8b27c2683738122febb4f171e213dcf12c1ec04d748e9d104eda",
+      "testSha256": "c87bd686e4dc8b27c2683738122febb4f171e213dcf12c1ec04d748e9d104eda"
+    },
+    {
+      "index": 25,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 4918,
+      "testBytes": 4918,
+      "demoSha256": "3763affec44f4fe23b5d70b5239a5a806442525426b55af4caa7f6178ceb461c",
+      "testSha256": "3763affec44f4fe23b5d70b5239a5a806442525426b55af4caa7f6178ceb461c"
+    },
+    {
+      "index": 26,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 6045,
+      "testBytes": 6045,
+      "demoSha256": "74f4638bd215cdce0dd57c42e105c3a2bc57543f5455a95e2b2674bc700b7396",
+      "testSha256": "74f4638bd215cdce0dd57c42e105c3a2bc57543f5455a95e2b2674bc700b7396"
+    },
+    {
+      "index": 27,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 2186,
+      "testBytes": 2186,
+      "demoSha256": "f378bfb6d83b5ff8a9333d814540dab1c9aa76ed177cbb1e337411aac63691e0",
+      "testSha256": "f378bfb6d83b5ff8a9333d814540dab1c9aa76ed177cbb1e337411aac63691e0"
+    },
+    {
+      "index": 28,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 24985,
+      "testBytes": 24985,
+      "demoSha256": "ace20d63fc9758ed46b6ef6701c2bf0971ff4d0dbdf27381eaf9589cac3f1679",
+      "testSha256": "ace20d63fc9758ed46b6ef6701c2bf0971ff4d0dbdf27381eaf9589cac3f1679"
+    },
+    {
+      "index": 29,
+      "tag": "script",
+      "attributes": [],
+      "same": true,
+      "demoBytes": 5181,
+      "testBytes": 5181,
+      "demoSha256": "d0ef0c3bcd1d2560bc88ea3330a53985e90266e94d27f3e5d5f4115943958055",
+      "testSha256": "d0ef0c3bcd1d2560bc88ea3330a53985e90266e94d27f3e5d5f4115943958055"
+    }
+  ],
+  "demoMeta": [
+    {
+      "charset": "utf-8"
+    },
+    {
+      "name": "viewport",
+      "content": "width=device-width,initial-scale=1,viewport-fit=cover"
+    },
+    {
+      "http-equiv": "Content-Security-Policy",
+      "content": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    },
+    {
+      "name": "theme-color",
+      "content": "#f6f5ee"
+    },
+    {
+      "name": "description",
+      "content": "Command and operate an armored platoon in original WWII scenarios."
+    },
+    {
+      "name": "wildlands-engine",
+      "content": "b27121d71f43fff7f5af3cb5344118eac23781e3426610775f6e22a823268349"
+    },
+    {
+      "name": "wildlands-game-digest",
+      "content": "670d863bca9125cf7e0aceb5991b5586473149ba883a1196c00ca0a1aba3d09f"
+    }
+  ],
+  "testMeta": [
+    {
+      "charset": "utf-8"
+    },
+    {
+      "name": "viewport",
+      "content": "width=device-width,initial-scale=1,viewport-fit=cover"
+    },
+    {
+      "http-equiv": "Content-Security-Policy",
+      "content": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; font-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    },
+    {
+      "name": "theme-color",
+      "content": "#f6f5ee"
+    },
+    {
+      "name": "description",
+      "content": "A Wildlands armored combat development checkpoint."
+    }
+  ],
+  "fullDocumentEqualAfterExplicitNormalization": true,
+  "normalization": [
+    "Remove two generated wildlands-engine/game-digest meta tags and their otherwise-empty line.",
+    "Replace description meta text with browser fixture description.",
+    "Remove exact LWGameProfile storage namespace assignment; runtime code, CSS, catalog and native visual bytes otherwise identical."
+  ]
+}

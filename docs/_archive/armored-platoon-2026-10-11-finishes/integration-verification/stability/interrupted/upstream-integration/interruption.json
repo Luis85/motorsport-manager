@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-11T14:57:08.213814+00:00",
+  "classification": "interrupted-for-upstream-integration",
+  "requestedBy": "root",
+  "reason": "Upstream PR47 merged; root is integrating main3f56925b including changed ECS bytes. Current frozen artifact is superseded. Stop cleanly and restart a full1800-second observation on final integrated artifact.",
+  "acceptance": "Partial observation only; not a thirty-minute pass.",
+  "actualObservedSeconds": 156.226,
+  "samples": 11,
+  "scriptedCommands": 35,
+  "acceptedScriptedCommands": 35,
+  "transitions": [
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 1,
+      "began": "2026-10-11T14:56:32.429Z",
+      "finishedAt": "2026-10-11T14:56:32.771Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 106522,
+      "checkpointSha256": "aa63292e449b79faef4c38d72d1bb26dd3035e4a691c5c7cfc820a3986e221b7",
+      "restoredSha256": "aa63292e449b79faef4c38d72d1bb26dd3035e4a691c5c7cfc820a3986e221b7"
+    }
+  ],
+  "pageErrors": 0,
+  "consoleWarningsOrErrors": 0,
+  "failureInterpretation": "SIGTERM was requested by root to stop superseded artifact. Playwright default SIGTERM handling closed browser before final page.evaluate and CDP.detach; these additional target-closed records occurred during interruption/cleanup. Context and browser close completed. Raw failures and observations retained unchanged.",
+  "cleanup": [
+    {
+      "name": "cdp",
+      "closed": false,
+      "error": "Error: cdpSession.detach: Target page, context or browser has been closed"
+    },
+    {
+      "name": "context",
+      "closed": true,
+      "at": "2026-10-11T14:57:08.647Z"
+    },
+    {
+      "name": "browser",
+      "closed": true,
+      "at": "2026-10-11T14:57:08.647Z"
+    }
+  ],
+  "restartPlan": "Wait for root final integrated artifact identity, use a fresh directory and1800 wallseconds; use stop-file polling for any further requested clean interruption."
+}

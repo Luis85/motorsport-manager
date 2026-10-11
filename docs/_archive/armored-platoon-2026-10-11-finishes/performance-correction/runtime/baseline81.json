@@ -1,0 +1,1382 @@
+{
+  "milliseconds": 351.882519,
+  "recipes": [
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0
+      },
+      "sha256": {
+        "color": "36097c0a6ea7b48588e50c9ff0fec83844e929841a25d7e6da1c29ff9960f4c1",
+        "normal": "aecb7a39aa8d83b6c91b84e4bcb08fa48e5061c775f84a683cdc1ecf632a52b5",
+        "orm": "bb1b64fe70e41ca25aef1931e9d344b786af3bb1504cc36c6336dc2a9d05467c"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "36097c0a6ea7b48588e50c9ff0fec83844e929841a25d7e6da1c29ff9960f4c1",
+        "normal": "aecb7a39aa8d83b6c91b84e4bcb08fa48e5061c775f84a683cdc1ecf632a52b5",
+        "orm": "bb1b64fe70e41ca25aef1931e9d344b786af3bb1504cc36c6336dc2a9d05467c"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "e2eed6d5ca447ceee96b1d7c282641fb7d1998ed6f70529abd3b54a0fd45d326",
+        "normal": "aecb7a39aa8d83b6c91b84e4bcb08fa48e5061c775f84a683cdc1ecf632a52b5",
+        "orm": "bb1b64fe70e41ca25aef1931e9d344b786af3bb1504cc36c6336dc2a9d05467c"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35
+      },
+      "sha256": {
+        "color": "7364ddc8fc13a4e4bf262e9a591588bd4da633c3f23b3b2c55c46da694cca0bd",
+        "normal": "3e37ff644a2ad98bfc8349d4502fa4b066f8f36eb1d456e57aad0c5a4532708e",
+        "orm": "3a40f8c6e3dc750916f1c8ae5491c6cfe751d58217dab3e2e218b44695b741c2"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "7364ddc8fc13a4e4bf262e9a591588bd4da633c3f23b3b2c55c46da694cca0bd",
+        "normal": "3e37ff644a2ad98bfc8349d4502fa4b066f8f36eb1d456e57aad0c5a4532708e",
+        "orm": "3a40f8c6e3dc750916f1c8ae5491c6cfe751d58217dab3e2e218b44695b741c2"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "79ec857896e06a2f99e6e2993fc6f56cc1d6e0a67371b9f7532d19c8366e3e07",
+        "normal": "3e37ff644a2ad98bfc8349d4502fa4b066f8f36eb1d456e57aad0c5a4532708e",
+        "orm": "3a40f8c6e3dc750916f1c8ae5491c6cfe751d58217dab3e2e218b44695b741c2"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1
+      },
+      "sha256": {
+        "color": "fb50b2dc9f29d7a3c8ce658578981afc5c2105dd1e78de59742211e61d2e0c06",
+        "normal": "e0fada1f77354c0ed7b05d72ae1288fa4d6a7113e02797097c210f98215293a6",
+        "orm": "e1a5f837194ac962ca63b0fd06db9d3743cf5808cbbe5c69f21a82f3119d0b8d"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "fb50b2dc9f29d7a3c8ce658578981afc5c2105dd1e78de59742211e61d2e0c06",
+        "normal": "e0fada1f77354c0ed7b05d72ae1288fa4d6a7113e02797097c210f98215293a6",
+        "orm": "e1a5f837194ac962ca63b0fd06db9d3743cf5808cbbe5c69f21a82f3119d0b8d"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "232a988ac7eedf454f5c0de1a5aec9568e4c10f73757eb44b428230398b10ade",
+        "normal": "e0fada1f77354c0ed7b05d72ae1288fa4d6a7113e02797097c210f98215293a6",
+        "orm": "e1a5f837194ac962ca63b0fd06db9d3743cf5808cbbe5c69f21a82f3119d0b8d"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0
+      },
+      "sha256": {
+        "color": "96e4d1537ef560798824825ba5faeb3f469768edef3a5fbf5e821905606daac2",
+        "normal": "f5be231dfa4d5d0c037fa86a8bb5cc1091ee476a93bd75a70716432e99177afa",
+        "orm": "7f78cad6b2d5e4dc78369342b3c24a6f6cce52d5afb7bc8fc36f4dc200f9ccba"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "96e4d1537ef560798824825ba5faeb3f469768edef3a5fbf5e821905606daac2",
+        "normal": "f5be231dfa4d5d0c037fa86a8bb5cc1091ee476a93bd75a70716432e99177afa",
+        "orm": "7f78cad6b2d5e4dc78369342b3c24a6f6cce52d5afb7bc8fc36f4dc200f9ccba"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "e9f8659b37464f1ea7ff2777744a8429cedf1f086f129384f376facd82341723",
+        "normal": "f5be231dfa4d5d0c037fa86a8bb5cc1091ee476a93bd75a70716432e99177afa",
+        "orm": "7f78cad6b2d5e4dc78369342b3c24a6f6cce52d5afb7bc8fc36f4dc200f9ccba"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35
+      },
+      "sha256": {
+        "color": "054cadb6959ce80284e5b7c3039e1aed302282a81963fe61957bd238710fcaef",
+        "normal": "b6578b956c8003e3b8a3464b06da4fe10d6aad4d48f423f01dd215f258a20f6c",
+        "orm": "0dbbb0b653cd274604294fa672c6b1103ebc7db7324c57065a9989af2daf136c"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "054cadb6959ce80284e5b7c3039e1aed302282a81963fe61957bd238710fcaef",
+        "normal": "b6578b956c8003e3b8a3464b06da4fe10d6aad4d48f423f01dd215f258a20f6c",
+        "orm": "0dbbb0b653cd274604294fa672c6b1103ebc7db7324c57065a9989af2daf136c"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "908c7ef91094917f8655a42fa6f1345fb62aa2b2894c79af2b58042f0d6dab3a",
+        "normal": "b6578b956c8003e3b8a3464b06da4fe10d6aad4d48f423f01dd215f258a20f6c",
+        "orm": "0dbbb0b653cd274604294fa672c6b1103ebc7db7324c57065a9989af2daf136c"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1
+      },
+      "sha256": {
+        "color": "67a8e093c8bbef7b7ad2c8ef27207e78efcf5dae3a3525d45775c3bf9e81f92d",
+        "normal": "ed3c76c242ae2dd6c0170178591a901e5e6257a9a21ed4743d432cad1966a554",
+        "orm": "4c1e2ee89f80c0c5ac98002998d10f302bb11618396007c478b68ec68cbd5e06"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "67a8e093c8bbef7b7ad2c8ef27207e78efcf5dae3a3525d45775c3bf9e81f92d",
+        "normal": "ed3c76c242ae2dd6c0170178591a901e5e6257a9a21ed4743d432cad1966a554",
+        "orm": "4c1e2ee89f80c0c5ac98002998d10f302bb11618396007c478b68ec68cbd5e06"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "ff5e731ee1836bcb74643fdf035ade48a34835338a0cf020e08fed9a1acfb6ae",
+        "normal": "ed3c76c242ae2dd6c0170178591a901e5e6257a9a21ed4743d432cad1966a554",
+        "orm": "4c1e2ee89f80c0c5ac98002998d10f302bb11618396007c478b68ec68cbd5e06"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0
+      },
+      "sha256": {
+        "color": "9e2bcaa1e6e16a2cfb98b8fbb5b73c32c74516fc47a6dfb75bd2aa1d05908137",
+        "normal": "b64a6aa4deb8843117e8c2ddfee8e065d26aa09f01d5b52d669cdc15ac3dfbd0",
+        "orm": "0d22500fed5099b3d295dd5b7675d0fbdad95cda50e8d54712836b0d63d8403c"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "9e2bcaa1e6e16a2cfb98b8fbb5b73c32c74516fc47a6dfb75bd2aa1d05908137",
+        "normal": "b64a6aa4deb8843117e8c2ddfee8e065d26aa09f01d5b52d669cdc15ac3dfbd0",
+        "orm": "0d22500fed5099b3d295dd5b7675d0fbdad95cda50e8d54712836b0d63d8403c"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "c2c344d5e543ae20876122a7d5bd27b54dc1df5b2fb5650788c762617e626a79",
+        "normal": "b64a6aa4deb8843117e8c2ddfee8e065d26aa09f01d5b52d669cdc15ac3dfbd0",
+        "orm": "0d22500fed5099b3d295dd5b7675d0fbdad95cda50e8d54712836b0d63d8403c"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35
+      },
+      "sha256": {
+        "color": "009b77a021e9356663b2d92be13dcb31d4b9ca4518e8be5d7e1f7b4df7616e16",
+        "normal": "a2862d1c1ac76c479a70c8d1033a78b519736fb5cd758714f316a470060aac76",
+        "orm": "9e873737084a8f729ec9684bc559308e2170c0dfbe68843d3b38f2ffcf2ed2c4"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "009b77a021e9356663b2d92be13dcb31d4b9ca4518e8be5d7e1f7b4df7616e16",
+        "normal": "a2862d1c1ac76c479a70c8d1033a78b519736fb5cd758714f316a470060aac76",
+        "orm": "9e873737084a8f729ec9684bc559308e2170c0dfbe68843d3b38f2ffcf2ed2c4"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "fae3d0242890ad8039a438a1689a410adacfccd63435fb5f464e265dba2bee43",
+        "normal": "a2862d1c1ac76c479a70c8d1033a78b519736fb5cd758714f316a470060aac76",
+        "orm": "9e873737084a8f729ec9684bc559308e2170c0dfbe68843d3b38f2ffcf2ed2c4"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1
+      },
+      "sha256": {
+        "color": "cfa6d426b6cbbe895fa53e655e73cf15ae5e6e3688a8d8e8a49cea4071b6b9d6",
+        "normal": "e8a9c70debfdec1d5a7faae25be75359db737bfce863469b94872812caab5542",
+        "orm": "107ee1be418237969641520b6020c288357b956eb2862917e0c3a1e5754c4a5a"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "cfa6d426b6cbbe895fa53e655e73cf15ae5e6e3688a8d8e8a49cea4071b6b9d6",
+        "normal": "e8a9c70debfdec1d5a7faae25be75359db737bfce863469b94872812caab5542",
+        "orm": "107ee1be418237969641520b6020c288357b956eb2862917e0c3a1e5754c4a5a"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "painted-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "914d5cca5e22d81797bf23e19d804b01c0d4c5f652bfce11f60ca0059abc8163",
+        "normal": "e8a9c70debfdec1d5a7faae25be75359db737bfce863469b94872812caab5542",
+        "orm": "107ee1be418237969641520b6020c288357b956eb2862917e0c3a1e5754c4a5a"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0
+      },
+      "sha256": {
+        "color": "36097c0a6ea7b48588e50c9ff0fec83844e929841a25d7e6da1c29ff9960f4c1",
+        "normal": "aecb7a39aa8d83b6c91b84e4bcb08fa48e5061c775f84a683cdc1ecf632a52b5",
+        "orm": "0b39507346360fcf27784cc14a79d1d2a20af88345f666e7d3adfd26743e54d4"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "36097c0a6ea7b48588e50c9ff0fec83844e929841a25d7e6da1c29ff9960f4c1",
+        "normal": "aecb7a39aa8d83b6c91b84e4bcb08fa48e5061c775f84a683cdc1ecf632a52b5",
+        "orm": "0b39507346360fcf27784cc14a79d1d2a20af88345f666e7d3adfd26743e54d4"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "e2eed6d5ca447ceee96b1d7c282641fb7d1998ed6f70529abd3b54a0fd45d326",
+        "normal": "aecb7a39aa8d83b6c91b84e4bcb08fa48e5061c775f84a683cdc1ecf632a52b5",
+        "orm": "0b39507346360fcf27784cc14a79d1d2a20af88345f666e7d3adfd26743e54d4"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35
+      },
+      "sha256": {
+        "color": "36097c0a6ea7b48588e50c9ff0fec83844e929841a25d7e6da1c29ff9960f4c1",
+        "normal": "3e37ff644a2ad98bfc8349d4502fa4b066f8f36eb1d456e57aad0c5a4532708e",
+        "orm": "17dc82b5e7f1cd3317ef864b5b55a8fd9964e1bde9b910867b76eeb62dc2cefd"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "36097c0a6ea7b48588e50c9ff0fec83844e929841a25d7e6da1c29ff9960f4c1",
+        "normal": "3e37ff644a2ad98bfc8349d4502fa4b066f8f36eb1d456e57aad0c5a4532708e",
+        "orm": "17dc82b5e7f1cd3317ef864b5b55a8fd9964e1bde9b910867b76eeb62dc2cefd"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "e2eed6d5ca447ceee96b1d7c282641fb7d1998ed6f70529abd3b54a0fd45d326",
+        "normal": "3e37ff644a2ad98bfc8349d4502fa4b066f8f36eb1d456e57aad0c5a4532708e",
+        "orm": "17dc82b5e7f1cd3317ef864b5b55a8fd9964e1bde9b910867b76eeb62dc2cefd"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1
+      },
+      "sha256": {
+        "color": "36097c0a6ea7b48588e50c9ff0fec83844e929841a25d7e6da1c29ff9960f4c1",
+        "normal": "e0fada1f77354c0ed7b05d72ae1288fa4d6a7113e02797097c210f98215293a6",
+        "orm": "a0baf828ce7c28a5bd00600f2770fdfad4d7aa18558cd1611fb0b552a11f0665"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "36097c0a6ea7b48588e50c9ff0fec83844e929841a25d7e6da1c29ff9960f4c1",
+        "normal": "e0fada1f77354c0ed7b05d72ae1288fa4d6a7113e02797097c210f98215293a6",
+        "orm": "a0baf828ce7c28a5bd00600f2770fdfad4d7aa18558cd1611fb0b552a11f0665"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "e2eed6d5ca447ceee96b1d7c282641fb7d1998ed6f70529abd3b54a0fd45d326",
+        "normal": "e0fada1f77354c0ed7b05d72ae1288fa4d6a7113e02797097c210f98215293a6",
+        "orm": "a0baf828ce7c28a5bd00600f2770fdfad4d7aa18558cd1611fb0b552a11f0665"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0
+      },
+      "sha256": {
+        "color": "96e4d1537ef560798824825ba5faeb3f469768edef3a5fbf5e821905606daac2",
+        "normal": "f5be231dfa4d5d0c037fa86a8bb5cc1091ee476a93bd75a70716432e99177afa",
+        "orm": "e253839d0c6079a7424a974d84f56d6302e60e6c2abe41b8fd284036ba879b77"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "96e4d1537ef560798824825ba5faeb3f469768edef3a5fbf5e821905606daac2",
+        "normal": "f5be231dfa4d5d0c037fa86a8bb5cc1091ee476a93bd75a70716432e99177afa",
+        "orm": "e253839d0c6079a7424a974d84f56d6302e60e6c2abe41b8fd284036ba879b77"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "e9f8659b37464f1ea7ff2777744a8429cedf1f086f129384f376facd82341723",
+        "normal": "f5be231dfa4d5d0c037fa86a8bb5cc1091ee476a93bd75a70716432e99177afa",
+        "orm": "e253839d0c6079a7424a974d84f56d6302e60e6c2abe41b8fd284036ba879b77"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35
+      },
+      "sha256": {
+        "color": "96e4d1537ef560798824825ba5faeb3f469768edef3a5fbf5e821905606daac2",
+        "normal": "b6578b956c8003e3b8a3464b06da4fe10d6aad4d48f423f01dd215f258a20f6c",
+        "orm": "b29fa6432676e1fdbdf37c405f74a61b602b868565eb864be789c948322a4cdc"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "96e4d1537ef560798824825ba5faeb3f469768edef3a5fbf5e821905606daac2",
+        "normal": "b6578b956c8003e3b8a3464b06da4fe10d6aad4d48f423f01dd215f258a20f6c",
+        "orm": "b29fa6432676e1fdbdf37c405f74a61b602b868565eb864be789c948322a4cdc"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "e9f8659b37464f1ea7ff2777744a8429cedf1f086f129384f376facd82341723",
+        "normal": "b6578b956c8003e3b8a3464b06da4fe10d6aad4d48f423f01dd215f258a20f6c",
+        "orm": "b29fa6432676e1fdbdf37c405f74a61b602b868565eb864be789c948322a4cdc"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1
+      },
+      "sha256": {
+        "color": "96e4d1537ef560798824825ba5faeb3f469768edef3a5fbf5e821905606daac2",
+        "normal": "ed3c76c242ae2dd6c0170178591a901e5e6257a9a21ed4743d432cad1966a554",
+        "orm": "98238bda1ca0e3c28ebba968ebf75127171a228e1896202b110a4193dc958c01"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "96e4d1537ef560798824825ba5faeb3f469768edef3a5fbf5e821905606daac2",
+        "normal": "ed3c76c242ae2dd6c0170178591a901e5e6257a9a21ed4743d432cad1966a554",
+        "orm": "98238bda1ca0e3c28ebba968ebf75127171a228e1896202b110a4193dc958c01"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "e9f8659b37464f1ea7ff2777744a8429cedf1f086f129384f376facd82341723",
+        "normal": "ed3c76c242ae2dd6c0170178591a901e5e6257a9a21ed4743d432cad1966a554",
+        "orm": "98238bda1ca0e3c28ebba968ebf75127171a228e1896202b110a4193dc958c01"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0
+      },
+      "sha256": {
+        "color": "9e2bcaa1e6e16a2cfb98b8fbb5b73c32c74516fc47a6dfb75bd2aa1d05908137",
+        "normal": "b64a6aa4deb8843117e8c2ddfee8e065d26aa09f01d5b52d669cdc15ac3dfbd0",
+        "orm": "46c8abf3dec6c6864aeaf4708e00abbda3c05d15b47d6be6cc3df6c797f338ff"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "9e2bcaa1e6e16a2cfb98b8fbb5b73c32c74516fc47a6dfb75bd2aa1d05908137",
+        "normal": "b64a6aa4deb8843117e8c2ddfee8e065d26aa09f01d5b52d669cdc15ac3dfbd0",
+        "orm": "46c8abf3dec6c6864aeaf4708e00abbda3c05d15b47d6be6cc3df6c797f338ff"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "c2c344d5e543ae20876122a7d5bd27b54dc1df5b2fb5650788c762617e626a79",
+        "normal": "b64a6aa4deb8843117e8c2ddfee8e065d26aa09f01d5b52d669cdc15ac3dfbd0",
+        "orm": "46c8abf3dec6c6864aeaf4708e00abbda3c05d15b47d6be6cc3df6c797f338ff"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35
+      },
+      "sha256": {
+        "color": "9e2bcaa1e6e16a2cfb98b8fbb5b73c32c74516fc47a6dfb75bd2aa1d05908137",
+        "normal": "a2862d1c1ac76c479a70c8d1033a78b519736fb5cd758714f316a470060aac76",
+        "orm": "1cc463f40352cd7c3aef8b476e2791ad171181d7732f351ccb92f4be26932034"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "9e2bcaa1e6e16a2cfb98b8fbb5b73c32c74516fc47a6dfb75bd2aa1d05908137",
+        "normal": "a2862d1c1ac76c479a70c8d1033a78b519736fb5cd758714f316a470060aac76",
+        "orm": "1cc463f40352cd7c3aef8b476e2791ad171181d7732f351ccb92f4be26932034"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "c2c344d5e543ae20876122a7d5bd27b54dc1df5b2fb5650788c762617e626a79",
+        "normal": "a2862d1c1ac76c479a70c8d1033a78b519736fb5cd758714f316a470060aac76",
+        "orm": "1cc463f40352cd7c3aef8b476e2791ad171181d7732f351ccb92f4be26932034"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1
+      },
+      "sha256": {
+        "color": "9e2bcaa1e6e16a2cfb98b8fbb5b73c32c74516fc47a6dfb75bd2aa1d05908137",
+        "normal": "e8a9c70debfdec1d5a7faae25be75359db737bfce863469b94872812caab5542",
+        "orm": "3dfaad6fbec6143fff25a255b88e8c5e04e20df1ab4e71fda615693f50f2141f"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "9e2bcaa1e6e16a2cfb98b8fbb5b73c32c74516fc47a6dfb75bd2aa1d05908137",
+        "normal": "e8a9c70debfdec1d5a7faae25be75359db737bfce863469b94872812caab5542",
+        "orm": "3dfaad6fbec6143fff25a255b88e8c5e04e20df1ab4e71fda615693f50f2141f"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "bare-metal",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "c2c344d5e543ae20876122a7d5bd27b54dc1df5b2fb5650788c762617e626a79",
+        "normal": "e8a9c70debfdec1d5a7faae25be75359db737bfce863469b94872812caab5542",
+        "orm": "3dfaad6fbec6143fff25a255b88e8c5e04e20df1ab4e71fda615693f50f2141f"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0
+      },
+      "sha256": {
+        "color": "7bc9a86e2095fda164a8f0bf650b53bf8efaf2da04270fabf249c70a051bdafb",
+        "normal": "e6f4fcc9f3093e0834c01116ca7b2b52f672dca1ffa2efffa377697e7083378b",
+        "orm": "b255732b111a17f7b1d49b7ea5ceaf79f3de684c68f120c23fd75d4dfe742b77"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "7bc9a86e2095fda164a8f0bf650b53bf8efaf2da04270fabf249c70a051bdafb",
+        "normal": "e6f4fcc9f3093e0834c01116ca7b2b52f672dca1ffa2efffa377697e7083378b",
+        "orm": "b255732b111a17f7b1d49b7ea5ceaf79f3de684c68f120c23fd75d4dfe742b77"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "1f8dbb7aff7b686b0ddbc26edc0508406ba4c103329f31441e4c2dce601430be",
+        "normal": "e6f4fcc9f3093e0834c01116ca7b2b52f672dca1ffa2efffa377697e7083378b",
+        "orm": "b255732b111a17f7b1d49b7ea5ceaf79f3de684c68f120c23fd75d4dfe742b77"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35
+      },
+      "sha256": {
+        "color": "7bc9a86e2095fda164a8f0bf650b53bf8efaf2da04270fabf249c70a051bdafb",
+        "normal": "f9a5d70fdffbc540eecf922a60f232d24059eeaf18ba41495f3ac3fb395a788b",
+        "orm": "b255732b111a17f7b1d49b7ea5ceaf79f3de684c68f120c23fd75d4dfe742b77"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "7bc9a86e2095fda164a8f0bf650b53bf8efaf2da04270fabf249c70a051bdafb",
+        "normal": "f9a5d70fdffbc540eecf922a60f232d24059eeaf18ba41495f3ac3fb395a788b",
+        "orm": "b255732b111a17f7b1d49b7ea5ceaf79f3de684c68f120c23fd75d4dfe742b77"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "1f8dbb7aff7b686b0ddbc26edc0508406ba4c103329f31441e4c2dce601430be",
+        "normal": "f9a5d70fdffbc540eecf922a60f232d24059eeaf18ba41495f3ac3fb395a788b",
+        "orm": "b255732b111a17f7b1d49b7ea5ceaf79f3de684c68f120c23fd75d4dfe742b77"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1
+      },
+      "sha256": {
+        "color": "7bc9a86e2095fda164a8f0bf650b53bf8efaf2da04270fabf249c70a051bdafb",
+        "normal": "128159071f8326d38f61ea035b3b27fa7190579bab76b28ea69a5661e0a1435f",
+        "orm": "b255732b111a17f7b1d49b7ea5ceaf79f3de684c68f120c23fd75d4dfe742b77"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "7bc9a86e2095fda164a8f0bf650b53bf8efaf2da04270fabf249c70a051bdafb",
+        "normal": "128159071f8326d38f61ea035b3b27fa7190579bab76b28ea69a5661e0a1435f",
+        "orm": "b255732b111a17f7b1d49b7ea5ceaf79f3de684c68f120c23fd75d4dfe742b77"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 0,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "1f8dbb7aff7b686b0ddbc26edc0508406ba4c103329f31441e4c2dce601430be",
+        "normal": "128159071f8326d38f61ea035b3b27fa7190579bab76b28ea69a5661e0a1435f",
+        "orm": "b255732b111a17f7b1d49b7ea5ceaf79f3de684c68f120c23fd75d4dfe742b77"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0
+      },
+      "sha256": {
+        "color": "3729c59bc326a952f85fdf57a9fa7862322e0c4a40c5bceaf13c7b293197b951",
+        "normal": "f4ae6a5e6b7a17d775f2c59aaf2cff43175cdd7051ac4e8a2660288b86219c6a",
+        "orm": "a96ff07d9c10a9ab4e21a21486b956a6e5002754e6918b3b3fd7fdb1449e15dc"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "3729c59bc326a952f85fdf57a9fa7862322e0c4a40c5bceaf13c7b293197b951",
+        "normal": "f4ae6a5e6b7a17d775f2c59aaf2cff43175cdd7051ac4e8a2660288b86219c6a",
+        "orm": "a96ff07d9c10a9ab4e21a21486b956a6e5002754e6918b3b3fd7fdb1449e15dc"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "1f7912b88100cb74231353e662357ec4eabca6dd536eba68aba127957b5cbbad",
+        "normal": "f4ae6a5e6b7a17d775f2c59aaf2cff43175cdd7051ac4e8a2660288b86219c6a",
+        "orm": "a96ff07d9c10a9ab4e21a21486b956a6e5002754e6918b3b3fd7fdb1449e15dc"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35
+      },
+      "sha256": {
+        "color": "3729c59bc326a952f85fdf57a9fa7862322e0c4a40c5bceaf13c7b293197b951",
+        "normal": "3f8de098c21acd5007e96586ca8f7d708468c95e5d51d534c2622fe059cf1a12",
+        "orm": "a96ff07d9c10a9ab4e21a21486b956a6e5002754e6918b3b3fd7fdb1449e15dc"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "3729c59bc326a952f85fdf57a9fa7862322e0c4a40c5bceaf13c7b293197b951",
+        "normal": "3f8de098c21acd5007e96586ca8f7d708468c95e5d51d534c2622fe059cf1a12",
+        "orm": "a96ff07d9c10a9ab4e21a21486b956a6e5002754e6918b3b3fd7fdb1449e15dc"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "1f7912b88100cb74231353e662357ec4eabca6dd536eba68aba127957b5cbbad",
+        "normal": "3f8de098c21acd5007e96586ca8f7d708468c95e5d51d534c2622fe059cf1a12",
+        "orm": "a96ff07d9c10a9ab4e21a21486b956a6e5002754e6918b3b3fd7fdb1449e15dc"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1
+      },
+      "sha256": {
+        "color": "3729c59bc326a952f85fdf57a9fa7862322e0c4a40c5bceaf13c7b293197b951",
+        "normal": "ce98d75d724b96b2cf7daa8725bc3aa58c991b90b51df6502ab89bf48ad5fdb2",
+        "orm": "a96ff07d9c10a9ab4e21a21486b956a6e5002754e6918b3b3fd7fdb1449e15dc"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "3729c59bc326a952f85fdf57a9fa7862322e0c4a40c5bceaf13c7b293197b951",
+        "normal": "ce98d75d724b96b2cf7daa8725bc3aa58c991b90b51df6502ab89bf48ad5fdb2",
+        "orm": "a96ff07d9c10a9ab4e21a21486b956a6e5002754e6918b3b3fd7fdb1449e15dc"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 7,
+        "scale": 16,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "1f7912b88100cb74231353e662357ec4eabca6dd536eba68aba127957b5cbbad",
+        "normal": "ce98d75d724b96b2cf7daa8725bc3aa58c991b90b51df6502ab89bf48ad5fdb2",
+        "orm": "a96ff07d9c10a9ab4e21a21486b956a6e5002754e6918b3b3fd7fdb1449e15dc"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0
+      },
+      "sha256": {
+        "color": "30d9655894fa47094279773deed99ead81282e37c5217aadd79dc3f5bc3fea93",
+        "normal": "d3e4f300c7fd6df996aa06f1e26a26123febb7be5a7aff0cf636c73f98391fc8",
+        "orm": "ef65293cb878633f99bb51e5ff89bc943db3f0316a25fe35ce0e88540b4205a9"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "30d9655894fa47094279773deed99ead81282e37c5217aadd79dc3f5bc3fea93",
+        "normal": "d3e4f300c7fd6df996aa06f1e26a26123febb7be5a7aff0cf636c73f98391fc8",
+        "orm": "ef65293cb878633f99bb51e5ff89bc943db3f0316a25fe35ce0e88540b4205a9"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "50fe5ff60fc1490073f03a03d943e2dff8c0e852f41be8060bb48e2e27ff6aae",
+        "normal": "d3e4f300c7fd6df996aa06f1e26a26123febb7be5a7aff0cf636c73f98391fc8",
+        "orm": "ef65293cb878633f99bb51e5ff89bc943db3f0316a25fe35ce0e88540b4205a9"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35
+      },
+      "sha256": {
+        "color": "30d9655894fa47094279773deed99ead81282e37c5217aadd79dc3f5bc3fea93",
+        "normal": "f8da70e7146864baac984a12b9fdd7ccde577521a6ef660943173ece04e8511c",
+        "orm": "ef65293cb878633f99bb51e5ff89bc943db3f0316a25fe35ce0e88540b4205a9"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "30d9655894fa47094279773deed99ead81282e37c5217aadd79dc3f5bc3fea93",
+        "normal": "f8da70e7146864baac984a12b9fdd7ccde577521a6ef660943173ece04e8511c",
+        "orm": "ef65293cb878633f99bb51e5ff89bc943db3f0316a25fe35ce0e88540b4205a9"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 0.35,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "50fe5ff60fc1490073f03a03d943e2dff8c0e852f41be8060bb48e2e27ff6aae",
+        "normal": "f8da70e7146864baac984a12b9fdd7ccde577521a6ef660943173ece04e8511c",
+        "orm": "ef65293cb878633f99bb51e5ff89bc943db3f0316a25fe35ce0e88540b4205a9"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1
+      },
+      "sha256": {
+        "color": "30d9655894fa47094279773deed99ead81282e37c5217aadd79dc3f5bc3fea93",
+        "normal": "1f038096aa86882cbcc614114774cf362bb4bbe29725ba1af6d3018ba2b938f7",
+        "orm": "ef65293cb878633f99bb51e5ff89bc943db3f0316a25fe35ce0e88540b4205a9"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#ffffff"
+        ]
+      },
+      "sha256": {
+        "color": "30d9655894fa47094279773deed99ead81282e37c5217aadd79dc3f5bc3fea93",
+        "normal": "1f038096aa86882cbcc614114774cf362bb4bbe29725ba1af6d3018ba2b938f7",
+        "orm": "ef65293cb878633f99bb51e5ff89bc943db3f0316a25fe35ce0e88540b4205a9"
+      }
+    },
+    {
+      "recipe": {
+        "version": 1,
+        "kind": "rubber",
+        "seed": 65535,
+        "scale": 1,
+        "wear": 1,
+        "palette": [
+          "#000000",
+          "#ffffff",
+          "#485239",
+          "#AbCdEf"
+        ]
+      },
+      "sha256": {
+        "color": "50fe5ff60fc1490073f03a03d943e2dff8c0e852f41be8060bb48e2e27ff6aae",
+        "normal": "1f038096aa86882cbcc614114774cf362bb4bbe29725ba1af6d3018ba2b938f7",
+        "orm": "ef65293cb878633f99bb51e5ff89bc943db3f0316a25fe35ce0e88540b4205a9"
+      }
+    }
+  ]
+}

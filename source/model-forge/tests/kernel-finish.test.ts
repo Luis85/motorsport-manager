@@ -84,6 +84,31 @@ test('finish v1 pixels have fixed identity, distinct recipes and bounded physica
     .update(pixels.normal)
     .update(pixels.orm)
     .digest('hex');
+  // Captured from implementation 09ed6726 before lattice precomputation.
+  // Cross-runtime parity alone would miss a simultaneous regression in both copies.
+  const history = createHash('sha256');
+  for (const kind of ['painted-metal', 'bare-metal', 'rubber'] as const)
+    for (const seed of [0, 7, 65535])
+      for (const wear of [0, 0.35, 1])
+        for (const palette of [
+          undefined,
+          ['#ffffff'],
+          ['#000000', '#ffffff', '#485239', '#AbCdEf'],
+        ]) {
+          const sample = generateFinish({
+            version: 1,
+            kind,
+            seed,
+            scale: seed === 7 ? 16 : 1,
+            wear,
+            ...(palette ? { palette } : {}),
+          });
+          history.update(sample.color).update(sample.normal).update(sample.orm);
+        }
+  assert.equal(
+    history.digest('hex'),
+    '0e645858b3f3af227e367a64dee336d84cb41b47915edc35ae8ce6e41961d8c2',
+  );
   assert.equal(finishAlgorithm, 'forge-finish-v1');
   assert.equal(digest, '7c6615684c36f6d9db1be7fecf7733bd2dee0387bfa5bdb38d291f25963cbc78');
   assert.deepEqual(generateFinish(finish), pixels);

@@ -74,3 +74,11 @@ detail, not authored edge wear or a combat-damage texture system.
 The [integration review corrections](review-fixes/README.md) preserve the subsequent
 input/admission defects and stale Character Studio failure with their original
 source identities. Final acceptance is recorded separately.
+
+The [subsequent integration verification](integration-verification/README.md)
+records ten passing CI workflows, the failed full-gate finish timeout, and the
+completed source-bound browser observation before the performance correction.
+
+The [finish performance correction](performance-correction/README.md) records
+the isolated timeout diagnosis, pixel-preserving generator optimization and
+unchanged nine-check suite passing within its original 120-second limit.

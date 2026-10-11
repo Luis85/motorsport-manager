@@ -1,0 +1,14 @@
+const fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process');
+const root=process.cwd(),out=path.join(root,'work/finish-harness-profile'),base=path.join(out,'optimized'),sha='09ed672642aedee855d2d45f0e8c4a611127ca7b';
+const ts=require(path.join(root,'source/wildlands/node_modules/typescript'));
+function original(p){return ['source/model-forge/src/kernel/application/finish-pattern.ts','source/wildlands/source/asset-finish.ts'].includes(p) ? fs.readFileSync(path.join(root,p),'utf8') : cp.execFileSync('git',['show',sha+':'+p],{encoding:'utf8'});}
+function save(p,s){p=path.join(base,p);fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,s);}
+function compile(s){return ts.transpileModule(s,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true}}).outputText;}
+for(const file of ['content-provider','asset-catalog','asset-surface','asset-finish','asset-renderer'])save('source/wildlands/.generated/'+file+'.js',compile(original('source/wildlands/source/'+file+'.ts')));
+for(const p of ['source/model-forge/src/kernel/application/finish-pattern.ts','source/wildlands/source/assets/asset.schema.json','docs/concepts/littlewild/assets/creatures/sproutling/definition.json'])save(p,original(p));
+let s=original('source/wildlands/source/test-asset-finish.cts');
+s=s.replace('try { work(); results.push({name, passed: true}); }','const started = performance.now();\n    try { work(); results.push({name, passed: true}); }');
+s=s.replace("console.error(name, error instanceof Error ? error.message : String(error)); }","console.error(name, error instanceof Error ? error.message : String(error)); }\n    finally { console.log(JSON.stringify({name, wallMs:performance.now()-started})); }");
+save('source/wildlands/.generated/test-asset-finish.cjs',compile(s));
+for(const [target,link]of [[path.join(root,'source/wildlands/node_modules'),path.join(base,'source/wildlands/node_modules')],[path.join(root,'source/wildlands/vendor'),path.join(base,'source/wildlands/vendor')]])if(!fs.existsSync(link))fs.symlinkSync(target,link);
+fs.writeFileSync(path.join(out,'optimized-suite-identity.json'),JSON.stringify({commit:sha,scope:'All original nine named checks/all81parity recipes/all255real finish pool allocations. Added per-check timing only; immutablegitshow inputs except the two optimized generators read from current source and snapshotted locally. Isolated generated outputs; shared generated tree untouched.',base},null,2));

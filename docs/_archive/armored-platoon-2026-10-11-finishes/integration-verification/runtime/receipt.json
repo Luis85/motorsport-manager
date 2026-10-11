@@ -1,0 +1,139 @@
+{
+  "source_commit": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "ci_checkout_commit": "ec88210c205a674cdb77f85cc2cc59d9feb3874c",
+  "equal_git_tree": "7eb1dc63ee7709b75c0a835dcb14cbb3d509cf99",
+  "source_equivalence_receipt": "checkout-identity.json",
+  "runtime_confidence": {
+    "run_id": 38151353080,
+    "url": "https://github.com/Luis85/motorsport-manager/actions/runs/38151353080",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 114505302443,
+        "name": "reproduction",
+        "status": "completed",
+        "conclusion": "success",
+        "successful_steps": [
+          "Set up job",
+          "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "Install and identify the pinned reproduction engine",
+          "Verify documentation links and navigation",
+          "Verify developer tooling contracts with the pinned native engine",
+          "Exercise recorded boundary diagnostics",
+          "Reproduce the deliberate test defect in a second isolated process",
+          "Retain diagnostic evidence",
+          "Retain exact developer reproduction toolchain",
+          "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "Complete job"
+        ]
+      },
+      {
+        "id": 114505302606,
+        "name": "Native toolbox SDK (Windows)",
+        "status": "completed",
+        "conclusion": "success",
+        "successful_steps": [
+          "Set up job",
+          "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+          "Install checksum-verified pinned Windows editor",
+          "Exercise native SDK, strict transport and process-family cleanup",
+          "Retain exact-source Windows SDK evidence",
+          "Post Run actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97",
+          "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+          "Complete job"
+        ]
+      }
+    ],
+    "observed_log_counts": {
+      "reproduction_checks": 19,
+      "script_loads": 453
+    },
+    "linux_full_python_count": null,
+    "windows_toolbox_count": null,
+    "windows_balance_count": null,
+    "count_limit": "The complete Linux unittest and both Windows command groups succeeded, but their outputs were redirected to retained artifacts. Workspace artifact download was blocked by network proxy403. No exact final Python/Windows test total is inferred. Earlier3ce1c8df local361discovered/360passed/1Windows skip remains separate evidence."
+  },
+  "quality": {
+    "analysis_complete": true,
+    "measured_files": 1812,
+    "findings": 6927,
+    "findings_by_rule": {
+      "long-line": 6927
+    },
+    "all_tools_clean": true,
+    "source_unchanged": true,
+    "receipt": "quality/receipt.json"
+  },
+  "artifacts": [
+    {
+      "id": 11707465550,
+      "name": "toolbox-windows-evidence",
+      "size_in_bytes": 5889,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707465550",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11707465550/zip",
+      "expired": false,
+      "created_at": "2026-10-11T15:41:14Z",
+      "expires_at": "2026-10-25T15:41:13Z",
+      "updated_at": "2026-10-11T15:41:14Z",
+      "digest": "sha256:0cd97cc7f51ac219e372024976b37099d565e64d796ae82051d0ea7e26e5e64e",
+      "workflow_run": {
+        "id": 38151353080,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "09ed672642aedee855d2d45f0e8c4a611127ca7b"
+      }
+    },
+    {
+      "id": 11706922091,
+      "name": "pinned-linux-reproduction-toolchain",
+      "size_in_bytes": 77832310,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11706922091",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11706922091/zip",
+      "expired": false,
+      "created_at": "2026-10-11T15:39:43Z",
+      "expires_at": "2026-10-18T15:39:40Z",
+      "updated_at": "2026-10-11T15:39:43Z",
+      "digest": "sha256:d7e246ec860988a5a105a7883219a40ba3318a8e851726da3e91902250465dda",
+      "workflow_run": {
+        "id": 38151353080,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "09ed672642aedee855d2d45f0e8c4a611127ca7b"
+      }
+    },
+    {
+      "id": 11706772640,
+      "name": "runtime-confidence-evidence",
+      "size_in_bytes": 266890,
+      "url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11706772640",
+      "archive_download_url": "https://api.github.com/repos/Luis85/motorsport-manager/actions/artifacts/11706772640/zip",
+      "expired": false,
+      "created_at": "2026-10-11T15:39:40Z",
+      "expires_at": "2026-10-25T15:39:39Z",
+      "updated_at": "2026-10-11T15:39:40Z",
+      "digest": "sha256:cf43ca74d6b0a89ebddbb9964c879d3feca61516d5f4feaf2a3c5d548b72225b",
+      "workflow_run": {
+        "id": 38151353080,
+        "repository_id": 1383237633,
+        "head_repository_id": 1383237633,
+        "head_branch": "codex/armored-platoon",
+        "head_sha": "09ed672642aedee855d2d45f0e8c4a611127ca7b"
+      }
+    }
+  ],
+  "logs": {
+    "runtime-linux-job.log": {
+      "bytes": 284698,
+      "sha256": "33c598af8b4df5901c617fbba8d83428c6e32b8ccd05788a61350f99d6bd7257"
+    },
+    "runtime-windows-job.log": {
+      "bytes": 24822,
+      "sha256": "38197927ca7ebbeb5bf5e9ea8492ccd6ba70c3845f28d9481b1f3ea8c1de1233"
+    }
+  },
+  "artifact_access_receipt": "runtime-artifact-access.json"
+}

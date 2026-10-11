@@ -369,6 +369,14 @@ campaign/content/mode coverage and online multiplayer remain incomplete. See the
 [parity ledger](armored-platoon-parity.md) for explicit gaps and the
 [dated evidence](../_archive/armored-platoon-2026-10-10-integration.md) for actual checks.
 
+The subsequent finish-performance correction precomputes bounded noise fields,
+captures realm-local Math functions and removes temporary per-pixel arrays.
+All 81 recipe outputs remain byte-identical. The unchanged nine-check finish
+suite passed locally in 2.029 seconds under its original 120-second cutoff;
+complete CI for the correction is recorded separately. The
+[diagnosis archive](../_archive/armored-platoon-2026-10-11-finishes/performance-correction/README.md)
+preserves the failed prior full-gate attempt and before/after measurements.
+
 The current work adds native painted-metal, bare-metal and rubber finish recipes
 across Model Forge, Scene Forge, browser assets and Godot export; the Armored
 visual package embeds bounded offline maps and refined original fittings.

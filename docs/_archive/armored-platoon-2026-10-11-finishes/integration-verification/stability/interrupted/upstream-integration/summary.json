@@ -1,0 +1,447 @@
+{
+  "format": "armored-software-stability-observation",
+  "version": 1,
+  "source": "491bc54cc7233388737e7600f6c21494ab07a95f",
+  "identity": {
+    "gitHead": "491bc54cc7233388737e7600f6c21494ab07a95f",
+    "freeze": {
+      "frozenAt": "2026-10-11T14:53:50.377435+00:00",
+      "gitHead": "491bc54cc7233388737e7600f6c21494ab07a95f",
+      "workingTreeStatus": " M bin/model-forge\n M bin/scene-forge\n M bin/wildlands\n M demos/README.md\n M demos/agency-delivery.html\n M demos/armored-platoon.html\n M demos/emberworks.html\n M demos/littlewild.html\n M demos/manifest.json\n M demos/office.html\n M demos/pocket-pet.html\n M demos/rts-frontier.html\n M docs/concepts/armored-platoon/PROVENANCE.md\n M docs/concepts/armored-platoon/content/visuals.json\n M docs/how-to/armored-platoon-authoring.md\n M docs/reference/armored-platoon-parity.md\n M docs/reference/armored-platoon.md\n M docs/reference/current-state.md\n M docs/reference/model-forge-cli.md\n M docs/reference/scene-forge-cli.md\n M docs/reference/wildlands-cli.md\n M source/model-forge/README.md\n M source/model-forge/examples/armored-platoon/m4-sherman.model-bundle.json\n M source/model-forge/examples/armored-platoon/m4-sherman.model.json\n M source/model-forge/examples/armored-platoon/panzer-iv.model-bundle.json\n M source/model-forge/examples/armored-platoon/panzer-iv.model.json\n M source/model-forge/scripts/armored-platoon-author.mjs\n M source/model-forge/scripts/armored-platoon-export.ts\n M source/model-forge/src/kernel/application/littlewild-materials.ts\n M source/model-forge/src/kernel/application/littlewild.ts\n M source/model-forge/src/kernel/application/materials.ts\n M source/model-forge/src/kernel/application/surfaces.ts\n M source/model-forge/src/kernel/domain/schema-material.ts\n M source/model-forge/src/kernel/index.ts\n M source/model-forge/src/kernel/render/index.ts\n M source/scene-forge/dist/cli.js\n M source/scene-forge/dist/cli.js.map\n M source/scene-forge/dist/index.js\n M source/scene-forge/dist/index.js.map\n M source/scene-forge/dist/types/model-forge/src/kernel/application/edit.d.ts\n M source/scene-forge/dist/types/model-forge/src/kernel/application/littlewild.d.ts\n M source/scene-forge/dist/types/model-forge/src/kernel/application/surfaces.d.ts\n M source/scene-forge/dist/types/model-forge/src/kernel/application/target.d.ts\n M source/scene-forge/dist/types/model-forge/src/kernel/domain/schema-documents.d.ts\n M source/scene-forge/dist/types/model-forge/src/kernel/domain/schema-littlewild.d.ts\n M source/scene-forge/dist/types/model-forge/src/kernel/domain/schema-material.d.ts\n M source/scene-forge/dist/types/model-forge/src/kernel/domain/schema-operations.d.ts\n M source/scene-forge/dist/types/model-forge/src/kernel/index.d.ts\n M source/scene-forge/dist/types/model-forge/src/kernel/render/index.d.ts\n M source/scene-forge/dist/types/scene-forge/src/domain/schema.d.ts\n M source/scene-forge/dist/types/scene-forge/src/infra/bundle.d.ts\n M source/scene-forge/dist/types/scene-forge/src/infra/examples.d.ts\n M source/scene-forge/dist/types/scene-forge/src/infra/littlewild-import.d.ts\n M source/scene-forge/dist/types/scene-forge/src/infra/project.d.ts\n M source/scene-forge/dist/types/scene-forge/src/preview/edit-state.d.ts\n M source/scene-forge/dist/viewer.js\n M source/scene-forge/examples/armored-platoon/exports/m4-sherman.three.json\n M source/scene-forge/examples/armored-platoon/exports/panzer-iv.three.json\n M source/scene-forge/examples/armored-platoon/models/m4-sherman.model.json\n M source/scene-forge/examples/armored-platoon/models/panzer-iv.model.json\n M source/scene-forge/schemas/batch.schema.json\n M source/scene-forge/schemas/littlewild-export.schema.json\n M source/scene-forge/schemas/material.schema.json\n M source/scene-forge/schemas/model-bundle.schema.json\n M source/scene-forge/schemas/model.schema.json\n M source/scene-forge/schemas/scene-bundle.schema.json\n M source/scene-forge/schemas/scene.schema.json\n M source/wildlands/source/architecture/domain-map.json\n M source/wildlands/source/armored-ai.ts\n M source/wildlands/source/armored-checkpoint.ts\n M source/wildlands/source/armored-combat.ts\n M source/wildlands/source/armored-contracts.d.ts\n M source/wildlands/source/armored-controls.ts\n M source/wildlands/source/armored-logistics.ts\n M source/wildlands/source/armored-renderer.ts\n M source/wildlands/source/armored-session.ts\n M source/wildlands/source/armored-ui.ts\n M source/wildlands/source/armored-visuals.ts\n M source/wildlands/source/armored-world.ts\n M source/wildlands/source/armored.css\n M source/wildlands/source/asset-catalog.ts\n M source/wildlands/source/asset-renderer.ts\n M source/wildlands/source/assets/asset.schema.json\n M source/wildlands/source/index.html\n M source/wildlands/source/test-armored-admission.cts\n M source/wildlands/source/test-armored-browser.cts\n M source/wildlands/source/test-armored-combat-v2.cts\n M source/wildlands/source/test-armored-combat.cts\n M source/wildlands/source/test-armored-logistics.cts\n M source/wildlands/source/test-armored-runtime.cts\n M source/wildlands/source/test-wildlands-godot.cts\n M source/wildlands/source/tools/build-inserts.cts\n M source/wildlands/source/tools/game-admission.cts\n M source/wildlands/source/tools/wildlands-godot-writer.cts\n M source/wildlands/source/verification/gate-expectations.json\n M source/wildlands/source/verification/suites.json\n M source/wildlands/source/wildlands-godot.ts\n M source/wildlands/source/wildlands-godot/assets.gd\n M source/wildlands/source/wildlands-godot/test-native-appearance.gd\n M source/wildlands/tsconfig.strict.json\n?? source/model-forge/examples/armored-platoon/m4-sherman.model.json.history/1.json\n?? source/model-forge/examples/armored-platoon/m4-sherman.model.json.history/2.json\n?? source/model-forge/examples/armored-platoon/m4-sherman.refine.batch.json\n?? source/model-forge/examples/armored-platoon/panzer-iv.model.json.history/1.json\n?? source/model-forge/examples/armored-platoon/panzer-iv.model.json.history/2.json\n?? source/model-forge/examples/armored-platoon/panzer-iv.refine.batch.json\n?? source/model-forge/examples/armored-platoon/quality-policy.json\n?? source/model-forge/examples/armored-platoon/refinement.workflow.json\n?? source/model-forge/scripts/armored-platoon-details.mjs\n?? source/model-forge/scripts/armored-platoon-refine.mjs\n?? source/model-forge/src/kernel/application/finish-pattern.ts\n?? source/model-forge/tests/kernel-finish.test.ts\n?? source/wildlands/source/armored-navigation.ts\n?? source/wildlands/source/asset-finish.ts\n?? source/wildlands/source/image-data.ts\n?? source/wildlands/source/test-armored-actions.cts\n?? source/wildlands/source/test-armored-navigation.cts\n?? source/wildlands/source/test-armored-visual-resources.cts\n?? source/wildlands/source/test-asset-finish.cts\n?? source/wildlands/source/visual-resources.ts\n?? work/\n",
+      "artifact": {
+        "origin": "source/wildlands/.generated/artifacts/armored-play.html",
+        "bytes": 4438131,
+        "sha256": "9c89da5d6bbdd7992d5d29bd540623dd1ca9e06b0caa43c6162015b0a2bb7170"
+      },
+      "sourceFiles": [
+        {
+          "file": "source/wildlands/source/armored-admission-results.json",
+          "bytes": 887,
+          "sha256": "89bf4d4e1a541ebf371a56e7035ca233b6bc97a4284851b3c14c769905e451ed"
+        },
+        {
+          "file": "source/wildlands/source/armored-ai.ts",
+          "bytes": 16742,
+          "sha256": "d4ba98def0dc7356dac2dd2346defec3d5eec11bf05d9da95746afb4e4d294d2"
+        },
+        {
+          "file": "source/wildlands/source/armored-application.ts",
+          "bytes": 1752,
+          "sha256": "59a86e8a3b9869e2bb4caf6c6b3b18ba134307c319ede7eab34e32bee58aaea1"
+        },
+        {
+          "file": "source/wildlands/source/armored-audio.ts",
+          "bytes": 2665,
+          "sha256": "57003d950cac26588a5bd8a0a29d01b8a4b7b28fee45012519337a63583db43d"
+        },
+        {
+          "file": "source/wildlands/source/armored-catalog.ts",
+          "bytes": 14021,
+          "sha256": "fed7ae6f658d901d46649c1b0660fa595b0ad5466cba580c8cbb715920a35276"
+        },
+        {
+          "file": "source/wildlands/source/armored-checkpoint.ts",
+          "bytes": 12181,
+          "sha256": "c619232b2919e9b7498e87575631eca7eec3e95d0ef9fd2f3555817b16e509e7"
+        },
+        {
+          "file": "source/wildlands/source/armored-collision.ts",
+          "bytes": 7698,
+          "sha256": "0ad4094f050a1981eedbe088e274ec1339b032b0a0385a820110e265256c3062"
+        },
+        {
+          "file": "source/wildlands/source/armored-combat-results.json",
+          "bytes": 2277,
+          "sha256": "6ae6681369337f0a58dc64437f7dbe9d48aa3c90d437a88634370b03889e3578"
+        },
+        {
+          "file": "source/wildlands/source/armored-combat-v2-results.json",
+          "bytes": 1703,
+          "sha256": "1b357cce37584ca2ed55cbe0e4da5aef8735245217a5fb465be29cefc0aae882"
+        },
+        {
+          "file": "source/wildlands/source/armored-combat.ts",
+          "bytes": 20943,
+          "sha256": "6dd641590635f0f1b0d57da3473ec22009b0d784d2a7e6ab52b6a165a4f3ff77"
+        },
+        {
+          "file": "source/wildlands/source/armored-contracts.d.ts",
+          "bytes": 7568,
+          "sha256": "6a8fbc30c9dec66a49dfa583e194bb36d71ea5e3888ddd653b05aa9e32d31a33"
+        },
+        {
+          "file": "source/wildlands/source/armored-controls.ts",
+          "bytes": 6789,
+          "sha256": "3f5ca80c076eba50dc0d616c1d897d479075d94fe70d45272dbe919a29d944b4"
+        },
+        {
+          "file": "source/wildlands/source/armored-host.ts",
+          "bytes": 6844,
+          "sha256": "0de48213d490210237bdba398e39aed5db8c34557ac9226cb34e735d6a57d82c"
+        },
+        {
+          "file": "source/wildlands/source/armored-logistics.ts",
+          "bytes": 6129,
+          "sha256": "8a43246128e7b75db88ddf74e5b1d2a21f5a93ac87a0749398565f89952b6242"
+        },
+        {
+          "file": "source/wildlands/source/armored-missions.ts",
+          "bytes": 2528,
+          "sha256": "a47d9274f6da21cdcff9c38e1dcbcc13d8e416196bf30a3dbb7a4525c318221a"
+        },
+        {
+          "file": "source/wildlands/source/armored-navigation.ts",
+          "bytes": 10305,
+          "sha256": "2777b80adbacd4d3b3325b54847b5282cd9cd9a85028adfe883d6f2911265fb4"
+        },
+        {
+          "file": "source/wildlands/source/armored-physics-legacy.ts",
+          "bytes": 6967,
+          "sha256": "3b4613a78af3b35d2f422507d8efc7a1539af52042c782680f24f8d4ce97bfc7"
+        },
+        {
+          "file": "source/wildlands/source/armored-physics.ts",
+          "bytes": 5363,
+          "sha256": "420771ad3bf6429fb02bcfafa36fc28ba9b885323c60d984e7093a979faebe0e"
+        },
+        {
+          "file": "source/wildlands/source/armored-presentation-contracts.d.ts",
+          "bytes": 1262,
+          "sha256": "dc824cc7e299108bede7ade1a0c93449b2b72e22d8cee498855c3664c35eee1d"
+        },
+        {
+          "file": "source/wildlands/source/armored-renderer.ts",
+          "bytes": 5857,
+          "sha256": "1c6807f1ab0aa1090b254ccd771daad2fe8e8919d14b42e9fc43698bebaeb1e8"
+        },
+        {
+          "file": "source/wildlands/source/armored-runtime-results.json",
+          "bytes": 1465,
+          "sha256": "7236ac6d9ba29bec50b30b78c7cfcdffc4fe0d0942ac943c0ae9329ddc5d76e6"
+        },
+        {
+          "file": "source/wildlands/source/armored-session.ts",
+          "bytes": 13381,
+          "sha256": "2c892e39bb413243ec2622e0fcd9dd33c09f36b802a9dca5566094b63ac2dafe"
+        },
+        {
+          "file": "source/wildlands/source/armored-ui.ts",
+          "bytes": 27144,
+          "sha256": "6f166a652ab3e62c0a57bbaf88d882e7718e1b05d6807f9f4f311a0a70f293b0"
+        },
+        {
+          "file": "source/wildlands/source/armored-visual-resources-results.json",
+          "bytes": 1538,
+          "sha256": "1bc939049f575b79a547beadfad024cf2fc3f6421e2561232791cc56cb33c474"
+        },
+        {
+          "file": "source/wildlands/source/armored-visuals.ts",
+          "bytes": 16447,
+          "sha256": "9a461d92f737211fadf11ee0fb385dc81739e56f8a3bb9848efbddcc597f4fe5"
+        },
+        {
+          "file": "source/wildlands/source/armored-world.ts",
+          "bytes": 15157,
+          "sha256": "66ba229992531d10277b3db12062857abcb915e6b63c1b785e6f0940376a8a7c"
+        },
+        {
+          "file": "source/wildlands/source/visual-resources.ts",
+          "bytes": 3446,
+          "sha256": "4b8741e3a59b34e49657773e7bde9e3a2fa9e395e262c1c2821d1e918eda3f8c"
+        },
+        {
+          "file": "docs/concepts/armored-platoon/content/catalog.json",
+          "bytes": 190203,
+          "sha256": "0bc1e6626c153fcacbfc424534fad02cf9f38128952862715532d9cd6b249afc"
+        },
+        {
+          "file": "docs/concepts/armored-platoon/content/visuals.json",
+          "bytes": 3133629,
+          "sha256": "8e406de65dd806954ce24a691da434fdfbdeac93e0f4901cb800445348be19c5"
+        }
+      ]
+    },
+    "harnessAdaptations": [
+      "Frozen generated artifact and browser harness copied before observation; exact bytes and SHA checked at launch and completion.",
+      "Root may commit/build in parallel; source checkout HEAD is recorded but does not replace the frozen artifact identity.",
+      "Prior thirty-minute workload retained, including legitimate command-rejection reporting; no altered game data, private ticks, accelerated RAF or forced GC.",
+      "Read-only action readiness and issued platoon-order reasons added to sampled projections; no command behavior changed.",
+      "Raw retention: work/armored-v3-stability."
+    ],
+    "artifact": {
+      "path": "work/armored-v3-stability/served-demo.html",
+      "origin": "source/wildlands/.generated/artifacts/armored-play.html",
+      "bytes": 4438131,
+      "sha256": "9c89da5d6bbdd7992d5d29bd540623dd1ca9e06b0caa43c6162015b0a2bb7170",
+      "matchesFrozenIdentity": true
+    },
+    "scriptSha256": "2dd41d530e7477094b6b847a94b532b98bdca47fd252deb24706ce9a785d489a",
+    "harnessSha256": "a464f9b13b46be5a626c628a805960170bbfca74c65fee26d2ea7a4926843bad",
+    "node": "v24.19.0",
+    "playwright": "1.63.0",
+    "os": {
+      "platform": "linux",
+      "release": "6.18.44",
+      "architecture": "x64",
+      "logicalCpus": 5,
+      "cpuModel": "AMD EPYC 9V74 80-Core Processor",
+      "totalMemoryBytes": 18882699264
+    },
+    "viewport": {
+      "width": 960,
+      "height": 600
+    },
+    "deviceScaleFactor": 1,
+    "executablePath": "/usr/bin/chromium",
+    "args": [
+      "--no-sandbox",
+      "--enable-unsafe-swiftshader",
+      "--use-angle=swiftshader"
+    ],
+    "browser": "151.0.7922.173",
+    "webgl": {
+      "version": "WebGL 2.0 (OpenGL ES 3.0 Chromium)",
+      "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+      "vendor": "Google Inc. (Google)",
+      "drawingBuffer": {
+        "width": 960,
+        "height": 600
+      }
+    }
+  },
+  "wall": {
+    "startedAt": "2026-10-11T14:54:32.420Z",
+    "endedAt": "2026-10-11T14:57:08.646Z",
+    "observedSeconds": 156.226,
+    "plannedSeconds": 1800,
+    "completed": false
+  },
+  "method": "30 wall minutes; frozen generated HTML bytes; native requestAnimationFrame; Playwright UI actions and public command/query/checkpoint/restore ports; no injected gameplay state or private ticks",
+  "workload": {
+    "route": "Scripted bounded driving near deployment",
+    "actions": [
+      "drive",
+      "aim",
+      "main-gun fire",
+      "platoon follow/hold",
+      "untouched checkpoint roundtrip",
+      "menu/briefing/mission selection/deployment"
+    ],
+    "notCovered": [
+      "multiplayer",
+      "hardware GPU performance",
+      "GPU memory/resource residency",
+      "device/context loss",
+      "full campaign completion",
+      "worst-case crowded scenes"
+    ]
+  },
+  "missionIntervals": [
+    {
+      "missionId": "crossroads",
+      "firstAt": "2026-10-11T14:54:34.638Z",
+      "lastAt": "2026-10-11T14:57:06.640Z",
+      "firstWallSecond": 2.218,
+      "lastWallSecond": 154.22,
+      "firstTick": 24,
+      "lastTick": 2208,
+      "firstSimulationSecond": 0.4,
+      "lastSimulationSecond": 36.8,
+      "samples": 11,
+      "observedStatuses": [
+        "running"
+      ],
+      "projectionRanges": {
+        "vehicles": {
+          "minimum": 5,
+          "maximum": 5
+        },
+        "projectiles": {
+          "minimum": 0,
+          "maximum": 4
+        },
+        "obstacles": {
+          "minimum": 42,
+          "maximum": 42
+        },
+        "smoke": {
+          "minimum": 0,
+          "maximum": 0
+        },
+        "events": {
+          "minimum": 0,
+          "maximum": 46
+        }
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "kind": "checkpoint-roundtrip",
+      "index": 1,
+      "began": "2026-10-11T14:56:32.429Z",
+      "finishedAt": "2026-10-11T14:56:32.771Z",
+      "exact": true,
+      "paused": true,
+      "bytes": 106522,
+      "checkpointSha256": "aa63292e449b79faef4c38d72d1bb26dd3035e4a691c5c7cfc820a3986e221b7",
+      "restoredSha256": "aa63292e449b79faef4c38d72d1bb26dd3035e4a691c5c7cfc820a3986e221b7"
+    }
+  ],
+  "commands": {
+    "count": 35,
+    "rejected": [],
+    "scope": "Scripted workload calls only. Automatic shell control/aim command responses were not instrumented or included in these totals."
+  },
+  "pageErrors": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "failures": [
+    {
+      "time": "2026-10-11T14:57:08.232Z",
+      "message": "SIGTERM interrupted the bounded observation"
+    },
+    {
+      "time": "2026-10-11T14:57:08.647Z",
+      "message": "Error: page.evaluate: Target page, context or browser has been closed"
+    }
+  ],
+  "resources": {
+    "jsHeapUsedBytes": {
+      "first": 15088808,
+      "last": 29147716,
+      "minimum": 15088808,
+      "maximum": 29147716
+    },
+    "jsHeapTotalBytes": {
+      "first": 32890880,
+      "last": 55853056,
+      "minimum": 32890880,
+      "maximum": 55853056
+    },
+    "domNodes": {
+      "first": 502,
+      "last": 567,
+      "minimum": 502,
+      "maximum": 640
+    },
+    "documents": {
+      "first": 1,
+      "last": 1,
+      "minimum": 1,
+      "maximum": 1
+    },
+    "jsEventListeners": {
+      "first": 48,
+      "last": 55,
+      "minimum": 48,
+      "maximum": 58
+    },
+    "forcedGarbageCollection": false,
+    "gpuMemory": "unavailable",
+    "gpuResourceResidency": "unavailable",
+    "rendererGeometryAndTextureCounts": "unavailable"
+  },
+  "requests": [
+    {
+      "at": "2026-10-11T14:54:26.166Z",
+      "url": "https://armored-stability.localhost/frozen-demo.html",
+      "resourceType": "document",
+      "fixture": true
+    }
+  ],
+  "artifactBytesUnchanged": true,
+  "cleanup": [
+    {
+      "name": "cdp",
+      "closed": false,
+      "error": "Error: cdpSession.detach: Target page, context or browser has been closed"
+    },
+    {
+      "name": "context",
+      "closed": true,
+      "at": "2026-10-11T14:57:08.647Z"
+    },
+    {
+      "name": "browser",
+      "closed": true,
+      "at": "2026-10-11T14:57:08.647Z"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "start.png",
+      "bytes": 287708,
+      "sha256": "2612f0ec801cc73f6313deb3cd9bb3e8cf3fbfa2341a5ac9c8caf2837c88ec08",
+      "at": "2026-10-11T14:54:34.623Z"
+    },
+    {
+      "file": "transition-01-checkpoint.png",
+      "bytes": 405301,
+      "sha256": "a850f27e51a2d6b56437fee993e454196200e7a9544297ada00cb14b113846a9",
+      "at": "2026-10-11T14:56:34.243Z"
+    }
+  ],
+  "limitations": [
+    "Software SwiftShader at 960x600; no hardware performance conclusion.",
+    "Entity counts are detached visible projection counts, not total live ECS or GPU allocations.",
+    "JS heap is CDP heap usage without forced garbage collection; fluctuations do not establish leak freedom.",
+    "GPU memory, resource residency, renderer geometry/texture counters, hardware VRAM and thermal/power data are unavailable.",
+    "Native RAF elapsed times are retained; no private ticks, RAF replacement, altered content, or fabricated checkpoint state.",
+    "This bounded observation is not full Q03 acceptance or reference-fidelity evidence.",
+    "Scripted workload calls only. Automatic shell control/aim command responses were not instrumented or included in these totals.",
+    "Repair and resupply actions were not part of this thirty-minute workload; their separate integrated browser checks are distinct evidence."
+  ],
+  "retention": {
+    "fullLocalRaw": "All raw observations, JSONL logs, untouched checkpoints, the exact served demo, exact harnesses, run log and PNG captures remain in work/armored-v3-stability.",
+    "archiveSelection": "Root chooses compact evidence and selected captures; that archive is not a copy of every local artifact."
+  },
+  "observedGameplay": {
+    "commandKinds": {
+      "drive": 11,
+      "aim": 11,
+      "fire": 11,
+      "order": 2
+    },
+    "controlledDamageStatusSamples": {
+      "operational": 11
+    },
+    "sampledMissionStatuses": [
+      "running"
+    ],
+    "finalSampleFeedback": {
+      "feedback": "",
+      "pauseFeedback": ""
+    },
+    "note": "Gameplay availability feedback, including unavailable gunner aiming after combat damage, remains in unmodified raw snapshots and captures. It is not a browser exception. These scripted command totals do not measure automatic shell rejections."
+  },
+  "counts": {
+    "samples": 11,
+    "checkpointRoundtrips": 1,
+    "exactCheckpointRoundtrips": 1,
+    "missionSwitches": 0,
+    "commands": 35,
+    "commandRejections": 0,
+    "pageErrors": 0,
+    "consoleErrors": 0,
+    "consoleWarnings": 0,
+    "observationFailures": 2
+  },
+  "warningTypes": [],
+  "domCanvasBounds": {
+    "canvasCount": {
+      "minimum": 1,
+      "maximum": 1
+    },
+    "domElementCount": {
+      "minimum": 233,
+      "maximum": 233
+    },
+    "cdpDomNodes": {
+      "first": 502,
+      "last": 567,
+      "minimum": 502,
+      "maximum": 640
+    }
+  }
+}

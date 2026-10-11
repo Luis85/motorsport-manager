@@ -1,0 +1,7 @@
+{
+  "reportedPath": "verification/v15/asset-finish.log",
+  "reportedBody": "\n\n",
+  "hasNonWhitespaceDiagnostics": false,
+  "resultFileAvailable": false,
+  "extraction": "Removed GitHub timestamp prefix from the failed-suite reporter section; original full job log is retained unchanged. This is not a downloaded raw suite log."
+}

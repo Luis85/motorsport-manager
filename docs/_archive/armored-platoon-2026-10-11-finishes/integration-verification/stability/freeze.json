@@ -1,0 +1,171 @@
+{
+  "frozenAt": "2026-10-11T15:24:33.656941+00:00",
+  "gitHead": "3ce1c8dfde1e479b9927e4447bcbb6e28e898ba9",
+  "workingTreeStatus": " M AGENTS.md\n M bin/character-studio\n M bin/process-studio\n M bin/wildlands\n M demos/README.md\n M demos/agency-delivery.html\n M demos/armored-platoon.html\n M demos/emberworks.html\n M demos/littlewild.html\n M demos/manifest.json\n M demos/office.html\n M demos/pocket-pet.html\n M demos/rts-frontier.html\n M docs/_archive/armored-platoon-2026-10-11-finishes/README.md\n M docs/reference/character-studio-cli.md\n M source/character-studio/README.md\n M source/character-studio/src/infra/engine-renderer.cjs\n M source/character-studio/tests/viewport-kit.test.ts\n M source/wildlands/source/armored-controls.ts\n M source/wildlands/source/armored-ui.ts\n M source/wildlands/source/asset-catalog.ts\n M source/wildlands/source/test-armored-browser.cts\n M source/wildlands/source/test-asset-finish.cts\n M source/wildlands/source/test-wildlands-godot.cts\n M source/wildlands/source/verification/gate-expectations.json\n?? docs/_archive/armored-platoon-2026-10-11-finishes/review-fixes/\n?? work/\n",
+  "artifact": {
+    "origin": "demos/armored-platoon.html",
+    "bytes": 4438590,
+    "sha256": "a15cb9df9468a2dbd5373f4ea4f345f8bf1ec83d80a0c598b63b59a626f7fdb6"
+  },
+  "browserTestArtifact": {
+    "bytes": 4438280,
+    "sha256": "a7c10a2071028a0de777878ed286e93004e97c43da2f039bcfea2eae8ecf4b44"
+  },
+  "sourceFiles": [
+    {
+      "file": "source/wildlands/source/armored-admission-results.json",
+      "bytes": 887,
+      "sha256": "89bf4d4e1a541ebf371a56e7035ca233b6bc97a4284851b3c14c769905e451ed"
+    },
+    {
+      "file": "source/wildlands/source/armored-ai.ts",
+      "bytes": 16742,
+      "sha256": "d4ba98def0dc7356dac2dd2346defec3d5eec11bf05d9da95746afb4e4d294d2"
+    },
+    {
+      "file": "source/wildlands/source/armored-application.ts",
+      "bytes": 1752,
+      "sha256": "59a86e8a3b9869e2bb4caf6c6b3b18ba134307c319ede7eab34e32bee58aaea1"
+    },
+    {
+      "file": "source/wildlands/source/armored-audio.ts",
+      "bytes": 2665,
+      "sha256": "57003d950cac26588a5bd8a0a29d01b8a4b7b28fee45012519337a63583db43d"
+    },
+    {
+      "file": "source/wildlands/source/armored-catalog.ts",
+      "bytes": 14021,
+      "sha256": "fed7ae6f658d901d46649c1b0660fa595b0ad5466cba580c8cbb715920a35276"
+    },
+    {
+      "file": "source/wildlands/source/armored-checkpoint.ts",
+      "bytes": 12181,
+      "sha256": "c619232b2919e9b7498e87575631eca7eec3e95d0ef9fd2f3555817b16e509e7"
+    },
+    {
+      "file": "source/wildlands/source/armored-collision.ts",
+      "bytes": 7698,
+      "sha256": "0ad4094f050a1981eedbe088e274ec1339b032b0a0385a820110e265256c3062"
+    },
+    {
+      "file": "source/wildlands/source/armored-combat-results.json",
+      "bytes": 2277,
+      "sha256": "6ae6681369337f0a58dc64437f7dbe9d48aa3c90d437a88634370b03889e3578"
+    },
+    {
+      "file": "source/wildlands/source/armored-combat-v2-results.json",
+      "bytes": 1703,
+      "sha256": "1b357cce37584ca2ed55cbe0e4da5aef8735245217a5fb465be29cefc0aae882"
+    },
+    {
+      "file": "source/wildlands/source/armored-combat.ts",
+      "bytes": 20943,
+      "sha256": "6dd641590635f0f1b0d57da3473ec22009b0d784d2a7e6ab52b6a165a4f3ff77"
+    },
+    {
+      "file": "source/wildlands/source/armored-contracts.d.ts",
+      "bytes": 7568,
+      "sha256": "6a8fbc30c9dec66a49dfa583e194bb36d71ea5e3888ddd653b05aa9e32d31a33"
+    },
+    {
+      "file": "source/wildlands/source/armored-controls.ts",
+      "bytes": 7138,
+      "sha256": "db33b18e023b51e2193b1db7a79e8ac7f5cd8889613b8a150c6b899dc305c213"
+    },
+    {
+      "file": "source/wildlands/source/armored-host.ts",
+      "bytes": 6844,
+      "sha256": "0de48213d490210237bdba398e39aed5db8c34557ac9226cb34e735d6a57d82c"
+    },
+    {
+      "file": "source/wildlands/source/armored-logistics.ts",
+      "bytes": 6129,
+      "sha256": "8a43246128e7b75db88ddf74e5b1d2a21f5a93ac87a0749398565f89952b6242"
+    },
+    {
+      "file": "source/wildlands/source/armored-missions.ts",
+      "bytes": 2528,
+      "sha256": "a47d9274f6da21cdcff9c38e1dcbcc13d8e416196bf30a3dbb7a4525c318221a"
+    },
+    {
+      "file": "source/wildlands/source/armored-navigation.ts",
+      "bytes": 10305,
+      "sha256": "2777b80adbacd4d3b3325b54847b5282cd9cd9a85028adfe883d6f2911265fb4"
+    },
+    {
+      "file": "source/wildlands/source/armored-physics-legacy.ts",
+      "bytes": 6967,
+      "sha256": "3b4613a78af3b35d2f422507d8efc7a1539af52042c782680f24f8d4ce97bfc7"
+    },
+    {
+      "file": "source/wildlands/source/armored-physics.ts",
+      "bytes": 5363,
+      "sha256": "420771ad3bf6429fb02bcfafa36fc28ba9b885323c60d984e7093a979faebe0e"
+    },
+    {
+      "file": "source/wildlands/source/armored-presentation-contracts.d.ts",
+      "bytes": 1262,
+      "sha256": "dc824cc7e299108bede7ade1a0c93449b2b72e22d8cee498855c3664c35eee1d"
+    },
+    {
+      "file": "source/wildlands/source/armored-renderer.ts",
+      "bytes": 5857,
+      "sha256": "1c6807f1ab0aa1090b254ccd771daad2fe8e8919d14b42e9fc43698bebaeb1e8"
+    },
+    {
+      "file": "source/wildlands/source/armored-runtime-results.json",
+      "bytes": 1465,
+      "sha256": "7236ac6d9ba29bec50b30b78c7cfcdffc4fe0d0942ac943c0ae9329ddc5d76e6"
+    },
+    {
+      "file": "source/wildlands/source/armored-session.ts",
+      "bytes": 13381,
+      "sha256": "2c892e39bb413243ec2622e0fcd9dd33c09f36b802a9dca5566094b63ac2dafe"
+    },
+    {
+      "file": "source/wildlands/source/armored-ui.ts",
+      "bytes": 27109,
+      "sha256": "886932790d9cacdf0e242c24322d744263b08edcc11e66d9603d3df96139ad58"
+    },
+    {
+      "file": "source/wildlands/source/armored-visual-resources-results.json",
+      "bytes": 1538,
+      "sha256": "1bc939049f575b79a547beadfad024cf2fc3f6421e2561232791cc56cb33c474"
+    },
+    {
+      "file": "source/wildlands/source/armored-visuals.ts",
+      "bytes": 16447,
+      "sha256": "9a461d92f737211fadf11ee0fb385dc81739e56f8a3bb9848efbddcc597f4fe5"
+    },
+    {
+      "file": "source/wildlands/source/armored-world.ts",
+      "bytes": 15157,
+      "sha256": "66ba229992531d10277b3db12062857abcb915e6b63c1b785e6f0940376a8a7c"
+    },
+    {
+      "file": "source/wildlands/source/visual-resources.ts",
+      "bytes": 3446,
+      "sha256": "4b8741e3a59b34e49657773e7bde9e3a2fa9e395e262c1c2821d1e918eda3f8c"
+    },
+    {
+      "file": "source/wildlands/source/ecs.ts",
+      "bytes": 13667,
+      "sha256": "0736c1aab5b235d608d5c1e3e3a414343596b5dcb3e43068ab3ce3cdf4b34bb3"
+    },
+    {
+      "file": "docs/concepts/armored-platoon/content/catalog.json",
+      "bytes": 190203,
+      "sha256": "0bc1e6626c153fcacbfc424534fad02cf9f38128952862715532d9cd6b249afc"
+    },
+    {
+      "file": "docs/concepts/armored-platoon/content/visuals.json",
+      "bytes": 3133629,
+      "sha256": "8e406de65dd806954ce24a691da434fdfbdeac93e0f4901cb800445348be19c5"
+    },
+    {
+      "file": "source/model-forge/src/kernel/application/finish-pattern.ts",
+      "bytes": 4617,
+      "sha256": "fd88b0ec05939bb439b6f3b7d1b76c2464c4c837027b59966bbd2cbe4d3a13fe"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "implementation": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "ciCheckout": "ec88210c205a674cdb77f85cc2cc59d9feb3874c",
+  "tree": "7eb1dc63ee7709b75c0a835dcb14cbb3d509cf99",
+  "base": "3f56925b3532f015d9a29f19a998a05286b76f13",
+  "method": "git fetch exact CI checkout; git rev-parse both tree objects; git diff empty",
+  "equal": true
+}

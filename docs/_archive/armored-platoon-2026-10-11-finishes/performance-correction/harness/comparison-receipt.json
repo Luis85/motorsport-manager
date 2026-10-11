@@ -1,0 +1,163 @@
+{
+  "baselineCommit": "09ed672642aedee855d2d45f0e8c4a611127ca7b",
+  "nodeVersion": "v24.19.0",
+  "sourceInputs": {
+    "source/model-forge/src/kernel/application/finish-pattern.ts": {
+      "baselineSha256": "fd88b0ec05939bb439b6f3b7d1b76c2464c4c837027b59966bbd2cbe4d3a13fe",
+      "optimizedSha256": "53fd6b90a5763aa5784d4795179e7571a70151aacd6a81cbc38c923688f71aeb"
+    },
+    "source/wildlands/source/asset-finish.ts": {
+      "baselineSha256": "5f24b7f7528f31098e1789fb7777904b4fce50acb8d7dde00afb64bef84b113a",
+      "optimizedSha256": "4aca0280594a3df3108fc30efa690536340466b66c8dc2bae43fd8dd5d3ecf4b"
+    }
+  },
+  "scope": "Isolated work-tree transpilation, original nine named assertions and VM realm setup, all81kind/seed/wear/palette parity recipes (243channels), all255real finish recipes in owner-budget check. Only timing output added. No test weakening, Math injection, shared build or tracked edits.",
+  "resultOriginal": {
+    "passed": 9,
+    "total": 9,
+    "results": [
+      {
+        "name": "Finish v1 pixels stay byte-identical to native Model Forge across kinds seeds wear and palettes",
+        "passed": true
+      },
+      {
+        "name": "Finish schema and runtime catalog reject malformed recipes and mutually exclusive detail",
+        "passed": true
+      },
+      {
+        "name": "Finish admission returns detached frozen data and rejects accessors without executing them",
+        "passed": true
+      },
+      {
+        "name": "Three finish maps share live owners preserve PBR multipliers and dispose only after the last owner",
+        "passed": true
+      },
+      {
+        "name": "A failed material constructor releases its newly acquired finish maps exactly once",
+        "passed": true
+      },
+      {
+        "name": "Combined finish and surface budgets reject a whole model before root or GPU allocation",
+        "passed": true
+      },
+      {
+        "name": "Littlewild finish recipes instantiate through the generic renderer with authored UVs and appearance colors",
+        "passed": true
+      },
+      {
+        "name": "Catalog admission rejects merged material conflicts and preserves valid node and actor palettes",
+        "passed": true
+      },
+      {
+        "name": "Material and per-node surface-finish conflicts fail before resource allocation",
+        "passed": true
+      }
+    ]
+  },
+  "resultOptimized": {
+    "passed": 9,
+    "total": 9,
+    "results": [
+      {
+        "name": "Finish v1 pixels stay byte-identical to native Model Forge across kinds seeds wear and palettes",
+        "passed": true
+      },
+      {
+        "name": "Finish schema and runtime catalog reject malformed recipes and mutually exclusive detail",
+        "passed": true
+      },
+      {
+        "name": "Finish admission returns detached frozen data and rejects accessors without executing them",
+        "passed": true
+      },
+      {
+        "name": "Three finish maps share live owners preserve PBR multipliers and dispose only after the last owner",
+        "passed": true
+      },
+      {
+        "name": "A failed material constructor releases its newly acquired finish maps exactly once",
+        "passed": true
+      },
+      {
+        "name": "Combined finish and surface budgets reject a whole model before root or GPU allocation",
+        "passed": true
+      },
+      {
+        "name": "Littlewild finish recipes instantiate through the generic renderer with authored UVs and appearance colors",
+        "passed": true
+      },
+      {
+        "name": "Catalog admission rejects merged material conflicts and preserves valid node and actor palettes",
+        "passed": true
+      },
+      {
+        "name": "Material and per-node surface-finish conflicts fail before resource allocation",
+        "passed": true
+      }
+    ]
+  },
+  "optimizedProcess": {
+    "exitCode": 0,
+    "wallSeconds": 2.0294514679990243,
+    "userCpuSeconds": 2.327463,
+    "systemCpuSeconds": 0.13677699999999998,
+    "maxRssKiB": 204344,
+    "timeoutSeconds": 120
+  },
+  "checkTimings": [
+    {
+      "name": "Finish v1 pixels stay byte-identical to native Model Forge across kinds seeds wear and palettes",
+      "originalMs": 15140.380669999999,
+      "optimizedMs": 789.948693
+    },
+    {
+      "name": "Finish schema and runtime catalog reject malformed recipes and mutually exclusive detail",
+      "originalMs": 101.2446519999994,
+      "optimizedMs": 102.77712199999996
+    },
+    {
+      "name": "Finish admission returns detached frozen data and rejects accessors without executing them",
+      "originalMs": 11.103221999999732,
+      "optimizedMs": 10.969858999999815
+    },
+    {
+      "name": "Three finish maps share live owners preserve PBR multipliers and dispose only after the last owner",
+      "originalMs": 345.29265000000123,
+      "optimizedMs": 25.632690999999795
+    },
+    {
+      "name": "A failed material constructor releases its newly acquired finish maps exactly once",
+      "originalMs": 2433.5853050000023,
+      "optimizedMs": 57.465970999999854
+    },
+    {
+      "name": "Combined finish and surface budgets reject a whole model before root or GPU allocation",
+      "originalMs": 58719.91917200001,
+      "optimizedMs": 684.4975849999998
+    },
+    {
+      "name": "Littlewild finish recipes instantiate through the generic renderer with authored UVs and appearance colors",
+      "originalMs": 224.85187900000892,
+      "optimizedMs": 33.579426999999896
+    },
+    {
+      "name": "Catalog admission rejects merged material conflicts and preserves valid node and actor palettes",
+      "originalMs": 21.907804000002216,
+      "optimizedMs": 20.45378800000003
+    },
+    {
+      "name": "Material and per-node surface-finish conflicts fail before resource allocation",
+      "originalMs": 218.18553099999554,
+      "optimizedMs": 26.816121000000066
+    }
+  ],
+  "checkTimingSumsMs": {
+    "original": 77216.47088500002,
+    "optimized": 1752.1412569999993
+  },
+  "limits": [
+    "Local timings may overlap other agents CPU work; no CI outcome inferred.",
+    "Microbenchmark realm substitutions are separate diagnostics only and were not applied to full-suite runs.",
+    "An initial optimized invocation could not start because /usr/bin/time was absent; preserved unavailable-time-command.log. Actual run used Python monotonic clock/resource counters and120s subprocess timeout."
+  ]
+}
