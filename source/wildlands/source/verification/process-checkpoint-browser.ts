@@ -42,7 +42,10 @@ runSuite('process checkpoint browser harness', 'process-checkpoint-browser-resul
   const stored = await storage();
   await page.locator('#export-menu').click();
   const item = page.locator('#checkpoint-export');
-  assert.deepEqual([await item.innerText(), await item.getAttribute('aria-disabled'), await item.getAttribute('title')], ['Export run checkpoint…', 'true', NO_RUN]);
+  assert.deepEqual(
+   [await item.innerText(), await item.getAttribute('aria-disabled'), await item.getAttribute('title')],
+   ['Export run checkpoint…', 'true', NO_RUN],
+  );
   // aria-disabled keeps the item in the keyboard order, so its reason is reachable: choosing it says why.
   await item.focus(); await page.keyboard.press('Enter');
   assert.equal(await message(), NO_RUN);
@@ -65,7 +68,8 @@ runSuite('process checkpoint browser harness', 'process-checkpoint-browser-resul
   assert.deepEqual(await storage(), stored, 'exporting writes nothing to browser storage');
   savedAt = before.snapshot.minute; savedSnapshot = JSON.stringify(before.snapshot);
  });
- await check('Load checkpoint asks first, starting on Cancel and naming both minutes; Cancel keeps the run and draft and restores focus without ticking', async () => {
+ await check('Load checkpoint asks first, starting on Cancel and naming both minutes; '
+  + 'Cancel keeps the run and draft and restores focus without ticking', async () => {
   for (let i = 0; i < 2; i++) await page.locator('#advance').click();
   await openDef(); await page.locator('#draft').fill('{\n  "unfinished":'); await closeDef();
   assert.match(await page.locator('#draft-chip').innerText(), /^Unapplied draft/);
@@ -84,7 +88,8 @@ runSuite('process checkpoint browser harness', 'process-checkpoint-browser-resul
   assert.deepEqual([await live(), await draftText()], [run, draft], 'Cancel keeps the run and the draft');
   assert.deepEqual(await storage(), stored);
  });
- await check('Load checkpoint restores the exported run exactly and paused, keeps the unapplied draft, continues as one run and writes no storage', async () => {
+ await check('Load checkpoint restores the exported run exactly and paused, keeps the unapplied draft, '
+  + 'continues as one run and writes no storage', async () => {
   const draft = await draftText(), stored = await storage();
   await load(saved);
   await ask.waitFor();

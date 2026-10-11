@@ -53,7 +53,8 @@ test('Brief slides keep the title, overview, resources, one section slide per se
    if (!REWORDED.has(s.id)) assert.deepEqual(s, twin, `${file}: ${s.id}`);
   }
   // Each step is named on exactly one section slide, in the section that held its step slide in the full deck.
-  const named = brief.slides.filter(s => s.kind === 'section').flatMap(s => s.blocks.filter(b => b.heading === 'In this part' || b.heading === 'Off the main route')
+  const named = brief.slides.filter(s => s.kind === 'section').flatMap(s => s.blocks
+   .filter(b => b.heading === 'In this part' || b.heading === 'Off the main route')
    .flatMap(b => b.items.map(item => [s.section, item] as const)));
   assert.equal(named.length, d.steps.length, file + ': one entry per step');
   for (const step of full.slides.filter(s => s.kind === 'step')) {

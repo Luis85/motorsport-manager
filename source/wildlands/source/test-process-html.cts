@@ -73,7 +73,9 @@ test('Tune values and the inspector carry no local escaper; the remaining escape
   assert.match(text, /root\.LWProcessHtml\.esc\b/, file + ' escapes with LWProcessHtml.esc');
  }
  // Every studio module now escapes through LWProcessHtml; a new local escaper fails here.
- const remaining = fs.readdirSync(dir).filter(f => /^process-.*\.ts$/.test(f) && f !== 'process-html.ts' && local.test(fs.readFileSync(path.join(dir, f), 'utf8'))).sort();
+ const remaining = fs.readdirSync(dir)
+  .filter(f => /^process-.*\.ts$/.test(f) && f !== 'process-html.ts' && local.test(fs.readFileSync(path.join(dir, f), 'utf8')))
+  .sort();
  assert.deepEqual(remaining, []);
 });
 
@@ -94,15 +96,22 @@ test('The inspector shows mean wait, the work cost split, pool idle cost, throug
   assert(m.starts > 0 && q.metrics.completed > 0, 'the pinned run has started and finished work');
   const step = inspector.step(view, d.steps[1]!), one = (n: number) => Number(n.toFixed(1)).toLocaleString();
   assert.match(step, new RegExp(`<dt>Mean wait per start</dt><dd>${one(m.meanWaitMinutes!)} min</dd>`));
-  assert.match(step, new RegExp(`<dt>Work cost</dt><dd>${one(m.workCost)} = ${one(m.fixedCost)} fixed \\+ ${one(m.workCost - m.fixedCost)} for pool minutes</dd>`));
+  assert.match(step, new RegExp(
+   `<dt>Work cost</dt><dd>${one(m.workCost)} = ${one(m.fixedCost)} fixed \\+ ${one(m.workCost - m.fixedCost)} for pool minutes</dd>`,
+  ));
   assert.match(step, /<p class="process-rounding">Whole-minute rounding: an exponential distribution with mean 2 min draws about 2\.2 min on average\.<\/p>/);
   assert.match(step, /<p>Review &lt;b&gt;<\/p>/, 'the step name is text');
   const pools = inspector.pools(view);
-  assert.match(pools, new RegExp(`Work cost ${one(pool.workCost)} of ${one(pool.capacityCost)} capacity cost · idle cost ${one(pool.capacityCost - pool.workCost)}`));
+  assert.match(pools, new RegExp(
+   `Work cost ${one(pool.workCost)} of ${one(pool.capacityCost)} capacity cost · idle cost ${one(pool.capacityCost - pool.workCost)}`,
+  ));
   assert.match(pools, /<strong>Crew &amp; co<\/strong>/); assert.match(pools, /Idle cost is capacity cost minus work cost\./);
   const overview = inspector.overview(view, false), rate = Number(q.metrics.throughputPerHour!.toFixed(2)).toLocaleString();
   assert.match(overview, new RegExp(`<dt>Throughput</dt><dd>${rate} ${rate === '1' ? 'case' : 'cases'} finished per business hour</dd>`));
-  assert.match(overview, /<h3>Notes<\/h3><ul class="process-adds process-notes" aria-label="Modelling notes"><li>Review &lt;b&gt;, random timing: Whole-minute rounding/);
+  assert.match(
+   overview,
+   /<h3>Notes<\/h3><ul class="process-adds process-notes" aria-label="Modelling notes"><li>Review &lt;b&gt;, random timing: Whole-minute rounding/,
+  );
   // A step without random timing or work starts shows neither the note nor the work analytics.
   const start = inspector.step(view, d.steps[0]!); assert.doesNotMatch(start, /Mean wait per start|process-rounding|Work cost/);
   const plain = {...d, steps: d.steps.map(x => x.id === 'work' ? {...x, timing: undefined} : x)};
@@ -123,7 +132,11 @@ test('Inspector and KPI times use the display calendar: business days and weeks 
   const without = kpi(plain), withCal = kpi({...plain, calendar: cal});
   assert.match(without, new RegExp(`<span>Mean cycle</span><strong>${time.span(m.meanCycleMinutes).replace(/[().]/g, '\\$&')}</strong>`));
   assert.match(without, /<span>Mean cycle<\/span><strong>[\d,.]+ min \(≈ [\d,.]+ h\)<\/strong>/, 'without a calendar, long times gloss hours');
-  assert.match(withCal, /<span>Mean cycle<\/span><strong>[\d,.]+ min \((≈ )?[\d.]+ business (days?|weeks?)\)<\/strong>/, 'with a calendar, business days or weeks');
+  assert.match(
+   withCal,
+   /<span>Mean cycle<\/span><strong>[\d,.]+ min \((≈ )?[\d.]+ business (days?|weeks?)\)<\/strong>/,
+   'with a calendar, business days or weeks',
+  );
   const busy = plain.steps.find(x => (q.steps.find(y => y.id === x.id)?.waitMinutes ?? 0) >= 60)!;
   const detail = inspector.step({definition: {...plain, calendar: cal}, snapshot: q, selected: busy.id} as unknown as LWProcessApp.View, busy);
   const wait = q.steps.find(y => y.id === busy.id)!.waitMinutes;

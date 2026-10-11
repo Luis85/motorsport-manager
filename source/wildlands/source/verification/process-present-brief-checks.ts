@@ -63,15 +63,18 @@ export async function presentBriefChecks(studio: Studio): Promise<void> {
   const other = (await mapSteps()).find(id => sectionOfStep(id) !== brief.sections[at + 1])!, owner = sectionOfStep(other);
   assert(other, 'the framed map shows a neighbour from another section');
   await page.locator(`#present-stage #process-map-${other}`).click();
-  await page.waitForFunction(id => (globalThis as unknown as {LWProcessStudio: {query(): {presenting: {id: string} | null}}}).LWProcessStudio.query().presenting?.id === id,
-   'section-' + owner);
+  await page.waitForFunction(
+   id => (globalThis as unknown as {LWProcessStudio: {query(): {presenting: {id: string} | null}}}).LWProcessStudio.query().presenting?.id === id,
+   'section-' + owner,
+  );
   assert.equal((await query(page)).selected, other);
   // After moving, switching back keeps the section slide; nothing ticked, and the next open starts with the full deck.
   await openContents(); await toggle.click(); await pressed(false);
   assert.deepEqual(await presenting(), {index: full.ids.indexOf('section-' + owner), count: full.ids.length, id: 'section-' + owner});
   await page.keyboard.press('Escape'); await page.keyboard.press('Escape'); await shown.waitFor({state: 'hidden'});
   const after = await query(page); assert.equal(after.snapshot.minute, 0); assert.equal(JSON.stringify(after.snapshot), before, 'the brief deck never ticks');
-  await page.locator('#mode-present').click(); await shown.waitFor(); assert.equal((await presenting()).count, full.ids.length, 'each open starts with the full deck');
+  await page.locator('#mode-present').click(); await shown.waitFor();
+  assert.equal((await presenting()).count, full.ids.length, 'each open starts with the full deck');
   await openContents(); assert.equal(await toggle.getAttribute('aria-pressed'), 'false');
   await page.keyboard.press('Escape'); await page.keyboard.press('Escape'); await shown.waitFor({state: 'hidden'});
  });

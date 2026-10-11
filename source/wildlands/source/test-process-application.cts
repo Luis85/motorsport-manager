@@ -19,7 +19,11 @@ test('Each process keeps its own paused run across switches; switching never tic
  app.use(0);
  const back = app.query();
  assert.deepEqual(back.snapshot, left.snapshot, 'the same minute and the same snapshot');
- assert.deepEqual([back.selected, back.horizon, back.playing, back.snapshot.seed], ['discovery', 1440, false, 9], 'paused, with its seed, selection and run length');
+ assert.deepEqual(
+  [back.selected, back.horizon, back.playing, back.snapshot.seed],
+  ['discovery', 1440, false, 9],
+  'paused, with its seed, selection and run length',
+ );
  app.pulse(30); assert.equal(app.query().snapshot.minute, 45, 'a paused run does not move on a pulse');
  app.use(1); assert.deepEqual(app.query().snapshot, second); assert.equal(app.query().horizon, null);
  // Reset, seed and replace act on the active slot only; the other run stays where it was.
@@ -29,7 +33,8 @@ test('Each process keeps its own paused run across switches; switching never tic
  assert.throws(() => app.use(2), /Unknown process: 2/);
  app.dispose(); assert.throws(() => app.use(1), /disposed/);
 });
-test('Run to end is one bounded clock command that equals advancing the same minutes in steps and refuses without a run length or after the run stopped', () => {
+test('Run to end is one bounded clock command that equals advancing the same minutes in steps '
+ + 'and refuses without a run length or after the run stopped', () => {
  const app = application.create(agency); app.horizon(1440); app.play(true);
  const minutes = app.runToEnd(), ended = app.query();
  assert.equal(ended.playing, false, 'it pauses a playing run'); assert.equal(ended.snapshot.status, 'completed'); assert.equal(minutes, ended.snapshot.minute);
