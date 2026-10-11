@@ -8,7 +8,8 @@ nothing in the browser for it. The file format, what it carries and every check 
 ## Before you start
 
 - A built studio (a process game such as `demos/agency-delivery.html`, or your own file from
-  `bin/wildlands process build`), or the checked-in `bin/wildlands` with Node.js 22+.
+  `bin/process-studio build`), or the checked-in `bin/process-studio` with Node.js 22+
+  (`bin/wildlands process run` takes the same options with identical results).
 - The process **definition the run belongs to**. A checkpoint does not contain the definition; it
   names its id and fingerprint, and only a run of that exact definition can be continued. Keep the
   `.process.json` (or the built HTML) beside the checkpoint.
@@ -48,8 +49,8 @@ JSON** for that.
 
 ```sh
 F=docs/concepts/agency-delivery/content/agency.process.json
-bin/wildlands process run --input $F --minutes 100 --output /tmp/run-a.json --checkpoint-out /tmp/agency.checkpoint.json
-bin/wildlands process run --input $F --minutes 140 --output /tmp/run-b.json --checkpoint /tmp/agency.checkpoint.json
+bin/process-studio run --input $F --minutes 100 --output /tmp/run-a.json --checkpoint-out /tmp/agency.checkpoint.json
+bin/process-studio run --input $F --minutes 140 --output /tmp/run-b.json --checkpoint /tmp/agency.checkpoint.json
 ```
 
 The first command runs 100 minutes and saves the run (`checkpointOut` names the file and the

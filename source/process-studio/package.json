@@ -1,0 +1,24 @@
+{
+  "name": "process-studio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent-first standalone CLI for Wildlands business-process definitions: author, validate, simulate, analyse, exchange BPMN 2.0 and build offline HTML.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "architecture": "node --import tsx scripts/architecture.cts",
+    "test": "node --import tsx --test --test-concurrency=4 tests/*.test.cts",
+    "cli": "node --import tsx src/cli.cts",
+    "build:cli": "node --import tsx scripts/bundle.cts --output ../../bin/process-studio",
+    "check:cli": "node --import tsx scripts/bundle.cts --check ../../bin/process-studio"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "esbuild": "0.25.12",
+    "pako": "2.2.0",
+    "tsx": "4.20.0",
+    "typescript": "5.9.3"
+  }
+}

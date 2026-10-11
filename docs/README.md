@@ -35,7 +35,7 @@ Advanced interfaces, diagnostic tools and foundations awaiting specialist UI.
 
 ## Standalone CLI projects
 
-Two independent Node/TypeScript projects live under `source/`, outside the Godot
+Three independent Node/TypeScript projects live under `source/`, outside the Godot
 game. Each builds a self-contained command-line bundle that is checked in under
 [`bin/`](../bin/README.md) and needs only Node.js 22 or newer, without `npm ci`.
 
@@ -43,6 +43,7 @@ game. Each builds a self-contained command-line bundle that is checked in under
 |---|---|---|
 | [Wildlands](../source/wildlands/DOCUMENTATION.md) | `bin/wildlands` | [Wildlands CLI](reference/wildlands-cli.md) |
 | [Scene Forge](../source/scene-forge/README.md) | `bin/scene-forge` | [Scene Forge CLI](reference/scene-forge-cli.md) |
+| [Process Studio](../source/process-studio/README.md) | `bin/process-studio` | [Process Studio CLI](reference/process-studio-cli.md) |
 
 The separate Wildlands documentation indexes the TypeScript engine, its
 browser/terminal workflows and Node-backed Godot desktop target. Its games live
@@ -50,7 +51,10 @@ as data-only [game folders](concepts/README.md); `bin/wildlands build-game`
 builds each into one of five ready-to-play files in [`demos/`](../demos/README.md)
 that open offline from disk. Scene Forge is a standalone CLI and offline 3D editor for
 declarative modeling, reusable scene composition, portable rigs and multi-view
-review. Each project retains its own runtime, tests and source-bound evidence
+review. Process Studio is the standalone command line for Wildlands business
+processes: it bundles the Wildlands process engine through one bridge module and
+builds the same offline HTML studio as `bin/wildlands process build`. Each project
+retains its own runtime, tests and source-bound evidence
 outside the native Motorsport Manager capability inventory.
 
 Scene Forge's `littlewild` commands export recipes into Wildlands asset
